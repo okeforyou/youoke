@@ -77,24 +77,20 @@ export default function ListPlaylistsGrid() {
     type: "ส่วนตัว",
   });
 
+  // Fetch data only on first load
   useEffect(() => {
-    console.log('[useEffect 1] activeIndex:', activeIndex, 'isLoadPlaylist:', isLoadPlaylist);
     if (activeIndex === 1 && isLoadPlaylist.myPlaylist == 0) {
-      console.log('[useEffect 1] Calling getMyPlaylists()');
       getMyPlaylists();
     } else if (activeIndex === 0 && isLoadPlaylist.suggest == 0) {
-      console.log('[useEffect 1] Calling getSuggestPlaylists()');
       getSuggestPlaylists();
     }
   }, [activeIndex, isLoadPlaylist]);
 
+  // Update playlists when data changes OR when switching tabs
   useEffect(() => {
-    console.log('[useEffect 2] activeIndex:', activeIndex, 'myPlaylist.length:', myPlaylist.length, 'latestPlaylists.length:', latestPlaylists.length);
-    if (activeIndex === 1) {
-      console.log('[useEffect 2] Setting playlists from myPlaylist:', myPlaylist.length);
+    if (activeIndex === 1 && myPlaylist.length > 0) {
       setPlaylists(myPlaylist);
-    } else {
-      console.log('[useEffect 2] Setting playlists from latestPlaylists:', latestPlaylists.length);
+    } else if (activeIndex === 0 && latestPlaylists.length > 0) {
       setPlaylists(latestPlaylists);
     }
   }, [activeIndex, myPlaylist, latestPlaylists]);
