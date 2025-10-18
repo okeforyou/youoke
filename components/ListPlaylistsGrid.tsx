@@ -111,7 +111,6 @@ export default function ListPlaylistsGrid() {
       });
 
       setMyPlaylist(data);
-      setPlaylists(data);
 
       setIsLoading(false);
       if (isLoadPlaylist.myPlaylist == 0) {
@@ -148,7 +147,6 @@ export default function ListPlaylistsGrid() {
       });
 
       setLatestPlaylists(data);
-      setPlaylists(data);
 
       const qSuggest = query(
         getPlaylistsRef(),
