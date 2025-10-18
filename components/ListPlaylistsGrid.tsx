@@ -82,6 +82,10 @@ export default function ListPlaylistsGrid() {
       getMyPlaylists();
     } else if (activeIndex === 0 && isLoadPlaylist.suggest == 0) {
       getSuggestPlaylists();
+    } else if (activeIndex === 1) {
+      setPlaylists(myPlaylist);
+    } else {
+      setPlaylists(latestPlaylists);
     }
   }, [activeIndex, isLoadPlaylist]);
 
@@ -91,7 +95,7 @@ export default function ListPlaylistsGrid() {
     } else {
       setPlaylists(latestPlaylists);
     }
-  }, [activeIndex, myPlaylist, latestPlaylists]);
+  }, [myPlaylist, latestPlaylists]);
 
   const getMyPlaylists = async () => {
     if (!database) {
