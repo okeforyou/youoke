@@ -78,15 +78,20 @@ export default function ListPlaylistsGrid() {
   });
 
   useEffect(() => {
-    if (activeIndex === 1 && isLoadPlaylist.myPlaylist == 0) getMyPlaylists();
-    else if (isLoadPlaylist.suggest == 0) getSuggestPlaylists();
+    if (activeIndex === 1 && isLoadPlaylist.myPlaylist == 0) {
+      getMyPlaylists();
+    } else if (activeIndex === 0 && isLoadPlaylist.suggest == 0) {
+      getSuggestPlaylists();
+    }
+  }, [activeIndex, isLoadPlaylist]);
 
+  useEffect(() => {
     if (activeIndex === 1) {
       setPlaylists(myPlaylist);
     } else {
       setPlaylists(latestPlaylists);
     }
-  }, [activeIndex, isLoadPlaylist]);
+  }, [activeIndex, myPlaylist, latestPlaylists]);
 
   const getMyPlaylists = async () => {
     if (!database) {
