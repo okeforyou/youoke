@@ -137,30 +137,30 @@ pm2 restart youoke
 
 ---
 
-## ⚙️ ตั้งค่า Vercel (ครั้งเดียว)
+## ⚙️ การทำงานของ Vercel (ทำให้อัตโนมัติ)
 
-### **ตั้งให้ Vercel deploy จาก develop branch:**
+### **Vercel Preview Deployments (ไม่ต้องตั้งค่าอะไร!)**
 
-1. ไปที่ Vercel Dashboard: https://vercel.com/okeforyou/youoke
-2. ไปที่ **Settings** → **Git**
-3. ใน **Production Branch** → เปลี่ยนเป็น `develop`
-4. Save
+Vercel จะ auto-deploy ทุก branch อัตโนมัติ:
 
-หรือใช้ Vercel CLI:
+- **`main` branch** → Production
+  - URL: `https://youoke.vercel.app`
+  - Deploy อัตโนมัติเมื่อ push to main
 
-```bash
-# ติดตั้ง Vercel CLI (ถ้ายังไม่มี)
-npm install -g vercel
+- **`develop` branch** → Preview
+  - URL: `https://youoke-git-develop-okeforyous-projects.vercel.app`
+  - Deploy อัตโนมัติเมื่อ push to develop
 
-# Login
-vercel login
+### **วิธีหา Preview URL:**
 
-# Link project
-vercel link
+1. Push code ไป `develop` branch
+2. ไปที่ Vercel Dashboard: https://vercel.com/okeforyous-projects/youoke/deployments
+3. หา deployment จาก `develop` branch
+4. คลิกเข้าไปจะเห็น Preview URL
 
-# ตั้งค่า production branch
-vercel --prod --branch develop
-```
+### **หรือดูจาก GitHub:**
+
+เมื่อ push ไป `develop`, Vercel จะ comment ใน commit พร้อม Preview URL อัตโนมัติ!
 
 ---
 
