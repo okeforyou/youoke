@@ -86,10 +86,6 @@ export default function ListPlaylistsGrid() {
     } else {
       setPlaylists(latestPlaylists);
     }
-
-    return () => {
-      setPlaylists([]);
-    };
   }, [activeIndex, isLoadPlaylist]);
 
   const getMyPlaylists = async () => {
