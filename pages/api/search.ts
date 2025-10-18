@@ -44,14 +44,21 @@ const INVIDIOUS_INSTANCES = [
 
 // Web scraping fallback - works without API keys!
 async function searchWithWebScraping(q: string): Promise<Video[]> {
+  const errors: string[] = [];
+
   for (const instance of INVIDIOUS_INSTANCES) {
     try {
-      console.log(`Trying web scraping from ${instance}`);
+      console.log(`[Web Scraping] Trying ${instance}`);
+
+      if (!instance || instance === "undefined") {
+        console.error(`[Web Scraping] Invalid instance: ${instance}`);
+        continue;
+      }
 
       const response = await axios.get(`${instance}/search`, {
         params: { q },
         headers: { "User-Agent": getRandomUserAgent() },
-        timeout: 8000,
+        timeout: 5000, // Reduce timeout for faster failover
         responseType: "text",
       });
 
@@ -74,16 +81,23 @@ async function searchWithWebScraping(q: string): Promise<Video[]> {
       });
 
       if (videos.length > 0) {
-        console.log(`Successfully scraped ${videos.length} videos from ${instance}`);
+        console.log(`[Web Scraping] ✅ SUCCESS! Scraped ${videos.length} videos from ${instance}`);
         return videos;
+      } else {
+        errors.push(`${instance}: No videos found in HTML`);
+        console.log(`[Web Scraping] No videos extracted from ${instance}`);
       }
     } catch (error: any) {
-      console.log(`Failed to scrape from ${instance}:`, error.message);
+      const errorMsg = `${instance}: ${error.message}`;
+      errors.push(errorMsg);
+      console.error(`[Web Scraping] ❌ Failed ${errorMsg}`);
       continue;
     }
   }
 
-  throw new Error("All web scraping sources failed");
+  const fullError = `All web scraping sources failed:\n${errors.join('\n')}`;
+  console.error(`[Web Scraping] ${fullError}`);
+  throw new Error(fullError);
 }
 
 // YouTube API Keys - support multiple keys for rotation (OPTIONAL)
