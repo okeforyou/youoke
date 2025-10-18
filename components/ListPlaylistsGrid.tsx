@@ -78,17 +78,23 @@ export default function ListPlaylistsGrid() {
   });
 
   useEffect(() => {
+    console.log('[useEffect 1] activeIndex:', activeIndex, 'isLoadPlaylist:', isLoadPlaylist);
     if (activeIndex === 1 && isLoadPlaylist.myPlaylist == 0) {
+      console.log('[useEffect 1] Calling getMyPlaylists()');
       getMyPlaylists();
     } else if (activeIndex === 0 && isLoadPlaylist.suggest == 0) {
+      console.log('[useEffect 1] Calling getSuggestPlaylists()');
       getSuggestPlaylists();
     }
   }, [activeIndex, isLoadPlaylist]);
 
   useEffect(() => {
+    console.log('[useEffect 2] activeIndex:', activeIndex, 'myPlaylist.length:', myPlaylist.length, 'latestPlaylists.length:', latestPlaylists.length);
     if (activeIndex === 1) {
+      console.log('[useEffect 2] Setting playlists from myPlaylist:', myPlaylist.length);
       setPlaylists(myPlaylist);
     } else {
+      console.log('[useEffect 2] Setting playlists from latestPlaylists:', latestPlaylists.length);
       setPlaylists(latestPlaylists);
     }
   }, [activeIndex, myPlaylist, latestPlaylists]);
