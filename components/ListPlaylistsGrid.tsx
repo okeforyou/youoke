@@ -36,7 +36,14 @@ import { getSkeletonItems } from "../utils/api";
 import Alert, { AlertHandler } from "./Alert";
 import Modal, { ModalHandler } from "./Modal";
 
-const playlistsRef = collection(database, "playlists");
+// Helper function to get playlists reference
+const getPlaylistsRef = () => {
+  if (!database) {
+    throw new Error('Firebase not configured');
+  }
+  return collection(database, "playlists");
+};
+
 enum MODE {
   CREATE = 1,
   EDIT,
@@ -86,9 +93,13 @@ export default function ListPlaylistsGrid() {
   }, [activeIndex, isLoadPlaylist]);
 
   const getMyPlaylists = async () => {
+    if (!database) {
+      console.warn('Firebase not configured');
+      return [];
+    }
     setIsLoading(true);
     try {
-      const q = query(playlistsRef, where("createdBy", "==", user.uid));
+      const q = query(getPlaylistsRef(), where("createdBy", "==", user.uid));
       const querySnapshot = await getDocs(q);
       const data = [];
       querySnapshot.forEach((doc) => {
@@ -113,10 +124,15 @@ export default function ListPlaylistsGrid() {
   };
 
   const getSuggestPlaylists = async () => {
+    if (!database) {
+      console.warn('Firebase not configured');
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     try {
       const q = query(
-        playlistsRef,
+        getPlaylistsRef(),
         where("type", "==", "public"),
         orderBy("createdAt", "desc"),
         limit(30)
@@ -134,7 +150,7 @@ export default function ListPlaylistsGrid() {
       setPlaylists(data);
 
       const qSuggest = query(
-        playlistsRef,
+        getPlaylistsRef(),
         where("type", "==", "public"),
         orderBy("starCount", "desc"),
         limit(24)
@@ -217,7 +233,7 @@ export default function ListPlaylistsGrid() {
         playlists: [],
       };
 
-      await addDoc(playlistsRef, playlistDoc);
+      await addDoc(getPlaylistsRef(), playlistDoc);
       await getMyPlaylists();
       createModalRef.current.close();
     } catch (error: any) {
