@@ -20,7 +20,7 @@ export function useKaraokeState() {
   );
   const { value: activeIndex, set: setActiveIndex } = useLocalStorageValue(
     "bottomNavActiveIndex",
-    { defaultValue: 0 }
+    { defaultValue: 1 } // 1 = แนะนำ (ศิลปิน/นักร้อง)
   );
 
   return {
