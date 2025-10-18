@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.aspect-video {
+  @apply aspect-w-16 aspect-h-9;
+}
+.aspect-square {
+  @apply aspect-w-1 aspect-h-1;
+}
+
+html {
+  font-family: "IBM Plex Sans Thai Looped", sans-serif;
+}
+
+.toast {
+  background-color: #333;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.toast button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+
+
+.chip-container {
+  position: relative;
+  display: inline-block;
+  /* margin: 1rem; */
+}
+
+.chip {
+  @apply  text-white py-2 px-4 rounded-full shadow-lg;
+  position: relative;
+  animation: floating 3s ease-in-out infinite;
+  text-align: center;
+}
+
+@keyframes floating {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+.sparkle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: white;
+  clip-path: polygon(
+    50% 0%,
+    60% 40%,
+    100% 50%,
+    60% 60%,
+    50% 100%,
+    40% 60%,
+    0% 50%,
+    40% 40%
+  );
+  opacity: 0;
+  animation: sparkle-animation 3s infinite ease-in-out;
+}
+
+.sparkle1 {
+  top: -10px;
+  left: 20px;
+  animation-delay: 0s;
+}
+
+.sparkle2 {
+  top: 10px;
+  right: -10px;
+  animation-delay: 0.5s;
+}
+
+.sparkle3 {
+  bottom: -5px;
+  left: 15px;
+  animation-delay: 1s;
+}
+
+.sparkle4 {
+  bottom: 10px;
+  right: -5px;
+  animation-delay: 1.5s;
+}
+
+@keyframes sparkle-animation {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.5);
+  }
+}
