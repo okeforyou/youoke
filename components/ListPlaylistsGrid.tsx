@@ -88,12 +88,15 @@ export default function ListPlaylistsGrid() {
 
   // Update playlists when data changes OR when switching tabs
   useEffect(() => {
-    if (activeIndex === 1 && myPlaylist.length > 0) {
-      setPlaylists(myPlaylist);
-    } else if (activeIndex === 0 && latestPlaylists.length > 0) {
-      setPlaylists(latestPlaylists);
+    // Only update when not currently loading
+    if (!isLoading) {
+      if (activeIndex === 1) {
+        setPlaylists(myPlaylist);
+      } else {
+        setPlaylists(latestPlaylists);
+      }
     }
-  }, [activeIndex, myPlaylist, latestPlaylists]);
+  }, [activeIndex, myPlaylist, latestPlaylists, isLoading]);
 
   const getMyPlaylists = async () => {
     if (!database) {
