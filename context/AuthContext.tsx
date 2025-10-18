@@ -33,6 +33,13 @@ export const AuthContextProvider = ({
   // listen for token changes
   // call setUser and write new token as a cookie
   useEffect(() => {
+    // Skip if Firebase auth is not configured
+    if (!auth) {
+      console.warn('Firebase Auth not configured');
+      setLoading(false);
+      return;
+    }
+
     return auth.onIdTokenChanged(async (user) => {
       if (!user) {
         setUser({ email: null, uid: null });
@@ -51,6 +58,11 @@ export const AuthContextProvider = ({
 
   // force refresh the token every 10 minutes
   useEffect(() => {
+    // Skip if Firebase auth is not configured
+    if (!auth) {
+      return;
+    }
+
     const handle = setInterval(async () => {
       const user = auth.currentUser;
       if (user) await user.getIdToken(true);
@@ -62,16 +74,25 @@ export const AuthContextProvider = ({
 
   // Sign up the user
   const signUp = (email: string, password: string) => {
+    if (!auth) {
+      return Promise.reject(new Error('Firebase Auth not configured'));
+    }
     return createUserWithEmailAndPassword(auth, email, password);
   };
 
   // Login the user
   const logIn = (email: string, password: string) => {
+    if (!auth) {
+      return Promise.reject(new Error('Firebase Auth not configured'));
+    }
     return signInWithEmailAndPassword(auth, email, password);
   };
 
   // Logout the user
   const logOut = async () => {
+    if (!auth) {
+      return Promise.reject(new Error('Firebase Auth not configured'));
+    }
     setUser({ email: null, uid: null });
     return await signOut(auth);
   };
