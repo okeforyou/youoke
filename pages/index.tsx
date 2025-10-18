@@ -138,11 +138,6 @@ function HomePage() {
     if (searchTerm) setActiveIndex(0);
   }, [searchTerm]);
 
-  useEffect(() => {
-    setSearchTerm("");
-    setActiveIndex(1);
-  }, []);
-
   const addVideoToMyPlaylist = async (key, data) => {
     const docRef = doc(database, "playlists", key);
     try {
