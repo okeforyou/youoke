@@ -1,40 +1,51 @@
-const { spawn } = require('child_process');
-const path = require('path');
+#!/usr/bin/env node
 
-// Get port from environment or use default
-const port = process.env.PORT || 3000;
+// Simple server.js for Plesk Node.js hosting
+// This starts Next.js dev server directly
 
-// Path to Next.js binary
-const nextBin = path.join(__dirname, 'node_modules', '.bin', 'next');
+const { createServer } = require('http');
+const { parse } = require('url');
+const next = require('next');
+
+const dev = process.env.NODE_ENV !== 'production';
+const hostname = 'localhost';
+const port = parseInt(process.env.PORT || '3000', 10);
+
+// Create Next.js app
+const app = next({ dev, hostname, port });
+const handle = app.getRequestHandler();
 
 console.log('Starting Next.js application...');
+console.log('Environment:', process.env.NODE_ENV || 'development');
 console.log('Port:', port);
-console.log('Directory:', __dirname);
+console.log('Hostname:', hostname);
 
-// Start Next.js in development mode
-const child = spawn(nextBin, ['dev', '-p', port], {
-  stdio: 'inherit',
-  cwd: __dirname,
-  env: process.env
-});
-
-child.on('error', (err) => {
+app.prepare().then(() => {
+  createServer(async (req, res) => {
+    try {
+      const parsedUrl = parse(req.url, true);
+      await handle(req, res, parsedUrl);
+    } catch (err) {
+      console.error('Error occurred handling', req.url, err);
+      res.statusCode = 500;
+      res.end('Internal Server Error');
+    }
+  }).listen(port, (err) => {
+    if (err) throw err;
+    console.log(`> Ready on http://${hostname}:${port}`);
+  });
+}).catch((err) => {
   console.error('Failed to start Next.js:', err);
   process.exit(1);
-});
-
-child.on('exit', (code) => {
-  console.log(`Next.js exited with code ${code}`);
-  process.exit(code || 0);
 });
 
 // Handle shutdown gracefully
 process.on('SIGTERM', () => {
   console.log('Received SIGTERM, shutting down gracefully...');
-  child.kill('SIGTERM');
+  process.exit(0);
 });
 
 process.on('SIGINT', () => {
   console.log('Received SIGINT, shutting down gracefully...');
-  child.kill('SIGINT');
+  process.exit(0);
 });
