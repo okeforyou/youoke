@@ -96,7 +96,11 @@ export default function SearchResultGrid({
                 <figure className="relative w-full aspect-video">
                   <Image
                     unoptimized
-                    src={`${process.env.NEXT_PUBLIC_INVIDIOUS_URL}vi/${rcm.videoId}/mqdefault.jpg`}
+                    src={
+                      rcm.videoThumbnails?.find((t) => t.quality === "medium")?.url ||
+                      rcm.videoThumbnails?.[0]?.url ||
+                      `https://i.ytimg.com/vi/${rcm.videoId}/mqdefault.jpg`
+                    }
                     priority
                     alt={rcm.title}
                     layout="fill"
