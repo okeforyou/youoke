@@ -42,7 +42,7 @@ export async function createUserProfile(data: {
   const userProfile: UserProfile = {
     uid: data.uid,
     email: data.email,
-    fullName: data.fullName,
+    displayName: data.fullName,
     phone: data.phone,
     role: data.plan === "free" ? "free" : "premium",
     subscription,
