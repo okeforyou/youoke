@@ -13,6 +13,7 @@ import { useAuth } from "../context/AuthContext";
 import Alert, { AlertHandler } from "../components/Alert";
 import { getPricingPackages } from "../services/pricingService";
 import { PricingPackage, SubscriptionPlan } from "../types/subscription";
+import { createUserProfile } from "../services/userService";
 
 interface RegisterData {
   email: string;
@@ -87,17 +88,13 @@ export default function RegisterPage() {
       const user = userCredential.user;
 
       // Save user profile to Firestore
-      // TODO: Create userService to save profile data
-      // await createUserProfile({
-      //   uid: user.uid,
-      //   email: data.email,
-      //   fullName: data.fullName,
-      //   phone: data.phone,
-      //   subscription: {
-      //     plan: selectedPlan?.id || "free",
-      //     status: "pending", // Will be "active" after payment approval
-      //   }
-      // });
+      await createUserProfile({
+        uid: user.uid,
+        email: data.email,
+        fullName: data.fullName,
+        phone: data.phone,
+        plan: (selectedPlan?.id as SubscriptionPlan) || "free",
+      });
 
       successRef.current?.open();
 

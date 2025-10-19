@@ -12,9 +12,10 @@ import {
 import { useAuth } from "../context/AuthContext";
 import Alert, { AlertHandler } from "../components/Alert";
 import { getPricingPackage } from "../services/pricingService";
-import { PricingPackage } from "../types/subscription";
+import { PricingPackage, SubscriptionPlan } from "../types/subscription";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../firebase";
+import { createPayment } from "../services/paymentService";
 
 interface PaymentData {
   bankName: string;
@@ -149,19 +150,16 @@ export default function PaymentPage() {
       const paymentProofURL = await uploadPaymentProof();
 
       // Save payment to Firestore
-      // TODO: Create paymentService to save payment data
-      // await createPayment({
-      //   userId: user.uid,
-      //   plan: selectedPlan.id,
-      //   amount: parseFloat(paymentData.amount),
-      //   bankName: paymentData.bankName,
-      //   transferDate: paymentData.transferDate,
-      //   transferTime: paymentData.transferTime,
-      //   note: paymentData.note,
-      //   paymentProof: paymentProofURL,
-      //   status: "pending",
-      //   createdAt: new Date(),
-      // });
+      await createPayment({
+        userId: user.uid,
+        plan: selectedPlan.id as SubscriptionPlan,
+        amount: parseFloat(paymentData.amount),
+        bankName: paymentData.bankName,
+        transferDate: paymentData.transferDate,
+        transferTime: paymentData.transferTime,
+        note: paymentData.note,
+        paymentProof: paymentProofURL,
+      });
 
       successRef.current?.open();
 
