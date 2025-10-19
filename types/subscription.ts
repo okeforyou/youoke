@@ -63,7 +63,9 @@ export interface PricingPackage {
   };
 }
 
-export const PRICING_PACKAGES: PricingPackage[] = [
+// Default pricing (for initial setup)
+// In production, these will be fetched from Firestore (/pricing collection)
+export const DEFAULT_PRICING_PACKAGES: PricingPackage[] = [
   {
     id: "free",
     name: "ฟรี",
