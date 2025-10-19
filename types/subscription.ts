@@ -21,6 +21,7 @@ export interface Payment {
   transactionDate: Date;
   bankName?: string;
   transferTime?: string;
+  note?: string;
   approvedBy?: string;
   approvedAt?: Date;
   rejectedReason?: string;
