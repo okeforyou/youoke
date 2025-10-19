@@ -3,6 +3,7 @@ import { initializeApp, getApps } from 'firebase/app'
 // https://firebase.google.com/docs/web/setup#available-libraries
 import { getAuth } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
+import { getStorage } from 'firebase/storage'
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -16,6 +17,7 @@ const firebaseConfig = {
 let app;
 let auth;
 let database;
+let storage;
 
 try {
   // Check if Firebase is already initialized
@@ -23,22 +25,26 @@ try {
     app = initializeApp(firebaseConfig);
     auth = getAuth(app);
     database = getFirestore(app);
+    storage = getStorage(app);
   } else if (getApps().length > 0) {
     app = getApps()[0];
     auth = getAuth(app);
     database = getFirestore(app);
+    storage = getStorage(app);
   } else {
     // Firebase not configured - use mock values
     console.warn('Firebase not configured. Using mock values.');
     app = null;
     auth = null;
     database = null;
+    storage = null;
   }
 } catch (error) {
   console.error('Firebase initialization error:', error);
   app = null;
   auth = null;
   database = null;
+  storage = null;
 }
 
-export { app, auth, database };
+export { app, auth, database, storage };
