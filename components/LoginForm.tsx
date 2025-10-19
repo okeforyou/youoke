@@ -112,7 +112,7 @@ const LoginForm = () => {
           </form>
           <button
             onClick={() => {
-              window.open("https://okeforyou.com/contact", "_blank");
+              router.push("/register");
             }}
             className="btn  btn-primary  mb-8 mt-2 w-full rounded-lg px-5 py-3 text-center text-sm font-medium text-white focus:outline-none focus:ring-4    group-invalid:pointer-events-none group-invalid:bg-gray-100 group-invalid:text-gray-400 group-invalid:opacity-70"
           >
