@@ -41,14 +41,15 @@ export default function BottomNavigation() {
         <RectangleStackIcon className="w-6 h-6" />
         <span className="btm-nav-label ">เพลย์ลิสต์</span>
       </button>
-      <button
+      {/* TODO: Uncomment when subscription system is ready */}
+      {/* <button
         className="text-warning shrink"
         onClick={() => router.push("/pricing")}
         title="สมัครสมาชิก"
       >
         <SparklesIcon className="w-6 h-6" />
         <span className="btm-nav-label">สมาชิก</span>
-      </button>
+      </button> */}
       <a
         className={`text-primary shrink`}
         href="https://okeforyou.com/contact/"
