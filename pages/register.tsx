@@ -141,8 +141,8 @@ export default function RegisterPage() {
             ref={successRef}
             timer={2500}
             headline="สำเร็จ!"
-            headlineColor="text-success"
-            bgColor="bg-success/20"
+            headlineColor="text-green-600"
+            bgColor="bg-green-100"
             content={
               <span className="text-sm">
                 {selectedPlan?.id === "free"
@@ -157,8 +157,8 @@ export default function RegisterPage() {
             ref={errorRef}
             timer={3000}
             headline="ผิดพลาด"
-            headlineColor="text-error"
-            bgColor="bg-error/20"
+            headlineColor="text-red-600"
+            bgColor="bg-red-100"
             content={
               <span className="text-sm">
                 {data.password !== data.confirmPassword

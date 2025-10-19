@@ -206,8 +206,8 @@ export default function PaymentPage() {
             ref={successRef}
             timer={2500}
             headline="สำเร็จ!"
-            headlineColor="text-success"
-            bgColor="bg-success/20"
+            headlineColor="text-green-600"
+            bgColor="bg-green-100"
             content={
               <span className="text-sm">
                 ส่งหลักฐานการชำระเงินสำเร็จ! รอการอนุมัติภายใน 24 ชั่วโมง
@@ -220,8 +220,8 @@ export default function PaymentPage() {
             ref={errorRef}
             timer={3000}
             headline="ผิดพลาด"
-            headlineColor="text-error"
-            bgColor="bg-error/20"
+            headlineColor="text-red-600"
+            bgColor="bg-red-100"
             content={
               <span className="text-sm">
                 ไม่สามารถส่งหลักฐานได้ กรุณาลองใหม่อีกครั้ง
