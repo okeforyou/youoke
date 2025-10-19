@@ -6,6 +6,7 @@ import {
     ChatBubbleLeftIcon,
     MusicalNoteIcon,
     RectangleStackIcon,
+    SparklesIcon,
     TrophyIcon,
 } from '@heroicons/react/24/outline'
 
@@ -40,6 +41,14 @@ export default function BottomNavigation() {
         <RectangleStackIcon className="w-6 h-6" />
         <span className="btm-nav-label ">เพลย์ลิสต์</span>
       </button>
+      <button
+        className="text-warning shrink"
+        onClick={() => router.push("/pricing")}
+        title="สมัครสมาชิก"
+      >
+        <SparklesIcon className="w-6 h-6" />
+        <span className="btm-nav-label">สมาชิก</span>
+      </button>
       <a
         className={`text-primary shrink`}
         href="https://okeforyou.com/contact/"
@@ -47,7 +56,7 @@ export default function BottomNavigation() {
         rel="noopener"
       >
         <ChatBubbleLeftIcon className="w-6 h-6" />
-        ติดต่อ Line
+        ติดต่อ
       </a>
       {!user.uid ? (
         <button
