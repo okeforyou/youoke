@@ -1,9 +1,17 @@
 import axios from "axios";
 
+interface VideoThumbnail {
+  quality: string;
+  url: string;
+  width: number;
+  height: number;
+}
+
 interface Video {
   videoId: string;
   title: string;
   author: string;
+  videoThumbnails?: VideoThumbnail[];
 }
 
 // List of User-Agents
@@ -76,7 +84,31 @@ async function searchWithWebScraping(q: string): Promise<Video[]> {
         const author = getMatch(/<p class="channel-name"[^>]*dir="auto">([^<\n]+)/);
 
         if (videoId && title) {
-          videos.push({ videoId, title, author });
+          videos.push({
+            videoId,
+            title,
+            author,
+            videoThumbnails: [
+              {
+                quality: "maxres",
+                url: `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`,
+                width: 1280,
+                height: 720,
+              },
+              {
+                quality: "medium",
+                url: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`,
+                width: 320,
+                height: 180,
+              },
+              {
+                quality: "default",
+                url: `https://i.ytimg.com/vi/${videoId}/default.jpg`,
+                width: 120,
+                height: 90,
+              },
+            ],
+          });
         }
       });
 
@@ -160,6 +192,26 @@ async function searchWithYouTube(q: string, type: string, region: string): Promi
         videoId: item.id.videoId,
         title: item.snippet.title,
         author: item.snippet.channelTitle,
+        videoThumbnails: [
+          {
+            quality: "maxres",
+            url: `https://i.ytimg.com/vi/${item.id.videoId}/maxresdefault.jpg`,
+            width: 1280,
+            height: 720,
+          },
+          {
+            quality: "medium",
+            url: `https://i.ytimg.com/vi/${item.id.videoId}/mqdefault.jpg`,
+            width: 320,
+            height: 180,
+          },
+          {
+            quality: "default",
+            url: `https://i.ytimg.com/vi/${item.id.videoId}/default.jpg`,
+            width: 120,
+            height: 90,
+          },
+        ],
       }));
 
     } catch (error: any) {
