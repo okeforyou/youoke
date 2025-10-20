@@ -7,48 +7,55 @@
 
 ---
 
-## Phase 1: MIDI Player Foundation (4-6 สัปดาห์)
+## Phase 1: MIDI Player Foundation (3-4 สัปดาห์) ⭐ SIMPLIFIED
 
-### Week 1-2: MIDI File Player
-- [ ] ติดตั้ง MIDI.js หรือ ToneJS
-- [ ] Upload MIDI file (.mid, .kar)
+### Week 1-2: MIDI File Player (Web Audio API)
+- [ ] ใช้ MIDI.js + Web Audio (ไม่ต้อง SoundFont!)
+- [ ] เล่นไฟล์ .mid/.kar จาก Extreme Karaoke
 - [ ] Play/Pause/Stop controls
 - [ ] Volume control
-- [ ] Tempo adjustment (เร็ว/ช้า)
-- [ ] Transpose (เปลี่ยน Key สูง/ต่ำ)
+- [ ] Tempo adjustment (เร็ว/ช้า ±50%)
+- [ ] Transpose (เปลี่ยน Key -12 ~ +12)
+- [ ] Progress bar + Time display
 
-### Week 3-4: Lyrics Display
-- [ ] อ่าน Karaoke MIDI format (.kar)
-- [ ] แสดงเนื้อเพลง sync กับดนตรี
-- [ ] Highlight คำที่กำลังร้อง (Karaoke style)
-- [ ] แสดงคอร์ดประกอบ (optional)
+### Week 3: Lyrics Display (Karaoke Style)
+- [ ] อ่าน lyrics จาก .kar file
+- [ ] แสดงเนื้อเพลง 2-3 บรรทัด
+- [ ] Highlight คำที่กำลังร้อง (เปลี่ยนสี)
+- [ ] Scroll เนื้อเพลงอัตโนมัติ
+- [ ] ปรับขนาดตัวอักษรได้
 
-### Week 5-6: File Management
-- [ ] Local File Upload (Drag & Drop)
-- [ ] IndexedDB สำหรับเก็บ MIDI files
-- [ ] My MIDI Library (รายการเพลงที่อัพโหลด)
-- [ ] Search/Filter MIDI files
-- [ ] Delete/Rename files
+### Week 4: Google Drive Integration (ผู้ใช้เก็บเอง)
+- [ ] Google OAuth 2.0 login
+- [ ] File Picker - เลือกไฟล์จาก Google Drive
+- [ ] Stream MIDI/KAR จาก Drive โดยตรง
+- [ ] Cache ไฟล์ชั่วคราว (IndexedDB)
+- [ ] ไม่เก็บไฟล์บน server → ไม่มีปัญหาลิขสิทธิ์!
 
-**Deliverable:** ผู้ใช้สามารถอัพโหลดและเล่น MIDI karaoke ได้
+**Deliverable:** ผู้ใช้เล่น MIDI karaoke จาก Google Drive ของตัวเองได้
 
 ---
 
-## Phase 2: Google Drive Integration (2-3 สัปดาห์)
+## Phase 2: VCD/Video Karaoke Support (2-3 สัปดาห์) ⭐ SIMPLIFIED
 
-### Week 1: Google Drive API
-- [ ] Google OAuth 2.0 login
-- [ ] Browse Google Drive folders
-- [ ] Select MIDI files from Drive
-- [ ] Download & cache MIDI files
+### Week 1-2: Video Player from Google Drive
+- [ ] Google Drive Video Picker
+- [ ] Support: MP4, WebM, OGG (VCD ให้ผู้ใช้ convert เอง)
+- [ ] Video player with controls
+- [ ] **Vocal Removal (Phase Cancellation)**
+  - [ ] ปุ่มสลับ: Original / Karaoke Mode
+  - [ ] ตัดเสียงตรงกลาง (Center Channel)
+  - [ ] ได้ผล 60-70% (เพียงพอ!)
 
-### Week 2-3: Drive Manager
-- [ ] Upload MIDI to Google Drive
-- [ ] Sync library with Google Drive
-- [ ] Auto-backup MIDI files
-- [ ] Shared Drive support (สำหรับร้าน)
+### Week 3: Lyrics Overlay (Optional)
+- [ ] Upload .srt/.lrc file พร้อม video
+- [ ] แสดง subtitle บนวิดีโอ
+- [ ] Sync เวลาได้
+- [ ] ปรับขนาด/สี subtitle
 
-**Deliverable:** ผู้ใช้สามารถจัดการ MIDI ผ่าน Google Drive ได้
+**Deliverable:** เล่น Video Karaoke จาก Google Drive + ตัดเสียงร้องได้
+
+**หมายเหตุ:** VCD → MP4 ให้ผู้ใช้ convert ด้วย HandBrake/FFmpeg ก่อน upload Drive
 
 ---
 
@@ -168,16 +175,19 @@
 
 ---
 
-## Timeline สรุป
+## Timeline สรุป (ปรับใหม่ - SIMPLIFIED)
 
 | Phase | ระยะเวลา | ฟีเจอร์หลัก |
 |-------|----------|-------------|
-| Phase 1 | 4-6 สัปดาห์ | MIDI Player + Lyrics |
-| Phase 2 | 2-3 สัปดาห์ | Google Drive Integration |
-| Phase 3 | 3-4 สัปดาห์ | Advanced MIDI Features |
-| Phase 4 | 6-8 สัปดาห์ | Commercial Foundation |
-| Phase 5 | 4-6 สัปดาห์ | Advanced Commercial |
-| **รวม** | **5-7 เดือน** | **ครบทุกฟีเจอร์** |
+| Phase 1 | 3-4 สัปดาห์ | MIDI Player + Google Drive ⭐ |
+| Phase 2 | 2-3 สัปดาห์ | Video Karaoke + Vocal Removal ⭐ |
+| Phase 3 | 2-3 สัปดาห์ | Advanced Features (Key/Tempo) |
+| Phase 4 | 4-6 สัปดาห์ | Commercial Foundation |
+| Phase 5 | 3-4 สัปดาห์ | Multi-Room & Payment |
+| **รวม** | **3-4 เดือน** | **Home Version สมบูรณ์** |
+| **Commercial** | **+2 เดือน** | **พร้อมขายให้ร้าน** |
+
+⭐ = ง่ายขึ้นมากเพราะใช้ Google Drive แทนการเก็บไฟล์เอง!
 
 ---
 
