@@ -25,14 +25,26 @@
 - [ ] Scroll เนื้อเพลงอัตโนมัติ
 - [ ] ปรับขนาดตัวอักษรได้
 
-### Week 4: Google Drive Integration (ผู้ใช้เก็บเอง)
-- [ ] Google OAuth 2.0 login
-- [ ] File Picker - เลือกไฟล์จาก Google Drive
-- [ ] Stream MIDI/KAR จาก Drive โดยตรง
-- [ ] Cache ไฟล์ชั่วคราว (IndexedDB)
-- [ ] ไม่เก็บไฟล์บน server → ไม่มีปัญหาลิขสิทธิ์!
+### Week 4: Multi-Storage Support (ความยืดหยุ่นสูง) 🆕
+- [ ] **Google Drive Integration**
+  - [ ] Google OAuth 2.0 login
+  - [ ] File Picker - เลือกไฟล์จาก Google Drive
+  - [ ] Stream MIDI/KAR จาก Drive โดยตรง
+- [ ] **Local Storage (File System Access API)**
+  - [ ] เลือกโฟลเดอร์ในเครื่อง
+  - [ ] Scan ไฟล์ .mid/.kar อัตโนมัติ
+  - [ ] จำ path ที่เลือกไว้
+- [ ] **External Drive Support**
+  - [ ] ตรวจจับ USB/External HDD
+  - [ ] Auto-scan เมื่อเสียบ
+- [ ] **Network Share (WebDAV)**
+  - [ ] เชื่อมต่อ NAS/Network Drive
+  - [ ] รองรับ SMB/WebDAV protocol
+- [ ] **Cache System (IndexedDB)**
+  - [ ] Cache ไฟล์ที่เล่นล่าสุด
+  - [ ] ลดการโหลดซ้ำ
 
-**Deliverable:** ผู้ใช้เล่น MIDI karaoke จาก Google Drive ของตัวเองได้
+**Deliverable:** ผู้ใช้เลือกที่เก็บไฟล์ได้ตามต้องการ (Cloud/Local/Network)
 
 ---
 
@@ -142,11 +154,15 @@
 ### MIDI Player
 - **MIDI.js** - MIDI file parser & player
 - **ToneJS** - Audio synthesis
-- **SoundFont** - เสียงเครื่องดนตรี high-quality
+- **Web Audio API** - Built-in browser (ไม่ต้อง SoundFont!)
 
-### Google Drive
-- **Google Drive API v3** - File management
+### Multi-Storage Support 🆕
+- **Google Drive API v3** - Cloud storage
 - **Google OAuth 2.0** - Authentication
+- **File System Access API** - Local/External drive access
+- **WebDAV Client** - Network share (NAS/SMB)
+- **IndexedDB** - Local cache
+- **navigator.storage** - Storage quota management
 
 ### VCD/Video
 - **FFmpeg.js** - Video conversion (browser)
