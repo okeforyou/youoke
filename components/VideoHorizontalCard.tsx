@@ -29,7 +29,11 @@ export default function VideoHorizontalCard({
         <figure className="relative w-full aspect-video">
           <Image
             unoptimized
-            src={`${process.env.NEXT_PUBLIC_INVIDIOUS_URL}vi/${video?.videoId}/mqdefault.jpg`}
+            src={
+              video?.videoThumbnails?.find((t) => t.quality === "medium")?.url ||
+              video?.videoThumbnails?.[0]?.url ||
+              `https://i.ytimg.com/vi/${video?.videoId}/mqdefault.jpg`
+            }
             priority
             alt={video?.title}
             layout="fill"
