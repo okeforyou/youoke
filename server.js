@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-// Simple server.js for Plesk Node.js hosting
-// This starts Next.js dev server directly
+// Production-ready server.js for Plesk Node.js hosting
+// Supports both development and production modes
 
 const { createServer } = require('http');
 const { parse } = require('url');
@@ -11,33 +11,39 @@ const dev = process.env.NODE_ENV !== 'production';
 const hostname = 'localhost';
 const port = parseInt(process.env.PORT || '3000', 10);
 
+console.log('=================================');
+console.log('Starting Next.js application...');
+console.log('Environment:', process.env.NODE_ENV || 'development');
+console.log('Mode:', dev ? 'Development' : 'Production');
+console.log('Port:', port);
+console.log('Hostname:', hostname);
+console.log('=================================');
+
 // Create Next.js app
 const app = next({ dev, hostname, port });
 const handle = app.getRequestHandler();
 
-console.log('Starting Next.js application...');
-console.log('Environment:', process.env.NODE_ENV || 'development');
-console.log('Port:', port);
-console.log('Hostname:', hostname);
-
-app.prepare().then(() => {
-  createServer(async (req, res) => {
-    try {
-      const parsedUrl = parse(req.url, true);
-      await handle(req, res, parsedUrl);
-    } catch (err) {
-      console.error('Error occurred handling', req.url, err);
-      res.statusCode = 500;
-      res.end('Internal Server Error');
-    }
-  }).listen(port, (err) => {
-    if (err) throw err;
-    console.log(`> Ready on http://${hostname}:${port}`);
+app.prepare()
+  .then(() => {
+    createServer(async (req, res) => {
+      try {
+        const parsedUrl = parse(req.url, true);
+        await handle(req, res, parsedUrl);
+      } catch (err) {
+        console.error('Error occurred handling', req.url, err);
+        res.statusCode = 500;
+        res.end('Internal Server Error');
+      }
+    }).listen(port, hostname, (err) => {
+      if (err) throw err;
+      console.log(`✅ Next.js server ready on http://${hostname}:${port}`);
+      console.log(`✅ Application mode: ${dev ? 'Development' : 'Production'}`);
+    });
+  })
+  .catch((err) => {
+    console.error('❌ Failed to start Next.js:', err);
+    process.exit(1);
   });
-}).catch((err) => {
-  console.error('Failed to start Next.js:', err);
-  process.exit(1);
-});
 
 // Handle shutdown gracefully
 process.on('SIGTERM', () => {
