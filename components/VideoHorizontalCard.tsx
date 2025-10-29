@@ -1,6 +1,8 @@
 import Image from "next/image";
 
 import {
+  ArrowDownIcon,
+  ArrowUpIcon,
   BarsArrowUpIcon,
   PlayIcon,
   TrashIcon,
@@ -13,12 +15,20 @@ interface VideoHorizontalCardProps {
   onPlayNow?: (video: PlaylistItem) => void;
   onSelect?: (video: PlaylistItem) => void;
   onDelete?: (video: PlaylistItem) => void;
+  onMoveUp?: (video: PlaylistItem) => void;
+  onMoveDown?: (video: PlaylistItem) => void;
+  canMoveUp?: boolean;
+  canMoveDown?: boolean;
 }
 export default function VideoHorizontalCard({
   video,
   onPlayNow = () => {},
   onSelect = () => {},
   onDelete = () => {},
+  onMoveUp = () => {},
+  onMoveDown = () => {},
+  canMoveUp = true,
+  canMoveDown = true,
 }: VideoHorizontalCardProps) {
   return (
     <div
@@ -66,6 +76,27 @@ export default function VideoHorizontalCard({
             <BarsArrowUpIcon className="w-5 h-5" />
             เล่นเป็นคิวแรก
           </div>
+
+          {canMoveUp && (
+            <div
+              className="btn btn-ghost btn-sm 2xl:text-2xl px-2"
+              onClick={() => onMoveUp(video)}
+              title="เลื่อนขึ้น"
+            >
+              <ArrowUpIcon className="w-5 h-5" />
+            </div>
+          )}
+
+          {canMoveDown && (
+            <div
+              className="btn btn-ghost btn-sm 2xl:text-2xl px-2"
+              onClick={() => onMoveDown(video)}
+              title="เลื่อนลง"
+            >
+              <ArrowDownIcon className="w-5 h-5" />
+            </div>
+          )}
+
           <div
             className="btn  btn-ghost text-error flex-auto 2xl:text-2xl gap-2 text-xs"
             onClick={() => onDelete(video)}

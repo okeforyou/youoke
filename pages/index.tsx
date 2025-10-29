@@ -27,6 +27,7 @@ import {
 
 import Alert, { AlertHandler } from "../components/Alert";
 import BottomNavigation from "../components/BottomNavigation";
+import FirebaseCastButton from "../components/FirebaseCastButton";
 import ListPlaylistsGrid from "../components/ListPlaylistsGrid";
 import Modal, { ModalHandler } from "../components/Modal";
 import SearchResultGrid from "../components/SearchResultGrid";
@@ -158,24 +159,7 @@ function HomePage() {
       <div className="flex flex-row font-bold gap-2 items-center">
         {!!user.uid && (
           <>
-            <button
-              className="btn btn-primary btn-xs gap-1 flex  flex-row 2xl:btn-sm "
-              onClick={() => {
-                const videoIds = playlist.map((p) => p.videoId).join(",");
-                const youtubeURL = `http://www.youtube.com/watch_videos?video_ids=${videoIds}`;
-                window.open(youtubeURL);
-              }}
-            >
-              <RssIcon className="w-4 h-4" /> Cast Youtube
-            </button>
-            <button
-              className="btn btn-xs gap-1 flex  btn-secondary flex-row 2xl:btn-sm "
-              onClick={() => {
-                socket.emit("reqPlaylist", room);
-              }}
-            >
-              ดึงคิวที่ค้างจาก TV
-            </button>
+            <FirebaseCastButton />
           </>
         )}
         {!isMobile && (
@@ -225,6 +209,28 @@ function HomePage() {
               onDelete={() =>
                 setPlaylist(playlist.filter((_, index) => index !== videoIndex))
               }
+              onMoveUp={() => {
+                if (videoIndex > 0) {
+                  const newPlaylist = [...playlist];
+                  [newPlaylist[videoIndex - 1], newPlaylist[videoIndex]] = [
+                    newPlaylist[videoIndex],
+                    newPlaylist[videoIndex - 1],
+                  ];
+                  setPlaylist(newPlaylist);
+                }
+              }}
+              onMoveDown={() => {
+                if (videoIndex < playlist.length - 1) {
+                  const newPlaylist = [...playlist];
+                  [newPlaylist[videoIndex], newPlaylist[videoIndex + 1]] = [
+                    newPlaylist[videoIndex + 1],
+                    newPlaylist[videoIndex],
+                  ];
+                  setPlaylist(newPlaylist);
+                }
+              }}
+              canMoveUp={videoIndex > 0}
+              canMoveDown={videoIndex < playlist.length - 1}
             />
           ))}
         </div>
