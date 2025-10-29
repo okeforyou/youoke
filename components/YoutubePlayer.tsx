@@ -352,7 +352,7 @@ function YoutubePlayer({
                         className="absolute right-2 top-2 py-0.5 px-3 text-white rounded-lg bg-primary"
                         onClick={() => {
                           setRoom(inputRoomId);
-                          addToast("ใช้ Firebase Cast แทน - กดปุ่ม Cast ด้านบน", "info");
+                          addToast("ใช้ Firebase Cast แทน - กดปุ่ม Cast ด้านบน");
                         }}
                       >
                         ยืนยัน
