@@ -30,23 +30,32 @@ export default function FirebaseCastButton() {
   };
 
   const handleJoinRoom = async () => {
+    console.log('🔍 handleJoinRoom called, roomCode:', inputRoomCode);
+
     if (!inputRoomCode || inputRoomCode.length !== 6) {
+      console.log('❌ Invalid room code length');
       setError('กรุณากรอกเลขห้อง 6 หลัก');
       return;
     }
 
     setIsJoining(true);
     setError('');
+    console.log('🚀 Attempting to join room:', inputRoomCode.toUpperCase());
 
     try {
       const success = await joinRoom(inputRoomCode.toUpperCase());
+      console.log('✅ joinRoom result:', success);
+
       if (success) {
+        console.log('✅ Successfully joined room');
         setShowModal(false);
         setInputRoomCode('');
       } else {
+        console.log('❌ Room not found');
         setError('ไม่พบห้อง กรุณาตรวจสอบเลขห้องอีกครั้ง');
       }
     } catch (err) {
+      console.error('❌ Error joining room:', err);
       setError('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
     }
 

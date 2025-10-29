@@ -160,27 +160,38 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
 
   // Join an existing room
   const joinRoom = async (code: string): Promise<boolean> => {
+    console.log('🔍 FirebaseCastContext.joinRoom called with code:', code);
+    console.log('🔍 realtimeDb exists:', !!realtimeDb);
+    console.log('🔍 user.uid:', user?.uid);
+
     if (!realtimeDb || !user?.uid) {
-      console.error('Firebase or user not available');
+      console.error('❌ Firebase or user not available');
       return false;
     }
 
     const roomRef = ref(realtimeDb, `rooms/${code}`);
+    console.log('🔍 Room ref created:', `rooms/${code}`);
 
     try {
       // Check if room exists
+      console.log('🔍 Checking if room exists...');
       const snapshot = await get(roomRef);
+      console.log('🔍 Snapshot exists:', snapshot.exists());
+
       if (!snapshot.exists()) {
-        console.error('Room not found');
+        console.error('❌ Room not found');
         return false;
       }
 
       const roomData = snapshot.val();
+      console.log('🔍 Room data:', roomData);
 
       // Check if user is host
       const isHostUser = roomData.hostId === user.uid;
+      console.log('🔍 Is host user:', isHostUser);
 
       // Add user to participants
+      console.log('🔍 Adding user to participants...');
       await update(ref(realtimeDb, `rooms/${code}/participants/${user.uid}`), {
         displayName: user.displayName || 'Guest',
         joinedAt: Date.now(),
@@ -191,10 +202,10 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
       setIsHost(isHostUser);
       setIsConnected(true);
 
-      console.log('Joined room:', code, 'as', isHostUser ? 'host' : 'guest');
+      console.log('✅ Joined room:', code, 'as', isHostUser ? 'host' : 'guest');
       return true;
     } catch (error) {
-      console.error('Error joining room:', error);
+      console.error('❌ Error joining room:', error);
       return false;
     }
   };
