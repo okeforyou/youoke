@@ -91,10 +91,10 @@ const Monitor = () => {
     height: '100%',
     width: '100%',
     playerVars: {
-      autoplay: 1,
-      controls: 1,
-      modestbranding: 1,
-      rel: 0,
+      autoplay: 1 as const,
+      controls: 1 as const,
+      modestbranding: 1 as const,
+      rel: 0 as const,
     },
   };
 
