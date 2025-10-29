@@ -41,7 +41,6 @@ import { useMyPlaylistState } from "../hooks/myPlaylist";
 import { useRoomState } from "../hooks/room";
 import { RecommendedVideo, SearchResult } from "../types/invidious";
 import { generateRandomString } from "../utils/random";
-import { socket } from "../utils/socket";
 
 const ListSingerGrid = dynamic(() => import("../components/ListSingerGrid"), {
   loading: () => <div>Loading...</div>,
@@ -107,14 +106,6 @@ function HomePage() {
     setCurVideoId(video.videoId);
     setPlaylist(playlist?.slice(videoIndex + 1));
   }
-
-  const socketInitializer = async () => {
-    await fetch("/api/socket");
-  };
-
-  useEffect(() => {
-    socketInitializer();
-  }, []);
 
   const getMyPlaylists = async () => {
     try {
