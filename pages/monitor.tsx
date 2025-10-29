@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import YouTube, { YouTubePlayer } from 'react-youtube';
-import { ref, onValue, off } from 'firebase/database';
+import { ref, onValue, off, set } from 'firebase/database';
 import { realtimeDb } from '../firebase';
 
 interface QueueVideo {
@@ -23,19 +23,62 @@ interface RoomData {
 const Monitor = () => {
   const router = useRouter();
   const { room: roomCodeParam } = router.query;
-  const roomCode = typeof roomCodeParam === 'string' ? roomCodeParam : '';
 
+  // Generate random room code if not provided
+  const [roomCode, setRoomCode] = useState<string>('');
   const [roomData, setRoomData] = useState<RoomData | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [playerRef, setPlayerRef] = useState<YouTubePlayer | null>(null);
 
-  // Listen to room data
+  // Generate room code on mount if not provided in URL
+  useEffect(() => {
+    if (roomCodeParam && typeof roomCodeParam === 'string') {
+      setRoomCode(roomCodeParam);
+    } else {
+      // Generate random 6-character code
+      const generateRoomCode = () => {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let code = '';
+        for (let i = 0; i < 6; i++) {
+          code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return code;
+      };
+      const newCode = generateRoomCode();
+      setRoomCode(newCode);
+      console.log('🎲 Generated room code:', newCode);
+    }
+  }, [roomCodeParam]);
+
+  // Auto-create room and listen to room data
   useEffect(() => {
     if (!roomCode || !realtimeDb) return;
 
     console.log('Monitoring room:', roomCode);
     const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
 
+    // Create room if it doesn't exist
+    const initializeRoom = async () => {
+      try {
+        await set(roomRef, {
+          hostId: 'monitor',
+          isHost: true,
+          queue: [],
+          currentIndex: 0,
+          currentVideo: null,
+          controls: { isPlaying: false },
+          createdAt: Date.now(),
+        });
+        console.log('✅ Room created:', roomCode);
+      } catch (error) {
+        console.error('❌ Error creating room:', error);
+      }
+    };
+
+    // Initialize room first
+    initializeRoom();
+
+    // Then listen to changes
     const unsubscribe = onValue(roomRef, (snapshot) => {
       const data = snapshot.val();
 
@@ -98,16 +141,13 @@ const Monitor = () => {
     },
   };
 
-  // Show waiting screen if no room code
+  // Show loading if room code not ready yet
   if (!roomCode) {
     return (
       <div className="relative h-screen bg-black text-white">
         <div className="absolute text-center inset-0 flex flex-col items-center justify-center">
           <h1 className="text-6xl font-bold mb-4">YouOke TV</h1>
-          <p className="text-2xl text-gray-400">Monitor Mode</p>
-          <p className="text-xl text-gray-500 mt-4">
-            กรุณาเพิ่ม ?room=XXXXXX ใน URL
-          </p>
+          <p className="text-2xl text-gray-400">กำลังเริ่มต้น...</p>
         </div>
       </div>
     );
@@ -118,11 +158,27 @@ const Monitor = () => {
     return (
       <div className="relative h-screen bg-black text-white">
         <div className="absolute text-center inset-0 flex flex-col items-center justify-center">
-          <h1 className="text-6xl font-bold mb-4">YouOke TV</h1>
-          <p className="text-3xl mb-6">เลขห้อง: {roomCode}</p>
-          <p className="text-xl text-gray-400">รอเชื่อมต่อจากมือถือ...</p>
-          <p className="text-lg text-gray-500 mt-4">
-            กด "Cast to TV" บนมือถือและกรอกเลขห้อง
+          <h1 className="text-6xl font-bold mb-8">YouOke TV</h1>
+
+          {/* Room Code Display */}
+          <div className="bg-primary/20 border-4 border-primary rounded-2xl px-12 py-8 mb-8">
+            <p className="text-2xl text-gray-300 mb-2">เลขห้อง</p>
+            <p className="text-8xl font-bold tracking-widest text-primary">{roomCode}</p>
+          </div>
+
+          {/* Instructions */}
+          <div className="space-y-3 max-w-xl">
+            <p className="text-2xl text-gray-300">📱 วิธีใช้งาน:</p>
+            <div className="text-left bg-base-200/10 rounded-lg p-4 space-y-2">
+              <p className="text-lg">1. เปิด youoke.vercel.app บนมือถือ</p>
+              <p className="text-lg">2. กดปุ่ม "Cast to TV"</p>
+              <p className="text-lg">3. กรอกเลขห้อง <span className="text-primary font-bold">{roomCode}</span></p>
+              <p className="text-lg">4. เพิ่มเพลงแล้วร้องได้เลย! 🎤</p>
+            </div>
+          </div>
+
+          <p className="text-xl text-gray-500 mt-8 animate-pulse">
+            รอเชื่อมต่อจากมือถือ...
           </p>
         </div>
       </div>

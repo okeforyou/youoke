@@ -3,31 +3,11 @@ import { TvIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useFirebaseCast } from '../context/FirebaseCastContext';
 
 export default function FirebaseCastButton() {
-  const { isConnected, roomCode, isHost, createRoom, joinRoom, leaveRoom } = useFirebaseCast();
+  const { isConnected, roomCode, isHost, joinRoom, leaveRoom } = useFirebaseCast();
   const [showModal, setShowModal] = useState(false);
   const [inputRoomCode, setInputRoomCode] = useState('');
-  const [isCreating, setIsCreating] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
   const [error, setError] = useState('');
-
-  const handleCreateRoom = async () => {
-    setIsCreating(true);
-    setError('');
-
-    try {
-      const code = await createRoom();
-      if (code) {
-        setShowModal(false);
-        setInputRoomCode('');
-      } else {
-        setError('ไม่สามารถสร้างห้องได้ กรุณาลองใหม่อีกครั้ง');
-      }
-    } catch (err) {
-      setError('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
-    }
-
-    setIsCreating(false);
-  };
 
   const handleJoinRoom = async () => {
     console.log('🔍 handleJoinRoom called, roomCode:', inputRoomCode);
@@ -112,33 +92,29 @@ export default function FirebaseCastButton() {
               <XMarkIcon className="w-5 h-5" />
             </button>
 
-            <h3 className="font-bold text-lg mb-4">Cast to TV</h3>
+            <h3 className="font-bold text-lg mb-4">📺 Cast to TV</h3>
 
-            {/* Create Room */}
-            <div className="card bg-base-200 p-4 mb-4">
-              <h4 className="font-semibold mb-2">📱 สร้างห้องใหม่</h4>
-              <p className="text-sm text-gray-600 mb-3">
-                สร้างห้องเพื่อแสดงเพลงบนทีวี
-              </p>
-              <button
-                className="btn btn-primary btn-sm"
-                onClick={handleCreateRoom}
-                disabled={isCreating}
-              >
-                {isCreating ? 'กำลังสร้าง...' : 'สร้างห้อง'}
-              </button>
+            {/* Instructions */}
+            <div className="alert alert-info mb-4">
+              <div className="text-sm">
+                <p className="font-semibold mb-1">วิธีใช้งาน:</p>
+                <ol className="list-decimal list-inside space-y-1">
+                  <li>เปิด youoke.vercel.app/monitor บนทีวี</li>
+                  <li>ดูเลขห้อง 6 หลักที่แสดงบนทีวี</li>
+                  <li>กรอกเลขห้องด้านล่าง แล้วกดเข้าร่วม</li>
+                </ol>
+              </div>
             </div>
 
             {/* Join Room */}
-            <div className="card bg-base-200 p-4">
-              <h4 className="font-semibold mb-2">📺 เข้าร่วมห้อง</h4>
-              <p className="text-sm text-gray-600 mb-3">
-                กรอกเลขห้องจากทีวี (6 หลัก)
-              </p>
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text font-semibold">กรอกเลขห้องจากทีวี</span>
+              </label>
               <div className="flex gap-2">
                 <input
                   type="text"
-                  className="input input-bordered input-sm flex-1 uppercase"
+                  className="input input-bordered flex-1 uppercase text-center text-xl tracking-widest"
                   placeholder="ABC123"
                   maxLength={6}
                   value={inputRoomCode}
@@ -148,15 +124,16 @@ export default function FirebaseCastButton() {
                       handleJoinRoom();
                     }
                   }}
+                  autoFocus
                 />
-                <button
-                  className="btn btn-primary btn-sm"
-                  onClick={handleJoinRoom}
-                  disabled={isJoining || inputRoomCode.length !== 6}
-                >
-                  {isJoining ? 'กำลังเข้าร่วม...' : 'เข้าร่วม'}
-                </button>
               </div>
+              <button
+                className="btn btn-primary mt-3 w-full"
+                onClick={handleJoinRoom}
+                disabled={isJoining || inputRoomCode.length !== 6}
+              >
+                {isJoining ? '⏳ กำลังเข้าร่วม...' : '🚀 เข้าร่วมห้อง'}
+              </button>
             </div>
 
             {/* Error Message */}
