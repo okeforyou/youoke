@@ -35,14 +35,10 @@ const Monitor = () => {
     if (roomCodeParam && typeof roomCodeParam === 'string') {
       setRoomCode(roomCodeParam);
     } else {
-      // Generate random 6-character code
+      // Generate random 4-digit code (0000-9999)
       const generateRoomCode = () => {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        let code = '';
-        for (let i = 0; i < 6; i++) {
-          code += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return code;
+        const randomNum = Math.floor(Math.random() * 10000);
+        return randomNum.toString().padStart(4, '0');
       };
       const newCode = generateRoomCode();
       setRoomCode(newCode);

@@ -42,14 +42,10 @@ interface CastContextValue {
 
 const CastContext = createContext<CastContextValue | undefined>(undefined);
 
-// Generate random room code (6 characters)
+// Generate random room code (4 digits: 0000-9999)
 const generateRoomCode = (): string => {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let code = '';
-  for (let i = 0; i < 6; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return code;
+  const randomNum = Math.floor(Math.random() * 10000);
+  return randomNum.toString().padStart(4, '0');
 };
 
 export function FirebaseCastProvider({ children }: { children: ReactNode }) {

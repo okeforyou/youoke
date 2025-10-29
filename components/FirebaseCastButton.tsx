@@ -12,18 +12,18 @@ export default function FirebaseCastButton() {
   const handleJoinRoom = async () => {
     console.log('🔍 handleJoinRoom called, roomCode:', inputRoomCode);
 
-    if (!inputRoomCode || inputRoomCode.length !== 6) {
+    if (!inputRoomCode || inputRoomCode.length !== 4) {
       console.log('❌ Invalid room code length');
-      setError('กรุณากรอกเลขห้อง 6 หลัก');
+      setError('กรุณากรอกเลขห้อง 4 หลัก');
       return;
     }
 
     setIsJoining(true);
     setError('');
-    console.log('🚀 Attempting to join room:', inputRoomCode.toUpperCase());
+    console.log('🚀 Attempting to join room:', inputRoomCode);
 
     try {
-      const success = await joinRoom(inputRoomCode.toUpperCase());
+      const success = await joinRoom(inputRoomCode);
       console.log('✅ joinRoom result:', success);
 
       if (success) {
@@ -100,7 +100,7 @@ export default function FirebaseCastButton() {
                 <p className="font-semibold mb-1">วิธีใช้งาน:</p>
                 <ol className="list-decimal list-inside space-y-1">
                   <li>เปิด youoke.vercel.app/monitor บนทีวี</li>
-                  <li>ดูเลขห้อง 6 หลักที่แสดงบนทีวี</li>
+                  <li>ดูเลขห้อง 4 หลักที่แสดงบนทีวี</li>
                   <li>กรอกเลขห้องด้านล่าง แล้วกดเข้าร่วม</li>
                 </ol>
               </div>
@@ -114,11 +114,13 @@ export default function FirebaseCastButton() {
               <div className="flex gap-2">
                 <input
                   type="text"
-                  className="input input-bordered flex-1 uppercase text-center text-xl tracking-widest"
-                  placeholder="ABC123"
-                  maxLength={6}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  className="input input-bordered flex-1 text-center text-3xl tracking-widest"
+                  placeholder="0000"
+                  maxLength={4}
                   value={inputRoomCode}
-                  onChange={(e) => setInputRoomCode(e.target.value.toUpperCase())}
+                  onChange={(e) => setInputRoomCode(e.target.value.replace(/\D/g, ''))}
                   onKeyPress={(e) => {
                     if (e.key === 'Enter') {
                       handleJoinRoom();
@@ -130,7 +132,7 @@ export default function FirebaseCastButton() {
               <button
                 className="btn btn-primary mt-3 w-full"
                 onClick={handleJoinRoom}
-                disabled={isJoining || inputRoomCode.length !== 6}
+                disabled={isJoining || inputRoomCode.length !== 4}
               >
                 {isJoining ? '⏳ กำลังเข้าร่วม...' : '🚀 เข้าร่วมห้อง'}
               </button>
