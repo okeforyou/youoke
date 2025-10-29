@@ -34,6 +34,7 @@ import SearchResultGrid from "../components/SearchResultGrid";
 import VideoHorizontalCard from "../components/VideoHorizontalCard";
 import YoutubePlayer from "../components/YoutubePlayer";
 import { useAuth } from "../context/AuthContext";
+import { useFirebaseCast } from "../context/FirebaseCastContext";
 import { database } from "../firebase";
 import useIsMobile from "../hooks/isMobile";
 import { useKaraokeState } from "../hooks/karaoke";
@@ -66,6 +67,7 @@ function HomePage() {
   const { user } = useAuth();
   const { myPlaylist, setMyPlaylist } = useMyPlaylistState();
   const { room, setRoom } = useRoomState();
+  const { isConnected: isCasting } = useFirebaseCast();
   const isMobile = useIsMobile();
 
   const addPlaylistModalRef = useRef<ModalHandler>(null);
@@ -439,16 +441,35 @@ function HomePage() {
           {/* END Recommend Videos List */}
           {/* Video Player */}
           <div className="relative order-1 sm:order-2 w-full flex flex-row sm:flex-col flex-grow flex-shrink-0 sm:max-w-[50vw] lg:max-w-[50vw] 2xl:max-w-[50vw] sm:min-w-[400px] sm:h-screen overflow-hidden">
-            <YoutubePlayer
-              videoId={curVideoId}
-              nextSong={() => setCurVideoId("")}
-              className="flex flex-col flex-1 sm:flex-grow-0"
-            />
-            <div
-              className={`max-h-full w-full p-2 overflow-y-scroll hidden sm:flex flex-col ${scrollbarCls}`}
-            >
-              {PlaylistScreen}
-            </div>
+            {isCasting ? (
+              // Show remote control UI when casting
+              <div className="flex flex-col flex-1 bg-primary/10 p-4">
+                <div className="text-center mb-4">
+                  <div className="text-4xl mb-2">📺</div>
+                  <h2 className="text-xl font-bold">กำลัง Cast ไปทีวี</h2>
+                  <p className="text-sm text-gray-600 mt-2">
+                    เพลงกำลังเล่นบนทีวี
+                  </p>
+                </div>
+                <div className="flex-1 overflow-y-scroll">
+                  {PlaylistScreen}
+                </div>
+              </div>
+            ) : (
+              // Show regular player when not casting
+              <>
+                <YoutubePlayer
+                  videoId={curVideoId}
+                  nextSong={() => setCurVideoId("")}
+                  className="flex flex-col flex-1 sm:flex-grow-0"
+                />
+                <div
+                  className={`max-h-full w-full p-2 overflow-y-scroll hidden sm:flex flex-col ${scrollbarCls}`}
+                >
+                  {PlaylistScreen}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </main>

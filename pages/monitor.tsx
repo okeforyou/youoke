@@ -85,7 +85,11 @@ const Monitor = () => {
         return;
       }
 
-      console.log('Room data received:', data);
+      console.log('📦 Room data received:', data);
+      console.log('🎵 Queue:', data.queue);
+      console.log('🎬 Current video:', data.currentVideo);
+      console.log('📍 Current index:', data.currentIndex);
+
       setIsConnected(true);
       setRoomData({
         queue: data.queue || [],
