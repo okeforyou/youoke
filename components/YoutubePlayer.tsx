@@ -26,8 +26,6 @@ import { useToast } from "../context/ToastContext";
 import useIsMobile from "../hooks/isMobile";
 import { useKaraokeState } from "../hooks/karaoke";
 import { useRoomState } from "../hooks/room";
-import { ACTION, SocketData } from "../types/socket";
-import { joinRoom, leaveRoom, socket } from "../utils/socket";
 import Alert, { AlertHandler } from "./Alert";
 import BottomAds from "./BottomAds";
 import VideoAds from "./VideoAds";
@@ -111,75 +109,11 @@ function YoutubePlayer({
     if (!!videoId) setVideoCount(videoCount + 1);
   }, [videoId]);
 
+  // Socket.io removed - now using Firebase Realtime Database
+  // See monitor.tsx for new Cast implementation
   useEffect(() => {
-    // Create a socket connection
-    const _room = isMoniter ? (router.query?.room as string) || room : room;
-
-    joinRoom(_room, addToast);
-
-    socket.on("message", (data) => {
-      //remote
-      if (!isMoniter) {
-        if (data.action == ACTION.SET_PLAYLIST_FROM_TV) {
-          setPlaylist(data.playlist);
-        }
-        return;
-      }
-
-      //TV
-      switch (data.action) {
-        case ACTION.PLAY:
-          handlePlay();
-          break;
-
-        case ACTION.PAUSED:
-          handlePause();
-          break;
-
-        case ACTION.REPLAY:
-          handleReplay();
-          break;
-
-        case ACTION.NEXT_SONG:
-          nextSong();
-          break;
-
-        case ACTION.MUTE:
-          handleMute();
-          break;
-
-        case ACTION.UNMUTE:
-          handleUnMute();
-          break;
-
-        case ACTION.SET_PLAYLIST:
-          setPlaylist(data.playlist);
-          break;
-
-        default:
-          break;
-      }
-    });
-    return () => {
-      socket.disconnect();
-    };
+    // No socket connection needed for standalone player
   }, []);
-
-  useEffect(() => {
-    if (isMoniter)
-      socket.on("reqPlaylist", () => {
-        socket.emit("message", {
-          room,
-          action: {
-            action: ACTION.SET_PLAYLIST_FROM_TV,
-            playlist: playlist,
-          },
-        });
-      });
-    return () => {
-      socket.off("reqPlaylist");
-    };
-  }, [playlist, room]);
 
   useEffect(() => {
     if (playlist?.length && !curVideoId && !isRemote) {
@@ -188,41 +122,14 @@ function YoutubePlayer({
       setCurVideoId(video.videoId);
       // then remove it from playlist
       setPlaylist(newPlaylist);
-
-      socket.emit("message", {
-        room: router.query?.room as string,
-        action: { action: ACTION.SET_PLAYLIST_FROM_TV, playlist: newPlaylist },
-      });
     }
   }, [playlist, curVideoId]);
 
   useEffect(() => {
-    //Play Now
-    if (curVideoId && isRemote) {
-      socket.emit("message", {
-        room,
-        action: { action: ACTION.SET_SONG, videoId: curVideoId },
-      });
-    }
+    //Play Now - Firebase Cast handles sync now
   }, [curVideoId]);
 
-  const sendMessage = (act = ACTION.PLAY, _room?: string) => {
-    const roomId = _room || room;
-
-    if (!roomId || isMoniter || !isLogin || !isRemote) return;
-
-    let action: SocketData = { action: act };
-
-    if ([ACTION.PLAY, ACTION.PAUSED, ACTION.SET_SONG].includes(act)) {
-      action.videoId = curVideoId;
-    }
-
-    if (act === ACTION.SET_PLAYLIST) {
-      action.playlist = playlist;
-    }
-
-    socket.emit("message", { room: roomId, action });
-  };
+  // sendMessage removed - Firebase Cast handles sync now
 
   useEffect(() => {
     if (!isLogin && videoCount % 1 == 0 && videoCount !== 0) {
@@ -268,7 +175,6 @@ function YoutubePlayer({
   };
 
   const handleMute = async () => {
-    sendMessage(ACTION.MUTE);
     try {
       const player = playerRef.current?.getInternalPlayer();
       setIsMuted(true);
@@ -279,7 +185,6 @@ function YoutubePlayer({
     }
   };
   const handleUnMute = async () => {
-    sendMessage(ACTION.UNMUTE);
     try {
       const player = playerRef.current?.getInternalPlayer();
       setIsMuted(false);
@@ -292,8 +197,6 @@ function YoutubePlayer({
 
   const handlePlay = async () => {
     try {
-      sendMessage(ACTION.PLAY);
-
       const player = playerRef.current?.getInternalPlayer();
 
       setPlayerState(YouTube.PlayerState.PLAYING);
@@ -305,8 +208,6 @@ function YoutubePlayer({
   };
 
   const handlePause = async () => {
-    sendMessage(ACTION.PAUSED);
-
     try {
       const player = playerRef.current?.getInternalPlayer();
 
@@ -319,7 +220,6 @@ function YoutubePlayer({
   };
 
   const handleReplay = async () => {
-    sendMessage(ACTION.REPLAY);
     try {
       const player = playerRef.current?.getInternalPlayer();
       if (!player) return;
@@ -330,9 +230,7 @@ function YoutubePlayer({
   };
 
   useEffect(() => {
-    if (!isMoniter && isRemote) {
-      sendMessage(ACTION.SET_PLAYLIST);
-    }
+    // Firebase Cast handles playlist sync now
   }, [playlist]);
 
   const playPauseBtn = [
@@ -396,13 +294,10 @@ function YoutubePlayer({
           if (!isRemote) {
             nextSong();
           } else {
-            sendMessage(ACTION.NEXT_SONG);
             if (playlist?.length) {
               // playing first video
               const [video, ...newPlaylist] = playlist;
               setCurVideoId(video.videoId);
-            } else {
-              // setCurVideoId("");
             }
           }
         },
@@ -456,11 +351,8 @@ function YoutubePlayer({
                       <button
                         className="absolute right-2 top-2 py-0.5 px-3 text-white rounded-lg bg-primary"
                         onClick={() => {
-                          leaveRoom(room);
                           setRoom(inputRoomId);
-                          joinRoom(inputRoomId, addToast);
-
-                          sendMessage(ACTION.REMOTE_JOIN, inputRoomId);
+                          addToast("ใช้ Firebase Cast แทน - กดปุ่ม Cast ด้านบน", "info");
                         }}
                       >
                         ยืนยัน
@@ -515,9 +407,9 @@ function YoutubePlayer({
         ...fullBtn,
         {
           icon: ArrowPathIcon,
-          label: "เชื่อมต่อใหม่",
+          label: "โหลดใหม่",
           onClick: async () => {
-            joinRoom(router.query?.room as string, addToast);
+            window.location.reload();
           },
         },
       ];
