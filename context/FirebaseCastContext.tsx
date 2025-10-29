@@ -240,16 +240,17 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
 
   // Update room data in Firebase
   const updateRoom = async (updates: any) => {
-    if (!realtimeDb || !roomCode || !isHost) {
-      console.warn('Cannot update room: not host or not connected');
+    if (!realtimeDb || !roomCode || !isConnected) {
+      console.warn('Cannot update room: not connected');
       return;
     }
 
     try {
       const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
       await update(roomRef, updates);
+      console.log('✅ Room updated:', updates);
     } catch (error) {
-      console.error('Error updating room:', error);
+      console.error('❌ Error updating room:', error);
     }
   };
 
