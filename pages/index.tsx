@@ -67,7 +67,16 @@ function HomePage() {
   const { user } = useAuth();
   const { myPlaylist, setMyPlaylist } = useMyPlaylistState();
   const { room, setRoom } = useRoomState();
-  const { isConnected: isCasting } = useFirebaseCast();
+  const {
+    isConnected: isCasting,
+    addToQueue: addToCastQueue,
+    playNow: castPlayNow,
+    playlist: castPlaylist,
+    removeAt: castRemoveAt,
+    moveUp: castMoveUp,
+    moveDown: castMoveDown,
+    setPlaylist: setCastPlaylist,
+  } = useFirebaseCast();
   const isMobile = useIsMobile();
 
   const addPlaylistModalRef = useRef<ModalHandler>(null);
@@ -88,25 +97,45 @@ function HomePage() {
   }, [user?.uid]);
 
   function addVideoToPlaylist(video: SearchResult | RecommendedVideo) {
-    setPlaylist(playlist?.concat([{ key: new Date().getTime(), ...video }]));
+    if (isCasting) {
+      // Send to Firebase Cast queue
+      console.log('📤 Adding to Cast queue:', video.title);
+      addToCastQueue(video);
+    } else {
+      // Local playlist
+      setPlaylist(playlist?.concat([{ key: new Date().getTime(), ...video }]));
+    }
   }
 
   function priorityVideo(
     video: SearchResult | RecommendedVideo,
     videoIndex?: number
   ) {
-    if (!curVideoId) setCurVideoId(video.videoId);
-    // move `videoId` to the top of the playlist
-    const newPlaylist = playlist?.filter((_, index) => index !== videoIndex);
-    setPlaylist([{ key: new Date().getTime(), ...video }, ...newPlaylist]);
+    if (isCasting) {
+      // Play now on Cast
+      console.log('▶️ Play now on Cast:', video.title);
+      castPlayNow(video);
+    } else {
+      // Local play now
+      if (!curVideoId) setCurVideoId(video.videoId);
+      const newPlaylist = playlist?.filter((_, index) => index !== videoIndex);
+      setPlaylist([{ key: new Date().getTime(), ...video }, ...newPlaylist]);
+    }
   }
 
   function skipVideoTo(
     video: SearchResult | RecommendedVideo,
     videoIndex?: number
   ) {
-    setCurVideoId(video.videoId);
-    setPlaylist(playlist?.slice(videoIndex + 1));
+    if (isCasting) {
+      // Cast mode: play now
+      console.log('⏭️ Skip to on Cast:', video.title);
+      castPlayNow(video);
+    } else {
+      // Local mode
+      setCurVideoId(video.videoId);
+      setPlaylist(playlist?.slice(videoIndex + 1));
+    }
   }
 
   const getMyPlaylists = async () => {
@@ -147,6 +176,9 @@ function HomePage() {
   const scrollbarCls =
     "scrollbar scrollbar-w-1 scrollbar-thumb-gray-400 hover:scrollbar-thumb-gray-500 scrollbar-track-base-300 scrollbar-thumb-rounded";
 
+  // Use Cast playlist if casting, otherwise local playlist
+  const displayPlaylist = isCasting ? castPlaylist : playlist;
+
   const PlaylistScreen = (
     <>
       <div className="flex flex-row font-bold gap-2 items-center">
@@ -157,11 +189,12 @@ function HomePage() {
         )}
         {!isMobile && (
           <span className="text-primary text-xs 2xl:text-xl">
-            คิวเพลง ( {playlist?.length || 0} เพลง )
+            คิวเพลง ( {displayPlaylist?.length || 0} เพลง )
+            {isCasting && <span className="text-xs ml-1">📺</span>}
           </span>
         )}
 
-        {!playlist?.length ? null : (
+        {!displayPlaylist?.length ? null : (
           <div className="dropdown dropdown-end ml-auto">
             <label
               tabIndex={0}
@@ -180,7 +213,13 @@ function HomePage() {
                 <div className="card-actions justify-end">
                   <button
                     className="btn btn-xs btn-ghost text-primary 2xl:text-xl"
-                    onClick={() => setPlaylist([])}
+                    onClick={() => {
+                      if (isCasting) {
+                        setCastPlaylist([]);
+                      } else {
+                        setPlaylist([]);
+                      }
+                    }}
                   >
                     ลบเลย
                   </button>
@@ -193,17 +232,23 @@ function HomePage() {
 
       <div className={`flex-shrink-0  pt-2 pb-12  `}>
         <div className="grid grid-cols-1 gap-2">
-          {playlist?.map((video, videoIndex) => (
+          {displayPlaylist?.map((video, videoIndex) => (
             <VideoHorizontalCard
               key={videoIndex}
               video={video}
               onPlayNow={() => skipVideoTo(video, videoIndex)}
               onSelect={() => priorityVideo(video, videoIndex)}
-              onDelete={() =>
-                setPlaylist(playlist.filter((_, index) => index !== videoIndex))
-              }
+              onDelete={() => {
+                if (isCasting) {
+                  castRemoveAt(videoIndex);
+                } else {
+                  setPlaylist(playlist.filter((_, index) => index !== videoIndex));
+                }
+              }}
               onMoveUp={() => {
-                if (videoIndex > 0) {
+                if (isCasting) {
+                  castMoveUp(videoIndex);
+                } else if (videoIndex > 0) {
                   const newPlaylist = [...playlist];
                   [newPlaylist[videoIndex - 1], newPlaylist[videoIndex]] = [
                     newPlaylist[videoIndex],
@@ -213,7 +258,9 @@ function HomePage() {
                 }
               }}
               onMoveDown={() => {
-                if (videoIndex < playlist.length - 1) {
+                if (isCasting) {
+                  castMoveDown(videoIndex);
+                } else if (videoIndex < playlist.length - 1) {
                   const newPlaylist = [...playlist];
                   [newPlaylist[videoIndex], newPlaylist[videoIndex + 1]] = [
                     newPlaylist[videoIndex + 1],
@@ -223,7 +270,7 @@ function HomePage() {
                 }
               }}
               canMoveUp={videoIndex > 0}
-              canMoveDown={videoIndex < playlist.length - 1}
+              canMoveDown={videoIndex < displayPlaylist.length - 1}
             />
           ))}
         </div>
