@@ -123,9 +123,17 @@ const Monitor = () => {
   }, [roomCode, isAuthReady]);
 
   // Handle player ready
-  const onPlayerReady = (event: { target: YouTubePlayer }) => {
+  const onPlayerReady = async (event: { target: YouTubePlayer }) => {
     setPlayerRef(event.target);
-    console.log('Player ready');
+    console.log('🎬 Player ready');
+
+    // Auto-play the video
+    try {
+      await event.target.playVideo();
+      console.log('▶️ Auto-playing video');
+    } catch (error) {
+      console.error('❌ Auto-play failed:', error);
+    }
   };
 
   // Handle player state change
