@@ -274,13 +274,19 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
 
   // Play video immediately (add to front)
   const playNow = (video: SearchResult | RecommendedVideo) => {
-    // Prevent duplicate play now for same video
+    const newVideo = { ...video, key: Date.now() };
+
+    // If same video, just restart it (don't add to queue again)
     if (currentVideo?.videoId === video.videoId) {
-      console.log('⏸️ Already playing this video, skipping');
+      console.log('▶️ Restarting current video');
+      updateRoom({
+        currentVideo: newVideo,
+        controls: { isPlaying: true },
+      });
       return;
     }
 
-    const newVideo = { ...video, key: Date.now() };
+    // Add to front of queue and play
     const newPlaylist = [newVideo, ...playlist];
 
     setPlaylistState(newPlaylist);

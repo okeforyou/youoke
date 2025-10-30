@@ -127,12 +127,23 @@ const Monitor = () => {
     setPlayerRef(event.target);
     console.log('🎬 Player ready');
 
-    // Auto-play the video
+    // Auto-play the video with retry
     try {
+      // Small delay to ensure player is fully ready
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       await event.target.playVideo();
       console.log('▶️ Auto-playing video');
+
+      // Verify it's actually playing
+      const playerState = await event.target.getPlayerState();
+      if (playerState !== 1) {
+        console.warn('⚠️ Player not playing, retrying...');
+        await event.target.playVideo();
+      }
     } catch (error) {
       console.error('❌ Auto-play failed:', error);
+      console.log('ℹ️ User may need to click play button (browser auto-play policy)');
     }
   };
 
