@@ -274,6 +274,12 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
 
   // Play video immediately (add to front)
   const playNow = (video: SearchResult | RecommendedVideo) => {
+    // Prevent duplicate play now for same video
+    if (currentVideo?.videoId === video.videoId) {
+      console.log('⏸️ Already playing this video, skipping');
+      return;
+    }
+
     const newVideo = { ...video, key: Date.now() };
     const newPlaylist = [newVideo, ...playlist];
 
