@@ -2,7 +2,8 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import YouTube, { YouTubePlayer } from 'react-youtube';
 import { ref, onValue, off, set } from 'firebase/database';
-import { realtimeDb } from '../firebase';
+import { signInAnonymously } from 'firebase/auth';
+import { realtimeDb, auth } from '../firebase';
 
 interface QueueVideo {
   videoId: string;
@@ -29,6 +30,22 @@ const Monitor = () => {
   const [roomData, setRoomData] = useState<RoomData | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [playerRef, setPlayerRef] = useState<YouTubePlayer | null>(null);
+  const [isAuthReady, setIsAuthReady] = useState(false);
+
+  // Anonymous login for monitor
+  useEffect(() => {
+    const loginAnonymously = async () => {
+      try {
+        await signInAnonymously(auth);
+        console.log('✅ Monitor signed in anonymously');
+        setIsAuthReady(true);
+      } catch (error) {
+        console.error('❌ Anonymous sign-in failed:', error);
+      }
+    };
+
+    loginAnonymously();
+  }, []);
 
   // Generate room code on mount if not provided in URL
   useEffect(() => {
@@ -48,7 +65,7 @@ const Monitor = () => {
 
   // Auto-create room and listen to room data
   useEffect(() => {
-    if (!roomCode || !realtimeDb) return;
+    if (!roomCode || !realtimeDb || !isAuthReady) return;
 
     console.log('Monitoring room:', roomCode);
     const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
@@ -103,7 +120,7 @@ const Monitor = () => {
       off(roomRef);
       unsubscribe();
     };
-  }, [roomCode]);
+  }, [roomCode, isAuthReady]);
 
   // Handle player ready
   const onPlayerReady = (event: { target: YouTubePlayer }) => {
