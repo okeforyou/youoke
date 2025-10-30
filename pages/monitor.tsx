@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import YouTube, { YouTubePlayer } from 'react-youtube';
-import { ref, onValue, off, set } from 'firebase/database';
+import { ref, onValue, off, set, update } from 'firebase/database';
 import { signInAnonymously } from 'firebase/auth';
 import { realtimeDb, auth } from '../firebase';
 
@@ -129,16 +129,35 @@ const Monitor = () => {
   };
 
   // Handle player state change
-  const onPlayerStateChange = (event: { data: number }) => {
+  const onPlayerStateChange = async (event: { data: number }) => {
     // YouTube player states: 0 = ended, 1 = playing, 2 = paused
-    if (event.data === 0) {
-      // Video ended
-      console.log('Video ended');
-      // Note: Auto-play next is handled by the sender updating currentIndex
+    if (event.data === 0 && roomData) {
+      // Video ended - play next song
+      console.log('🎬 Video ended, playing next...');
+
+      const nextIndex = roomData.currentIndex + 1;
+      if (nextIndex < roomData.queue.length) {
+        // Play next song
+        const nextVideo = roomData.queue[nextIndex];
+        const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
+
+        try {
+          await update(roomRef, {
+            currentIndex: nextIndex,
+            currentVideo: nextVideo,
+            controls: { isPlaying: true },
+          });
+          console.log('✅ Auto-played next song:', nextVideo.title);
+        } catch (error) {
+          console.error('❌ Error playing next song:', error);
+        }
+      } else {
+        console.log('🏁 Queue finished');
+      }
     } else if (event.data === 1) {
-      console.log('Video playing');
+      console.log('▶️ Video playing');
     } else if (event.data === 2) {
-      console.log('Video paused');
+      console.log('⏸️ Video paused');
     }
   };
 
@@ -209,6 +228,7 @@ const Monitor = () => {
       <div className="flex-1 relative">
         {roomData.currentVideo ? (
           <YouTube
+            key={roomData.currentVideo.videoId}
             videoId={roomData.currentVideo.videoId}
             opts={opts}
             onReady={onPlayerReady}
