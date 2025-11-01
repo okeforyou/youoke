@@ -177,7 +177,10 @@ const Monitor = () => {
         // Mute before loading to ensure autoplay works
         await playerRef.mute();
 
-        if (roomData.controls?.isPlaying) {
+        // Always auto-play when video changes (default to isPlaying if undefined)
+        const shouldPlay = roomData.controls?.isPlaying !== false;
+
+        if (shouldPlay) {
           // loadVideoById auto-plays by default
           await playerRef.loadVideoById({
             videoId: currentVideoId,
@@ -185,9 +188,9 @@ const Monitor = () => {
           });
           console.log('▶️ Loading and auto-playing (muted)');
         } else {
-          // Use cueVideoById if we don't want to auto-play
+          // Use cueVideoById only if explicitly paused
           await playerRef.cueVideoById(currentVideoId);
-          console.log('⏸️ Video cued');
+          console.log('⏸️ Video cued (paused)');
         }
       } catch (error) {
         console.error('❌ Failed to load video:', error);
