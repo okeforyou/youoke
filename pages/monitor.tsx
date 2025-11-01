@@ -174,15 +174,38 @@ const Monitor = () => {
       try {
         console.log('🎵 Loading new video:', roomData.currentVideo.title);
 
-        // Load new video
-        await playerRef.loadVideoById(roomData.currentVideo.videoId);
-
-        // Auto-play if controls say so
         if (roomData.controls?.isPlaying) {
-          console.log('▶️ Auto-playing...');
-          // Small delay to ensure video is loaded
-          await new Promise(resolve => setTimeout(resolve, 500));
-          await playerRef.playVideo();
+          // loadVideoById auto-plays by default
+          await playerRef.loadVideoById({
+            videoId: roomData.currentVideo.videoId,
+            startSeconds: 0
+          });
+          console.log('▶️ Auto-playing with loadVideoById...');
+
+          // Wait for video to start loading
+          await new Promise(resolve => setTimeout(resolve, 1500));
+
+          // Verify it's playing
+          const state = await playerRef.getPlayerState();
+          console.log('📊 Player state after load:', state, '(1=playing, 2=paused, 3=buffering)');
+
+          if (state !== 1 && state !== 3) { // Not playing and not buffering
+            console.warn('⚠️ Not playing, calling playVideo()');
+            await playerRef.playVideo();
+
+            // Final verification
+            await new Promise(resolve => setTimeout(resolve, 500));
+            const finalState = await playerRef.getPlayerState();
+            console.log('📊 Final player state:', finalState);
+
+            if (finalState !== 1 && finalState !== 3) {
+              console.error('❌ Still not playing! Manual click required.');
+            }
+          }
+        } else {
+          // Use cueVideoById if we don't want to auto-play
+          await playerRef.cueVideoById(roomData.currentVideo.videoId);
+          console.log('⏸️ Video cued (not auto-playing)');
         }
       } catch (error) {
         console.error('❌ Failed to load video:', error);
