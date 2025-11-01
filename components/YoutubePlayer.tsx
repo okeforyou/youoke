@@ -403,6 +403,7 @@ function YoutubePlayer({
         </div>
       )
     );
+    */
   };
 
   const buttons = !isMoniter
