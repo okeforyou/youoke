@@ -112,13 +112,13 @@ const Monitor = () => {
       console.log('🎬 Current video:', data.currentVideo);
       console.log('📍 Current index:', data.currentIndex);
 
-      // Check if anyone has joined (besides monitor)
-      const participants = data.participants || {};
-      const participantCount = Object.keys(participants).length;
-      const hasGuests = participantCount > 0; // Any participant means someone joined
+      // Check if anyone has joined by checking if there's any content
+      const hasQueue = data.queue && data.queue.length > 0;
+      const hasCurrentVideo = data.currentVideo !== null && data.currentVideo !== undefined;
+      const hasContent = hasQueue || hasCurrentVideo;
 
-      console.log('👥 Participants:', participantCount);
-      setIsConnected(hasGuests);
+      console.log('✅ Has content (queue or video):', hasContent);
+      setIsConnected(hasContent);
       setRoomData({
         queue: data.queue || [],
         currentIndex: data.currentIndex || 0,
