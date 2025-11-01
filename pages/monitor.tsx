@@ -34,7 +34,6 @@ const Monitor = () => {
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [showQueue, setShowQueue] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [initialVideoId, setInitialVideoId] = useState<string | null>(null);
   const lastLoadedVideoIdRef = useRef<string | null>(null);
 
   // Anonymous login for monitor
@@ -145,6 +144,22 @@ const Monitor = () => {
     } catch (error) {
       console.error('❌ Mute failed:', error);
     }
+
+    // Auto-play first video
+    if (roomData?.currentVideo) {
+      const currentVideoId = roomData.currentVideo.videoId;
+      lastLoadedVideoIdRef.current = currentVideoId;
+
+      const shouldPlay = roomData.controls?.isPlaying !== false;
+      if (shouldPlay) {
+        try {
+          await event.target.playVideo();
+          console.log('▶️ Auto-playing first video');
+        } catch (error) {
+          console.error('❌ Auto-play failed:', error);
+        }
+      }
+    }
   };
 
   // Sync mute state from Remote
@@ -177,12 +192,6 @@ const Monitor = () => {
     }
 
     const currentVideoId = roomData.currentVideo.videoId;
-
-    // Set initial video ID on first video
-    if (!initialVideoId) {
-      console.log('🎬 Setting initial video:', currentVideoId);
-      setInitialVideoId(currentVideoId);
-    }
 
     // Skip if this video is already loaded
     if (lastLoadedVideoIdRef.current === currentVideoId) {
@@ -219,7 +228,7 @@ const Monitor = () => {
     };
 
     loadAndPlay();
-  }, [playerRef, roomData?.currentVideo?.key, initialVideoId]);
+  }, [playerRef, roomData?.currentVideo?.key]);
 
   // Check remaining time and show/hide queue
   useEffect(() => {
@@ -368,9 +377,9 @@ const Monitor = () => {
     <div className="h-screen w-screen bg-black text-white flex flex-col">
       {/* YouTube Player */}
       <div className="flex-1 relative">
-        {initialVideoId ? (
+        {roomData?.currentVideo ? (
           <YouTube
-            videoId={initialVideoId}
+            videoId={roomData.currentVideo.videoId}
             opts={opts}
             onReady={onPlayerReady}
             onStateChange={onPlayerStateChange}
