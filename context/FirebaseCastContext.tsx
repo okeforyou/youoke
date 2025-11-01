@@ -272,33 +272,49 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  // Play video immediately (add to front)
+  // Play video immediately (add to front or jump to existing)
   const playNow = (video: SearchResult | RecommendedVideo) => {
-    const newVideo = { ...video, key: Date.now() };
-
-    // If same video, just restart it (don't add to queue again)
+    // If same video as current, just restart it
     if (currentVideo?.videoId === video.videoId) {
       console.log('▶️ Restarting current video');
       updateRoom({
-        currentVideo: newVideo,
+        currentVideo: { ...video, key: Date.now() },
         controls: { isPlaying: true },
       });
       return;
     }
 
-    // Add to front of queue and play
-    const newPlaylist = [newVideo, ...playlist];
+    // Check if video already exists in queue
+    const existingIndex = playlist.findIndex(v => v.videoId === video.videoId);
 
-    setPlaylistState(newPlaylist);
-    setCurrentIndex(0);
-    setCurrentVideo(newVideo);
+    if (existingIndex !== -1) {
+      // Video exists in queue - jump to it
+      console.log('▶️ Jumping to existing song in queue at index', existingIndex);
+      setCurrentIndex(existingIndex);
+      setCurrentVideo(playlist[existingIndex]);
 
-    updateRoom({
-      queue: newPlaylist,
-      currentIndex: 0,
-      currentVideo: newVideo,
-      controls: { isPlaying: true },
-    });
+      updateRoom({
+        currentIndex: existingIndex,
+        currentVideo: playlist[existingIndex],
+        controls: { isPlaying: true },
+      });
+    } else {
+      // Video not in queue - add to front and play
+      console.log('▶️ Adding new song to front and playing');
+      const newVideo = { ...video, key: Date.now() };
+      const newPlaylist = [newVideo, ...playlist];
+
+      setPlaylistState(newPlaylist);
+      setCurrentIndex(0);
+      setCurrentVideo(newVideo);
+
+      updateRoom({
+        queue: newPlaylist,
+        currentIndex: 0,
+        currentVideo: newVideo,
+        controls: { isPlaying: true },
+      });
+    }
   };
 
   // Play video next (insert after current)

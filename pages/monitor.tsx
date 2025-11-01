@@ -259,12 +259,8 @@ const Monitor = () => {
     } else if (event.data === 1) {
       console.log('▶️ Video playing');
       setIsPlaying(true);
-
-      // Unmute when playing (browser may block first time, user can unmute via controls)
-      if (playerRef) {
-        playerRef.unMute();
-        console.log('🔊 Unmuted');
-      }
+      // Don't unmute - browser blocks it and pauses video
+      // User can unmute manually via YouTube controls
     } else if (event.data === 2) {
       console.log('⏸️ Video paused');
       setIsPlaying(false);
