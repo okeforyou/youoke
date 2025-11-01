@@ -59,6 +59,7 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
   const [playlist, setPlaylistState] = useState<QueueVideo[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentVideo, setCurrentVideo] = useState<QueueVideo | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true); // Start muted
 
   // Cleanup listeners on unmount or room change
@@ -98,6 +99,16 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
 
       if (data.currentVideo) {
         setCurrentVideo(data.currentVideo);
+      }
+
+      // Sync controls state
+      if (data.controls) {
+        if (data.controls.isPlaying !== undefined) {
+          setIsPlaying(data.controls.isPlaying);
+        }
+        if (data.controls.isMuted !== undefined) {
+          setIsMuted(data.controls.isMuted);
+        }
       }
 
       console.log('Room data updated:', data);
@@ -280,9 +291,10 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
     // If same video as current, just restart it
     if (currentVideo?.videoId === video.videoId) {
       console.log('▶️ Restarting current video');
+      setIsPlaying(true);
       updateRoom({
         currentVideo: { ...video, key: Date.now() },
-        controls: { isPlaying: true },
+        controls: { isPlaying: true, isMuted },
       });
       return;
     }
@@ -295,11 +307,12 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
       console.log('▶️ Jumping to existing song in queue at index', existingIndex);
       setCurrentIndex(existingIndex);
       setCurrentVideo(playlist[existingIndex]);
+      setIsPlaying(true);
 
       updateRoom({
         currentIndex: existingIndex,
         currentVideo: playlist[existingIndex],
-        controls: { isPlaying: true },
+        controls: { isPlaying: true, isMuted },
       });
     } else {
       // Video not in queue - add to front and play
@@ -310,12 +323,13 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
       setPlaylistState(newPlaylist);
       setCurrentIndex(0);
       setCurrentVideo(newVideo);
+      setIsPlaying(true);
 
       updateRoom({
         queue: newPlaylist,
         currentIndex: 0,
         currentVideo: newVideo,
-        controls: { isPlaying: true },
+        controls: { isPlaying: true, isMuted },
       });
     }
   };
@@ -379,14 +393,16 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
 
   // Player controls
   const play = () => {
+    setIsPlaying(true);
     updateRoom({
-      controls: { isPlaying: true },
+      controls: { isPlaying: true, isMuted },
     });
   };
 
   const pause = () => {
+    setIsPlaying(false);
     updateRoom({
-      controls: { isPlaying: false },
+      controls: { isPlaying: false, isMuted },
     });
   };
 
@@ -395,11 +411,12 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
       const newIndex = currentIndex + 1;
       setCurrentIndex(newIndex);
       setCurrentVideo(playlist[newIndex]);
+      setIsPlaying(true);
 
       updateRoom({
         currentIndex: newIndex,
         currentVideo: playlist[newIndex],
-        controls: { isPlaying: true },
+        controls: { isPlaying: true, isMuted },
       });
     }
   };
@@ -409,11 +426,12 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
       const newIndex = currentIndex - 1;
       setCurrentIndex(newIndex);
       setCurrentVideo(playlist[newIndex]);
+      setIsPlaying(true);
 
       updateRoom({
         currentIndex: newIndex,
         currentVideo: playlist[newIndex],
-        controls: { isPlaying: true },
+        controls: { isPlaying: true, isMuted },
       });
     }
   };
@@ -422,11 +440,12 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
     if (index >= 0 && index < playlist.length) {
       setCurrentIndex(index);
       setCurrentVideo(playlist[index]);
+      setIsPlaying(true);
 
       updateRoom({
         currentIndex: index,
         currentVideo: playlist[index],
-        controls: { isPlaying: true },
+        controls: { isPlaying: true, isMuted },
       });
     }
   };
@@ -437,7 +456,7 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
     console.log(newMutedState ? '🔇 Muting from Remote' : '🔊 Unmuting from Remote');
 
     updateRoom({
-      controls: { isPlaying: currentVideo !== null, isMuted: newMutedState },
+      controls: { isPlaying, isMuted: newMutedState },
     });
   };
 
