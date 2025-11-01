@@ -18,6 +18,7 @@ interface RoomData {
   currentVideo: QueueVideo | null;
   controls: {
     isPlaying: boolean;
+    isMuted?: boolean;
   };
 }
 
@@ -137,7 +138,7 @@ const Monitor = () => {
     setPlayerRef(event.target);
     console.log('🎬 Player ready');
 
-    // Mute player (playback will be handled by useEffect)
+    // Mute player initially (will be controlled by Remote)
     try {
       await event.target.mute();
       console.log('🔇 Player muted and ready');
@@ -146,21 +147,42 @@ const Monitor = () => {
     }
   };
 
-  // Set initial video ID when first video arrives
+  // Sync mute state from Remote
   useEffect(() => {
-    if (!initialVideoId && roomData?.currentVideo) {
-      console.log('🎬 Setting initial video:', roomData.currentVideo.videoId);
-      setInitialVideoId(roomData.currentVideo.videoId);
-    }
-  }, [roomData?.currentVideo, initialVideoId]);
+    if (!playerRef || !roomData?.controls) return;
+
+    const shouldMute = roomData.controls.isMuted !== false; // Default to muted
+
+    const syncMute = async () => {
+      try {
+        if (shouldMute) {
+          await playerRef.mute();
+          console.log('🔇 Muted from Remote');
+        } else {
+          await playerRef.unMute();
+          console.log('🔊 Unmuted from Remote');
+        }
+      } catch (error) {
+        console.error('❌ Mute/Unmute failed:', error);
+      }
+    };
+
+    syncMute();
+  }, [playerRef, roomData?.controls?.isMuted]);
 
   // Load and play new video when currentVideo changes
   useEffect(() => {
-    if (!playerRef || !roomData?.currentVideo || !initialVideoId) {
+    if (!playerRef || !roomData?.currentVideo) {
       return;
     }
 
     const currentVideoId = roomData.currentVideo.videoId;
+
+    // Set initial video ID on first video
+    if (!initialVideoId) {
+      console.log('🎬 Setting initial video:', currentVideoId);
+      setInitialVideoId(currentVideoId);
+    }
 
     // Skip if this video is already loaded
     if (lastLoadedVideoIdRef.current === currentVideoId) {
@@ -216,9 +238,14 @@ const Monitor = () => {
         const showAtStart = currentTime < 15;
         const showAtEnd = remaining < 60;
 
+        // Debug log every 10 seconds
+        if (Math.floor(currentTime) % 10 === 0) {
+          console.log(`⏱️ Time: ${Math.floor(currentTime)}s / ${Math.floor(duration)}s, Remaining: ${Math.floor(remaining)}s, Queue: ${showQueue}`);
+        }
+
         if (showAtStart || showAtEnd) {
           if (!showQueue) {
-            console.log(`📋 Showing queue (${showAtStart ? 'start' : 'ending soon'})`);
+            console.log(`📋 Showing queue (${showAtStart ? 'start' : 'ending soon'}) - Remaining: ${Math.floor(remaining)}s`);
             setShowQueue(true);
           }
         } else {
@@ -228,7 +255,7 @@ const Monitor = () => {
           }
         }
       } catch (error) {
-        // Player not ready yet
+        console.error('❌ Queue check error:', error);
       }
     }, 1000);
 

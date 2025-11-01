@@ -38,6 +38,8 @@ interface CastContextValue {
   next: () => void;
   previous: () => void;
   skipTo: (index: number) => void;
+  toggleMute: () => void;
+  isMuted: boolean;
 }
 
 const CastContext = createContext<CastContextValue | undefined>(undefined);
@@ -57,6 +59,7 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
   const [playlist, setPlaylistState] = useState<QueueVideo[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentVideo, setCurrentVideo] = useState<QueueVideo | null>(null);
+  const [isMuted, setIsMuted] = useState(true); // Start muted
 
   // Cleanup listeners on unmount or room change
   useEffect(() => {
@@ -428,6 +431,16 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const toggleMute = () => {
+    const newMutedState = !isMuted;
+    setIsMuted(newMutedState);
+    console.log(newMutedState ? '🔇 Muting from Remote' : '🔊 Unmuting from Remote');
+
+    updateRoom({
+      controls: { isPlaying: currentVideo !== null, isMuted: newMutedState },
+    });
+  };
+
   const value: CastContextValue = {
     isConnected,
     roomCode,
@@ -450,6 +463,8 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
     next,
     previous,
     skipTo,
+    toggleMute,
+    isMuted,
   };
 
   return <CastContext.Provider value={value}>{children}</CastContext.Provider>;
