@@ -85,6 +85,7 @@ function HomePage() {
   const [selectedVideo, setSelectedVideo] = useState<
     SearchResult | RecommendedVideo
   >();
+  const [hasSyncedPlaylist, setHasSyncedPlaylist] = useState(false);
 
   useEffect(() => {
     if (!user?.uid) {
@@ -95,6 +96,20 @@ function HomePage() {
       setRoom(generateRandomString(6));
     }
   }, [user?.uid]);
+
+  // Sync local playlist to Cast when connecting
+  useEffect(() => {
+    if (isCasting && playlist?.length > 0 && !hasSyncedPlaylist) {
+      console.log('🔄 Syncing local playlist to Cast:', playlist.length, 'songs');
+      setCastPlaylist(playlist);
+      setHasSyncedPlaylist(true);
+    }
+
+    // Reset sync flag when disconnected
+    if (!isCasting) {
+      setHasSyncedPlaylist(false);
+    }
+  }, [isCasting, playlist, hasSyncedPlaylist]);
 
   function addVideoToPlaylist(video: SearchResult | RecommendedVideo) {
     if (isCasting) {

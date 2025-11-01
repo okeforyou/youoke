@@ -312,6 +312,10 @@ function YoutubePlayer({
   );
 
   const RemoteComponent = () => {
+    // Hidden: Old 2-screen system (Socket.io) - replaced by Firebase Cast
+    return null;
+
+    /* Old code - kept for reference
     return (
       isLogin &&
       !isMoniter && (

@@ -31,6 +31,8 @@ const Monitor = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [playerRef, setPlayerRef] = useState<YouTubePlayer | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
+  const [showQueue, setShowQueue] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   // Anonymous login for monitor
   useEffect(() => {
@@ -107,7 +109,13 @@ const Monitor = () => {
       console.log('🎬 Current video:', data.currentVideo);
       console.log('📍 Current index:', data.currentIndex);
 
-      setIsConnected(true);
+      // Check if anyone has joined (besides monitor)
+      const participants = data.participants || {};
+      const participantCount = Object.keys(participants).length;
+      const hasGuests = participantCount > 0; // Any participant means someone joined
+
+      console.log('👥 Participants:', participantCount);
+      setIsConnected(hasGuests);
       setRoomData({
         queue: data.queue || [],
         currentIndex: data.currentIndex || 0,
@@ -147,12 +155,41 @@ const Monitor = () => {
     }
   };
 
+  // Check remaining time and show/hide queue
+  useEffect(() => {
+    if (!playerRef || !isPlaying) {
+      setShowQueue(true); // Show queue when not playing
+      return;
+    }
+
+    const checkTime = setInterval(async () => {
+      try {
+        const currentTime = await playerRef.getCurrentTime();
+        const duration = await playerRef.getDuration();
+        const remaining = duration - currentTime;
+
+        // Show queue if less than 30 seconds remaining
+        if (remaining < 30) {
+          setShowQueue(true);
+        } else {
+          setShowQueue(false);
+        }
+      } catch (error) {
+        // Player not ready yet
+      }
+    }, 1000);
+
+    return () => clearInterval(checkTime);
+  }, [playerRef, isPlaying]);
+
   // Handle player state change
   const onPlayerStateChange = async (event: { data: number }) => {
     // YouTube player states: 0 = ended, 1 = playing, 2 = paused
     if (event.data === 0 && roomData) {
       // Video ended - play next song
       console.log('🎬 Video ended, playing next...');
+      setIsPlaying(false);
+      setShowQueue(true);
 
       const nextIndex = roomData.currentIndex + 1;
       if (nextIndex < roomData.queue.length) {
@@ -175,8 +212,11 @@ const Monitor = () => {
       }
     } else if (event.data === 1) {
       console.log('▶️ Video playing');
+      setIsPlaying(true);
     } else if (event.data === 2) {
       console.log('⏸️ Video paused');
+      setIsPlaying(false);
+      setShowQueue(true);
     }
   };
 
@@ -269,9 +309,9 @@ const Monitor = () => {
         )}
       </div>
 
-      {/* Queue Display */}
-      {roomData.queue.length > 0 && (
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent p-6">
+      {/* Queue Display - Show when paused or near end */}
+      {showQueue && roomData.queue.length > 0 && (
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent p-6 transition-opacity duration-500">
           <div className="max-w-6xl mx-auto">
             {/* Now Playing */}
             {roomData.currentVideo && (
@@ -325,10 +365,12 @@ const Monitor = () => {
         </div>
       )}
 
-      {/* Connection indicator */}
-      <div className="absolute top-4 right-4 bg-green-600 text-white px-3 py-1 rounded-full text-sm">
-        🔗 เชื่อมต่อแล้ว
-      </div>
+      {/* Connection indicator - Show when not playing or queue visible */}
+      {showQueue && (
+        <div className="absolute top-4 right-4 bg-green-600 text-white px-3 py-1 rounded-full text-sm shadow-lg transition-opacity duration-500">
+          🔗 เชื่อมต่อแล้ว
+        </div>
+      )}
     </div>
   );
 };
