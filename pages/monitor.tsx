@@ -34,7 +34,7 @@ const Monitor = () => {
   const [showQueue, setShowQueue] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [initialVideoId, setInitialVideoId] = useState<string | null>(null);
-  const [autoplayUnlocked, setAutoplayUnlocked] = useState(false);
+  const [userInteracted, setUserInteracted] = useState(false);
   const lastLoadedVideoIdRef = useRef<string | null>(null);
 
   // Anonymous login for monitor
@@ -135,8 +135,19 @@ const Monitor = () => {
 
   // Unlock autoplay with user interaction
   const unlockAutoplay = async () => {
-    console.log('🔓 Unlocking autoplay...');
-    setAutoplayUnlocked(true);
+    console.log('🔓 Unlocking autoplay with user click...');
+    setUserInteracted(true);
+
+    // Play and unmute with user interaction
+    if (playerRef) {
+      try {
+        await playerRef.playVideo();
+        await playerRef.unMute();
+        console.log('✅ Autoplay unlocked! Video playing with sound.');
+      } catch (error) {
+        console.error('❌ Failed to unlock:', error);
+      }
+    }
   };
 
   // Handle player ready
@@ -267,8 +278,8 @@ const Monitor = () => {
       console.log('▶️ Video playing');
       setIsPlaying(true);
 
-      // Unmute when video starts playing
-      if (playerRef) {
+      // Only unmute if user has interacted (to avoid browser blocking)
+      if (playerRef && userInteracted) {
         playerRef.unMute();
         console.log('🔊 Unmuted');
       }
@@ -366,6 +377,27 @@ const Monitor = () => {
           </div>
         )}
       </div>
+
+      {/* Start Button Overlay - Show when video loaded but user hasn't interacted */}
+      {initialVideoId && !userInteracted && (
+        <div className="absolute inset-0 bg-black/90 flex items-center justify-center z-50">
+          <div className="text-center">
+            <h1 className="text-6xl font-bold mb-8">🎤 YouOke TV</h1>
+            <p className="text-2xl text-gray-300 mb-8">
+              มีเพลงพร้อมเล่นแล้ว!
+            </p>
+            <button
+              onClick={unlockAutoplay}
+              className="bg-primary hover:bg-primary/80 text-white font-bold text-3xl px-12 py-6 rounded-full shadow-2xl transition-all hover:scale-105 active:scale-95"
+            >
+              ▶️ เริ่มเล่น
+            </button>
+            <p className="text-sm text-gray-500 mt-8">
+              กดปุ่มเพื่อเล่นเพลงอัตโนมัติ (กดครั้งเดียวเท่านั้น)
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Queue Display - Show when paused or near end */}
       {showQueue && roomData.queue.length > 0 && (
