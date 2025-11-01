@@ -33,6 +33,7 @@ const Monitor = () => {
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [showQueue, setShowQueue] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [wasFullscreen, setWasFullscreen] = useState(false);
 
   // Anonymous login for monitor
   useEffect(() => {
@@ -197,8 +198,11 @@ const Monitor = () => {
         const duration = await playerRef.getDuration();
         const remaining = duration - currentTime;
 
-        // Show queue if less than 30 seconds remaining
-        if (remaining < 30) {
+        console.log(`⏱️ Time remaining: ${Math.floor(remaining)}s`);
+
+        // Show queue if less than 60 seconds remaining (was 30s)
+        if (remaining < 60) {
+          console.log('📋 Showing queue (less than 60s remaining)');
           setShowQueue(true);
         } else {
           setShowQueue(false);
@@ -210,6 +214,41 @@ const Monitor = () => {
 
     return () => clearInterval(checkTime);
   }, [playerRef, isPlaying]);
+
+  // Track fullscreen state
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isFullscreen = !!document.fullscreenElement;
+      setWasFullscreen(isFullscreen);
+      console.log('🖥️ Fullscreen:', isFullscreen);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  // Restore fullscreen when video changes
+  useEffect(() => {
+    if (!playerRef || !roomData?.currentVideo) return;
+
+    const restoreFullscreen = async () => {
+      // If was fullscreen before video change, restore it
+      if (wasFullscreen && !document.fullscreenElement) {
+        try {
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for player to be ready
+          const iframe = playerRef.getIframe();
+          if (iframe) {
+            await iframe.requestFullscreen();
+            console.log('✅ Restored fullscreen after video change');
+          }
+        } catch (error) {
+          console.error('❌ Could not restore fullscreen:', error);
+        }
+      }
+    };
+
+    restoreFullscreen();
+  }, [playerRef, roomData?.currentVideo?.key, wasFullscreen]);
 
   // Handle player state change
   const onPlayerStateChange = async (event: { data: number }) => {
