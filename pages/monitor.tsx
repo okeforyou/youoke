@@ -33,7 +33,7 @@ const Monitor = () => {
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [showQueue, setShowQueue] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [wasFullscreen, setWasFullscreen] = useState(false);
+  const [initialVideoId, setInitialVideoId] = useState<string | null>(null);
 
   // Anonymous login for monitor
   useEffect(() => {
@@ -156,34 +156,41 @@ const Monitor = () => {
     }
   };
 
-  // Auto-play when currentVideo changes and controls say to play
+  // Set initial video ID when first video arrives
   useEffect(() => {
-    if (!playerRef || !roomData?.currentVideo || !roomData?.controls?.isPlaying) {
+    if (!initialVideoId && roomData?.currentVideo) {
+      console.log('🎬 Setting initial video:', roomData.currentVideo.videoId);
+      setInitialVideoId(roomData.currentVideo.videoId);
+    }
+  }, [roomData?.currentVideo, initialVideoId]);
+
+  // Load and play new video when currentVideo changes
+  useEffect(() => {
+    if (!playerRef || !roomData?.currentVideo || !initialVideoId) {
       return;
     }
 
-    const autoPlay = async () => {
+    const loadAndPlay = async () => {
       try {
-        console.log('🎵 New video detected, auto-playing:', roomData.currentVideo.title);
+        console.log('🎵 Loading new video:', roomData.currentVideo.title);
 
-        // Small delay to ensure video is loaded
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Load new video
+        await playerRef.loadVideoById(roomData.currentVideo.videoId);
 
-        await playerRef.playVideo();
-
-        // Verify it's actually playing
-        const playerState = await playerRef.getPlayerState();
-        if (playerState !== 1) {
-          console.warn('⚠️ Player not playing, retrying...');
+        // Auto-play if controls say so
+        if (roomData.controls?.isPlaying) {
+          console.log('▶️ Auto-playing...');
+          // Small delay to ensure video is loaded
+          await new Promise(resolve => setTimeout(resolve, 500));
           await playerRef.playVideo();
         }
       } catch (error) {
-        console.error('❌ Auto-play failed:', error);
+        console.error('❌ Failed to load video:', error);
       }
     };
 
-    autoPlay();
-  }, [playerRef, roomData?.currentVideo?.key, roomData?.controls?.isPlaying]);
+    loadAndPlay();
+  }, [playerRef, roomData?.currentVideo?.key, initialVideoId]);
 
   // Check remaining time and show/hide queue
   useEffect(() => {
@@ -215,40 +222,6 @@ const Monitor = () => {
     return () => clearInterval(checkTime);
   }, [playerRef, isPlaying]);
 
-  // Track fullscreen state
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      const isFullscreen = !!document.fullscreenElement;
-      setWasFullscreen(isFullscreen);
-      console.log('🖥️ Fullscreen:', isFullscreen);
-    };
-
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-  }, []);
-
-  // Restore fullscreen when video changes
-  useEffect(() => {
-    if (!playerRef || !roomData?.currentVideo) return;
-
-    const restoreFullscreen = async () => {
-      // If was fullscreen before video change, restore it
-      if (wasFullscreen && !document.fullscreenElement) {
-        try {
-          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for player to be ready
-          const iframe = playerRef.getIframe();
-          if (iframe) {
-            await iframe.requestFullscreen();
-            console.log('✅ Restored fullscreen after video change');
-          }
-        } catch (error) {
-          console.error('❌ Could not restore fullscreen:', error);
-        }
-      }
-    };
-
-    restoreFullscreen();
-  }, [playerRef, roomData?.currentVideo?.key, wasFullscreen]);
 
   // Handle player state change
   const onPlayerStateChange = async (event: { data: number }) => {
@@ -353,10 +326,9 @@ const Monitor = () => {
     <div className="h-screen w-screen bg-black text-white flex flex-col">
       {/* YouTube Player */}
       <div className="flex-1 relative">
-        {roomData.currentVideo ? (
+        {initialVideoId ? (
           <YouTube
-            key={roomData.currentVideo.videoId}
-            videoId={roomData.currentVideo.videoId}
+            videoId={initialVideoId}
             opts={opts}
             onReady={onPlayerReady}
             onStateChange={onPlayerStateChange}
