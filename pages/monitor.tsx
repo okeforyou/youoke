@@ -34,7 +34,6 @@ const Monitor = () => {
   const [showQueue, setShowQueue] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [initialVideoId, setInitialVideoId] = useState<string | null>(null);
-  const [userInteracted, setUserInteracted] = useState(false);
   const lastLoadedVideoIdRef = useRef<string | null>(null);
 
   // Anonymous login for monitor
@@ -132,23 +131,6 @@ const Monitor = () => {
       unsubscribe();
     };
   }, [roomCode, isAuthReady]);
-
-  // Unlock autoplay with user interaction
-  const unlockAutoplay = async () => {
-    console.log('🔓 Unlocking autoplay with user click...');
-    setUserInteracted(true);
-
-    // Play and unmute with user interaction
-    if (playerRef) {
-      try {
-        await playerRef.playVideo();
-        await playerRef.unMute();
-        console.log('✅ Autoplay unlocked! Video playing with sound.');
-      } catch (error) {
-        console.error('❌ Failed to unlock:', error);
-      }
-    }
-  };
 
   // Handle player ready
   const onPlayerReady = async (event: { target: YouTubePlayer }) => {
@@ -278,8 +260,8 @@ const Monitor = () => {
       console.log('▶️ Video playing');
       setIsPlaying(true);
 
-      // Only unmute if user has interacted (to avoid browser blocking)
-      if (playerRef && userInteracted) {
+      // Unmute when playing (browser may block first time, user can unmute via controls)
+      if (playerRef) {
         playerRef.unMute();
         console.log('🔊 Unmuted');
       }
@@ -378,79 +360,56 @@ const Monitor = () => {
         )}
       </div>
 
-      {/* Start Button - Show when video loaded but user hasn't interacted */}
-      {initialVideoId && !userInteracted && (
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-50 animate-pulse">
-          <button
-            onClick={unlockAutoplay}
-            className="bg-primary hover:bg-primary/90 text-white font-bold text-2xl px-10 py-5 rounded-full shadow-2xl transition-all hover:scale-110 active:scale-95 flex items-center gap-3"
-          >
-            <span className="text-3xl">▶️</span>
-            <span>กดเพื่อเริ่มเล่น</span>
-          </button>
-        </div>
-      )}
+      {/* Queue Display - Top Right Corner (show when near end) */}
+      {showQueue && roomData.queue.length > roomData.currentIndex + 1 && (
+        <div className="absolute top-6 right-6 w-80 bg-black/90 backdrop-blur-md rounded-xl shadow-2xl border border-primary/30 p-5 transition-all duration-500">
+          {/* Header */}
+          <div className="mb-4 pb-3 border-b border-primary/30">
+            <h3 className="text-lg font-bold text-primary flex items-center gap-2">
+              <span>🎵</span>
+              <span>เพลงถัดไป</span>
+            </h3>
+          </div>
 
-      {/* Queue Display - Show when paused or near end */}
-      {showQueue && roomData.queue.length > 0 && (
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent p-6 transition-opacity duration-500">
-          <div className="max-w-6xl mx-auto">
-            {/* Now Playing */}
-            {roomData.currentVideo && (
-              <div className="mb-4">
-                <p className="text-sm text-gray-400 mb-1">กำลังเล่น:</p>
-                <h2 className="text-2xl font-bold truncate">
-                  {roomData.currentVideo.title}
-                </h2>
-                {roomData.currentVideo.author && (
-                  <p className="text-lg text-gray-300">{roomData.currentVideo.author}</p>
-                )}
-              </div>
-            )}
+          {/* Queue List */}
+          <div className="space-y-2.5 max-h-80 overflow-y-auto custom-scrollbar">
+            {roomData.queue
+              .slice(roomData.currentIndex + 1, roomData.currentIndex + 6)
+              .map((video, idx) => (
+                <div
+                  key={video.key}
+                  className="flex items-start gap-3 bg-white/5 hover:bg-white/10 rounded-lg p-3 transition-all"
+                >
+                  {/* Number Badge */}
+                  <div className="flex-shrink-0 w-7 h-7 bg-primary/20 rounded-full flex items-center justify-center">
+                    <span className="text-primary font-bold text-sm">
+                      {idx + 1}
+                    </span>
+                  </div>
 
-            {/* Next in Queue */}
-            {roomData.queue.length > roomData.currentIndex + 1 && (
-              <div>
-                <p className="text-sm text-gray-400 mb-2">คิวถัดไป:</p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                  {roomData.queue
-                    .slice(roomData.currentIndex + 1, roomData.currentIndex + 4)
-                    .map((video, index) => (
-                      <div
-                        key={video.key}
-                        className="bg-gray-900/50 rounded p-2 text-sm"
-                      >
-                        <p className="text-xs text-gray-400">
-                          #{roomData.currentIndex + index + 2}
-                        </p>
-                        <p className="font-semibold truncate">{video.title}</p>
-                        {video.author && (
-                          <p className="text-xs text-gray-400 truncate">
-                            {video.author}
-                          </p>
-                        )}
-                      </div>
-                    ))}
+                  {/* Song Info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-white text-sm truncate leading-snug">
+                      {video.title}
+                    </p>
+                    {video.author && (
+                      <p className="text-xs text-gray-400 truncate mt-0.5">
+                        {video.author}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              ))}
+          </div>
 
-            {/* Queue count */}
-            <div className="mt-3 text-center">
+          {/* Footer - More songs indicator */}
+          {roomData.queue.length > roomData.currentIndex + 6 && (
+            <div className="mt-3 pt-3 border-t border-white/10 text-center">
               <p className="text-xs text-gray-400">
-                {roomData.currentIndex + 1} / {roomData.queue.length} เพลง
-                {roomData.queue.length > roomData.currentIndex + 4 &&
-                  ` (เหลืออีก ${roomData.queue.length - roomData.currentIndex - 1} เพลง)`}
+                + อีก {roomData.queue.length - roomData.currentIndex - 6} เพลง
               </p>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Connection indicator - Show when not playing or queue visible */}
-      {showQueue && (
-        <div className="absolute top-4 right-4 bg-green-600 text-white px-3 py-1 rounded-full text-sm shadow-lg transition-opacity duration-500">
-          🔗 เชื่อมต่อแล้ว
+          )}
         </div>
       )}
     </div>
