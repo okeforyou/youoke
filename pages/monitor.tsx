@@ -378,24 +378,16 @@ const Monitor = () => {
         )}
       </div>
 
-      {/* Start Button Overlay - Show when video loaded but user hasn't interacted */}
+      {/* Start Button - Show when video loaded but user hasn't interacted */}
       {initialVideoId && !userInteracted && (
-        <div className="absolute inset-0 bg-black/90 flex items-center justify-center z-50">
-          <div className="text-center">
-            <h1 className="text-6xl font-bold mb-8">🎤 YouOke TV</h1>
-            <p className="text-2xl text-gray-300 mb-8">
-              มีเพลงพร้อมเล่นแล้ว!
-            </p>
-            <button
-              onClick={unlockAutoplay}
-              className="bg-primary hover:bg-primary/80 text-white font-bold text-3xl px-12 py-6 rounded-full shadow-2xl transition-all hover:scale-105 active:scale-95"
-            >
-              ▶️ เริ่มเล่น
-            </button>
-            <p className="text-sm text-gray-500 mt-8">
-              กดปุ่มเพื่อเล่นเพลงอัตโนมัติ (กดครั้งเดียวเท่านั้น)
-            </p>
-          </div>
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-50 animate-pulse">
+          <button
+            onClick={unlockAutoplay}
+            className="bg-primary hover:bg-primary/90 text-white font-bold text-2xl px-10 py-5 rounded-full shadow-2xl transition-all hover:scale-110 active:scale-95 flex items-center gap-3"
+          >
+            <span className="text-3xl">▶️</span>
+            <span>กดเพื่อเริ่มเล่น</span>
+          </button>
         </div>
       )}
 
