@@ -144,39 +144,13 @@ const Monitor = () => {
     setPlayerRef(event.target);
     console.log('🎬 Player ready');
 
-    // Mute first to ensure autoplay works
-    await event.target.mute();
-    console.log('🔇 Muted for initial autoplay');
-
-    // Auto-play the video with retry
+    // Just mute and play - unmute will happen in onStateChange
     try {
-      // Small delay to ensure player is fully ready
-      await new Promise(resolve => setTimeout(resolve, 500));
-
+      await event.target.mute();
       await event.target.playVideo();
-      console.log('▶️ Auto-playing video (muted)');
-
-      // Verify it's actually playing
-      const playerState = await event.target.getPlayerState();
-      if (playerState !== 1) {
-        console.warn('⚠️ Player not playing, retrying...');
-        await event.target.playVideo();
-      }
-
-      // Wait longer before unmuting to ensure stable playback
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Check if still playing before unmuting
-      const beforeUnmuteState = await event.target.getPlayerState();
-      if (beforeUnmuteState === 1 || beforeUnmuteState === 3) {
-        await event.target.unMute();
-        console.log('🔊 Unmuted after stable playback');
-      } else {
-        console.warn('⚠️ Not playing, keeping muted');
-      }
+      console.log('▶️ Auto-playing (muted)');
     } catch (error) {
       console.error('❌ Auto-play failed:', error);
-      console.log('ℹ️ User may need to click play button (browser auto-play policy)');
     }
   };
 
@@ -207,55 +181,20 @@ const Monitor = () => {
         console.log('🎵 Loading new video:', roomData.currentVideo.title);
         lastLoadedVideoIdRef.current = currentVideoId;
 
-        if (roomData.controls?.isPlaying) {
-          // Mute first to ensure autoplay works
-          await playerRef.mute();
-          console.log('🔇 Muted for autoplay');
+        // Mute before loading to ensure autoplay works
+        await playerRef.mute();
 
+        if (roomData.controls?.isPlaying) {
           // loadVideoById auto-plays by default
           await playerRef.loadVideoById({
             videoId: currentVideoId,
             startSeconds: 0
           });
-          console.log('▶️ Auto-playing with loadVideoById (muted)...');
-
-          // Wait for video to start loading
-          await new Promise(resolve => setTimeout(resolve, 1500));
-
-          // Verify it's playing
-          const state = await playerRef.getPlayerState();
-          console.log('📊 Player state after load:', state, '(1=playing, 2=paused, 3=buffering)');
-
-          if (state !== 1 && state !== 3) { // Not playing and not buffering
-            console.warn('⚠️ Not playing, calling playVideo()');
-            await playerRef.playVideo();
-
-            // Final verification
-            await new Promise(resolve => setTimeout(resolve, 500));
-            const finalState = await playerRef.getPlayerState();
-            console.log('📊 Final player state:', finalState);
-
-            if (finalState !== 1 && finalState !== 3) {
-              console.error('❌ Still not playing! Manual click required.');
-              return; // Don't unmute if not playing
-            }
-          }
-
-          // Wait longer before unmuting to ensure stable playback
-          await new Promise(resolve => setTimeout(resolve, 2000));
-
-          // Check if still playing before unmuting
-          const beforeUnmuteState = await playerRef.getPlayerState();
-          if (beforeUnmuteState === 1 || beforeUnmuteState === 3) {
-            await playerRef.unMute();
-            console.log('🔊 Unmuted after stable playback');
-          } else {
-            console.warn('⚠️ Not playing, keeping muted');
-          }
+          console.log('▶️ Loading and auto-playing (muted)');
         } else {
           // Use cueVideoById if we don't want to auto-play
           await playerRef.cueVideoById(currentVideoId);
-          console.log('⏸️ Video cued (not auto-playing)');
+          console.log('⏸️ Video cued');
         }
       } catch (error) {
         console.error('❌ Failed to load video:', error);
@@ -327,6 +266,12 @@ const Monitor = () => {
     } else if (event.data === 1) {
       console.log('▶️ Video playing');
       setIsPlaying(true);
+
+      // Unmute when video starts playing
+      if (playerRef) {
+        playerRef.unMute();
+        console.log('🔊 Unmuted');
+      }
     } else if (event.data === 2) {
       console.log('⏸️ Video paused');
       setIsPlaying(false);
