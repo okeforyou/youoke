@@ -155,6 +155,35 @@ const Monitor = () => {
     }
   };
 
+  // Auto-play when currentVideo changes and controls say to play
+  useEffect(() => {
+    if (!playerRef || !roomData?.currentVideo || !roomData?.controls?.isPlaying) {
+      return;
+    }
+
+    const autoPlay = async () => {
+      try {
+        console.log('🎵 New video detected, auto-playing:', roomData.currentVideo.title);
+
+        // Small delay to ensure video is loaded
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        await playerRef.playVideo();
+
+        // Verify it's actually playing
+        const playerState = await playerRef.getPlayerState();
+        if (playerState !== 1) {
+          console.warn('⚠️ Player not playing, retrying...');
+          await playerRef.playVideo();
+        }
+      } catch (error) {
+        console.error('❌ Auto-play failed:', error);
+      }
+    };
+
+    autoPlay();
+  }, [playerRef, roomData?.currentVideo?.key, roomData?.controls?.isPlaying]);
+
   // Check remaining time and show/hide queue
   useEffect(() => {
     if (!playerRef || !isPlaying) {
