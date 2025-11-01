@@ -34,6 +34,7 @@ const Monitor = () => {
   const [showQueue, setShowQueue] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [initialVideoId, setInitialVideoId] = useState<string | null>(null);
+  const [autoplayUnlocked, setAutoplayUnlocked] = useState(false);
 
   // Anonymous login for monitor
   useEffect(() => {
@@ -131,10 +132,19 @@ const Monitor = () => {
     };
   }, [roomCode, isAuthReady]);
 
+  // Unlock autoplay with user interaction
+  const unlockAutoplay = async () => {
+    console.log('🔓 Unlocking autoplay...');
+    setAutoplayUnlocked(true);
+  };
+
   // Handle player ready
   const onPlayerReady = async (event: { target: YouTubePlayer }) => {
     setPlayerRef(event.target);
     console.log('🎬 Player ready');
+
+    // Mute first to ensure autoplay works
+    await event.target.mute();
 
     // Auto-play the video with retry
     try {
@@ -142,7 +152,7 @@ const Monitor = () => {
       await new Promise(resolve => setTimeout(resolve, 500));
 
       await event.target.playVideo();
-      console.log('▶️ Auto-playing video');
+      console.log('▶️ Auto-playing video (muted)');
 
       // Verify it's actually playing
       const playerState = await event.target.getPlayerState();
@@ -150,6 +160,11 @@ const Monitor = () => {
         console.warn('⚠️ Player not playing, retrying...');
         await event.target.playVideo();
       }
+
+      // Unmute after successful autoplay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      await event.target.unMute();
+      console.log('🔊 Unmuted after autoplay started');
     } catch (error) {
       console.error('❌ Auto-play failed:', error);
       console.log('ℹ️ User may need to click play button (browser auto-play policy)');
@@ -175,15 +190,18 @@ const Monitor = () => {
         console.log('🎵 Loading new video:', roomData.currentVideo.title);
 
         if (roomData.controls?.isPlaying) {
+          // Mute first to ensure autoplay works
+          await playerRef.mute();
+
           // loadVideoById auto-plays by default
           await playerRef.loadVideoById({
             videoId: roomData.currentVideo.videoId,
             startSeconds: 0
           });
-          console.log('▶️ Auto-playing with loadVideoById...');
+          console.log('▶️ Auto-playing with loadVideoById (muted)...');
 
           // Wait for video to start loading
-          await new Promise(resolve => setTimeout(resolve, 1500));
+          await new Promise(resolve => setTimeout(resolve, 1000));
 
           // Verify it's playing
           const state = await playerRef.getPlayerState();
@@ -202,6 +220,11 @@ const Monitor = () => {
               console.error('❌ Still not playing! Manual click required.');
             }
           }
+
+          // Unmute after successful playback
+          await new Promise(resolve => setTimeout(resolve, 500));
+          await playerRef.unMute();
+          console.log('🔊 Unmuted');
         } else {
           // Use cueVideoById if we don't want to auto-play
           await playerRef.cueVideoById(roomData.currentVideo.videoId);
