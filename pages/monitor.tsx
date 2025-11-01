@@ -137,13 +137,12 @@ const Monitor = () => {
     setPlayerRef(event.target);
     console.log('🎬 Player ready');
 
-    // Just mute and play - unmute will happen in onStateChange
+    // Mute player (playback will be handled by useEffect)
     try {
       await event.target.mute();
-      await event.target.playVideo();
-      console.log('▶️ Auto-playing (muted)');
+      console.log('🔇 Player muted and ready');
     } catch (error) {
-      console.error('❌ Auto-play failed:', error);
+      console.error('❌ Mute failed:', error);
     }
   };
 
@@ -213,14 +212,20 @@ const Monitor = () => {
         const duration = await playerRef.getDuration();
         const remaining = duration - currentTime;
 
-        console.log(`⏱️ Time remaining: ${Math.floor(remaining)}s`);
+        // Show queue at the beginning (first 15s) OR near the end (last 60s)
+        const showAtStart = currentTime < 15;
+        const showAtEnd = remaining < 60;
 
-        // Show queue if less than 60 seconds remaining (was 30s)
-        if (remaining < 60) {
-          console.log('📋 Showing queue (less than 60s remaining)');
-          setShowQueue(true);
+        if (showAtStart || showAtEnd) {
+          if (!showQueue) {
+            console.log(`📋 Showing queue (${showAtStart ? 'start' : 'ending soon'})`);
+            setShowQueue(true);
+          }
         } else {
-          setShowQueue(false);
+          if (showQueue) {
+            console.log('📋 Hiding queue (middle of song)');
+            setShowQueue(false);
+          }
         }
       } catch (error) {
         // Player not ready yet
@@ -228,7 +233,7 @@ const Monitor = () => {
     }, 1000);
 
     return () => clearInterval(checkTime);
-  }, [playerRef, isPlaying]);
+  }, [playerRef, isPlaying, showQueue]);
 
 
   // Handle player state change
