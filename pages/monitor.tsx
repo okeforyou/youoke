@@ -34,8 +34,10 @@ const Monitor = () => {
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [showQueue, setShowQueue] = useState(false);
   const [audioUnlocked, setAudioUnlocked] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const lastLoadedVideoIdRef = useRef<string | null>(null);
   const initialVideoIdRef = useRef<string | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   // Anonymous login
   useEffect(() => {
@@ -128,6 +130,32 @@ const Monitor = () => {
     currentState: state,
     onStateChange: handleStateChange,
   });
+
+  // Fullscreen handling
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  const toggleFullscreen = async () => {
+    if (!containerRef.current) return;
+
+    try {
+      if (!document.fullscreenElement) {
+        await containerRef.current.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (error) {
+      console.error('❌ Fullscreen toggle failed:', error);
+    }
+  };
 
   // YouTube player ready
   const onPlayerReady = async (event: { target: YouTubePlayer }) => {
@@ -296,6 +324,7 @@ const Monitor = () => {
       controls: 1 as const,
       modestbranding: 1 as const,
       rel: 0 as const,
+      fs: 0 as const, // Disable YouTube's fullscreen button (we'll use our own)
     },
   };
 
@@ -353,7 +382,7 @@ const Monitor = () => {
   // Show player
   return (
     <div className="h-screen w-screen bg-black text-white flex flex-col">
-      <div className="flex-1 relative">
+      <div ref={containerRef} className="flex-1 relative">
         {initialVideoIdRef.current ? (
           <YouTube
             videoId={initialVideoIdRef.current}
@@ -414,6 +443,25 @@ const Monitor = () => {
             </div>
           </div>
         </div>
+        )}
+
+        {/* Fullscreen Button */}
+        {state.currentVideo && audioUnlocked && (
+        <button
+          onClick={toggleFullscreen}
+          className="absolute bottom-6 right-6 bg-black/80 hover:bg-black/90 backdrop-blur-md rounded-lg p-3 transition-all hover:scale-110 z-50 border border-white/20"
+          title={isFullscreen ? "ออกจาก Fullscreen" : "เข้าสู่ Fullscreen"}
+        >
+          {isFullscreen ? (
+            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          ) : (
+            <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+            </svg>
+          )}
+        </button>
         )}
 
         {/* Queue Display */}
