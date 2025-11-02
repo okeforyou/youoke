@@ -267,10 +267,25 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
   // Set entire playlist
   const setPlaylist = (newPlaylist: QueueVideo[]) => {
     setPlaylistState(newPlaylist);
+
+    // If currentVideo exists in newPlaylist, keep it. Otherwise use first song.
+    let newIndex = 0;
+    let newCurrentVideo = newPlaylist[0] || null;
+
+    if (currentVideo) {
+      const existingIndex = newPlaylist.findIndex(v => v.videoId === currentVideo.videoId);
+      if (existingIndex !== -1) {
+        // Current video exists in new playlist - keep playing it
+        newIndex = existingIndex;
+        newCurrentVideo = currentVideo;
+        console.log('🔄 Keeping current video in sync:', currentVideo.title);
+      }
+    }
+
     updateRoom({
       queue: newPlaylist,
-      currentIndex: 0,
-      currentVideo: newPlaylist[0] || null,
+      currentIndex: newIndex,
+      currentVideo: newCurrentVideo,
     });
   };
 

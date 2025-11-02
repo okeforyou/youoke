@@ -170,6 +170,13 @@ const Monitor = () => {
 
     const syncMute = async () => {
       try {
+        // Check if player is ready before calling methods
+        const playerState = await playerRef.getPlayerState();
+        if (playerState === -1) {
+          console.log('⏳ Player not ready yet, skipping mute sync');
+          return;
+        }
+
         if (shouldMute) {
           await playerRef.mute();
           console.log('🔇 Muted from Remote');
@@ -203,6 +210,14 @@ const Monitor = () => {
       try {
         console.log('🎵 Loading new video:', roomData.currentVideo.title);
         lastLoadedVideoIdRef.current = currentVideoId;
+
+        // Check if player is ready
+        const playerState = await playerRef.getPlayerState();
+        if (playerState === -1) {
+          console.log('⏳ Player not ready, waiting...');
+          // Player will auto-play via onPlayerReady
+          return;
+        }
 
         // Mute before loading to ensure autoplay works
         await playerRef.mute();
