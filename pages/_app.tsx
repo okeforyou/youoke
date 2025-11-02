@@ -8,7 +8,7 @@ import { Analytics } from '@vercel/analytics/react'
 import GoogleAnalytics from '../components/GoogleAnalytics'
 import { AdsProvider } from '../context/AdsContext'
 import { AuthContextProvider } from '../context/AuthContext'
-import { FirebaseCastProvider } from '../context/FirebaseCastContext-v2'
+import { FirebaseCastProvider } from '../context/FirebaseCastContext'
 import { ToastProvider } from '../context/ToastContext'
 
 // Create a client
