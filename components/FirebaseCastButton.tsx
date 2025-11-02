@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { TvIcon, XMarkIcon, SpeakerWaveIcon, SpeakerXMarkIcon } from '@heroicons/react/24/outline';
+import { TvIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useFirebaseCast } from '../context/FirebaseCastContext';
 
 export default function FirebaseCastButton() {
-  const { isConnected, roomCode, isHost, joinRoom, leaveRoom, toggleMute, isMuted } = useFirebaseCast();
+  const { isConnected, roomCode, isHost, joinRoom, leaveRoom } = useFirebaseCast();
   const [showModal, setShowModal] = useState(false);
   const [inputRoomCode, setInputRoomCode] = useState('');
   const [isJoining, setIsJoining] = useState(false);
@@ -55,36 +55,19 @@ export default function FirebaseCastButton() {
   };
 
   if (isConnected) {
-    // Show connected state with mute/unmute button
+    // Show connected state - Mute control via YouTube player on Monitor
     return (
-      <div className="flex gap-1 items-center">
-        {/* Mute/Unmute Button */}
-        <button
-          className={`btn btn-xs gap-1 flex flex-row 2xl:btn-sm ${isMuted ? 'btn-error' : 'btn-success'}`}
-          onClick={toggleMute}
-          title={isMuted ? 'Unmute TV' : 'Mute TV'}
-        >
-          {isMuted ? (
-            <SpeakerXMarkIcon className="w-4 h-4" />
-          ) : (
-            <SpeakerWaveIcon className="w-4 h-4" />
-          )}
-          <span className="hidden sm:inline">{isMuted ? 'Muted' : 'Sound'}</span>
-        </button>
-
-        {/* Cast Connection Button */}
-        <button
-          className="btn btn-success btn-xs gap-1 flex flex-row 2xl:btn-sm"
-          onClick={handleDisconnect}
-          title={`Connected to room ${roomCode}`}
-        >
-          <TvIcon className="w-4 h-4" />
-          <span className="hidden sm:inline">
-            {isHost ? '📡' : '👁️'} {roomCode}
-          </span>
-          <span className="sm:hidden">{roomCode}</span>
-        </button>
-      </div>
+      <button
+        className="btn btn-success btn-xs gap-1 flex flex-row 2xl:btn-sm"
+        onClick={handleDisconnect}
+        title={`Connected to room ${roomCode}. ควบคุมเสียงที่หน้าจอทีวี`}
+      >
+        <TvIcon className="w-4 h-4" />
+        <span className="hidden sm:inline">
+          {isHost ? '📡' : '👁️'} {roomCode}
+        </span>
+        <span className="sm:hidden">{roomCode}</span>
+      </button>
     );
   }
 

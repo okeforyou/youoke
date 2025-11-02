@@ -33,6 +33,7 @@ const Monitor = () => {
   const [playerRef, setPlayerRef] = useState<YouTubePlayer | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [showQueue, setShowQueue] = useState(false);
+  const [audioUnlocked, setAudioUnlocked] = useState(false);
   const lastLoadedVideoIdRef = useRef<string | null>(null);
 
   // Anonymous login
@@ -358,6 +359,38 @@ const Monitor = () => {
           </div>
         )}
       </div>
+
+      {/* Audio Unlock Overlay - Show first time only */}
+      {state.currentVideo && !audioUnlocked && (
+        <div
+          className="absolute inset-0 bg-black/95 flex items-center justify-center cursor-pointer z-50 backdrop-blur-sm"
+          onClick={async () => {
+            if (playerRef) {
+              try {
+                await playerRef.playVideo();
+                await playerRef.unMute();
+                setAudioUnlocked(true);
+                console.log('🔓 Audio unlocked by user interaction');
+              } catch (error) {
+                // If unmute fails, still unlock and let user use YouTube controls
+                setAudioUnlocked(true);
+                console.log('🔓 Audio unlocked (mute control via YouTube)');
+              }
+            }
+          }}
+        >
+          <div className="text-center animate-pulse">
+            <div className="mb-6">
+              <div className="text-8xl mb-4">🎤</div>
+              <h2 className="text-5xl font-bold mb-4">กดที่นี่เพื่อเริ่มเล่น</h2>
+              <p className="text-2xl text-gray-400">คลิกเพื่อเปิดเสียงและเริ่มต้นระบบ</p>
+            </div>
+            <div className="mt-8 text-sm text-gray-500">
+              <p>ควบคุมระดับเสียงได้ที่ปุ่มด้านล่างวิดีโอ</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Queue Display */}
       {showQueue && state.queue.length > state.currentIndex + 1 && (
