@@ -35,6 +35,7 @@ const Monitor = () => {
   const [showQueue, setShowQueue] = useState(false);
   const [audioUnlocked, setAudioUnlocked] = useState(false);
   const lastLoadedVideoIdRef = useRef<string | null>(null);
+  const initialVideoIdRef = useRef<string | null>(null);
 
   // Anonymous login
   useEffect(() => {
@@ -133,19 +134,30 @@ const Monitor = () => {
     setPlayerRef(event.target);
     console.log('🎬 Player ready');
 
-    // Mute initially
-    try {
-      await event.target.mute();
-      console.log('🔇 Player muted');
-    } catch (error) {
-      console.error('❌ Mute failed:', error);
+    // Only mute on first load (before user unlocks audio)
+    // After unlock, keep audio unmuted even if component remounts
+    if (!audioUnlocked) {
+      try {
+        await event.target.mute();
+        console.log('🔇 Player muted (waiting for user unlock)');
+      } catch (error) {
+        console.error('❌ Mute failed:', error);
+      }
+    } else {
+      // Audio already unlocked, keep unmuted
+      console.log('🔊 Audio unlocked, keeping sound on');
+      try {
+        await event.target.unMute();
+      } catch (error) {
+        console.error('❌ Unmute failed:', error);
+      }
     }
 
     // Auto-play if there's a current video
     if (state.currentVideo && state.controls.isPlaying) {
       try {
         await event.target.playVideo();
-        console.log('▶️ Auto-playing first video');
+        console.log('▶️ Auto-playing video');
       } catch (error) {
         console.error('❌ Auto-play failed:', error);
       }
@@ -333,19 +345,32 @@ const Monitor = () => {
     );
   }
 
+  // Set initial video ID (only once, never change it to prevent remount)
+  if (state.currentVideo && !initialVideoIdRef.current) {
+    initialVideoIdRef.current = state.currentVideo.videoId;
+  }
+
   // Show player
   return (
     <div className="h-screen w-screen bg-black text-white flex flex-col">
       <div className="flex-1 relative">
-        {state.currentVideo ? (
+        {initialVideoIdRef.current ? (
           <YouTube
-            videoId={state.currentVideo.videoId}
+            videoId={initialVideoIdRef.current}
             opts={opts}
             onReady={onPlayerReady}
             onStateChange={onPlayerStateChange}
             onError={onPlayerError}
             className="w-full h-full"
           />
+        ) : state.currentVideo ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <h1 className="text-6xl font-bold mb-4">YouOke TV</h1>
+              <p className="text-3xl mb-6">เลขห้อง: {roomCode}</p>
+              <p className="text-2xl text-gray-400">กำลังโหลดเพลง...</p>
+            </div>
+          </div>
         ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
