@@ -383,10 +383,9 @@ const Monitor = () => {
             </div>
           </div>
         )}
-      </div>
 
-      {/* Audio Unlock Overlay - Show first time only */}
-      {state.currentVideo && !audioUnlocked && (
+        {/* Audio Unlock Overlay - Show first time only */}
+        {state.currentVideo && !audioUnlocked && (
         <div
           className="absolute inset-0 bg-black/95 flex items-center justify-center cursor-pointer z-50 backdrop-blur-sm"
           onClick={async () => {
@@ -415,11 +414,11 @@ const Monitor = () => {
             </div>
           </div>
         </div>
-      )}
+        )}
 
-      {/* Queue Display */}
-      {showQueue && state.queue.length > state.currentIndex + 1 && (
-        <div className="absolute top-6 right-6 w-80 bg-black/90 backdrop-blur-md rounded-xl shadow-2xl border border-primary/30 p-5">
+        {/* Queue Display */}
+        {showQueue && state.queue.length > state.currentIndex + 1 && (
+        <div className="absolute top-6 right-6 w-80 bg-black/90 backdrop-blur-md rounded-xl shadow-2xl border border-primary/30 p-5 z-40">
           <div className="mb-4 pb-3 border-b border-primary/30">
             <h3 className="text-lg font-bold text-primary flex items-center gap-2">
               <span>🎵</span>
@@ -462,7 +461,8 @@ const Monitor = () => {
             </div>
           )}
         </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
