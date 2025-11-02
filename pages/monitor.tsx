@@ -176,8 +176,8 @@ const Monitor = () => {
         console.log('🎵 Loading video:', state.currentVideo?.title);
         lastLoadedVideoIdRef.current = currentVideoId;
 
-        // Always mute before loading
-        await playerRef.mute();
+        // No need to mute - keep user's volume preference
+        // Mute only happens once on player ready before unlock overlay
 
         if (state.controls.isPlaying) {
           await playerRef.loadVideoById({
