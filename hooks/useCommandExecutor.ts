@@ -152,7 +152,22 @@ export function useCommandExecutor({
 
           case 'UNMUTE':
             if (playerRef) {
-              await playerRef.unMute();
+              try {
+                await playerRef.unMute();
+                // Resume playing if paused by browser
+                const playerState = await playerRef.getPlayerState();
+                if (playerState === 2) {
+                  await playerRef.playVideo();
+                  console.log('▶️ Resumed after unmute');
+                }
+              } catch (error) {
+                console.warn('⚠️ Unmute blocked by browser, staying muted');
+                // Keep muted if browser blocks
+                newState = {
+                  controls: { ...currentState.controls, isMuted: true },
+                };
+                break;
+              }
             }
             newState = {
               controls: { ...currentState.controls, isMuted: false },
@@ -162,10 +177,22 @@ export function useCommandExecutor({
           case 'TOGGLE_MUTE': {
             const newMuted = !currentState.controls.isMuted;
             if (playerRef) {
-              if (newMuted) {
-                await playerRef.mute();
-              } else {
-                await playerRef.unMute();
+              try {
+                if (newMuted) {
+                  await playerRef.mute();
+                } else {
+                  await playerRef.unMute();
+                  // Resume playing if paused by browser
+                  const playerState = await playerRef.getPlayerState();
+                  if (playerState === 2) {
+                    await playerRef.playVideo();
+                    console.log('▶️ Resumed after unmute');
+                  }
+                }
+              } catch (error) {
+                console.warn('⚠️ Toggle mute blocked by browser');
+                // Don't change mute state if blocked
+                break;
               }
             }
             newState = {

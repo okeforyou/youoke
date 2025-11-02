@@ -196,29 +196,8 @@ const Monitor = () => {
     loadVideo();
   }, [playerRef, state.currentVideo?.videoId, state.controls.isPlaying]);
 
-  // Sync mute state
-  useEffect(() => {
-    if (!playerRef) return;
-
-    const syncMute = async () => {
-      try {
-        const playerState = await playerRef.getPlayerState();
-        if (playerState === -1) return;
-
-        if (state.controls.isMuted) {
-          await playerRef.mute();
-          console.log('🔇 Muted');
-        } else {
-          await playerRef.unMute();
-          console.log('🔊 Unmuted');
-        }
-      } catch (error) {
-        console.error('❌ Mute sync failed:', error);
-      }
-    };
-
-    syncMute();
-  }, [playerRef, state.controls.isMuted]);
+  // NOTE: Mute state is handled by Command Executor
+  // No need to sync mute here to avoid conflicts with browser autoplay policy
 
   // Sync play/pause state
   useEffect(() => {
