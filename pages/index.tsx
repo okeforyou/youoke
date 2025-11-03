@@ -27,7 +27,6 @@ import {
 
 import Alert, { AlertHandler } from "../components/Alert";
 import BottomNavigation from "../components/BottomNavigation";
-import FirebaseCastButton from "../components/FirebaseCastButton";
 import ListPlaylistsGrid from "../components/ListPlaylistsGrid";
 import Modal, { ModalHandler } from "../components/Modal";
 import SearchResultGrid from "../components/SearchResultGrid";
@@ -197,11 +196,6 @@ function HomePage() {
   const PlaylistScreen = (
     <>
       <div className="flex flex-row font-bold gap-2 items-center">
-        {!!user.uid && (
-          <>
-            <FirebaseCastButton />
-          </>
-        )}
         {!isMobile && (
           <span className="text-primary text-xs 2xl:text-xl">
             คิวเพลง ( {displayPlaylist?.length || 0} เพลง )
