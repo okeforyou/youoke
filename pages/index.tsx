@@ -508,18 +508,38 @@ function HomePage() {
           <div className="relative order-1 sm:order-2 w-full flex flex-row sm:flex-col flex-grow flex-shrink-0 sm:max-w-[50vw] lg:max-w-[50vw] 2xl:max-w-[50vw] sm:min-w-[400px] sm:h-screen overflow-hidden">
             {isCasting ? (
               // Show remote control UI when casting
-              <div className="flex flex-col flex-1 bg-primary/10 p-4">
-                <div className="text-center mb-4">
-                  <div className="text-4xl mb-2">📺</div>
-                  <h2 className="text-xl font-bold">กำลัง Cast ไปทีวี</h2>
-                  <p className="text-sm text-gray-600 mt-2">
-                    เพลงกำลังเล่นบนทีวี
-                  </p>
+              <>
+                {/* Mobile: Just show Cast status card (don't block UI) */}
+                <div className="flex sm:hidden flex-col flex-1 bg-primary/10 p-4 items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-6xl mb-4">📺</div>
+                    <h2 className="text-2xl font-bold mb-2">กำลัง Cast ไปทีวี</h2>
+                    <p className="text-sm text-gray-600 mb-4">
+                      เพลงกำลังเล่นบนทีวี
+                    </p>
+                    <label
+                      htmlFor="modal-playlist"
+                      className="btn btn-primary btn-sm"
+                    >
+                      ดูคิวเพลง ({displayPlaylist?.length || 0})
+                    </label>
+                  </div>
                 </div>
-                <div className="flex-1 overflow-y-scroll">
-                  {PlaylistScreen}
+
+                {/* Desktop: Show full playlist */}
+                <div className="hidden sm:flex flex-col flex-1 bg-primary/10 p-4">
+                  <div className="text-center mb-4">
+                    <div className="text-4xl mb-2">📺</div>
+                    <h2 className="text-xl font-bold">กำลัง Cast ไปทีวี</h2>
+                    <p className="text-sm text-gray-600 mt-2">
+                      เพลงกำลังเล่นบนทีวี
+                    </p>
+                  </div>
+                  <div className="flex-1 overflow-y-scroll">
+                    {PlaylistScreen}
+                  </div>
                 </div>
-              </div>
+              </>
             ) : (
               // Show regular player when not casting
               <>
