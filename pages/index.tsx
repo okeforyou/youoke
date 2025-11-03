@@ -71,6 +71,7 @@ function HomePage() {
     addToQueue: addToCastQueue,
     playNow: castPlayNow,
     playlist: castPlaylist,
+    currentIndex: castCurrentIndex,
     removeAt: castRemoveAt,
     moveUp: castMoveUp,
     moveDown: castMoveDown,
@@ -191,7 +192,10 @@ function HomePage() {
     "scrollbar scrollbar-w-1 scrollbar-thumb-gray-400 hover:scrollbar-thumb-gray-500 scrollbar-track-base-300 scrollbar-thumb-rounded";
 
   // Use Cast playlist if casting, otherwise local playlist
-  const displayPlaylist = isCasting ? castPlaylist : playlist;
+  // When casting, show only upcoming songs (exclude played songs)
+  const displayPlaylist = isCasting
+    ? castPlaylist.slice(castCurrentIndex)
+    : playlist;
 
   const PlaylistScreen = (
     <>
@@ -241,22 +245,26 @@ function HomePage() {
 
       <div className={`flex-shrink-0  pt-2 pb-12  `}>
         <div className="grid grid-cols-1 gap-2">
-          {displayPlaylist?.map((video, videoIndex) => (
+          {displayPlaylist?.map((video, videoIndex) => {
+            // When casting, calculate real index in full queue (not sliced display)
+            const realIndex = isCasting ? videoIndex + castCurrentIndex : videoIndex;
+
+            return (
             <VideoHorizontalCard
               key={videoIndex}
               video={video}
-              onPlayNow={() => skipVideoTo(video, videoIndex)}
-              onSelect={() => priorityVideo(video, videoIndex)}
+              onPlayNow={() => skipVideoTo(video, realIndex)}
+              onSelect={() => priorityVideo(video, realIndex)}
               onDelete={() => {
                 if (isCasting) {
-                  castRemoveAt(videoIndex);
+                  castRemoveAt(realIndex);
                 } else {
-                  setPlaylist(playlist.filter((_, index) => index !== videoIndex));
+                  setPlaylist(playlist.filter((_, index) => index !== realIndex));
                 }
               }}
               onMoveUp={() => {
                 if (isCasting) {
-                  castMoveUp(videoIndex);
+                  castMoveUp(realIndex);
                 } else if (videoIndex > 0) {
                   const newPlaylist = [...playlist];
                   [newPlaylist[videoIndex - 1], newPlaylist[videoIndex]] = [
@@ -268,7 +276,7 @@ function HomePage() {
               }}
               onMoveDown={() => {
                 if (isCasting) {
-                  castMoveDown(videoIndex);
+                  castMoveDown(realIndex);
                 } else if (videoIndex < playlist.length - 1) {
                   const newPlaylist = [...playlist];
                   [newPlaylist[videoIndex], newPlaylist[videoIndex + 1]] = [
@@ -281,7 +289,8 @@ function HomePage() {
               canMoveUp={videoIndex > 0}
               canMoveDown={videoIndex < displayPlaylist.length - 1}
             />
-          ))}
+            );
+          })}
         </div>
       </div>
     </>

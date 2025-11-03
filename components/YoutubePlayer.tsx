@@ -16,8 +16,12 @@ import {
 import {
   ArrowsPointingInIcon,
   ArrowsPointingOutIcon,
+  CheckCircleIcon,
+  ClockIcon,
   ExclamationTriangleIcon,
+  RocketLaunchIcon,
   TvIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { ArrowPathIcon } from "@heroicons/react/24/solid";
 
@@ -359,24 +363,27 @@ function YoutubePlayer({
             {isCastOverlayOpen && (
               <div className="absolute inset-0 flex items-center justify-center text-xl p-4">
                 {isMobile ? (
-                  <div className="text-sm flex space-y-3 flex-col text-center w-full max-w-md">
-                    <div className="text-lg font-bold">📺 Cast to TV</div>
-                    <div className="text-xs">
-                      <p className="mb-2">วิธีใช้งาน:</p>
-                      <ol className="list-decimal list-inside text-left space-y-1">
-                        <li>เปิด <span className="font-bold">youoke.vercel.app/monitor</span> บนทีวี</li>
+                  <div className="text-sm flex space-y-2 flex-col text-center w-full max-w-md px-4">
+                    <div className="flex items-center justify-center gap-2 text-base font-bold mb-1">
+                      <TvIcon className="w-5 h-5" />
+                      <span>Cast to TV</span>
+                    </div>
+                    <div className="text-xs bg-white/10 rounded-lg p-3 mb-2">
+                      <p className="font-semibold mb-2">วิธีใช้งาน:</p>
+                      <ol className="list-decimal list-inside text-left space-y-1.5 text-xs">
+                        <li className="break-words">เปิด <span className="font-bold text-primary">youoke.vercel.app/monitor</span> บนทีวี</li>
                         <li>ดูเลขห้อง 4 หลักที่แสดงบนทีวี</li>
-                        <li>กรอกเลขห้องด้านล่าง แล้วกดเข้าร่วม</li>
+                        <li>กรอกเลขห้องด้านล่าง</li>
                       </ol>
                     </div>
 
                     {!isCasting ? (
-                      <div className="relative mt-4">
+                      <div className="relative">
                         <input
                           type="text"
                           inputMode="numeric"
                           pattern="[0-9]*"
-                          className="py-3 px-4 block w-full text-black bg-white rounded-lg text-center text-2xl tracking-widest font-bold"
+                          className="py-2.5 px-3 block w-full text-black bg-white rounded-lg text-center text-xl tracking-widest font-bold"
                           placeholder="0000"
                           maxLength={4}
                           value={castInputRoomCode}
@@ -389,27 +396,41 @@ function YoutubePlayer({
                           autoFocus
                         />
                         <button
-                          className="mt-2 w-full py-2 px-4 text-white rounded-lg bg-success font-semibold disabled:opacity-50"
+                          className="mt-2 w-full py-2 px-3 text-white rounded-lg bg-success font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
                           onClick={handleCastJoinRoom}
                           disabled={isJoiningRoom || castInputRoomCode.length !== 4}
                         >
-                          {isJoiningRoom ? '⏳ กำลังเข้าร่วม...' : '🚀 เข้าร่วมห้อง'}
+                          {isJoiningRoom ? (
+                            <>
+                              <ClockIcon className="w-4 h-4 animate-spin" />
+                              <span>กำลังเข้าร่วม...</span>
+                            </>
+                          ) : (
+                            <>
+                              <RocketLaunchIcon className="w-4 h-4" />
+                              <span>เข้าร่วมห้อง</span>
+                            </>
+                          )}
                         </button>
                         {castError && (
-                          <div className="mt-2 text-xs text-error bg-white/20 rounded px-2 py-1">
+                          <div className="mt-2 text-xs text-error bg-white/20 rounded px-2 py-1.5">
                             {castError}
                           </div>
                         )}
                       </div>
                     ) : (
-                      <div className="mt-4">
-                        <div className="text-lg mb-2">✅ เชื่อมต่อแล้ว</div>
-                        <div className="text-2xl font-bold mb-4">ห้อง: {roomCode}</div>
+                      <div className="mt-2">
+                        <div className="flex items-center justify-center gap-2 text-base mb-3">
+                          <CheckCircleIcon className="w-5 h-5 text-success" />
+                          <span>เชื่อมต่อแล้ว</span>
+                        </div>
+                        <div className="text-xl font-bold mb-3">ห้อง: {roomCode}</div>
                         <button
-                          className="w-full py-2 px-4 text-white rounded-lg bg-error font-semibold"
+                          className="w-full py-2 px-3 text-white rounded-lg bg-error font-semibold flex items-center justify-center gap-2"
                           onClick={handleCastDisconnect}
                         >
-                          ❌ ตัดการเชื่อมต่อ
+                          <XMarkIcon className="w-4 h-4" />
+                          <span>ตัดการเชื่อมต่อ</span>
                         </button>
                       </div>
                     )}
@@ -420,9 +441,12 @@ function YoutubePlayer({
                     {!isCasting ? (
                       <>
                         <div className="mb-4">
-                          <div className="text-2xl font-bold mb-2">📺 Cast to TV</div>
+                          <div className="flex items-center justify-center gap-2 text-2xl font-bold mb-2">
+                            <TvIcon className="w-6 h-6" />
+                            <span>Cast to TV</span>
+                          </div>
                           <div className="text-sm mb-4">
-                            เปิด <span className="font-bold">youoke.vercel.app/monitor</span><br />
+                            เปิด <span className="font-bold text-primary">youoke.vercel.app/monitor</span><br />
                             บนทีวี แล้วกรอกเลขห้อง
                           </div>
                         </div>
@@ -443,11 +467,21 @@ function YoutubePlayer({
                           autoFocus
                         />
                         <button
-                          className="py-2 px-6 text-white rounded-lg bg-success font-semibold disabled:opacity-50"
+                          className="py-2 px-6 text-white rounded-lg bg-success font-semibold disabled:opacity-50 flex items-center gap-2"
                           onClick={handleCastJoinRoom}
                           disabled={isJoiningRoom || castInputRoomCode.length !== 4}
                         >
-                          {isJoiningRoom ? '⏳ กำลังเข้าร่วม...' : '🚀 เข้าร่วมห้อง'}
+                          {isJoiningRoom ? (
+                            <>
+                              <ClockIcon className="w-5 h-5 animate-spin" />
+                              <span>กำลังเข้าร่วม...</span>
+                            </>
+                          ) : (
+                            <>
+                              <RocketLaunchIcon className="w-5 h-5" />
+                              <span>เข้าร่วมห้อง</span>
+                            </>
+                          )}
                         </button>
                         {castError && (
                           <div className="mt-2 text-sm text-error bg-white/20 rounded px-3 py-1">
@@ -457,13 +491,17 @@ function YoutubePlayer({
                       </>
                     ) : (
                       <>
-                        <div className="text-2xl mb-4">✅ เชื่อมต่อแล้ว</div>
+                        <div className="flex items-center gap-2 text-2xl mb-4">
+                          <CheckCircleIcon className="w-7 h-7 text-success" />
+                          <span>เชื่อมต่อแล้ว</span>
+                        </div>
                         <div className="text-4xl font-bold mb-6">ห้อง: {roomCode}</div>
                         <button
-                          className="py-2 px-6 text-white rounded-lg bg-error font-semibold"
+                          className="py-2 px-6 text-white rounded-lg bg-error font-semibold flex items-center gap-2"
                           onClick={handleCastDisconnect}
                         >
-                          ❌ ตัดการเชื่อมต่อ
+                          <XMarkIcon className="w-5 h-5" />
+                          <span>ตัดการเชื่อมต่อ</span>
                         </button>
                       </>
                     )}
