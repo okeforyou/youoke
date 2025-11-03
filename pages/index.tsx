@@ -32,10 +32,9 @@ import Modal, { ModalHandler } from "../components/Modal";
 import SearchResultGrid from "../components/SearchResultGrid";
 import VideoHorizontalCard from "../components/VideoHorizontalCard";
 import YoutubePlayer from "../components/YoutubePlayer";
-import { YouTubeCastButton } from "../components/YouTubeCastButton";
+import { GoogleCastYouTubeButton } from "../components/GoogleCastYouTubeButton";
 import { useAuth } from "../context/AuthContext";
 import { useFirebaseCast } from "../context/FirebaseCastContext";
-import { useYouTubeCast } from "../context/YouTubeCastContext";
 import { database } from "../firebase";
 import useIsMobile from "../hooks/isMobile";
 import { useKaraokeState } from "../hooks/karaoke";
@@ -80,11 +79,6 @@ function HomePage() {
     setPlaylist: setCastPlaylist,
   } = useFirebaseCast();
 
-  // YouTube Cast
-  const {
-    setPlaylist: setYouTubeCastPlaylist,
-  } = useYouTubeCast();
-
   const isMobile = useIsMobile();
 
   const addPlaylistModalRef = useRef<ModalHandler>(null);
@@ -118,13 +112,6 @@ function HomePage() {
       setHasSyncedPlaylist(false);
     }
   }, [isCasting, playlist, hasSyncedPlaylist]);
-
-  // Sync playlist to YouTube Cast
-  useEffect(() => {
-    if (playlist?.length > 0) {
-      setYouTubeCastPlaylist(playlist);
-    }
-  }, [playlist]);
 
   function addVideoToPlaylist(video: SearchResult | RecommendedVideo) {
     if (isCasting) {
@@ -222,10 +209,12 @@ function HomePage() {
           </span>
         )}
 
-        {/* YouTube Cast Button */}
+        {/* Google Cast YouTube Button */}
         {!!user.uid && !isCasting && (
           <div className="ml-2">
-            <YouTubeCastButton />
+            <GoogleCastYouTubeButton
+              videoIds={playlist.map(v => v.videoId)}
+            />
           </div>
         )}
 
