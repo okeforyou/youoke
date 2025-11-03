@@ -461,8 +461,8 @@ const Monitor = () => {
         )}
 
         {/* Empty Queue State */}
-        {isQueueEmpty && audioUnlocked && (
-        <div className="absolute inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-40 animate-fade-in">
+        {isQueueEmpty && audioUnlocked && roomCode && (
+        <div className="absolute inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-40">
           <div className="text-center">
 
             {/* Icon with pulse animation */}
@@ -489,7 +489,7 @@ const Monitor = () => {
             </div>
 
             {/* Song count */}
-            {state.currentIndex > 0 && (
+            {state?.currentIndex > 0 && (
               <p className="text-lg text-gray-500 mt-8">
                 เล่นไปแล้ว {state.currentIndex} เพลง
               </p>
