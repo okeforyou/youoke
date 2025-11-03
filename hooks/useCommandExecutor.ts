@@ -41,27 +41,22 @@ export function useCommandExecutor({
         switch (command.type) {
           case 'PLAY_NOW': {
             const { video } = command.payload;
-            const existingIndex = currentState.queue.findIndex(
-              (v) => v.videoId === video.videoId
-            );
 
-            if (existingIndex !== -1) {
-              // Jump to existing
-              newState = {
-                currentIndex: existingIndex,
-                currentVideo: currentState.queue[existingIndex],
-                controls: { ...currentState.controls, isPlaying: true },
-              };
-            } else {
-              // Add to front
-              const newQueue = [video, ...currentState.queue];
-              newState = {
-                queue: newQueue,
-                currentIndex: 0,
-                currentVideo: video,
-                controls: { ...currentState.controls, isPlaying: true },
-              };
-            }
+            // Get only upcoming songs (exclude current and already played songs)
+            const upcomingQueue = currentState.queue.slice(currentState.currentIndex + 1);
+
+            // Remove duplicate if video already exists in upcoming queue
+            const filteredQueue = upcomingQueue.filter(v => v.videoId !== video.videoId);
+
+            // Add new video to front of upcoming queue
+            const newQueue = [video, ...filteredQueue];
+
+            newState = {
+              queue: newQueue,
+              currentIndex: 0,
+              currentVideo: video,
+              controls: { ...currentState.controls, isPlaying: true },
+            };
             break;
           }
 
