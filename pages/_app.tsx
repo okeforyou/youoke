@@ -9,6 +9,7 @@ import GoogleAnalytics from '../components/GoogleAnalytics'
 import { AdsProvider } from '../context/AdsContext'
 import { AuthContextProvider } from '../context/AuthContext'
 import { FirebaseCastProvider } from '../context/FirebaseCastContext'
+import { YouTubeCastProvider } from '../context/YouTubeCastContext'
 import { ToastProvider } from '../context/ToastContext'
 
 // Create a client
@@ -79,9 +80,11 @@ function App({ Component, pageProps }) {
           )}
           <QueryClientProvider client={queryClient}>
             <FirebaseCastProvider>
-              <AdsProvider>
-                <Component {...pageProps} />
-              </AdsProvider>
+              <YouTubeCastProvider>
+                <AdsProvider>
+                  <Component {...pageProps} />
+                </AdsProvider>
+              </YouTubeCastProvider>
             </FirebaseCastProvider>
             {/* <ReactQueryDevtools /> */}
           </QueryClientProvider>
