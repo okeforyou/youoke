@@ -194,7 +194,7 @@ function HomePage() {
   // Use Cast playlist if casting, otherwise local playlist
   // When casting, show only upcoming songs (exclude played songs)
   const displayPlaylist = isCasting
-    ? castPlaylist.slice(castCurrentIndex)
+    ? (castPlaylist?.slice(castCurrentIndex) || [])
     : playlist;
 
   const PlaylistScreen = (
