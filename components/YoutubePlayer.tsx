@@ -363,27 +363,27 @@ function YoutubePlayer({
             {isCastOverlayOpen && (
               <div className="absolute inset-0 flex items-center justify-center text-xl p-4">
                 {isMobile ? (
-                  <div className="text-sm flex space-y-2 flex-col text-center w-full max-w-md px-4">
-                    <div className="flex items-center justify-center gap-2 text-base font-bold mb-1">
+                  <div className="text-sm flex space-y-3 flex-col text-center w-full max-w-md">
+                    <div className="flex items-center justify-center gap-2 text-lg font-bold">
                       <TvIcon className="w-5 h-5" />
                       <span>Cast to TV</span>
                     </div>
-                    <div className="text-xs bg-white/10 rounded-lg p-3 mb-2">
-                      <p className="font-semibold mb-2">วิธีใช้งาน:</p>
-                      <ol className="list-decimal list-inside text-left space-y-1.5 text-xs">
-                        <li className="break-words">เปิด <span className="font-bold text-primary">youoke.vercel.app/monitor</span> บนทีวี</li>
+                    <div className="text-xs">
+                      <p className="mb-2">วิธีใช้งาน:</p>
+                      <ol className="list-decimal list-inside text-left space-y-1">
+                        <li>เปิด <span className="font-bold">youoke.vercel.app/monitor</span> บนทีวี</li>
                         <li>ดูเลขห้อง 4 หลักที่แสดงบนทีวี</li>
-                        <li>กรอกเลขห้องด้านล่าง</li>
+                        <li>กรอกเลขห้องด้านล่าง แล้วกดเข้าร่วม</li>
                       </ol>
                     </div>
 
                     {!isCasting ? (
-                      <div className="relative">
+                      <div className="relative mt-4">
                         <input
                           type="text"
                           inputMode="numeric"
                           pattern="[0-9]*"
-                          className="py-2.5 px-3 block w-full text-black bg-white rounded-lg text-center text-xl tracking-widest font-bold"
+                          className="py-3 px-4 block w-full text-black bg-white rounded-lg text-center text-2xl tracking-widest font-bold"
                           placeholder="0000"
                           maxLength={4}
                           value={castInputRoomCode}
@@ -446,7 +446,7 @@ function YoutubePlayer({
                             <span>Cast to TV</span>
                           </div>
                           <div className="text-sm mb-4">
-                            เปิด <span className="font-bold text-primary">youoke.vercel.app/monitor</span><br />
+                            เปิด <span className="font-bold">youoke.vercel.app/monitor</span><br />
                             บนทีวี แล้วกรอกเลขห้อง
                           </div>
                         </div>
