@@ -35,6 +35,7 @@ const Monitor = () => {
   const [showQueue, setShowQueue] = useState(false);
   const [audioUnlocked, setAudioUnlocked] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isQueueEmpty, setIsQueueEmpty] = useState(false);
   const lastLoadedVideoIdRef = useRef<string | null>(null);
   const initialVideoIdRef = useRef<string | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -262,6 +263,15 @@ const Monitor = () => {
     syncPlayPause();
   }, [playerRef, state.controls.isPlaying, state.currentVideo]);
 
+  // Reset empty state when new songs added to queue
+  useEffect(() => {
+    const hasUpcomingSongs = state.currentIndex + 1 < state.queue.length;
+    if (hasUpcomingSongs && isQueueEmpty) {
+      console.log('🎵 New songs added, hiding empty state');
+      setIsQueueEmpty(false);
+    }
+  }, [state.queue.length, state.currentIndex, isQueueEmpty]);
+
   // Queue visibility
   useEffect(() => {
     if (!playerRef || !state.controls.isPlaying) {
@@ -294,6 +304,7 @@ const Monitor = () => {
       console.log('🎬 Video ended');
       const nextIndex = state.currentIndex + 1;
       if (nextIndex < state.queue.length) {
+        setIsQueueEmpty(false);
         const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
         try {
           await update(roomRef, {
@@ -304,6 +315,10 @@ const Monitor = () => {
         } catch (error) {
           console.error('❌ Auto-next failed:', error);
         }
+      } else {
+        // No more songs in queue
+        console.log('📭 Queue is empty');
+        setIsQueueEmpty(true);
       }
     } else if (event.data === 1) {
       console.log('▶️ Playing');
@@ -441,6 +456,44 @@ const Monitor = () => {
             <div className="mt-8 text-sm text-gray-500">
               <p>ควบคุมระดับเสียงได้ที่ปุ่มด้านล่างวิดีโอ</p>
             </div>
+          </div>
+        </div>
+        )}
+
+        {/* Empty Queue State */}
+        {isQueueEmpty && audioUnlocked && (
+        <div className="absolute inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-40 animate-fade-in">
+          <div className="text-center">
+
+            {/* Icon with pulse animation */}
+            <div className="mb-8 animate-pulse">
+              <div className="text-9xl mb-4">🎤</div>
+            </div>
+
+            {/* Main Message */}
+            <h2 className="text-6xl font-bold mb-4 text-white">
+              ไม่มีเพลงในคิว
+            </h2>
+
+            {/* Subtitle */}
+            <p className="text-3xl text-gray-400 mb-8">
+              เพิ่มเพลงจากมือถือเพื่อเล่นต่อ
+            </p>
+
+            {/* Room Code */}
+            <div className="bg-primary/20 border-2 border-primary rounded-xl px-8 py-4 inline-block">
+              <p className="text-xl text-gray-300 mb-1">เลขห้อง</p>
+              <p className="text-5xl font-bold tracking-widest text-primary">
+                {roomCode}
+              </p>
+            </div>
+
+            {/* Song count */}
+            {state.currentIndex > 0 && (
+              <p className="text-lg text-gray-500 mt-8">
+                เล่นไปแล้ว {state.currentIndex} เพลง
+              </p>
+            )}
           </div>
         </div>
         )}
