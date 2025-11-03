@@ -20,8 +20,11 @@ export const GoogleCastYouTubeButton: React.FC<GoogleCastYouTubeButtonProps> = (
   const [castSession, setCastSession] = useState<any>(null);
 
   useEffect(() => {
+    console.log('🎬 GoogleCastYouTubeButton: Initializing...');
+
     // Initialize Cast SDK when available
     (window as any).__onGCastApiAvailable = (isAvailable: boolean) => {
+      console.log('🎬 Google Cast API available:', isAvailable);
       if (isAvailable) {
         initializeCastApi();
       }
@@ -29,7 +32,10 @@ export const GoogleCastYouTubeButton: React.FC<GoogleCastYouTubeButtonProps> = (
 
     // Check if Cast SDK is already loaded
     if ((window as any).cast?.framework) {
+      console.log('🎬 Google Cast SDK already loaded');
       initializeCastApi();
+    } else {
+      console.log('⏳ Waiting for Google Cast SDK to load...');
     }
   }, []);
 
@@ -100,23 +106,31 @@ export const GoogleCastYouTubeButton: React.FC<GoogleCastYouTubeButtonProps> = (
     castSession.endSession(true);
   };
 
-  if (!isCastAvailable) {
-    return null; // Hide button if Cast not available
-  }
+  // Always show button, but with different states
+  const getButtonText = () => {
+    if (!isCastAvailable) return 'Cast Loading...';
+    if (isCasting) return 'Casting to TV';
+    return 'Cast to TV';
+  };
+
+  const getButtonClass = () => {
+    if (isCasting) return 'btn-success';
+    if (!isCastAvailable) return 'btn-ghost';
+    return 'btn-primary';
+  };
 
   return (
     <button
       onClick={isCasting ? stopCasting : startCasting}
-      disabled={videoIds.length === 0}
-      className={`btn btn-sm gap-2 ${
-        isCasting ? 'btn-success' : 'btn-primary'
-      }`}
+      disabled={!isCastAvailable || videoIds.length === 0}
+      className={`btn btn-sm gap-2 ${getButtonClass()}`}
+      title={!isCastAvailable ? 'Google Cast SDK loading...' : 'Cast to Chromecast device'}
     >
       {/* Google Cast Icon */}
       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
         <path d="M1 18v3h3c0-1.66-1.34-3-3-3zm0-4v2c2.76 0 5 2.24 5 5h2c0-3.87-3.13-7-7-7zm0-4v2c4.97 0 9 4.03 9 9h2c0-6.08-4.93-11-11-11zm20-7H3c-1.1 0-2 .9-2 2v3h2V5h18v14h-7v2h7c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" />
       </svg>
-      {isCasting ? 'Casting to TV' : 'Cast to TV'}
+      {getButtonText()}
     </button>
   );
 };
