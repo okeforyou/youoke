@@ -105,7 +105,7 @@ const Monitor = () => {
         console.log('📦 State updated:', newState);
         setState(newState);
         setIsConnected(
-          newState.queue.length > 0 || newState.currentVideo !== null
+          (newState.queue && newState.queue.length > 0) || newState.currentVideo !== null
         );
       }
     });
@@ -265,12 +265,12 @@ const Monitor = () => {
 
   // Reset empty state when new songs added to queue
   useEffect(() => {
-    const hasUpcomingSongs = state.currentIndex + 1 < state.queue.length;
+    const hasUpcomingSongs = state.queue && state.currentIndex + 1 < state.queue.length;
     if (hasUpcomingSongs && isQueueEmpty) {
       console.log('🎵 New songs added, hiding empty state');
       setIsQueueEmpty(false);
     }
-  }, [state.queue.length, state.currentIndex, isQueueEmpty]);
+  }, [state.queue?.length, state.currentIndex, isQueueEmpty]);
 
   // Queue visibility
   useEffect(() => {
@@ -303,7 +303,7 @@ const Monitor = () => {
       // Video ended - play next
       console.log('🎬 Video ended');
       const nextIndex = state.currentIndex + 1;
-      if (nextIndex < state.queue.length) {
+      if (state.queue && nextIndex < state.queue.length) {
         setIsQueueEmpty(false);
         const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
         try {
@@ -518,7 +518,7 @@ const Monitor = () => {
         )}
 
         {/* Queue Display */}
-        {showQueue && state.queue.length > state.currentIndex + 1 && (
+        {showQueue && state.queue && state.queue.length > state.currentIndex + 1 && (
         <div className="absolute top-6 right-6 w-80 bg-black/90 backdrop-blur-md rounded-xl shadow-2xl border border-primary/30 p-5 z-40">
           <div className="mb-4 pb-3 border-b border-primary/30">
             <h3 className="text-lg font-bold text-primary flex items-center gap-2">
@@ -554,7 +554,7 @@ const Monitor = () => {
               ))}
           </div>
 
-          {state.queue.length > state.currentIndex + 6 && (
+          {state.queue && state.queue.length > state.currentIndex + 6 && (
             <div className="mt-3 pt-3 border-t border-white/10 text-center">
               <p className="text-xs text-gray-400">
                 + อีก {state.queue.length - state.currentIndex - 6} เพลง
