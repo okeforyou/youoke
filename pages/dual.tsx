@@ -130,20 +130,7 @@ export default function DualScreen() {
           </div>
         )}
 
-        {/* Queue Display */}
-        {queue.length > 0 && (
-          <div className="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-sm p-4 border-t border-gray-700">
-            <div className="text-white text-sm mb-2">คิวถัดไป ({queue.length} เพลง)</div>
-            <div className="flex gap-2 overflow-x-auto">
-              {queue.slice(0, 5).map((video, index) => (
-                <div key={index} className="flex-shrink-0 bg-gray-800 rounded p-2 w-40">
-                  <div className="text-white text-xs truncate">{video.title}</div>
-                  <div className="text-gray-400 text-xs truncate">{video.artist}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* Queue Display removed - Dual screen shows only fullscreen video */}
       </div>
     </>
   );
