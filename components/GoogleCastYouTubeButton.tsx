@@ -7,10 +7,10 @@
 
 import React, { useEffect, useState } from 'react';
 
-// YouTube receiver app ID (official YouTube Cast receiver)
-// CC1AD845 = Default Media Receiver
-// 233637DE = YouTube
-const YOUTUBE_RECEIVER_APP_ID = '233637DE';
+// YouTube receiver app ID
+// CC1AD845 = Default Media Receiver (supports YouTube URLs)
+// 233637DE = YouTube (requires special format, not working for us)
+const YOUTUBE_RECEIVER_APP_ID = 'CC1AD845';
 
 interface GoogleCastYouTubeButtonProps {
   videoIds: string[]; // Array of YouTube video IDs to play
@@ -89,31 +89,42 @@ export const GoogleCastYouTubeButton: React.FC<GoogleCastYouTubeButtonProps> = (
       const session = context.getCurrentSession();
       if (!session) return;
 
-      // Build YouTube playlist URL (same format as old YouTube Cast)
-      const playlistUrl = `https://www.youtube.com/watch_videos?video_ids=${videoIds.join(',')}`;
+      // Play first video (YouTube watch URL)
+      const firstVideoUrl = `https://www.youtube.com/watch?v=${videoIds[0]}`;
 
-      console.log('🎬 Casting YouTube playlist:', playlistUrl);
-      console.log('📋 Videos in queue:', videoIds.length);
+      console.log('🎬 Casting YouTube video:', firstVideoUrl);
+      console.log('📋 Total videos in queue:', videoIds.length);
 
-      // Create media info for YouTube playlist
-      const mediaInfo = new chrome.cast.media.GenericMediaMetadata();
-      mediaInfo.metadataType = chrome.cast.media.MetadataType.GENERIC;
-      mediaInfo.title = `Karaoke Playlist (${videoIds.length} songs)`;
+      // Create metadata
+      const metadata = new chrome.cast.media.GenericMediaMetadata();
+      metadata.metadataType = chrome.cast.media.MetadataType.GENERIC;
+      metadata.title = `Karaoke Video ${1}/${videoIds.length}`;
 
-      // Try to load as YouTube content
-      const request = {
-        type: 'LOAD',
-        media: {
-          contentId: playlistUrl,
-          contentType: 'video/youtube',
-          streamType: chrome.cast.media.StreamType.BUFFERED,
-          metadata: mediaInfo,
+      // Create MediaInfo
+      const mediaInfo = new chrome.cast.media.MediaInfo(firstVideoUrl, 'video/mp4');
+      mediaInfo.metadata = metadata;
+      mediaInfo.streamType = chrome.cast.media.StreamType.BUFFERED;
+
+      // Create LoadRequest
+      const request = new chrome.cast.media.LoadRequest(mediaInfo);
+      request.autoplay = true;
+
+      // Load media to Cast device
+      session.loadMedia(request).then(
+        () => {
+          console.log('✅ Video loaded successfully!');
+
+          // TODO: Queue remaining videos
+          if (videoIds.length > 1) {
+            console.log('📝 Note: Queue feature not implemented yet');
+            console.log('💡 Remaining videos:', videoIds.slice(1));
+          }
         },
-        autoplay: true,
-      };
+        (error: any) => {
+          console.error('❌ Load media failed:', error);
+        }
+      );
 
-      session.sendMessage('urn:x-cast:com.google.cast.media', request);
-      console.log('✅ Cast request sent');
     } catch (error) {
       console.error('❌ Cast error:', error);
     }
