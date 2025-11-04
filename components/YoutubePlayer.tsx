@@ -150,6 +150,53 @@ function YoutubePlayer({
     }
   }, [videoCount]);
 
+  // BroadcastChannel for Dual Screen sync
+  useEffect(() => {
+    if (isMoniter) return; // Only main screen sends updates
+
+    const channel = new BroadcastChannel('youoke-dual-sync');
+
+    // Listen for state requests from dual screen
+    channel.onmessage = (event) => {
+      if (event.data.type === 'REQUEST_STATE') {
+        // Send current state to dual screen
+        channel.postMessage({
+          type: 'QUEUE_UPDATE',
+          queue: playlist,
+          currentIndex: playlist.findIndex((v) => v.videoId === curVideoId),
+          videoId: curVideoId,
+        });
+      }
+    };
+
+    return () => channel.close();
+  }, [isMoniter, playlist, curVideoId]);
+
+  // Sync current video to dual screen
+  useEffect(() => {
+    if (isMoniter || !curVideoId) return;
+
+    const channel = new BroadcastChannel('youoke-dual-sync');
+    channel.postMessage({
+      type: 'PLAY',
+      videoId: curVideoId,
+    });
+    channel.close();
+  }, [curVideoId, isMoniter]);
+
+  // Sync queue to dual screen
+  useEffect(() => {
+    if (isMoniter || !playlist || playlist.length === 0) return;
+
+    const channel = new BroadcastChannel('youoke-dual-sync');
+    channel.postMessage({
+      type: 'QUEUE_UPDATE',
+      queue: playlist,
+      currentIndex: playlist.findIndex((v) => v.videoId === curVideoId),
+    });
+    channel.close();
+  }, [playlist, isMoniter, curVideoId]);
+
   // Event handler for triggering fullscreen on a user gesture
   const handleFullscreenButtonClick = () => {
     if (!isIphone && !isFullscreen) {
