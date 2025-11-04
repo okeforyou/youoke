@@ -40,6 +40,7 @@ const Monitor = () => {
   const lastLoadedVideoIdRef = useRef<string | null>(null);
   const initialVideoIdRef = useRef<string | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const isConnectedRef = useRef<boolean>(false);
 
   // Anonymous login
   useEffect(() => {
@@ -100,20 +101,33 @@ const Monitor = () => {
 
     // Listen to state changes
     const stateRef = ref(realtimeDb, `rooms/${roomCode}/state`);
-    const unsubscribe = onValue(stateRef, (snapshot) => {
+    const stateUnsubscribe = onValue(stateRef, (snapshot) => {
       const newState = snapshot.val() as CastState | null;
       if (newState) {
         console.log('📦 State updated:', newState);
         setState(newState);
-        setIsConnected(
-          (newState.queue && newState.queue.length > 0) || newState.currentVideo !== null
-        );
+      }
+    });
+
+    // Listen to commands to detect remote connection
+    const commandsRef = ref(realtimeDb, `rooms/${roomCode}/commands`);
+    const commandsUnsubscribe = onValue(commandsRef, (snapshot) => {
+      const commands = snapshot.val();
+      // If there are any commands, it means remote is connected
+      const hasCommands = commands && Object.keys(commands).length > 0;
+
+      if (hasCommands && !isConnectedRef.current) {
+        console.log('📱 Remote connected!');
+        isConnectedRef.current = true;
+        setIsConnected(true);
       }
     });
 
     return () => {
       off(stateRef);
-      unsubscribe();
+      off(commandsRef);
+      stateUnsubscribe();
+      commandsUnsubscribe();
     };
   }, [roomCode, isAuthReady]);
 
