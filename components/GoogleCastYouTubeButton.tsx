@@ -7,8 +7,10 @@
 
 import React, { useEffect, useState } from 'react';
 
-// YouTube receiver app ID (official)
-const YOUTUBE_RECEIVER_APP_ID = 'CC1AD845';
+// YouTube receiver app ID (official YouTube Cast receiver)
+// CC1AD845 = Default Media Receiver
+// 233637DE = YouTube
+const YOUTUBE_RECEIVER_APP_ID = '233637DE';
 
 interface GoogleCastYouTubeButtonProps {
   videoIds: string[]; // Array of YouTube video IDs to play
@@ -87,15 +89,31 @@ export const GoogleCastYouTubeButton: React.FC<GoogleCastYouTubeButtonProps> = (
       const session = context.getCurrentSession();
       if (!session) return;
 
-      // Build YouTube queue URL
-      const queueUrl = `https://www.youtube.com/watch_videos?video_ids=${videoIds.join(',')}`;
+      // Build YouTube playlist URL (same format as old YouTube Cast)
+      const playlistUrl = `https://www.youtube.com/watch_videos?video_ids=${videoIds.join(',')}`;
 
-      // Load media
-      const mediaInfo = new chrome.cast.media.MediaInfo(queueUrl, 'video/youtube');
-      const request = new chrome.cast.media.LoadRequest(mediaInfo);
+      console.log('🎬 Casting YouTube playlist:', playlistUrl);
+      console.log('📋 Videos in queue:', videoIds.length);
 
-      await session.loadMedia(request);
-      console.log('🎬 Casting YouTube playlist:', videoIds.length, 'videos');
+      // Create media info for YouTube playlist
+      const mediaInfo = new chrome.cast.media.GenericMediaMetadata();
+      mediaInfo.metadataType = chrome.cast.media.MetadataType.GENERIC;
+      mediaInfo.title = `Karaoke Playlist (${videoIds.length} songs)`;
+
+      // Try to load as YouTube content
+      const request = {
+        type: 'LOAD',
+        media: {
+          contentId: playlistUrl,
+          contentType: 'video/youtube',
+          streamType: chrome.cast.media.StreamType.BUFFERED,
+          metadata: mediaInfo,
+        },
+        autoplay: true,
+      };
+
+      session.sendMessage('urn:x-cast:com.google.cast.media', request);
+      console.log('✅ Cast request sent');
     } catch (error) {
       console.error('❌ Cast error:', error);
     }
