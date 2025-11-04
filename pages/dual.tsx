@@ -24,6 +24,9 @@ export default function DualScreen() {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
+    // Mark dual mode as active
+    localStorage.setItem('youoke-dual-active', 'true');
+
     // Create BroadcastChannel
     const channel = new BroadcastChannel('youoke-dual-sync');
 
@@ -65,9 +68,19 @@ export default function DualScreen() {
     // Request initial state from main screen
     channel.postMessage({ type: 'REQUEST_STATE' });
 
+    // Clean up when window closes
+    const handleBeforeUnload = () => {
+      console.log('📺 Dual Screen: Window closing, clearing dual mode');
+      localStorage.removeItem('youoke-dual-active');
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
     return () => {
       console.log('📺 Dual Screen: Closing channel');
+      localStorage.removeItem('youoke-dual-active');
       channel.close();
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, []);
 

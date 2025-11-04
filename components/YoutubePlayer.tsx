@@ -62,6 +62,7 @@ function YoutubePlayer({
   const [isIphone, setIsIphone] = useState<boolean>(false);
   const [isCastOverlayOpen, setIsCastOverlayOpen] = useState<boolean>(false);
   const [showCastModeSelector, setShowCastModeSelector] = useState<boolean>(false);
+  const [isDualMode, setIsDualMode] = useState<boolean>(false);
   const [castInputRoomCode, setCastInputRoomCode] = useState<string>('');
   const [castError, setCastError] = useState<string>('');
   const [isJoiningRoom, setIsJoiningRoom] = useState<boolean>(false);
@@ -99,6 +100,28 @@ function YoutubePlayer({
       clearTimeout(timeoutId);
     };
   }, []);
+
+  // Check if Dual Mode is active
+  useEffect(() => {
+    if (isMoniter) return; // Don't run on monitor/dual screen
+
+    const checkDualMode = () => {
+      const dualActive = localStorage.getItem('youoke-dual-active') === 'true';
+      setIsDualMode(dualActive);
+    };
+
+    checkDualMode();
+
+    // Listen for storage changes (when dual screen closes)
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'youoke-dual-active') {
+        setIsDualMode(e.newValue === 'true');
+      }
+    };
+
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, [isMoniter]);
 
   const UseFullScreenCss = isFullScreenIphone;
   const isIOS =
@@ -700,7 +723,13 @@ function YoutubePlayer({
         }}
         onSelectDual={() => {
           setShowCastModeSelector(false);
+          // Set dual mode active
+          localStorage.setItem('youoke-dual-active', 'true');
+          setIsDualMode(true);
+          // Open dual screen
           window.open('/dual', '_blank');
+          // Pause video on main screen
+          handlePause();
         }}
         onSelectYouTube={() => {
           setShowCastModeSelector(false);
@@ -740,7 +769,25 @@ function YoutubePlayer({
         className="w-full aspect-video relative flex-1 md:flex-grow-1"
         onClick={() => handleFullscreenButtonClick()}
       >
-        {!videoId ? (
+        {isDualMode && !isMoniter ? (
+          <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20 backdrop-blur-sm">
+            <div className="text-center p-8 bg-base-100/90 rounded-xl shadow-2xl">
+              <div className="text-6xl mb-4">🖥️</div>
+              <h2 className="text-3xl font-bold mb-2 text-primary">กำลังเล่นที่หน้าจอที่ 2</h2>
+              <p className="text-gray-600 mb-4">วิดีโอกำลังเล่นบนหน้าจอ Dual Screen</p>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  localStorage.removeItem('youoke-dual-active');
+                  setIsDualMode(false);
+                }}
+                className="btn btn-sm btn-primary"
+              >
+                ปิดโหมด 2 หน้าจอ
+              </button>
+            </div>
+          </div>
+        ) : !videoId ? (
           <div
             className="h-full w-full flex items-center justify-center bg-black"
             onClick={(e) => {
