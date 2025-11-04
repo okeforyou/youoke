@@ -242,6 +242,38 @@ function YoutubePlayer({
     // Firebase Cast handles playlist sync now
   }, [playlist]);
 
+  // Auto-connect from QR Code scan
+  useEffect(() => {
+    const { castRoom } = router.query;
+
+    if (castRoom && typeof castRoom === 'string' && castRoom.length === 4 && !isCasting) {
+      console.log('🎬 Auto-connecting to Cast room from QR:', castRoom);
+      setCastInputRoomCode(castRoom);
+      setIsCastOverlayOpen(true);
+
+      // Auto-join after a short delay (to show overlay)
+      const timer = setTimeout(async () => {
+        setIsJoiningRoom(true);
+        try {
+          const success = await joinRoom(castRoom);
+          if (success) {
+            setIsCastOverlayOpen(false);
+            addToast('เชื่อมต่อจาก QR Code สำเร็จ! 🎉');
+            // Remove castRoom from URL
+            router.replace('/', undefined, { shallow: true });
+          } else {
+            setCastError('ไม่พบห้อง กรุณาตรวจสอบ QR Code อีกครั้ง');
+          }
+        } catch (err) {
+          setCastError('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+        }
+        setIsJoiningRoom(false);
+      }, 500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [router.query, isCasting]);
+
   const playPauseBtn = [
     playerState === YouTube.PlayerState.PLAYING
       ? {

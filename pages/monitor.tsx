@@ -13,6 +13,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import YouTube, { YouTubePlayer } from 'react-youtube';
 import { ref, onValue, off, set, update } from 'firebase/database';
 import { signInAnonymously } from 'firebase/auth';
+import { QRCodeSVG } from 'qrcode.react';
 import { realtimeDb, auth } from '../firebase';
 import { useCommandExecutor } from '../hooks/useCommandExecutor';
 import { CastState } from '../types/castCommands';
@@ -357,27 +358,60 @@ const Monitor = () => {
 
   // Show waiting for connection
   if (!isConnected) {
+    // Generate Cast URL for QR Code
+    const baseUrl = typeof window !== 'undefined'
+      ? window.location.origin
+      : 'https://youoke.vercel.app';
+    const castUrl = `${baseUrl}/?castRoom=${roomCode}`;
+
     return (
       <div className="relative h-screen bg-black text-white">
-        <div className="absolute text-center inset-0 flex flex-col items-center justify-center">
+        <div className="absolute text-center inset-0 flex flex-col items-center justify-center p-8">
           <h1 className="text-6xl font-bold mb-8">YouOke TV</h1>
 
-          <div className="bg-primary/20 border-4 border-primary rounded-2xl px-12 py-8 mb-8">
-            <p className="text-2xl text-gray-300 mb-2">เลขห้อง</p>
-            <p className="text-8xl font-bold tracking-widest text-primary">
-              {roomCode}
-            </p>
+          {/* QR Code + Room Number */}
+          <div className="flex flex-col lg:flex-row gap-8 items-center justify-center mb-8">
+            {/* QR Code */}
+            <div className="bg-white p-6 rounded-2xl shadow-2xl">
+              <QRCodeSVG
+                value={castUrl}
+                size={220}
+                level="H"
+                includeMargin={false}
+              />
+            </div>
+
+            {/* Room Number */}
+            <div className="bg-primary/20 border-4 border-primary rounded-2xl px-12 py-8">
+              <p className="text-2xl text-gray-300 mb-2">เลขห้อง</p>
+              <p className="text-8xl font-bold tracking-widest text-primary">
+                {roomCode}
+              </p>
+            </div>
           </div>
 
-          <div className="space-y-3 max-w-xl">
-            <p className="text-2xl text-gray-300">📱 วิธีใช้งาน:</p>
-            <div className="text-left bg-base-200/10 rounded-lg p-4 space-y-2">
-              <p className="text-lg">1. เปิด youoke.vercel.app บนมือถือ</p>
-              <p className="text-lg">2. กดปุ่ม &quot;Cast to TV&quot;</p>
-              <p className="text-lg">
-                3. กรอกเลขห้อง <span className="text-primary font-bold">{roomCode}</span>
-              </p>
-              <p className="text-lg">4. เพิ่มเพลงแล้วร้องได้เลย! 🎤</p>
+          <div className="space-y-3 max-w-2xl">
+            <p className="text-2xl text-gray-300 mb-4">📱 วิธีใช้งาน:</p>
+            <div className="grid md:grid-cols-2 gap-4">
+              {/* Method 1: QR Code */}
+              <div className="text-left bg-primary/10 rounded-lg p-4 border-2 border-primary/30">
+                <p className="text-xl font-bold text-primary mb-3">วิธีที่ 1: Scan QR Code</p>
+                <div className="space-y-2 text-base">
+                  <p>1. เปิดกล้องบนมือถือ</p>
+                  <p>2. Scan QR Code</p>
+                  <p>3. เชื่อมต่ออัตโนมัติ! 🎉</p>
+                </div>
+              </div>
+
+              {/* Method 2: Manual */}
+              <div className="text-left bg-base-200/10 rounded-lg p-4">
+                <p className="text-xl font-bold text-gray-300 mb-3">วิธีที่ 2: กรอกเลขห้อง</p>
+                <div className="space-y-2 text-base">
+                  <p>1. เปิด youoke.vercel.app</p>
+                  <p>2. กดปุ่ม &quot;Cast to TV&quot;</p>
+                  <p>3. กรอกเลขห้อง <span className="text-primary font-bold">{roomCode}</span></p>
+                </div>
+              </div>
             </div>
           </div>
 
