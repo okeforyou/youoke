@@ -33,7 +33,6 @@ import SearchResultGrid from "../components/SearchResultGrid";
 import VideoHorizontalCard from "../components/VideoHorizontalCard";
 import YoutubePlayer from "../components/YoutubePlayer";
 import { CastModeSelector } from "../components/CastModeSelector";
-import { YouTubeCastButton } from "../components/YouTubeCastButton";
 import { useAuth } from "../context/AuthContext";
 import { useFirebaseCast } from "../context/FirebaseCastContext";
 import { useYouTubeCast } from "../context/YouTubeCastContext";
@@ -95,7 +94,6 @@ function HomePage() {
   >();
   const [hasSyncedPlaylist, setHasSyncedPlaylist] = useState(false);
   const [showCastModeSelector, setShowCastModeSelector] = useState(false);
-  const [showYouTubeCast, setShowYouTubeCast] = useState(false);
 
   useEffect(() => {
     if (!user?.uid) {
@@ -603,22 +601,13 @@ function HomePage() {
         }}
         onSelectYouTube={() => {
           setShowCastModeSelector(false);
-          setShowYouTubeCast(true);
+          // Generate YouTube URL and open it
+          const videoIds = playlist.map(v => v.videoId).join(',');
+          const youtubeURL = `https://www.youtube.com/watch_videos?video_ids=${videoIds}`;
+          console.log('📱 Opening YouTube app:', youtubeURL);
+          window.open(youtubeURL, '_blank');
         }}
       />
-
-      {/* YouTube Cast QR Code Modal */}
-      {showYouTubeCast && (
-        <div className="fixed inset-0 z-50">
-          <YouTubeCastButton />
-          <button
-            onClick={() => setShowYouTubeCast(false)}
-            className="fixed top-4 right-4 btn btn-circle btn-ghost z-50 bg-black/50"
-          >
-            ✕
-          </button>
-        </div>
-      )}
     </div>
   );
 }
