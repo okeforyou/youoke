@@ -359,7 +359,7 @@ function YoutubePlayer({
       {
         icon: TvIcon,
         label: "Cast",
-        onClick: () => {
+        onClick: async () => {
           setShowCastModeSelector(true);
         },
       },

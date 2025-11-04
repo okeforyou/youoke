@@ -599,6 +599,11 @@ function HomePage() {
           const castButton = document.querySelector('[data-cast-button]') as HTMLElement;
           if (castButton) castButton.click();
         }}
+        onSelectDual={() => {
+          setShowCastModeSelector(false);
+          // Open dual screen in new tab
+          window.open('/dual', '_blank');
+        }}
         onSelectYouTube={() => {
           setShowCastModeSelector(false);
           // Generate YouTube URL and open it
