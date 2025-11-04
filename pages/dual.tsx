@@ -49,10 +49,10 @@ export default function DualScreen() {
         case 'QUEUE_UPDATE':
           if (newQueue) {
             setQueue(newQueue);
-            // Auto-play first video if available
-            if (newQueue.length > 0 && currentIndex !== undefined) {
-              setCurrentVideoId(newQueue[currentIndex]?.videoId || '');
-            }
+          }
+          // Set videoId from message (more reliable than using queue index)
+          if (videoId) {
+            setCurrentVideoId(videoId);
           }
           break;
 
