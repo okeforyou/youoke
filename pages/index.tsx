@@ -32,9 +32,11 @@ import Modal, { ModalHandler } from "../components/Modal";
 import SearchResultGrid from "../components/SearchResultGrid";
 import VideoHorizontalCard from "../components/VideoHorizontalCard";
 import YoutubePlayer from "../components/YoutubePlayer";
-import { GoogleCastYouTubeButton } from "../components/GoogleCastYouTubeButton";
+import { CastModeSelector } from "../components/CastModeSelector";
+import { YouTubeCastButton } from "../components/YouTubeCastButton";
 import { useAuth } from "../context/AuthContext";
 import { useFirebaseCast } from "../context/FirebaseCastContext";
+import { useYouTubeCast } from "../context/YouTubeCastContext";
 import { database } from "../firebase";
 import useIsMobile from "../hooks/isMobile";
 import { useKaraokeState } from "../hooks/karaoke";
@@ -79,6 +81,10 @@ function HomePage() {
     setPlaylist: setCastPlaylist,
   } = useFirebaseCast();
 
+  const {
+    setPlaylist: setYouTubeCastPlaylist,
+  } = useYouTubeCast();
+
   const isMobile = useIsMobile();
 
   const addPlaylistModalRef = useRef<ModalHandler>(null);
@@ -88,6 +94,8 @@ function HomePage() {
     SearchResult | RecommendedVideo
   >();
   const [hasSyncedPlaylist, setHasSyncedPlaylist] = useState(false);
+  const [showCastModeSelector, setShowCastModeSelector] = useState(false);
+  const [showYouTubeCast, setShowYouTubeCast] = useState(false);
 
   useEffect(() => {
     if (!user?.uid) {
@@ -112,6 +120,13 @@ function HomePage() {
       setHasSyncedPlaylist(false);
     }
   }, [isCasting, playlist, hasSyncedPlaylist]);
+
+  // Sync playlist to YouTube Cast
+  useEffect(() => {
+    if (playlist?.length > 0) {
+      setYouTubeCastPlaylist(playlist);
+    }
+  }, [playlist]);
 
   function addVideoToPlaylist(video: SearchResult | RecommendedVideo) {
     if (isCasting) {
@@ -209,12 +224,18 @@ function HomePage() {
           </span>
         )}
 
-        {/* Google Cast YouTube Button */}
-        {!!user.uid && !isCasting && (
+        {/* Cast to TV Button */}
+        {!!user.uid && !isCasting && playlist.length > 0 && (
           <div className="ml-2">
-            <GoogleCastYouTubeButton
-              videoIds={playlist.map(v => v.videoId)}
-            />
+            <button
+              onClick={() => setShowCastModeSelector(true)}
+              className="btn btn-sm btn-primary gap-2"
+            >
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M21 3H3c-1.1 0-2 .9-2 2v3h2V5h18v14h-7v2h7c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM1 18v3h3c0-1.66-1.34-3-3-3zm0-4v2c2.76 0 5 2.24 5 5h2c0-3.87-3.13-7-7-7zm0-4v2c4.97 0 9 4.03 9 9h2c0-6.08-4.93-11-11-11z" />
+              </svg>
+              Cast to TV
+            </button>
           </div>
         )}
 
@@ -569,6 +590,35 @@ function HomePage() {
           </div>
         </div>
       </main>
+
+      {/* Cast Mode Selector Modal */}
+      <CastModeSelector
+        isOpen={showCastModeSelector}
+        onClose={() => setShowCastModeSelector(false)}
+        onSelectWebMonitor={() => {
+          setShowCastModeSelector(false);
+          // Open YoutubePlayer Cast overlay (handled by YoutubePlayer component)
+          const castButton = document.querySelector('[data-cast-button]') as HTMLElement;
+          if (castButton) castButton.click();
+        }}
+        onSelectYouTube={() => {
+          setShowCastModeSelector(false);
+          setShowYouTubeCast(true);
+        }}
+      />
+
+      {/* YouTube Cast QR Code Modal */}
+      {showYouTubeCast && (
+        <div className="fixed inset-0 z-50">
+          <YouTubeCastButton />
+          <button
+            onClick={() => setShowYouTubeCast(false)}
+            className="fixed top-4 right-4 btn btn-circle btn-ghost z-50 bg-black/50"
+          >
+            ✕
+          </button>
+        </div>
+      )}
     </div>
   );
 }
