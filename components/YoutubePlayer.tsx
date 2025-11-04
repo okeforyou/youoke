@@ -76,7 +76,6 @@ function YoutubePlayer({
   const [isShowAds, setIsShowAds] = useState(false);
   const [videoCount, setVideoCount] = useState<number>(0);
   const [inputRoomId, setInputRoomId] = useState("");
-  const [isRemote, setIsRemote] = useState<boolean>(false);
 
   const mounted = usePromise();
 
