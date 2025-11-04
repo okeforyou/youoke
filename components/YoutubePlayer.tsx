@@ -575,10 +575,7 @@ function YoutubePlayer({
   };
 
   const RemoteComponent = () => {
-    // Old 2-screen system (Socket.io) - replaced by CastOverlayComponent
-    return null;
-
-    /* Old code - kept for reference
+    // 2-screen DJ mode - Opens /monitor in new window
     return (
       isLogin &&
       !isMoniter && (
@@ -666,7 +663,6 @@ function YoutubePlayer({
         </div>
       )
     );
-    */
   };
 
   const buttons = !isMoniter
@@ -721,6 +717,7 @@ function YoutubePlayer({
         />
       </span>
       {CastOverlayComponent()}
+      {RemoteComponent()}
       {isMoniter && !isOpenMonitor && (
         <div
           className={` w-full aspect-video   bg-primary text-white  z-2 left-auto
