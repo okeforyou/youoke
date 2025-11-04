@@ -33,6 +33,7 @@ import { useKaraokeState } from "../hooks/karaoke";
 import { useRoomState } from "../hooks/room";
 import Alert, { AlertHandler } from "./Alert";
 import BottomAds from "./BottomAds";
+import { CastModeSelector } from "./CastModeSelector";
 import VideoAds from "./VideoAds";
 
 function YoutubePlayer({
@@ -60,6 +61,7 @@ function YoutubePlayer({
 
   const [isIphone, setIsIphone] = useState<boolean>(false);
   const [isCastOverlayOpen, setIsCastOverlayOpen] = useState<boolean>(false);
+  const [showCastModeSelector, setShowCastModeSelector] = useState<boolean>(false);
   const [castInputRoomCode, setCastInputRoomCode] = useState<string>('');
   const [castError, setCastError] = useState<string>('');
   const [isJoiningRoom, setIsJoiningRoom] = useState<boolean>(false);
@@ -76,7 +78,6 @@ function YoutubePlayer({
   const [isShowAds, setIsShowAds] = useState(false);
   const [videoCount, setVideoCount] = useState<number>(0);
   const [inputRoomId, setInputRoomId] = useState("");
-  const [isRemote, setIsRemote] = useState<boolean>(false);
 
   const mounted = usePromise();
 
@@ -304,6 +305,19 @@ function YoutubePlayer({
           },
     ],
     [isMuted]
+  );
+
+  const castBtn = useMemo(
+    () => [
+      {
+        icon: TvIcon,
+        label: "Cast",
+        onClick: () => {
+          setShowCastModeSelector(true);
+        },
+      },
+    ],
+    []
   );
 
   const fullBtn = useMemo(
@@ -574,99 +588,10 @@ function YoutubePlayer({
     );
   };
 
-  const RemoteComponent = () => {
-    // 2-screen DJ mode - Opens /monitor in new window
-    return (
-      isLogin &&
-      !isMoniter && (
-        <div
-          className={`${
-            isRemote
-              ? " w-full aspect-video  top-0 right-0 "
-              : "w-16 h-16  top-5 right-5  drop-shadow-md rounded-full "
-          } bg-primary text-white  z-2 left-auto
-    flex items-center justify-center  transition-all duration-50 ${
-      !isRemote && playerState === PlayerStates.PLAYING ? "opacity-0" : ""
-    }`}
-          style={{
-            zIndex: 2,
-            position: "absolute",
-          }}
-        >
-          <div className="relative">
-            {isRemote && (
-              <div className="absolute inset-0 flex items-center justify-center  text-xl ">
-                {isMobile ? (
-                  <div className=" text-sm flex space-y-2 flex-col text-center">
-                    <div>
-                      คัดลอก URL เพื่อเปิดบน Google Chrome บนหน้าจอที่ 2<br />
-                      <span className="font-bold">
-                        https://play.okeforyou.com/monitor
-                      </span>
-                    </div>
-                    <div className="relative">
-                      <input
-                        id="room-id"
-                        className="py-2 px-2  block w-full text-black bg-gray-100 rounded-lg text-sm disabled:opacity-50 border-0 disabled:pointer-events-none"
-                        placeholder="กรอกเลขห้อง"
-                        value={inputRoomId}
-                        onChange={(e) => setInputRoomId(e.target.value)}
-                      />
-                      <button
-                        className="absolute right-2 top-2 py-0.5 px-3 text-white rounded-lg bg-primary"
-                        onClick={() => {
-                          setRoom(inputRoomId);
-                          addToast("ใช้ Firebase Cast แทน - กดปุ่ม Cast ด้านบน");
-                        }}
-                      >
-                        ยืนยัน
-                      </button>
-                    </div>
-                    <div className="text-sm">
-                      Android TV ใช้งาน ผ่าน App : Monitor YouOKE <br />
-                      โหมด 2 หน้าจอ เพลงจะเล่นจากคิวที่ค้างบน TV ก่อน
-                    </div>
-                  </div>
-                ) : (
-                  <a
-                    href={`/monitor?room=${room}`}
-                    target="_blank"
-                    className="flex flex-col items-center justify-center text-center cursor-pointer "
-                  >
-                    <TvIcon className="w-10 h-10" />
-                    {`เปิดห้อง: ${room}`}
-                  </a>
-                )}
-              </div>
-            )}
-            <div
-              className={`  cursor-pointer   ${
-                isRemote ? "absolute top-5 right-5  " : "w-16 h-16  "
-              }  flex flex-col items-center justify-center text-center   `}
-              onClick={() => {
-                setIsRemote(!isRemote);
-                handlePause();
-              }}
-            >
-              <TvIcon
-                className={`w-8 h-8 ${isRemote ? "opacity-0 hidden none" : ""}`}
-              />
-              <div
-                className={`text-xs ${
-                  isRemote ? "bg-white text-primary px-0.5" : ""
-                }`}
-              >
-                {isRemote && "ปิด"} 2 หน้าจอ
-              </div>
-            </div>
-          </div>
-        </div>
-      )
-    );
-  };
+  // Old RemoteComponent removed - replaced by unified Cast button in control bar
 
   const buttons = !isMoniter
-    ? playPauseBtn.concat(playerBtns, muteBtn, fullBtn)
+    ? playPauseBtn.concat(playerBtns, muteBtn, castBtn, fullBtn)
     : [
         ...fullBtn,
         {
@@ -717,7 +642,31 @@ function YoutubePlayer({
         />
       </span>
       {CastOverlayComponent()}
-      {RemoteComponent()}
+
+      {/* Cast Mode Selector Modal */}
+      <CastModeSelector
+        isOpen={showCastModeSelector}
+        onClose={() => setShowCastModeSelector(false)}
+        onSelectWebMonitor={() => {
+          setShowCastModeSelector(false);
+          setIsCastOverlayOpen(true);
+        }}
+        onSelectDual={() => {
+          setShowCastModeSelector(false);
+          window.open('/dual', '_blank');
+        }}
+        onSelectYouTube={() => {
+          setShowCastModeSelector(false);
+          if (playlist.length === 0) {
+            addToast('กรุณาเพิ่มเพลงลงคิวก่อน');
+            return;
+          }
+          const videoIds = playlist.map((v) => v.videoId).join(',');
+          const youtubeURL = `https://www.youtube.com/watch_videos?video_ids=${videoIds}`;
+          window.open(youtubeURL, '_blank');
+        }}
+      />
+
       {isMoniter && !isOpenMonitor && (
         <div
           className={` w-full aspect-video   bg-primary text-white  z-2 left-auto

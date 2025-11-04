@@ -2,8 +2,9 @@
  * Cast Mode Selector
  *
  * Allows user to choose between:
- * 1. Web Monitor Cast (Firebase) - Full control
- * 2. YouTube Cast (QR Code) - Direct to YouTube app
+ * 1. Web Monitor Cast (Firebase) - Full control with room code
+ * 2. Dual Screen (2 หน้าจอ) - Instant second screen (no code needed)
+ * 3. YouTube Cast - Direct to YouTube app
  */
 
 import React from 'react';
@@ -13,6 +14,7 @@ interface CastModeSelectorProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectWebMonitor: () => void;
+  onSelectDual: () => void;
   onSelectYouTube: () => void;
 }
 
@@ -20,6 +22,7 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
   isOpen,
   onClose,
   onSelectWebMonitor,
+  onSelectDual,
   onSelectYouTube,
 }) => {
   if (!isOpen) return null;
@@ -69,7 +72,30 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
             </div>
           </button>
 
-          {/* Option 2: YouTube Cast */}
+          {/* Option 2: Dual Screen (2 หน้าจอ) */}
+          <button
+            onClick={onSelectDual}
+            className="w-full text-left bg-secondary/10 hover:bg-secondary/20 rounded-lg p-5 border-2 border-secondary/30 hover:border-secondary transition-all group"
+          >
+            <div className="flex items-start gap-4">
+              <div className="text-4xl">🖥️</div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-secondary mb-2 group-hover:underline">
+                  2 หน้าจอ (Dual Screen)
+                </h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  เปิดหน้าจอที่ 2 ทันที - ไม่ต้องกรอกรหัส
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <span className="badge badge-success badge-sm">ง่ายที่สุด</span>
+                  <span className="badge badge-success badge-sm">ไม่ต้องกรอกรหัส</span>
+                  <span className="badge badge-info badge-sm">แนะนำสำหรับ DJ</span>
+                </div>
+              </div>
+            </div>
+          </button>
+
+          {/* Option 3: YouTube Cast */}
           <button
             onClick={onSelectYouTube}
             className="w-full text-left bg-base-200/50 hover:bg-base-200 rounded-lg p-5 border-2 border-base-300 hover:border-primary/50 transition-all group"
