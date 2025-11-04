@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouOke Cast Receiver</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #000;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    #player {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    #status {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      color: white;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 15px 25px;
+      border-radius: 10px;
+      font-size: 18px;
+      z-index: 100;
+      display: none;
+    }
+
+    #queue-info {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      color: white;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 15px 25px;
+      border-radius: 10px;
+      font-size: 16px;
+      z-index: 100;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div id="status">🎤 YouOke Cast Receiver</div>
+  <div id="queue-info">Ready...</div>
+  <div id="player"></div>
+
+  <!-- Google Cast Receiver SDK -->
+  <script src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
+
+  <!-- YouTube IFrame Player API -->
+  <script src="https://www.youtube.com/iframe_api"></script>
+
+  <script>
+    const context = cast.framework.CastReceiverContext.getInstance();
+    const playerManager = context.getPlayerManager();
+
+    let ytPlayer = null;
+    let currentVideoId = null;
+    let videoQueue = [];
+    let currentIndex = 0;
+
+    // Status display
+    function showStatus(message, duration = 3000) {
+      const status = document.getElementById('status');
+      status.textContent = message;
+      status.style.display = 'block';
+      setTimeout(() => {
+        status.style.display = 'none';
+      }, duration);
+    }
+
+    function updateQueueInfo() {
+      const info = document.getElementById('queue-info');
+      if (videoQueue.length > 0) {
+        info.textContent = `🎵 ${currentIndex + 1}/${videoQueue.length}`;
+      } else {
+        info.textContent = 'Ready...';
+      }
+    }
+
+    // YouTube IFrame Player ready
+    function onYouTubeIframeAPIReady() {
+      console.log('✅ YouTube IFrame API ready');
+
+      ytPlayer = new YT.Player('player', {
+        height: '100%',
+        width: '100%',
+        playerVars: {
+          autoplay: 1,
+          controls: 1,
+          modestbranding: 1,
+          rel: 0,
+          fs: 1,
+        },
+        events: {
+          onReady: onPlayerReady,
+          onStateChange: onPlayerStateChange,
+          onError: onPlayerError,
+        }
+      });
+    }
+
+    function onPlayerReady(event) {
+      console.log('✅ YouTube Player ready');
+      showStatus('🎤 Ready to Cast');
+    }
+
+    function onPlayerStateChange(event) {
+      console.log('Player state:', event.data);
+
+      // YT.PlayerState.ENDED = 0
+      if (event.data === 0) {
+        console.log('✅ Video ended, checking for next...');
+        playNext();
+      }
+    }
+
+    function onPlayerError(event) {
+      console.error('❌ YouTube Player error:', event.data);
+      showStatus('❌ Error playing video', 5000);
+    }
+
+    function playVideo(videoId) {
+      if (!ytPlayer || !ytPlayer.loadVideoById) {
+        console.error('❌ YouTube Player not ready');
+        return;
+      }
+
+      console.log('🎬 Playing video:', videoId);
+      currentVideoId = videoId;
+
+      ytPlayer.loadVideoById({
+        videoId: videoId,
+        startSeconds: 0,
+      });
+
+      showStatus('▶️ Playing...');
+      updateQueueInfo();
+    }
+
+    function playNext() {
+      if (currentIndex + 1 < videoQueue.length) {
+        currentIndex++;
+        const nextVideo = videoQueue[currentIndex];
+        console.log('⏭️ Playing next video:', nextVideo);
+        playVideo(nextVideo);
+      } else {
+        console.log('📭 Queue finished');
+        showStatus('✅ Queue finished', 5000);
+      }
+    }
+
+    // Custom message handler
+    context.addCustomMessageListener('urn:x-cast:com.youoke.cast', (customEvent) => {
+      console.log('📨 Received custom message:', customEvent.data);
+
+      const data = customEvent.data;
+
+      switch (data.type) {
+        case 'LOAD_VIDEO':
+          videoQueue = [data.videoId];
+          currentIndex = 0;
+          playVideo(data.videoId);
+          break;
+
+        case 'LOAD_QUEUE':
+          videoQueue = data.videoIds || [];
+          currentIndex = 0;
+          if (videoQueue.length > 0) {
+            playVideo(videoQueue[0]);
+          }
+          break;
+
+        case 'PLAY':
+          if (ytPlayer) ytPlayer.playVideo();
+          break;
+
+        case 'PAUSE':
+          if (ytPlayer) ytPlayer.pauseVideo();
+          break;
+
+        case 'NEXT':
+          playNext();
+          break;
+
+        default:
+          console.log('Unknown message type:', data.type);
+      }
+    });
+
+    // Intercept LOAD requests and extract YouTube video ID
+    playerManager.setMessageInterceptor(
+      cast.framework.messages.MessageType.LOAD,
+      (loadRequestData) => {
+        console.log('📦 Load request:', loadRequestData);
+
+        // Extract video ID from YouTube URL
+        const contentId = loadRequestData.media.contentId;
+        const videoIdMatch = contentId.match(/[?&]v=([^&]+)/);
+
+        if (videoIdMatch) {
+          const videoId = videoIdMatch[1];
+          console.log('🎬 Extracted video ID:', videoId);
+
+          videoQueue = [videoId];
+          currentIndex = 0;
+          playVideo(videoId);
+
+          // Return null to prevent default media player
+          return null;
+        }
+
+        return loadRequestData;
+      }
+    );
+
+    // Start Cast Receiver
+    const options = new cast.framework.CastReceiverOptions();
+    options.disableIdleTimeout = true;
+
+    context.start(options);
+    console.log('✅ Cast Receiver started');
+    showStatus('🎤 YouOke Cast Receiver Ready', 3000);
+  </script>
+</body>
+</html>
