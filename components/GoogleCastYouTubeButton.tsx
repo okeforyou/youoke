@@ -7,10 +7,10 @@
 
 import React, { useEffect, useState } from 'react';
 
-// YouTube receiver app ID
-// CC1AD845 = Default Media Receiver (supports YouTube URLs)
-// 233637DE = YouTube (requires special format, not working for us)
-const YOUTUBE_RECEIVER_APP_ID = 'CC1AD845';
+// Google Cast Application ID
+// 4FB4C174 = YouOke Karaoke Custom Receiver (with queue support)
+// Registered at: https://cast.google.com/publish
+const YOUTUBE_RECEIVER_APP_ID = '4FB4C174';
 
 interface GoogleCastYouTubeButtonProps {
   videoIds: string[]; // Array of YouTube video IDs to play

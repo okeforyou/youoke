@@ -15,6 +15,7 @@ interface CastModeSelectorProps {
   onClose: () => void;
   onSelectWebMonitor: () => void;
   onSelectDual: () => void;
+  onSelectGoogleCast: () => void;
   onSelectYouTube: () => void;
 }
 
@@ -23,6 +24,7 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
   onClose,
   onSelectWebMonitor,
   onSelectDual,
+  onSelectGoogleCast,
   onSelectYouTube,
 }) => {
   if (!isOpen) return null;
@@ -95,7 +97,30 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
             </div>
           </button>
 
-          {/* Option 3: YouTube Cast */}
+          {/* Option 3: Google Cast (Chromecast) */}
+          <button
+            onClick={onSelectGoogleCast}
+            className="w-full text-left bg-accent/10 hover:bg-accent/20 rounded-lg p-5 border-2 border-accent/30 hover:border-accent transition-all group"
+          >
+            <div className="flex items-start gap-4">
+              <div className="text-4xl">📡</div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold text-accent mb-2 group-hover:underline">
+                  Google Cast (Chromecast)
+                </h3>
+                <p className="text-sm text-gray-600 mb-3">
+                  Cast ไปยัง Chromecast - ไม่ต้องกรอกรหัส Auto-discover
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <span className="badge badge-success badge-sm">ง่ายที่สุด</span>
+                  <span className="badge badge-success badge-sm">Auto-discover</span>
+                  <span className="badge badge-info badge-sm">แนะนำสำหรับบ้าน</span>
+                </div>
+              </div>
+            </div>
+          </button>
+
+          {/* Option 4: YouTube Cast */}
           <button
             onClick={onSelectYouTube}
             className="w-full text-left bg-base-200/50 hover:bg-base-200 rounded-lg p-5 border-2 border-base-300 hover:border-primary/50 transition-all group"

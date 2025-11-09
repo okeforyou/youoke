@@ -82,9 +82,9 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
     const context = cast.framework.CastContext.getInstance();
 
-    // TODO: Replace with your actual Google Cast Application ID
-    // Register at: https://cast.google.com/publish
-    const applicationId = (window as any).chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID; // Temporary
+    // Google Cast Application ID
+    // Registered at: https://cast.google.com/publish
+    const applicationId = '4FB4C174'; // YouOke Karaoke Custom Receiver
 
     context.setOptions({
       receiverApplicationId: applicationId,

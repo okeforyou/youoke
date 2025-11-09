@@ -8,6 +8,7 @@ import { Analytics } from '@vercel/analytics/react'
 import GoogleAnalytics from '../components/GoogleAnalytics'
 import { AdsProvider } from '../context/AdsContext'
 import { AuthContextProvider } from '../context/AuthContext'
+import { CastProvider } from '../context/CastContext'
 import { FirebaseCastProvider } from '../context/FirebaseCastContext'
 import { YouTubeCastProvider } from '../context/YouTubeCastContext'
 import { ToastProvider } from '../context/ToastContext'
@@ -79,13 +80,15 @@ function App({ Component, pageProps }) {
             </>
           )}
           <QueryClientProvider client={queryClient}>
-            <FirebaseCastProvider>
-              <YouTubeCastProvider>
-                <AdsProvider>
-                  <Component {...pageProps} />
-                </AdsProvider>
-              </YouTubeCastProvider>
-            </FirebaseCastProvider>
+            <CastProvider>
+              <FirebaseCastProvider>
+                <YouTubeCastProvider>
+                  <AdsProvider>
+                    <Component {...pageProps} />
+                  </AdsProvider>
+                </YouTubeCastProvider>
+              </FirebaseCastProvider>
+            </CastProvider>
             {/* <ReactQueryDevtools /> */}
           </QueryClientProvider>
           <Analytics />

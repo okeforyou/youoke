@@ -34,6 +34,7 @@ import VideoHorizontalCard from "../components/VideoHorizontalCard";
 import YoutubePlayer from "../components/YoutubePlayer";
 import { CastModeSelector } from "../components/CastModeSelector";
 import { useAuth } from "../context/AuthContext";
+import { useCast } from "../context/CastContext";
 import { useFirebaseCast } from "../context/FirebaseCastContext";
 import { useYouTubeCast } from "../context/YouTubeCastContext";
 import { database } from "../firebase";
@@ -66,6 +67,7 @@ function HomePage() {
   } = useKaraokeState();
 
   const { user } = useAuth();
+  const { connect: connectGoogleCast, setPlaylist: setGoogleCastPlaylist } = useCast();
   const { myPlaylist, setMyPlaylist } = useMyPlaylistState();
   const { room, setRoom } = useRoomState();
   const {
@@ -603,6 +605,13 @@ function HomePage() {
           setShowCastModeSelector(false);
           // Open dual screen in new tab
           window.open('/dual', '_blank');
+        }}
+        onSelectGoogleCast={() => {
+          setShowCastModeSelector(false);
+          // Set playlist and connect to Chromecast
+          setGoogleCastPlaylist(playlist);
+          connectGoogleCast();
+          console.log('📡 Google Cast: Connecting to Chromecast...');
         }}
         onSelectYouTube={() => {
           setShowCastModeSelector(false);
