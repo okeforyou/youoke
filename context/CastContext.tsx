@@ -65,19 +65,51 @@ export function CastProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
+    console.log('🎬 CastContext mounted, waiting for Google Cast SDK...');
+
+    let pollCount = 0;
+    const maxPolls = 30; // Try for 15 seconds (30 * 500ms)
+
+    // Setup callback for when SDK is available
     window['__onGCastApiAvailable'] = (isAvailable: boolean) => {
+      console.log('📡 __onGCastApiAvailable called:', isAvailable);
       if (isAvailable) {
         initializeCastApi();
       }
     };
 
+    // Poll for Cast SDK in case callback doesn't fire
+    const pollInterval = setInterval(() => {
+      pollCount++;
+      const cast = (window as any).chrome?.cast;
+
+      if (cast?.framework) {
+        console.log(`✅ Google Cast SDK detected (poll #${pollCount})`);
+        clearInterval(pollInterval);
+        initializeCastApi();
+      } else if (pollCount >= maxPolls) {
+        console.warn('⚠️ Google Cast SDK not loaded after 15 seconds');
+        clearInterval(pollInterval);
+      } else {
+        console.log(`⏳ Waiting for Cast SDK... (poll #${pollCount}/${maxPolls})`);
+      }
+    }, 500);
+
     return () => {
+      clearInterval(pollInterval);
       delete window['__onGCastApiAvailable'];
     };
   }, []);
 
   const initializeCastApi = () => {
     console.log('🎬 Initializing Google Cast API...');
+
+    // Prevent double initialization
+    if (isAvailable) {
+      console.log('⚠️ Google Cast already initialized, skipping...');
+      return;
+    }
+
     const cast = window.chrome?.cast as any;
     if (!cast) {
       console.log('⚠️ Google Cast not available on window.chrome');
