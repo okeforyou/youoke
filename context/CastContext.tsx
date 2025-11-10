@@ -240,12 +240,32 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
     try {
       const context = cast.framework.CastContext.getInstance();
+      console.log('🔌 Requesting Cast session...');
       context.requestSession().then(
-        () => console.log('Cast session requested'),
-        (error: any) => console.error('Error requesting session:', error)
+        () => {
+          console.log('✅ Cast session requested successfully');
+        },
+        (error: any) => {
+          console.error('❌ Error requesting session:', error);
+          console.error('Error details:', {
+            code: error?.code,
+            description: error?.description,
+            details: error?.details,
+            message: error?.message,
+          });
+
+          // Show user-friendly error
+          let errorMessage = 'ไม่สามารถเชื่อมต่อ Google Cast ได้';
+          if (error === 'cancel') {
+            errorMessage = 'การเชื่อมต่อถูกยกเลิก';
+          } else if (error === 'session_error') {
+            errorMessage = 'ไม่สามารถเชื่อมต่อกับอุปกรณ์ได้\n\nกรุณา:\n1. Reboot ทีวี\n2. รอ 5-10 นาที\n3. ลองใหม่อีกครั้ง';
+          }
+          alert(errorMessage);
+        }
       );
     } catch (error) {
-      console.error('Error connecting to Cast:', error);
+      console.error('❌ Error connecting to Cast:', error);
       alert('ไม่สามารถเชื่อมต่อ Google Cast ได้\nกรุณาลองใหม่อีกครั้ง');
     }
   };
