@@ -26,6 +26,7 @@ import {
 import { ArrowPathIcon } from "@heroicons/react/24/solid";
 
 import { useAuth } from "../context/AuthContext";
+import { useCast } from "../context/CastContext";
 import { useFirebaseCast } from "../context/FirebaseCastContext";
 import { useToast } from "../context/ToastContext";
 import useIsMobile from "../hooks/isMobile";
@@ -54,6 +55,7 @@ function YoutubePlayer({
   const { user } = useAuth();
   const isLogin = !!user.uid;
   const { isConnected: isCasting, roomCode, joinRoom, leaveRoom } = useFirebaseCast();
+  const { connect: connectGoogleCast, setPlaylist: setGoogleCastPlaylist } = useCast();
 
   const [isFullScreenIphone, setIsFullScreenIphone] = useState<boolean>(false);
   const alertRef = useRef<AlertHandler>(null);
@@ -730,6 +732,17 @@ function YoutubePlayer({
           window.open('/dual', '_blank');
           // Pause video on main screen
           handlePause();
+        }}
+        onSelectGoogleCast={() => {
+          setShowCastModeSelector(false);
+          if (playlist.length === 0) {
+            addToast('กรุณาเพิ่มเพลงลงคิวก่อน');
+            return;
+          }
+          // Set playlist and connect to Chromecast
+          setGoogleCastPlaylist(playlist);
+          connectGoogleCast();
+          console.log('📡 Google Cast: Connecting to Chromecast...');
         }}
         onSelectYouTube={() => {
           setShowCastModeSelector(false);
