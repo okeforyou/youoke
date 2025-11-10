@@ -86,11 +86,17 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
       // Debug: Show what's available
       if (pollCount === 1 || pollCount === 5 || pollCount === 10) {
-        console.log(`🔍 Debug (poll #${pollCount}):`, {
+        const debugInfo = {
           hasCast: !!cast,
           hasFramework: !!cast?.framework,
           castKeys: cast ? Object.keys(cast) : [],
-        });
+        };
+        console.log(`🔍 Debug (poll #${pollCount}):`, JSON.stringify(debugInfo, null, 2));
+        console.log(`🔍 window.chrome:`, !!window.chrome);
+        console.log(`🔍 window.chrome.cast:`, !!cast);
+        if (cast) {
+          console.log(`🔍 cast properties:`, Object.keys(cast).join(', '));
+        }
       }
 
       if (cast?.framework) {
@@ -99,11 +105,17 @@ export function CastProvider({ children }: { children: ReactNode }) {
         initializeCastApi();
       } else if (pollCount >= maxPolls) {
         console.warn('⚠️ Google Cast SDK not loaded after 15 seconds');
-        console.warn('🔍 Final debug:', {
+        const finalDebug = {
           hasCast: !!cast,
           hasFramework: !!cast?.framework,
           castKeys: cast ? Object.keys(cast) : [],
-        });
+        };
+        console.warn('🔍 Final debug:', JSON.stringify(finalDebug, null, 2));
+        console.warn('🔍 window.chrome:', !!window.chrome);
+        console.warn('🔍 window.chrome.cast:', !!cast);
+        if (cast) {
+          console.warn('🔍 cast properties:', Object.keys(cast).join(', '));
+        }
         clearInterval(pollInterval);
       } else {
         console.log(`⏳ Waiting for Cast SDK... (poll #${pollCount}/${maxPolls})`);
