@@ -82,40 +82,40 @@ export function CastProvider({ children }: { children: ReactNode }) {
     // Poll for Cast SDK in case callback doesn't fire
     const pollInterval = setInterval(() => {
       pollCount++;
-      const cast = (window as any).chrome?.cast;
+      const chromeCast = (window as any).chrome?.cast;
+      const castFramework = (window as any).cast?.framework;
 
       // Debug: Show what's available
       if (pollCount === 1 || pollCount === 5 || pollCount === 10) {
         const debugInfo = {
-          hasCast: !!cast,
-          hasFramework: !!cast?.framework,
-          castKeys: cast ? Object.keys(cast) : [],
+          hasChromeCast: !!chromeCast,
+          hasCastFramework: !!castFramework,
+          hasWindowCast: !!(window as any).cast,
         };
         console.log(`🔍 Debug (poll #${pollCount}):`, JSON.stringify(debugInfo, null, 2));
-        console.log(`🔍 window.chrome:`, !!window.chrome);
-        console.log(`🔍 window.chrome.cast:`, !!cast);
-        if (cast) {
-          console.log(`🔍 cast properties:`, Object.keys(cast).join(', '));
+        console.log(`🔍 window.chrome.cast:`, !!chromeCast);
+        console.log(`🔍 window.cast:`, !!(window as any).cast);
+        console.log(`🔍 window.cast.framework:`, !!castFramework);
+        if (castFramework) {
+          console.log(`🔍 cast.framework properties:`, Object.keys(castFramework).join(', '));
         }
       }
 
-      if (cast?.framework) {
+      if (castFramework) {
         console.log(`✅ Google Cast SDK detected (poll #${pollCount})`);
         clearInterval(pollInterval);
         initializeCastApi();
       } else if (pollCount >= maxPolls) {
         console.warn('⚠️ Google Cast SDK not loaded after 15 seconds');
         const finalDebug = {
-          hasCast: !!cast,
-          hasFramework: !!cast?.framework,
-          castKeys: cast ? Object.keys(cast) : [],
+          hasChromeCast: !!chromeCast,
+          hasCastFramework: !!castFramework,
+          hasWindowCast: !!(window as any).cast,
         };
         console.warn('🔍 Final debug:', JSON.stringify(finalDebug, null, 2));
-        console.warn('🔍 window.chrome:', !!window.chrome);
-        console.warn('🔍 window.chrome.cast:', !!cast);
-        if (cast) {
-          console.warn('🔍 cast properties:', Object.keys(cast).join(', '));
-        }
+        console.warn('🔍 window.chrome.cast:', !!chromeCast);
+        console.warn('🔍 window.cast:', !!(window as any).cast);
+        console.warn('🔍 window.cast.framework:', !!castFramework);
         clearInterval(pollInterval);
       } else {
         console.log(`⏳ Waiting for Cast SDK... (poll #${pollCount}/${maxPolls})`);
@@ -137,9 +137,9 @@ export function CastProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const cast = window.chrome?.cast as any;
+    const cast = (window as any).cast;
     if (!cast) {
-      console.log('⚠️ Google Cast not available on window.chrome');
+      console.log('⚠️ Google Cast not available on window.cast');
       return;
     }
 
@@ -231,7 +231,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
   // Connection Actions
   const connect = () => {
-    const cast = window.chrome?.cast as any;
+    const cast = (window as any).cast;
     if (!cast || !cast.framework) {
       console.error('Google Cast SDK not loaded yet. Please wait a moment and try again.');
       alert('กรุณารอสักครู่และลองใหม่อีกครั้ง\n(Google Cast SDK กำลังโหลด...)');
@@ -251,7 +251,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
   };
 
   const disconnect = () => {
-    const cast = window.chrome?.cast as any;
+    const cast = (window as any).cast;
     if (!cast) return;
 
     const context = cast.framework.CastContext.getInstance();
