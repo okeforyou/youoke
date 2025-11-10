@@ -67,7 +67,7 @@ function HomePage() {
   } = useKaraokeState();
 
   const { user } = useAuth();
-  const { connect: connectGoogleCast, setPlaylist: setGoogleCastPlaylist } = useCast();
+  const { connect: connectGoogleCast, setPlaylist: setGoogleCastPlaylist, isAvailable: isCastAvailable } = useCast();
   const { myPlaylist, setMyPlaylist } = useMyPlaylistState();
   const { room, setRoom } = useRoomState();
   const {
@@ -595,6 +595,7 @@ function HomePage() {
       <CastModeSelector
         isOpen={showCastModeSelector}
         onClose={() => setShowCastModeSelector(false)}
+        isCastAvailable={isCastAvailable}
         onSelectWebMonitor={() => {
           setShowCastModeSelector(false);
           // Open YoutubePlayer Cast overlay (handled by YoutubePlayer component)

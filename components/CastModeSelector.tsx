@@ -13,6 +13,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 interface CastModeSelectorProps {
   isOpen: boolean;
   onClose: () => void;
+  isCastAvailable: boolean;
   onSelectWebMonitor: () => void;
   onSelectDual: () => void;
   onSelectGoogleCast: () => void;
@@ -22,6 +23,7 @@ interface CastModeSelectorProps {
 export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
   isOpen,
   onClose,
+  isCastAvailable,
   onSelectWebMonitor,
   onSelectDual,
   onSelectGoogleCast,
@@ -100,21 +102,40 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
           {/* Option 3: Google Cast (Chromecast) */}
           <button
             onClick={onSelectGoogleCast}
-            className="w-full text-left bg-accent/10 hover:bg-accent/20 rounded-lg p-5 border-2 border-accent/30 hover:border-accent transition-all group"
+            disabled={!isCastAvailable}
+            className={`w-full text-left rounded-lg p-5 border-2 transition-all group ${
+              isCastAvailable
+                ? 'bg-accent/10 hover:bg-accent/20 border-accent/30 hover:border-accent cursor-pointer'
+                : 'bg-gray-100 border-gray-300 cursor-not-allowed opacity-60'
+            }`}
           >
             <div className="flex items-start gap-4">
-              <div className="text-4xl">📡</div>
+              <div className="text-4xl">
+                {isCastAvailable ? '📡' : '⏳'}
+              </div>
               <div className="flex-1">
-                <h3 className="text-xl font-bold text-accent mb-2 group-hover:underline">
+                <h3 className={`text-xl font-bold mb-2 ${
+                  isCastAvailable ? 'text-accent group-hover:underline' : 'text-gray-500'
+                }`}>
                   Google Cast (Chromecast)
+                  {!isCastAvailable && <span className="ml-2 text-sm">(กำลังโหลด...)</span>}
                 </h3>
                 <p className="text-sm text-gray-600 mb-3">
-                  Cast ไปยัง Chromecast - ไม่ต้องกรอกรหัส Auto-discover
+                  {isCastAvailable
+                    ? 'Cast ไปยัง Chromecast - ไม่ต้องกรอกรหัส Auto-discover'
+                    : 'รอสักครู่ กำลังโหลด Google Cast SDK...'
+                  }
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  <span className="badge badge-success badge-sm">ง่ายที่สุด</span>
-                  <span className="badge badge-success badge-sm">Auto-discover</span>
-                  <span className="badge badge-info badge-sm">แนะนำสำหรับบ้าน</span>
+                  {isCastAvailable ? (
+                    <>
+                      <span className="badge badge-success badge-sm">ง่ายที่สุด</span>
+                      <span className="badge badge-success badge-sm">Auto-discover</span>
+                      <span className="badge badge-info badge-sm">แนะนำสำหรับบ้าน</span>
+                    </>
+                  ) : (
+                    <span className="badge badge-warning badge-sm">กำลังโหลด SDK...</span>
+                  )}
                 </div>
               </div>
             </div>

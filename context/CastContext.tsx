@@ -77,21 +77,38 @@ export function CastProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const initializeCastApi = () => {
+    console.log('🎬 Initializing Google Cast API...');
     const cast = window.chrome?.cast as any;
-    if (!cast) return;
+    if (!cast) {
+      console.log('⚠️ Google Cast not available on window.chrome');
+      return;
+    }
 
-    const context = cast.framework.CastContext.getInstance();
+    if (!cast.framework) {
+      console.log('⚠️ Google Cast framework not available');
+      return;
+    }
 
-    // Google Cast Application ID
-    // Registered at: https://cast.google.com/publish
-    const applicationId = '4FB4C174'; // YouOke Karaoke Custom Receiver
+    let context;
+    try {
+      context = cast.framework.CastContext.getInstance();
 
-    context.setOptions({
-      receiverApplicationId: applicationId,
-      autoJoinPolicy: (window as any).chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
-    });
+      // Google Cast Application ID
+      // Registered at: https://cast.google.com/publish
+      const applicationId = '4FB4C174'; // YouOke Karaoke Custom Receiver
 
-    setIsAvailable(true);
+      context.setOptions({
+        receiverApplicationId: applicationId,
+        autoJoinPolicy: (window as any).chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
+      });
+
+      setIsAvailable(true);
+      console.log('✅ Google Cast SDK initialized successfully!');
+      console.log('📱 Application ID:', applicationId);
+    } catch (error) {
+      console.error('❌ Error initializing Google Cast:', error);
+      return;
+    }
 
     // Listen for session state changes
     context.addEventListener(

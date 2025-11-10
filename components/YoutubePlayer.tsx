@@ -55,7 +55,7 @@ function YoutubePlayer({
   const { user } = useAuth();
   const isLogin = !!user.uid;
   const { isConnected: isCasting, roomCode, joinRoom, leaveRoom } = useFirebaseCast();
-  const { connect: connectGoogleCast, setPlaylist: setGoogleCastPlaylist } = useCast();
+  const { connect: connectGoogleCast, setPlaylist: setGoogleCastPlaylist, isAvailable: isCastAvailable } = useCast();
 
   const [isFullScreenIphone, setIsFullScreenIphone] = useState<boolean>(false);
   const alertRef = useRef<AlertHandler>(null);
@@ -719,6 +719,7 @@ function YoutubePlayer({
       <CastModeSelector
         isOpen={showCastModeSelector}
         onClose={() => setShowCastModeSelector(false)}
+        isCastAvailable={isCastAvailable}
         onSelectWebMonitor={() => {
           setShowCastModeSelector(false);
           setIsCastOverlayOpen(true);
