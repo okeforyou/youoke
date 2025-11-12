@@ -55,7 +55,16 @@ function YoutubePlayer({
   const { user } = useAuth();
   const isLogin = !!user.uid;
   const { isConnected: isCasting, roomCode, joinRoom, leaveRoom } = useFirebaseCast();
-  const { connect: connectGoogleCast, setPlaylist: setGoogleCastPlaylist, isAvailable: isCastAvailable } = useCast();
+  const {
+    connect: connectGoogleCast,
+    setPlaylist: setGoogleCastPlaylist,
+    isAvailable: isCastAvailable,
+    isConnected: isGoogleCastConnected,
+    next: castNext,
+    previous: castPrevious,
+    play: castPlay,
+    pause: castPause,
+  } = useCast();
 
   const [isFullScreenIphone, setIsFullScreenIphone] = useState<boolean>(false);
   const alertRef = useRef<AlertHandler>(null);
@@ -279,6 +288,13 @@ function YoutubePlayer({
   };
 
   const handlePlay = async () => {
+    // If connected to Google Cast, send command to TV
+    if (isGoogleCastConnected) {
+      castPlay();
+      return;
+    }
+
+    // Otherwise, control local player
     try {
       const player = playerRef.current?.getInternalPlayer();
 
@@ -291,6 +307,13 @@ function YoutubePlayer({
   };
 
   const handlePause = async () => {
+    // If connected to Google Cast, send command to TV
+    if (isGoogleCastConnected) {
+      castPause();
+      return;
+    }
+
+    // Otherwise, control local player
     try {
       const player = playerRef.current?.getInternalPlayer();
 
@@ -418,7 +441,13 @@ function YoutubePlayer({
       {
         icon: ForwardIcon,
         label: "เพลงถัดไป",
-        onClick: nextSong,
+        onClick: () => {
+          if (isGoogleCastConnected) {
+            castNext();
+          } else {
+            nextSong();
+          }
+        },
       },
       {
         icon: ArrowUturnLeftIcon,
@@ -426,7 +455,7 @@ function YoutubePlayer({
         onClick: handleReplay,
       },
     ],
-    [nextSong, playlist]
+    [nextSong, playlist, isGoogleCastConnected, castNext]
   );
 
   const handleCastJoinRoom = async () => {
