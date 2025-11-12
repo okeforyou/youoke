@@ -179,9 +179,20 @@
 
       switch (data.type) {
         case 'LOAD_VIDEO':
-          videoQueue = [data.videoId];
-          currentIndex = 0;
+          // Find video in existing queue
+          const videoIndex = videoQueue.findIndex(id => id === data.videoId);
+
+          if (videoIndex !== -1) {
+            // Video found in queue - just change current index
+            currentIndex = videoIndex;
+            console.log('🎯 Playing video from queue at index:', currentIndex);
+          } else {
+            // Video not in queue - this shouldn't happen normally, but handle it
+            console.warn('⚠️ Video not in queue, playing anyway');
+          }
+
           playVideo(data.videoId);
+          updateQueueInfo();
           break;
 
         case 'LOAD_QUEUE':
@@ -190,6 +201,7 @@
           if (videoQueue.length > 0) {
             playVideo(videoQueue[0]);
           }
+          updateQueueInfo();
           break;
 
         case 'PLAY':
