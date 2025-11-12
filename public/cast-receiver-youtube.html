@@ -132,7 +132,24 @@
       // YT.PlayerState.ENDED = 0
       if (event.data === 0) {
         console.log('✅ Video ended, checking for next...');
+
+        // Notify sender that video ended
+        sendMessageToSender({
+          type: 'VIDEO_ENDED',
+          videoId: currentVideoId,
+          nextIndex: currentIndex + 1,
+        });
+
         playNext();
+      }
+    }
+
+    function sendMessageToSender(message) {
+      try {
+        context.sendCustomMessage(CAST_NAMESPACE, undefined, message);
+        console.log('📤 Sent message to sender:', message);
+      } catch (error) {
+        console.error('❌ Error sending message to sender:', error);
       }
     }
 
@@ -201,6 +218,13 @@
           if (videoQueue.length > 0) {
             playVideo(videoQueue[0]);
           }
+          updateQueueInfo();
+          break;
+
+        case 'UPDATE_QUEUE':
+          // Update queue without changing current index/video
+          videoQueue = data.videoIds || [];
+          console.log('📝 Queue updated, keeping current video. Total:', videoQueue.length);
           updateQueueInfo();
           break;
 
