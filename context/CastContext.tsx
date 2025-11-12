@@ -244,16 +244,20 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
   // Send message to receiver
   const sendMessage = (message: CastMessage) => {
+    console.log('🎯 sendMessage called:', message.type, 'isConnected:', isConnected);
+
     if (!castSession) {
-      console.warn('No cast session available');
+      console.error('❌ No cast session available! isConnected:', isConnected);
+      console.error('❌ Please reconnect to Cast');
       return;
     }
 
+    console.log('📤 Sending message to receiver...', message);
     castSession.sendMessage(
       CAST_NAMESPACE,
       message,
-      () => console.log('Message sent:', message.type),
-      (error) => console.error('Error sending message:', error)
+      () => console.log('✅ Message sent successfully:', message.type),
+      (error) => console.error('❌ Error sending message:', error)
     );
   };
 
@@ -318,15 +322,22 @@ export function CastProvider({ children }: { children: ReactNode }) {
   };
 
   const addToQueue = (video: SearchResult | RecommendedVideo) => {
+    console.log('➕ addToQueue() called, video:', video.title || video.videoId, 'isConnected:', isConnected);
+
     const newVideo = { ...video, key: Date.now() };
     const newPlaylist = [...playlist, newVideo];
     setPlaylistState(newPlaylist);
 
+    console.log('📋 New playlist length:', newPlaylist.length);
+
     if (isConnected) {
+      console.log('📤 Sending updated queue to receiver...');
       sendMessage({
         type: 'LOAD_QUEUE',
         videoIds: newPlaylist.map(v => v.videoId),
       });
+    } else {
+      console.warn('⚠️ Not connected! Queue not sent to TV');
     }
   };
 
@@ -435,21 +446,34 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
   // Player Controls
   const play = () => {
+    console.log('▶️ play() called, isConnected:', isConnected);
     if (isConnected) {
       sendMessage({ type: 'PLAY' });
+    } else {
+      console.warn('⚠️ Not connected! Cannot play');
     }
   };
 
   const pause = () => {
+    console.log('⏸️ pause() called, isConnected:', isConnected);
     if (isConnected) {
       sendMessage({ type: 'PAUSE' });
+    } else {
+      console.warn('⚠️ Not connected! Cannot pause');
     }
   };
 
   const next = () => {
-    if (playlist.length === 0) return;
+    console.log('⏭️ next() called, playlist.length:', playlist.length, 'currentIndex:', currentIndex, 'isConnected:', isConnected);
+
+    if (playlist.length === 0) {
+      console.warn('⚠️ Playlist is empty!');
+      return;
+    }
 
     const newIndex = Math.min(currentIndex + 1, playlist.length - 1);
+    console.log('📍 Moving to index:', newIndex, 'videoId:', playlist[newIndex]?.videoId);
+
     setCurrentIndex(newIndex);
     setCurrentVideo(playlist[newIndex]);
 
@@ -459,13 +483,22 @@ export function CastProvider({ children }: { children: ReactNode }) {
         type: 'LOAD_VIDEO',
         videoId: playlist[newIndex].videoId
       });
+    } else {
+      console.warn('⚠️ Not connected or no video at index', newIndex);
     }
   };
 
   const previous = () => {
-    if (playlist.length === 0) return;
+    console.log('⏮️ previous() called, playlist.length:', playlist.length, 'currentIndex:', currentIndex, 'isConnected:', isConnected);
+
+    if (playlist.length === 0) {
+      console.warn('⚠️ Playlist is empty!');
+      return;
+    }
 
     const newIndex = Math.max(currentIndex - 1, 0);
+    console.log('📍 Moving to index:', newIndex, 'videoId:', playlist[newIndex]?.videoId);
+
     setCurrentIndex(newIndex);
     setCurrentVideo(playlist[newIndex]);
 
@@ -475,6 +508,8 @@ export function CastProvider({ children }: { children: ReactNode }) {
         type: 'LOAD_VIDEO',
         videoId: playlist[newIndex].videoId
       });
+    } else {
+      console.warn('⚠️ Not connected or no video at index', newIndex);
     }
   };
 
