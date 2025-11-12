@@ -144,16 +144,17 @@
 
       // YT.PlayerState.ENDED = 0
       if (event.data === 0) {
-        console.log('✅ Video ended, checking for next...');
+        console.log('✅ Video ended, notifying sender...');
 
         // Notify sender that video ended
+        // Sender will handle queue management and tell us which video to play next
         sendMessageToSender({
           type: 'VIDEO_ENDED',
           videoId: currentVideoId,
-          nextIndex: currentIndex + 1,
+          currentIndex: currentIndex,
         });
 
-        playNext();
+        // Don't auto-play next - wait for sender to send LOAD_VIDEO
       }
     }
 
@@ -214,16 +215,17 @@
 
       switch (data.type) {
         case 'LOAD_VIDEO':
-          // Find video in existing queue
+          // Find video in existing queue and update currentIndex
           const videoIndex = videoQueue.findIndex(v => v.videoId === data.videoId);
 
           if (videoIndex !== -1) {
-            // Video found in queue - just change current index
+            // Video found in queue - update current index
             currentIndex = videoIndex;
             console.log('🎯 Playing video from queue at index:', currentIndex);
           } else {
-            // Video not in queue - this shouldn't happen normally, but handle it
-            console.warn('⚠️ Video not in queue, playing anyway');
+            // Video not in queue yet - might arrive via UPDATE_QUEUE shortly
+            // Try to find by videoId after a brief delay
+            console.warn('⚠️ Video not in queue yet, will play:', data.videoId);
           }
 
           playVideo(data.videoId);
