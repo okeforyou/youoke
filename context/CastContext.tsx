@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
 import { RecommendedVideo, SearchResult } from '../types/invidious';
 
 // Extended Video type with queue key
@@ -60,6 +60,24 @@ export function CastProvider({ children }: { children: ReactNode }) {
   const [playlist, setPlaylistState] = useState<QueueVideo[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [currentVideo, setCurrentVideo] = useState<QueueVideo | null>(null);
+
+  // Refs to access latest state in event handlers (avoid stale closure)
+  const playlistRef = useRef<QueueVideo[]>([]);
+  const currentVideoRef = useRef<QueueVideo | null>(null);
+  const currentIndexRef = useRef<number>(0);
+
+  // Keep refs in sync with state
+  useEffect(() => {
+    playlistRef.current = playlist;
+  }, [playlist]);
+
+  useEffect(() => {
+    currentVideoRef.current = currentVideo;
+  }, [currentVideo]);
+
+  useEffect(() => {
+    currentIndexRef.current = currentIndex;
+  }, [currentIndex]);
 
   // Initialize Google Cast API
   useEffect(() => {
@@ -208,10 +226,20 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
     console.log('Cast session started:', session.getCastDevice().friendlyName);
 
+    // ⚠️ IMPORTANT: Read from refs to get latest state (not stale closure values)
+    const latestPlaylist = playlistRef.current;
+    const latestCurrentVideo = currentVideoRef.current;
+
+    console.log('📊 Current state when connected:', {
+      playlistLength: latestPlaylist.length,
+      hasCurrentVideo: !!latestCurrentVideo,
+      firstVideoId: latestPlaylist[0]?.videoId,
+    });
+
     // Send current playlist to receiver if available
-    if (playlist.length > 0) {
+    if (latestPlaylist.length > 0) {
       console.log('📤 Sending playlist to receiver...');
-      const videoIds = playlist.map(v => v.videoId);
+      const videoIds = latestPlaylist.map(v => v.videoId);
 
       // Send queue
       session.sendMessage(
@@ -222,7 +250,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
       );
 
       // Play video: use currentVideo if available, otherwise play first video in queue
-      const videoToPlay = currentVideo || playlist[0];
+      const videoToPlay = latestCurrentVideo || latestPlaylist[0];
       if (videoToPlay) {
         console.log('📤 Sending video to play:', videoToPlay.videoId);
         session.sendMessage(
@@ -231,7 +259,11 @@ export function CastProvider({ children }: { children: ReactNode }) {
           () => console.log('✅ Video sent:', videoToPlay.videoId),
           (error: any) => console.error('❌ Error sending video:', error)
         );
+      } else {
+        console.error('❌ No video to play! playlist has items but playlist[0] is undefined');
       }
+    } else {
+      console.warn('⚠️ Playlist is empty when connected! Nothing to play.');
     }
   };
 
@@ -464,24 +496,28 @@ export function CastProvider({ children }: { children: ReactNode }) {
   };
 
   const next = () => {
-    console.log('⏭️ next() called, playlist.length:', playlist.length, 'currentIndex:', currentIndex, 'isConnected:', isConnected);
+    // Use refs to get latest state
+    const latestPlaylist = playlistRef.current;
+    const latestIndex = currentIndexRef.current;
 
-    if (playlist.length === 0) {
+    console.log('⏭️ next() called, playlist.length:', latestPlaylist.length, 'currentIndex:', latestIndex, 'isConnected:', isConnected);
+
+    if (latestPlaylist.length === 0) {
       console.warn('⚠️ Playlist is empty!');
       return;
     }
 
-    const newIndex = Math.min(currentIndex + 1, playlist.length - 1);
-    console.log('📍 Moving to index:', newIndex, 'videoId:', playlist[newIndex]?.videoId);
+    const newIndex = Math.min(latestIndex + 1, latestPlaylist.length - 1);
+    console.log('📍 Moving to index:', newIndex, 'videoId:', latestPlaylist[newIndex]?.videoId);
 
     setCurrentIndex(newIndex);
-    setCurrentVideo(playlist[newIndex]);
+    setCurrentVideo(latestPlaylist[newIndex]);
 
-    if (isConnected && playlist[newIndex]) {
+    if (isConnected && latestPlaylist[newIndex]) {
       // Send LOAD_VIDEO instead of just NEXT to ensure receiver plays the correct video
       sendMessage({
         type: 'LOAD_VIDEO',
-        videoId: playlist[newIndex].videoId
+        videoId: latestPlaylist[newIndex].videoId
       });
     } else {
       console.warn('⚠️ Not connected or no video at index', newIndex);
@@ -489,24 +525,28 @@ export function CastProvider({ children }: { children: ReactNode }) {
   };
 
   const previous = () => {
-    console.log('⏮️ previous() called, playlist.length:', playlist.length, 'currentIndex:', currentIndex, 'isConnected:', isConnected);
+    // Use refs to get latest state
+    const latestPlaylist = playlistRef.current;
+    const latestIndex = currentIndexRef.current;
 
-    if (playlist.length === 0) {
+    console.log('⏮️ previous() called, playlist.length:', latestPlaylist.length, 'currentIndex:', latestIndex, 'isConnected:', isConnected);
+
+    if (latestPlaylist.length === 0) {
       console.warn('⚠️ Playlist is empty!');
       return;
     }
 
-    const newIndex = Math.max(currentIndex - 1, 0);
-    console.log('📍 Moving to index:', newIndex, 'videoId:', playlist[newIndex]?.videoId);
+    const newIndex = Math.max(latestIndex - 1, 0);
+    console.log('📍 Moving to index:', newIndex, 'videoId:', latestPlaylist[newIndex]?.videoId);
 
     setCurrentIndex(newIndex);
-    setCurrentVideo(playlist[newIndex]);
+    setCurrentVideo(latestPlaylist[newIndex]);
 
-    if (isConnected && playlist[newIndex]) {
+    if (isConnected && latestPlaylist[newIndex]) {
       // Send LOAD_VIDEO instead of just PREVIOUS to ensure receiver plays the correct video
       sendMessage({
         type: 'LOAD_VIDEO',
-        videoId: playlist[newIndex].videoId
+        videoId: latestPlaylist[newIndex].videoId
       });
     } else {
       console.warn('⚠️ Not connected or no video at index', newIndex);
