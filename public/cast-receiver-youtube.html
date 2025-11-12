@@ -74,10 +74,11 @@
   <script>
     const context = cast.framework.CastReceiverContext.getInstance();
     const playerManager = context.getPlayerManager();
+    const CAST_NAMESPACE = 'urn:x-cast:com.youoke.cast';
 
     let ytPlayer = null;
     let currentVideoId = null;
-    let videoQueue = [];
+    let videoQueue = []; // Array of {videoId, title}
     let currentIndex = 0;
 
     // Status display
@@ -93,7 +94,19 @@
     function updateQueueInfo() {
       const info = document.getElementById('queue-info');
       if (videoQueue.length > 0) {
-        info.textContent = `🎵 ${currentIndex + 1}/${videoQueue.length}`;
+        const currentVideo = videoQueue[currentIndex];
+        const title = currentVideo?.title || 'Unknown';
+        const truncatedTitle = title.length > 50 ? title.substring(0, 50) + '...' : title;
+        info.innerHTML = `
+          <div style="max-width: 400px;">
+            <div style="font-size: 14px; color: #aaa; margin-bottom: 5px;">
+              ขณะนี้ (${currentIndex + 1}/${videoQueue.length})
+            </div>
+            <div style="font-size: 18px; font-weight: bold;">
+              🎵 ${truncatedTitle}
+            </div>
+          </div>
+        `;
       } else {
         info.textContent = 'Ready...';
       }
@@ -158,11 +171,16 @@
       showStatus('❌ Error playing video', 5000);
     }
 
-    function playVideo(videoId) {
+    function playVideo(videoIdOrObject) {
       if (!ytPlayer || !ytPlayer.loadVideoById) {
         console.error('❌ YouTube Player not ready');
         return;
       }
+
+      // Support both string videoId and video object {videoId, title}
+      const videoId = typeof videoIdOrObject === 'string'
+        ? videoIdOrObject
+        : videoIdOrObject.videoId;
 
       console.log('🎬 Playing video:', videoId);
       currentVideoId = videoId;
@@ -181,7 +199,7 @@
         currentIndex++;
         const nextVideo = videoQueue[currentIndex];
         console.log('⏭️ Playing next video:', nextVideo);
-        playVideo(nextVideo);
+        playVideo(nextVideo.videoId);
       } else {
         console.log('📭 Queue finished');
         showStatus('✅ Queue finished', 5000);
@@ -197,7 +215,7 @@
       switch (data.type) {
         case 'LOAD_VIDEO':
           // Find video in existing queue
-          const videoIndex = videoQueue.findIndex(id => id === data.videoId);
+          const videoIndex = videoQueue.findIndex(v => v.videoId === data.videoId);
 
           if (videoIndex !== -1) {
             // Video found in queue - just change current index
@@ -213,17 +231,18 @@
           break;
 
         case 'LOAD_QUEUE':
-          videoQueue = data.videoIds || [];
+          videoQueue = data.videos || [];
           currentIndex = 0;
+          console.log('📋 Loaded queue with', videoQueue.length, 'videos');
           if (videoQueue.length > 0) {
-            playVideo(videoQueue[0]);
+            playVideo(videoQueue[0].videoId);
           }
           updateQueueInfo();
           break;
 
         case 'UPDATE_QUEUE':
           // Update queue without changing current index/video
-          videoQueue = data.videoIds || [];
+          videoQueue = data.videos || [];
           console.log('📝 Queue updated, keeping current video. Total:', videoQueue.length);
           updateQueueInfo();
           break;
@@ -257,9 +276,10 @@
 
         if (videoIdMatch) {
           const videoId = videoIdMatch[1];
-          console.log('🎬 Extracted video ID:', videoId);
+          const title = loadRequestData.media.metadata?.title || 'Unknown';
+          console.log('🎬 Extracted video ID:', videoId, 'Title:', title);
 
-          videoQueue = [videoId];
+          videoQueue = [{videoId, title}];
           currentIndex = 0;
           playVideo(videoId);
 
