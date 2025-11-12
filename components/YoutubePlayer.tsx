@@ -740,10 +740,9 @@ function YoutubePlayer({
             addToast('กรุณาเพิ่มเพลงลงคิวก่อน');
             return;
           }
-          // Set playlist and connect to Chromecast
-          setGoogleCastPlaylist(playlist);
-          connectGoogleCast();
-          console.log('📡 Google Cast: Connecting to Chromecast...');
+          // Connect to Chromecast with playlist
+          console.log('📡 Google Cast: Connecting to Chromecast with', playlist.length, 'videos');
+          connectGoogleCast(playlist);
         }}
         onSelectYouTube={() => {
           setShowCastModeSelector(false);

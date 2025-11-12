@@ -17,7 +17,7 @@ interface CastContextValue {
   currentVideo: QueueVideo | null;
 
   // Connection Actions
-  connect: () => void;
+  connect: (initialPlaylist?: QueueVideo[]) => void;
   disconnect: () => void;
 
   // Queue Operations
@@ -294,12 +294,25 @@ export function CastProvider({ children }: { children: ReactNode }) {
   };
 
   // Connection Actions
-  const connect = () => {
+  const connect = (initialPlaylist?: QueueVideo[]) => {
     const cast = (window as any).cast;
     if (!cast || !cast.framework) {
       console.error('Google Cast SDK not loaded yet. Please wait a moment and try again.');
       alert('กรุณารอสักครู่และลองใหม่อีกครั้ง\n(Google Cast SDK กำลังโหลด...)');
       return;
+    }
+
+    // If initialPlaylist provided, set it immediately before connecting
+    if (initialPlaylist && initialPlaylist.length > 0) {
+      console.log('📋 Setting initial playlist before connecting:', initialPlaylist.length, 'videos');
+      setPlaylistState(initialPlaylist);
+      playlistRef.current = initialPlaylist; // Update ref immediately!
+
+      // Set first video as current if not set
+      if (!currentVideo) {
+        setCurrentVideo(initialPlaylist[0]);
+        currentVideoRef.current = initialPlaylist[0];
+      }
     }
 
     try {
