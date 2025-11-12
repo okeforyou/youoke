@@ -43,11 +43,32 @@
       bottom: 20px;
       right: 20px;
       color: white;
-      background: rgba(0, 0, 0, 0.7);
-      padding: 15px 25px;
-      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 20px 30px;
+      border-radius: 15px;
       font-size: 16px;
       z-index: 100;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    #queue-info::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    #queue-info::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+
+    #queue-info::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 10px;
+    }
+
+    #queue-info::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.5);
     }
 
     .fade-in {
@@ -97,18 +118,65 @@
         const currentVideo = videoQueue[currentIndex];
         const title = currentVideo?.title || 'Unknown';
         const truncatedTitle = title.length > 50 ? title.substring(0, 50) + '...' : title;
-        info.innerHTML = `
-          <div style="max-width: 400px;">
+
+        // Build HTML for current song
+        let html = `
+          <div style="margin-bottom: 15px;">
             <div style="font-size: 14px; color: #aaa; margin-bottom: 5px;">
-              ขณะนี้ (${currentIndex + 1}/${videoQueue.length})
+              กำลังเล่น (${currentIndex + 1}/${videoQueue.length})
             </div>
-            <div style="font-size: 18px; font-weight: bold;">
+            <div style="font-size: 18px; font-weight: bold; color: #4ade80;">
               🎵 ${truncatedTitle}
             </div>
           </div>
         `;
+
+        // Add next songs (if any)
+        const remainingSongs = videoQueue.slice(currentIndex + 1);
+        if (remainingSongs.length > 0) {
+          html += `
+            <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 15px; margin-top: 10px;">
+              <div style="font-size: 13px; color: #aaa; margin-bottom: 10px;">
+                ถัดไป (${remainingSongs.length} เพลง)
+              </div>
+          `;
+
+          // Show up to 5 next songs
+          const songsToShow = remainingSongs.slice(0, 5);
+          songsToShow.forEach((video, idx) => {
+            const songTitle = video?.title || 'Unknown';
+            const truncated = songTitle.length > 45 ? songTitle.substring(0, 45) + '...' : songTitle;
+            html += `
+              <div style="margin-bottom: 8px; padding: 8px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                <div style="font-size: 12px; color: #aaa; margin-bottom: 3px;">
+                  ${currentIndex + idx + 2}.
+                </div>
+                <div style="font-size: 14px; color: #e5e5e5;">
+                  ${truncated}
+                </div>
+              </div>
+            `;
+          });
+
+          // Show "... and X more" if there are more songs
+          if (remainingSongs.length > 5) {
+            html += `
+              <div style="font-size: 12px; color: #aaa; margin-top: 8px; text-align: center;">
+                ... และอีก ${remainingSongs.length - 5} เพลง
+              </div>
+            `;
+          }
+
+          html += `</div>`;
+        }
+
+        info.innerHTML = html;
       } else {
-        info.textContent = 'Ready...';
+        info.innerHTML = `
+          <div style="font-size: 16px; color: #aaa;">
+            🎤 Ready to Cast...
+          </div>
+        `;
       }
     }
 
