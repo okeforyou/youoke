@@ -46,6 +46,7 @@ const CAST_NAMESPACE = 'urn:x-cast:com.youoke.cast';
 type CastMessage =
   | { type: 'LOAD_VIDEO', videoId: string }
   | { type: 'LOAD_QUEUE', videoIds: string[] }
+  | { type: 'UPDATE_QUEUE', videoIds: string[] }
   | { type: 'PLAY' }
   | { type: 'PAUSE' }
   | { type: 'NEXT' }
@@ -221,7 +222,53 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
     // Setup message listener
     session.addMessageListener(CAST_NAMESPACE, (namespace: string, message: string) => {
-      console.log('Received message from receiver:', message);
+      console.log('📨 Received message from receiver:', message);
+
+      try {
+        const data = JSON.parse(message);
+
+        switch (data.type) {
+          case 'VIDEO_ENDED':
+            console.log('🎬 Video ended on receiver:', data.videoId);
+            // Remove the ended video from playlist
+            const latestPlaylist = playlistRef.current;
+            const latestIndex = currentIndexRef.current;
+
+            if (latestPlaylist.length > 0 && latestIndex < latestPlaylist.length) {
+              // Remove current video from playlist
+              const newPlaylist = [...latestPlaylist];
+              newPlaylist.splice(latestIndex, 1);
+
+              console.log('🗑️ Removing video from queue. Remaining:', newPlaylist.length);
+              setPlaylistState(newPlaylist);
+              playlistRef.current = newPlaylist;
+
+              // Keep current index the same (next video now at same index)
+              if (newPlaylist.length > 0 && latestIndex < newPlaylist.length) {
+                setCurrentVideo(newPlaylist[latestIndex]);
+                currentVideoRef.current = newPlaylist[latestIndex];
+              } else if (newPlaylist.length > 0) {
+                // If at end, go to last video
+                setCurrentIndex(newPlaylist.length - 1);
+                currentIndexRef.current = newPlaylist.length - 1;
+                setCurrentVideo(newPlaylist[newPlaylist.length - 1]);
+                currentVideoRef.current = newPlaylist[newPlaylist.length - 1];
+              } else {
+                // Queue empty
+                setCurrentIndex(0);
+                currentIndexRef.current = 0;
+                setCurrentVideo(null);
+                currentVideoRef.current = null;
+              }
+            }
+            break;
+
+          default:
+            console.log('Unknown message type from receiver:', data.type);
+        }
+      } catch (error) {
+        console.error('❌ Error parsing receiver message:', error);
+      }
     });
 
     console.log('Cast session started:', session.getCastDevice().friendlyName);
@@ -378,7 +425,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
     if (isConnected) {
       console.log('📤 Sending updated queue to receiver...');
       sendMessage({
-        type: 'LOAD_QUEUE',
+        type: 'UPDATE_QUEUE',
         videoIds: newPlaylist.map(v => v.videoId),
       });
     } else {
@@ -418,7 +465,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
     if (isConnected) {
       sendMessage({
-        type: 'LOAD_QUEUE',
+        type: 'UPDATE_QUEUE',
         videoIds: newPlaylist.map(v => v.videoId),
       });
     }
@@ -432,7 +479,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
     if (isConnected) {
       sendMessage({
-        type: 'LOAD_QUEUE',
+        type: 'UPDATE_QUEUE',
         videoIds: newPlaylist.map(v => v.videoId),
       });
     }
@@ -453,7 +500,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
     if (isConnected && newPlaylist.length > 0) {
       sendMessage({
-        type: 'LOAD_QUEUE',
+        type: 'UPDATE_QUEUE',
         videoIds: newPlaylist.map(v => v.videoId),
       });
     }
@@ -468,7 +515,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
     if (isConnected) {
       sendMessage({
-        type: 'LOAD_QUEUE',
+        type: 'UPDATE_QUEUE',
         videoIds: newPlaylist.map(v => v.videoId),
       });
     }
@@ -483,7 +530,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
     if (isConnected) {
       sendMessage({
-        type: 'LOAD_QUEUE',
+        type: 'UPDATE_QUEUE',
         videoIds: newPlaylist.map(v => v.videoId),
       });
     }
