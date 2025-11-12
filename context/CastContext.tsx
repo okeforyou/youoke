@@ -207,6 +207,31 @@ export function CastProvider({ children }: { children: ReactNode }) {
     });
 
     console.log('Cast session started:', session.getCastDevice().friendlyName);
+
+    // Send current playlist to receiver if available
+    if (playlist.length > 0) {
+      console.log('📤 Sending playlist to receiver...');
+      const videoIds = playlist.map(v => v.videoId);
+
+      // Send queue
+      session.sendMessage(
+        CAST_NAMESPACE,
+        { type: 'LOAD_QUEUE', videoIds },
+        () => console.log('✅ Playlist sent:', videoIds.length, 'videos'),
+        (error: any) => console.error('❌ Error sending playlist:', error)
+      );
+
+      // If there's a current video, play it
+      if (currentVideo) {
+        console.log('📤 Sending current video to play:', currentVideo.videoId);
+        session.sendMessage(
+          CAST_NAMESPACE,
+          { type: 'LOAD_VIDEO', videoId: currentVideo.videoId },
+          () => console.log('✅ Video sent:', currentVideo.videoId),
+          (error: any) => console.error('❌ Error sending video:', error)
+        );
+      }
+    }
   };
 
   const handleSessionEnded = () => {
