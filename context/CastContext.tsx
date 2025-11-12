@@ -221,13 +221,14 @@ export function CastProvider({ children }: { children: ReactNode }) {
         (error: any) => console.error('❌ Error sending playlist:', error)
       );
 
-      // If there's a current video, play it
-      if (currentVideo) {
-        console.log('📤 Sending current video to play:', currentVideo.videoId);
+      // Play video: use currentVideo if available, otherwise play first video in queue
+      const videoToPlay = currentVideo || playlist[0];
+      if (videoToPlay) {
+        console.log('📤 Sending video to play:', videoToPlay.videoId);
         session.sendMessage(
           CAST_NAMESPACE,
-          { type: 'LOAD_VIDEO', videoId: currentVideo.videoId },
-          () => console.log('✅ Video sent:', currentVideo.videoId),
+          { type: 'LOAD_VIDEO', videoId: videoToPlay.videoId },
+          () => console.log('✅ Video sent:', videoToPlay.videoId),
           (error: any) => console.error('❌ Error sending video:', error)
         );
       }
@@ -452,8 +453,12 @@ export function CastProvider({ children }: { children: ReactNode }) {
     setCurrentIndex(newIndex);
     setCurrentVideo(playlist[newIndex]);
 
-    if (isConnected) {
-      sendMessage({ type: 'NEXT' });
+    if (isConnected && playlist[newIndex]) {
+      // Send LOAD_VIDEO instead of just NEXT to ensure receiver plays the correct video
+      sendMessage({
+        type: 'LOAD_VIDEO',
+        videoId: playlist[newIndex].videoId
+      });
     }
   };
 
@@ -464,8 +469,12 @@ export function CastProvider({ children }: { children: ReactNode }) {
     setCurrentIndex(newIndex);
     setCurrentVideo(playlist[newIndex]);
 
-    if (isConnected) {
-      sendMessage({ type: 'PREVIOUS' });
+    if (isConnected && playlist[newIndex]) {
+      // Send LOAD_VIDEO instead of just PREVIOUS to ensure receiver plays the correct video
+      sendMessage({
+        type: 'LOAD_VIDEO',
+        videoId: playlist[newIndex].videoId
+      });
     }
   };
 
