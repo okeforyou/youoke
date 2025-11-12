@@ -229,32 +229,58 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
         switch (data.type) {
           case 'VIDEO_ENDED':
-            console.log('🎬 Video ended on receiver:', data.videoId);
+            console.log('🎬 Video ended on receiver:', data.videoId, 'at index:', data.currentIndex);
             // Remove the ended video from playlist
             const latestPlaylist = playlistRef.current;
-            const latestIndex = currentIndexRef.current;
+            const endedIndex = data.currentIndex;
 
-            if (latestPlaylist.length > 0 && latestIndex < latestPlaylist.length) {
-              // Remove current video from playlist
+            if (latestPlaylist.length > 0 && endedIndex < latestPlaylist.length) {
+              // Remove video that just ended
               const newPlaylist = [...latestPlaylist];
-              newPlaylist.splice(latestIndex, 1);
+              newPlaylist.splice(endedIndex, 1);
 
               console.log('🗑️ Removing video from queue. Remaining:', newPlaylist.length);
               setPlaylistState(newPlaylist);
               playlistRef.current = newPlaylist;
 
-              // Keep current index the same (next video now at same index)
-              if (newPlaylist.length > 0 && latestIndex < newPlaylist.length) {
-                setCurrentVideo(newPlaylist[latestIndex]);
-                currentVideoRef.current = newPlaylist[latestIndex];
-              } else if (newPlaylist.length > 0) {
-                // If at end, go to last video
-                setCurrentIndex(newPlaylist.length - 1);
-                currentIndexRef.current = newPlaylist.length - 1;
-                setCurrentVideo(newPlaylist[newPlaylist.length - 1]);
-                currentVideoRef.current = newPlaylist[newPlaylist.length - 1];
+              // Send updated queue to receiver
+              if (newPlaylist.length > 0) {
+                const videos = newPlaylist.map(v => ({
+                  videoId: v.videoId,
+                  title: v.title || 'Unknown'
+                }));
+                session.sendMessage(
+                  CAST_NAMESPACE,
+                  { type: 'UPDATE_QUEUE', videos },
+                  () => console.log('✅ Updated queue sent after VIDEO_ENDED:', videos.length, 'videos'),
+                  (error: any) => console.error('❌ Error sending updated queue:', error)
+                );
+
+                // Play next video if available (at same index, since we just deleted the current one)
+                if (endedIndex < newPlaylist.length) {
+                  const nextVideo = newPlaylist[endedIndex];
+                  console.log('▶️ Playing next video:', nextVideo.title);
+                  setCurrentIndex(endedIndex);
+                  currentIndexRef.current = endedIndex;
+                  setCurrentVideo(nextVideo);
+                  currentVideoRef.current = nextVideo;
+
+                  session.sendMessage(
+                    CAST_NAMESPACE,
+                    { type: 'LOAD_VIDEO', videoId: nextVideo.videoId },
+                    () => console.log('✅ Next video sent:', nextVideo.videoId),
+                    (error: any) => console.error('❌ Error sending next video:', error)
+                  );
+                } else {
+                  console.log('📭 Queue finished');
+                  setCurrentIndex(0);
+                  currentIndexRef.current = 0;
+                  setCurrentVideo(null);
+                  currentVideoRef.current = null;
+                }
               } else {
                 // Queue empty
+                console.log('📭 Queue empty');
                 setCurrentIndex(0);
                 currentIndexRef.current = 0;
                 setCurrentVideo(null);
