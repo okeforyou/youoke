@@ -72,6 +72,8 @@ function HomePage() {
     setPlaylist: setGoogleCastPlaylist,
     isAvailable: isCastAvailable,
     isConnected: isGoogleCastConnected,
+    playlist: googleCastPlaylist,
+    currentIndex: googleCastCurrentIndex,
     addToQueue: googleCastAddToQueue,
     playNow: googleCastPlayNow,
     removeAt: googleCastRemoveAt,
@@ -231,8 +233,10 @@ function HomePage() {
     "scrollbar scrollbar-w-1 scrollbar-thumb-gray-400 hover:scrollbar-thumb-gray-500 scrollbar-track-base-300 scrollbar-thumb-rounded";
 
   // Use Cast playlist if casting, otherwise local playlist
-  // When casting, show only upcoming songs (exclude played songs)
-  const displayPlaylist = isCasting
+  // Priority: Google Cast > Firebase Cast > Local
+  const displayPlaylist = isGoogleCastConnected
+    ? (googleCastPlaylist || [])
+    : isCasting
     ? (castPlaylist?.slice(castCurrentIndex) || [])
     : playlist;
 
@@ -242,7 +246,7 @@ function HomePage() {
         {!isMobile && (
           <span className="text-primary text-xs 2xl:text-xl">
             คิวเพลง ( {displayPlaylist?.length || 0} เพลง )
-            {isCasting && <span className="text-xs ml-1">📺</span>}
+            {(isGoogleCastConnected || isCasting) && <span className="text-xs ml-1">📺</span>}
           </span>
         )}
 
@@ -301,7 +305,13 @@ function HomePage() {
         <div className="grid grid-cols-1 gap-2">
           {displayPlaylist?.map((video, videoIndex) => {
             // When casting, calculate real index in full queue (not sliced display)
-            const realIndex = isCasting ? videoIndex + castCurrentIndex : videoIndex;
+            // Google Cast: use videoIndex directly (full array)
+            // Firebase Cast: adjust for sliced array
+            const realIndex = isGoogleCastConnected
+              ? videoIndex
+              : isCasting
+              ? videoIndex + castCurrentIndex
+              : videoIndex;
 
             return (
             <VideoHorizontalCard
