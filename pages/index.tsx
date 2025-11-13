@@ -76,6 +76,7 @@ function HomePage() {
     currentIndex: googleCastCurrentIndex,
     addToQueue: googleCastAddToQueue,
     playNow: googleCastPlayNow,
+    jumpToIndex: googleCastJumpToIndex,
     removeAt: googleCastRemoveAt,
     moveUp: googleCastMoveUp,
     moveDown: googleCastMoveDown,
@@ -180,9 +181,14 @@ function HomePage() {
     videoIndex?: number
   ) {
     if (isGoogleCastConnected) {
-      // Google Cast (Chromecast) - skip to video
-      console.log('⏭️ Skip to on Google Cast:', video.title);
-      googleCastPlayNow(video);
+      // Google Cast (Chromecast) - jump to video in queue without adding duplicate
+      console.log('⏭️ Skip to on Google Cast:', video.title, 'at index:', videoIndex);
+      if (videoIndex !== undefined) {
+        googleCastJumpToIndex(videoIndex);
+      } else {
+        // Fallback to playNow if no index provided
+        googleCastPlayNow(video);
+      }
     } else if (isCasting) {
       // Firebase Cast (Web Monitor) - skip to video
       console.log('⏭️ Skip to on Firebase Cast:', video.title);
