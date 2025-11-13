@@ -326,6 +326,17 @@ function YoutubePlayer({
   };
 
   const handleReplay = async () => {
+    // If connected to Google Cast, we need to restart the current video on TV
+    if (isGoogleCastConnected) {
+      // For Cast, we can't directly seek - need to reload the video
+      // This is a limitation of the current Cast implementation
+      // TODO: Implement SEEK command in Cast receiver
+      console.log('⚠️ Replay not yet supported for Google Cast');
+      addToast('ฟังก์ชันนี้ยังไม่รองรับสำหรับ Google Cast');
+      return;
+    }
+
+    // Otherwise, control local player
     try {
       const player = playerRef.current?.getInternalPlayer();
       if (!player) return;
@@ -811,7 +822,20 @@ function YoutubePlayer({
         className="w-full aspect-video relative flex-1 md:flex-grow-1"
         onClick={() => handleFullscreenButtonClick()}
       >
-        {isDualMode && !isMoniter ? (
+        {isGoogleCastConnected && !isMoniter ? (
+          <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-accent/20 to-primary/20 backdrop-blur-sm">
+            <div className="text-center p-8 bg-base-100/90 rounded-xl shadow-2xl max-w-md">
+              <div className="text-6xl mb-4">📡</div>
+              <h2 className="text-3xl font-bold mb-2 text-accent">กำลัง Cast ไปทีวี</h2>
+              <p className="text-gray-600 mb-4">
+                วิดีโอกำลังเล่นบน Google Cast (Chromecast)
+              </p>
+              <div className="text-sm text-gray-500 mb-4">
+                ใช้ปุ่มด้านล่างเพื่อควบคุมการเล่น
+              </div>
+            </div>
+          </div>
+        ) : isDualMode && !isMoniter ? (
           <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20 backdrop-blur-sm">
             <div className="text-center p-8 bg-base-100/90 rounded-xl shadow-2xl">
               <div className="text-6xl mb-4">🖥️</div>
