@@ -67,7 +67,17 @@ function HomePage() {
   } = useKaraokeState();
 
   const { user } = useAuth();
-  const { connect: connectGoogleCast, setPlaylist: setGoogleCastPlaylist, isAvailable: isCastAvailable } = useCast();
+  const {
+    connect: connectGoogleCast,
+    setPlaylist: setGoogleCastPlaylist,
+    isAvailable: isCastAvailable,
+    isConnected: isGoogleCastConnected,
+    addToQueue: googleCastAddToQueue,
+    playNow: googleCastPlayNow,
+    removeAt: googleCastRemoveAt,
+    moveUp: googleCastMoveUp,
+    moveDown: googleCastMoveDown,
+  } = useCast();
   const { myPlaylist, setMyPlaylist } = useMyPlaylistState();
   const { room, setRoom } = useRoomState();
   const {
@@ -129,9 +139,13 @@ function HomePage() {
   }, [playlist]);
 
   function addVideoToPlaylist(video: SearchResult | RecommendedVideo) {
-    if (isCasting) {
-      // Send to Firebase Cast queue
-      console.log('📤 Adding to Cast queue:', video.title);
+    if (isGoogleCastConnected) {
+      // Google Cast (Chromecast) - add to queue
+      console.log('📤 Adding to Google Cast queue:', video.title);
+      googleCastAddToQueue(video);
+    } else if (isCasting) {
+      // Firebase Cast (Web Monitor) - add to queue
+      console.log('📤 Adding to Firebase Cast queue:', video.title);
       addToCastQueue(video);
     } else {
       // Local playlist
@@ -143,9 +157,13 @@ function HomePage() {
     video: SearchResult | RecommendedVideo,
     videoIndex?: number
   ) {
-    if (isCasting) {
-      // Play now on Cast
-      console.log('▶️ Play now on Cast:', video.title);
+    if (isGoogleCastConnected) {
+      // Google Cast (Chromecast) - play now
+      console.log('▶️ Play now on Google Cast:', video.title);
+      googleCastPlayNow(video);
+    } else if (isCasting) {
+      // Firebase Cast (Web Monitor) - play now
+      console.log('▶️ Play now on Firebase Cast:', video.title);
       castPlayNow(video);
     } else {
       // Local play now
@@ -159,9 +177,13 @@ function HomePage() {
     video: SearchResult | RecommendedVideo,
     videoIndex?: number
   ) {
-    if (isCasting) {
-      // Cast mode: play now
-      console.log('⏭️ Skip to on Cast:', video.title);
+    if (isGoogleCastConnected) {
+      // Google Cast (Chromecast) - skip to video
+      console.log('⏭️ Skip to on Google Cast:', video.title);
+      googleCastPlayNow(video);
+    } else if (isCasting) {
+      // Firebase Cast (Web Monitor) - skip to video
+      console.log('⏭️ Skip to on Firebase Cast:', video.title);
       castPlayNow(video);
     } else {
       // Local mode
@@ -288,16 +310,26 @@ function HomePage() {
               onPlayNow={() => skipVideoTo(video, realIndex)}
               onSelect={() => priorityVideo(video, realIndex)}
               onDelete={() => {
-                if (isCasting) {
+                if (isGoogleCastConnected) {
+                  // Google Cast (Chromecast) - use absolute index
+                  googleCastRemoveAt(videoIndex);
+                } else if (isCasting) {
+                  // Firebase Cast (Web Monitor) - use real index
                   castRemoveAt(realIndex);
                 } else {
+                  // Local playback - use real index
                   setPlaylist(playlist.filter((_, index) => index !== realIndex));
                 }
               }}
               onMoveUp={() => {
-                if (isCasting) {
+                if (isGoogleCastConnected) {
+                  // Google Cast (Chromecast) - use absolute index
+                  googleCastMoveUp(videoIndex);
+                } else if (isCasting) {
+                  // Firebase Cast (Web Monitor) - use real index
                   castMoveUp(realIndex);
                 } else if (videoIndex > 0) {
+                  // Local playback
                   const newPlaylist = [...playlist];
                   [newPlaylist[videoIndex - 1], newPlaylist[videoIndex]] = [
                     newPlaylist[videoIndex],
@@ -307,9 +339,14 @@ function HomePage() {
                 }
               }}
               onMoveDown={() => {
-                if (isCasting) {
+                if (isGoogleCastConnected) {
+                  // Google Cast (Chromecast) - use absolute index
+                  googleCastMoveDown(videoIndex);
+                } else if (isCasting) {
+                  // Firebase Cast (Web Monitor) - use real index
                   castMoveDown(realIndex);
                 } else if (videoIndex < playlist.length - 1) {
+                  // Local playback
                   const newPlaylist = [...playlist];
                   [newPlaylist[videoIndex], newPlaylist[videoIndex + 1]] = [
                     newPlaylist[videoIndex + 1],
