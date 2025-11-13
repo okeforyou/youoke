@@ -51,6 +51,13 @@
       max-width: 600px;
       max-height: 80vh;
       overflow-y: auto;
+      opacity: 1;
+      transition: opacity 0.5s ease-in-out;
+    }
+
+    #queue-info.hidden {
+      opacity: 0;
+      pointer-events: none;
     }
 
     #queue-info::-webkit-scrollbar {
@@ -101,6 +108,7 @@
     let currentVideoId = null;
     let videoQueue = []; // Array of {videoId, title}
     let currentIndex = 0;
+    let queueInfoTimer = null; // Timer for auto-hiding queue info
 
     // Status display
     function showStatus(message, duration = 3000) {
@@ -110,6 +118,22 @@
       setTimeout(() => {
         status.style.display = 'none';
       }, duration);
+    }
+
+    // Show queue info and auto-hide after 10 seconds
+    function showQueueInfo() {
+      const info = document.getElementById('queue-info');
+      info.classList.remove('hidden');
+
+      // Clear existing timer
+      if (queueInfoTimer) {
+        clearTimeout(queueInfoTimer);
+      }
+
+      // Set new timer to hide after 10 seconds
+      queueInfoTimer = setTimeout(() => {
+        info.classList.add('hidden');
+      }, 10000); // 10 seconds
     }
 
     function updateQueueInfo() {
