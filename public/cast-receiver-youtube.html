@@ -90,7 +90,7 @@
 </head>
 <body>
   <div id="status">🎤 YouOke Cast Receiver</div>
-  <div id="queue-info">Ready...</div>
+  <div id="queue-info" class="hidden">Ready...</div>
   <div id="player"></div>
 
   <!-- Google Cast Receiver SDK -->
@@ -172,11 +172,8 @@
             const truncated = songTitle.length > 45 ? songTitle.substring(0, 45) + '...' : songTitle;
             html += `
               <div style="margin-bottom: 8px; padding: 8px; background: rgba(255,255,255,0.05); border-radius: 8px;">
-                <div style="font-size: 12px; color: #aaa; margin-bottom: 3px;">
-                  ${currentIndex + idx + 2}.
-                </div>
                 <div style="font-size: 14px; color: #e5e5e5;">
-                  ${truncated}
+                  <span style="color: #aaa; margin-right: 8px;">${currentIndex + idx + 2}.</span>${truncated}
                 </div>
               </div>
             `;

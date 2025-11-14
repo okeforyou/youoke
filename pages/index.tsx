@@ -246,6 +246,18 @@ function HomePage() {
     ? (castPlaylist?.slice(castCurrentIndex) || [])
     : playlist;
 
+  // Debug: Log displayPlaylist length
+  useEffect(() => {
+    console.log('🔍 displayPlaylist updated:', {
+      length: displayPlaylist?.length || 0,
+      isGoogleCastConnected,
+      googleCastPlaylistLength: googleCastPlaylist?.length || 0,
+      isCasting,
+      castPlaylistLength: castPlaylist?.length || 0,
+      localPlaylistLength: playlist?.length || 0,
+    });
+  }, [displayPlaylist, isGoogleCastConnected, googleCastPlaylist, isCasting, castPlaylist, playlist]);
+
   const PlaylistScreen = (
     <>
       <div className="flex flex-row font-bold gap-2 items-center">
