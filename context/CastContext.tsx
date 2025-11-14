@@ -25,6 +25,7 @@ interface CastContextValue {
   addToQueue: (video: SearchResult | RecommendedVideo) => void;
   playNow: (video: SearchResult | RecommendedVideo) => void;
   playNext: (video: SearchResult | RecommendedVideo) => void;
+  jumpToIndex: (index: number) => void; // Jump to specific song in queue without modifying queue
   insertAt: (video: SearchResult | RecommendedVideo, index: number) => void;
   removeAt: (index: number) => void;
   moveUp: (index: number) => void;
@@ -492,6 +493,37 @@ export function CastProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const jumpToIndex = (index: number) => {
+    // Use refs to get latest state
+    const latestPlaylist = playlistRef.current;
+
+    console.log('🎯 jumpToIndex() called, index:', index, 'playlist.length:', latestPlaylist.length, 'isConnected:', isConnected);
+
+    if (index < 0 || index >= latestPlaylist.length) {
+      console.warn('⚠️ Invalid index:', index);
+      return;
+    }
+
+    const video = latestPlaylist[index];
+    console.log('📍 Jumping to video:', video.title || video.videoId);
+
+    // Update state and refs
+    setCurrentIndex(index);
+    currentIndexRef.current = index;
+    setCurrentVideo(video);
+    currentVideoRef.current = video;
+
+    if (isConnected) {
+      // Send LOAD_VIDEO to play the video at this index
+      sendMessage({
+        type: 'LOAD_VIDEO',
+        videoId: video.videoId,
+      });
+    } else {
+      console.warn('⚠️ Not connected! Cannot jump to video');
+    }
+  };
+
   const playNext = (video: SearchResult | RecommendedVideo) => {
     const newVideo = { ...video, key: Date.now() };
     const newPlaylist = [
@@ -680,6 +712,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
     addToQueue,
     playNow,
     playNext,
+    jumpToIndex,
     insertAt,
     removeAt,
     moveUp,

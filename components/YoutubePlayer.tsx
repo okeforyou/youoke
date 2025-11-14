@@ -290,6 +290,7 @@ function YoutubePlayer({
   const handlePlay = async () => {
     // If connected to Google Cast, send command to TV
     if (isGoogleCastConnected) {
+      setPlayerState(YouTube.PlayerState.PLAYING);
       castPlay();
       return;
     }
@@ -309,6 +310,7 @@ function YoutubePlayer({
   const handlePause = async () => {
     // If connected to Google Cast, send command to TV
     if (isGoogleCastConnected) {
+      setPlayerState(YouTube.PlayerState.PAUSED);
       castPause();
       return;
     }
@@ -935,10 +937,10 @@ function YoutubePlayer({
           return (
             <button
               key={btn.label}
-              className="btn btn-ghost font-normal text-primary flex h-auto flex-col flex-1 overflow-hidden  text-sm 2xl:text-lg p-0 hover:bg-base-200"
+              className="btn btn-ghost font-normal text-primary flex h-auto flex-col flex-1 overflow-hidden text-xs 2xl:text-sm p-1 gap-1 hover:bg-base-200"
               onClick={btn.onClick}
             >
-              <btn.icon className="w-8 h-8 2xl:w-10 2xl:h-10" />
+              <btn.icon className="w-6 h-6 2xl:w-8 2xl:h-8" />
               {btn.label}
             </button>
           );
