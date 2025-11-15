@@ -9,7 +9,7 @@ import {
 } from "firebase/firestore";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { DebounceInput } from "react-debounce-input";
 
 import {
@@ -240,11 +240,14 @@ function HomePage() {
 
   // Use Cast playlist if casting, otherwise local playlist
   // Priority: Google Cast > Firebase Cast > Local
-  const displayPlaylist = isGoogleCastConnected
-    ? (googleCastPlaylist || [])
-    : isCasting
-    ? (castPlaylist?.slice(castCurrentIndex) || [])
-    : playlist;
+  // Using useMemo to ensure recalculation on Mobile when dependencies change
+  const displayPlaylist = useMemo(() => {
+    return isGoogleCastConnected
+      ? (googleCastPlaylist || [])
+      : isCasting
+      ? (castPlaylist?.slice(castCurrentIndex) || [])
+      : playlist;
+  }, [isGoogleCastConnected, googleCastPlaylist, isCasting, castPlaylist, castCurrentIndex, playlist]);
 
   // Debug: Log displayPlaylist length
   useEffect(() => {
