@@ -417,47 +417,29 @@ function YoutubePlayer({
     [isMuted]
   );
 
-  // Cast icon component for connected state
-  const CastConnectedIcon = ({ className }: { className?: string }) => (
-    <svg className={`${className} text-success animate-pulse`} fill="currentColor" viewBox="0 0 24 24">
+  // Cast icon component - green when connected
+  const CastIcon = ({ className }: { className?: string }) => (
+    <svg className={`${className} ${isGoogleCastConnected ? 'text-success animate-pulse' : ''}`} fill="currentColor" viewBox="0 0 24 24">
       <path d="M1 18v3h3c0-1.66-1.34-3-3-3zm0-4v2c2.76 0 5 2.24 5 5h2c0-3.87-3.13-7-7-7zm0-4v2c4.97 0 9 4.03 9 9h2c0-6.08-4.93-11-11-11zm20-7H3c-1.1 0-2 .9-2 2v3h2V5h18v14h-7v2h7c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" />
     </svg>
   );
 
   const castBtn = useMemo(() => {
-    // When connected to Google Cast, show connected icon + disconnect button
-    if (isGoogleCastConnected) {
-      return [
-        {
-          icon: CastConnectedIcon,
-          label: "Casting",
-          onClick: () => {
-            // Do nothing when clicking the cast icon - it's just a status indicator
-          },
-        },
-        {
-          icon: XMarkIcon,
-          label: "ปิด Cast",
-          onClick: () => {
-            disconnectGoogleCast();
-            console.log('📡 Disconnecting from Google Cast...');
-            addToast('ตัดการเชื่อมต่อ Google Cast แล้ว');
-          },
-        },
-      ];
-    }
-
-    // When not connected, show Cast button
+    // Always show single Cast button - green when connected
     return [
       {
-        icon: TvIcon,
-        label: "Cast",
+        icon: CastIcon,
+        label: isGoogleCastConnected ? "Casting" : "Cast",
         onClick: async () => {
-          setShowCastModeSelector(true);
+          // If connected, do nothing (user must use disconnect button in video area)
+          // If not connected, open Cast selector
+          if (!isGoogleCastConnected) {
+            setShowCastModeSelector(true);
+          }
         },
       },
     ];
-  }, [isGoogleCastConnected, disconnectGoogleCast, addToast]);
+  }, [isGoogleCastConnected]);
 
   const fullBtn = useMemo(
     () => [
@@ -786,7 +768,8 @@ function YoutubePlayer({
           icon={<ExclamationTriangleIcon />}
         />
       </span>
-      {CastOverlayComponent()}
+      {/* Web Monitor Cast - Hidden for Home Use (will be used for Karaoke Shop) */}
+      {/* {CastOverlayComponent()} */}
 
       {/* Cast Mode Selector Modal */}
       <CastModeSelector
@@ -857,16 +840,27 @@ function YoutubePlayer({
         onClick={() => handleFullscreenButtonClick()}
       >
         {isGoogleCastConnected && !isMoniter ? (
-          <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-accent/20 to-primary/20 backdrop-blur-sm">
-            <div className="text-center p-8 bg-base-100/90 rounded-xl shadow-2xl max-w-md">
-              <div className="text-6xl mb-4">📡</div>
-              <h2 className="text-3xl font-bold mb-2 text-accent">กำลัง Cast ไปทีวี</h2>
-              <p className="text-gray-600 mb-4">
-                วิดีโอกำลังเล่นบน Google Cast (Chromecast)
+          <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-accent/20 to-primary/20 backdrop-blur-sm p-4">
+            <div className="text-center p-6 bg-base-100/95 rounded-xl shadow-2xl w-full max-w-md">
+              <div className="text-5xl mb-3">📡</div>
+              <h2 className="text-xl font-bold mb-2 text-accent">กำลัง Cast ไป</h2>
+              <p className="text-base font-semibold text-success mb-3 truncate">
+                {receiverName || 'Chromecast'}
               </p>
-              <div className="text-sm text-gray-500 mb-4">
-                ใช้ปุ่มด้านล่างเพื่อควบคุมการเล่น
-              </div>
+              <p className="text-sm text-gray-600 mb-4">
+                วิดีโอกำลังเล่นบนทีวี - ใช้ปุ่มด้านล่างเพื่อควบคุม
+              </p>
+              <button
+                onClick={() => {
+                  disconnectGoogleCast();
+                  console.log('📡 Disconnecting from Google Cast...');
+                  addToast('ตัดการเชื่อมต่อ Google Cast แล้ว');
+                }}
+                className="btn btn-sm btn-error gap-2"
+              >
+                <XMarkIcon className="w-4 h-4" />
+                ปิด Cast
+              </button>
             </div>
           </div>
         ) : isDualMode && !isMoniter ? (
