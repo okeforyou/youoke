@@ -440,7 +440,7 @@ function HomePage() {
                   <div className="relative">
                     <ListBulletIcon className="h-6 w-6" />
                     <span className="badge absolute -top-2 -right-2 text-xs p-1">
-                      {playlist?.length || 0}
+                      {displayPlaylist?.length || 0}
                     </span>
                   </div>
                   <span className="text-[10px] leading-none">คิวเพลง</span>
