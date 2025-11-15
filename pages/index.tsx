@@ -483,6 +483,10 @@ function HomePage() {
                   className="flex flex-col modal-box max-h-[50%] overflow-hidden bg-base-300 p-2"
                   htmlFor=""
                 >
+                  {/* Debug: Show queue count in modal header */}
+                  <div className="text-sm font-bold mb-2 px-2 py-1 bg-primary/20 rounded">
+                    คิวเพลง ( {displayPlaylist?.length || 0} เพลง )
+                  </div>
                   <div className="relative h-full overflow-y-auto flex flex-col">
                     {PlaylistScreen}
                   </div>
