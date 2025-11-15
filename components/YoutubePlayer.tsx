@@ -464,7 +464,7 @@ function YoutubePlayer({
       },
       {
         icon: ArrowUturnLeftIcon,
-        label: "ร้องอีกครั้ง",
+        label: "ร้องซ้ำ",
         onClick: handleReplay,
       },
     ],
