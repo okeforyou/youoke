@@ -192,6 +192,9 @@
         }
 
         info.innerHTML = html;
+
+        // Show queue info and auto-hide after 10 seconds
+        showQueueInfo();
       } else {
         info.innerHTML = `
           <div style="font-size: 16px; color: #aaa;">
