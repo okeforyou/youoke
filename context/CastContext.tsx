@@ -71,6 +71,10 @@ export function CastProvider({ children }: { children: ReactNode }) {
   // Keep refs in sync with state
   useEffect(() => {
     playlistRef.current = playlist;
+    console.log('🔍 [CastContext] Playlist state updated:', {
+      length: playlist.length,
+      videos: playlist.map(v => v.title || v.videoId),
+    });
   }, [playlist]);
 
   useEffect(() => {
@@ -250,10 +254,21 @@ export function CastProvider({ children }: { children: ReactNode }) {
             const latestPlaylist = playlistRef.current;
             const endedIndex = data.currentIndex;
 
+            console.log('🔍 [VIDEO_ENDED] Before removal:', {
+              latestPlaylistLength: latestPlaylist.length,
+              endedIndex,
+              videoToRemove: latestPlaylist[endedIndex]?.title || latestPlaylist[endedIndex]?.videoId,
+            });
+
             if (latestPlaylist.length > 0 && endedIndex < latestPlaylist.length) {
               // Remove video that just ended
               const newPlaylist = [...latestPlaylist];
               newPlaylist.splice(endedIndex, 1);
+
+              console.log('🔍 [VIDEO_ENDED] After removal:', {
+                newPlaylistLength: newPlaylist.length,
+                remainingVideos: newPlaylist.map(v => v.title || v.videoId),
+              });
 
               console.log('🗑️ Removing video from queue. Remaining:', newPlaylist.length);
               setPlaylistState(newPlaylist);
@@ -468,7 +483,11 @@ export function CastProvider({ children }: { children: ReactNode }) {
     const newPlaylist = [...playlist, newVideo];
     setPlaylistState(newPlaylist);
 
-    console.log('📋 New playlist length:', newPlaylist.length);
+    console.log('🔍 [addToQueue] Playlist updated:', {
+      oldLength: playlist.length,
+      newLength: newPlaylist.length,
+      addedVideo: video.title || video.videoId,
+    });
 
     if (isConnected) {
       console.log('📤 Sending updated queue to receiver...');
@@ -577,8 +596,16 @@ export function CastProvider({ children }: { children: ReactNode }) {
   };
 
   const removeAt = (index: number) => {
+    console.log('🔍 [removeAt] Removing video at index:', index, 'of', playlist.length);
+
     const newPlaylist = playlist.filter((_, i) => i !== index);
     setPlaylistState(newPlaylist);
+
+    console.log('🔍 [removeAt] Playlist updated:', {
+      oldLength: playlist.length,
+      newLength: newPlaylist.length,
+      removedIndex: index,
+    });
 
     // Adjust current index if needed
     let newCurrentIndex = currentIndex;
