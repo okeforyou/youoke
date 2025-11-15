@@ -242,11 +242,21 @@ function HomePage() {
   // Priority: Google Cast > Firebase Cast > Local
   // Using useMemo to ensure recalculation on Mobile when dependencies change
   const displayPlaylist = useMemo(() => {
-    return isGoogleCastConnected
+    const result = isGoogleCastConnected
       ? (googleCastPlaylist || [])
       : isCasting
       ? (castPlaylist?.slice(castCurrentIndex) || [])
       : playlist;
+
+    // Log inside useMemo to confirm recalculation
+    console.log('🔄 [useMemo] displayPlaylist recalculated:', {
+      resultLength: result.length,
+      isGoogleCastConnected,
+      googleCastPlaylistLength: googleCastPlaylist?.length || 0,
+      source: isGoogleCastConnected ? 'GoogleCast' : (isCasting ? 'FirebaseCast' : 'Local'),
+    });
+
+    return result;
   }, [isGoogleCastConnected, googleCastPlaylist, isCasting, castPlaylist, castCurrentIndex, playlist]);
 
   // Debug: Log displayPlaylist length
