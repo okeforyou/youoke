@@ -465,6 +465,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
   // Queue Operations
   const setPlaylist = (newPlaylist: QueueVideo[]) => {
     setPlaylistState(newPlaylist);
+    playlistRef.current = newPlaylist; // ✅ Update ref immediately!
     if (isConnected && newPlaylist.length > 0) {
       sendMessage({
         type: 'LOAD_QUEUE',
@@ -482,6 +483,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
     const newVideo = { ...video, key: Date.now() };
     const newPlaylist = [...playlist, newVideo];
     setPlaylistState(newPlaylist);
+    playlistRef.current = newPlaylist; // ✅ Update ref immediately!
 
     console.log('🔍 [addToQueue] Playlist updated:', {
       oldLength: playlist.length,
@@ -507,8 +509,11 @@ export function CastProvider({ children }: { children: ReactNode }) {
     const newVideo = { ...video, key: Date.now() };
     const newPlaylist = [newVideo, ...playlist];
     setPlaylistState(newPlaylist);
+    playlistRef.current = newPlaylist; // ✅ Update ref immediately!
     setCurrentIndex(0);
+    currentIndexRef.current = 0; // ✅ Update ref immediately!
     setCurrentVideo(newVideo);
+    currentVideoRef.current = newVideo; // ✅ Update ref immediately!
 
     if (isConnected) {
       // Send LOAD_VIDEO to start playing immediately
@@ -566,6 +571,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
       ...playlist.slice(currentIndex + 1),
     ];
     setPlaylistState(newPlaylist);
+    playlistRef.current = newPlaylist; // ✅ Update ref immediately!
 
     if (isConnected) {
       sendMessage({
@@ -583,6 +589,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
     const newPlaylist = [...playlist];
     newPlaylist.splice(index, 0, newVideo);
     setPlaylistState(newPlaylist);
+    playlistRef.current = newPlaylist; // ✅ Update ref immediately!
 
     if (isConnected) {
       sendMessage({
@@ -600,6 +607,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
     const newPlaylist = playlist.filter((_, i) => i !== index);
     setPlaylistState(newPlaylist);
+    playlistRef.current = newPlaylist; // ✅ Update ref immediately!
 
     console.log('🔍 [removeAt] Playlist updated:', {
       oldLength: playlist.length,
@@ -615,6 +623,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
       newCurrentIndex = Math.min(currentIndex, newPlaylist.length - 1);
     }
     setCurrentIndex(newCurrentIndex);
+    currentIndexRef.current = newCurrentIndex; // ✅ Update ref immediately!
 
     if (isConnected && newPlaylist.length > 0) {
       sendMessage({
@@ -633,6 +642,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
     const newPlaylist = [...playlist];
     [newPlaylist[index - 1], newPlaylist[index]] = [newPlaylist[index], newPlaylist[index - 1]];
     setPlaylistState(newPlaylist);
+    playlistRef.current = newPlaylist; // ✅ Update ref immediately!
 
     if (isConnected) {
       sendMessage({
@@ -651,6 +661,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
     const newPlaylist = [...playlist];
     [newPlaylist[index], newPlaylist[index + 1]] = [newPlaylist[index + 1], newPlaylist[index]];
     setPlaylistState(newPlaylist);
+    playlistRef.current = newPlaylist; // ✅ Update ref immediately!
 
     if (isConnected) {
       sendMessage({
@@ -698,7 +709,9 @@ export function CastProvider({ children }: { children: ReactNode }) {
     console.log('📍 Moving to index:', newIndex, 'videoId:', latestPlaylist[newIndex]?.videoId);
 
     setCurrentIndex(newIndex);
+    currentIndexRef.current = newIndex; // ✅ Update ref immediately!
     setCurrentVideo(latestPlaylist[newIndex]);
+    currentVideoRef.current = latestPlaylist[newIndex]; // ✅ Update ref immediately!
 
     if (isConnected && latestPlaylist[newIndex]) {
       // Send LOAD_VIDEO instead of just NEXT to ensure receiver plays the correct video
@@ -727,7 +740,9 @@ export function CastProvider({ children }: { children: ReactNode }) {
     console.log('📍 Moving to index:', newIndex, 'videoId:', latestPlaylist[newIndex]?.videoId);
 
     setCurrentIndex(newIndex);
+    currentIndexRef.current = newIndex; // ✅ Update ref immediately!
     setCurrentVideo(latestPlaylist[newIndex]);
+    currentVideoRef.current = latestPlaylist[newIndex]; // ✅ Update ref immediately!
 
     if (isConnected && latestPlaylist[newIndex]) {
       // Send LOAD_VIDEO instead of just PREVIOUS to ensure receiver plays the correct video
