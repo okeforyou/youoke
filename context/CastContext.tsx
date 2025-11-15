@@ -87,19 +87,31 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
     console.log('🎬 CastContext mounted, waiting for Google Cast SDK...');
 
+    // Try immediate initialization first (SDK might already be loaded)
+    const immediateCheck = (window as any).cast?.framework;
+    if (immediateCheck) {
+      console.log('✅ Google Cast SDK already loaded! Initializing immediately...');
+      initializeCastApi();
+      return;
+    }
+
     let pollCount = 0;
-    const maxPolls = 30; // Try for 15 seconds (30 * 500ms)
+    const maxPolls = 100; // Try for 10 seconds (100 * 100ms) - faster polling
 
     // Setup callback for when SDK is available
     // Note: This callback fires when cast_sender.js loads, but cast.framework
     // may not be ready yet. We still rely on polling to check for cast.framework.
     window['__onGCastApiAvailable'] = (isAvailable: boolean) => {
       console.log('📡 __onGCastApiAvailable called:', isAvailable);
-      // Don't call initializeCastApi() here - let polling handle it
-      // because cast.framework may not be ready yet
+      // Check immediately if framework is ready
+      if (isAvailable && (window as any).cast?.framework) {
+        console.log('✅ Cast framework ready via callback! Initializing...');
+        clearInterval(pollInterval);
+        initializeCastApi();
+      }
     };
 
-    // Poll for Cast SDK in case callback doesn't fire
+    // Poll for Cast SDK with faster interval (100ms instead of 500ms)
     const pollInterval = setInterval(() => {
       pollCount++;
       const chromeCast = (window as any).chrome?.cast;
@@ -126,7 +138,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
         clearInterval(pollInterval);
         initializeCastApi();
       } else if (pollCount >= maxPolls) {
-        console.warn('⚠️ Google Cast SDK not loaded after 15 seconds');
+        console.warn('⚠️ Google Cast SDK not loaded after 10 seconds');
         const finalDebug = {
           hasChromeCast: !!chromeCast,
           hasCastFramework: !!castFramework,
@@ -138,9 +150,12 @@ export function CastProvider({ children }: { children: ReactNode }) {
         console.warn('🔍 window.cast.framework:', !!castFramework);
         clearInterval(pollInterval);
       } else {
-        console.log(`⏳ Waiting for Cast SDK... (poll #${pollCount}/${maxPolls})`);
+        // Only log every 10th poll to reduce console spam
+        if (pollCount % 10 === 0) {
+          console.log(`⏳ Waiting for Cast SDK... (poll #${pollCount}/${maxPolls})`);
+        }
       }
-    }, 500);
+    }, 100); // 100ms interval - 5x faster than before!
 
     return () => {
       clearInterval(pollInterval);
