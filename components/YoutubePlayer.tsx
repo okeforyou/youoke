@@ -417,15 +417,15 @@ function YoutubePlayer({
     [isMuted]
   );
 
-  // Cast icon component - green when connected
+  // Cast icon component - same color always
   const CastIcon = ({ className }: { className?: string }) => (
-    <svg className={`${className} ${isGoogleCastConnected ? 'text-success animate-pulse' : ''}`} fill="currentColor" viewBox="0 0 24 24">
+    <svg className={className} fill="currentColor" viewBox="0 0 24 24">
       <path d="M1 18v3h3c0-1.66-1.34-3-3-3zm0-4v2c2.76 0 5 2.24 5 5h2c0-3.87-3.13-7-7-7zm0-4v2c4.97 0 9 4.03 9 9h2c0-6.08-4.93-11-11-11zm20-7H3c-1.1 0-2 .9-2 2v3h2V5h18v14h-7v2h7c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" />
     </svg>
   );
 
   const castBtn = useMemo(() => {
-    // Always show single Cast button - green when connected
+    // Always show single Cast button - same color always
     return [
       {
         icon: CastIcon,
@@ -718,7 +718,7 @@ function YoutubePlayer({
   // Old RemoteComponent removed - replaced by unified Cast button in control bar
 
   const buttons: any = !isMoniter
-    ? [...playPauseBtn, ...playerBtns, ...muteBtn, ...castBtn, ...fullBtn]
+    ? [...playPauseBtn, ...playerBtns, ...muteBtn, ...castBtn]
     : [
         ...fullBtn,
         {
@@ -841,17 +841,18 @@ function YoutubePlayer({
       >
         {isGoogleCastConnected && !isMoniter ? (
           <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-accent/20 to-primary/20 backdrop-blur-sm p-4">
-            <div className="text-center p-6 bg-base-100/95 rounded-xl shadow-2xl w-full max-w-md">
-              <div className="text-5xl mb-3">📡</div>
-              <h2 className="text-xl font-bold mb-2 text-accent">กำลัง Cast ไป</h2>
-              <p className="text-base font-semibold text-success mb-3 truncate">
+            <div className="text-center p-4 bg-white/80 backdrop-blur-sm rounded-lg w-full max-w-sm">
+              <div className="text-4xl mb-2">📡</div>
+              <h2 className="text-lg font-bold mb-1 text-gray-800">กำลัง Cast ไป</h2>
+              <p className="text-sm font-semibold text-primary mb-2 truncate">
                 {receiverName || 'Chromecast'}
               </p>
-              <p className="text-sm text-gray-600 mb-4">
+              <p className="text-xs text-gray-600 mb-3">
                 วิดีโอกำลังเล่นบนทีวี - ใช้ปุ่มด้านล่างเพื่อควบคุม
               </p>
               <button
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent fullscreen trigger
                   disconnectGoogleCast();
                   console.log('📡 Disconnecting from Google Cast...');
                   addToast('ตัดการเชื่อมต่อ Google Cast แล้ว');
