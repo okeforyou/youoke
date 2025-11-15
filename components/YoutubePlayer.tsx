@@ -57,9 +57,11 @@ function YoutubePlayer({
   const { isConnected: isCasting, roomCode, joinRoom, leaveRoom } = useFirebaseCast();
   const {
     connect: connectGoogleCast,
+    disconnect: disconnectGoogleCast,
     setPlaylist: setGoogleCastPlaylist,
     isAvailable: isCastAvailable,
     isConnected: isGoogleCastConnected,
+    receiverName,
     next: castNext,
     previous: castPrevious,
     play: castPlay,
@@ -415,8 +417,38 @@ function YoutubePlayer({
     [isMuted]
   );
 
-  const castBtn = useMemo(
-    () => [
+  // Cast icon component for connected state
+  const CastConnectedIcon = ({ className }: { className?: string }) => (
+    <svg className={`${className} text-success animate-pulse`} fill="currentColor" viewBox="0 0 24 24">
+      <path d="M1 18v3h3c0-1.66-1.34-3-3-3zm0-4v2c2.76 0 5 2.24 5 5h2c0-3.87-3.13-7-7-7zm0-4v2c4.97 0 9 4.03 9 9h2c0-6.08-4.93-11-11-11zm20-7H3c-1.1 0-2 .9-2 2v3h2V5h18v14h-7v2h7c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" />
+    </svg>
+  );
+
+  const castBtn = useMemo(() => {
+    // When connected to Google Cast, show connected icon + disconnect button
+    if (isGoogleCastConnected) {
+      return [
+        {
+          icon: CastConnectedIcon,
+          label: "Casting",
+          onClick: () => {
+            // Do nothing when clicking the cast icon - it's just a status indicator
+          },
+        },
+        {
+          icon: XMarkIcon,
+          label: "ปิด Cast",
+          onClick: () => {
+            disconnectGoogleCast();
+            console.log('📡 Disconnecting from Google Cast...');
+            addToast('ตัดการเชื่อมต่อ Google Cast แล้ว');
+          },
+        },
+      ];
+    }
+
+    // When not connected, show Cast button
+    return [
       {
         icon: TvIcon,
         label: "Cast",
@@ -424,9 +456,8 @@ function YoutubePlayer({
           setShowCastModeSelector(true);
         },
       },
-    ],
-    []
-  );
+    ];
+  }, [isGoogleCastConnected, disconnectGoogleCast, addToast]);
 
   const fullBtn = useMemo(
     () => [
@@ -704,8 +735,8 @@ function YoutubePlayer({
 
   // Old RemoteComponent removed - replaced by unified Cast button in control bar
 
-  const buttons = !isMoniter
-    ? playPauseBtn.concat(playerBtns, muteBtn, castBtn, fullBtn)
+  const buttons: any = !isMoniter
+    ? [...playPauseBtn, ...playerBtns, ...muteBtn, ...castBtn, ...fullBtn]
     : [
         ...fullBtn,
         {
@@ -762,6 +793,7 @@ function YoutubePlayer({
         isOpen={showCastModeSelector}
         onClose={() => setShowCastModeSelector(false)}
         isCastAvailable={isCastAvailable}
+        isMobile={isMobile}
         onSelectWebMonitor={() => {
           setShowCastModeSelector(false);
           setIsCastOverlayOpen(true);

@@ -69,11 +69,9 @@ function HomePage() {
   const { user } = useAuth();
   const {
     connect: connectGoogleCast,
-    disconnect: disconnectGoogleCast,
     setPlaylist: setGoogleCastPlaylist,
     isAvailable: isCastAvailable,
     isConnected: isGoogleCastConnected,
-    receiverName,
     playlist: googleCastPlaylist,
     currentIndex: googleCastCurrentIndex,
     addToQueue: googleCastAddToQueue,
@@ -268,52 +266,6 @@ function HomePage() {
             คิวเพลง ( {displayPlaylist?.length || 0} เพลง )
             {(isGoogleCastConnected || isCasting) && <span className="text-xs ml-1">📺</span>}
           </span>
-        )}
-
-        {/* Cast to TV Button / Connected Device Display */}
-        {!!user.uid && playlist.length > 0 && (
-          <div className="ml-2">
-            {/* Show device name and disconnect button when connected to Google Cast */}
-            {isGoogleCastConnected && receiverName ? (
-              <div className="flex items-center gap-2 bg-success/10 border border-success/30 rounded-lg px-3 py-1.5">
-                {/* Device info */}
-                <div className="flex items-center gap-2 flex-1 min-w-0">
-                  <svg className="w-4 h-4 text-success flex-shrink-0" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M1 18v3h3c0-1.66-1.34-3-3-3zm0-4v2c2.76 0 5 2.24 5 5h2c0-3.87-3.13-7-7-7zm0-4v2c4.97 0 9 4.03 9 9h2c0-6.08-4.93-11-11-11zm20-7H3c-1.1 0-2 .9-2 2v3h2V5h18v14h-7v2h7c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" />
-                  </svg>
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-xs text-gray-500">Casting to</span>
-                    <span className="text-sm font-bold text-success truncate">{receiverName}</span>
-                  </div>
-                </div>
-
-                {/* Disconnect button */}
-                <button
-                  onClick={() => {
-                    disconnectGoogleCast();
-                    console.log('📡 Disconnecting from Google Cast...');
-                  }}
-                  className="btn btn-xs btn-circle btn-ghost hover:btn-error flex-shrink-0"
-                  title="Stop casting"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            ) : !isCasting && (
-              /* Show Cast button when not connected */
-              <button
-                onClick={() => setShowCastModeSelector(true)}
-                className="btn btn-sm btn-primary gap-2"
-              >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M21 3H3c-1.1 0-2 .9-2 2v3h2V5h18v14h-7v2h7c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM1 18v3h3c0-1.66-1.34-3-3-3zm0-4v2c2.76 0 5 2.24 5 5h2c0-3.87-3.13-7-7-7zm0-4v2c4.97 0 9 4.03 9 9h2c0-6.08-4.93-11-11-11z" />
-                </svg>
-                Cast to TV
-              </button>
-            )}
-          </div>
         )}
 
         {!displayPlaylist?.length ? null : (
