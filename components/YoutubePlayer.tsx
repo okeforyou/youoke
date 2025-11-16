@@ -153,7 +153,8 @@ function YoutubePlayer({
       setPlayerState(playerState.value);
 
       // Update Media Session playback state for Android lock screen
-      if ('mediaSession' in navigator && !isMoniter && !isGoogleCastConnected && !isCasting && !isDualMode) {
+      // Allow for both local and Cast modes (skip only Monitor/Dual modes)
+      if ('mediaSession' in navigator && !isMoniter && !isDualMode) {
         switch (playerState.value) {
           case YouTube.PlayerState.PLAYING:
           case YouTube.PlayerState.BUFFERING:
@@ -452,86 +453,113 @@ function YoutubePlayer({
 
   // Enhanced Auto-Resume when returning from background (Mobile fix + Queue support)
   useEffect(() => {
-    // Skip if Monitor mode or Cast mode
-    if (isMoniter || isGoogleCastConnected || isCasting || isDualMode) {
+    // Skip only Monitor mode and Dual mode
+    // Allow for both local and Cast modes
+    if (isMoniter || isDualMode) {
       return;
     }
 
     let wasPlayingBeforeHidden = false;
     let lastKnownVideoId = videoId;
+    const isCastMode = isGoogleCastConnected || isCasting;
 
     const handleVisibilityChange = async () => {
-      const player = playerRef.current?.getInternalPlayer();
-      if (!player) return;
-
       if (document.visibilityState === 'hidden') {
         // App going to background - remember state
-        try {
-          const state = await player.getPlayerState();
-          wasPlayingBeforeHidden = state === YouTube.PlayerState.PLAYING || state === YouTube.PlayerState.BUFFERING;
-          lastKnownVideoId = videoId;
-          console.log('📱 App going to background. Was playing:', wasPlayingBeforeHidden, 'videoId:', lastKnownVideoId);
-        } catch (error) {
-          console.log('Error checking player state:', error);
-        }
+        wasPlayingBeforeHidden = playerState === YouTube.PlayerState.PLAYING || playerState === YouTube.PlayerState.BUFFERING;
+        lastKnownVideoId = videoId;
+        console.log('📱 App going to background', {
+          wasPlaying: wasPlayingBeforeHidden,
+          videoId: lastKnownVideoId,
+          mode: isCastMode ? 'Cast' : 'Local'
+        });
       } else if (document.visibilityState === 'visible') {
         // App returning to foreground
-        console.log('📱 App returning to foreground. Should auto-resume:', wasPlayingBeforeHidden);
-        console.log('📱 Last known videoId:', lastKnownVideoId, 'Current videoId:', videoId);
+        console.log('📱 App returning to foreground', {
+          shouldResume: wasPlayingBeforeHidden,
+          lastVideoId: lastKnownVideoId,
+          currentVideoId: videoId,
+          mode: isCastMode ? 'Cast' : 'Local'
+        });
 
-        // Wait a bit for player and DOM to be ready
+        // For Cast mode, just update Media Session state
+        if (isCastMode) {
+          if (wasPlayingBeforeHidden && 'mediaSession' in navigator) {
+            navigator.mediaSession.playbackState = 'playing';
+            console.log('📱 Cast mode: Updated Media Session to playing');
+          }
+          return; // Cast receiver handles playback
+        }
+
+        // For local mode, aggressively resume playback
+        const player = playerRef.current?.getInternalPlayer();
+        if (!player) {
+          console.log('📱 No player available');
+          return;
+        }
+
+        // Wait for player to be ready
         setTimeout(async () => {
           try {
             const state = await player.getPlayerState();
             console.log('📱 Current player state:', state);
 
-            // Check if video ended while in background and next should play
+            // Check if video ended while in background
             if (state === YouTube.PlayerState.ENDED && playlist && playlist.length > 0) {
-              console.log('📱 Video ended in background. Queue length:', playlist.length);
-
-              // Force play next video from queue
+              console.log('📱 Video ended in background. Playing next...');
               if (nextSong) {
-                console.log('📱 Force playing next song from queue...');
                 nextSong();
-                return;
-              }
-            }
-
-            // Check if video changed while in background (queue auto-played)
-            if (lastKnownVideoId !== videoId) {
-              console.log('📱 Video changed in background. New video detected.');
-              // New video is already loaded, just need to resume if it should be playing
-              if (wasPlayingBeforeHidden && state !== YouTube.PlayerState.PLAYING) {
-                console.log('📱 Auto-resuming new video...');
-                await player.playVideo();
-                setPlayerState(YouTube.PlayerState.PLAYING);
               }
               return;
             }
 
-            // Normal resume - same video
+            // Check if video changed while in background
+            if (lastKnownVideoId !== videoId) {
+              console.log('📱 Video changed in background');
+              if (wasPlayingBeforeHidden && state !== YouTube.PlayerState.PLAYING) {
+                console.log('📱 Resuming new video...');
+                await player.playVideo();
+                setPlayerState(YouTube.PlayerState.PLAYING);
+                if ('mediaSession' in navigator) {
+                  navigator.mediaSession.playbackState = 'playing';
+                }
+              }
+              return;
+            }
+
+            // Resume if was playing before
             if (wasPlayingBeforeHidden && state !== YouTube.PlayerState.PLAYING && state !== YouTube.PlayerState.ENDED) {
-              console.log('📱 Auto-resuming playback...');
+              console.log('📱 Resuming playback...');
               await player.playVideo();
               setPlayerState(YouTube.PlayerState.PLAYING);
+              if ('mediaSession' in navigator) {
+                navigator.mediaSession.playbackState = 'playing';
+              }
 
-              // Verify after 1 second that playback actually resumed
-              setTimeout(async () => {
-                try {
-                  const verifyState = await player.getPlayerState();
-                  if (verifyState !== YouTube.PlayerState.PLAYING) {
-                    console.log('📱 Playback verification failed. Retrying...');
-                    await player.playVideo();
+              // Aggressive retry - verify 3 times
+              for (let i = 1; i <= 3; i++) {
+                setTimeout(async () => {
+                  try {
+                    const verifyState = await player.getPlayerState();
+                    if (verifyState !== YouTube.PlayerState.PLAYING) {
+                      console.log(`📱 Retry ${i}/3: Playback not playing, retrying...`);
+                      await player.playVideo();
+                      if ('mediaSession' in navigator) {
+                        navigator.mediaSession.playbackState = 'playing';
+                      }
+                    } else {
+                      console.log(`📱 Retry ${i}/3: Playback confirmed ✓`);
+                    }
+                  } catch (err) {
+                    console.log(`Error retry ${i}:`, err);
                   }
-                } catch (err) {
-                  console.log('Error verifying playback:', err);
-                }
-              }, 1000);
+                }, i * 1000);
+              }
             }
           } catch (error) {
             console.log('Error auto-resuming:', error);
           }
-        }, 400); // Slightly longer delay for stability
+        }, 300);
       }
     };
 
@@ -540,12 +568,13 @@ function YoutubePlayer({
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [isMoniter, isGoogleCastConnected, isCasting, isDualMode, videoId, playlist, nextSong]);
+  }, [isMoniter, isGoogleCastConnected, isCasting, isDualMode, videoId, playlist, nextSong, playerState]);
 
   // Media Session API - Native app controls (notification, lock screen)
   useEffect(() => {
-    // Skip if Monitor mode or Cast mode (only for local playback)
-    if (isMoniter || isGoogleCastConnected || isCasting || isDualMode) {
+    // Skip only if Monitor mode or Dual mode (display screens, not controllers)
+    // Allow for both local playback AND Cast mode (to control TV from lock screen)
+    if (isMoniter || isDualMode) {
       return;
     }
 
@@ -555,18 +584,19 @@ function YoutubePlayer({
       return;
     }
 
-    console.log('🎵 Setting up Media Session API handlers');
+    const isCastMode = isGoogleCastConnected || isCasting;
+    console.log('🎵 Setting up Media Session API handlers', isCastMode ? '(Cast mode - remote control)' : '(Local mode)');
 
     // Setup action handlers for notification/lock screen controls
     try {
       navigator.mediaSession.setActionHandler('play', () => {
         console.log('🎵 Media Session: Play action');
-        handlePlay();
+        handlePlay(); // handlePlay already supports Cast
       });
 
       navigator.mediaSession.setActionHandler('pause', () => {
         console.log('🎵 Media Session: Pause action');
-        handlePause();
+        handlePause(); // handlePause already supports Cast
       });
 
       navigator.mediaSession.setActionHandler('nexttrack', () => {
@@ -588,32 +618,42 @@ function YoutubePlayer({
         }
       });
 
-      // Seek handlers for Android (10 seconds backward/forward)
-      navigator.mediaSession.setActionHandler('seekbackward', (details) => {
-        console.log('🎵 Media Session: Seek backward action');
-        const player = playerRef.current?.getInternalPlayer();
-        if (player) {
-          player.getCurrentTime().then((currentTime: number) => {
-            const seekTime = Math.max(0, currentTime - (details.seekOffset || 10));
-            player.seekTo(seekTime, true);
-          }).catch((err: any) => console.log('Error seeking:', err));
-        }
-      });
-
-      navigator.mediaSession.setActionHandler('seekforward', (details) => {
-        console.log('🎵 Media Session: Seek forward action');
-        const player = playerRef.current?.getInternalPlayer();
-        if (player) {
-          player.getCurrentTime().then((currentTime: number) => {
-            player.getDuration().then((duration: number) => {
-              const seekTime = Math.min(duration, currentTime + (details.seekOffset || 10));
+      // Seek handlers only for local playback (not supported in Cast mode)
+      if (!isCastMode) {
+        navigator.mediaSession.setActionHandler('seekbackward', (details) => {
+          console.log('🎵 Media Session: Seek backward action');
+          const player = playerRef.current?.getInternalPlayer();
+          if (player) {
+            player.getCurrentTime().then((currentTime: number) => {
+              const seekTime = Math.max(0, currentTime - (details.seekOffset || 10));
               player.seekTo(seekTime, true);
-            }).catch((err: any) => console.log('Error getting duration:', err));
-          }).catch((err: any) => console.log('Error seeking:', err));
-        }
-      });
+            }).catch((err: any) => console.log('Error seeking:', err));
+          }
+        });
 
-      console.log('✅ Media Session API handlers registered (with seek support)');
+        navigator.mediaSession.setActionHandler('seekforward', (details) => {
+          console.log('🎵 Media Session: Seek forward action');
+          const player = playerRef.current?.getInternalPlayer();
+          if (player) {
+            player.getCurrentTime().then((currentTime: number) => {
+              player.getDuration().then((duration: number) => {
+                const seekTime = Math.min(duration, currentTime + (details.seekOffset || 10));
+                player.seekTo(seekTime, true);
+              }).catch((err: any) => console.log('Error getting duration:', err));
+            }).catch((err: any) => console.log('Error seeking:', err));
+          }
+        });
+      } else {
+        // Remove seek handlers in Cast mode
+        try {
+          navigator.mediaSession.setActionHandler('seekbackward', null);
+          navigator.mediaSession.setActionHandler('seekforward', null);
+        } catch (e) {
+          // Ignore
+        }
+      }
+
+      console.log('✅ Media Session API handlers registered', isCastMode ? '(remote control mode)' : '(with seek support)');
     } catch (error) {
       console.log('⚠️ Error setting up Media Session API:', error);
     }
@@ -635,8 +675,9 @@ function YoutubePlayer({
 
   // Update Media Session metadata when video changes
   useEffect(() => {
-    // Skip if Monitor mode or Cast mode
-    if (isMoniter || isGoogleCastConnected || isCasting || isDualMode) {
+    // Skip only if Monitor mode or Dual mode
+    // Show metadata for both local and Cast modes
+    if (isMoniter || isDualMode) {
       return;
     }
 
@@ -656,13 +697,14 @@ function YoutubePlayer({
         || currentVideo?.videoThumbnails?.[0]?.url
         || `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`;
 
-      console.log('🎵 Updating Media Session metadata:', { title, artist });
+      const isCastMode = isGoogleCastConnected || isCasting;
+      console.log('🎵 Updating Media Session metadata:', { title, artist, mode: isCastMode ? 'Cast' : 'Local' });
 
       // Update notification metadata
       navigator.mediaSession.metadata = new MediaMetadata({
         title: title,
         artist: artist,
-        album: 'YouOke Karaoke',
+        album: isCastMode ? 'YouOke Karaoke (Casting)' : 'YouOke Karaoke',
         artwork: [
           { src: thumbnailUrl, sizes: '96x96', type: 'image/jpeg' },
           { src: thumbnailUrl, sizes: '128x128', type: 'image/jpeg' },
