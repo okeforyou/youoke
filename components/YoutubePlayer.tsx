@@ -415,7 +415,7 @@ function YoutubePlayer({
     }
   }, [router.query, isCasting]);
 
-  // Auto-Resume when returning from background (Mobile fix)
+  // Enhanced Auto-Resume when returning from background (Mobile fix + Queue support)
   useEffect(() => {
     // Skip if Monitor mode or Cast mode
     if (isMoniter || isGoogleCastConnected || isCasting || isDualMode) {
@@ -423,42 +423,80 @@ function YoutubePlayer({
     }
 
     let wasPlayingBeforeHidden = false;
+    let lastKnownVideoId = videoId;
 
     const handleVisibilityChange = async () => {
       const player = playerRef.current?.getInternalPlayer();
       if (!player) return;
 
       if (document.visibilityState === 'hidden') {
-        // App going to background - remember if we were playing
+        // App going to background - remember state
         try {
           const state = await player.getPlayerState();
-          wasPlayingBeforeHidden = state === YouTube.PlayerState.PLAYING;
-          console.log('📱 App going to background. Was playing:', wasPlayingBeforeHidden);
+          wasPlayingBeforeHidden = state === YouTube.PlayerState.PLAYING || state === YouTube.PlayerState.BUFFERING;
+          lastKnownVideoId = videoId;
+          console.log('📱 App going to background. Was playing:', wasPlayingBeforeHidden, 'videoId:', lastKnownVideoId);
         } catch (error) {
           console.log('Error checking player state:', error);
         }
       } else if (document.visibilityState === 'visible') {
         // App returning to foreground
         console.log('📱 App returning to foreground. Should auto-resume:', wasPlayingBeforeHidden);
+        console.log('📱 Last known videoId:', lastKnownVideoId, 'Current videoId:', videoId);
 
-        if (wasPlayingBeforeHidden) {
-          // Wait a bit for player to be ready
-          setTimeout(async () => {
-            try {
-              const state = await player.getPlayerState();
-              console.log('📱 Current player state:', state);
+        // Wait a bit for player and DOM to be ready
+        setTimeout(async () => {
+          try {
+            const state = await player.getPlayerState();
+            console.log('📱 Current player state:', state);
 
-              // If player is paused/buffering and we should be playing, resume
-              if (state !== YouTube.PlayerState.PLAYING && state !== YouTube.PlayerState.ENDED) {
-                console.log('📱 Auto-resuming playback...');
+            // Check if video ended while in background and next should play
+            if (state === YouTube.PlayerState.ENDED && playlist && playlist.length > 0) {
+              console.log('📱 Video ended in background. Queue length:', playlist.length);
+
+              // Force play next video from queue
+              if (nextSong) {
+                console.log('📱 Force playing next song from queue...');
+                nextSong();
+                return;
+              }
+            }
+
+            // Check if video changed while in background (queue auto-played)
+            if (lastKnownVideoId !== videoId) {
+              console.log('📱 Video changed in background. New video detected.');
+              // New video is already loaded, just need to resume if it should be playing
+              if (wasPlayingBeforeHidden && state !== YouTube.PlayerState.PLAYING) {
+                console.log('📱 Auto-resuming new video...');
                 await player.playVideo();
                 setPlayerState(YouTube.PlayerState.PLAYING);
               }
-            } catch (error) {
-              console.log('Error auto-resuming:', error);
+              return;
             }
-          }, 300); // Small delay to ensure player is ready
-        }
+
+            // Normal resume - same video
+            if (wasPlayingBeforeHidden && state !== YouTube.PlayerState.PLAYING && state !== YouTube.PlayerState.ENDED) {
+              console.log('📱 Auto-resuming playback...');
+              await player.playVideo();
+              setPlayerState(YouTube.PlayerState.PLAYING);
+
+              // Verify after 1 second that playback actually resumed
+              setTimeout(async () => {
+                try {
+                  const verifyState = await player.getPlayerState();
+                  if (verifyState !== YouTube.PlayerState.PLAYING) {
+                    console.log('📱 Playback verification failed. Retrying...');
+                    await player.playVideo();
+                  }
+                } catch (err) {
+                  console.log('Error verifying playback:', err);
+                }
+              }, 1000);
+            }
+          } catch (error) {
+            console.log('Error auto-resuming:', error);
+          }
+        }, 400); // Slightly longer delay for stability
       }
     };
 
@@ -467,7 +505,117 @@ function YoutubePlayer({
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [isMoniter, isGoogleCastConnected, isCasting, isDualMode]);
+  }, [isMoniter, isGoogleCastConnected, isCasting, isDualMode, videoId, playlist, nextSong]);
+
+  // Media Session API - Native app controls (notification, lock screen)
+  useEffect(() => {
+    // Skip if Monitor mode or Cast mode (only for local playback)
+    if (isMoniter || isGoogleCastConnected || isCasting || isDualMode) {
+      return;
+    }
+
+    // Check if Media Session API is supported
+    if (!('mediaSession' in navigator)) {
+      console.log('📱 Media Session API not supported');
+      return;
+    }
+
+    console.log('🎵 Setting up Media Session API handlers');
+
+    // Setup action handlers for notification/lock screen controls
+    try {
+      navigator.mediaSession.setActionHandler('play', () => {
+        console.log('🎵 Media Session: Play action');
+        handlePlay();
+      });
+
+      navigator.mediaSession.setActionHandler('pause', () => {
+        console.log('🎵 Media Session: Pause action');
+        handlePause();
+      });
+
+      navigator.mediaSession.setActionHandler('nexttrack', () => {
+        console.log('🎵 Media Session: Next track action');
+        if (nextSong) {
+          nextSong();
+        }
+      });
+
+      navigator.mediaSession.setActionHandler('previoustrack', () => {
+        console.log('🎵 Media Session: Previous track action');
+        // Find current video in playlist and go to previous
+        if (playlist && playlist.length > 0 && curVideoId) {
+          const currentIndex = playlist.findIndex(v => v.videoId === curVideoId);
+          if (currentIndex > 0) {
+            const previousVideo = playlist[currentIndex - 1];
+            setCurVideoId(previousVideo.videoId);
+          }
+        }
+      });
+
+      console.log('✅ Media Session API handlers registered');
+    } catch (error) {
+      console.log('⚠️ Error setting up Media Session API:', error);
+    }
+
+    return () => {
+      // Cleanup handlers
+      try {
+        navigator.mediaSession.setActionHandler('play', null);
+        navigator.mediaSession.setActionHandler('pause', null);
+        navigator.mediaSession.setActionHandler('nexttrack', null);
+        navigator.mediaSession.setActionHandler('previoustrack', null);
+      } catch (error) {
+        // Ignore cleanup errors
+      }
+    };
+  }, [isMoniter, isGoogleCastConnected, isCasting, isDualMode, nextSong, playlist, curVideoId]);
+
+  // Update Media Session metadata when video changes
+  useEffect(() => {
+    // Skip if Monitor mode or Cast mode
+    if (isMoniter || isGoogleCastConnected || isCasting || isDualMode) {
+      return;
+    }
+
+    // Check if Media Session API is supported
+    if (!('mediaSession' in navigator) || !videoId) {
+      return;
+    }
+
+    try {
+      // Find current video info from playlist
+      const currentVideo = playlist?.find(v => v.videoId === videoId);
+      const title = currentVideo?.title || 'Unknown Track';
+      const artist = currentVideo?.author || 'Unknown Artist';
+
+      // Get thumbnail URL
+      const thumbnailUrl = currentVideo?.videoThumbnails?.find(t => t.quality === 'medium')?.url
+        || currentVideo?.videoThumbnails?.[0]?.url
+        || `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`;
+
+      console.log('🎵 Updating Media Session metadata:', { title, artist });
+
+      // Update notification metadata
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: title,
+        artist: artist,
+        album: 'YouOke Karaoke',
+        artwork: [
+          { src: thumbnailUrl, sizes: '96x96', type: 'image/jpeg' },
+          { src: thumbnailUrl, sizes: '128x128', type: 'image/jpeg' },
+          { src: thumbnailUrl, sizes: '192x192', type: 'image/jpeg' },
+          { src: thumbnailUrl, sizes: '256x256', type: 'image/jpeg' },
+          { src: thumbnailUrl, sizes: '384x384', type: 'image/jpeg' },
+          { src: thumbnailUrl, sizes: '512x512', type: 'image/jpeg' },
+        ],
+      });
+
+      console.log('✅ Media Session metadata updated');
+    } catch (error) {
+      console.log('⚠️ Error updating Media Session metadata:', error);
+    }
+  }, [videoId, playlist, isMoniter, isGoogleCastConnected, isCasting, isDualMode]);
 
   const playPauseBtn = [
     playerState === YouTube.PlayerState.PLAYING

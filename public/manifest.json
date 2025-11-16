@@ -1,6 +1,7 @@
 {
-  "name": "Oke for You",
+  "name": "Oke for You - Karaoke App",
   "short_name": "YouOke",
+  "description": "Online Karaoke App - เล่นคาราโอเกะออนไลน์ฟรี",
   "icons": [
     {
       "src": "assets/icons/icon-72x72.png",
@@ -54,6 +55,10 @@
   "theme_color": "#ef4444",
   "background_color": "#e5e6e6",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "orientation": "any"
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "categories": ["music", "entertainment"],
+  "prefer_related_applications": false
 }
