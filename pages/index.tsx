@@ -73,6 +73,7 @@ function HomePage() {
   const {
     connect: connectGoogleCast,
     setPlaylist: setGoogleCastPlaylist,
+    updatePlaylistOrder: updateGoogleCastPlaylistOrder,
     isAvailable: isCastAvailable,
     isConnected: isGoogleCastConnected,
     playlist: googleCastPlaylist,
@@ -306,7 +307,8 @@ function HomePage() {
       const newPlaylist = arrayMove(googleCastPlaylist, oldIndex, newIndex);
       const newCurrentIndex = calculateNewCurrentIndex(oldIndex, newIndex, googleCastCurrentIndex);
 
-      setGoogleCastPlaylist(newPlaylist);
+      // Use updatePlaylistOrder instead of setPlaylist to avoid restarting video
+      updateGoogleCastPlaylistOrder(newPlaylist);
 
       // Update current index silently if it changed
       if (newCurrentIndex !== googleCastCurrentIndex) {

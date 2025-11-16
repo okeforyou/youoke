@@ -22,6 +22,7 @@ interface CastContextValue {
 
   // Queue Operations
   setPlaylist: (playlist: QueueVideo[]) => void;
+  updatePlaylistOrder: (playlist: QueueVideo[]) => void; // Update playlist order without reloading (for drag & drop)
   addToQueue: (video: SearchResult | RecommendedVideo) => void;
   playNow: (video: SearchResult | RecommendedVideo) => void;
   playNext: (video: SearchResult | RecommendedVideo) => void;
@@ -774,6 +775,25 @@ export function CastProvider({ children }: { children: ReactNode }) {
     currentVideoRef.current = latestPlaylist[newIndex];
   };
 
+  // Update playlist order (for drag & drop) - sends UPDATE_QUEUE instead of LOAD_QUEUE
+  // This prevents the receiver from restarting the current video
+  const updatePlaylistOrder = (newPlaylist: QueueVideo[]) => {
+    console.log('🔄 Updating playlist order (drag & drop):', newPlaylist.length, 'items');
+    setPlaylistState(newPlaylist);
+    playlistRef.current = newPlaylist;
+
+    if (isConnected && newPlaylist.length > 0) {
+      console.log('📤 Sending UPDATE_QUEUE to receiver...');
+      sendMessage({
+        type: 'UPDATE_QUEUE', // Use UPDATE_QUEUE instead of LOAD_QUEUE to avoid restarting video
+        videos: newPlaylist.map(v => ({
+          videoId: v.videoId,
+          title: v.title || 'Unknown'
+        })),
+      });
+    }
+  };
+
   const value: CastContextValue = {
     isAvailable,
     isConnected,
@@ -785,6 +805,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
     connect,
     disconnect,
     setPlaylist,
+    updatePlaylistOrder,
     addToQueue,
     playNow,
     playNext,

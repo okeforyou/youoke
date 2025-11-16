@@ -350,13 +350,33 @@ function YoutubePlayer({
     }
   };
 
+  // Double-click detection
+  const [clickCount, setClickCount] = useState(0);
+  const [clickTimer, setClickTimer] = useState<NodeJS.Timeout | null>(null);
+
   const handleVideoClick = () => {
-    // Toggle play/pause when clicking on video
-    if (playerState === YouTube.PlayerState.PLAYING) {
-      handlePause();
-    } else {
-      handlePlay();
+    setClickCount(prev => prev + 1);
+
+    if (clickTimer) {
+      clearTimeout(clickTimer);
     }
+
+    const timer = setTimeout(() => {
+      if (clickCount + 1 === 1) {
+        // Single click - Play/Pause
+        if (playerState === YouTube.PlayerState.PLAYING) {
+          handlePause();
+        } else {
+          handlePlay();
+        }
+      } else if (clickCount + 1 >= 2) {
+        // Double click - Fullscreen
+        handleFullscreenButtonClick();
+      }
+      setClickCount(0);
+    }, 250); // 250ms delay to detect double-click
+
+    setClickTimer(timer);
   };
 
   useEffect(() => {
@@ -727,7 +747,7 @@ function YoutubePlayer({
   // Old RemoteComponent removed - replaced by unified Cast button in control bar
 
   const buttons: any = !isMoniter
-    ? [...playPauseBtn, ...playerBtns, ...muteBtn, ...castBtn]
+    ? [...playPauseBtn, ...playerBtns, ...muteBtn, ...fullBtn, ...castBtn]
     : [
         ...fullBtn,
         {
