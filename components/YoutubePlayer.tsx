@@ -302,6 +302,13 @@ function YoutubePlayer({
       const player = playerRef.current?.getInternalPlayer();
 
       setPlayerState(YouTube.PlayerState.PLAYING);
+
+      // Update Media Session playback state
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'playing';
+        console.log('🎵 Media Session: Set playback state to PLAYING');
+      }
+
       if (!player) return;
       await player?.playVideo();
     } catch (error) {
@@ -322,6 +329,13 @@ function YoutubePlayer({
       const player = playerRef.current?.getInternalPlayer();
 
       setPlayerState(YouTube.PlayerState.PAUSED);
+
+      // Update Media Session playback state
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'paused';
+        console.log('🎵 Media Session: Set playback state to PAUSED');
+      }
+
       if (!player) return;
       await player.pauseVideo();
     } catch (error) {
