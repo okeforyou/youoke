@@ -149,7 +149,28 @@ function YoutubePlayer({
 
     // These lines will not execute if this component gets unmounted.
     if (muteState.status === "fulfilled") setIsMuted(muteState.value);
-    if (playerState.status === "fulfilled") setPlayerState(playerState.value);
+    if (playerState.status === "fulfilled") {
+      setPlayerState(playerState.value);
+
+      // Update Media Session playback state for Android lock screen
+      if ('mediaSession' in navigator && !isMoniter && !isGoogleCastConnected && !isCasting && !isDualMode) {
+        switch (playerState.value) {
+          case YouTube.PlayerState.PLAYING:
+          case YouTube.PlayerState.BUFFERING:
+            navigator.mediaSession.playbackState = 'playing';
+            console.log('🎵 Media Session: Auto-updated to PLAYING');
+            break;
+          case YouTube.PlayerState.PAUSED:
+            navigator.mediaSession.playbackState = 'paused';
+            console.log('🎵 Media Session: Auto-updated to PAUSED');
+            break;
+          case YouTube.PlayerState.ENDED:
+            navigator.mediaSession.playbackState = 'none';
+            console.log('🎵 Media Session: Auto-updated to NONE');
+            break;
+        }
+      }
+    }
   }
 
   useEffect(() => {
@@ -567,7 +588,32 @@ function YoutubePlayer({
         }
       });
 
-      console.log('✅ Media Session API handlers registered');
+      // Seek handlers for Android (10 seconds backward/forward)
+      navigator.mediaSession.setActionHandler('seekbackward', (details) => {
+        console.log('🎵 Media Session: Seek backward action');
+        const player = playerRef.current?.getInternalPlayer();
+        if (player) {
+          player.getCurrentTime().then((currentTime: number) => {
+            const seekTime = Math.max(0, currentTime - (details.seekOffset || 10));
+            player.seekTo(seekTime, true);
+          }).catch((err: any) => console.log('Error seeking:', err));
+        }
+      });
+
+      navigator.mediaSession.setActionHandler('seekforward', (details) => {
+        console.log('🎵 Media Session: Seek forward action');
+        const player = playerRef.current?.getInternalPlayer();
+        if (player) {
+          player.getCurrentTime().then((currentTime: number) => {
+            player.getDuration().then((duration: number) => {
+              const seekTime = Math.min(duration, currentTime + (details.seekOffset || 10));
+              player.seekTo(seekTime, true);
+            }).catch((err: any) => console.log('Error getting duration:', err));
+          }).catch((err: any) => console.log('Error seeking:', err));
+        }
+      });
+
+      console.log('✅ Media Session API handlers registered (with seek support)');
     } catch (error) {
       console.log('⚠️ Error setting up Media Session API:', error);
     }
@@ -579,6 +625,8 @@ function YoutubePlayer({
         navigator.mediaSession.setActionHandler('pause', null);
         navigator.mediaSession.setActionHandler('nexttrack', null);
         navigator.mediaSession.setActionHandler('previoustrack', null);
+        navigator.mediaSession.setActionHandler('seekbackward', null);
+        navigator.mediaSession.setActionHandler('seekforward', null);
       } catch (error) {
         // Ignore cleanup errors
       }
@@ -630,6 +678,59 @@ function YoutubePlayer({
       console.log('⚠️ Error updating Media Session metadata:', error);
     }
   }, [videoId, playlist, isMoniter, isGoogleCastConnected, isCasting, isDualMode]);
+
+  // Update Media Session position state (required for Android lock screen)
+  useEffect(() => {
+    // Skip if Monitor mode or Cast mode
+    if (isMoniter || isGoogleCastConnected || isCasting || isDualMode) {
+      return;
+    }
+
+    // Check if Media Session API is supported
+    if (!('mediaSession' in navigator) || !videoId) {
+      return;
+    }
+
+    // Update position state every second when playing
+    let intervalId: NodeJS.Timeout | null = null;
+
+    const updatePositionState = async () => {
+      try {
+        const player = playerRef.current?.getInternalPlayer();
+        if (!player) return;
+
+        const [currentTime, duration] = await Promise.all([
+          player.getCurrentTime(),
+          player.getDuration(),
+        ]);
+
+        if ('setPositionState' in navigator.mediaSession) {
+          navigator.mediaSession.setPositionState({
+            duration: duration || 0,
+            playbackRate: 1.0,
+            position: currentTime || 0,
+          });
+          console.log('🎵 Position updated:', { position: currentTime, duration });
+        }
+      } catch (error) {
+        // Ignore position update errors
+      }
+    };
+
+    // Update immediately
+    updatePositionState();
+
+    // Update every second if playing
+    if (playerState === YouTube.PlayerState.PLAYING) {
+      intervalId = setInterval(updatePositionState, 1000);
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [videoId, playerState, isMoniter, isGoogleCastConnected, isCasting, isDualMode]);
 
   const playPauseBtn = [
     playerState === YouTube.PlayerState.PLAYING
