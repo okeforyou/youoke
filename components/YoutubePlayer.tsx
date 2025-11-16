@@ -350,6 +350,15 @@ function YoutubePlayer({
     }
   };
 
+  const handleVideoClick = () => {
+    // Toggle play/pause when clicking on video
+    if (playerState === YouTube.PlayerState.PLAYING) {
+      handlePause();
+    } else {
+      handlePlay();
+    }
+  };
+
   useEffect(() => {
     // Firebase Cast handles playlist sync now
   }, [playlist]);
@@ -837,7 +846,7 @@ function YoutubePlayer({
       )}
       <div
         className="w-full aspect-video relative flex-1 md:flex-grow-1"
-        onClick={() => handleFullscreenButtonClick()}
+        onClick={() => handleVideoClick()}
       >
         {isGoogleCastConnected && !isMoniter ? (
           <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-accent/20 to-primary/20 backdrop-blur-sm p-4">

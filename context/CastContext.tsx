@@ -36,6 +36,9 @@ interface CastContextValue {
   pause: () => void;
   next: () => void;
   previous: () => void;
+
+  // Index Management (for drag & drop reordering)
+  updateCurrentIndexSilent: (newIndex: number) => void;
 }
 
 const CastContext = createContext<CastContextValue | undefined>(undefined);
@@ -755,6 +758,22 @@ export function CastProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Update current index silently (for drag & drop reordering) without sending message to receiver
+  const updateCurrentIndexSilent = (newIndex: number) => {
+    const latestPlaylist = playlistRef.current;
+
+    if (newIndex < 0 || newIndex >= latestPlaylist.length) {
+      console.warn('⚠️ Invalid index for silent update:', newIndex);
+      return;
+    }
+
+    console.log('🔄 Updating currentIndex silently:', currentIndexRef.current, '→', newIndex);
+    setCurrentIndex(newIndex);
+    currentIndexRef.current = newIndex;
+    setCurrentVideo(latestPlaylist[newIndex]);
+    currentVideoRef.current = latestPlaylist[newIndex];
+  };
+
   const value: CastContextValue = {
     isAvailable,
     isConnected,
@@ -778,6 +797,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
     pause,
     next,
     previous,
+    updateCurrentIndexSilent,
   };
 
   return <CastContext.Provider value={value}>{children}</CastContext.Provider>;

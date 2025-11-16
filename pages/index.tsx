@@ -81,6 +81,7 @@ function HomePage() {
     playNow: googleCastPlayNow,
     jumpToIndex: googleCastJumpToIndex,
     removeAt: googleCastRemoveAt,
+    updateCurrentIndexSilent: updateGoogleCastCurrentIndex,
   } = useCast();
   const { myPlaylist, setMyPlaylist } = useMyPlaylistState();
   const { room, setRoom } = useRoomState();
@@ -270,6 +271,25 @@ function HomePage() {
     });
   }, [displayPlaylist, isGoogleCastConnected, googleCastPlaylist, isCasting, castPlaylist, playlist]);
 
+  // Calculate new current index after drag & drop reordering
+  const calculateNewCurrentIndex = (oldIndex: number, newIndex: number, currentIndex: number) => {
+    if (oldIndex === currentIndex) {
+      // Currently playing item was moved
+      return newIndex;
+    } else if (oldIndex < currentIndex && newIndex >= currentIndex) {
+      // Item moved from before current to after/at current
+      // Current shifts left by 1
+      return currentIndex - 1;
+    } else if (oldIndex > currentIndex && newIndex <= currentIndex) {
+      // Item moved from after current to before/at current
+      // Current shifts right by 1
+      return currentIndex + 1;
+    } else {
+      // No effect on current
+      return currentIndex;
+    }
+  };
+
   // Handle drag end - reorder playlist
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -282,17 +302,32 @@ function HomePage() {
     const newIndex = parseInt(over.id.toString());
 
     if (isGoogleCastConnected) {
-      // Google Cast - reorder using context method (if available)
+      // Google Cast - reorder and update current index
       const newPlaylist = arrayMove(googleCastPlaylist, oldIndex, newIndex);
+      const newCurrentIndex = calculateNewCurrentIndex(oldIndex, newIndex, googleCastCurrentIndex);
+
       setGoogleCastPlaylist(newPlaylist);
+
+      // Update current index silently if it changed
+      if (newCurrentIndex !== googleCastCurrentIndex) {
+        updateGoogleCastCurrentIndex(newCurrentIndex);
+      }
     } else if (isCasting) {
       // Firebase Cast - reorder
       const realOldIndex = oldIndex + castCurrentIndex;
       const realNewIndex = newIndex + castCurrentIndex;
       const newPlaylist = arrayMove(castPlaylist, realOldIndex, realNewIndex);
+
+      // Calculate new current index (relative to full playlist)
+      const newCurrentIndex = calculateNewCurrentIndex(realOldIndex, realNewIndex, castCurrentIndex);
+
       setCastPlaylist(newPlaylist);
+
+      // Note: Firebase Cast context doesn't expose updateCurrentIndexSilent yet
+      // The receiver will handle index updates via sync
     } else {
       // Local playlist - reorder
+      // For local mode, curVideoId is used (not index-based), so no index update needed
       const newPlaylist = arrayMove(playlist, oldIndex, newIndex);
       setPlaylist(newPlaylist);
     }
