@@ -11,6 +11,8 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useEffect, useRef, useState, useMemo } from "react";
 import { DebounceInput } from "react-debounce-input";
+import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 
 import {
   BarsArrowUpIcon,
@@ -31,6 +33,7 @@ import ListPlaylistsGrid from "../components/ListPlaylistsGrid";
 import Modal, { ModalHandler } from "../components/Modal";
 import SearchResultGrid from "../components/SearchResultGrid";
 import VideoHorizontalCard from "../components/VideoHorizontalCard";
+import { DraggablePlaylistItem } from "../components/DraggablePlaylistItem";
 import YoutubePlayer from "../components/YoutubePlayer";
 import { CastModeSelector } from "../components/CastModeSelector";
 import { useAuth } from "../context/AuthContext";
@@ -271,6 +274,34 @@ function HomePage() {
     });
   }, [displayPlaylist, isGoogleCastConnected, googleCastPlaylist, isCasting, castPlaylist, playlist]);
 
+  // Handle drag end - reorder playlist
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) {
+      return;
+    }
+
+    const oldIndex = parseInt(active.id.toString());
+    const newIndex = parseInt(over.id.toString());
+
+    if (isGoogleCastConnected) {
+      // Google Cast - reorder using context method (if available)
+      const newPlaylist = arrayMove(googleCastPlaylist, oldIndex, newIndex);
+      setGoogleCastPlaylist(newPlaylist);
+    } else if (isCasting) {
+      // Firebase Cast - reorder
+      const realOldIndex = oldIndex + castCurrentIndex;
+      const realNewIndex = newIndex + castCurrentIndex;
+      const newPlaylist = arrayMove(castPlaylist, realOldIndex, realNewIndex);
+      setCastPlaylist(newPlaylist);
+    } else {
+      // Local playlist - reorder
+      const newPlaylist = arrayMove(playlist, oldIndex, newIndex);
+      setPlaylist(newPlaylist);
+    }
+  };
+
   const PlaylistScreen = (
     <>
       <div className="flex flex-row font-bold gap-2 items-center">
@@ -318,75 +349,86 @@ function HomePage() {
       </div>
 
       <div className={`flex-shrink-0  pt-2 pb-12  `}>
-        <div className="grid grid-cols-1 gap-2">
-          {displayPlaylist?.map((video, videoIndex) => {
-            // When casting, calculate real index in full queue (not sliced display)
-            // Google Cast: use videoIndex directly (full array)
-            // Firebase Cast: adjust for sliced array
-            const realIndex = isGoogleCastConnected
-              ? videoIndex
-              : isCasting
-              ? videoIndex + castCurrentIndex
-              : videoIndex;
+        <DndContext
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={displayPlaylist?.map((_, index) => index.toString()) || []}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="grid grid-cols-1 gap-2">
+              {displayPlaylist?.map((video, videoIndex) => {
+                // When casting, calculate real index in full queue (not sliced display)
+                // Google Cast: use videoIndex directly (full array)
+                // Firebase Cast: adjust for sliced array
+                const realIndex = isGoogleCastConnected
+                  ? videoIndex
+                  : isCasting
+                  ? videoIndex + castCurrentIndex
+                  : videoIndex;
 
-            return (
-            <VideoHorizontalCard
-              key={videoIndex}
-              video={video}
-              onPlayNow={() => skipVideoTo(video, realIndex)}
-              onSelect={() => priorityVideo(video, realIndex)}
-              onDelete={() => {
-                if (isGoogleCastConnected) {
-                  // Google Cast (Chromecast) - use absolute index
-                  googleCastRemoveAt(videoIndex);
-                } else if (isCasting) {
-                  // Firebase Cast (Web Monitor) - use real index
-                  castRemoveAt(realIndex);
-                } else {
-                  // Local playback - use real index
-                  setPlaylist(playlist.filter((_, index) => index !== realIndex));
-                }
-              }}
-              onMoveUp={() => {
-                if (isGoogleCastConnected) {
-                  // Google Cast (Chromecast) - use absolute index
-                  googleCastMoveUp(videoIndex);
-                } else if (isCasting) {
-                  // Firebase Cast (Web Monitor) - use real index
-                  castMoveUp(realIndex);
-                } else if (videoIndex > 0) {
-                  // Local playback
-                  const newPlaylist = [...playlist];
-                  [newPlaylist[videoIndex - 1], newPlaylist[videoIndex]] = [
-                    newPlaylist[videoIndex],
-                    newPlaylist[videoIndex - 1],
-                  ];
-                  setPlaylist(newPlaylist);
-                }
-              }}
-              onMoveDown={() => {
-                if (isGoogleCastConnected) {
-                  // Google Cast (Chromecast) - use absolute index
-                  googleCastMoveDown(videoIndex);
-                } else if (isCasting) {
-                  // Firebase Cast (Web Monitor) - use real index
-                  castMoveDown(realIndex);
-                } else if (videoIndex < playlist.length - 1) {
-                  // Local playback
-                  const newPlaylist = [...playlist];
-                  [newPlaylist[videoIndex], newPlaylist[videoIndex + 1]] = [
-                    newPlaylist[videoIndex + 1],
-                    newPlaylist[videoIndex],
-                  ];
-                  setPlaylist(newPlaylist);
-                }
-              }}
-              canMoveUp={videoIndex > 0}
-              canMoveDown={videoIndex < displayPlaylist.length - 1}
-            />
-            );
-          })}
-        </div>
+                return (
+                  <DraggablePlaylistItem
+                    key={videoIndex}
+                    video={video}
+                    videoIndex={videoIndex}
+                    onPlayNow={() => skipVideoTo(video, realIndex)}
+                    onSelect={() => priorityVideo(video, realIndex)}
+                    onDelete={() => {
+                      if (isGoogleCastConnected) {
+                        // Google Cast (Chromecast) - use absolute index
+                        googleCastRemoveAt(videoIndex);
+                      } else if (isCasting) {
+                        // Firebase Cast (Web Monitor) - use real index
+                        castRemoveAt(realIndex);
+                      } else {
+                        // Local playback - use real index
+                        setPlaylist(playlist.filter((_, index) => index !== realIndex));
+                      }
+                    }}
+                    onMoveUp={() => {
+                      if (isGoogleCastConnected) {
+                        // Google Cast (Chromecast) - use absolute index
+                        googleCastMoveUp(videoIndex);
+                      } else if (isCasting) {
+                        // Firebase Cast (Web Monitor) - use real index
+                        castMoveUp(realIndex);
+                      } else if (videoIndex > 0) {
+                        // Local playback
+                        const newPlaylist = [...playlist];
+                        [newPlaylist[videoIndex - 1], newPlaylist[videoIndex]] = [
+                          newPlaylist[videoIndex],
+                          newPlaylist[videoIndex - 1],
+                        ];
+                        setPlaylist(newPlaylist);
+                      }
+                    }}
+                    onMoveDown={() => {
+                      if (isGoogleCastConnected) {
+                        // Google Cast (Chromecast) - use absolute index
+                        googleCastMoveDown(videoIndex);
+                      } else if (isCasting) {
+                        // Firebase Cast (Web Monitor) - use real index
+                        castMoveDown(realIndex);
+                      } else if (videoIndex < playlist.length - 1) {
+                        // Local playback
+                        const newPlaylist = [...playlist];
+                        [newPlaylist[videoIndex], newPlaylist[videoIndex + 1]] = [
+                          newPlaylist[videoIndex + 1],
+                          newPlaylist[videoIndex],
+                        ];
+                        setPlaylist(newPlaylist);
+                      }
+                    }}
+                    canMoveUp={videoIndex > 0}
+                    canMoveDown={videoIndex < displayPlaylist.length - 1}
+                  />
+                );
+              })}
+            </div>
+          </SortableContext>
+        </DndContext>
       </div>
     </>
   );
