@@ -492,17 +492,27 @@ function YoutubePlayer({
         }
 
         // For local mode, aggressively resume playback
-        const player = playerRef.current?.getInternalPlayer();
-        if (!player) {
-          console.log('📱 No player available');
-          return;
-        }
+        // Retry multiple times to get player (it might not be ready immediately)
+        const attemptResume = async (attemptNumber: number = 1): Promise<void> => {
+          console.log(`📱 Resume attempt ${attemptNumber}/5...`);
 
-        // Wait for player to be ready
-        setTimeout(async () => {
+          const player = playerRef.current?.getInternalPlayer();
+          if (!player) {
+            console.log(`📱 Attempt ${attemptNumber}: No player available yet`);
+            if (attemptNumber < 5) {
+              // Retry getting player
+              setTimeout(() => attemptResume(attemptNumber + 1), 500);
+            } else {
+              console.log('📱 ❌ Failed to get player after 5 attempts');
+            }
+            return;
+          }
+
+          console.log(`📱 Attempt ${attemptNumber}: Player available ✓`);
+
           try {
             const state = await player.getPlayerState();
-            console.log('📱 Current player state:', state);
+            console.log(`📱 Attempt ${attemptNumber}: Player state:`, state);
 
             // Check if video ended while in background
             if (state === YouTube.PlayerState.ENDED && playlist && playlist.length > 0) {
@@ -540,10 +550,15 @@ function YoutubePlayer({
               for (let i = 1; i <= 3; i++) {
                 setTimeout(async () => {
                   try {
-                    const verifyState = await player.getPlayerState();
+                    const verifyPlayer = playerRef.current?.getInternalPlayer();
+                    if (!verifyPlayer) {
+                      console.log(`📱 Retry ${i}/3: Player not available`);
+                      return;
+                    }
+                    const verifyState = await verifyPlayer.getPlayerState();
                     if (verifyState !== YouTube.PlayerState.PLAYING) {
-                      console.log(`📱 Retry ${i}/3: Playback not playing, retrying...`);
-                      await player.playVideo();
+                      console.log(`📱 Retry ${i}/3: Not playing (state: ${verifyState}), retrying...`);
+                      await verifyPlayer.playVideo();
                       if ('mediaSession' in navigator) {
                         navigator.mediaSession.playbackState = 'playing';
                       }
@@ -551,15 +566,34 @@ function YoutubePlayer({
                       console.log(`📱 Retry ${i}/3: Playback confirmed ✓`);
                     }
                   } catch (err) {
-                    console.log(`Error retry ${i}:`, err);
+                    console.log(`📱 Error retry ${i}:`, err);
                   }
                 }, i * 1000);
               }
+            } else {
+              console.log('📱 No resume needed:', {
+                wasPlayingBeforeHidden,
+                currentState: state,
+                stateNames: {
+                  '-1': 'UNSTARTED',
+                  '0': 'ENDED',
+                  '1': 'PLAYING',
+                  '2': 'PAUSED',
+                  '3': 'BUFFERING',
+                  '5': 'CUED'
+                }
+              });
             }
           } catch (error) {
-            console.log('Error auto-resuming:', error);
+            console.log(`📱 Error in resume attempt ${attemptNumber}:`, error);
+            if (attemptNumber < 5) {
+              setTimeout(() => attemptResume(attemptNumber + 1), 500);
+            }
           }
-        }, 300);
+        };
+
+        // Start resume attempts after a short delay
+        setTimeout(() => attemptResume(1), 300);
       }
     };
 
