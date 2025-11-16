@@ -415,6 +415,60 @@ function YoutubePlayer({
     }
   }, [router.query, isCasting]);
 
+  // Auto-Resume when returning from background (Mobile fix)
+  useEffect(() => {
+    // Skip if Monitor mode or Cast mode
+    if (isMoniter || isGoogleCastConnected || isCasting || isDualMode) {
+      return;
+    }
+
+    let wasPlayingBeforeHidden = false;
+
+    const handleVisibilityChange = async () => {
+      const player = playerRef.current?.getInternalPlayer();
+      if (!player) return;
+
+      if (document.visibilityState === 'hidden') {
+        // App going to background - remember if we were playing
+        try {
+          const state = await player.getPlayerState();
+          wasPlayingBeforeHidden = state === YouTube.PlayerState.PLAYING;
+          console.log('📱 App going to background. Was playing:', wasPlayingBeforeHidden);
+        } catch (error) {
+          console.log('Error checking player state:', error);
+        }
+      } else if (document.visibilityState === 'visible') {
+        // App returning to foreground
+        console.log('📱 App returning to foreground. Should auto-resume:', wasPlayingBeforeHidden);
+
+        if (wasPlayingBeforeHidden) {
+          // Wait a bit for player to be ready
+          setTimeout(async () => {
+            try {
+              const state = await player.getPlayerState();
+              console.log('📱 Current player state:', state);
+
+              // If player is paused/buffering and we should be playing, resume
+              if (state !== YouTube.PlayerState.PLAYING && state !== YouTube.PlayerState.ENDED) {
+                console.log('📱 Auto-resuming playback...');
+                await player.playVideo();
+                setPlayerState(YouTube.PlayerState.PLAYING);
+              }
+            } catch (error) {
+              console.log('Error auto-resuming:', error);
+            }
+          }, 300); // Small delay to ensure player is ready
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isMoniter, isGoogleCastConnected, isCasting, isDualMode]);
+
   const playPauseBtn = [
     playerState === YouTube.PlayerState.PLAYING
       ? {
