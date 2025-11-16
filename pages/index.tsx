@@ -440,7 +440,7 @@ function HomePage() {
                   <div className="relative">
                     <ListBulletIcon className="h-6 w-6" />
                     <span className="badge absolute -top-2 -right-2 text-xs p-1">
-                      {playlist?.length || 0}
+                      {displayPlaylist?.length || 0}
                     </span>
                   </div>
                   <span className="text-[10px] leading-none">คิวเพลง</span>
@@ -483,6 +483,10 @@ function HomePage() {
                   className="flex flex-col modal-box max-h-[50%] overflow-hidden bg-base-300 p-2"
                   htmlFor=""
                 >
+                  {/* Debug: Show queue count in modal header */}
+                  <div className="text-sm font-bold mb-2 px-2 py-1 bg-primary/20 rounded">
+                    คิวเพลง ( {displayPlaylist?.length || 0} เพลง )
+                  </div>
                   <div className="relative h-full overflow-y-auto flex flex-col">
                     {PlaylistScreen}
                   </div>
