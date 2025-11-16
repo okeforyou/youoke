@@ -1,42 +1,39 @@
 import Image from "next/image";
-
-import {
-  ArrowDownIcon,
-  ArrowUpIcon,
-  BarsArrowUpIcon,
-  PlayIcon,
-  TrashIcon,
-} from "@heroicons/react/24/outline";
-
+import { PlayIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { PlaylistItem } from "../types";
 
 interface VideoHorizontalCardProps {
   video: PlaylistItem;
   onPlayNow?: (video: PlaylistItem) => void;
-  onSelect?: (video: PlaylistItem) => void;
   onDelete?: (video: PlaylistItem) => void;
-  onMoveUp?: (video: PlaylistItem) => void;
-  onMoveDown?: (video: PlaylistItem) => void;
-  canMoveUp?: boolean;
-  canMoveDown?: boolean;
 }
+
 export default function VideoHorizontalCard({
   video,
   onPlayNow = () => {},
-  onSelect = () => {},
   onDelete = () => {},
-  onMoveUp = () => {},
-  onMoveDown = () => {},
-  canMoveUp = true,
-  canMoveDown = true,
 }: VideoHorizontalCardProps) {
   return (
-    <div
-      tabIndex={0}
-      className="collapse bg-white shadow hover:shadow-md rounded cursor-pointer"
-    >
-      <div className="collapse-title p-0 flex-1 grid grid-cols-3 overflow-hidden">
-        <figure className="relative w-full aspect-video">
+    <div className="relative bg-white shadow hover:shadow-md rounded overflow-hidden group">
+      {/* Delete button - Top right corner */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete(video);
+        }}
+        className="absolute top-2 right-2 z-10 btn btn-xs btn-circle btn-error opacity-0 group-hover:opacity-100 transition-opacity"
+        title="ลบออกจากคิว"
+      >
+        <TrashIcon className="w-4 h-4" />
+      </button>
+
+      {/* Main content */}
+      <div className="grid grid-cols-3 overflow-hidden">
+        {/* Thumbnail with Play overlay */}
+        <figure
+          className="relative w-full aspect-video cursor-pointer group/thumbnail"
+          onClick={() => onPlayNow(video)}
+        >
           <Image
             unoptimized
             src={
@@ -49,61 +46,20 @@ export default function VideoHorizontalCard({
             layout="fill"
             className="bg-gray-400 col-span-1"
           />
+          {/* Play icon overlay */}
+          <div className="absolute inset-0 bg-black/0 group-hover/thumbnail:bg-black/30 transition-all flex items-center justify-center">
+            <PlayIcon className="w-12 h-12 text-white opacity-0 group-hover/thumbnail:opacity-100 transition-opacity drop-shadow-lg" />
+          </div>
         </figure>
 
-        <div className="col-span-2 flex flex-col p-[1vw] overflow-hidden gap-2">
+        {/* Song info */}
+        <div className="col-span-2 flex flex-col p-[1vw] overflow-hidden gap-2 justify-center">
           <h2 className="font-semibold text-xs 2xl:text-xl line-clamp-2">
             {video?.title}
           </h2>
-          <p className="text-xs 2xl:text-xl truncate">{video?.author}</p>
-        </div>
-      </div>
-
-      <div className="collapse-content p-0">
-        <div className="flex flex-row gap-1 px-2 pt-4 pb-0 border-t text-xs">
-          <div
-            className="btn  btn-primary flex-auto 2xl:text-2xl gap-2 text-xs"
-            onClick={() => onPlayNow(video)}
-          >
-            <PlayIcon className="w-5 h-5" />
-            เล่นเลย
-          </div>
-
-          <div
-            className="btn  btn-primary flex-auto  2xl:text-2xl gap-2 text-xs"
-            onClick={() => onSelect(video)}
-          >
-            <BarsArrowUpIcon className="w-5 h-5" />
-            เล่นเป็นคิวแรก
-          </div>
-
-          {canMoveUp && (
-            <div
-              className="btn btn-ghost btn-sm 2xl:text-2xl px-2"
-              onClick={() => onMoveUp(video)}
-              title="เลื่อนขึ้น"
-            >
-              <ArrowUpIcon className="w-5 h-5" />
-            </div>
-          )}
-
-          {canMoveDown && (
-            <div
-              className="btn btn-ghost btn-sm 2xl:text-2xl px-2"
-              onClick={() => onMoveDown(video)}
-              title="เลื่อนลง"
-            >
-              <ArrowDownIcon className="w-5 h-5" />
-            </div>
-          )}
-
-          <div
-            className="btn  btn-ghost text-error flex-auto 2xl:text-2xl gap-2 text-xs"
-            onClick={() => onDelete(video)}
-          >
-            <TrashIcon className="w-5 h-5" />
-            ลบออกจากคิว
-          </div>
+          <p className="text-xs 2xl:text-xl truncate text-gray-500">
+            {video?.author}
+          </p>
         </div>
       </div>
     </div>

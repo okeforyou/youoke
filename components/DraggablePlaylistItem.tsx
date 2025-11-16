@@ -8,24 +8,14 @@ interface DraggablePlaylistItemProps {
   video: PlaylistItem;
   videoIndex: number;
   onPlayNow?: () => void;
-  onSelect?: () => void;
   onDelete?: () => void;
-  onMoveUp?: () => void;
-  onMoveDown?: () => void;
-  canMoveUp?: boolean;
-  canMoveDown?: boolean;
 }
 
 export function DraggablePlaylistItem({
   video,
   videoIndex,
   onPlayNow,
-  onSelect,
   onDelete,
-  onMoveUp,
-  onMoveDown,
-  canMoveUp,
-  canMoveDown,
 }: DraggablePlaylistItemProps) {
   const {
     attributes,
@@ -52,7 +42,7 @@ export function DraggablePlaylistItem({
         className="flex items-center justify-center cursor-grab active:cursor-grabbing touch-none p-2 hover:bg-gray-100 rounded transition-colors"
         title="ลากเพื่อเลื่อนลำดับ"
       >
-        <Bars3Icon className="w-6 h-6 text-gray-400" />
+        <Bars3Icon className="w-6 h-6 text-gray-400 hover:text-gray-600" />
       </div>
 
       {/* VideoHorizontalCard */}
@@ -60,12 +50,7 @@ export function DraggablePlaylistItem({
         <VideoHorizontalCard
           video={video}
           onPlayNow={onPlayNow}
-          onSelect={onSelect}
           onDelete={onDelete}
-          onMoveUp={onMoveUp}
-          onMoveDown={onMoveDown}
-          canMoveUp={canMoveUp}
-          canMoveDown={canMoveDown}
         />
       </div>
     </div>
