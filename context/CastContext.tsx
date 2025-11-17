@@ -63,30 +63,97 @@ export function CastProvider({ children }: { children: ReactNode }) {
   const [castSession, setCastSession] = useState<chrome.cast.Session | null>(null);
   const [receiverName, setReceiverName] = useState('');
 
-  const [playlist, setPlaylistState] = useState<QueueVideo[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [currentVideo, setCurrentVideo] = useState<QueueVideo | null>(null);
+  // Load playlist from localStorage on mount (for resume after app close)
+  const [playlist, setPlaylistState] = useState<QueueVideo[]>(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const saved = localStorage.getItem('cast_playlist');
+      if (saved) {
+        console.log('📂 Loaded playlist from localStorage');
+        return JSON.parse(saved);
+      }
+    } catch (error) {
+      console.error('Error loading playlist from localStorage:', error);
+    }
+    return [];
+  });
+
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    if (typeof window === 'undefined') return 0;
+    try {
+      const saved = localStorage.getItem('cast_currentIndex');
+      return saved ? parseInt(saved) : 0;
+    } catch {
+      return 0;
+    }
+  });
+
+  const [currentVideo, setCurrentVideo] = useState<QueueVideo | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const saved = localStorage.getItem('cast_currentVideo');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
 
   // Refs to access latest state in event handlers (avoid stale closure)
   const playlistRef = useRef<QueueVideo[]>([]);
   const currentVideoRef = useRef<QueueVideo | null>(null);
   const currentIndexRef = useRef<number>(0);
 
-  // Keep refs in sync with state
+  // Keep refs in sync with state AND save to localStorage
   useEffect(() => {
     playlistRef.current = playlist;
     console.log('🔍 [CastContext] Playlist state updated:', {
       length: playlist.length,
       videos: playlist.map(v => v.title || v.videoId),
     });
+
+    // Save to localStorage for persistence
+    if (typeof window !== 'undefined') {
+      try {
+        if (playlist.length > 0) {
+          localStorage.setItem('cast_playlist', JSON.stringify(playlist));
+          console.log('💾 Saved playlist to localStorage');
+        } else {
+          localStorage.removeItem('cast_playlist');
+        }
+      } catch (error) {
+        console.error('Error saving playlist to localStorage:', error);
+      }
+    }
   }, [playlist]);
 
   useEffect(() => {
     currentVideoRef.current = currentVideo;
+
+    // Save to localStorage
+    if (typeof window !== 'undefined') {
+      try {
+        if (currentVideo) {
+          localStorage.setItem('cast_currentVideo', JSON.stringify(currentVideo));
+        } else {
+          localStorage.removeItem('cast_currentVideo');
+        }
+      } catch (error) {
+        console.error('Error saving currentVideo to localStorage:', error);
+      }
+    }
   }, [currentVideo]);
 
   useEffect(() => {
     currentIndexRef.current = currentIndex;
+
+    // Save to localStorage
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('cast_currentIndex', currentIndex.toString());
+      } catch (error) {
+        console.error('Error saving currentIndex to localStorage:', error);
+      }
+    }
   }, [currentIndex]);
 
   // Initialize Google Cast API
@@ -170,6 +237,43 @@ export function CastProvider({ children }: { children: ReactNode }) {
       delete window['__onGCastApiAvailable'];
     };
   }, []);
+
+  // Sync playlist to receiver when reconnecting (after page reload)
+  useEffect(() => {
+    if (!isConnected || !castSession || playlist.length === 0) return;
+
+    console.log('📂 Syncing playlist to receiver (resume session):', {
+      playlistLength: playlist.length,
+      currentIndex,
+      hasCurrentVideo: !!currentVideo
+    });
+
+    // Send full queue to receiver
+    const videos = playlist.map(v => ({
+      videoId: v.videoId,
+      title: v.title || 'Unknown'
+    }));
+
+    castSession.sendMessage(
+      CAST_NAMESPACE,
+      { type: 'LOAD_QUEUE', videos },
+      () => {
+        console.log('✅ Playlist synced to receiver:', videos.length, 'videos');
+
+        // Resume playing current video if available
+        const videoToPlay = currentVideo || playlist[currentIndex] || playlist[0];
+        if (videoToPlay) {
+          castSession.sendMessage(
+            CAST_NAMESPACE,
+            { type: 'LOAD_VIDEO', videoId: videoToPlay.videoId },
+            () => console.log('✅ Resumed video:', videoToPlay.videoId),
+            (error: any) => console.error('❌ Error resuming video:', error)
+          );
+        }
+      },
+      (error: any) => console.error('❌ Error syncing playlist:', error)
+    );
+  }, [isConnected, castSession, playlist.length]); // Trigger when playlist loads from localStorage
 
   const initializeCastApi = () => {
     console.log('🎬 Initializing Google Cast API...');
@@ -352,27 +456,29 @@ export function CastProvider({ children }: { children: ReactNode }) {
         title: v.title || 'Unknown'
       }));
 
-      // Send queue
+      // Send queue FIRST, then play video after queue is loaded
       session.sendMessage(
         CAST_NAMESPACE,
         { type: 'LOAD_QUEUE', videos },
-        () => console.log('✅ Playlist sent:', videos.length, 'videos'),
+        () => {
+          console.log('✅ Playlist sent:', videos.length, 'videos');
+
+          // Now send video to play (after queue is loaded on receiver)
+          const videoToPlay = latestCurrentVideo || latestPlaylist[0];
+          if (videoToPlay) {
+            console.log('📤 Sending video to play:', videoToPlay.videoId);
+            session.sendMessage(
+              CAST_NAMESPACE,
+              { type: 'LOAD_VIDEO', videoId: videoToPlay.videoId },
+              () => console.log('✅ Video sent:', videoToPlay.videoId),
+              (error: any) => console.error('❌ Error sending video:', error)
+            );
+          } else {
+            console.error('❌ No video to play! playlist has items but playlist[0] is undefined');
+          }
+        },
         (error: any) => console.error('❌ Error sending playlist:', error)
       );
-
-      // Play video: use currentVideo if available, otherwise play first video in queue
-      const videoToPlay = latestCurrentVideo || latestPlaylist[0];
-      if (videoToPlay) {
-        console.log('📤 Sending video to play:', videoToPlay.videoId);
-        session.sendMessage(
-          CAST_NAMESPACE,
-          { type: 'LOAD_VIDEO', videoId: videoToPlay.videoId },
-          () => console.log('✅ Video sent:', videoToPlay.videoId),
-          (error: any) => console.error('❌ Error sending video:', error)
-        );
-      } else {
-        console.error('❌ No video to play! playlist has items but playlist[0] is undefined');
-      }
     } else {
       console.warn('⚠️ Playlist is empty when connected! Nothing to play.');
     }
