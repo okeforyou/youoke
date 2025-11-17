@@ -9,12 +9,15 @@ interface QueueVideo {
 }
 
 type CastMessage =
-  | { type: 'QUEUE_UPDATE'; queue: QueueVideo[]; currentIndex: number }
-  | { type: 'PLAY_VIDEO'; videoId: string; index: number }
+  | { type: 'LOAD_QUEUE'; videos: { videoId: string; title: string }[] }
+  | { type: 'UPDATE_QUEUE'; videos: { videoId: string; title: string }[] }
+  | { type: 'LOAD_VIDEO'; videoId: string }
   | { type: 'PLAY' }
   | { type: 'PAUSE' }
   | { type: 'NEXT' }
-  | { type: 'PREVIOUS' };
+  | { type: 'PREVIOUS' }
+  | { type: 'QUEUE_UPDATE'; queue: QueueVideo[]; currentIndex: number }  // Legacy support
+  | { type: 'PLAY_VIDEO'; videoId: string; index: number };  // Legacy support
 
 export default function CastReceiver() {
   const [queue, setQueue] = useState<QueueVideo[]>([]);
@@ -56,7 +59,7 @@ export default function CastReceiver() {
 
     // Listen for custom messages from sender
     context.addCustomMessageListener(CAST_NAMESPACE, (event: any) => {
-      console.log('Received message:', event.data);
+      console.log('📨 Received message:', event.data);
       handleMessage(event.data as CastMessage);
     });
 
@@ -65,9 +68,59 @@ export default function CastReceiver() {
     console.log('Cast Receiver started');
   };
 
+  const sendMessageToSender = (message: any) => {
+    if (!contextRef.current) return;
+
+    try {
+      const CAST_NAMESPACE = 'urn:x-cast:com.youoke.cast';
+      contextRef.current.getSenders().forEach((senderId: string) => {
+        contextRef.current.sendCustomMessage(CAST_NAMESPACE, senderId, message);
+      });
+      console.log('📤 Sent to sender:', message);
+    } catch (error) {
+      console.error('Error sending message to sender:', error);
+    }
+  };
+
   const handleMessage = (message: CastMessage) => {
+    console.log('📨 Receiver got message:', message.type);
+
     switch (message.type) {
-      case 'QUEUE_UPDATE':
+      case 'LOAD_QUEUE':
+      case 'UPDATE_QUEUE':
+        // Convert videos array to queue format
+        const newQueue: QueueVideo[] = message.videos.map((v, index) => ({
+          videoId: v.videoId,
+          title: v.title || 'Unknown Track',
+          author: '',
+          key: Date.now() + index
+        }));
+        setQueue(newQueue);
+
+        // Only change video if LOAD_QUEUE (not UPDATE_QUEUE)
+        if (message.type === 'LOAD_QUEUE' && newQueue.length > 0) {
+          setCurrentIndex(0);
+          setCurrentVideoId(newQueue[0].videoId);
+          setIsPlaying(true);
+          console.log('📺 Loading first video:', newQueue[0].title);
+        } else {
+          console.log('📺 Updated queue, keeping current video');
+        }
+        break;
+
+      case 'LOAD_VIDEO':
+        const videoIndex = queue.findIndex(v => v.videoId === message.videoId);
+        if (videoIndex >= 0) {
+          setCurrentIndex(videoIndex);
+          setCurrentVideoId(message.videoId);
+          setIsPlaying(true);
+          console.log('📺 Loading video at index:', videoIndex);
+        } else {
+          console.warn('⚠️ Video not found in queue:', message.videoId);
+        }
+        break;
+
+      case 'QUEUE_UPDATE':  // Legacy support
         setQueue(message.queue);
         setCurrentIndex(message.currentIndex);
         if (message.queue.length > message.currentIndex) {
@@ -75,7 +128,7 @@ export default function CastReceiver() {
         }
         break;
 
-      case 'PLAY_VIDEO':
+      case 'PLAY_VIDEO':  // Legacy support
         setCurrentVideoId(message.videoId);
         setCurrentIndex(message.index);
         setIsPlaying(true);
@@ -84,11 +137,13 @@ export default function CastReceiver() {
       case 'PLAY':
         setIsPlaying(true);
         playerRef.current?.playVideo();
+        console.log('▶️ Playing');
         break;
 
       case 'PAUSE':
         setIsPlaying(false);
         playerRef.current?.pauseVideo();
+        console.log('⏸ Paused');
         break;
 
       case 'NEXT':
@@ -127,13 +182,24 @@ export default function CastReceiver() {
   const onPlayerStateChange = (event: { target: YouTubePlayer; data: number }) => {
     // YouTube player state: 0 = ended, 1 = playing, 2 = paused
     if (event.data === 0) {
-      // Video ended, play next
-      console.log('Video ended, playing next...');
+      // Video ended, notify sender and play next
+      console.log('🎬 Video ended:', currentVideoId, 'at index:', currentIndex);
+
+      // Send VIDEO_ENDED message to sender
+      sendMessageToSender({
+        type: 'VIDEO_ENDED',
+        videoId: currentVideoId,
+        currentIndex: currentIndex
+      });
+
+      // Play next video
       playNext();
     } else if (event.data === 1) {
       setIsPlaying(true);
+      console.log('▶️ Playing:', currentVideoId);
     } else if (event.data === 2) {
       setIsPlaying(false);
+      console.log('⏸ Paused');
     }
   };
 
