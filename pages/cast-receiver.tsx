@@ -51,8 +51,8 @@ export default function CastReceiver() {
     const options = new (window as any).cast.framework.CastReceiverOptions();
     options.disableIdleTimeout = true;
 
-    // Custom message namespace
-    const CAST_NAMESPACE = 'urn:x-cast:com.youoke.karaoke';
+    // Custom message namespace (MUST match CastContext.tsx)
+    const CAST_NAMESPACE = 'urn:x-cast:com.youoke.cast';
 
     // Listen for custom messages from sender
     context.addCustomMessageListener(CAST_NAMESPACE, (event: any) => {
