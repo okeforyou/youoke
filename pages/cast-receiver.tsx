@@ -9,7 +9,7 @@ interface QueueVideo {
 }
 
 type CastMessage =
-  | { type: 'LOAD_QUEUE'; videos: { videoId: string; title: string }[] }
+  | { type: 'LOAD_QUEUE'; videos: { videoId: string; title: string }[]; startIndex?: number }
   | { type: 'UPDATE_QUEUE'; videos: { videoId: string; title: string }[] }
   | { type: 'LOAD_VIDEO'; videoId: string }
   | { type: 'PLAY' }
@@ -95,16 +95,26 @@ export default function CastReceiver() {
           author: '',
           key: Date.now() + index
         }));
+        console.log('📋 Queue received:', {
+          type: message.type,
+          count: newQueue.length,
+          videos: newQueue.map(v => v.title),
+          startIndex: message.type === 'LOAD_QUEUE' ? (message as any).startIndex : undefined
+        });
         setQueue(newQueue);
 
         // Only change video if LOAD_QUEUE (not UPDATE_QUEUE)
         if (message.type === 'LOAD_QUEUE' && newQueue.length > 0) {
-          setCurrentIndex(0);
-          setCurrentVideoId(newQueue[0].videoId);
+          // Use startIndex if provided, otherwise start from 0
+          const startIndex = (message as any).startIndex || 0;
+          const videoToPlay = newQueue[startIndex] || newQueue[0];
+
+          setCurrentIndex(startIndex);
+          setCurrentVideoId(videoToPlay.videoId);
           setIsPlaying(true);
-          console.log('📺 Loading first video:', newQueue[0].title);
+          console.log('📺 LOAD_QUEUE: Starting video at index:', startIndex, '→', videoToPlay.title);
         } else {
-          console.log('📺 Updated queue, keeping current video');
+          console.log('📺 UPDATE_QUEUE: Keeping current video, queue length:', newQueue.length);
         }
         break;
 
@@ -157,11 +167,21 @@ export default function CastReceiver() {
   };
 
   const playNext = () => {
+    console.log('🎵 playNext() called:', {
+      currentIndex,
+      queueLength: queue.length,
+      hasNextVideo: currentIndex < queue.length - 1,
+      nextVideoId: queue[currentIndex + 1]?.videoId
+    });
+
     if (currentIndex < queue.length - 1) {
       const nextIndex = currentIndex + 1;
       setCurrentIndex(nextIndex);
       setCurrentVideoId(queue[nextIndex].videoId);
       setIsPlaying(true);
+      console.log('✅ Playing next video:', queue[nextIndex].title, 'at index:', nextIndex);
+    } else {
+      console.log('📭 No more videos in queue (last video played)');
     }
   };
 

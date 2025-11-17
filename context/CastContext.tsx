@@ -50,7 +50,7 @@ const CAST_NAMESPACE = 'urn:x-cast:com.youoke.cast';
 // Cast message types (must match receiver message handler)
 type CastMessage =
   | { type: 'LOAD_VIDEO', videoId: string }
-  | { type: 'LOAD_QUEUE', videos: Array<{videoId: string, title: string}> }
+  | { type: 'LOAD_QUEUE', videos: Array<{videoId: string, title: string}>, startIndex?: number }
   | { type: 'UPDATE_QUEUE', videos: Array<{videoId: string, title: string}> }
   | { type: 'PLAY' }
   | { type: 'PAUSE' }
@@ -248,7 +248,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
       hasCurrentVideo: !!currentVideo
     });
 
-    // Send full queue to receiver
+    // Send full queue to receiver with startIndex (no need to send LOAD_VIDEO separately)
     const videos = playlist.map(v => ({
       videoId: v.videoId,
       title: v.title || 'Unknown'
@@ -256,21 +256,12 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
     castSession.sendMessage(
       CAST_NAMESPACE,
-      { type: 'LOAD_QUEUE', videos },
-      () => {
-        console.log('✅ Playlist synced to receiver:', videos.length, 'videos');
-
-        // Resume playing current video if available
-        const videoToPlay = currentVideo || playlist[currentIndex] || playlist[0];
-        if (videoToPlay) {
-          castSession.sendMessage(
-            CAST_NAMESPACE,
-            { type: 'LOAD_VIDEO', videoId: videoToPlay.videoId },
-            () => console.log('✅ Resumed video:', videoToPlay.videoId),
-            (error: any) => console.error('❌ Error resuming video:', error)
-          );
-        }
+      {
+        type: 'LOAD_QUEUE',
+        videos,
+        startIndex: currentIndex  // Receiver will autoplay this video
       },
+      () => console.log('✅ Playlist synced to receiver:', videos.length, 'videos', 'starting at index:', currentIndex),
       (error: any) => console.error('❌ Error syncing playlist:', error)
     );
   }, [isConnected, castSession, playlist.length]); // Trigger when playlist loads from localStorage
@@ -456,27 +447,17 @@ export function CastProvider({ children }: { children: ReactNode }) {
         title: v.title || 'Unknown'
       }));
 
-      // Send queue FIRST, then play video after queue is loaded
+      // Send queue with startIndex - receiver will autoplay (no need for separate LOAD_VIDEO)
+      const latestCurrentIndex = currentIndexRef.current;
+
       session.sendMessage(
         CAST_NAMESPACE,
-        { type: 'LOAD_QUEUE', videos },
-        () => {
-          console.log('✅ Playlist sent:', videos.length, 'videos');
-
-          // Now send video to play (after queue is loaded on receiver)
-          const videoToPlay = latestCurrentVideo || latestPlaylist[0];
-          if (videoToPlay) {
-            console.log('📤 Sending video to play:', videoToPlay.videoId);
-            session.sendMessage(
-              CAST_NAMESPACE,
-              { type: 'LOAD_VIDEO', videoId: videoToPlay.videoId },
-              () => console.log('✅ Video sent:', videoToPlay.videoId),
-              (error: any) => console.error('❌ Error sending video:', error)
-            );
-          } else {
-            console.error('❌ No video to play! playlist has items but playlist[0] is undefined');
-          }
+        {
+          type: 'LOAD_QUEUE',
+          videos,
+          startIndex: latestCurrentIndex  // Receiver will autoplay this video
         },
+        () => console.log('✅ Playlist sent:', videos.length, 'videos', 'starting at index:', latestCurrentIndex),
         (error: any) => console.error('❌ Error sending playlist:', error)
       );
     } else {
