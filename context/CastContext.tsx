@@ -62,6 +62,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
   const [isConnected, setIsConnected] = useState(false);
   const [castSession, setCastSession] = useState<chrome.cast.Session | null>(null);
   const [receiverName, setReceiverName] = useState('');
+  const [receiverStateReceived, setReceiverStateReceived] = useState(false);  // Track if we got state from receiver
 
   // Load playlist from localStorage on mount (for resume after app close)
   const [playlist, setPlaylistState] = useState<QueueVideo[]>(() => {
@@ -239,32 +240,43 @@ export function CastProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Sync playlist to receiver when reconnecting (after page reload)
+  // BUT: Wait for receiver to send its state first! (receiver is source of truth)
   useEffect(() => {
     if (!isConnected || !castSession || playlist.length === 0) return;
 
-    console.log('📂 Syncing playlist to receiver (resume session):', {
-      playlistLength: playlist.length,
-      currentIndex,
-      hasCurrentVideo: !!currentVideo
-    });
+    // Wait 1 second for receiver to send RECEIVER_STATE
+    const timeout = setTimeout(() => {
+      if (receiverStateReceived) {
+        console.log('✅ Already got state from receiver - skipping localStorage sync');
+        return;
+      }
 
-    // Send full queue to receiver with startIndex (no need to send LOAD_VIDEO separately)
-    const videos = playlist.map(v => ({
-      videoId: v.videoId,
-      title: v.title || 'Unknown'
-    }));
+      console.log('📂 No RECEIVER_STATE received - syncing localStorage to receiver:', {
+        playlistLength: playlist.length,
+        currentIndex,
+        hasCurrentVideo: !!currentVideo
+      });
 
-    castSession.sendMessage(
-      CAST_NAMESPACE,
-      {
-        type: 'LOAD_QUEUE',
-        videos,
-        startIndex: currentIndex  // Receiver will autoplay this video
-      },
-      () => console.log('✅ Playlist synced to receiver:', videos.length, 'videos', 'starting at index:', currentIndex),
-      (error: any) => console.error('❌ Error syncing playlist:', error)
-    );
-  }, [isConnected, castSession, playlist.length]); // Trigger when playlist loads from localStorage
+      // Send full queue to receiver with startIndex
+      const videos = playlist.map(v => ({
+        videoId: v.videoId,
+        title: v.title || 'Unknown'
+      }));
+
+      castSession.sendMessage(
+        CAST_NAMESPACE,
+        {
+          type: 'LOAD_QUEUE',
+          videos,
+          startIndex: currentIndex
+        },
+        () => console.log('✅ Playlist synced to receiver:', videos.length, 'videos', 'starting at index:', currentIndex),
+        (error: any) => console.error('❌ Error syncing playlist:', error)
+      );
+    }, 1000); // Wait 1 second for RECEIVER_STATE
+
+    return () => clearTimeout(timeout);
+  }, [isConnected, castSession, playlist.length, receiverStateReceived]);
 
   const initializeCastApi = () => {
     console.log('🎬 Initializing Google Cast API...');
@@ -347,6 +359,45 @@ export function CastProvider({ children }: { children: ReactNode }) {
         const data = JSON.parse(message);
 
         switch (data.type) {
+          case 'RECEIVER_STATE':
+            // Receiver sent its current state - use it instead of localStorage!
+            console.log('📥 Received state from receiver:', data);
+
+            if (data.queue && data.queue.length > 0) {
+              // Convert receiver's queue format to our playlist format
+              const receiverPlaylist: QueueVideo[] = data.queue.map((v: any, index: number) => ({
+                videoId: v.videoId,
+                title: v.title || 'Unknown',
+                key: Date.now() + index
+              }));
+
+              console.log('✅ Syncing state FROM receiver:', {
+                queueLength: receiverPlaylist.length,
+                currentIndex: data.currentIndex,
+                currentVideo: data.currentVideoId
+              });
+
+              // Update our state to match receiver
+              setPlaylistState(receiverPlaylist);
+              playlistRef.current = receiverPlaylist;
+
+              setCurrentIndex(data.currentIndex);
+              currentIndexRef.current = data.currentIndex;
+
+              const currentVid = receiverPlaylist[data.currentIndex];
+              if (currentVid) {
+                setCurrentVideo(currentVid);
+                currentVideoRef.current = currentVid;
+              }
+
+              // Mark that we received state from receiver (don't overwrite it!)
+              setReceiverStateReceived(true);
+            } else {
+              console.log('⚠️ Receiver has empty queue - will send our playlist');
+              setReceiverStateReceived(false);  // Receiver empty, we can send our playlist
+            }
+            break;
+
           case 'VIDEO_ENDED':
             console.log('🎬 Video ended on receiver:', data.videoId, 'at index:', data.currentIndex);
             // Remove the ended video from playlist
@@ -469,6 +520,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
     setCastSession(null);
     setIsConnected(false);
     setReceiverName('');
+    setReceiverStateReceived(false);  // Reset flag for next connection
     console.log('Cast session ended');
   };
 

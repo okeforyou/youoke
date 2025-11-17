@@ -27,6 +27,18 @@ export default function CastReceiver() {
   const playerRef = useRef<YouTubePlayer | null>(null);
   const contextRef = useRef<any>(null);
 
+  // Refs for latest state (avoid stale closure in event listeners)
+  const queueRef = useRef<QueueVideo[]>([]);
+  const currentIndexRef = useRef<number>(0);
+  const currentVideoIdRef = useRef<string>('');
+  const isPlayingRef = useRef<boolean>(false);
+
+  // Sync refs with state
+  useEffect(() => { queueRef.current = queue; }, [queue]);
+  useEffect(() => { currentIndexRef.current = currentIndex; }, [currentIndex]);
+  useEffect(() => { currentVideoIdRef.current = currentVideoId; }, [currentVideoId]);
+  useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
+
   useEffect(() => {
     // Only initialize on client side
     if (typeof window === 'undefined') return;
@@ -56,6 +68,33 @@ export default function CastReceiver() {
 
     // Custom message namespace (MUST match CastContext.tsx)
     const CAST_NAMESPACE = 'urn:x-cast:com.youoke.cast';
+
+    // Listen for sender connected event
+    context.addEventListener(
+      (window as any).cast.framework.system.EventType.SENDER_CONNECTED,
+      (event: any) => {
+        console.log('📱 Sender connected! Sending current state...');
+
+        // Send current queue state to sender (use refs for latest values)
+        setTimeout(() => {
+          const latestQueue = queueRef.current;
+          const latestIndex = currentIndexRef.current;
+          const latestVideoId = currentVideoIdRef.current;
+          const latestIsPlaying = isPlayingRef.current;
+
+          const currentState = {
+            type: 'RECEIVER_STATE',
+            queue: latestQueue.map(v => ({ videoId: v.videoId, title: v.title })),
+            currentIndex: latestIndex,
+            currentVideoId: latestVideoId,
+            isPlaying: latestIsPlaying
+          };
+
+          sendMessageToSender(currentState);
+          console.log('📤 Sent receiver state to sender:', currentState);
+        }, 500); // Small delay to ensure sender is ready
+      }
+    );
 
     // Listen for custom messages from sender
     context.addCustomMessageListener(CAST_NAMESPACE, (event: any) => {
