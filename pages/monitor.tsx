@@ -605,9 +605,9 @@ const Monitor = () => {
         </div>
         )}
 
-        {/* Mobile Control Buttons - Show on small screens */}
+        {/* Mobile Control Buttons - Always visible for testing */}
         {state.currentVideo && audioUnlocked && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 md:hidden z-50">
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50">
           <div className="bg-black/90 backdrop-blur-md rounded-full px-6 py-3 flex items-center gap-4 border border-white/20 shadow-2xl">
             {/* Previous Button */}
             <button
