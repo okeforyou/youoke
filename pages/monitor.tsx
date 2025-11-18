@@ -346,6 +346,65 @@ const Monitor = () => {
     console.error('❌ Player error:', event.data);
   };
 
+  // Mobile control functions
+  const handlePlayPause = async () => {
+    if (!roomCode || !realtimeDb) return;
+    const roomRef = ref(realtimeDb, `rooms/${roomCode}/state/controls/isPlaying`);
+    try {
+      await set(roomRef, !state.controls.isPlaying);
+      console.log(state.controls.isPlaying ? '⏸️ Paused' : '▶️ Playing');
+    } catch (error) {
+      console.error('❌ Play/Pause failed:', error);
+    }
+  };
+
+  const handleNext = async () => {
+    if (!roomCode || !realtimeDb || !state.queue) return;
+    const nextIndex = state.currentIndex + 1;
+    if (nextIndex < state.queue.length) {
+      const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
+      try {
+        await update(roomRef, {
+          'state/currentIndex': nextIndex,
+          'state/currentVideo': state.queue[nextIndex],
+          'state/controls/isPlaying': true,
+        });
+        console.log('⏭️ Next song');
+      } catch (error) {
+        console.error('❌ Next failed:', error);
+      }
+    }
+  };
+
+  const handlePrevious = async () => {
+    if (!roomCode || !realtimeDb || !state.queue) return;
+    const prevIndex = state.currentIndex - 1;
+    if (prevIndex >= 0) {
+      const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
+      try {
+        await update(roomRef, {
+          'state/currentIndex': prevIndex,
+          'state/currentVideo': state.queue[prevIndex],
+          'state/controls/isPlaying': true,
+        });
+        console.log('⏮️ Previous song');
+      } catch (error) {
+        console.error('❌ Previous failed:', error);
+      }
+    }
+  };
+
+  const handleReplay = async () => {
+    if (!playerRef) return;
+    try {
+      await playerRef.seekTo(0, true);
+      await playerRef.playVideo();
+      console.log('🔁 Replay from start');
+    } catch (error) {
+      console.error('❌ Replay failed:', error);
+    }
+  };
+
   const opts = {
     height: '100%',
     width: '100%',
@@ -542,6 +601,65 @@ const Monitor = () => {
                 เล่นไปแล้ว {state.currentIndex} เพลง
               </p>
             )}
+          </div>
+        </div>
+        )}
+
+        {/* Mobile Control Buttons - Show on small screens */}
+        {state.currentVideo && audioUnlocked && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 md:hidden z-50">
+          <div className="bg-black/90 backdrop-blur-md rounded-full px-6 py-3 flex items-center gap-4 border border-white/20 shadow-2xl">
+            {/* Previous Button */}
+            <button
+              onClick={handlePrevious}
+              disabled={state.currentIndex <= 0}
+              className="p-3 rounded-full hover:bg-white/10 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              title="เพลงก่อนหน้า"
+            >
+              <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
+              </svg>
+            </button>
+
+            {/* Replay Button */}
+            <button
+              onClick={handleReplay}
+              className="p-3 rounded-full hover:bg-white/10 transition-all"
+              title="เล่นซ้ำ"
+            >
+              <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+
+            {/* Play/Pause Button */}
+            <button
+              onClick={handlePlayPause}
+              className="p-4 bg-primary rounded-full hover:bg-primary/80 transition-all shadow-lg"
+              title={state.controls.isPlaying ? "หยุด" : "เล่น"}
+            >
+              {state.controls.isPlaying ? (
+                <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                </svg>
+              ) : (
+                <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              )}
+            </button>
+
+            {/* Next Button */}
+            <button
+              onClick={handleNext}
+              disabled={!state.queue || state.currentIndex >= state.queue.length - 1}
+              className="p-3 rounded-full hover:bg-white/10 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              title="เพลงถัดไป"
+            >
+              <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+              </svg>
+            </button>
           </div>
         </div>
         )}
