@@ -354,7 +354,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
     const sessionInfo = {
       deviceName: session.getCastDevice().friendlyName,
-      sessionId: session.getSessionId(),
+      sessionId: session.sessionId,
     };
     console.log('🔌 Session started/resumed:', sessionInfo);
     addDebugLog('🔌 Session started/resumed', sessionInfo);
@@ -530,7 +530,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
       type: message.type,
       isConnected,
       hasCastSession: !!castSession,
-      sessionId: castSession?.getSessionId?.(),
+      sessionId: castSession?.sessionId,
     });
 
     if (!castSession) {
