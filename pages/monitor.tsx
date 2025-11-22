@@ -83,20 +83,29 @@ const Monitor = () => {
     // See: FIREBASE-CAST-TROUBLESHOOTING.md
     const initializeRoom = async () => {
       try {
-        await set(roomRef, {
+        // Start with minimal data structure
+        const roomData = {
           hostId: 'monitor',
           isHost: true,
           state: {
             queue: [],
             currentIndex: 0,
             currentVideo: null,
-            controls: { isPlaying: false, isMuted: true },
+            controls: {
+              isPlaying: false,
+              isMuted: true
+            }
           },
-          createdAt: Date.now(),
-        });
+          createdAt: new Date().toISOString()  // Use ISO string instead of timestamp
+        };
+
+        console.log('🔍 Attempting to create room with data:', roomData);
+        await set(roomRef, roomData);
         console.log('✅ Room created:', roomCode);
       } catch (error) {
         console.error('❌ Error creating room:', error);
+        console.error('❌ Error details:', error instanceof Error ? error.message : String(error));
+        console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack');
       }
     };
 

@@ -14,6 +14,13 @@ console.log('  NEXT_PUBLIC_FIREBASE_DATABASE_URL:', process.env.NEXT_PUBLIC_FIRE
 console.log('  NEXT_PUBLIC_FIREBASE_PROJECT_ID:', process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'MISSING');
 console.log('  NEXT_PUBLIC_FIREBASE_PUBLIC_API_KEY:', process.env.NEXT_PUBLIC_FIREBASE_PUBLIC_API_KEY ? 'PRESENT' : 'MISSING');
 
+// Sanitize DATABASE_URL - remove trailing slash if present
+const rawDatabaseURL = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL ||
+  `https://${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'dummy-project'}.firebaseio.com`;
+const databaseURL = rawDatabaseURL.replace(/\/$/, '');  // Remove trailing slash
+
+console.log('🔧 Sanitized DATABASE_URL:', databaseURL);
+
 // Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_PUBLIC_API_KEY || 'dummy-api-key',
@@ -24,7 +31,7 @@ const firebaseConfig = {
   // IMPORTANT: Must include region in databaseURL (asia-southeast1)
   // Fallback URL without region will cause "Maximum call stack size exceeded" error
   // See: FIREBASE-CAST-TROUBLESHOOTING.md for details
-  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL || `https://${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'dummy-project'}.firebaseio.com`,
+  databaseURL: databaseURL,
 };
 
 // DEBUG: Log the actual config being used
