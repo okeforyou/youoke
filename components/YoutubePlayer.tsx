@@ -1439,7 +1439,7 @@ function YoutubePlayer({
         onClose={() => setIsDebugOverlayOpen(false)}
       />
 
-      {/* Debug Toggle Button - Float at bottom right */}
+      {/* Debug Toggle Button - Float at top right */}
       {!isMoniter && (
         <button
           onClick={() => {
@@ -1450,8 +1450,13 @@ function YoutubePlayer({
               isCasting,
             });
           }}
-          className="fixed bottom-20 right-4 z-[9998] btn btn-sm btn-circle btn-primary shadow-lg"
+          className="fixed top-4 right-4 z-[99999] btn btn-circle btn-error shadow-2xl text-2xl animate-pulse"
           title="เปิด Debug Console"
+          style={{
+            width: '60px',
+            height: '60px',
+            border: '3px solid white',
+          }}
         >
           🐛
         </button>
