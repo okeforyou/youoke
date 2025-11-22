@@ -90,7 +90,7 @@ const Monitor = () => {
           queue: [],
           currentIndex: 0,
           currentVideo: null,
-          controls: { isPlaying: false, isMuted: true },
+          controls: { isPlaying: false },  // Remove isMuted - same as old version
           createdAt: Date.now()
         });
         console.log('✅ Room created:', roomCode);
@@ -111,7 +111,7 @@ const Monitor = () => {
           queue: data.queue || [],
           currentIndex: data.currentIndex || 0,
           currentVideo: data.currentVideo || null,
-          controls: data.controls || { isPlaying: false, isMuted: true }
+          controls: data.controls || { isPlaying: false }
         };
         setState(newState);
         setIsConnected(
