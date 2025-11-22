@@ -746,26 +746,25 @@ function YoutubePlayer({
       const title = currentVideo?.title || 'Unknown Track';
       const artist = currentVideo?.author || 'Unknown Artist';
 
-      // Get thumbnail URL
-      const thumbnailUrl = currentVideo?.videoThumbnails?.find(t => t.quality === 'medium')?.url
-        || currentVideo?.videoThumbnails?.[0]?.url
-        || `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`;
-
       const isCastMode = isGoogleCastConnected || isCasting;
       console.log('🎵 Updating Media Session metadata:', { title, artist, mode: isCastMode ? 'Cast' : 'Local' });
 
-      // Update notification metadata
+      // Update notification metadata with video thumbnails (different sizes for different screens)
       navigator.mediaSession.metadata = new MediaMetadata({
         title: title,
         artist: artist,
-        album: isCastMode ? 'YouOke Karaoke (Casting)' : 'YouOke Karaoke',
+        album: isCastMode ? '📺 YouOke Karaoke (Casting)' : '🎤 YouOke Karaoke',
         artwork: [
-          { src: thumbnailUrl, sizes: '96x96', type: 'image/jpeg' },
-          { src: thumbnailUrl, sizes: '128x128', type: 'image/jpeg' },
-          { src: thumbnailUrl, sizes: '192x192', type: 'image/jpeg' },
-          { src: thumbnailUrl, sizes: '256x256', type: 'image/jpeg' },
-          { src: thumbnailUrl, sizes: '384x384', type: 'image/jpeg' },
-          { src: thumbnailUrl, sizes: '512x512', type: 'image/jpeg' },
+          // Small - for notifications
+          { src: `https://i.ytimg.com/vi/${videoId}/default.jpg`, sizes: '120x90', type: 'image/jpeg' },
+          // Medium - for lock screen
+          { src: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`, sizes: '320x180', type: 'image/jpeg' },
+          // High - for tablets
+          { src: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`, sizes: '480x360', type: 'image/jpeg' },
+          // SD - for larger screens
+          { src: `https://i.ytimg.com/vi/${videoId}/sddefault.jpg`, sizes: '640x480', type: 'image/jpeg' },
+          // Max resolution - for Cast/TV
+          { src: `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`, sizes: '1280x720', type: 'image/jpeg' },
         ],
       });
 
