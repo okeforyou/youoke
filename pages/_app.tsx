@@ -86,12 +86,10 @@ function App({ Component, pageProps }) {
           )}
           <QueryClientProvider client={queryClient}>
             {isMonitorPage ? (
-              // Monitor page: Only Firebase Cast (no Google Cast to avoid conflicts)
-              <FirebaseCastProvider>
-                <AdsProvider>
-                  <Component {...pageProps} />
-                </AdsProvider>
-              </FirebaseCastProvider>
+              // Monitor page: No Cast providers (has its own Firebase logic)
+              <AdsProvider>
+                <Component {...pageProps} />
+              </AdsProvider>
             ) : (
               // Other pages: Full Cast stack
               <CastProvider>
