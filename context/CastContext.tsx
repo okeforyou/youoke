@@ -345,9 +345,23 @@ export function CastProvider({ children }: { children: ReactNode }) {
   };
 
   const handleSessionStarted = (session: any) => {
-    if (!session) return;
+    if (!session) {
+      console.error('❌ handleSessionStarted called with null session!');
+      return;
+    }
 
-    console.log('🔌 Session started/resumed - requesting receiver state...');
+    console.log('🔌 Session started/resumed:', {
+      deviceName: session.getCastDevice().friendlyName,
+      sessionId: session.getSessionId(),
+    });
+
+    // IMPORTANT: Remove old listener before adding new one to prevent duplicates
+    try {
+      session.removeMessageListener(CAST_NAMESPACE);
+      console.log('✅ Removed old message listener');
+    } catch (e) {
+      console.log('ℹ️ No old listener to remove (first connection)');
+    }
 
     setCastSession(session);
     setIsConnected(true);
@@ -500,21 +514,33 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
   // Send message to receiver
   const sendMessage = (message: CastMessage) => {
-    console.log('🎯 sendMessage called:', message.type, 'isConnected:', isConnected);
+    console.log('🎯 sendMessage called:', {
+      type: message.type,
+      isConnected,
+      hasCastSession: !!castSession,
+      sessionId: castSession?.getSessionId?.(),
+    });
 
     if (!castSession) {
-      console.error('❌ No cast session available! isConnected:', isConnected);
+      console.error('❌ No cast session available!', {
+        isConnected,
+        castSessionExists: !!castSession,
+      });
       console.error('❌ Please reconnect to Cast');
       return;
     }
 
-    console.log('📤 Sending message to receiver...', message);
-    castSession.sendMessage(
-      CAST_NAMESPACE,
-      message,
-      () => console.log('✅ Message sent successfully:', message.type),
-      (error) => console.error('❌ Error sending message:', error)
-    );
+    try {
+      console.log('📤 Sending message to receiver...', message);
+      castSession.sendMessage(
+        CAST_NAMESPACE,
+        message,
+        () => console.log('✅ Message sent successfully:', message.type),
+        (error) => console.error('❌ Error sending message:', error)
+      );
+    } catch (error) {
+      console.error('❌ Exception when sending message:', error);
+    }
   };
 
   // Connection Actions
@@ -572,11 +598,21 @@ export function CastProvider({ children }: { children: ReactNode }) {
   };
 
   const disconnect = () => {
-    const cast = (window as any).cast;
-    if (!cast) return;
+    console.log('🔌 Disconnect called');
 
-    const context = cast.framework.CastContext.getInstance();
-    context.endCurrentSession(true);
+    const cast = (window as any).cast;
+    if (!cast) {
+      console.error('❌ Cast API not available');
+      return;
+    }
+
+    try {
+      const context = cast.framework.CastContext.getInstance();
+      console.log('📡 Ending current session...');
+      context.endCurrentSession(true);
+    } catch (error) {
+      console.error('❌ Error disconnecting:', error);
+    }
   };
 
   // Queue Operations
