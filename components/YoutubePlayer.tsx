@@ -37,6 +37,7 @@ import BottomAds from "./BottomAds";
 import { CastModeSelector } from "./CastModeSelector";
 import VideoAds from "./VideoAds";
 import DebugOverlay, { addDebugLog } from "./DebugOverlay";
+import PlayerControls from "./PlayerControls";
 
 function YoutubePlayer({
   videoId,
@@ -55,7 +56,17 @@ function YoutubePlayer({
   const [playerState, setPlayerState] = useState<number>();
   const { user } = useAuth();
   const isLogin = !!user.uid;
-  const { isConnected: isCasting, roomCode, joinRoom, leaveRoom } = useFirebaseCast();
+  const {
+    isConnected: isCasting,
+    roomCode,
+    joinRoom,
+    leaveRoom,
+    play: firebaseCastPlay,
+    pause: firebaseCastPause,
+    next: firebaseCastNext,
+    replay: firebaseCastReplay,
+    state: firebaseCastState,
+  } = useFirebaseCast();
   const {
     connect: connectGoogleCast,
     disconnect: disconnectGoogleCast,
@@ -1043,12 +1054,26 @@ function YoutubePlayer({
                         )}
                       </div>
                     ) : (
-                      <div className="mt-2">
+                      <div className="mt-2 w-full">
                         <div className="flex items-center justify-center gap-2 text-base mb-3">
                           <CheckCircleIcon className="w-5 h-5 text-success" />
                           <span>เชื่อมต่อแล้ว</span>
                         </div>
-                        <div className="text-xl font-bold mb-3">ห้อง: {roomCode}</div>
+                        <div className="text-xl font-bold mb-4">ห้อง: {roomCode}</div>
+
+                        {/* Player Controls */}
+                        <div className="mb-4">
+                          <PlayerControls
+                            isPlaying={firebaseCastState.controls.isPlaying}
+                            onPlay={firebaseCastPlay}
+                            onPause={firebaseCastPause}
+                            onNext={firebaseCastNext}
+                            onReplay={firebaseCastReplay}
+                            showReplay={true}
+                            className="justify-center"
+                          />
+                        </div>
+
                         <button
                           className="w-full py-2 px-3 text-white rounded-lg bg-error font-semibold flex items-center justify-center gap-2"
                           onClick={handleCastDisconnect}
@@ -1120,6 +1145,20 @@ function YoutubePlayer({
                           <span>เชื่อมต่อแล้ว</span>
                         </div>
                         <div className="text-4xl font-bold mb-6">ห้อง: {roomCode}</div>
+
+                        {/* Player Controls */}
+                        <div className="mb-6 w-full max-w-md">
+                          <PlayerControls
+                            isPlaying={firebaseCastState.controls.isPlaying}
+                            onPlay={firebaseCastPlay}
+                            onPause={firebaseCastPause}
+                            onNext={firebaseCastNext}
+                            onReplay={firebaseCastReplay}
+                            showReplay={true}
+                            className="justify-center"
+                          />
+                        </div>
+
                         <button
                           className="py-2 px-6 text-white rounded-lg bg-error font-semibold flex items-center gap-2"
                           onClick={handleCastDisconnect}

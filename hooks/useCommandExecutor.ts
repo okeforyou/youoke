@@ -124,6 +124,16 @@ export function useCommandExecutor({
             break;
           }
 
+          case 'REPLAY':
+            if (playerRef) {
+              await playerRef.seekTo(0, true);
+              await playerRef.playVideo();
+            }
+            newState = {
+              controls: { ...currentState.controls, isPlaying: true },
+            };
+            break;
+
           case 'SKIP_TO': {
             const { index } = command.payload;
             if (index >= 0 && index < currentState.queue.length) {
