@@ -312,8 +312,14 @@ function YoutubePlayer({
   };
 
   const handlePlay = async () => {
+    console.log('🎯 handlePlay called:', {
+      isGoogleCastConnected,
+      castPlayExists: !!castPlay,
+    });
+
     // If connected to Google Cast, send command to TV
     if (isGoogleCastConnected) {
+      console.log('📤 Calling castPlay()...');
       setPlayerState(YouTube.PlayerState.PLAYING);
       castPlay();
       return;
@@ -339,8 +345,14 @@ function YoutubePlayer({
   };
 
   const handlePause = async () => {
+    console.log('🎯 handlePause called:', {
+      isGoogleCastConnected,
+      castPauseExists: !!castPause,
+    });
+
     // If connected to Google Cast, send command to TV
     if (isGoogleCastConnected) {
+      console.log('📤 Calling castPause()...');
       setPlayerState(YouTube.PlayerState.PAUSED);
       castPause();
       return;
@@ -890,7 +902,13 @@ function YoutubePlayer({
         icon: ForwardIcon,
         label: "เพลงถัดไป",
         onClick: () => {
+          console.log('🎯 Next button clicked:', {
+            isGoogleCastConnected,
+            castNextExists: !!castNext,
+          });
+
           if (isGoogleCastConnected) {
+            console.log('📤 Calling castNext()...');
             castNext();
           } else {
             nextSong();
@@ -1274,6 +1292,10 @@ function YoutubePlayer({
               </p>
               <button
                 onClick={(e) => {
+                  console.log('🎯 Disconnect button clicked!', {
+                    isGoogleCastConnected,
+                    disconnectExists: !!disconnectGoogleCast,
+                  });
                   e.stopPropagation(); // Prevent fullscreen trigger
                   disconnectGoogleCast();
                   console.log('📡 Disconnecting from Google Cast...');
