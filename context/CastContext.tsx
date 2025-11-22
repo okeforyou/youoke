@@ -276,7 +276,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
     }, 1000); // Wait 1 second for RECEIVER_STATE
 
     return () => clearTimeout(timeout);
-  }, [isConnected, castSession, playlist.length, receiverStateReceived]);
+  }, [isConnected, castSession, receiverStateReceived]); // Removed playlist.length - we don't want to reload queue on every add
 
   const initializeCastApi = () => {
     console.log('🎬 Initializing Google Cast API...');
