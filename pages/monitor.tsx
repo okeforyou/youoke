@@ -41,6 +41,7 @@ const Monitor = () => {
   const initialVideoIdRef = useRef<string | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const isConnectedRef = useRef<boolean>(false);
+  const roomInitializedRef = useRef<boolean>(false);
 
   // Anonymous login
   useEffect(() => {
@@ -76,8 +77,15 @@ const Monitor = () => {
     console.log('📺 Monitoring room:', roomCode);
     const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
 
-    // Create room if doesn't exist (check first to avoid overwriting)
+    // Create room if doesn't exist (prevent double initialization in React 18 Strict Mode)
     const initializeRoom = async () => {
+      // Prevent double initialization
+      if (roomInitializedRef.current) {
+        console.log('⏭️ Room already being initialized, skipping...');
+        return;
+      }
+      roomInitializedRef.current = true;
+
       try {
         const snapshot = await get(roomRef);
 
@@ -98,11 +106,14 @@ const Monitor = () => {
             currentVideo: null,
             controls: { isPlaying: false, isMuted: true },
           },
+          commands: {},
           createdAt: Date.now(),
         });
         console.log('✅ Room created successfully:', roomCode);
       } catch (error) {
         console.error('❌ Error initializing room:', error);
+        // Reset flag on error to allow retry
+        roomInitializedRef.current = false;
       }
     };
 
@@ -137,6 +148,8 @@ const Monitor = () => {
       off(commandsRef);
       stateUnsubscribe();
       commandsUnsubscribe();
+      // Reset flag on cleanup
+      roomInitializedRef.current = false;
     };
   }, [roomCode, isAuthReady]);
 
