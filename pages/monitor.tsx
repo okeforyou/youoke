@@ -88,6 +88,7 @@ const Monitor = () => {
             currentVideo: null,
             controls: { isPlaying: false, isMuted: true },
           },
+          commands: {},
           createdAt: Date.now(),
         });
         console.log('✅ Room created:', roomCode);
