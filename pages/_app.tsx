@@ -1,6 +1,7 @@
 import '../styles/global.css'
 
 import Head from 'next/head'
+import { useRouter } from 'next/router'
 import { QueryClient, QueryClientProvider } from 'react-query'
 
 import { Analytics } from '@vercel/analytics/react'
@@ -23,6 +24,10 @@ const queryClient = new QueryClient({
 });
 
 function App({ Component, pageProps }) {
+  const router = useRouter();
+
+  // Monitor page should NOT have Google Cast (it's a receiver, not a sender)
+  const isMonitorPage = router.pathname === '/monitor';
   return (
     <AuthContextProvider>
       <ToastProvider>
@@ -80,15 +85,25 @@ function App({ Component, pageProps }) {
             </>
           )}
           <QueryClientProvider client={queryClient}>
-            <CastProvider>
+            {isMonitorPage ? (
+              // Monitor page: Only Firebase Cast (no Google Cast to avoid conflicts)
               <FirebaseCastProvider>
-                <YouTubeCastProvider>
-                  <AdsProvider>
-                    <Component {...pageProps} />
-                  </AdsProvider>
-                </YouTubeCastProvider>
+                <AdsProvider>
+                  <Component {...pageProps} />
+                </AdsProvider>
               </FirebaseCastProvider>
-            </CastProvider>
+            ) : (
+              // Other pages: Full Cast stack
+              <CastProvider>
+                <FirebaseCastProvider>
+                  <YouTubeCastProvider>
+                    <AdsProvider>
+                      <Component {...pageProps} />
+                    </AdsProvider>
+                  </YouTubeCastProvider>
+                </FirebaseCastProvider>
+              </CastProvider>
+            )}
             {/* <ReactQueryDevtools /> */}
           </QueryClientProvider>
           <Analytics />

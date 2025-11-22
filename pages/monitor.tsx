@@ -83,25 +83,6 @@ const Monitor = () => {
     // See: FIREBASE-CAST-TROUBLESHOOTING.md
     const initializeRoom = async () => {
       try {
-        // Test 1: Try absolute minimal data first
-        console.log('🧪 Test 1: Creating room with minimal data...');
-        await set(roomRef, {
-          test: 'hello'
-        });
-        console.log('✅ Test 1 passed - basic write works');
-
-        // Test 2: Try with nested object
-        console.log('🧪 Test 2: Creating room with nested data...');
-        await set(roomRef, {
-          hostId: 'monitor',
-          state: {
-            test: 'nested'
-          }
-        });
-        console.log('✅ Test 2 passed - nested write works');
-
-        // Test 3: Try with actual structure
-        console.log('🧪 Test 3: Creating room with full structure...');
         await set(roomRef, {
           hostId: 'monitor',
           isHost: true,
