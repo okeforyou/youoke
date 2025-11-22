@@ -12,6 +12,10 @@ const firebaseConfig = {
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || 'dummy.firebaseapp.com',
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'dummy-project',
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || 'dummy.appspot.com',
+
+  // IMPORTANT: Must include region in databaseURL (asia-southeast1)
+  // Fallback URL without region will cause "Maximum call stack size exceeded" error
+  // See: FIREBASE-CAST-TROUBLESHOOTING.md for details
   databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL || `https://${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'dummy-project'}.firebaseio.com`,
 };
 

@@ -42,6 +42,8 @@ const Monitor = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   // Anonymous login
+  // NOTE: Required for Firebase Realtime Database access
+  // Monitor needs to authenticate to create/manage rooms
   useEffect(() => {
     const loginAnonymously = async () => {
       try {
@@ -76,6 +78,9 @@ const Monitor = () => {
     const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
 
     // Create room if doesn't exist
+    // Create room in Firebase Realtime Database
+    // IMPORTANT: Requires NEXT_PUBLIC_FIREBASE_DATABASE_URL to be set correctly
+    // See: FIREBASE-CAST-TROUBLESHOOTING.md
     const initializeRoom = async () => {
       try {
         await set(roomRef, {
