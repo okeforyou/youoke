@@ -347,9 +347,14 @@ export function CastProvider({ children }: { children: ReactNode }) {
   const handleSessionStarted = (session: any) => {
     if (!session) return;
 
+    console.log('🔌 Session started/resumed - requesting receiver state...');
+
     setCastSession(session);
     setIsConnected(true);
     setReceiverName(session.getCastDevice().friendlyName);
+
+    // Reset receiver state flag to trigger re-sync
+    setReceiverStateReceived(false);
 
     // Setup message listener
     session.addMessageListener(CAST_NAMESPACE, (namespace: string, message: string) => {
@@ -478,42 +483,11 @@ export function CastProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    console.log('Cast session started:', session.getCastDevice().friendlyName);
+    console.log('✅ Cast session started/resumed:', session.getCastDevice().friendlyName);
 
-    // ⚠️ IMPORTANT: Read from refs to get latest state (not stale closure values)
-    const latestPlaylist = playlistRef.current;
-    const latestCurrentVideo = currentVideoRef.current;
-
-    console.log('📊 Current state when connected:', {
-      playlistLength: latestPlaylist.length,
-      hasCurrentVideo: !!latestCurrentVideo,
-      firstVideoId: latestPlaylist[0]?.videoId,
-    });
-
-    // Send current playlist to receiver if available
-    if (latestPlaylist.length > 0) {
-      console.log('📤 Sending playlist to receiver...');
-      const videos = latestPlaylist.map(v => ({
-        videoId: v.videoId,
-        title: v.title || 'Unknown'
-      }));
-
-      // Send queue with startIndex - receiver will autoplay (no need for separate LOAD_VIDEO)
-      const latestCurrentIndex = currentIndexRef.current;
-
-      session.sendMessage(
-        CAST_NAMESPACE,
-        {
-          type: 'LOAD_QUEUE',
-          videos,
-          startIndex: latestCurrentIndex  // Receiver will autoplay this video
-        },
-        () => console.log('✅ Playlist sent:', videos.length, 'videos', 'starting at index:', latestCurrentIndex),
-        (error: any) => console.error('❌ Error sending playlist:', error)
-      );
-    } else {
-      console.warn('⚠️ Playlist is empty when connected! Nothing to play.');
-    }
+    // Don't send LOAD_QUEUE here - let the useEffect (line 250-279) handle it after waiting for RECEIVER_STATE
+    // This prevents sending LOAD_QUEUE when resuming from background (which would restart the video)
+    console.log('⏳ Waiting for RECEIVER_STATE from receiver before syncing...');
   };
 
   const handleSessionEnded = () => {

@@ -358,6 +358,25 @@
       }
     });
 
+    // Listen for sender connected/reconnected event
+    context.addEventListener(cast.framework.system.EventType.SENDER_CONNECTED, (event) => {
+      console.log('📱 Sender connected/reconnected! Sending current state...');
+
+      // Send current receiver state to sender
+      setTimeout(() => {
+        const currentState = {
+          type: 'RECEIVER_STATE',
+          queue: videoQueue.map(v => ({ videoId: v.videoId, title: v.title })),
+          currentIndex: currentIndex,
+          currentVideoId: currentVideoId,
+          isPlaying: ytPlayer ? (ytPlayer.getPlayerState() === 1) : false
+        };
+
+        sendMessageToSender(currentState);
+        console.log('📤 Sent receiver state to sender:', currentState);
+      }, 500); // Small delay to ensure sender is ready
+    });
+
     // Intercept LOAD requests and extract YouTube video ID
     playerManager.setMessageInterceptor(
       cast.framework.messages.MessageType.LOAD,
