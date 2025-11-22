@@ -11,7 +11,7 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import YouTube, { YouTubePlayer } from 'react-youtube';
-import { ref, onValue, off, set, update } from 'firebase/database';
+import { ref, onValue, off, set, update, serverTimestamp } from 'firebase/database';
 import { signInAnonymously } from 'firebase/auth';
 import { QRCodeSVG } from 'qrcode.react';
 import { realtimeDb, auth } from '../firebase';
@@ -88,7 +88,7 @@ const Monitor = () => {
             currentVideo: null,
             controls: { isPlaying: false, isMuted: true },
           },
-          createdAt: Date.now(),
+          createdAt: serverTimestamp(),
         });
         console.log('✅ Room created:', roomCode);
       } catch (error) {
