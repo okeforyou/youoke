@@ -22,7 +22,7 @@ export interface PlayerControlsProps {
   onPlay: () => void;
   onPause: () => void;
   onNext: () => void;
-  onReplay: () => void;
+  onReplay?: () => void;
 
   // Optional customization
   showReplay?: boolean;
@@ -61,7 +61,7 @@ export default function PlayerControls({
     },
 
     // Replay Button (optional)
-    ...(showReplay ? [{
+    ...(showReplay && onReplay ? [{
       icon: ArrowUturnLeftIcon,
       label: 'ร้องซ้ำ',
       onClick: onReplay,
