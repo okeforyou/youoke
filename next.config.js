@@ -1,17 +1,18 @@
-// @ts-check
-
-const withPWA = require("next-pwa")({
-  dest: "public",
-  disable: process.env.NODE_ENV === "development",
-  register: true,
-  skipWaiting: true,
-});
-
-const nextConfig = withPWA({
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   reactStrictMode: true,
-  experimental: {
-    nextScriptWorkers: true,
+  swcMinify: true,
+  images: {
+    domains: ['i.ytimg.com', 'firebasestorage.googleapis.com'],
   },
-});
+  async rewrites() {
+    return [
+      {
+        source: '/cast-receiver-youtube.html',
+        destination: '/cast-receiver-youtube-static.html',
+      },
+    ];
+  },
+}
 
-module.exports = nextConfig;
+module.exports = nextConfig
