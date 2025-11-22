@@ -64,7 +64,6 @@ function YoutubePlayer({
     play: firebaseCastPlay,
     pause: firebaseCastPause,
     next: firebaseCastNext,
-    replay: firebaseCastReplay,
     state: firebaseCastState,
   } = useFirebaseCast();
   const {
@@ -1068,8 +1067,6 @@ function YoutubePlayer({
                             onPlay={firebaseCastPlay}
                             onPause={firebaseCastPause}
                             onNext={firebaseCastNext}
-                            onReplay={firebaseCastReplay}
-                            showReplay={true}
                             className="justify-center"
                           />
                         </div>
@@ -1153,8 +1150,6 @@ function YoutubePlayer({
                             onPlay={firebaseCastPlay}
                             onPause={firebaseCastPause}
                             onNext={firebaseCastNext}
-                            onReplay={firebaseCastReplay}
-                            showReplay={true}
                             className="justify-center"
                           />
                         </div>
