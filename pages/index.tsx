@@ -644,116 +644,17 @@ function HomePage() {
           {/* END Recommend Videos List */}
           {/* Video Player */}
           <div className="relative order-1 sm:order-2 w-full flex flex-row sm:flex-col flex-grow flex-shrink-0 sm:max-w-[50vw] lg:max-w-[50vw] 2xl:max-w-[50vw] sm:min-w-[400px] sm:h-screen overflow-hidden">
-            {isCasting ? (
-              // Show remote control UI when casting
-              <>
-                {/* Mobile: Show Cast status card with playback controls */}
-                <div className="flex sm:hidden flex-col flex-1 bg-primary/10 p-4 items-center justify-center gap-6">
-                  <div className="text-center">
-                    <div className="text-6xl mb-4">📺</div>
-                    <h2 className="text-2xl font-bold mb-2">กำลัง Cast ไปทีวี</h2>
-                    <p className="text-sm text-gray-600">
-                      เพลงกำลังเล่นบนทีวี
-                    </p>
-                  </div>
-
-                  {/* Playback Controls */}
-                  <div className="flex items-center gap-4">
-                    {/* Previous Button */}
-                    <button
-                      onClick={castPrevious}
-                      disabled={castCurrentIndex <= 0}
-                      className="p-3 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                      title="เพลงก่อนหน้า"
-                    >
-                      <svg className="w-6 h-6 text-gray-800" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
-                      </svg>
-                    </button>
-
-                    {/* Play/Pause Button */}
-                    <button
-                      onClick={() => {
-                        if (castState?.controls?.isPlaying) {
-                          castPause();
-                        } else {
-                          castPlay();
-                        }
-                      }}
-                      className="p-4 bg-primary rounded-full shadow-xl hover:bg-primary/80 transition-all"
-                      title={castState?.controls?.isPlaying ? "หยุด" : "เล่น"}
-                    >
-                      {castState?.controls?.isPlaying ? (
-                        <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
-                        </svg>
-                      ) : (
-                        <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M8 5v14l11-7z"/>
-                        </svg>
-                      )}
-                    </button>
-
-                    {/* Next Button */}
-                    <button
-                      onClick={castNext}
-                      disabled={!castPlaylist || castCurrentIndex >= castPlaylist.length - 1}
-                      className="p-3 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                      title="เพลงถัดไป"
-                    >
-                      <svg className="w-6 h-6 text-gray-800" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
-                      </svg>
-                    </button>
-                  </div>
-
-                  {/* Current Song Info */}
-                  {castState?.currentVideo && (
-                    <div className="text-center max-w-xs">
-                      <p className="text-xs text-gray-500 mb-1">กำลังเล่น</p>
-                      <p className="font-semibold text-sm truncate">
-                        {castState.currentVideo.title}
-                      </p>
-                    </div>
-                  )}
-
-                  <label
-                    htmlFor="modal-playlist"
-                    className="btn btn-primary btn-sm"
-                  >
-                    ดูคิวเพลง ({displayPlaylist?.length || 0})
-                  </label>
-                </div>
-
-                {/* Desktop: Show full playlist */}
-                <div className="hidden sm:flex flex-col flex-1 bg-primary/10 p-4">
-                  <div className="text-center mb-4">
-                    <div className="text-4xl mb-2">📺</div>
-                    <h2 className="text-xl font-bold">กำลัง Cast ไปทีวี</h2>
-                    <p className="text-sm text-gray-600 mt-2">
-                      เพลงกำลังเล่นบนทีวี
-                    </p>
-                  </div>
-                  <div className="flex-1 overflow-y-scroll">
-                    {PlaylistScreen}
-                  </div>
-                </div>
-              </>
-            ) : (
-              // Show regular player when not casting
-              <>
-                <YoutubePlayer
-                  videoId={curVideoId}
-                  nextSong={() => setCurVideoId("")}
-                  className="flex flex-col flex-1 sm:flex-grow-0"
-                />
-                <div
-                  className={`max-h-full w-full p-2 overflow-y-scroll hidden sm:flex flex-col ${scrollbarCls}`}
-                >
-                  {PlaylistScreen}
-                </div>
-              </>
-            )}
+            {/* Always show YoutubePlayer - it handles both local and cast modes */}
+            <YoutubePlayer
+              videoId={curVideoId}
+              nextSong={() => setCurVideoId("")}
+              className="flex flex-col flex-1 sm:flex-grow-0"
+            />
+            <div
+              className={`max-h-full w-full p-2 overflow-y-scroll hidden sm:flex flex-col ${scrollbarCls}`}
+            >
+              {PlaylistScreen}
+            </div>
           </div>
         </div>
       </main>
