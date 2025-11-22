@@ -83,8 +83,26 @@ const Monitor = () => {
     // See: FIREBASE-CAST-TROUBLESHOOTING.md
     const initializeRoom = async () => {
       try {
-        // Start with minimal data structure
-        const roomData = {
+        // Test 1: Try absolute minimal data first
+        console.log('🧪 Test 1: Creating room with minimal data...');
+        await set(roomRef, {
+          test: 'hello'
+        });
+        console.log('✅ Test 1 passed - basic write works');
+
+        // Test 2: Try with nested object
+        console.log('🧪 Test 2: Creating room with nested data...');
+        await set(roomRef, {
+          hostId: 'monitor',
+          state: {
+            test: 'nested'
+          }
+        });
+        console.log('✅ Test 2 passed - nested write works');
+
+        // Test 3: Try with actual structure
+        console.log('🧪 Test 3: Creating room with full structure...');
+        await set(roomRef, {
           hostId: 'monitor',
           isHost: true,
           state: {
@@ -96,16 +114,11 @@ const Monitor = () => {
               isMuted: true
             }
           },
-          createdAt: new Date().toISOString()  // Use ISO string instead of timestamp
-        };
-
-        console.log('🔍 Attempting to create room with data:', roomData);
-        await set(roomRef, roomData);
+          createdAt: Date.now()
+        });
         console.log('✅ Room created:', roomCode);
       } catch (error) {
         console.error('❌ Error creating room:', error);
-        console.error('❌ Error details:', error instanceof Error ? error.message : String(error));
-        console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack');
       }
     };
 

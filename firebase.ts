@@ -8,18 +8,10 @@ import { getStorage } from 'firebase/storage'
 
 // Force rebuild to pick up new environment variables (Nov 22, 2025)
 
-// DEBUG: Log environment variables at build/runtime
-console.log('🔍 Firebase Environment Variables Check:');
-console.log('  NEXT_PUBLIC_FIREBASE_DATABASE_URL:', process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL || 'MISSING');
-console.log('  NEXT_PUBLIC_FIREBASE_PROJECT_ID:', process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'MISSING');
-console.log('  NEXT_PUBLIC_FIREBASE_PUBLIC_API_KEY:', process.env.NEXT_PUBLIC_FIREBASE_PUBLIC_API_KEY ? 'PRESENT' : 'MISSING');
-
 // Sanitize DATABASE_URL - remove trailing slash if present
 const rawDatabaseURL = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL ||
   `https://${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'dummy-project'}.firebaseio.com`;
 const databaseURL = rawDatabaseURL.replace(/\/$/, '');  // Remove trailing slash
-
-console.log('🔧 Sanitized DATABASE_URL:', databaseURL);
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -33,11 +25,6 @@ const firebaseConfig = {
   // See: FIREBASE-CAST-TROUBLESHOOTING.md for details
   databaseURL: databaseURL,
 };
-
-// DEBUG: Log the actual config being used
-console.log('🔧 Firebase Config:');
-console.log('  databaseURL:', firebaseConfig.databaseURL);
-console.log('  projectId:', firebaseConfig.projectId);
 
 // Initialize Firebase only if config is valid
 let app;
