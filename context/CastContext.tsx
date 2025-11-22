@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
 import { RecommendedVideo, SearchResult } from '../types/invidious';
+import { addDebugLog } from '../components/DebugOverlay';
 
 // Extended Video type with queue key
 type QueueVideo = (SearchResult | RecommendedVideo) & { key: number };
@@ -347,20 +348,25 @@ export function CastProvider({ children }: { children: ReactNode }) {
   const handleSessionStarted = (session: any) => {
     if (!session) {
       console.error('❌ handleSessionStarted called with null session!');
+      addDebugLog('❌ handleSessionStarted: null session');
       return;
     }
 
-    console.log('🔌 Session started/resumed:', {
+    const sessionInfo = {
       deviceName: session.getCastDevice().friendlyName,
       sessionId: session.getSessionId(),
-    });
+    };
+    console.log('🔌 Session started/resumed:', sessionInfo);
+    addDebugLog('🔌 Session started/resumed', sessionInfo);
 
     // IMPORTANT: Remove old listener before adding new one to prevent duplicates
     try {
       session.removeMessageListener(CAST_NAMESPACE);
       console.log('✅ Removed old message listener');
+      addDebugLog('✅ Removed old message listener');
     } catch (e) {
       console.log('ℹ️ No old listener to remove (first connection)');
+      addDebugLog('ℹ️ First connection - no old listener');
     }
 
     setCastSession(session);
@@ -381,6 +387,10 @@ export function CastProvider({ children }: { children: ReactNode }) {
           case 'RECEIVER_STATE':
             // Receiver sent its current state - use it instead of localStorage!
             console.log('📥 Received state from receiver:', data);
+            addDebugLog('📥 RECEIVER_STATE received', {
+              queueLength: data.queue?.length || 0,
+              currentIndex: data.currentIndex,
+            });
 
             if (data.queue && data.queue.length > 0) {
               // Convert receiver's queue format to our playlist format
@@ -390,11 +400,13 @@ export function CastProvider({ children }: { children: ReactNode }) {
                 key: Date.now() + index
               }));
 
-              console.log('✅ Syncing state FROM receiver:', {
+              const syncInfo = {
                 queueLength: receiverPlaylist.length,
                 currentIndex: data.currentIndex,
                 currentVideo: data.currentVideoId
-              });
+              };
+              console.log('✅ Syncing state FROM receiver:', syncInfo);
+              addDebugLog('✅ Synced FROM receiver', syncInfo);
 
               // Update our state to match receiver
               setPlaylistState(receiverPlaylist);

@@ -36,6 +36,7 @@ import Alert, { AlertHandler } from "./Alert";
 import BottomAds from "./BottomAds";
 import { CastModeSelector } from "./CastModeSelector";
 import VideoAds from "./VideoAds";
+import DebugOverlay, { addDebugLog } from "./DebugOverlay";
 
 function YoutubePlayer({
   videoId,
@@ -79,6 +80,7 @@ function YoutubePlayer({
   const [castInputRoomCode, setCastInputRoomCode] = useState<string>('');
   const [castError, setCastError] = useState<string>('');
   const [isJoiningRoom, setIsJoiningRoom] = useState<boolean>(false);
+  const [isDebugOverlayOpen, setIsDebugOverlayOpen] = useState<boolean>(false);
 
   const { playlist, curVideoId, setCurVideoId, setPlaylist } =
     useKaraokeState();
@@ -312,14 +314,17 @@ function YoutubePlayer({
   };
 
   const handlePlay = async () => {
-    console.log('🎯 handlePlay called:', {
+    const debugInfo = {
       isGoogleCastConnected,
       castPlayExists: !!castPlay,
-    });
+    };
+    console.log('🎯 handlePlay called:', debugInfo);
+    addDebugLog('🎯 handlePlay called', debugInfo);
 
     // If connected to Google Cast, send command to TV
     if (isGoogleCastConnected) {
       console.log('📤 Calling castPlay()...');
+      addDebugLog('📤 Calling castPlay()');
       setPlayerState(YouTube.PlayerState.PLAYING);
       castPlay();
       return;
@@ -345,14 +350,17 @@ function YoutubePlayer({
   };
 
   const handlePause = async () => {
-    console.log('🎯 handlePause called:', {
+    const debugInfo = {
       isGoogleCastConnected,
       castPauseExists: !!castPause,
-    });
+    };
+    console.log('🎯 handlePause called:', debugInfo);
+    addDebugLog('🎯 handlePause called', debugInfo);
 
     // If connected to Google Cast, send command to TV
     if (isGoogleCastConnected) {
       console.log('📤 Calling castPause()...');
+      addDebugLog('📤 Calling castPause()');
       setPlayerState(YouTube.PlayerState.PAUSED);
       castPause();
       return;
@@ -902,13 +910,16 @@ function YoutubePlayer({
         icon: ForwardIcon,
         label: "เพลงถัดไป",
         onClick: () => {
-          console.log('🎯 Next button clicked:', {
+          const debugInfo = {
             isGoogleCastConnected,
             castNextExists: !!castNext,
-          });
+          };
+          console.log('🎯 Next button clicked:', debugInfo);
+          addDebugLog('🎯 Next button clicked', debugInfo);
 
           if (isGoogleCastConnected) {
             console.log('📤 Calling castNext()...');
+            addDebugLog('📤 Calling castNext()');
             castNext();
           } else {
             nextSong();
@@ -1292,13 +1303,16 @@ function YoutubePlayer({
               </p>
               <button
                 onClick={(e) => {
-                  console.log('🎯 Disconnect button clicked!', {
+                  const debugInfo = {
                     isGoogleCastConnected,
                     disconnectExists: !!disconnectGoogleCast,
-                  });
+                  };
+                  console.log('🎯 Disconnect button clicked!', debugInfo);
+                  addDebugLog('🎯 Disconnect button clicked', debugInfo);
                   e.stopPropagation(); // Prevent fullscreen trigger
                   disconnectGoogleCast();
                   console.log('📡 Disconnecting from Google Cast...');
+                  addDebugLog('📡 Disconnecting from Google Cast');
                   addToast('ตัดการเชื่อมต่อ Google Cast แล้ว');
                 }}
                 className="btn btn-sm btn-error gap-2"
@@ -1418,6 +1432,30 @@ function YoutubePlayer({
         })}
         {extra}
       </div>
+
+      {/* Debug Overlay */}
+      <DebugOverlay
+        isVisible={isDebugOverlayOpen}
+        onClose={() => setIsDebugOverlayOpen(false)}
+      />
+
+      {/* Debug Toggle Button - Float at bottom right */}
+      {!isMoniter && (
+        <button
+          onClick={() => {
+            setIsDebugOverlayOpen(true);
+            addDebugLog('🐛 Debug overlay opened', {
+              isGoogleCastConnected,
+              receiverName,
+              isCasting,
+            });
+          }}
+          className="fixed bottom-20 right-4 z-[9998] btn btn-sm btn-circle btn-primary shadow-lg"
+          title="เปิด Debug Console"
+        >
+          🐛
+        </button>
+      )}
     </div>
   );
 }
