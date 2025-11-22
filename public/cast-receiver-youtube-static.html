@@ -411,6 +411,19 @@
     context.start(options);
     console.log('✅ Cast Receiver started');
     showStatus('🎤 YouOke Cast Receiver Ready', 3000);
+
+    // Keep-alive heartbeat to prevent receiver from being suspended
+    setInterval(() => {
+      // Send heartbeat back to sender to keep connection alive
+      const heartbeat = {
+        type: 'HEARTBEAT',
+        timestamp: Date.now(),
+        isPlaying: ytPlayer ? (ytPlayer.getPlayerState() === 1) : false,
+        currentVideoId: currentVideoId,
+      };
+      sendMessageToSender(heartbeat);
+      console.log('💓 Heartbeat sent');
+    }, 5000); // Every 5 seconds
   </script>
 </body>
 </html>
