@@ -422,6 +422,19 @@ const Monitor = () => {
           <p className="text-xl text-gray-500 mt-8 animate-pulse">
             รอเชื่อมต่อจากมือถือ...
           </p>
+
+          {/* Debug Panel */}
+          <div className="fixed bottom-4 left-4 bg-gray-900/80 text-xs text-gray-300 p-3 rounded-lg border border-gray-700 max-w-md">
+            <p className="font-bold text-yellow-400 mb-2">🔍 Debug Info:</p>
+            <div className="space-y-1 font-mono">
+              <p>DATABASE_URL: {process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL ? '✅ SET' : '❌ MISSING'}</p>
+              <p className="text-[10px] break-all">
+                {process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL || 'Not configured'}
+              </p>
+              <p>PROJECT_ID: {process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || '❌ MISSING'}</p>
+              <p>API_KEY: {process.env.NEXT_PUBLIC_FIREBASE_PUBLIC_API_KEY ? '✅ SET' : '❌ MISSING'}</p>
+            </div>
+          </div>
         </div>
       </div>
     );
