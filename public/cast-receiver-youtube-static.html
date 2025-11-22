@@ -213,10 +213,14 @@
         width: '100%',
         playerVars: {
           autoplay: 1,
-          controls: 1,
+          controls: 1,          // Show video controls
           modestbranding: 1,
           rel: 0,
           fs: 1,
+          playsinline: 1,       // Ensure video plays inline
+          iv_load_policy: 3,    // Hide video annotations
+          disablekb: 0,         // Enable keyboard controls
+          enablejsapi: 1,       // Enable JS API
         },
         events: {
           onReady: onPlayerReady,
@@ -228,7 +232,16 @@
 
     function onPlayerReady(event) {
       console.log('✅ YouTube Player ready');
-      showStatus('🎤 Ready to Cast');
+      showStatus('🎥 Video Player Ready');
+
+      // Make sure player is visible
+      const playerEl = document.getElementById('player');
+      if (playerEl) {
+        playerEl.style.display = 'block';
+        playerEl.style.visibility = 'visible';
+        playerEl.style.opacity = '1';
+        console.log('✅ Player visibility confirmed');
+      }
     }
 
     function onPlayerStateChange(event) {
@@ -283,7 +296,7 @@
         startSeconds: 0,
       });
 
-      showStatus('▶️ Playing...');
+      showStatus('🎥 Playing Video...');
       updateQueueInfo();
     }
 
