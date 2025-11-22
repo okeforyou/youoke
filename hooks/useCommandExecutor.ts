@@ -41,22 +41,27 @@ export function useCommandExecutor({
         switch (command.type) {
           case 'PLAY_NOW': {
             const { video } = command.payload;
+            const existingIndex = currentState.queue.findIndex(
+              (v) => v.videoId === video.videoId
+            );
 
-            // Get only upcoming songs (exclude current and already played songs)
-            const upcomingQueue = currentState.queue.slice(currentState.currentIndex + 1);
-
-            // Remove duplicate if video already exists in upcoming queue
-            const filteredQueue = upcomingQueue.filter(v => v.videoId !== video.videoId);
-
-            // Add new video to front of upcoming queue
-            const newQueue = [video, ...filteredQueue];
-
-            newState = {
-              queue: newQueue,
-              currentIndex: 0,
-              currentVideo: video,
-              controls: { ...currentState.controls, isPlaying: true },
-            };
+            if (existingIndex !== -1) {
+              // Jump to existing
+              newState = {
+                currentIndex: existingIndex,
+                currentVideo: currentState.queue[existingIndex],
+                controls: { ...currentState.controls, isPlaying: true },
+              };
+            } else {
+              // Add to front
+              const newQueue = [video, ...currentState.queue];
+              newState = {
+                queue: newQueue,
+                currentIndex: 0,
+                currentVideo: video,
+                controls: { ...currentState.controls, isPlaying: true },
+              };
+            }
             break;
           }
 
@@ -124,16 +129,6 @@ export function useCommandExecutor({
             break;
           }
 
-          case 'REPLAY':
-            if (playerRef) {
-              await playerRef.seekTo(0, true);
-              await playerRef.playVideo();
-            }
-            newState = {
-              controls: { ...currentState.controls, isPlaying: true },
-            };
-            break;
-
           case 'SKIP_TO': {
             const { index } = command.payload;
             if (index >= 0 && index < currentState.queue.length) {
@@ -157,22 +152,7 @@ export function useCommandExecutor({
 
           case 'UNMUTE':
             if (playerRef) {
-              try {
-                await playerRef.unMute();
-                // Resume playing if paused by browser
-                const playerState = await playerRef.getPlayerState();
-                if (playerState === 2) {
-                  await playerRef.playVideo();
-                  console.log('▶️ Resumed after unmute');
-                }
-              } catch (error) {
-                console.warn('⚠️ Unmute blocked by browser, staying muted');
-                // Keep muted if browser blocks
-                newState = {
-                  controls: { ...currentState.controls, isMuted: true },
-                };
-                break;
-              }
+              await playerRef.unMute();
             }
             newState = {
               controls: { ...currentState.controls, isMuted: false },
@@ -182,22 +162,10 @@ export function useCommandExecutor({
           case 'TOGGLE_MUTE': {
             const newMuted = !currentState.controls.isMuted;
             if (playerRef) {
-              try {
-                if (newMuted) {
-                  await playerRef.mute();
-                } else {
-                  await playerRef.unMute();
-                  // Resume playing if paused by browser
-                  const playerState = await playerRef.getPlayerState();
-                  if (playerState === 2) {
-                    await playerRef.playVideo();
-                    console.log('▶️ Resumed after unmute');
-                  }
-                }
-              } catch (error) {
-                console.warn('⚠️ Toggle mute blocked by browser');
-                // Don't change mute state if blocked
-                break;
+              if (newMuted) {
+                await playerRef.mute();
+              } else {
+                await playerRef.unMute();
               }
             }
             newState = {

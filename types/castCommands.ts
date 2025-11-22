@@ -23,7 +23,6 @@ export type CastCommand =
   | { type: 'PAUSE'; payload: null }
   | { type: 'NEXT'; payload: null }
   | { type: 'PREVIOUS'; payload: null }
-  | { type: 'REPLAY'; payload: null }
   | { type: 'SKIP_TO'; payload: { index: number } }
   | { type: 'MUTE'; payload: null }
   | { type: 'UNMUTE'; payload: null }
