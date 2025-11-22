@@ -83,18 +83,14 @@ const Monitor = () => {
     // See: FIREBASE-CAST-TROUBLESHOOTING.md
     const initializeRoom = async () => {
       try {
+        // Use flat structure (same as old working version)
         await set(roomRef, {
           hostId: 'monitor',
           isHost: true,
-          state: {
-            queue: [],
-            currentIndex: 0,
-            currentVideo: null,
-            controls: {
-              isPlaying: false,
-              isMuted: true
-            }
-          },
+          queue: [],
+          currentIndex: 0,
+          currentVideo: null,
+          controls: { isPlaying: false, isMuted: true },
           createdAt: Date.now()
         });
         console.log('✅ Room created:', roomCode);
@@ -105,12 +101,18 @@ const Monitor = () => {
 
     initializeRoom();
 
-    // Listen to state changes
-    const stateRef = ref(realtimeDb, `rooms/${roomCode}/state`);
-    const unsubscribe = onValue(stateRef, (snapshot) => {
-      const newState = snapshot.val() as CastState | null;
-      if (newState) {
-        console.log('📦 State updated:', newState);
+    // Listen to room changes (flat structure, not nested in state)
+    const unsubscribe = onValue(roomRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        console.log('📦 Room data updated:', data);
+        // Map flat structure to state
+        const newState: CastState = {
+          queue: data.queue || [],
+          currentIndex: data.currentIndex || 0,
+          currentVideo: data.currentVideo || null,
+          controls: data.controls || { isPlaying: false, isMuted: true }
+        };
         setState(newState);
         setIsConnected(
           (newState.queue && newState.queue.length > 0) || newState.currentVideo !== null
@@ -119,7 +121,7 @@ const Monitor = () => {
     });
 
     return () => {
-      off(stateRef);
+      off(roomRef);
       unsubscribe();
     };
   }, [roomCode, isAuthReady]);
@@ -315,10 +317,11 @@ const Monitor = () => {
         setIsQueueEmpty(false);
         const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
         try {
+          // Update flat structure (no state/ prefix)
           await update(roomRef, {
-            'state/currentIndex': nextIndex,
-            'state/currentVideo': state.queue[nextIndex],
-            'state/controls/isPlaying': true,
+            currentIndex: nextIndex,
+            currentVideo: state.queue[nextIndex],
+            'controls/isPlaying': true,
           });
         } catch (error) {
           console.error('❌ Auto-next failed:', error);
