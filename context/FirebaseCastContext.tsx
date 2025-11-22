@@ -48,7 +48,6 @@ interface CastContextValue {
   pause: () => void;
   next: () => void;
   previous: () => void;
-  replay: () => void;
   skipTo: (index: number) => void;
   toggleMute: () => void;
 
@@ -264,10 +263,6 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
     sendCommand(roomCode, { type: 'PREVIOUS', payload: null });
   };
 
-  const replay = () => {
-    sendCommand(roomCode, { type: 'REPLAY', payload: null });
-  };
-
   const skipTo = (index: number) => {
     sendCommand(roomCode, {
       type: 'SKIP_TO',
@@ -298,7 +293,6 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
     pause,
     next,
     previous,
-    replay,
     skipTo,
     toggleMute,
     // Shortcuts for backwards compatibility
