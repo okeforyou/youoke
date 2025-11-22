@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouOke Cast Receiver</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #000;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    #player {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    #status {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      color: white;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 15px 25px;
+      border-radius: 10px;
+      font-size: 18px;
+      z-index: 100;
+      display: none;
+    }
+
+    #queue-info {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      color: white;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 20px 30px;
+      border-radius: 15px;
+      font-size: 16px;
+      z-index: 100;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      opacity: 1;
+      transition: opacity 0.5s ease-in-out;
+    }
+
+    #queue-info.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #queue-info::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    #queue-info::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+
+    #queue-info::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 10px;
+    }
+
+    #queue-info::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div id="status">🎤 YouOke Cast Receiver</div>
+  <div id="queue-info" class="hidden">Ready...</div>
+  <div id="player"></div>
+
+  <!-- Google Cast Receiver SDK -->
+  <script src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
+
+  <!-- YouTube IFrame Player API -->
+  <script src="https://www.youtube.com/iframe_api"></script>
+
+  <script>
+    const context = cast.framework.CastReceiverContext.getInstance();
+    const playerManager = context.getPlayerManager();
+    const CAST_NAMESPACE = 'urn:x-cast:com.youoke.cast';
+
+    let ytPlayer = null;
+    let currentVideoId = null;
+    let videoQueue = []; // Array of {videoId, title}
+    let currentIndex = 0;
+    let queueInfoTimer = null; // Timer for auto-hiding queue info
+
+    // Status display
+    function showStatus(message, duration = 3000) {
+      const status = document.getElementById('status');
+      status.textContent = message;
+      status.style.display = 'block';
+      setTimeout(() => {
+        status.style.display = 'none';
+      }, duration);
+    }
+
+    // Show queue info and auto-hide after 10 seconds
+    function showQueueInfo() {
+      const info = document.getElementById('queue-info');
+      info.classList.remove('hidden');
+
+      // Clear existing timer
+      if (queueInfoTimer) {
+        clearTimeout(queueInfoTimer);
+      }
+
+      // Set new timer to hide after 10 seconds
+      queueInfoTimer = setTimeout(() => {
+        info.classList.add('hidden');
+      }, 10000); // 10 seconds
+    }
+
+    function updateQueueInfo() {
+      const info = document.getElementById('queue-info');
+      if (videoQueue.length > 0) {
+        const currentVideo = videoQueue[currentIndex];
+        const title = currentVideo?.title || 'Unknown';
+        const truncatedTitle = title.length > 50 ? title.substring(0, 50) + '...' : title;
+
+        // Build HTML for current song
+        let html = `
+          <div style="margin-bottom: 15px;">
+            <div style="font-size: 14px; color: #aaa; margin-bottom: 5px;">
+              กำลังเล่น (${currentIndex + 1}/${videoQueue.length})
+            </div>
+            <div style="font-size: 18px; font-weight: bold; color: #4ade80;">
+              🎵 ${truncatedTitle}
+            </div>
+          </div>
+        `;
+
+        // Add next songs (if any)
+        const remainingSongs = videoQueue.slice(currentIndex + 1);
+        if (remainingSongs.length > 0) {
+          html += `
+            <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 15px; margin-top: 10px;">
+              <div style="font-size: 13px; color: #aaa; margin-bottom: 10px;">
+                ถัดไป (${remainingSongs.length} เพลง)
+              </div>
+          `;
+
+          // Show up to 5 next songs
+          const songsToShow = remainingSongs.slice(0, 5);
+          songsToShow.forEach((video, idx) => {
+            const songTitle = video?.title || 'Unknown';
+            const truncated = songTitle.length > 45 ? songTitle.substring(0, 45) + '...' : songTitle;
+            html += `
+              <div style="margin-bottom: 8px; padding: 8px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                <div style="font-size: 14px; color: #e5e5e5;">
+                  <span style="color: #aaa; margin-right: 8px;">${currentIndex + idx + 2}.</span>${truncated}
+                </div>
+              </div>
+            `;
+          });
+
+          // Show "... and X more" if there are more songs
+          if (remainingSongs.length > 5) {
+            html += `
+              <div style="font-size: 12px; color: #aaa; margin-top: 8px; text-align: center;">
+                ... และอีก ${remainingSongs.length - 5} เพลง
+              </div>
+            `;
+          }
+
+          html += `</div>`;
+        }
+
+        info.innerHTML = html;
+
+        // Show queue info and auto-hide after 10 seconds
+        showQueueInfo();
+      } else {
+        info.innerHTML = `
+          <div style="font-size: 16px; color: #aaa;">
+            🎤 Ready to Cast...
+          </div>
+        `;
+      }
+    }
+
+    // YouTube IFrame Player ready
+    function onYouTubeIframeAPIReady() {
+      console.log('✅ YouTube IFrame API ready');
+
+      ytPlayer = new YT.Player('player', {
+        height: '100%',
+        width: '100%',
+        playerVars: {
+          autoplay: 1,
+          controls: 1,
+          modestbranding: 1,
+          rel: 0,
+          fs: 1,
+        },
+        events: {
+          onReady: onPlayerReady,
+          onStateChange: onPlayerStateChange,
+          onError: onPlayerError,
+        }
+      });
+    }
+
+    function onPlayerReady(event) {
+      console.log('✅ YouTube Player ready');
+      showStatus('🎤 Ready to Cast');
+    }
+
+    function onPlayerStateChange(event) {
+      console.log('Player state:', event.data);
+
+      // YT.PlayerState.ENDED = 0
+      if (event.data === 0) {
+        console.log('✅ Video ended, notifying sender...');
+
+        // Notify sender that video ended
+        // Sender will handle queue management and tell us which video to play next
+        sendMessageToSender({
+          type: 'VIDEO_ENDED',
+          videoId: currentVideoId,
+          currentIndex: currentIndex,
+        });
+
+        // Don't auto-play next - wait for sender to send LOAD_VIDEO
+      }
+    }
+
+    function sendMessageToSender(message) {
+      try {
+        context.sendCustomMessage(CAST_NAMESPACE, undefined, message);
+        console.log('📤 Sent message to sender:', message);
+      } catch (error) {
+        console.error('❌ Error sending message to sender:', error);
+      }
+    }
+
+    function onPlayerError(event) {
+      console.error('❌ YouTube Player error:', event.data);
+      showStatus('❌ Error playing video', 5000);
+    }
+
+    function playVideo(videoIdOrObject) {
+      if (!ytPlayer || !ytPlayer.loadVideoById) {
+        console.error('❌ YouTube Player not ready');
+        return;
+      }
+
+      // Support both string videoId and video object {videoId, title}
+      const videoId = typeof videoIdOrObject === 'string'
+        ? videoIdOrObject
+        : videoIdOrObject.videoId;
+
+      console.log('🎬 Playing video:', videoId);
+      currentVideoId = videoId;
+
+      ytPlayer.loadVideoById({
+        videoId: videoId,
+        startSeconds: 0,
+      });
+
+      showStatus('▶️ Playing...');
+      updateQueueInfo();
+    }
+
+    function playNext() {
+      if (currentIndex + 1 < videoQueue.length) {
+        currentIndex++;
+        const nextVideo = videoQueue[currentIndex];
+        console.log('⏭️ Playing next video:', nextVideo);
+        playVideo(nextVideo.videoId);
+      } else {
+        console.log('📭 Queue finished');
+        showStatus('✅ Queue finished', 5000);
+      }
+    }
+
+    // Custom message handler
+    context.addCustomMessageListener('urn:x-cast:com.youoke.cast', (customEvent) => {
+      console.log('📨 Received custom message:', customEvent.data);
+
+      const data = customEvent.data;
+
+      switch (data.type) {
+        case 'LOAD_VIDEO':
+          // Find video in existing queue and update currentIndex
+          const videoIndex = videoQueue.findIndex(v => v.videoId === data.videoId);
+
+          if (videoIndex !== -1) {
+            // Video found in queue - update current index
+            currentIndex = videoIndex;
+            console.log('🎯 Playing video from queue at index:', currentIndex);
+          } else {
+            // Video not in queue yet - might arrive via UPDATE_QUEUE shortly
+            // Try to find by videoId after a brief delay
+            console.warn('⚠️ Video not in queue yet, will play:', data.videoId);
+          }
+
+          playVideo(data.videoId);
+          updateQueueInfo();
+          break;
+
+        case 'LOAD_QUEUE':
+          videoQueue = data.videos || [];
+          currentIndex = 0;
+          console.log('📋 Loaded queue with', videoQueue.length, 'videos');
+          if (videoQueue.length > 0) {
+            playVideo(videoQueue[0].videoId);
+          }
+          updateQueueInfo();
+          break;
+
+        case 'UPDATE_QUEUE':
+          // Update queue without changing current index/video
+          videoQueue = data.videos || [];
+          console.log('📝 Queue updated, keeping current video. Total:', videoQueue.length);
+          updateQueueInfo();
+          break;
+
+        case 'PLAY':
+          if (ytPlayer) ytPlayer.playVideo();
+          break;
+
+        case 'PAUSE':
+          if (ytPlayer) ytPlayer.pauseVideo();
+          break;
+
+        case 'NEXT':
+          playNext();
+          break;
+
+        default:
+          console.log('Unknown message type:', data.type);
+      }
+    });
+
+    // Intercept LOAD requests and extract YouTube video ID
+    playerManager.setMessageInterceptor(
+      cast.framework.messages.MessageType.LOAD,
+      (loadRequestData) => {
+        console.log('📦 Load request:', loadRequestData);
+
+        // Extract video ID from YouTube URL
+        const contentId = loadRequestData.media.contentId;
+        const videoIdMatch = contentId.match(/[?&]v=([^&]+)/);
+
+        if (videoIdMatch) {
+          const videoId = videoIdMatch[1];
+          const title = loadRequestData.media.metadata?.title || 'Unknown';
+          console.log('🎬 Extracted video ID:', videoId, 'Title:', title);
+
+          videoQueue = [{videoId, title}];
+          currentIndex = 0;
+          playVideo(videoId);
+
+          // Return null to prevent default media player
+          return null;
+        }
+
+        return loadRequestData;
+      }
+    );
+
+    // Start Cast Receiver
+    const options = new cast.framework.CastReceiverOptions();
+    options.disableIdleTimeout = true;
+
+    context.start(options);
+    console.log('✅ Cast Receiver started');
+    showStatus('🎤 YouOke Cast Receiver Ready', 3000);
+  </script>
+</body>
+</html>
