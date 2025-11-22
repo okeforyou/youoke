@@ -94,11 +94,6 @@ function HomePage() {
     currentIndex: castCurrentIndex,
     removeAt: castRemoveAt,
     setPlaylist: setCastPlaylist,
-    state: castState,
-    play: castPlay,
-    pause: castPause,
-    next: castNext,
-    previous: castPrevious,
   } = useFirebaseCast();
 
   const {

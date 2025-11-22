@@ -320,6 +320,10 @@ const Monitor = () => {
       const nextIndex = state.currentIndex + 1;
       if (state.queue && nextIndex < state.queue.length) {
         setIsQueueEmpty(false);
+        if (!realtimeDb || !roomCode) {
+          console.error('❌ Firebase not initialized');
+          return;
+        }
         const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
         try {
           await update(roomRef, {
