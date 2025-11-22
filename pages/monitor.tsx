@@ -88,7 +88,7 @@ const Monitor = () => {
             currentVideo: null,
             controls: { isPlaying: false, isMuted: true },
           },
-          commands: {},
+          // Don't initialize commands - let it be created when first command arrives
           createdAt: Date.now(),
         });
         console.log('✅ Room created:', roomCode);

@@ -128,7 +128,7 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
           currentVideo: null,
           controls: { isPlaying: false, isMuted: true },
         },
-        commands: {},
+        // Don't initialize commands - let it be created when first command arrives
         createdAt: Date.now(),
         participants: { [user.uid]: true },
       });
