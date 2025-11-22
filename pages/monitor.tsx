@@ -11,7 +11,7 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import YouTube, { YouTubePlayer } from 'react-youtube';
-import { ref, onValue, off, set, update } from 'firebase/database';
+import { ref, onValue, off, set, update, get } from 'firebase/database';
 import { signInAnonymously } from 'firebase/auth';
 import { QRCodeSVG } from 'qrcode.react';
 import { realtimeDb, auth } from '../firebase';
@@ -76,9 +76,19 @@ const Monitor = () => {
     console.log('📺 Monitoring room:', roomCode);
     const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
 
-    // Create room if doesn't exist
+    // Create room if doesn't exist (check first to avoid overwriting)
     const initializeRoom = async () => {
       try {
+        const snapshot = await get(roomRef);
+
+        if (snapshot.exists()) {
+          console.log('✅ Room already exists:', roomCode);
+          // Room exists, just connect to it
+          return;
+        }
+
+        // Room doesn't exist, create it
+        console.log('🆕 Creating new room:', roomCode);
         await set(roomRef, {
           hostId: 'monitor',
           isHost: true,
@@ -88,12 +98,11 @@ const Monitor = () => {
             currentVideo: null,
             controls: { isPlaying: false, isMuted: true },
           },
-          // Don't initialize commands - let it be created when first command arrives
           createdAt: Date.now(),
         });
-        console.log('✅ Room created:', roomCode);
+        console.log('✅ Room created successfully:', roomCode);
       } catch (error) {
-        console.error('❌ Error creating room:', error);
+        console.error('❌ Error initializing room:', error);
       }
     };
 
