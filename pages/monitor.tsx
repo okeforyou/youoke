@@ -11,7 +11,7 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import YouTube, { YouTubePlayer } from 'react-youtube';
-import { ref, onValue, off, set, update, get } from 'firebase/database';
+import { ref, onValue, off, set, update } from 'firebase/database';
 import { signInAnonymously } from 'firebase/auth';
 import { QRCodeSVG } from 'qrcode.react';
 import { realtimeDb, auth } from '../firebase';
@@ -41,7 +41,6 @@ const Monitor = () => {
   const initialVideoIdRef = useRef<string | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const isConnectedRef = useRef<boolean>(false);
-  const roomInitializedRef = useRef<boolean>(false);
 
   // Anonymous login
   useEffect(() => {
@@ -77,26 +76,9 @@ const Monitor = () => {
     console.log('📺 Monitoring room:', roomCode);
     const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
 
-    // Create room if doesn't exist (prevent double initialization in React 18 Strict Mode)
+    // Create room if doesn't exist
     const initializeRoom = async () => {
-      // Prevent double initialization
-      if (roomInitializedRef.current) {
-        console.log('⏭️ Room already being initialized, skipping...');
-        return;
-      }
-      roomInitializedRef.current = true;
-
       try {
-        const snapshot = await get(roomRef);
-
-        if (snapshot.exists()) {
-          console.log('✅ Room already exists:', roomCode);
-          // Room exists, just connect to it
-          return;
-        }
-
-        // Room doesn't exist, create it
-        console.log('🆕 Creating new room:', roomCode);
         await set(roomRef, {
           hostId: 'monitor',
           isHost: true,
@@ -109,11 +91,9 @@ const Monitor = () => {
           commands: {},
           createdAt: Date.now(),
         });
-        console.log('✅ Room created successfully:', roomCode);
+        console.log('✅ Room created:', roomCode);
       } catch (error) {
-        console.error('❌ Error initializing room:', error);
-        // Reset flag on error to allow retry
-        roomInitializedRef.current = false;
+        console.error('❌ Error creating room:', error);
       }
     };
 
@@ -148,8 +128,6 @@ const Monitor = () => {
       off(commandsRef);
       stateUnsubscribe();
       commandsUnsubscribe();
-      // Reset flag on cleanup
-      roomInitializedRef.current = false;
     };
   }, [roomCode, isAuthReady]);
 
@@ -342,10 +320,6 @@ const Monitor = () => {
       const nextIndex = state.currentIndex + 1;
       if (state.queue && nextIndex < state.queue.length) {
         setIsQueueEmpty(false);
-        if (!realtimeDb || !roomCode) {
-          console.error('❌ Firebase not initialized');
-          return;
-        }
         const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
         try {
           await update(roomRef, {
