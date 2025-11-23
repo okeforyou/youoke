@@ -23,10 +23,22 @@ interface RoomData {
 const Monitor = () => {
   const router = useRouter();
   const { room: roomCodeParam } = router.query;
-  const roomCode = typeof roomCodeParam === 'string' ? roomCodeParam : '';
 
+  // Auto-generate room code if not provided
+  const [roomCode, setRoomCode] = useState<string>('');
   const [roomData, setRoomData] = useState<RoomData | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+
+  // Generate room code once
+  useEffect(() => {
+    if (roomCodeParam && typeof roomCodeParam === 'string') {
+      setRoomCode(roomCodeParam);
+    } else {
+      const newCode = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+      setRoomCode(newCode);
+      console.log('🎲 Auto-generated room code:', newCode);
+    }
+  }, [roomCodeParam]);
 
   // Listen to room data
   useEffect(() => {
@@ -37,23 +49,44 @@ const Monitor = () => {
 
     // Create room if doesn't exist
     const initializeRoom = async () => {
-      const { get, set } = await import('firebase/database');
-      const snapshot = await get(roomRef);
+      try {
+        console.log('🔍 Checking if room exists...');
+        const { get, set } = await import('firebase/database');
 
-      if (!snapshot.exists()) {
-        console.log('Room not found, creating...');
-        await set(roomRef, {
-          hostId: 'monitor',
-          isHost: true,
-          state: {
-            queue: [],
-            currentIndex: 0,
-            currentVideo: null,
-            controls: { isPlaying: false },
-          },
-          createdAt: Date.now(),
-        });
-        console.log('✅ Room created:', roomCode);
+        console.log('📡 Calling get() on roomRef...');
+        const snapshot = await get(roomRef);
+        console.log('✅ get() successful, exists:', snapshot.exists());
+
+        if (!snapshot.exists()) {
+          console.log('📝 Room not found, creating new room...');
+          console.log('📊 Firebase config:', {
+            databaseURL: realtimeDb?.app?.options?.databaseURL || 'MISSING',
+            projectId: realtimeDb?.app?.options?.projectId || 'MISSING',
+          });
+
+          const roomData = {
+            hostId: 'monitor',
+            isHost: true,
+            state: {
+              queue: [],
+              currentIndex: 0,
+              currentVideo: null,
+              controls: { isPlaying: false },
+            },
+            createdAt: Date.now(),
+          };
+
+          console.log('💾 Calling set() with data:', roomData);
+          await set(roomRef, roomData);
+          console.log('✅ Room created successfully:', roomCode);
+        } else {
+          console.log('✅ Room already exists');
+        }
+      } catch (error) {
+        console.error('❌ initializeRoom error:', error);
+        console.error('Error name:', error.name);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
       }
     };
 
@@ -123,22 +156,7 @@ const Monitor = () => {
     },
   };
 
-  // Show waiting screen if no room code
-  if (!roomCode) {
-    return (
-      <div className="relative h-screen bg-black text-white">
-        <div className="absolute text-center inset-0 flex flex-col items-center justify-center">
-          <h1 className="text-6xl font-bold mb-4">YouOke TV</h1>
-          <p className="text-2xl text-gray-400">Monitor Mode</p>
-          <p className="text-xl text-gray-500 mt-4">
-            กรุณาเพิ่ม ?room=XXXXXX ใน URL
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show waiting for connection
+  // Show waiting for connection (room code is auto-generated)
   if (!isConnected || !roomData) {
     return (
       <div className="relative h-screen bg-black text-white">
