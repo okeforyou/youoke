@@ -63,18 +63,21 @@ const Monitor = () => {
     console.log('Monitoring room:', roomCode);
     const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
     let unsubscribe: (() => void) | null = null;
+    let lastDataRef: any = null; // Track last data to avoid logging unchanged data
 
     // Create room if doesn't exist, THEN start listening
     const initializeRoom = async () => {
       try {
         console.log('🔍 Checking if room exists...');
-        const { get, set } = await import('firebase/database');
+        const dbURL = realtimeDb?.app?.options?.databaseURL || 'MISSING';
 
-        console.log('📡 Calling get() on roomRef...');
-        const snapshot = await get(roomRef);
-        console.log('✅ get() successful, exists:', snapshot.exists());
+        // Use REST API instead of get() to bypass stack overflow
+        console.log('📡 Calling REST API to check room...');
+        const checkResponse = await fetch(`${dbURL}/rooms/${roomCode}.json`);
+        const existingData = await checkResponse.json();
+        console.log('✅ REST API check successful, exists:', existingData !== null);
 
-        if (!snapshot.exists()) {
+        if (!existingData) {
           console.log('📝 Room not found, creating new room...');
 
           // Log Firebase config with actual values (not just [Object])
@@ -124,8 +127,8 @@ const Monitor = () => {
             const result = await response.json();
             console.log('✅ Room created via REST API:', result);
           } catch (restError) {
-            console.error('❌ REST API failed, falling back to SDK set():', restError);
-            await set(roomRef, roomData);
+            console.error('❌ REST API failed:', restError);
+            throw restError; // Don't fallback to SDK - it will stack overflow
           }
 
           console.log('✅ Room created successfully:', roomCode);
@@ -133,30 +136,49 @@ const Monitor = () => {
           console.log('✅ Room already exists');
         }
 
-        // Start listening AFTER initialization is complete
-        console.log('👂 Starting to listen for room updates...');
-        unsubscribe = onValue(roomRef, (snapshot) => {
-          const data = snapshot.val();
+        // Use REST API polling instead of onValue() to bypass stack overflow bug
+        console.log('👂 Starting to poll for room updates (REST API)...');
 
-          if (!data) {
-            console.log('Room not found');
-            setIsConnected(false);
-            setRoomData(null);
-            return;
+        const pollInterval = setInterval(async () => {
+          try {
+            const response = await fetch(`${dbURL}/rooms/${roomCode}.json`);
+
+            if (!response.ok) {
+              console.error('❌ Poll failed:', response.status);
+              return;
+            }
+
+            const data = await response.json();
+
+            if (!data) {
+              console.log('Room not found');
+              setIsConnected(false);
+              setRoomData(null);
+              return;
+            }
+
+            // Only log when data changes (reduce console spam)
+            if (JSON.stringify(data) !== JSON.stringify(lastDataRef)) {
+              console.log('📦 Room data updated:', data);
+              lastDataRef = data;
+            }
+
+            setIsConnected(true);
+
+            // Read from data.state (nested structure from FirebaseCastContext)
+            const state = data.state || data; // Fallback to flat if state doesn't exist
+            setRoomData({
+              queue: state.queue || [],
+              currentIndex: state.currentIndex || 0,
+              currentVideo: state.currentVideo || null,
+              controls: state.controls || { isPlaying: false },
+            });
+          } catch (error) {
+            console.error('❌ Polling error:', error);
           }
+        }, 1000); // Poll every 1 second
 
-          console.log('Room data received:', data);
-          setIsConnected(true);
-
-          // Read from data.state (nested structure from FirebaseCastContext)
-          const state = data.state || data; // Fallback to flat if state doesn't exist
-          setRoomData({
-            queue: state.queue || [],
-            currentIndex: state.currentIndex || 0,
-            currentVideo: state.currentVideo || null,
-            controls: state.controls || { isPlaying: false },
-          });
-        });
+        unsubscribe = () => clearInterval(pollInterval);
       } catch (error) {
         console.error('❌ initializeRoom error:', error);
         console.error('Error name:', error.name);
