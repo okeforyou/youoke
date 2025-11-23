@@ -99,7 +99,7 @@ const Monitor = () => {
               queue: [],
               currentIndex: 0,
               currentVideo: null,
-              controls: { isPlaying: false, isMuted: true },
+              controls: { isPlaying: false, isMuted: false },
             },
             createdAt: Date.now(),
           };
@@ -175,7 +175,7 @@ const Monitor = () => {
               queue: state.queue || [],
               currentIndex: state.currentIndex || 0,
               currentVideo: state.currentVideo || null,
-              controls: state.controls || { isPlaying: false, isMuted: true },
+              controls: state.controls || { isPlaying: false, isMuted: false },
             });
           } catch (error) {
             console.error('❌ Polling error:', error);
@@ -338,8 +338,16 @@ const Monitor = () => {
           await player.mute();
           console.log('🔇 Muted from Remote');
         } else {
-          await player.unMute();
-          console.log('🔊 Unmuted from Remote');
+          // Unmute from Remote control
+          // Wait a bit for video to start playing before unmuting (to avoid browser blocking)
+          setTimeout(async () => {
+            try {
+              await player.unMute();
+              console.log('🔊 Unmuted from Remote');
+            } catch (error) {
+              console.warn('⚠️ Unmute failed:', error);
+            }
+          }, 500); // 500ms delay to ensure video is playing
         }
       } catch (error) {
         console.warn('⚠️ Mute/Unmute failed:', error);
@@ -433,7 +441,7 @@ const Monitor = () => {
         queue: [],
         currentIndex: 0,
         currentVideo: null,
-        controls: { isPlaying: false, isMuted: true },
+        controls: { isPlaying: false, isMuted: false },
       };
     }
 
@@ -567,16 +575,57 @@ const Monitor = () => {
   };
 
   // Handle player state change
-  const onPlayerStateChange = (event: { data: number }) => {
+  const onPlayerStateChange = async (event: { data: number }) => {
     // YouTube player states: 0 = ended, 1 = playing, 2 = paused
-    if (event.data === 0) {
-      // Video ended
-      console.log('Video ended');
-      // Note: Auto-play next is handled by the sender updating currentIndex
+    if (event.data === 0 && roomData) {
+      // Video ended - play next song
+      console.log('🎬 Video ended, playing next...');
+
+      const nextIndex = roomData.currentIndex + 1;
+      if (nextIndex < roomData.queue.length) {
+        // Play next song
+        const nextVideo = roomData.queue[nextIndex];
+
+        try {
+          const dbURL = realtimeDb.app.options.databaseURL;
+          const user = auth.currentUser;
+          const token = user ? await user.getIdToken() : null;
+
+          const stateURL = token
+            ? `${dbURL}/rooms/${roomCode}/state.json?auth=${token}`
+            : `${dbURL}/rooms/${roomCode}/state.json`;
+
+          const newState = {
+            queue: roomData.queue,
+            currentIndex: nextIndex,
+            currentVideo: nextVideo,
+            controls: {
+              isPlaying: true,
+              isMuted: roomData.controls.isMuted
+            },
+          };
+
+          const response = await fetch(stateURL, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newState),
+          });
+
+          if (response.ok) {
+            console.log('✅ Auto-played next song:', nextVideo.title);
+          } else {
+            console.error('❌ Failed to update state:', response.status);
+          }
+        } catch (error) {
+          console.error('❌ Error playing next song:', error);
+        }
+      } else {
+        console.log('🏁 Queue finished');
+      }
     } else if (event.data === 1) {
-      console.log('Video playing');
+      console.log('▶️ Video playing');
     } else if (event.data === 2) {
-      console.log('Video paused');
+      console.log('⏸️ Video paused');
     }
   };
 
