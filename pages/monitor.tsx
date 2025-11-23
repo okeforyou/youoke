@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import YouTube, { YouTubePlayer } from 'react-youtube';
-import { ref, onValue, off } from 'firebase/database';
+import { ref, off } from 'firebase/database';
 import { signInAnonymously } from 'firebase/auth';
 import { realtimeDb, auth } from '../firebase';
 
@@ -30,6 +30,7 @@ const Monitor = () => {
   const [roomData, setRoomData] = useState<RoomData | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isAuthReady, setIsAuthReady] = useState(false);
+  const [player, setPlayer] = useState<YouTubePlayer | null>(null);
 
   // Anonymous login (required for Firebase write permission)
   useEffect(() => {
@@ -197,9 +198,47 @@ const Monitor = () => {
     };
   }, [roomCode, isAuthReady]);
 
+  // Load new video when currentVideo changes
+  useEffect(() => {
+    if (!player || !roomData?.currentVideo) return;
+
+    const { videoId } = roomData.currentVideo;
+
+    // Load the new video
+    console.log('📺 Loading video on Monitor:', videoId, roomData.currentVideo.title);
+    player.loadVideoById(videoId);
+
+    // Auto-play if controls say to play
+    if (roomData.controls.isPlaying) {
+      player.playVideo();
+    }
+  }, [player, roomData?.currentVideo?.videoId]);
+
+  // Control player based on roomData.controls
+  useEffect(() => {
+    if (!player || !roomData) return;
+
+    const { isPlaying } = roomData.controls;
+
+    // Get current player state
+    player.getPlayerState().then((state) => {
+      // 1 = playing, 2 = paused
+      const isCurrentlyPlaying = state === 1;
+
+      if (isPlaying && !isCurrentlyPlaying) {
+        console.log('▶️ Playing video (from remote control)');
+        player.playVideo();
+      } else if (!isPlaying && isCurrentlyPlaying) {
+        console.log('⏸️ Pausing video (from remote control)');
+        player.pauseVideo();
+      }
+    });
+  }, [player, roomData?.controls.isPlaying]);
+
   // Handle player ready
   const onPlayerReady = (event: { target: YouTubePlayer }) => {
     console.log('Player ready');
+    setPlayer(event.target);
   };
 
   // Handle player state change
