@@ -5,6 +5,7 @@ import { ref, off } from 'firebase/database';
 import { signInAnonymously } from 'firebase/auth';
 import { realtimeDb, auth } from '../firebase';
 import { CastCommand, CastCommandEnvelope } from '../types/castCommands';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface QueueVideo {
   videoId: string;
@@ -670,14 +671,42 @@ const Monitor = () => {
 
   // Show waiting for connection (room code is auto-generated)
   if (!isConnected || !roomData) {
+    const qrCodeUrl = `https://play.okeforyou.com/?castRoom=${roomCode}`;
+
     return (
       <div className="relative h-screen bg-black text-white">
-        <div className="absolute text-center inset-0 flex flex-col items-center justify-center">
-          <h1 className="text-6xl font-bold mb-4">YouOke TV</h1>
-          <p className="text-3xl mb-6">เลขห้อง: {roomCode}</p>
-          <p className="text-xl text-gray-400">รอเชื่อมต่อจากมือถือ...</p>
-          <p className="text-lg text-gray-500 mt-4">
-            กด "Cast to TV" บนมือถือและกรอกเลขห้อง
+        <div className="absolute text-center inset-0 flex flex-col items-center justify-center px-4">
+          <h1 className="text-6xl font-bold mb-8">YouOke TV</h1>
+
+          {/* QR Code พร้อมกรอบสวยๆ */}
+          <div className="bg-white p-8 rounded-2xl shadow-2xl mb-6">
+            <QRCodeSVG
+              value={qrCodeUrl}
+              size={256}
+              level="M"
+            />
+          </div>
+
+          {/* Room Code Display */}
+          <div className="bg-primary/20 border-4 border-primary rounded-2xl px-12 py-6 mb-6">
+            <p className="text-xl text-gray-300 mb-2">เลขห้อง</p>
+            <p className="text-7xl font-bold tracking-widest text-primary">{roomCode}</p>
+          </div>
+
+          {/* Instructions */}
+          <div className="space-y-3 max-w-xl">
+            <p className="text-2xl text-gray-300">📱 วิธีใช้งาน:</p>
+            <div className="text-left bg-base-200/10 rounded-lg p-4 space-y-2">
+              <p className="text-lg">1. <span className="font-bold text-primary">Scan QR Code</span> ด้วยกล้องมือถือ</p>
+              <p className="text-lg pl-6 text-gray-400">หรือ</p>
+              <p className="text-lg">2. เปิด <span className="font-semibold">play.okeforyou.com</span> บนมือถือ</p>
+              <p className="text-lg">3. กดปุ่ม "Cast to TV"</p>
+              <p className="text-lg">4. กรอกเลขห้อง <span className="text-primary font-bold">{roomCode}</span></p>
+            </div>
+          </div>
+
+          <p className="text-xl text-gray-500 mt-8 animate-pulse">
+            รอเชื่อมต่อจากมือถือ...
           </p>
         </div>
       </div>
