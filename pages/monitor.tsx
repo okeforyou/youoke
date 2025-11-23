@@ -178,18 +178,19 @@ const Monitor = () => {
               lastDataRef = data;
             }
 
-            // Check if anyone has joined (besides monitor)
-            const participants = data.participants || {};
-            const participantCount = Object.keys(participants).length;
-            const hasGuests = participantCount > 0; // Any participant means someone joined
-
-            console.log('👥 Participants:', participantCount);
-            setIsConnected(hasGuests);
-
             // Read from data.state (nested structure from FirebaseCastContext)
             const state = data.state || data; // Fallback to flat if state doesn't exist
+            const queueData = state.queue || [];
+
+            // Check if anyone has joined by checking if there's any queue
+            // More reliable than participants (which can fail due to auth)
+            const hasQueue = queueData.length > 0;
+
+            console.log('🎵 Queue count:', queueData.length);
+            setIsConnected(hasQueue);
+
             setRoomData({
-              queue: state.queue || [],
+              queue: queueData,
               currentIndex: state.currentIndex || 0,
               currentVideo: state.currentVideo || null,
               controls: state.controls || { isPlaying: false, isMuted: false },
