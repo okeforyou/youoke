@@ -1367,30 +1367,24 @@ function YoutubePlayer({
       >
         {isCasting && !isMoniter ? (
           <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-success/20 to-primary/20 backdrop-blur-sm p-4">
-            <div className="text-center p-4 bg-white/80 backdrop-blur-sm rounded-lg w-full max-w-md">
-              <div className="text-6xl mb-3">📺</div>
-              <h2 className="text-2xl font-bold mb-2 text-gray-800">กำลัง Cast ไป Monitor</h2>
-              <p className="text-lg font-semibold text-success mb-1">
-                Room: {roomCode}
-              </p>
-              <p className="text-sm text-gray-600 mb-2">
-                {firebaseCastState.currentVideo?.title || 'รอเพิ่มเพลง...'}
-              </p>
-              <p className="text-xs text-gray-500 mb-4">
-                เพลงกำลังเล่นบน Monitor - ใช้ปุ่มด้านล่างเพื่อควบคุม
-              </p>
-
-              {/* Player Controls */}
-              <div className="mb-4">
-                <PlayerControls
-                  isPlaying={firebaseCastState.controls.isPlaying}
-                  onPlay={firebaseCastPlay}
-                  onPause={firebaseCastPause}
-                  onNext={firebaseCastNext}
-                  className="justify-center"
-                />
+            <div className="text-center p-6 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg w-full max-w-md">
+              <div className="text-7xl mb-4">📺</div>
+              <h2 className="text-3xl font-bold mb-3 text-gray-800">กำลัง Cast ไป Monitor</h2>
+              <div className="bg-success/10 rounded-lg p-3 mb-3">
+                <p className="text-xs text-gray-500 mb-1">เลขห้อง</p>
+                <p className="text-2xl font-bold text-success tracking-wider">
+                  {roomCode}
+                </p>
               </div>
-
+              <div className="bg-gray-50 rounded-lg p-3 mb-4">
+                <p className="text-xs text-gray-500 mb-1">กำลังเล่น</p>
+                <p className="text-sm font-medium text-gray-800 line-clamp-2">
+                  {firebaseCastState.currentVideo?.title || 'รอเพิ่มเพลง...'}
+                </p>
+              </div>
+              <p className="text-xs text-gray-500 mb-4">
+                ใช้ปุ่มด้านล่างเพื่อควบคุม
+              </p>
               <button
                 onClick={(e) => {
                   e.stopPropagation();

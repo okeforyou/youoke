@@ -412,6 +412,7 @@ const Monitor = () => {
         if (newState.queue.length > 0) {
           newState.currentIndex = 0;
           newState.currentVideo = newState.queue[0];
+          newState.controls.isPlaying = true; // Auto-play when playlist is set
         } else {
           newState.currentIndex = 0;
           newState.currentVideo = null;
