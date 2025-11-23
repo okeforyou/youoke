@@ -36,6 +36,15 @@ const Monitor = () => {
   const [player, setPlayer] = useState<YouTubePlayer | null>(null);
   const [isLoadingVideo, setIsLoadingVideo] = useState(false);
   const [hasUserInteraction, setHasUserInteraction] = useState(false);
+  const [baseUrl, setBaseUrl] = useState<string>('');
+
+  // Detect base URL (client-side only)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setBaseUrl(window.location.origin);
+      console.log('🌐 Base URL detected:', window.location.origin);
+    }
+  }, []);
 
   // Anonymous login (required for Firebase write permission)
   useEffect(() => {
@@ -677,7 +686,8 @@ const Monitor = () => {
 
   // Show waiting for connection (room code is auto-generated)
   if (!isConnected || !roomData) {
-    const qrCodeUrl = `https://play.okeforyou.com/?castRoom=${roomCode}`;
+    // Use dynamic base URL (auto-detects youoke.vercel.app, play.okeforyou.com, localhost, etc.)
+    const qrCodeUrl = baseUrl ? `${baseUrl}/?castRoom=${roomCode}` : '';
 
     return (
       <div className="relative h-screen bg-black text-white">
@@ -685,13 +695,15 @@ const Monitor = () => {
           <h1 className="text-6xl font-bold mb-8">YouOke TV</h1>
 
           {/* QR Code พร้อมกรอบสวยๆ */}
-          <div className="bg-white p-8 rounded-2xl shadow-2xl mb-6">
-            <QRCodeSVG
-              value={qrCodeUrl}
-              size={256}
-              level="M"
-            />
-          </div>
+          {qrCodeUrl && (
+            <div className="bg-white p-8 rounded-2xl shadow-2xl mb-6">
+              <QRCodeSVG
+                value={qrCodeUrl}
+                size={256}
+                level="M"
+              />
+            </div>
+          )}
 
           {/* Room Code Display */}
           <div className="bg-primary/20 border-4 border-primary rounded-2xl px-12 py-6 mb-6">
