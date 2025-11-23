@@ -214,44 +214,57 @@ const Monitor = () => {
       // Set loading flag to prevent playback control useEffect from interfering
       setIsLoadingVideo(true);
 
-      // Use loadVideoById which should auto-play
-      console.log('▶️ Auto-playing video');
-      player.loadVideoById(videoId);
-
-      // Aggressively ensure playback starts (retry mechanism)
-      // Because YouTube player might not be ready immediately
-      const ensurePlayback = async () => {
-        for (let i = 0; i < 5; i++) {
-          await new Promise(resolve => setTimeout(resolve, 300 * (i + 1))); // Increasing delays: 300ms, 600ms, 900ms, 1200ms, 1500ms
-
-          try {
-            const state = await player.getPlayerState();
-            console.log(`🔄 Playback check ${i + 1}/5: state =`, state);
-
-            // If not playing (state !== 1), force play
-            if (state !== 1) {
-              console.log(`⚡ Forcing playback (attempt ${i + 1}/5)`);
-              await player.playVideo();
-            } else {
-              console.log('✅ Video is playing!');
-              break; // Success!
-            }
-          } catch (error) {
-            console.warn(`⚠️ Playback check ${i + 1} failed:`, error);
-            // Try anyway
-            try {
-              await player.playVideo();
-            } catch (e) {
-              // Ignore
-            }
-          }
+      // CRITICAL: Mute before loading to ensure autoplay works
+      // Browsers block autoplay for unmuted videos
+      const loadAndPlay = async () => {
+        try {
+          console.log('🔇 Muting player before load (required for autoplay)');
+          await player.mute();
+        } catch (error) {
+          console.warn('⚠️ Could not mute player:', error);
         }
 
-        // Clear loading flag when done
-        setIsLoadingVideo(false);
+        // Use loadVideoById which should auto-play
+        console.log('▶️ Auto-playing video');
+        player.loadVideoById(videoId);
+
+        // Aggressively ensure playback starts (retry mechanism)
+        // Because YouTube player might not be ready immediately
+        const ensurePlayback = async () => {
+          for (let i = 0; i < 5; i++) {
+            await new Promise(resolve => setTimeout(resolve, 300 * (i + 1))); // Increasing delays: 300ms, 600ms, 900ms, 1200ms, 1500ms
+
+            try {
+              const state = await player.getPlayerState();
+              console.log(`🔄 Playback check ${i + 1}/5: state =`, state);
+
+              // If not playing (state !== 1), force play
+              if (state !== 1) {
+                console.log(`⚡ Forcing playback (attempt ${i + 1}/5)`);
+                await player.playVideo();
+              } else {
+                console.log('✅ Video is playing!');
+                break; // Success!
+              }
+            } catch (error) {
+              console.warn(`⚠️ Playback check ${i + 1} failed:`, error);
+              // Try anyway
+              try {
+                await player.playVideo();
+              } catch (e) {
+                // Ignore
+              }
+            }
+          }
+
+          // Clear loading flag when done
+          setIsLoadingVideo(false);
+        };
+
+        ensurePlayback();
       };
 
-      ensurePlayback();
+      loadAndPlay();
     } else {
       // Use cueVideoById which loads but doesn't play
       console.log('⏸️ Cueing video (not playing)');

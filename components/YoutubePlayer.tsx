@@ -1040,16 +1040,16 @@ function YoutubePlayer({
           <div className="relative w-full h-full flex items-center justify-center">
             {/* Overlay Content */}
             {isCastOverlayOpen && (
-              <div className="absolute inset-0 flex items-center justify-center text-xl p-4">
+              <div className="absolute inset-0 flex items-center justify-center text-xl p-3 sm:p-4">
                 {isMobile ? (
-                  <div className="text-sm flex space-y-3 flex-col text-center w-full max-w-md">
-                    <div className="flex items-center justify-center gap-2 text-lg font-bold">
+                  <div className="text-sm flex space-y-2.5 flex-col text-center w-full max-w-[90%] sm:max-w-sm mx-auto">
+                    <div className="flex items-center justify-center gap-2 text-base sm:text-lg font-bold">
                       <TvIcon className="w-5 h-5" />
                       <span>Cast to TV</span>
                     </div>
                     <div className="text-xs">
                       <p className="mb-2">วิธีใช้งาน:</p>
-                      <ol className="list-decimal list-inside text-left space-y-1">
+                      <ol className="list-decimal list-inside text-left space-y-1 px-2">
                         <li>เปิด <span className="font-bold">youoke.vercel.app/monitor</span> บนทีวี</li>
                         <li>ดูเลขห้อง 4 หลักที่แสดงบนทีวี</li>
                         <li>กรอกเลขห้องด้านล่าง แล้วกดเข้าร่วม</li>
@@ -1057,12 +1057,12 @@ function YoutubePlayer({
                     </div>
 
                     {!isCasting ? (
-                      <div className="relative mt-4">
+                      <div className="relative mt-2">
                         <input
                           type="text"
                           inputMode="numeric"
                           pattern="[0-9]*"
-                          className="py-3 px-4 block w-full text-black bg-white rounded-lg text-center text-2xl tracking-widest font-bold"
+                          className="py-2.5 sm:py-3 px-3 sm:px-4 block w-full text-black bg-white rounded-lg text-center text-xl sm:text-2xl tracking-widest font-bold"
                           placeholder="0000"
                           maxLength={4}
                           value={castInputRoomCode}
@@ -1075,7 +1075,7 @@ function YoutubePlayer({
                           autoFocus
                         />
                         <button
-                          className="mt-2 w-full py-2 px-3 text-white rounded-lg bg-success font-semibold disabled:opacity-50 flex items-center justify-center gap-2"
+                          className="mt-2 w-full py-2 px-3 text-white rounded-lg bg-success font-semibold disabled:opacity-50 flex items-center justify-center gap-2 text-sm sm:text-base"
                           onClick={handleCastJoinRoom}
                           disabled={isJoiningRoom || castInputRoomCode.length !== 4}
                         >
@@ -1369,31 +1369,22 @@ function YoutubePlayer({
         onClick={() => handleVideoClick()}
       >
         {isCasting && !isMoniter ? (
-          <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-success/20 to-primary/20 backdrop-blur-sm p-2 sm:p-4">
-            <div className="text-center p-4 sm:p-6 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg w-full max-w-[95%] sm:max-w-md mx-auto">
-              <div className="text-5xl sm:text-7xl mb-3 sm:mb-4">📺</div>
-              <h2 className="text-2xl sm:text-3xl font-bold mb-2 sm:mb-3 text-gray-800">กำลัง Cast ไป Monitor</h2>
-              <div className="bg-success/10 rounded-lg p-2 sm:p-3 mb-2 sm:mb-3">
-                <p className="text-xs text-gray-500 mb-1">เลขห้อง</p>
-                <p className="text-xl sm:text-2xl font-bold text-success tracking-wider">
-                  {roomCode}
-                </p>
-              </div>
-              <div className="bg-gray-50 rounded-lg p-2 sm:p-3 mb-3 sm:mb-4">
+          <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-success/20 to-primary/20 backdrop-blur-sm p-3 sm:p-4">
+            <div className="text-center p-4 sm:p-5 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg w-full max-w-[90%] sm:max-w-sm mx-auto">
+              <div className="text-4xl sm:text-6xl mb-3">📺</div>
+              <h2 className="text-lg sm:text-xl font-bold mb-3 text-gray-800">กำลัง Cast ไป Monitor</h2>
+              <div className="bg-gray-50 rounded-lg p-2.5 sm:p-3 mb-3">
                 <p className="text-xs text-gray-500 mb-1">กำลังเล่น</p>
                 <p className="text-sm font-medium text-gray-800 line-clamp-2">
                   {firebaseCastState.currentVideo?.title || 'รอเพิ่มเพลง...'}
                 </p>
               </div>
-              <p className="text-xs text-gray-500 mb-3 sm:mb-4">
-                ใช้ปุ่มด้านล่างเพื่อควบคุม
-              </p>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   handleCastDisconnect();
                 }}
-                className="btn btn-sm btn-error gap-2"
+                className="btn btn-sm btn-error gap-2 w-full"
               >
                 <XMarkIcon className="w-4 h-4" />
                 ตัดการเชื่อมต่อ
