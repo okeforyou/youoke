@@ -169,7 +169,13 @@ const Monitor = () => {
               lastDataRef = data;
             }
 
-            setIsConnected(true);
+            // Check if anyone has joined (besides monitor)
+            const participants = data.participants || {};
+            const participantCount = Object.keys(participants).length;
+            const hasGuests = participantCount > 0; // Any participant means someone joined
+
+            console.log('👥 Participants:', participantCount);
+            setIsConnected(hasGuests);
 
             // Read from data.state (nested structure from FirebaseCastContext)
             const state = data.state || data; // Fallback to flat if state doesn't exist
