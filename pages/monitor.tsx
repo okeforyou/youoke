@@ -32,6 +32,7 @@ const Monitor = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [player, setPlayer] = useState<YouTubePlayer | null>(null);
+  const [isLoadingVideo, setIsLoadingVideo] = useState(false);
 
   // Anonymous login (required for Firebase write permission)
   useEffect(() => {
@@ -210,6 +211,9 @@ const Monitor = () => {
     console.log('📺 Loading video on Monitor:', videoId, roomData.currentVideo.title);
 
     if (shouldAutoPlay) {
+      // Set loading flag to prevent playback control useEffect from interfering
+      setIsLoadingVideo(true);
+
       // Use loadVideoById which should auto-play
       console.log('▶️ Auto-playing video');
       player.loadVideoById(videoId);
@@ -242,6 +246,9 @@ const Monitor = () => {
             }
           }
         }
+
+        // Clear loading flag when done
+        setIsLoadingVideo(false);
       };
 
       ensurePlayback();
@@ -255,6 +262,12 @@ const Monitor = () => {
   // Control player based on roomData.controls
   useEffect(() => {
     if (!player || !roomData) return;
+
+    // Skip if currently loading a new video (to avoid interference)
+    if (isLoadingVideo) {
+      console.log('⏭️ Skipping playback control (video loading in progress)');
+      return;
+    }
 
     const { isPlaying } = roomData.controls;
 
@@ -290,7 +303,7 @@ const Monitor = () => {
     } catch (error) {
       console.error('❌ Error controlling player:', error);
     }
-  }, [player, roomData?.controls.isPlaying]);
+  }, [player, roomData?.controls.isPlaying, isLoadingVideo]);
 
   // Command Executor - Process commands from Remote
   useEffect(() => {
@@ -329,11 +342,21 @@ const Monitor = () => {
               ? `${dbURL}/rooms/${roomCode}/state.json?auth=${token}`
               : `${dbURL}/rooms/${roomCode}/state.json`;
 
-            await fetch(stateURL, {
+            const stateResponse = await fetch(stateURL, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(newState),
             });
+
+            if (!stateResponse.ok) {
+              console.error('❌ Failed to write state:', stateResponse.status);
+            } else {
+              console.log('💾 State written to Firebase:', {
+                command: envelope.command.type,
+                currentIndex: newState.currentIndex,
+                currentVideo: newState.currentVideo?.title,
+              });
+            }
 
             // Mark command as completed
             const cmdURL = token
@@ -403,10 +426,23 @@ const Monitor = () => {
         break;
 
       case 'NEXT':
+        console.log('🎵 NEXT command - Current state:', {
+          currentIndex: newState.currentIndex,
+          queueLength: newState.queue.length,
+          currentVideo: newState.currentVideo?.title,
+        });
+
         if (newState.currentIndex < newState.queue.length - 1) {
           newState.currentIndex++;
           newState.currentVideo = newState.queue[newState.currentIndex];
           newState.controls.isPlaying = true;
+
+          console.log('🎵 NEXT command - New state:', {
+            currentIndex: newState.currentIndex,
+            newVideo: newState.currentVideo?.title,
+          });
+        } else {
+          console.log('⚠️ NEXT command - Already at last video');
         }
         break;
 

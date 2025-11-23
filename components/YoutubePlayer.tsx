@@ -1369,23 +1369,23 @@ function YoutubePlayer({
         onClick={() => handleVideoClick()}
       >
         {isCasting && !isMoniter ? (
-          <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-success/20 to-primary/20 backdrop-blur-sm p-4">
-            <div className="text-center p-6 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg w-full max-w-md">
-              <div className="text-7xl mb-4">📺</div>
-              <h2 className="text-3xl font-bold mb-3 text-gray-800">กำลัง Cast ไป Monitor</h2>
-              <div className="bg-success/10 rounded-lg p-3 mb-3">
+          <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-success/20 to-primary/20 backdrop-blur-sm p-2 sm:p-4">
+            <div className="text-center p-4 sm:p-6 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg w-full max-w-[95%] sm:max-w-md mx-auto">
+              <div className="text-5xl sm:text-7xl mb-3 sm:mb-4">📺</div>
+              <h2 className="text-2xl sm:text-3xl font-bold mb-2 sm:mb-3 text-gray-800">กำลัง Cast ไป Monitor</h2>
+              <div className="bg-success/10 rounded-lg p-2 sm:p-3 mb-2 sm:mb-3">
                 <p className="text-xs text-gray-500 mb-1">เลขห้อง</p>
-                <p className="text-2xl font-bold text-success tracking-wider">
+                <p className="text-xl sm:text-2xl font-bold text-success tracking-wider">
                   {roomCode}
                 </p>
               </div>
-              <div className="bg-gray-50 rounded-lg p-3 mb-4">
+              <div className="bg-gray-50 rounded-lg p-2 sm:p-3 mb-3 sm:mb-4">
                 <p className="text-xs text-gray-500 mb-1">กำลังเล่น</p>
                 <p className="text-sm font-medium text-gray-800 line-clamp-2">
                   {firebaseCastState.currentVideo?.title || 'รอเพิ่มเพลง...'}
                 </p>
               </div>
-              <p className="text-xs text-gray-500 mb-4">
+              <p className="text-xs text-gray-500 mb-3 sm:mb-4">
                 ใช้ปุ่มด้านล่างเพื่อควบคุม
               </p>
               <button
