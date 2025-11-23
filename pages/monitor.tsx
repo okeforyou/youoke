@@ -204,14 +204,47 @@ const Monitor = () => {
     if (!player || !roomData?.currentVideo) return;
 
     const { videoId } = roomData.currentVideo;
+    const shouldAutoPlay = roomData.controls.isPlaying;
 
     // Load the new video with autoplay based on isPlaying state
     console.log('📺 Loading video on Monitor:', videoId, roomData.currentVideo.title);
 
-    if (roomData.controls.isPlaying) {
-      // Use loadVideoById which auto-plays
+    if (shouldAutoPlay) {
+      // Use loadVideoById which should auto-play
       console.log('▶️ Auto-playing video');
       player.loadVideoById(videoId);
+
+      // Aggressively ensure playback starts (retry mechanism)
+      // Because YouTube player might not be ready immediately
+      const ensurePlayback = async () => {
+        for (let i = 0; i < 5; i++) {
+          await new Promise(resolve => setTimeout(resolve, 300 * (i + 1))); // Increasing delays: 300ms, 600ms, 900ms, 1200ms, 1500ms
+
+          try {
+            const state = await player.getPlayerState();
+            console.log(`🔄 Playback check ${i + 1}/5: state =`, state);
+
+            // If not playing (state !== 1), force play
+            if (state !== 1) {
+              console.log(`⚡ Forcing playback (attempt ${i + 1}/5)`);
+              await player.playVideo();
+            } else {
+              console.log('✅ Video is playing!');
+              break; // Success!
+            }
+          } catch (error) {
+            console.warn(`⚠️ Playback check ${i + 1} failed:`, error);
+            // Try anyway
+            try {
+              await player.playVideo();
+            } catch (e) {
+              // Ignore
+            }
+          }
+        }
+      };
+
+      ensurePlayback();
     } else {
       // Use cueVideoById which loads but doesn't play
       console.log('⏸️ Cueing video (not playing)');
