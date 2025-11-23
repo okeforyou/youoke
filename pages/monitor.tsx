@@ -98,7 +98,36 @@ const Monitor = () => {
           };
 
           console.log('💾 Creating room with data:', roomData);
-          await set(roomRef, roomData);
+
+          // Use REST API instead of SDK to bypass stack overflow bug
+          try {
+            // Get auth token from current user
+            const user = auth.currentUser;
+            const token = user ? await user.getIdToken() : null;
+
+            const restURL = token
+              ? `${dbURL}/rooms/${roomCode}.json?auth=${token}`
+              : `${dbURL}/rooms/${roomCode}.json`;
+            console.log('🌐 Using REST API:', restURL.replace(/auth=.*/, 'auth=***'));
+
+            const response = await fetch(restURL, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(roomData),
+            });
+
+            if (!response.ok) {
+              const errorText = await response.text();
+              throw new Error(`REST API failed: ${response.status} ${response.statusText} - ${errorText}`);
+            }
+
+            const result = await response.json();
+            console.log('✅ Room created via REST API:', result);
+          } catch (restError) {
+            console.error('❌ REST API failed, falling back to SDK set():', restError);
+            await set(roomRef, roomData);
+          }
+
           console.log('✅ Room created successfully:', roomCode);
         } else {
           console.log('✅ Room already exists');
