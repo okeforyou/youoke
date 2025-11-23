@@ -75,10 +75,13 @@ const Monitor = () => {
 
         if (!snapshot.exists()) {
           console.log('📝 Room not found, creating new room...');
-          console.log('📊 Firebase config:', {
-            databaseURL: realtimeDb?.app?.options?.databaseURL || 'MISSING',
-            projectId: realtimeDb?.app?.options?.projectId || 'MISSING',
-          });
+
+          // Log Firebase config with actual values (not just [Object])
+          const dbURL = realtimeDb?.app?.options?.databaseURL || 'MISSING';
+          const projID = realtimeDb?.app?.options?.projectId || 'MISSING';
+          console.log('📊 DATABASE_URL:', dbURL);
+          console.log('📊 PROJECT_ID:', projID);
+          console.log('📊 Has region (asia-southeast1)?', dbURL.includes('asia-southeast1'));
 
           // TEST 1: Try simplest possible data first
           console.log('🧪 TEST: Trying to write minimal data { test: "hello" }...');
