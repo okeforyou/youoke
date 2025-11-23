@@ -1252,8 +1252,8 @@ function YoutubePlayer({
           icon={<ExclamationTriangleIcon />}
         />
       </span>
-      {/* Web Monitor Cast - Hidden for Home Use (will be used for Karaoke Shop) */}
-      {/* {CastOverlayComponent()} */}
+      {/* Web Monitor Cast - Enabled for testing */}
+      {CastOverlayComponent()}
 
       {/* Cast Mode Selector Modal */}
       <CastModeSelector
