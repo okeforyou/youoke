@@ -319,16 +319,16 @@ const Monitor = () => {
     }
   }, [player, roomData?.controls.isPlaying, isLoadingVideo]);
 
-  // Sync mute state from Remote
+  // Sync mute state from Remote (only when user explicitly controls it)
   useEffect(() => {
     if (!player || !roomData) return;
 
-    const shouldMute = roomData.controls.isMuted === true; // Only mute if explicitly true
+    const shouldMute = roomData.controls.isMuted === true;
 
     const syncMute = async () => {
       try {
         const state = await player.getPlayerState();
-        // Skip if player not ready (-1 = unstarted)
+        // Skip if player not ready
         if (state === -1) {
           console.log('⏳ Player not ready, skipping mute sync');
           return;
@@ -337,17 +337,11 @@ const Monitor = () => {
         if (shouldMute) {
           await player.mute();
           console.log('🔇 Muted from Remote');
-        } else {
-          // Only unmute if video is playing (state === 1)
-          if (state === 1) {
-            await player.unMute();
-            console.log('🔊 Unmuted from Remote');
-          } else {
-            console.log('⏸️ Video not playing, will unmute when it starts');
-          }
         }
+        // Don't auto-unmute - let user unmute via YouTube controls
+        // Browser blocks auto-unmute without user interaction
       } catch (error) {
-        console.warn('⚠️ Mute/Unmute failed:', error);
+        console.warn('⚠️ Mute failed:', error);
       }
     };
 
@@ -456,9 +450,20 @@ const Monitor = () => {
         break;
 
       case 'PLAY_NOW':
-        newState.queue = [command.payload.video, ...newState.queue];
-        newState.currentVideo = command.payload.video;
-        newState.currentIndex = 0;
+        // Check if video already exists in queue (by videoId)
+        const existingIndex = newState.queue.findIndex(v => v.videoId === command.payload.video.videoId);
+
+        if (existingIndex >= 0) {
+          // Video already in queue - just play it
+          console.log('🔄 Video already in queue, skipping to it');
+          newState.currentIndex = existingIndex;
+          newState.currentVideo = newState.queue[existingIndex];
+        } else {
+          // New video - add to front of queue
+          newState.queue = [command.payload.video, ...newState.queue];
+          newState.currentVideo = command.payload.video;
+          newState.currentIndex = 0;
+        }
         newState.controls.isPlaying = true;
         break;
 
@@ -570,37 +575,8 @@ const Monitor = () => {
     console.log('🎬 Player ready');
     setPlayer(event.target);
 
-    // Auto-play first video if available
-    if (roomData?.currentVideo) {
-      const currentVideoId = roomData.currentVideo.videoId;
-      const shouldPlay = roomData.controls?.isPlaying !== false;
-
-      if (shouldPlay) {
-        try {
-          // Mute first for browser autoplay policy
-          await event.target.mute();
-          console.log('🔇 Muted for autoplay');
-
-          // Auto-play
-          await event.target.playVideo();
-          console.log('▶️ Auto-playing first video');
-
-          // Unmute after a delay if not muted by user
-          if (!roomData.controls.isMuted) {
-            setTimeout(async () => {
-              try {
-                await event.target.unMute();
-                console.log('🔊 Unmuted after autoplay');
-              } catch (error) {
-                console.warn('⚠️ Auto-unmute failed:', error);
-              }
-            }, 1000); // 1 second delay
-          }
-        } catch (error) {
-          console.error('❌ Auto-play failed:', error);
-        }
-      }
-    }
+    // Don't auto-unmute - browser blocks it and pauses video
+    // User can unmute manually via YouTube controls
   };
 
   // Handle player state change
@@ -653,16 +629,7 @@ const Monitor = () => {
       }
     } else if (event.data === 1) {
       console.log('▶️ Video playing');
-
-      // Auto-unmute when video starts playing (if not muted by user)
-      if (player && roomData && !roomData.controls.isMuted) {
-        try {
-          await player.unMute();
-          console.log('🔊 Auto-unmuted (video started playing)');
-        } catch (error) {
-          console.warn('⚠️ Auto-unmute failed:', error);
-        }
-      }
+      // Don't auto-unmute - browser blocks it without user interaction
     } else if (event.data === 2) {
       console.log('⏸️ Video paused');
     }
