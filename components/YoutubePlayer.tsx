@@ -1370,61 +1370,25 @@ function YoutubePlayer({
         onClick={() => handleVideoClick()}
       >
         {isCasting && !isMoniter ? (
-          <div className="h-full w-full flex flex-col items-center justify-center p-4 bg-gradient-to-br from-primary/20 to-accent/20">
-            <div className="text-center w-full max-w-md mx-auto">
-              {/* Main Card */}
-              <div className="bg-base-100/95 backdrop-blur-sm rounded-2xl shadow-2xl p-6 space-y-4">
-                {/* Icon */}
-                <div className="text-6xl">📺</div>
-
-                {/* Title */}
-                <h2 className="text-2xl font-bold text-base-content">กำลัง Cast ไป Monitor</h2>
-
-                {/* Now Playing Box */}
-                <div className="bg-primary/10 rounded-lg p-4 border border-primary/20">
-                  <p className="text-xs text-base-content/60 mb-2 font-medium">กำลังเล่น</p>
-                  <p className="text-base font-semibold text-base-content line-clamp-2">
+          <div className="h-full w-full flex flex-col items-center justify-center p-4">
+            {/* Compact status banner - ไม่ซ้อนทับ controls */}
+            <div className="bg-base-100/95 backdrop-blur-sm rounded-lg shadow-lg px-4 py-3 max-w-sm mx-auto">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-base-content/60 font-medium">กำลัง Cast ไป Monitor</p>
+                  <p className="text-sm font-semibold text-base-content truncate">
                     {firebaseCastState.currentVideo?.title || 'รอเพิ่มเพลง...'}
                   </p>
                 </div>
-
-                {/* Controls */}
-                <div className="flex gap-3 pt-2">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      firebaseCastToggleMute();
-                    }}
-                    className="flex-1 py-3 px-4 bg-base-200 hover:bg-base-300 text-base-content rounded-xl font-semibold flex items-center justify-center gap-2 text-sm transition-colors shadow-sm"
-                  >
-                    {firebaseCastState.controls.isMuted ? (
-                      <>
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" clipRule="evenodd" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
-                        </svg>
-                        <span>เปิดเสียง</span>
-                      </>
-                    ) : (
-                      <>
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                        </svg>
-                        <span>ปิดเสียง</span>
-                      </>
-                    )}
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCastDisconnect();
-                    }}
-                    className="flex-1 py-3 px-4 bg-error hover:bg-error/80 text-white rounded-xl font-semibold flex items-center justify-center gap-2 text-sm transition-colors shadow-sm"
-                  >
-                    <XMarkIcon className="w-5 h-5" />
-                    <span>ตัดการเชื่อมต่อ</span>
-                  </button>
-                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCastDisconnect();
+                  }}
+                  className="flex-shrink-0 px-3 py-2 bg-error hover:bg-error/80 text-white rounded-lg font-semibold text-xs transition-colors"
+                >
+                  ตัดการเชื่อมต่อ
+                </button>
               </div>
             </div>
           </div>

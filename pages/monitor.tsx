@@ -323,7 +323,7 @@ const Monitor = () => {
   useEffect(() => {
     if (!player || !roomData) return;
 
-    const shouldMute = roomData.controls.isMuted !== false; // Default to muted
+    const shouldMute = roomData.controls.isMuted === true; // Only mute if explicitly true
 
     const syncMute = async () => {
       try {
@@ -338,16 +338,13 @@ const Monitor = () => {
           await player.mute();
           console.log('🔇 Muted from Remote');
         } else {
-          // Unmute from Remote control
-          // Wait a bit for video to start playing before unmuting (to avoid browser blocking)
-          setTimeout(async () => {
-            try {
-              await player.unMute();
-              console.log('🔊 Unmuted from Remote');
-            } catch (error) {
-              console.warn('⚠️ Unmute failed:', error);
-            }
-          }, 500); // 500ms delay to ensure video is playing
+          // Only unmute if video is playing (state === 1)
+          if (state === 1) {
+            await player.unMute();
+            console.log('🔊 Unmuted from Remote');
+          } else {
+            console.log('⏸️ Video not playing, will unmute when it starts');
+          }
         }
       } catch (error) {
         console.warn('⚠️ Mute/Unmute failed:', error);
@@ -569,9 +566,41 @@ const Monitor = () => {
   };
 
   // Handle player ready
-  const onPlayerReady = (event: { target: YouTubePlayer }) => {
-    console.log('Player ready');
+  const onPlayerReady = async (event: { target: YouTubePlayer }) => {
+    console.log('🎬 Player ready');
     setPlayer(event.target);
+
+    // Auto-play first video if available
+    if (roomData?.currentVideo) {
+      const currentVideoId = roomData.currentVideo.videoId;
+      const shouldPlay = roomData.controls?.isPlaying !== false;
+
+      if (shouldPlay) {
+        try {
+          // Mute first for browser autoplay policy
+          await event.target.mute();
+          console.log('🔇 Muted for autoplay');
+
+          // Auto-play
+          await event.target.playVideo();
+          console.log('▶️ Auto-playing first video');
+
+          // Unmute after a delay if not muted by user
+          if (!roomData.controls.isMuted) {
+            setTimeout(async () => {
+              try {
+                await event.target.unMute();
+                console.log('🔊 Unmuted after autoplay');
+              } catch (error) {
+                console.warn('⚠️ Auto-unmute failed:', error);
+              }
+            }, 1000); // 1 second delay
+          }
+        } catch (error) {
+          console.error('❌ Auto-play failed:', error);
+        }
+      }
+    }
   };
 
   // Handle player state change
@@ -624,6 +653,16 @@ const Monitor = () => {
       }
     } else if (event.data === 1) {
       console.log('▶️ Video playing');
+
+      // Auto-unmute when video starts playing (if not muted by user)
+      if (player && roomData && !roomData.controls.isMuted) {
+        try {
+          await player.unMute();
+          console.log('🔊 Auto-unmuted (video started playing)');
+        } catch (error) {
+          console.warn('⚠️ Auto-unmute failed:', error);
+        }
+      }
     } else if (event.data === 2) {
       console.log('⏸️ Video paused');
     }
