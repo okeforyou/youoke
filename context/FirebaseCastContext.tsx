@@ -180,14 +180,20 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
       const isHostUser = roomData.hostId === user.uid;
 
       // Add user to participants using REST API
-      const token = await user.getIdToken();
-      const participantURL = `${dbURL}/rooms/${code}/participants/${user.uid}.json?auth=${token}`;
+      try {
+        const token = await user.getIdToken();
+        const participantURL = `${dbURL}/rooms/${code}/participants/${user.uid}.json?auth=${token}`;
 
-      await fetch(participantURL, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(true),
-      });
+        await fetch(participantURL, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(true),
+        });
+        console.log('✅ Participant added to room');
+      } catch (authError) {
+        console.warn('⚠️ Could not add participant (auth issue), continuing anyway...', authError);
+        // Continue - room join is more important than participant tracking
+      }
 
       setRoomCode(code);
       setIsHost(isHostUser);
