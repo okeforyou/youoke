@@ -27,7 +27,6 @@ const Monitor = () => {
 
   const [roomData, setRoomData] = useState<RoomData | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [playerRef, setPlayerRef] = useState<YouTubePlayer | null>(null);
 
   // Listen to room data
   useEffect(() => {
@@ -67,7 +66,6 @@ const Monitor = () => {
 
   // Handle player ready
   const onPlayerReady = (event: { target: YouTubePlayer }) => {
-    setPlayerRef(event.target);
     console.log('Player ready');
   };
 
@@ -94,10 +92,10 @@ const Monitor = () => {
     height: '100%',
     width: '100%',
     playerVars: {
-      autoplay: 1,
-      controls: 1,
-      modestbranding: 1,
-      rel: 0,
+      autoplay: 1 as 1,
+      controls: 1 as 1,
+      modestbranding: 1 as 1,
+      rel: 0 as 0,
     },
   };
 
