@@ -4,6 +4,7 @@ import YouTube, { YouTubePlayer } from 'react-youtube';
 import { ref, off } from 'firebase/database';
 import { signInAnonymously } from 'firebase/auth';
 import { realtimeDb, auth } from '../firebase';
+import { CastCommand, CastCommandEnvelope } from '../types/castCommands';
 
 interface QueueVideo {
   videoId: string;
@@ -234,6 +235,181 @@ const Monitor = () => {
       }
     });
   }, [player, roomData?.controls.isPlaying]);
+
+  // Command Executor - Process commands from Remote
+  useEffect(() => {
+    if (!roomCode || !realtimeDb || !isAuthReady) return;
+
+    const dbURL = realtimeDb.app.options.databaseURL;
+    let processedCommandIds = new Set<string>();
+
+    const commandPollInterval = setInterval(async () => {
+      try {
+        // Fetch all pending commands
+        const response = await fetch(`${dbURL}/rooms/${roomCode}/commands.json`);
+        if (!response.ok) return;
+
+        const commands = await response.json() as Record<string, CastCommandEnvelope> | null;
+        if (!commands) return;
+
+        // Process pending commands
+        for (const [commandId, envelope] of Object.entries(commands)) {
+          // Skip if already processed or not pending
+          if (processedCommandIds.has(commandId) || envelope.status !== 'pending') {
+            continue;
+          }
+
+          console.log('⚙️ Executing command:', envelope.command.type);
+          processedCommandIds.add(commandId);
+
+          // Execute command and update state
+          try {
+            const newState = await executeCommand(envelope.command, roomData);
+
+            // Update state in Firebase
+            const user = auth.currentUser;
+            const token = user ? await user.getIdToken() : null;
+            const stateURL = token
+              ? `${dbURL}/rooms/${roomCode}/state.json?auth=${token}`
+              : `${dbURL}/rooms/${roomCode}/state.json`;
+
+            await fetch(stateURL, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(newState),
+            });
+
+            // Mark command as completed
+            const cmdURL = token
+              ? `${dbURL}/rooms/${roomCode}/commands/${commandId}/status.json?auth=${token}`
+              : `${dbURL}/rooms/${roomCode}/commands/${commandId}/status.json`;
+
+            await fetch(cmdURL, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify('completed'),
+            });
+
+            console.log('✅ Command executed:', envelope.command.type);
+          } catch (error) {
+            console.error('❌ Command execution failed:', error);
+          }
+        }
+      } catch (error) {
+        console.error('❌ Command polling error:', error);
+      }
+    }, 500); // Poll commands every 500ms
+
+    return () => clearInterval(commandPollInterval);
+  }, [roomCode, isAuthReady, roomData]);
+
+  // Execute a command and return new state
+  const executeCommand = async (command: CastCommand, currentState: RoomData | null): Promise<RoomData> => {
+    if (!currentState) {
+      currentState = {
+        queue: [],
+        currentIndex: 0,
+        currentVideo: null,
+        controls: { isPlaying: false },
+      };
+    }
+
+    const newState = { ...currentState };
+
+    switch (command.type) {
+      case 'ADD_TO_QUEUE':
+        newState.queue = [...newState.queue, command.payload.video];
+        // If no current video, start playing the first one
+        if (!newState.currentVideo && newState.queue.length > 0) {
+          newState.currentVideo = newState.queue[0];
+          newState.currentIndex = 0;
+          newState.controls.isPlaying = true;
+        }
+        break;
+
+      case 'PLAY_NOW':
+        newState.queue = [command.payload.video, ...newState.queue];
+        newState.currentVideo = command.payload.video;
+        newState.currentIndex = 0;
+        newState.controls.isPlaying = true;
+        break;
+
+      case 'PLAY_NEXT':
+        newState.queue.splice(newState.currentIndex + 1, 0, command.payload.video);
+        break;
+
+      case 'PLAY':
+        newState.controls.isPlaying = true;
+        break;
+
+      case 'PAUSE':
+        newState.controls.isPlaying = false;
+        break;
+
+      case 'NEXT':
+        if (newState.currentIndex < newState.queue.length - 1) {
+          newState.currentIndex++;
+          newState.currentVideo = newState.queue[newState.currentIndex];
+          newState.controls.isPlaying = true;
+        }
+        break;
+
+      case 'PREVIOUS':
+        if (newState.currentIndex > 0) {
+          newState.currentIndex--;
+          newState.currentVideo = newState.queue[newState.currentIndex];
+          newState.controls.isPlaying = true;
+        }
+        break;
+
+      case 'SKIP_TO':
+        if (command.payload.index >= 0 && command.payload.index < newState.queue.length) {
+          newState.currentIndex = command.payload.index;
+          newState.currentVideo = newState.queue[command.payload.index];
+          newState.controls.isPlaying = true;
+        }
+        break;
+
+      case 'REMOVE_AT':
+        if (command.payload.index >= 0 && command.payload.index < newState.queue.length) {
+          newState.queue.splice(command.payload.index, 1);
+          // Adjust currentIndex if needed
+          if (command.payload.index < newState.currentIndex) {
+            newState.currentIndex--;
+          } else if (command.payload.index === newState.currentIndex) {
+            // Removed current video, play next one
+            if (newState.queue.length > 0) {
+              newState.currentVideo = newState.queue[newState.currentIndex] || newState.queue[0];
+            } else {
+              newState.currentVideo = null;
+              newState.controls.isPlaying = false;
+            }
+          }
+        }
+        break;
+
+      case 'SET_PLAYLIST':
+        newState.queue = command.payload.playlist;
+        if (newState.queue.length > 0) {
+          newState.currentIndex = 0;
+          newState.currentVideo = newState.queue[0];
+        } else {
+          newState.currentIndex = 0;
+          newState.currentVideo = null;
+          newState.controls.isPlaying = false;
+        }
+        break;
+
+      case 'CLEAR_QUEUE':
+        newState.queue = [];
+        newState.currentIndex = 0;
+        newState.currentVideo = null;
+        newState.controls.isPlaying = false;
+        break;
+    }
+
+    return newState;
+  };
 
   // Handle player ready
   const onPlayerReady = (event: { target: YouTubePlayer }) => {
