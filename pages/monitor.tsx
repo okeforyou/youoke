@@ -62,8 +62,9 @@ const Monitor = () => {
 
     console.log('Monitoring room:', roomCode);
     const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
+    let unsubscribe: (() => void) | null = null;
 
-    // Create room if doesn't exist
+    // Create room if doesn't exist, THEN start listening
     const initializeRoom = async () => {
       try {
         console.log('🔍 Checking if room exists...');
@@ -83,35 +84,50 @@ const Monitor = () => {
           console.log('📊 PROJECT_ID:', projID);
           console.log('📊 Has region (asia-southeast1)?', dbURL.includes('asia-southeast1'));
 
-          // TEST 1: Try simplest possible data first
-          console.log('🧪 TEST: Trying to write minimal data { test: "hello" }...');
-          try {
-            await set(roomRef, { test: 'hello' });
-            console.log('✅ SUCCESS! Minimal data written. Now trying full data...');
+          // Create room with full data
+          const roomData = {
+            hostId: 'monitor',
+            isHost: true,
+            state: {
+              queue: [],
+              currentIndex: 0,
+              currentVideo: null,
+              controls: { isPlaying: false },
+            },
+            createdAt: Date.now(),
+          };
 
-            // TEST 2: If minimal works, try full data
-            const roomData = {
-              hostId: 'monitor',
-              isHost: true,
-              state: {
-                queue: [],
-                currentIndex: 0,
-                currentVideo: null,
-                controls: { isPlaying: false },
-              },
-              createdAt: Date.now(),
-            };
-
-            console.log('💾 Calling set() with full data:', roomData);
-            await set(roomRef, roomData);
-            console.log('✅ Room created successfully:', roomCode);
-          } catch (setError) {
-            console.error('❌ set() failed:', setError);
-            throw setError; // Re-throw to outer catch
-          }
+          console.log('💾 Creating room with data:', roomData);
+          await set(roomRef, roomData);
+          console.log('✅ Room created successfully:', roomCode);
         } else {
           console.log('✅ Room already exists');
         }
+
+        // Start listening AFTER initialization is complete
+        console.log('👂 Starting to listen for room updates...');
+        unsubscribe = onValue(roomRef, (snapshot) => {
+          const data = snapshot.val();
+
+          if (!data) {
+            console.log('Room not found');
+            setIsConnected(false);
+            setRoomData(null);
+            return;
+          }
+
+          console.log('Room data received:', data);
+          setIsConnected(true);
+
+          // Read from data.state (nested structure from FirebaseCastContext)
+          const state = data.state || data; // Fallback to flat if state doesn't exist
+          setRoomData({
+            queue: state.queue || [],
+            currentIndex: state.currentIndex || 0,
+            currentVideo: state.currentVideo || null,
+            controls: state.controls || { isPlaying: false },
+          });
+        });
       } catch (error) {
         console.error('❌ initializeRoom error:', error);
         console.error('Error name:', error.name);
@@ -122,32 +138,11 @@ const Monitor = () => {
 
     initializeRoom();
 
-    const unsubscribe = onValue(roomRef, (snapshot) => {
-      const data = snapshot.val();
-
-      if (!data) {
-        console.log('Room not found');
-        setIsConnected(false);
-        setRoomData(null);
-        return;
-      }
-
-      console.log('Room data received:', data);
-      setIsConnected(true);
-
-      // Read from data.state (nested structure from FirebaseCastContext)
-      const state = data.state || data; // Fallback to flat if state doesn't exist
-      setRoomData({
-        queue: state.queue || [],
-        currentIndex: state.currentIndex || 0,
-        currentVideo: state.currentVideo || null,
-        controls: state.controls || { isPlaying: false },
-      });
-    });
-
     return () => {
-      off(roomRef);
-      unsubscribe();
+      if (unsubscribe) {
+        off(roomRef);
+        unsubscribe();
+      }
     };
   }, [roomCode, isAuthReady]);
 
