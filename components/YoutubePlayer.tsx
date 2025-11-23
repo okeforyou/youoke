@@ -1472,28 +1472,7 @@ function YoutubePlayer({
         onClose={() => setIsDebugOverlayOpen(false)}
       />
 
-      {/* Debug Toggle Button - Float at top right */}
-      {!isMoniter && (
-        <button
-          onClick={() => {
-            setIsDebugOverlayOpen(true);
-            addDebugLog('🐛 Debug overlay opened', {
-              isGoogleCastConnected,
-              receiverName,
-              isCasting,
-            });
-          }}
-          className="fixed top-4 right-4 z-[99999] btn btn-circle btn-error shadow-2xl text-2xl animate-pulse"
-          title="เปิด Debug Console"
-          style={{
-            width: '60px',
-            height: '60px',
-            border: '3px solid white',
-          }}
-        >
-          🐛
-        </button>
-      )}
+      {/* Debug Toggle Button - Removed to avoid blocking Dual Screen button */}
     </div>
   );
 }

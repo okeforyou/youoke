@@ -35,6 +35,30 @@ const Monitor = () => {
     console.log('Monitoring room:', roomCode);
     const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
 
+    // Create room if doesn't exist
+    const initializeRoom = async () => {
+      const { get, set } = await import('firebase/database');
+      const snapshot = await get(roomRef);
+
+      if (!snapshot.exists()) {
+        console.log('Room not found, creating...');
+        await set(roomRef, {
+          hostId: 'monitor',
+          isHost: true,
+          state: {
+            queue: [],
+            currentIndex: 0,
+            currentVideo: null,
+            controls: { isPlaying: false },
+          },
+          createdAt: Date.now(),
+        });
+        console.log('✅ Room created:', roomCode);
+      }
+    };
+
+    initializeRoom();
+
     const unsubscribe = onValue(roomRef, (snapshot) => {
       const data = snapshot.val();
 
