@@ -13,7 +13,6 @@
  */
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { ref, set, onValue, get, off } from 'firebase/database';
 import { realtimeDb } from '../firebase';
 import { RecommendedVideo, SearchResult } from '../types/invidious';
 import { useAuth } from './AuthContext';
@@ -79,32 +78,33 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
     controls: { isPlaying: false, isMuted: true },
   });
 
-  // Cleanup
-  useEffect(() => {
-    return () => {
-      if (roomCode && realtimeDb) {
-        const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
-        off(roomRef);
-      }
-    };
-  }, [roomCode]);
-
-  // Listen to state changes
+  // Listen to state changes using REST API polling
   useEffect(() => {
     if (!roomCode || !realtimeDb) return;
 
-    const stateRef = ref(realtimeDb, `rooms/${roomCode}/state`);
-    const unsubscribe = onValue(stateRef, (snapshot) => {
-      const newState = snapshot.val() as CastState | null;
-      if (newState) {
-        console.log('📦 State updated from Firebase:', newState);
-        setState(newState);
+    const dbURL = realtimeDb.app.options.databaseURL;
+    let lastStateRef: any = null;
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const response = await fetch(`${dbURL}/rooms/${roomCode}/state.json`);
+        const newState = await response.json() as CastState | null;
+
+        if (newState) {
+          // Only update if state changed (reduce re-renders)
+          if (JSON.stringify(newState) !== JSON.stringify(lastStateRef)) {
+            console.log('📦 State updated from Firebase (polling):', newState);
+            setState(newState);
+            lastStateRef = newState;
+          }
+        }
+      } catch (error) {
+        console.error('❌ State polling error:', error);
       }
-    });
+    }, 500); // Poll every 500ms for faster response than Monitor
 
     return () => {
-      off(stateRef);
-      unsubscribe();
+      clearInterval(pollInterval);
     };
   }, [roomCode]);
 
@@ -115,10 +115,10 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
     }
 
     const newRoomCode = generateRoomCode();
-    const roomRef = ref(realtimeDb, `rooms/${newRoomCode}`);
+    const dbURL = realtimeDb.app.options.databaseURL;
 
     try {
-      await set(roomRef, {
+      const roomData = {
         hostId: user.uid,
         isHost: true,
         state: {
@@ -130,12 +130,24 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
         // Don't initialize commands - let it be created when first command arrives
         createdAt: Date.now(),
         participants: { [user.uid]: true },
+      };
+
+      // Use REST API instead of set() to bypass stack overflow
+      const token = await user.getIdToken();
+      const response = await fetch(`${dbURL}/rooms/${newRoomCode}.json?auth=${token}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(roomData),
       });
+
+      if (!response.ok) {
+        throw new Error(`Failed to create room: ${response.status}`);
+      }
 
       setRoomCode(newRoomCode);
       setIsHost(true);
       setIsConnected(true);
-      console.log('✅ Room created:', newRoomCode);
+      console.log('✅ Room created via REST API:', newRoomCode);
 
       return newRoomCode;
     } catch (error) {
@@ -151,26 +163,36 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
     }
 
     console.log('🔍 Attempting to join room:', code);
-    const roomRef = ref(realtimeDb, `rooms/${code}`);
 
     try {
-      const snapshot = await get(roomRef);
-      if (!snapshot.exists()) {
+      // Use REST API instead of get() to bypass stack overflow
+      const dbURL = realtimeDb.app.options.databaseURL;
+      console.log('📡 Calling REST API to check room...');
+
+      const response = await fetch(`${dbURL}/rooms/${code}.json`);
+      const roomData = await response.json();
+
+      if (!roomData) {
         console.log('❌ Room not found:', code);
         return false;
       }
 
-      const roomData = snapshot.val();
       const isHostUser = roomData.hostId === user.uid;
 
-      // Add user to participants
-      const participantRef = ref(realtimeDb, `rooms/${code}/participants/${user.uid}`);
-      await set(participantRef, true);
+      // Add user to participants using REST API
+      const token = await user.getIdToken();
+      const participantURL = `${dbURL}/rooms/${code}/participants/${user.uid}.json?auth=${token}`;
+
+      await fetch(participantURL, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(true),
+      });
 
       setRoomCode(code);
       setIsHost(isHostUser);
       setIsConnected(true);
-      console.log('✅ Joined room:', code, isHostUser ? 'as host' : 'as guest');
+      console.log('✅ Joined room via REST API:', code, isHostUser ? 'as host' : 'as guest');
 
       return true;
     } catch (error) {
