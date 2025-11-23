@@ -34,6 +34,7 @@ const Monitor = () => {
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [player, setPlayer] = useState<YouTubePlayer | null>(null);
   const [isLoadingVideo, setIsLoadingVideo] = useState(false);
+  const [hasUserInteraction, setHasUserInteraction] = useState(false);
 
   // Anonymous login (required for Firebase write permission)
   useEffect(() => {
@@ -575,8 +576,15 @@ const Monitor = () => {
     console.log('🎬 Player ready');
     setPlayer(event.target);
 
-    // Don't auto-unmute - browser blocks it and pauses video
-    // User can unmute manually via YouTube controls
+    // If user has interacted, unmute immediately
+    if (hasUserInteraction && roomData && !roomData.controls.isMuted) {
+      try {
+        await event.target.unMute();
+        console.log('🔊 Unmuted after user interaction');
+      } catch (error) {
+        console.warn('⚠️ Unmute failed:', error);
+      }
+    }
   };
 
   // Handle player state change
@@ -629,7 +637,16 @@ const Monitor = () => {
       }
     } else if (event.data === 1) {
       console.log('▶️ Video playing');
-      // Don't auto-unmute - browser blocks it without user interaction
+
+      // Unmute if user has interacted
+      if (hasUserInteraction && player && roomData && !roomData.controls.isMuted) {
+        try {
+          await player.unMute();
+          console.log('🔊 Unmuted (user has interacted)');
+        } catch (error) {
+          console.warn('⚠️ Unmute failed:', error);
+        }
+      }
     } else if (event.data === 2) {
       console.log('⏸️ Video paused');
     }
@@ -681,12 +698,46 @@ const Monitor = () => {
             onError={onPlayerError}
             className="w-full h-full"
           />
+        ) : !hasUserInteraction ? (
+          <div
+            className="flex items-center justify-center h-full cursor-pointer bg-gradient-to-br from-primary/20 to-accent/20 hover:from-primary/30 hover:to-accent/30 transition-all"
+            onClick={async () => {
+              console.log('👆 User clicked to start');
+              setHasUserInteraction(true);
+
+              // Unmute if video is ready
+              if (player && roomData && !roomData.controls.isMuted) {
+                try {
+                  await player.unMute();
+                  console.log('🔊 Unmuted after user click');
+                } catch (error) {
+                  console.warn('⚠️ Unmute failed:', error);
+                }
+              }
+            }}
+          >
+            <div className="text-center">
+              <div className="text-8xl mb-6">🎤</div>
+              <h1 className="text-6xl font-bold mb-4">YouOke TV</h1>
+              <p className="text-3xl mb-6">เลขห้อง: {roomCode}</p>
+              <p className="text-2xl text-gray-400 mb-8">เชื่อมต่อแล้ว ✅</p>
+
+              {/* Big "Start" button */}
+              <div className="bg-primary hover:bg-primary/90 text-white px-12 py-6 rounded-2xl text-3xl font-bold inline-block shadow-2xl transform hover:scale-105 transition-all animate-pulse">
+                กดเพื่อเริ่มเล่น
+              </div>
+
+              <p className="text-lg text-gray-500 mt-8">
+                เพิ่มเพลงจากมือถือได้เลย
+              </p>
+            </div>
+          </div>
         ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <h1 className="text-6xl font-bold mb-4">YouOke TV</h1>
               <p className="text-3xl mb-6">เลขห้อง: {roomCode}</p>
-              <p className="text-2xl text-gray-400">เชื่อมต่อแล้ว ✅</p>
+              <p className="text-2xl text-gray-400">พร้อมเล่น ✅</p>
               <p className="text-xl text-gray-500 mt-4">
                 เพิ่มเพลงจากมือถือเพื่อเริ่มเล่น
               </p>
