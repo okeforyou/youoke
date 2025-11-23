@@ -64,6 +64,7 @@ function YoutubePlayer({
     play: firebaseCastPlay,
     pause: firebaseCastPause,
     next: firebaseCastNext,
+    toggleMute: firebaseCastToggleMute,
     state: firebaseCastState,
   } = useFirebaseCast();
   const {
@@ -1369,26 +1370,52 @@ function YoutubePlayer({
         onClick={() => handleVideoClick()}
       >
         {isCasting && !isMoniter ? (
-          <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-success/20 to-primary/20 backdrop-blur-sm p-3">
-            <div className="text-center p-4 bg-white/95 backdrop-blur-sm rounded-md shadow-md w-full max-w-[88%] sm:max-w-[380px] mx-auto">
-              <div className="text-4xl mb-2">📺</div>
-              <h2 className="text-base font-bold mb-2 text-gray-800">กำลัง Cast ไป Monitor</h2>
-              <div className="bg-gray-100 rounded-md p-2 mb-2.5">
-                <p className="text-xs text-gray-500 mb-0.5 font-medium">กำลังเล่น</p>
-                <p className="text-sm font-medium text-gray-800 line-clamp-2">
+          <div className="h-full w-full flex flex-col items-center justify-center p-4">
+            <div className="text-center w-full max-w-[90%] sm:max-w-md mx-auto space-y-3">
+              <div className="text-6xl mb-2">📺</div>
+              <h2 className="text-xl font-bold mb-2 text-white drop-shadow-lg">กำลัง Cast ไป Monitor</h2>
+              <div className="bg-black/40 backdrop-blur-md rounded-lg p-3 border border-white/10">
+                <p className="text-xs text-white/70 mb-1 font-medium">กำลังเล่น</p>
+                <p className="text-sm font-medium text-white line-clamp-2">
                   {firebaseCastState.currentVideo?.title || 'รอเพิ่มเพลง...'}
                 </p>
               </div>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleCastDisconnect();
-                }}
-                className="w-full py-2 px-3 text-white rounded-md bg-error font-semibold flex items-center justify-center gap-2 text-sm shadow-sm hover:bg-error/90"
-              >
-                <XMarkIcon className="w-4 h-4" />
-                ตัดการเชื่อมต่อ
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    firebaseCastToggleMute();
+                  }}
+                  className="flex-1 py-2.5 px-3 text-white rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 font-semibold flex items-center justify-center gap-2 text-sm hover:bg-white/20 transition-colors"
+                >
+                  {firebaseCastState.controls.isMuted ? (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" clipRule="evenodd" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                      </svg>
+                      <span>เปิดเสียง</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                      </svg>
+                      <span>ปิดเสียง</span>
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleCastDisconnect();
+                  }}
+                  className="flex-1 py-2.5 px-3 text-white rounded-lg bg-error/90 backdrop-blur-sm font-semibold flex items-center justify-center gap-2 text-sm hover:bg-error transition-colors"
+                >
+                  <XMarkIcon className="w-5 h-5" />
+                  <span>ตัดการเชื่อมต่อ</span>
+                </button>
+              </div>
             </div>
           </div>
         ) : isGoogleCastConnected && !isMoniter ? (
