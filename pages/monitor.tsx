@@ -221,19 +221,38 @@ const Monitor = () => {
 
     const { isPlaying } = roomData.controls;
 
-    // Get current player state
-    player.getPlayerState().then((state) => {
-      // 1 = playing, 2 = paused
-      const isCurrentlyPlaying = state === 1;
+    // Get current player state with error handling
+    try {
+      const statePromise = player.getPlayerState();
 
-      if (isPlaying && !isCurrentlyPlaying) {
-        console.log('▶️ Playing video (from remote control)');
-        player.playVideo();
-      } else if (!isPlaying && isCurrentlyPlaying) {
-        console.log('⏸️ Pausing video (from remote control)');
-        player.pauseVideo();
+      // Check if getPlayerState returned a Promise
+      if (statePromise && typeof statePromise.then === 'function') {
+        statePromise.then((state) => {
+          // 1 = playing, 2 = paused
+          const isCurrentlyPlaying = state === 1;
+
+          if (isPlaying && !isCurrentlyPlaying) {
+            console.log('▶️ Playing video (from remote control)');
+            player.playVideo();
+          } else if (!isPlaying && isCurrentlyPlaying) {
+            console.log('⏸️ Pausing video (from remote control)');
+            player.pauseVideo();
+          }
+        }).catch((error) => {
+          console.warn('⚠️ Could not get player state:', error);
+        });
+      } else {
+        // If player not ready, just call play/pause directly
+        console.log('⚠️ Player not ready, calling play/pause directly');
+        if (isPlaying) {
+          player.playVideo();
+        } else {
+          player.pauseVideo();
+        }
       }
-    });
+    } catch (error) {
+      console.error('❌ Error controlling player:', error);
+    }
   }, [player, roomData?.controls.isPlaying]);
 
   // Command Executor - Process commands from Remote
