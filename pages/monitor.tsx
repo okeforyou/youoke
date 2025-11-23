@@ -64,21 +64,32 @@ const Monitor = () => {
             projectId: realtimeDb?.app?.options?.projectId || 'MISSING',
           });
 
-          const roomData = {
-            hostId: 'monitor',
-            isHost: true,
-            state: {
-              queue: [],
-              currentIndex: 0,
-              currentVideo: null,
-              controls: { isPlaying: false },
-            },
-            createdAt: Date.now(),
-          };
+          // TEST 1: Try simplest possible data first
+          console.log('🧪 TEST: Trying to write minimal data { test: "hello" }...');
+          try {
+            await set(roomRef, { test: 'hello' });
+            console.log('✅ SUCCESS! Minimal data written. Now trying full data...');
 
-          console.log('💾 Calling set() with data:', roomData);
-          await set(roomRef, roomData);
-          console.log('✅ Room created successfully:', roomCode);
+            // TEST 2: If minimal works, try full data
+            const roomData = {
+              hostId: 'monitor',
+              isHost: true,
+              state: {
+                queue: [],
+                currentIndex: 0,
+                currentVideo: null,
+                controls: { isPlaying: false },
+              },
+              createdAt: Date.now(),
+            };
+
+            console.log('💾 Calling set() with full data:', roomData);
+            await set(roomRef, roomData);
+            console.log('✅ Room created successfully:', roomCode);
+          } catch (setError) {
+            console.error('❌ set() failed:', setError);
+            throw setError; // Re-throw to outer catch
+          }
         } else {
           console.log('✅ Room already exists');
         }
