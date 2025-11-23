@@ -1042,27 +1042,27 @@ function YoutubePlayer({
             {isCastOverlayOpen && (
               <div className="absolute inset-0 flex items-center justify-center text-xl p-3 sm:p-4">
                 {isMobile ? (
-                  <div className="text-sm flex space-y-2.5 flex-col text-center w-full max-w-[90%] sm:max-w-sm mx-auto">
-                    <div className="flex items-center justify-center gap-2 text-base sm:text-lg font-bold">
+                  <div className="text-sm flex space-y-2 flex-col text-center w-full max-w-[88%] sm:max-w-[380px] mx-auto">
+                    <div className="flex items-center justify-center gap-2 text-base font-bold text-white">
                       <TvIcon className="w-5 h-5" />
                       <span>Cast to TV</span>
                     </div>
-                    <div className="text-xs">
-                      <p className="mb-2">วิธีใช้งาน:</p>
-                      <ol className="list-decimal list-inside text-left space-y-1 px-2">
-                        <li>เปิด <span className="font-bold">youoke.vercel.app/monitor</span> บนทีวี</li>
+                    <div className="text-xs text-white/90">
+                      <p className="mb-1.5 font-medium">วิธีใช้งาน:</p>
+                      <ol className="list-decimal list-inside text-left space-y-0.5 px-1">
+                        <li>เปิด <span className="font-semibold">youoke.vercel.app/monitor</span> บนทีวี</li>
                         <li>ดูเลขห้อง 4 หลักที่แสดงบนทีวี</li>
                         <li>กรอกเลขห้องด้านล่าง แล้วกดเข้าร่วม</li>
                       </ol>
                     </div>
 
                     {!isCasting ? (
-                      <div className="relative mt-2">
+                      <div className="relative mt-1">
                         <input
                           type="text"
                           inputMode="numeric"
                           pattern="[0-9]*"
-                          className="py-2.5 sm:py-3 px-3 sm:px-4 block w-full text-black bg-white rounded-lg text-center text-xl sm:text-2xl tracking-widest font-bold"
+                          className="py-2 px-3 block w-full text-black bg-white rounded-md text-center text-lg tracking-widest font-bold shadow-sm"
                           placeholder="0000"
                           maxLength={4}
                           value={castInputRoomCode}
@@ -1075,7 +1075,7 @@ function YoutubePlayer({
                           autoFocus
                         />
                         <button
-                          className="mt-2 w-full py-2 px-3 text-white rounded-lg bg-success font-semibold disabled:opacity-50 flex items-center justify-center gap-2 text-sm sm:text-base"
+                          className="mt-1.5 w-full py-2 px-3 text-white rounded-md bg-success font-semibold disabled:opacity-50 flex items-center justify-center gap-2 text-sm shadow-sm"
                           onClick={handleCastJoinRoom}
                           disabled={isJoiningRoom || castInputRoomCode.length !== 4}
                         >
@@ -1092,7 +1092,7 @@ function YoutubePlayer({
                           )}
                         </button>
                         {castError && (
-                          <div className="mt-2 text-xs text-error bg-white/20 rounded px-2 py-1.5">
+                          <div className="mt-1.5 text-xs text-error bg-white/20 rounded px-2 py-1.5">
                             {castError}
                           </div>
                         )}
@@ -1369,12 +1369,12 @@ function YoutubePlayer({
         onClick={() => handleVideoClick()}
       >
         {isCasting && !isMoniter ? (
-          <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-success/20 to-primary/20 backdrop-blur-sm p-3 sm:p-4">
-            <div className="text-center p-4 sm:p-5 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg w-full max-w-[90%] sm:max-w-sm mx-auto">
-              <div className="text-4xl sm:text-6xl mb-3">📺</div>
-              <h2 className="text-lg sm:text-xl font-bold mb-3 text-gray-800">กำลัง Cast ไป Monitor</h2>
-              <div className="bg-gray-50 rounded-lg p-2.5 sm:p-3 mb-3">
-                <p className="text-xs text-gray-500 mb-1">กำลังเล่น</p>
+          <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-success/20 to-primary/20 backdrop-blur-sm p-3">
+            <div className="text-center p-4 bg-white/95 backdrop-blur-sm rounded-md shadow-md w-full max-w-[88%] sm:max-w-[380px] mx-auto">
+              <div className="text-4xl mb-2">📺</div>
+              <h2 className="text-base font-bold mb-2 text-gray-800">กำลัง Cast ไป Monitor</h2>
+              <div className="bg-gray-100 rounded-md p-2 mb-2.5">
+                <p className="text-xs text-gray-500 mb-0.5 font-medium">กำลังเล่น</p>
                 <p className="text-sm font-medium text-gray-800 line-clamp-2">
                   {firebaseCastState.currentVideo?.title || 'รอเพิ่มเพลง...'}
                 </p>
@@ -1384,7 +1384,7 @@ function YoutubePlayer({
                   e.stopPropagation();
                   handleCastDisconnect();
                 }}
-                className="btn btn-sm btn-error gap-2 w-full"
+                className="w-full py-2 px-3 text-white rounded-md bg-error font-semibold flex items-center justify-center gap-2 text-sm shadow-sm hover:bg-error/90"
               >
                 <XMarkIcon className="w-4 h-4" />
                 ตัดการเชื่อมต่อ

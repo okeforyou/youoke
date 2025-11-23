@@ -19,6 +19,7 @@ interface RoomData {
   currentVideo: QueueVideo | null;
   controls: {
     isPlaying: boolean;
+    isMuted: boolean;
   };
 }
 
@@ -98,7 +99,7 @@ const Monitor = () => {
               queue: [],
               currentIndex: 0,
               currentVideo: null,
-              controls: { isPlaying: false },
+              controls: { isPlaying: false, isMuted: true },
             },
             createdAt: Date.now(),
           };
@@ -174,7 +175,7 @@ const Monitor = () => {
               queue: state.queue || [],
               currentIndex: state.currentIndex || 0,
               currentVideo: state.currentVideo || null,
-              controls: state.controls || { isPlaying: false },
+              controls: state.controls || { isPlaying: false, isMuted: true },
             });
           } catch (error) {
             console.error('❌ Polling error:', error);
@@ -318,6 +319,36 @@ const Monitor = () => {
     }
   }, [player, roomData?.controls.isPlaying, isLoadingVideo]);
 
+  // Sync mute state from Remote
+  useEffect(() => {
+    if (!player || !roomData) return;
+
+    const shouldMute = roomData.controls.isMuted !== false; // Default to muted
+
+    const syncMute = async () => {
+      try {
+        const state = await player.getPlayerState();
+        // Skip if player not ready (-1 = unstarted)
+        if (state === -1) {
+          console.log('⏳ Player not ready, skipping mute sync');
+          return;
+        }
+
+        if (shouldMute) {
+          await player.mute();
+          console.log('🔇 Muted from Remote');
+        } else {
+          await player.unMute();
+          console.log('🔊 Unmuted from Remote');
+        }
+      } catch (error) {
+        console.warn('⚠️ Mute/Unmute failed:', error);
+      }
+    };
+
+    syncMute();
+  }, [player, roomData?.controls.isMuted]);
+
   // Command Executor - Process commands from Remote
   useEffect(() => {
     if (!roomCode || !realtimeDb || !isAuthReady) return;
@@ -402,7 +433,7 @@ const Monitor = () => {
         queue: [],
         currentIndex: 0,
         currentVideo: null,
-        controls: { isPlaying: false },
+        controls: { isPlaying: false, isMuted: true },
       };
     }
 
@@ -511,6 +542,18 @@ const Monitor = () => {
         newState.currentIndex = 0;
         newState.currentVideo = null;
         newState.controls.isPlaying = false;
+        break;
+
+      case 'MUTE':
+        newState.controls.isMuted = true;
+        break;
+
+      case 'UNMUTE':
+        newState.controls.isMuted = false;
+        break;
+
+      case 'TOGGLE_MUTE':
+        newState.controls.isMuted = !newState.controls.isMuted;
         break;
     }
 
