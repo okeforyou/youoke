@@ -325,11 +325,20 @@ function YoutubePlayer({
 
   const handlePlay = async () => {
     const debugInfo = {
+      isCasting,
       isGoogleCastConnected,
       castPlayExists: !!castPlay,
     };
     console.log('🎯 handlePlay called:', debugInfo);
     addDebugLog('🎯 handlePlay called', debugInfo);
+
+    // If connected to Firebase Cast, send command to Monitor
+    if (isCasting) {
+      console.log('📤 Calling firebaseCastPlay()...');
+      addDebugLog('📤 Calling firebaseCastPlay()');
+      firebaseCastPlay();
+      return;
+    }
 
     // If connected to Google Cast, send command to TV
     if (isGoogleCastConnected) {
@@ -361,11 +370,20 @@ function YoutubePlayer({
 
   const handlePause = async () => {
     const debugInfo = {
+      isCasting,
       isGoogleCastConnected,
       castPauseExists: !!castPause,
     };
     console.log('🎯 handlePause called:', debugInfo);
     addDebugLog('🎯 handlePause called', debugInfo);
+
+    // If connected to Firebase Cast, send command to Monitor
+    if (isCasting) {
+      console.log('📤 Calling firebaseCastPause()...');
+      addDebugLog('📤 Calling firebaseCastPause()');
+      firebaseCastPause();
+      return;
+    }
 
     // If connected to Google Cast, send command to TV
     if (isGoogleCastConnected) {
