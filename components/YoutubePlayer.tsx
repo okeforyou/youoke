@@ -1017,6 +1017,9 @@ function YoutubePlayer({
   };
 
   const CastOverlayComponent = () => {
+    // Don't show overlay at all when already casting (user sees "กำลัง Cast ไป Monitor" screen instead)
+    if (isCasting) return null;
+
     return (
       isLogin &&
       !isMoniter && (
@@ -1025,7 +1028,7 @@ function YoutubePlayer({
             isCastOverlayOpen
               ? "w-full aspect-video top-0 right-0"
               : "w-16 h-16 top-5 right-5 drop-shadow-md rounded-full"
-          } ${isCasting ? "bg-success" : "bg-primary"} text-white z-2 left-auto
+          } bg-primary text-white z-2 left-auto
     flex items-center justify-center transition-all duration-50 ${
             !isCastOverlayOpen && playerState === PlayerStates.PLAYING ? "opacity-0" : ""
           }`}

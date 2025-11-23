@@ -205,13 +205,17 @@ const Monitor = () => {
 
     const { videoId } = roomData.currentVideo;
 
-    // Load the new video
+    // Load the new video with autoplay based on isPlaying state
     console.log('📺 Loading video on Monitor:', videoId, roomData.currentVideo.title);
-    player.loadVideoById(videoId);
 
-    // Auto-play if controls say to play
     if (roomData.controls.isPlaying) {
-      player.playVideo();
+      // Use loadVideoById which auto-plays
+      console.log('▶️ Auto-playing video');
+      player.loadVideoById(videoId);
+    } else {
+      // Use cueVideoById which loads but doesn't play
+      console.log('⏸️ Cueing video (not playing)');
+      player.cueVideoById(videoId);
     }
   }, [player, roomData?.currentVideo?.videoId]);
 
