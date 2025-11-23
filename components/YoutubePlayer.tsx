@@ -838,16 +838,34 @@ function YoutubePlayer({
   }, [videoId, playerState, isMoniter, isGoogleCastConnected, isCasting, isDualMode]);
 
   const playPauseBtn = [
-    playerState === YouTube.PlayerState.PLAYING
+    playerState === YouTube.PlayerState.PLAYING || (isCasting && firebaseCastState.controls.isPlaying)
       ? {
           icon: PauseIcon,
           label: "หยุด",
-          onClick: handlePause,
+          onClick: () => {
+            console.log('🎯 Pause button clicked:', { isCasting, isGoogleCastConnected });
+            if (isCasting) {
+              firebaseCastPause();
+            } else if (isGoogleCastConnected) {
+              castPause();
+            } else {
+              handlePause();
+            }
+          },
         }
       : {
           icon: PlayIcon,
           label: "เล่น",
-          onClick: handlePlay,
+          onClick: () => {
+            console.log('🎯 Play button clicked:', { isCasting, isGoogleCastConnected });
+            if (isCasting) {
+              firebaseCastPlay();
+            } else if (isGoogleCastConnected) {
+              castPlay();
+            } else {
+              handlePlay();
+            }
+          },
         },
   ];
 
@@ -920,13 +938,19 @@ function YoutubePlayer({
         label: "เพลงถัดไป",
         onClick: () => {
           const debugInfo = {
+            isCasting,
             isGoogleCastConnected,
+            firebaseCastNextExists: !!firebaseCastNext,
             castNextExists: !!castNext,
           };
           console.log('🎯 Next button clicked:', debugInfo);
           addDebugLog('🎯 Next button clicked', debugInfo);
 
-          if (isGoogleCastConnected) {
+          if (isCasting) {
+            console.log('📤 Calling firebaseCastNext()...');
+            addDebugLog('📤 Calling firebaseCastNext()');
+            firebaseCastNext();
+          } else if (isGoogleCastConnected) {
             console.log('📤 Calling castNext()...');
             addDebugLog('📤 Calling castNext()');
             castNext();
@@ -941,7 +965,7 @@ function YoutubePlayer({
         onClick: handleReplay,
       },
     ],
-    [nextSong, playlist, isGoogleCastConnected, castNext]
+    [nextSong, playlist, isCasting, isGoogleCastConnected, firebaseCastNext, castNext]
   );
 
   const handleCastJoinRoom = async () => {
@@ -1323,7 +1347,45 @@ function YoutubePlayer({
         className="w-full aspect-video relative flex-1 md:flex-grow-1"
         onClick={() => handleVideoClick()}
       >
-        {isGoogleCastConnected && !isMoniter ? (
+        {isCasting && !isMoniter ? (
+          <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-success/20 to-primary/20 backdrop-blur-sm p-4">
+            <div className="text-center p-4 bg-white/80 backdrop-blur-sm rounded-lg w-full max-w-md">
+              <div className="text-6xl mb-3">📺</div>
+              <h2 className="text-2xl font-bold mb-2 text-gray-800">กำลัง Cast ไป Monitor</h2>
+              <p className="text-lg font-semibold text-success mb-1">
+                Room: {roomCode}
+              </p>
+              <p className="text-sm text-gray-600 mb-2">
+                {firebaseCastState.currentVideo?.title || 'รอเพิ่มเพลง...'}
+              </p>
+              <p className="text-xs text-gray-500 mb-4">
+                เพลงกำลังเล่นบน Monitor - ใช้ปุ่มด้านล่างเพื่อควบคุม
+              </p>
+
+              {/* Player Controls */}
+              <div className="mb-4">
+                <PlayerControls
+                  isPlaying={firebaseCastState.controls.isPlaying}
+                  onPlay={firebaseCastPlay}
+                  onPause={firebaseCastPause}
+                  onNext={firebaseCastNext}
+                  className="justify-center"
+                />
+              </div>
+
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCastDisconnect();
+                }}
+                className="btn btn-sm btn-error gap-2"
+              >
+                <XMarkIcon className="w-4 h-4" />
+                ตัดการเชื่อมต่อ
+              </button>
+            </div>
+          </div>
+        ) : isGoogleCastConnected && !isMoniter ? (
           <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-accent/20 to-primary/20 backdrop-blur-sm p-4">
             <div className="text-center p-4 bg-white/80 backdrop-blur-sm rounded-lg w-full max-w-sm">
               <div className="text-4xl mb-2">📡</div>
