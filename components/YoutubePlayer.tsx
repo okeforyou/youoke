@@ -1027,225 +1027,127 @@ function YoutubePlayer({
 
   const CastOverlayComponent = () => {
     // Don't show overlay at all when already casting (user sees "กำลัง Cast ไป Monitor" screen instead)
-    if (isCasting) return null;
+    if (isCasting || !isCastOverlayOpen) return null;
 
     return (
       isLogin &&
       !isMoniter && (
-        <div
-          className={`${
-            isCastOverlayOpen
-              ? "w-full aspect-video top-0 right-0"
-              : "w-16 h-16 top-5 right-5 drop-shadow-md rounded-full"
-          } bg-primary text-white z-2 left-auto
-    flex items-center justify-center transition-all duration-50 ${
-            !isCastOverlayOpen && playerState === PlayerStates.PLAYING ? "opacity-0" : ""
-          }`}
-          style={{
-            zIndex: 2,
-            position: "absolute",
-          }}
-        >
-          <div className="relative w-full h-full flex items-center justify-center">
-            {/* Overlay Content */}
-            {isCastOverlayOpen && (
-              <div className="absolute inset-0 flex items-center justify-center text-xl p-3 sm:p-4">
-                {isMobile ? (
-                  <div className="text-sm flex space-y-2 flex-col text-center w-full max-w-[88%] sm:max-w-[380px] mx-auto">
-                    <div className="flex items-center justify-center gap-2 text-base font-bold text-white">
-                      <TvIcon className="w-5 h-5" />
-                      <span>Cast to TV</span>
-                    </div>
-                    <div className="text-xs text-white/90">
-                      <p className="mb-1.5 font-medium">วิธีใช้งาน:</p>
-                      <ol className="list-decimal list-inside text-left space-y-0.5 px-1">
-                        <li>เปิด <span className="font-semibold">{baseUrl ? new URL(baseUrl).hostname : 'youoke.vercel.app'}/monitor</span> บนทีวี</li>
-                        <li>ดูเลขห้อง 4 หลักที่แสดงบนทีวี</li>
-                        <li>กรอกเลขห้องด้านล่าง แล้วกดเข้าร่วม</li>
-                      </ol>
-                    </div>
-
-                    {!isCasting ? (
-                      <div className="relative mt-1">
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          pattern="[0-9]*"
-                          className="py-2 px-3 block w-full text-black bg-white rounded-md text-center text-lg tracking-widest font-bold shadow-sm"
-                          placeholder="0000"
-                          maxLength={4}
-                          value={castInputRoomCode}
-                          onChange={(e) => setCastInputRoomCode(e.target.value.replace(/\D/g, ''))}
-                          onKeyPress={(e) => {
-                            if (e.key === 'Enter') {
-                              handleCastJoinRoom();
-                            }
-                          }}
-                          autoFocus
-                        />
-                        <button
-                          className="mt-1.5 w-full py-2 px-3 text-white rounded-md bg-success font-semibold disabled:opacity-50 flex items-center justify-center gap-2 text-sm shadow-sm"
-                          onClick={handleCastJoinRoom}
-                          disabled={isJoiningRoom || castInputRoomCode.length !== 4}
-                        >
-                          {isJoiningRoom ? (
-                            <>
-                              <ClockIcon className="w-4 h-4 animate-spin" />
-                              <span>กำลังเข้าร่วม...</span>
-                            </>
-                          ) : (
-                            <>
-                              <RocketLaunchIcon className="w-4 h-4" />
-                              <span>เข้าร่วมห้อง</span>
-                            </>
-                          )}
-                        </button>
-                        {castError && (
-                          <div className="mt-1.5 text-xs text-error bg-white/20 rounded px-2 py-1.5">
-                            {castError}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="mt-2 w-full">
-                        <div className="flex items-center justify-center gap-2 text-base mb-3">
-                          <CheckCircleIcon className="w-5 h-5 text-success" />
-                          <span>เชื่อมต่อแล้ว</span>
-                        </div>
-                        <div className="text-xl font-bold mb-4">ห้อง: {roomCode}</div>
-
-                        {/* Player Controls */}
-                        <div className="mb-4">
-                          <PlayerControls
-                            isPlaying={firebaseCastState.controls.isPlaying}
-                            onPlay={firebaseCastPlay}
-                            onPause={firebaseCastPause}
-                            onNext={firebaseCastNext}
-                            className="justify-center"
-                          />
-                        </div>
-
-                        <button
-                          className="w-full py-2 px-3 text-white rounded-lg bg-error font-semibold flex items-center justify-center gap-2"
-                          onClick={handleCastDisconnect}
-                        >
-                          <XMarkIcon className="w-4 h-4" />
-                          <span>ตัดการเชื่อมต่อ</span>
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  // Desktop version
-                  <div className="flex flex-col items-center justify-center text-center">
-                    {!isCasting ? (
-                      <>
-                        <div className="mb-4">
-                          <div className="flex items-center justify-center gap-2 text-2xl font-bold mb-2">
-                            <TvIcon className="w-6 h-6" />
-                            <span>Cast to TV</span>
-                          </div>
-                          <div className="text-sm mb-4">
-                            เปิด <span className="font-bold">{baseUrl ? new URL(baseUrl).hostname : 'youoke.vercel.app'}/monitor</span><br />
-                            บนทีวี แล้วกรอกเลขห้อง
-                          </div>
-                        </div>
-                        <input
-                          type="text"
-                          inputMode="numeric"
-                          pattern="[0-9]*"
-                          className="py-3 px-6 text-black bg-white rounded-lg text-center text-3xl tracking-widest font-bold mb-3"
-                          placeholder="0000"
-                          maxLength={4}
-                          value={castInputRoomCode}
-                          onChange={(e) => setCastInputRoomCode(e.target.value.replace(/\D/g, ''))}
-                          onKeyPress={(e) => {
-                            if (e.key === 'Enter') {
-                              handleCastJoinRoom();
-                            }
-                          }}
-                          autoFocus
-                        />
-                        <button
-                          className="py-2 px-6 text-white rounded-lg bg-success font-semibold disabled:opacity-50 flex items-center gap-2"
-                          onClick={handleCastJoinRoom}
-                          disabled={isJoiningRoom || castInputRoomCode.length !== 4}
-                        >
-                          {isJoiningRoom ? (
-                            <>
-                              <ClockIcon className="w-5 h-5 animate-spin" />
-                              <span>กำลังเข้าร่วม...</span>
-                            </>
-                          ) : (
-                            <>
-                              <RocketLaunchIcon className="w-5 h-5" />
-                              <span>เข้าร่วมห้อง</span>
-                            </>
-                          )}
-                        </button>
-                        {castError && (
-                          <div className="mt-2 text-sm text-error bg-white/20 rounded px-3 py-1">
-                            {castError}
-                          </div>
-                        )}
-                      </>
-                    ) : (
-                      <>
-                        <div className="flex items-center gap-2 text-2xl mb-4">
-                          <CheckCircleIcon className="w-7 h-7 text-success" />
-                          <span>เชื่อมต่อแล้ว</span>
-                        </div>
-                        <div className="text-4xl font-bold mb-6">ห้อง: {roomCode}</div>
-
-                        {/* Player Controls */}
-                        <div className="mb-6 w-full max-w-md">
-                          <PlayerControls
-                            isPlaying={firebaseCastState.controls.isPlaying}
-                            onPlay={firebaseCastPlay}
-                            onPause={firebaseCastPause}
-                            onNext={firebaseCastNext}
-                            className="justify-center"
-                          />
-                        </div>
-
-                        <button
-                          className="py-2 px-6 text-white rounded-lg bg-error font-semibold flex items-center gap-2"
-                          onClick={handleCastDisconnect}
-                        >
-                          <XMarkIcon className="w-5 h-5" />
-                          <span>ตัดการเชื่อมต่อ</span>
-                        </button>
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Toggle Button */}
-            <div
-              className={`cursor-pointer ${
-                isCastOverlayOpen ? "absolute top-5 right-5" : "w-16 h-16"
-              } flex flex-col items-center justify-center text-center`}
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-base-100 rounded-xl shadow-2xl max-w-lg w-full p-4 sm:p-6 relative my-auto max-h-[95vh] overflow-y-auto">
+            {/* Close Button */}
+            <button
               onClick={() => {
-                setIsCastOverlayOpen(!isCastOverlayOpen);
-                if (!isCastOverlayOpen) {
-                  handlePause();
-                  setCastError('');
-                  setCastInputRoomCode('');
-                }
+                setIsCastOverlayOpen(false);
+                setCastError('');
+                setCastInputRoomCode('');
               }}
+              className="absolute top-2 right-2 sm:top-4 sm:right-4 btn btn-sm btn-circle btn-ghost z-10"
             >
-              <TvIcon
-                className={`w-8 h-8 ${isCastOverlayOpen ? "opacity-0 hidden" : ""}`}
-              />
-              <div
-                className={`text-xs ${
-                  isCastOverlayOpen ? "bg-white text-primary px-2 py-0.5 rounded" : ""
-                }`}
-              >
-                {isCastOverlayOpen ? "ปิด" : ""} Cast
+              <XMarkIcon className="w-5 h-5" />
+            </button>
+
+            {/* Content */}
+            <div className="space-y-3 sm:space-y-4">
+              {/* Title */}
+              <div className="text-center mb-3 sm:mb-4 pr-8">
+                <div className="text-3xl sm:text-4xl mb-2 sm:mb-3">📺</div>
+                <h2 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2">Web Monitor Cast</h2>
+                <p className="text-xs sm:text-sm text-gray-600">
+                  ควบคุมเต็มรูปแบบ - เพิ่ม/ลบเพลงได้แบบ real-time
+                </p>
               </div>
+
+              {/* Instructions */}
+              <div className="bg-info/10 rounded-lg p-3 sm:p-4 text-xs sm:text-sm">
+                <p className="font-semibold mb-2">วิธีใช้งาน:</p>
+                <ol className="list-decimal list-inside space-y-1 text-left break-words">
+                  <li>เปิด <span className="font-semibold break-all">{baseUrl ? new URL(baseUrl).hostname : 'youoke.vercel.app'}/monitor</span> บนทีวี</li>
+                  <li>ดูเลขห้อง 4 หลักที่แสดงบนทีวี</li>
+                  <li>กรอกเลขห้องด้านล่าง แล้วกดเข้าร่วม</li>
+                </ol>
+              </div>
+
+              {!isCasting ? (
+                <div>
+                  {/* Room Code Input */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-semibold mb-2">เลขห้อง (4 หลัก)</label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      className="py-3 px-4 block w-full text-black bg-white border-2 border-gray-300 rounded-lg text-center text-2xl tracking-widest font-bold focus:border-primary focus:outline-none"
+                      placeholder="0000"
+                      maxLength={4}
+                      value={castInputRoomCode}
+                      onChange={(e) => setCastInputRoomCode(e.target.value.replace(/\D/g, ''))}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          handleCastJoinRoom();
+                        }
+                      }}
+                      autoFocus
+                    />
+                  </div>
+
+                  {/* Error Message */}
+                  {castError && (
+                    <div className="mb-4 p-3 bg-error/10 border border-error/30 rounded-lg text-sm text-error">
+                      {castError}
+                    </div>
+                  )}
+
+                  {/* Join Button */}
+                  <button
+                    className="w-full py-3 px-4 text-white rounded-lg bg-success hover:bg-success/90 font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
+                    onClick={handleCastJoinRoom}
+                    disabled={isJoiningRoom || castInputRoomCode.length !== 4}
+                  >
+                    {isJoiningRoom ? (
+                      <>
+                        <ClockIcon className="w-5 h-5 animate-spin" />
+                        <span>กำลังเข้าร่วม...</span>
+                      </>
+                    ) : (
+                      <>
+                        <RocketLaunchIcon className="w-5 h-5" />
+                        <span>เข้าร่วมห้อง</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  {/* Connected Status */}
+                  <div className="bg-success/10 rounded-lg p-4 mb-4">
+                    <div className="flex items-center justify-center gap-2 text-lg font-bold text-success mb-2">
+                      <CheckCircleIcon className="w-6 h-6" />
+                      <span>เชื่อมต่อแล้ว</span>
+                    </div>
+                    <div className="text-2xl font-bold text-center">ห้อง: {roomCode}</div>
+                  </div>
+
+                  {/* Player Controls */}
+                  <div className="mb-4">
+                    <PlayerControls
+                      isPlaying={firebaseCastState.controls.isPlaying}
+                      onPlay={firebaseCastPlay}
+                      onPause={firebaseCastPause}
+                      onNext={firebaseCastNext}
+                      className="justify-center"
+                    />
+                  </div>
+
+                  {/* Disconnect Button */}
+                  <button
+                    className="w-full py-3 px-4 text-white rounded-lg bg-error hover:bg-error/90 font-semibold flex items-center justify-center gap-2 transition-colors"
+                    onClick={handleCastDisconnect}
+                  >
+                    <XMarkIcon className="w-5 h-5" />
+                    <span>ตัดการเชื่อมต่อ</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
