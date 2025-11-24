@@ -182,12 +182,17 @@ const Monitor = () => {
             const state = data.state || data; // Fallback to flat if state doesn't exist
             const queueData = state.queue || [];
 
-            // Check if anyone has joined by checking if there's any queue
-            // More reliable than participants (which can fail due to auth)
-            const hasQueue = queueData.length > 0;
+            // Check if Remote has connected
+            // Either: 1) lastConnected timestamp exists (Remote sent CONNECT command)
+            //     OR: 2) queue has songs (backwards compatibility)
+            const hasConnected = !!(state.lastConnected) || queueData.length > 0;
 
-            console.log('🎵 Queue count:', queueData.length);
-            setIsConnected(hasQueue);
+            console.log('🔗 Connection check:', {
+              lastConnected: state.lastConnected ? new Date(state.lastConnected).toLocaleTimeString() : 'none',
+              queueLength: queueData.length,
+              hasConnected,
+            });
+            setIsConnected(hasConnected);
 
             setRoomData({
               queue: queueData,
@@ -396,6 +401,11 @@ const Monitor = () => {
           try {
             const newState = await executeCommand(envelope.command, roomData);
 
+            // Add lastConnected timestamp for CONNECT command
+            const stateToWrite = envelope.command.type === 'CONNECT'
+              ? { ...newState, lastConnected: Date.now() }
+              : newState;
+
             // Update state in Firebase
             const user = auth.currentUser;
             const token = user ? await user.getIdToken() : null;
@@ -406,7 +416,7 @@ const Monitor = () => {
             const stateResponse = await fetch(stateURL, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(newState),
+              body: JSON.stringify(stateToWrite),
             });
 
             if (!stateResponse.ok) {
@@ -457,6 +467,12 @@ const Monitor = () => {
     const newState = { ...currentState };
 
     switch (command.type) {
+      case 'CONNECT':
+        console.log('🔗 Remote connected');
+        // CONNECT doesn't modify roomData, but we need to update state with lastConnected
+        // This will be handled by returning the state with lastConnected added
+        break;
+
       case 'ADD_TO_QUEUE':
         newState.queue = [...newState.queue, command.payload.video];
         // If no current video, start playing the first one
@@ -594,13 +610,15 @@ const Monitor = () => {
     setPlayer(event.target);
 
     // If user has interacted, unmute immediately
-    if (hasUserInteraction && roomData && !roomData.controls.isMuted) {
+    if (hasUserInteraction) {
       try {
         await event.target.unMute();
-        console.log('🔊 Unmuted after user interaction');
+        console.log('🔊 Unmuted on player ready (user has interacted)');
       } catch (error) {
         console.warn('⚠️ Unmute failed:', error);
       }
+    } else {
+      console.log('🔇 Player ready but muted (waiting for user interaction)');
     }
   };
 
@@ -656,13 +674,15 @@ const Monitor = () => {
       console.log('▶️ Video playing');
 
       // Unmute if user has interacted
-      if (hasUserInteraction && player && roomData && !roomData.controls.isMuted) {
+      if (hasUserInteraction && player) {
         try {
           await player.unMute();
           console.log('🔊 Unmuted (user has interacted)');
         } catch (error) {
           console.warn('⚠️ Unmute failed:', error);
         }
+      } else {
+        console.log('🔇 Playing muted (waiting for user interaction)');
       }
     } else if (event.data === 2) {
       console.log('⏸️ Video paused');
@@ -691,40 +711,138 @@ const Monitor = () => {
     const qrCodeUrl = baseUrl ? `${baseUrl}/?castRoom=${roomCode}` : '';
 
     return (
-      <div className="relative h-screen bg-black text-white">
-        <div className="absolute text-center inset-0 flex flex-col items-center justify-center px-4">
-          <h1 className="text-6xl font-bold mb-8">YouOke TV</h1>
+      <div
+        className="relative h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white cursor-pointer overflow-hidden"
+        onClick={() => {
+          if (!hasUserInteraction) {
+            console.log('👆 User clicked on QR screen - enabling audio');
+            setHasUserInteraction(true);
+          }
+        }}
+      >
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute top-0 left-0 w-96 h-96 bg-primary rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-accent rounded-full blur-3xl"></div>
+        </div>
 
-          {/* QR Code พร้อมกรอบสวยๆ */}
-          {qrCodeUrl && (
-            <div className="bg-white p-8 rounded-2xl shadow-2xl mb-6">
-              <QRCodeSVG
-                value={qrCodeUrl}
-                size={256}
-                level="M"
-              />
-            </div>
-          )}
-
-          {/* Room Code Display */}
-          <div className="bg-primary/20 border-4 border-primary rounded-2xl px-12 py-6 mb-6">
-            <p className="text-xl text-gray-300 mb-2">เลขห้อง</p>
-            <p className="text-7xl font-bold tracking-widest text-primary">{roomCode}</p>
+        <div className="relative h-full flex flex-col items-center justify-center px-4 sm:px-6 md:px-8">
+          {/* Logo/Title */}
+          <div className="text-center mb-8 md:mb-12">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-2 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+              YouOke TV
+            </h1>
+            <p className="text-sm sm:text-base md:text-lg text-gray-400">
+              คาราโอเกะออนไลน์ ฟรี ไม่มีโฆษณา
+            </p>
           </div>
 
-          {/* Instructions */}
-          <div className="space-y-3 max-w-xl">
-            <p className="text-2xl text-gray-300">📱 วิธีใช้งาน:</p>
-            <div className="text-left bg-base-200/10 rounded-lg p-4 space-y-2">
-              <p className="text-lg">1. <span className="font-bold text-primary">Scan QR Code</span> ด้วยกล้องมือถือ</p>
-              <p className="text-lg pl-6 text-gray-400">หรือ</p>
-              <p className="text-lg">2. เปิด <span className="font-semibold">play.okeforyou.com</span> บนมือถือ</p>
-              <p className="text-lg">3. กดปุ่ม "Cast to TV"</p>
-              <p className="text-lg">4. กรอกเลขห้อง <span className="text-primary font-bold">{roomCode}</span></p>
+          {/* Main Content Container - YouTube Style */}
+          <div className="w-full max-w-4xl mx-auto">
+            <div className="bg-gray-800/50 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-700/50 overflow-hidden">
+              <div className="grid md:grid-cols-2 gap-0">
+                {/* Left: QR Code Section */}
+                <div className="flex flex-col items-center justify-center p-8 md:p-12 bg-gradient-to-br from-gray-800/80 to-gray-900/80">
+                  {qrCodeUrl && (
+                    <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-2xl mb-6">
+                      <QRCodeSVG
+                        value={qrCodeUrl}
+                        size={window.innerWidth < 640 ? 180 : 220}
+                        level="M"
+                      />
+                    </div>
+                  )}
+
+                  {/* Room Code */}
+                  <div className="text-center">
+                    <p className="text-xs sm:text-sm text-gray-400 mb-2">เลขห้อง</p>
+                    <p className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-widest text-primary">
+                      {roomCode}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Right: Instructions Section */}
+                <div className="flex flex-col justify-center p-8 md:p-12 space-y-6">
+                  <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+                    <span className="text-2xl">📱</span>
+                    วิธีใช้งาน
+                  </h2>
+
+                  <div className="space-y-4">
+                    {/* Step 1 */}
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                        <span className="text-primary font-bold">1</span>
+                      </div>
+                      <div>
+                        <p className="text-sm sm:text-base text-gray-200">
+                          <span className="font-semibold text-primary">Scan QR Code</span> ด้วยกล้องมือถือ
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Divider */}
+                    <div className="flex items-center gap-3 pl-11">
+                      <div className="flex-1 border-t border-gray-600"></div>
+                      <span className="text-xs text-gray-500">หรือ</span>
+                      <div className="flex-1 border-t border-gray-600"></div>
+                    </div>
+
+                    {/* Step 2 */}
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                        <span className="text-primary font-bold">2</span>
+                      </div>
+                      <div>
+                        <p className="text-sm sm:text-base text-gray-200">
+                          เปิด <span className="font-mono font-semibold text-accent">play.okeforyou.com</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Step 3 */}
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                        <span className="text-primary font-bold">3</span>
+                      </div>
+                      <div>
+                        <p className="text-sm sm:text-base text-gray-200">
+                          กดปุ่ม <span className="font-semibold">"Cast to TV"</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Step 4 */}
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                        <span className="text-primary font-bold">4</span>
+                      </div>
+                      <div>
+                        <p className="text-sm sm:text-base text-gray-200">
+                          กรอกเลขห้อง <span className="font-bold text-primary">{roomCode}</span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Audio Hint */}
+                  {!hasUserInteraction && (
+                    <div className="mt-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl px-4 py-3">
+                      <p className="text-xs sm:text-sm text-yellow-200 flex items-center gap-2">
+                        <span>💡</span>
+                        <span className="font-medium">กดที่หน้าจอเพื่อเปิดเสียง</span>
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
-          <p className="text-xl text-gray-500 mt-8 animate-pulse">
+          {/* Status */}
+          <p className="text-base sm:text-lg text-gray-400 mt-8 animate-pulse flex items-center gap-2">
+            <span className="w-2 h-2 bg-primary rounded-full animate-ping"></span>
             รอเชื่อมต่อจากมือถือ...
           </p>
         </div>
@@ -746,40 +864,6 @@ const Monitor = () => {
             onError={onPlayerError}
             className="w-full h-full"
           />
-        ) : !hasUserInteraction ? (
-          <div
-            className="flex items-center justify-center h-full cursor-pointer bg-gradient-to-br from-primary/20 to-accent/20 hover:from-primary/30 hover:to-accent/30 transition-all"
-            onClick={async () => {
-              console.log('👆 User clicked to start');
-              setHasUserInteraction(true);
-
-              // Unmute if video is ready
-              if (player && roomData && !roomData.controls.isMuted) {
-                try {
-                  await player.unMute();
-                  console.log('🔊 Unmuted after user click');
-                } catch (error) {
-                  console.warn('⚠️ Unmute failed:', error);
-                }
-              }
-            }}
-          >
-            <div className="text-center">
-              <div className="text-8xl mb-6">🎤</div>
-              <h1 className="text-6xl font-bold mb-4">YouOke TV</h1>
-              <p className="text-3xl mb-6">เลขห้อง: {roomCode}</p>
-              <p className="text-2xl text-gray-400 mb-8">เชื่อมต่อแล้ว ✅</p>
-
-              {/* Big "Start" button */}
-              <div className="bg-primary hover:bg-primary/90 text-white px-12 py-6 rounded-2xl text-3xl font-bold inline-block shadow-2xl transform hover:scale-105 transition-all animate-pulse">
-                กดเพื่อเริ่มเล่น
-              </div>
-
-              <p className="text-lg text-gray-500 mt-8">
-                เพิ่มเพลงจากมือถือได้เลย
-              </p>
-            </div>
-          </div>
         ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
@@ -792,68 +876,115 @@ const Monitor = () => {
             </div>
           </div>
         )}
+
+        {/* Audio hint overlay - บังคับให้ต้องกดก่อนเปิดเสียง */}
+        {!hasUserInteraction && (
+          <div
+            className="absolute inset-0 flex items-center justify-center bg-black/90 backdrop-blur-md cursor-pointer z-50"
+            onClick={async () => {
+              console.log('👆 User clicked to enable audio');
+              setHasUserInteraction(true);
+
+              // Unmute and ensure playback
+              if (player) {
+                try {
+                  await player.unMute();
+                  console.log('🔊 Unmuted after user click');
+
+                  // Make sure video is playing
+                  const state = await player.getPlayerState();
+                  if (state !== 1) {
+                    await player.playVideo();
+                    console.log('▶️ Playing after unmute');
+                  }
+                } catch (error) {
+                  console.warn('⚠️ Unmute/Play failed:', error);
+                }
+              }
+            }}
+          >
+            <div className="text-center bg-primary px-16 py-12 rounded-3xl shadow-2xl animate-pulse">
+              <div className="text-8xl mb-6">🔇➡️🔊</div>
+              <h2 className="text-5xl font-bold mb-6">กดเพื่อเริ่มใช้งาน</h2>
+              <p className="text-2xl text-white/90">
+                {roomData.currentVideo ? 'วิดีโอพร้อมเล่น' : 'กดที่หน้าจอเพื่อเริ่มต้น'}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Queue Display */}
+      {/* Queue Display - Right Side Vertical */}
       {roomData.queue.length > 0 && (
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent p-6">
-          <div className="max-w-6xl mx-auto">
+        <div className="absolute top-0 right-0 h-full w-80 lg:w-96 bg-gradient-to-l from-black/90 via-black/80 to-transparent backdrop-blur-md p-6 overflow-y-auto">
+          <div className="space-y-6">
             {/* Now Playing */}
             {roomData.currentVideo && (
-              <div className="mb-4">
-                <p className="text-sm text-gray-400 mb-1">กำลังเล่น:</p>
-                <h2 className="text-2xl font-bold truncate">
-                  {roomData.currentVideo.title}
-                </h2>
-                {roomData.currentVideo.author && (
-                  <p className="text-lg text-gray-300">{roomData.currentVideo.author}</p>
-                )}
+              <div>
+                <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide">กำลังเล่น</p>
+                <div className="bg-primary/20 border border-primary/30 rounded-xl p-4">
+                  <h2 className="text-lg font-bold mb-1 line-clamp-2">
+                    {roomData.currentVideo.title}
+                  </h2>
+                  {roomData.currentVideo.author && (
+                    <p className="text-sm text-gray-300 truncate">{roomData.currentVideo.author}</p>
+                  )}
+                </div>
               </div>
             )}
 
             {/* Next in Queue */}
             {roomData.queue.length > roomData.currentIndex + 1 && (
               <div>
-                <p className="text-sm text-gray-400 mb-2">คิวถัดไป:</p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                <p className="text-xs text-gray-400 mb-3 uppercase tracking-wide flex items-center gap-2">
+                  <span>🎵</span>
+                  <span>คิวถัดไป</span>
+                  <span className="ml-auto text-xs bg-white/10 px-2 py-0.5 rounded-full">
+                    {roomData.queue.length - roomData.currentIndex - 1} เพลง
+                  </span>
+                </p>
+                <div className="space-y-2">
                   {roomData.queue
-                    .slice(roomData.currentIndex + 1, roomData.currentIndex + 4)
+                    .slice(roomData.currentIndex + 1, roomData.currentIndex + 8)
                     .map((video, index) => (
                       <div
                         key={video.key}
-                        className="bg-gray-900/50 rounded p-2 text-sm"
+                        className="bg-white/5 hover:bg-white/10 rounded-lg p-3 transition-all"
                       >
-                        <p className="text-xs text-gray-400">
-                          #{roomData.currentIndex + index + 2}
-                        </p>
-                        <p className="font-semibold truncate">{video.title}</p>
-                        {video.author && (
-                          <p className="text-xs text-gray-400 truncate">
-                            {video.author}
-                          </p>
-                        )}
+                        <div className="flex items-start gap-3">
+                          <div className="flex-shrink-0 w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center">
+                            <span className="text-primary font-bold text-xs">
+                              {index + 1}
+                            </span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-sm line-clamp-2 mb-0.5">
+                              {video.title}
+                            </p>
+                            {video.author && (
+                              <p className="text-xs text-gray-400 truncate">
+                                {video.author}
+                              </p>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     ))}
                 </div>
+
+                {/* More songs indicator */}
+                {roomData.queue.length > roomData.currentIndex + 9 && (
+                  <div className="mt-3 text-center">
+                    <p className="text-xs text-gray-400">
+                      + อีก {roomData.queue.length - roomData.currentIndex - 9} เพลง
+                    </p>
+                  </div>
+                )}
               </div>
             )}
-
-            {/* Queue count */}
-            <div className="mt-3 text-center">
-              <p className="text-xs text-gray-400">
-                {roomData.currentIndex + 1} / {roomData.queue.length} เพลง
-                {roomData.queue.length > roomData.currentIndex + 4 &&
-                  ` (เหลืออีก ${roomData.queue.length - roomData.currentIndex - 1} เพลง)`}
-              </p>
-            </div>
           </div>
         </div>
       )}
-
-      {/* Connection indicator */}
-      <div className="absolute top-4 right-4 bg-green-600 text-white px-3 py-1 rounded-full text-sm">
-        🔗 เชื่อมต่อแล้ว
-      </div>
     </div>
   );
 };

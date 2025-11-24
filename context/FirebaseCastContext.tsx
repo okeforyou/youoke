@@ -200,6 +200,10 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
       setIsConnected(true);
       console.log('✅ Joined room via REST API:', code, isHostUser ? 'as host' : 'as guest');
 
+      // Send CONNECT command to notify Monitor
+      sendCommand(code, { type: 'CONNECT', payload: null });
+      console.log('📡 Sent CONNECT command');
+
       return true;
     } catch (error) {
       console.error('❌ Failed to join room:', error);

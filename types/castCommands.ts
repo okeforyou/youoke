@@ -16,6 +16,7 @@ export interface QueueVideo {
 
 // Command Types
 export type CastCommand =
+  | { type: 'CONNECT'; payload: null }
   | { type: 'PLAY_NOW'; payload: { video: QueueVideo } }
   | { type: 'ADD_TO_QUEUE'; payload: { video: QueueVideo } }
   | { type: 'PLAY_NEXT'; payload: { video: QueueVideo } }
@@ -57,6 +58,7 @@ export interface CastState {
     duration?: number;
   };
   participants?: { [uid: string]: boolean };
+  lastConnected?: number; // Timestamp when Remote last connected
 }
 
 // Room Data Structure
