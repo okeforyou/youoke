@@ -14,10 +14,6 @@ import {
   MusicalNoteIcon,
   LightBulbIcon,
   TvIcon,
-  PlayIcon,
-  PauseIcon,
-  ForwardIcon,
-  BackwardIcon,
 } from '@heroicons/react/24/outline';
 
 interface QueueVideo {
@@ -52,11 +48,9 @@ const Monitor = () => {
   const [baseUrl, setBaseUrl] = useState<string>('');
   const [isPlaying, setIsPlaying] = useState(false);
   const [showQueue, setShowQueue] = useState(true);
-  const [showControls, setShowControls] = useState(true);
 
   // Track previous queue length for temporary queue display
   const lastQueueLengthRef = useRef(0);
-  const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Detect base URL (client-side only)
   useEffect(() => {
@@ -651,9 +645,9 @@ const Monitor = () => {
       // Show queue when queue changes (added or removed)
       if (currentLength !== previousLength && previousLength !== 0) {
         if (currentLength > previousLength) {
-          console.log('📋 New song added - showing queue for 10 seconds');
+          console.log('📋 New song added - showing queue for 20 seconds');
         } else {
-          console.log('📋 Song removed - showing queue for 10 seconds');
+          console.log('📋 Song removed - showing queue for 20 seconds');
         }
 
         setShowQueue(true);
@@ -661,7 +655,7 @@ const Monitor = () => {
         const timer = setTimeout(() => {
           console.log('📋 Returning to normal queue visibility');
           // Queue will be controlled by the time-based logic below
-        }, 10000); // 10 seconds
+        }, 20000); // 20 seconds
 
         lastQueueLengthRef.current = currentLength;
         return () => clearTimeout(timer);
@@ -769,200 +763,6 @@ const Monitor = () => {
   // Handle player error
   const onPlayerError = (event: { data: number }) => {
     console.error('Player error:', event.data);
-  };
-
-  // Mouse movement tracking for auto-hide controls
-  useEffect(() => {
-    const handleMouseMove = () => {
-      setShowControls(true);
-
-      // Clear existing timeout
-      if (controlsTimeoutRef.current) {
-        clearTimeout(controlsTimeoutRef.current);
-      }
-
-      // Hide controls after 3 seconds of inactivity
-      controlsTimeoutRef.current = setTimeout(() => {
-        setShowControls(false);
-      }, 3000);
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      if (controlsTimeoutRef.current) {
-        clearTimeout(controlsTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  // Control button handlers
-  const handlePlayPause = async () => {
-    if (!player || !roomData) return;
-
-    try {
-      const dbURL = realtimeDb.app.options.databaseURL;
-      const user = auth.currentUser;
-      const token = user ? await user.getIdToken() : null;
-
-      const stateURL = token
-        ? `${dbURL}/rooms/${roomCode}/state.json?auth=${token}`
-        : `${dbURL}/rooms/${roomCode}/state.json`;
-
-      const newState = {
-        ...roomData,
-        controls: {
-          ...roomData.controls,
-          isPlaying: !roomData.controls.isPlaying,
-        },
-      };
-
-      const response = await fetch(stateURL, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ controls: newState.controls }),
-      });
-
-      if (response.ok) {
-        if (!roomData.controls.isPlaying) {
-          await player.playVideo();
-          console.log('▶️ Manual play');
-        } else {
-          await player.pauseVideo();
-          console.log('⏸️ Manual pause');
-        }
-      }
-    } catch (error) {
-      console.error('❌ Play/Pause failed:', error);
-    }
-  };
-
-  const handleNext = async () => {
-    if (!roomData || !player) return;
-
-    const nextIndex = roomData.currentIndex + 1;
-    if (nextIndex >= roomData.queue.length) {
-      console.log('🏁 No next song');
-      return;
-    }
-
-    try {
-      const nextVideo = roomData.queue[nextIndex];
-      const dbURL = realtimeDb.app.options.databaseURL;
-      const user = auth.currentUser;
-      const token = user ? await user.getIdToken() : null;
-
-      const stateURL = token
-        ? `${dbURL}/rooms/${roomCode}/state.json?auth=${token}`
-        : `${dbURL}/rooms/${roomCode}/state.json`;
-
-      const newState = {
-        ...roomData,
-        currentIndex: nextIndex,
-        currentVideo: nextVideo,
-        controls: {
-          ...roomData.controls,
-          isPlaying: true,
-        },
-      };
-
-      const response = await fetch(stateURL, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newState),
-      });
-
-      if (response.ok) {
-        console.log('⏭️ Manual next:', nextVideo.title);
-      }
-    } catch (error) {
-      console.error('❌ Next failed:', error);
-    }
-  };
-
-  const handlePrevious = async () => {
-    if (!roomData || !player) return;
-
-    const prevIndex = roomData.currentIndex - 1;
-    if (prevIndex < 0) {
-      console.log('🏁 No previous song');
-      return;
-    }
-
-    try {
-      const prevVideo = roomData.queue[prevIndex];
-      const dbURL = realtimeDb.app.options.databaseURL;
-      const user = auth.currentUser;
-      const token = user ? await user.getIdToken() : null;
-
-      const stateURL = token
-        ? `${dbURL}/rooms/${roomCode}/state.json?auth=${token}`
-        : `${dbURL}/rooms/${roomCode}/state.json`;
-
-      const newState = {
-        ...roomData,
-        currentIndex: prevIndex,
-        currentVideo: prevVideo,
-        controls: {
-          ...roomData.controls,
-          isPlaying: true,
-        },
-      };
-
-      const response = await fetch(stateURL, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newState),
-      });
-
-      if (response.ok) {
-        console.log('⏮️ Manual previous:', prevVideo.title);
-      }
-    } catch (error) {
-      console.error('❌ Previous failed:', error);
-    }
-  };
-
-  const handleToggleMute = async () => {
-    if (!player || !roomData) return;
-
-    try {
-      const newMuteState = !roomData.controls.isMuted;
-      const dbURL = realtimeDb.app.options.databaseURL;
-      const user = auth.currentUser;
-      const token = user ? await user.getIdToken() : null;
-
-      const stateURL = token
-        ? `${dbURL}/rooms/${roomCode}/state.json?auth=${token}`
-        : `${dbURL}/rooms/${roomCode}/state.json`;
-
-      const newState = {
-        ...roomData,
-        controls: {
-          ...roomData.controls,
-          isMuted: newMuteState,
-        },
-      };
-
-      const response = await fetch(stateURL, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ controls: newState.controls }),
-      });
-
-      if (response.ok) {
-        if (newMuteState) {
-          await player.mute();
-          console.log('🔇 Muted');
-        } else {
-          await player.unMute();
-          console.log('🔊 Unmuted');
-        }
-      }
-    } catch (error) {
-      console.error('❌ Toggle mute failed:', error);
-    }
   };
 
   const opts = {
@@ -1188,64 +988,9 @@ const Monitor = () => {
           </div>
         )}
 
-        {/* Control Buttons - Bottom Center (Auto-hide) */}
-        {roomData.currentVideo && showControls && (
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30 transition-opacity duration-300">
-            <div className="bg-black/80 backdrop-blur-md rounded-full px-6 py-3 flex items-center gap-3 shadow-2xl border border-white/10">
-              {/* Previous Button */}
-              <button
-                onClick={handlePrevious}
-                disabled={roomData.currentIndex === 0}
-                className="p-3 rounded-full hover:bg-white/20 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                title="เพลงก่อนหน้า"
-              >
-                <BackwardIcon className="w-6 h-6 text-white" />
-              </button>
-
-              {/* Play/Pause Button */}
-              <button
-                onClick={handlePlayPause}
-                className="p-4 rounded-full bg-primary hover:bg-primary/80 transition-all"
-                title={roomData.controls.isPlaying ? 'หยุดชั่วคราว' : 'เล่น'}
-              >
-                {roomData.controls.isPlaying ? (
-                  <PauseIcon className="w-7 h-7 text-white" />
-                ) : (
-                  <PlayIcon className="w-7 h-7 text-white" />
-                )}
-              </button>
-
-              {/* Next Button */}
-              <button
-                onClick={handleNext}
-                disabled={roomData.currentIndex >= roomData.queue.length - 1}
-                className="p-3 rounded-full hover:bg-white/20 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                title="เพลงถัดไป"
-              >
-                <ForwardIcon className="w-6 h-6 text-white" />
-              </button>
-
-              {/* Mute Toggle */}
-              <div className="ml-2 pl-2 border-l border-white/20">
-                <button
-                  onClick={handleToggleMute}
-                  className="p-3 rounded-full hover:bg-white/20 transition-all"
-                  title={roomData.controls.isMuted ? 'เปิดเสียง' : 'ปิดเสียง'}
-                >
-                  {roomData.controls.isMuted ? (
-                    <SpeakerXMarkIcon className="w-6 h-6 text-white" />
-                  ) : (
-                    <SpeakerWaveIcon className="w-6 h-6 text-white" />
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Room Code Display - Bottom Left (Always visible when playing) */}
+        {/* Room Code Display - Top Left (Always visible when playing) */}
         {roomData.currentVideo && (
-          <div className="absolute bottom-8 left-8 z-20">
+          <div className="absolute top-8 left-8 z-50">
             <div className="bg-black/60 backdrop-blur-md rounded-lg px-4 py-2 border border-white/10">
               <p className="text-xs text-gray-400 mb-1">Room Code</p>
               <p className="text-2xl font-bold text-primary tracking-widest">{roomCode}</p>
@@ -1256,7 +1001,7 @@ const Monitor = () => {
 
       {/* Queue Display - Right Side Vertical */}
       {roomData.queue.length > 0 && showQueue && (
-        <div className="absolute top-0 right-0 h-full w-80 lg:w-96 bg-gradient-to-l from-black/90 via-black/80 to-transparent backdrop-blur-md p-6 overflow-y-auto transition-all duration-500">
+        <div className="absolute top-0 right-0 h-full w-80 lg:w-96 z-50 bg-gradient-to-l from-black/90 via-black/80 to-transparent backdrop-blur-md p-6 overflow-y-auto transition-all duration-500">
           <div className="space-y-6">
             {/* Now Playing */}
             {roomData.currentVideo && (
