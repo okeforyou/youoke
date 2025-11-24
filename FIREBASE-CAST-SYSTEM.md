@@ -428,6 +428,56 @@ npm run dev
 - [ ] User favorites sync
 - [ ] MIDI file support (see ROADMAP-MIDI.md)
 
+### Phase 2: Multi-User Features (Estimated: 2-3 hours)
+
+**Goal:** Allow multiple people to join the same room and see who added which songs.
+
+**Features:**
+- [ ] **Guest Mode** - Allow non-logged-in users to join by entering their name
+- [ ] **Show Song Owner** - Display who added each song in the queue
+- [ ] **Owner Controls** - Host can delete songs added by others
+- [ ] **Share Link** - Generate shareable link instead of manual room code entry
+- [ ] **Participant List** - Show all users currently in the room
+
+**Data Structure Changes:**
+```typescript
+interface QueueVideo {
+  videoId: string;
+  title: string;
+  author?: string;
+  key: number;
+  addedBy?: {
+    uid: string;           // User ID or guest ID
+    displayName: string;   // User's name or guest name
+    isGuest: boolean;      // true if not logged in
+  };
+}
+```
+
+**Implementation Tasks:**
+1. Add guest name input on join (for non-logged-in users)
+2. Update `addToQueue()` to include `addedBy` field
+3. Update Queue Display UI to show who added each song
+4. Add "Remove" button (visible only to host) next to each song
+5. Generate shareable link: `youoke.vercel.app/?castRoom=1234`
+6. Add participant list overlay (optional)
+
+**UI Mockup:**
+```
+┌─────────────────────────────┐
+│ คิวถัดไป (3 เพลง)           │
+├─────────────────────────────┤
+│ 1. Never Gonna Give You Up  │
+│    โดย: John (Guest)    [×] │  ← Host can remove
+│                              │
+│ 2. Bohemian Rhapsody        │
+│    โดย: user@example.com    │
+│                              │
+│ 3. Hotel California         │
+│    โดย: Alice (Guest)   [×] │
+└─────────────────────────────┘
+```
+
 ### Performance Optimizations
 - [ ] Reduce polling frequency when idle
 - [ ] Implement WebSocket for real-time updates
@@ -456,6 +506,6 @@ For issues or questions:
 
 ---
 
-**Last Updated:** 2025-01-24
+**Last Updated:** 2025-01-24 (Phase 2 roadmap added)
 **Version:** 1.0.0
 **Status:** Production Ready ✅
