@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import YouTube, { YouTubePlayer } from 'react-youtube';
 import { ref, off } from 'firebase/database';
 import { signInAnonymously } from 'firebase/auth';
@@ -47,6 +47,9 @@ const Monitor = () => {
   const [baseUrl, setBaseUrl] = useState<string>('');
   const [isPlaying, setIsPlaying] = useState(false);
   const [showQueue, setShowQueue] = useState(true);
+
+  // Track previous queue length for temporary queue display
+  const lastQueueLengthRef = useRef(0);
 
   // Detect base URL (client-side only)
   useEffect(() => {
@@ -632,6 +635,25 @@ const Monitor = () => {
     }
   };
 
+  // Temporarily show queue when new songs are added
+  useEffect(() => {
+    if (roomData && roomData.queue.length > lastQueueLengthRef.current) {
+      // New song added - show queue temporarily for user feedback
+      console.log('📋 New song added - showing queue for 5 seconds');
+      setShowQueue(true);
+
+      const timer = setTimeout(() => {
+        console.log('📋 Returning to normal queue visibility');
+        // Queue will be controlled by the time-based logic below
+      }, 5000);
+
+      lastQueueLengthRef.current = roomData.queue.length;
+      return () => clearTimeout(timer);
+    }
+
+    lastQueueLengthRef.current = roomData?.queue.length || 0;
+  }, [roomData?.queue.length]);
+
   // Check remaining time and show/hide queue
   useEffect(() => {
     if (!player || !isPlaying) {
@@ -834,7 +856,7 @@ const Monitor = () => {
                       </div>
                       <div>
                         <p className="text-sm sm:text-base text-gray-200">
-                          เปิด <span className="font-mono font-semibold text-accent">play.okeforyou.com</span>
+                          เปิด <span className="font-mono font-semibold text-accent">{baseUrl ? new URL(baseUrl).hostname : 'youoke.vercel.app'}</span>
                         </p>
                       </div>
                     </div>
