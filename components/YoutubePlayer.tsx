@@ -92,6 +92,7 @@ function YoutubePlayer({
   const [castError, setCastError] = useState<string>('');
   const [isJoiningRoom, setIsJoiningRoom] = useState<boolean>(false);
   const [isDebugOverlayOpen, setIsDebugOverlayOpen] = useState<boolean>(false);
+  const [baseUrl, setBaseUrl] = useState<string>('');
 
   const { playlist, curVideoId, setCurVideoId, setPlaylist } =
     useKaraokeState();
@@ -118,6 +119,13 @@ function YoutubePlayer({
       setIsMouseMoving(false);
     }, 3000); // 3 seconds delay before hiding the div
   };
+
+  // Detect base URL for dynamic domain support
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setBaseUrl(window.location.origin);
+    }
+  }, []);
 
   useEffect(() => {
     window.addEventListener("mousemove", handleMouseMove);
@@ -1051,7 +1059,7 @@ function YoutubePlayer({
                     <div className="text-xs text-white/90">
                       <p className="mb-1.5 font-medium">วิธีใช้งาน:</p>
                       <ol className="list-decimal list-inside text-left space-y-0.5 px-1">
-                        <li>เปิด <span className="font-semibold">youoke.vercel.app/monitor</span> บนทีวี</li>
+                        <li>เปิด <span className="font-semibold">{baseUrl ? new URL(baseUrl).hostname : 'youoke.vercel.app'}/monitor</span> บนทีวี</li>
                         <li>ดูเลขห้อง 4 หลักที่แสดงบนทีวี</li>
                         <li>กรอกเลขห้องด้านล่าง แล้วกดเข้าร่วม</li>
                       </ol>
@@ -1138,7 +1146,7 @@ function YoutubePlayer({
                             <span>Cast to TV</span>
                           </div>
                           <div className="text-sm mb-4">
-                            เปิด <span className="font-bold">youoke.vercel.app/monitor</span><br />
+                            เปิด <span className="font-bold">{baseUrl ? new URL(baseUrl).hostname : 'youoke.vercel.app'}/monitor</span><br />
                             บนทีวี แล้วกรอกเลขห้อง
                           </div>
                         </div>

@@ -6,6 +6,14 @@ import { signInAnonymously } from 'firebase/auth';
 import { realtimeDb, auth } from '../firebase';
 import { CastCommand, CastCommandEnvelope } from '../types/castCommands';
 import { QRCodeSVG } from 'qrcode.react';
+import {
+  DevicePhoneMobileIcon,
+  SpeakerXMarkIcon,
+  SpeakerWaveIcon,
+  ArrowRightIcon,
+  MusicalNoteIcon,
+  LightBulbIcon,
+} from '@heroicons/react/24/outline';
 
 interface QueueVideo {
   videoId: string;
@@ -37,6 +45,8 @@ const Monitor = () => {
   const [isLoadingVideo, setIsLoadingVideo] = useState(false);
   const [hasUserInteraction, setHasUserInteraction] = useState(false);
   const [baseUrl, setBaseUrl] = useState<string>('');
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [showQueue, setShowQueue] = useState(true);
 
   // Detect base URL (client-side only)
   useEffect(() => {
@@ -622,6 +632,32 @@ const Monitor = () => {
     }
   };
 
+  // Check remaining time and show/hide queue
+  useEffect(() => {
+    if (!player || !isPlaying) {
+      setShowQueue(true); // Show queue when not playing
+      return;
+    }
+
+    const checkTime = setInterval(async () => {
+      try {
+        const currentTime = await player.getCurrentTime();
+        const duration = await player.getDuration();
+        const remaining = duration - currentTime;
+
+        // Show queue at the beginning (first 15s) OR near the end (last 60s)
+        const showAtStart = currentTime < 15;
+        const showAtEnd = remaining < 60;
+
+        setShowQueue(showAtStart || showAtEnd);
+      } catch (error) {
+        console.error('❌ Queue visibility check error:', error);
+      }
+    }, 1000);
+
+    return () => clearInterval(checkTime);
+  }, [player, isPlaying]);
+
   // Handle player state change
   const onPlayerStateChange = async (event: { data: number }) => {
     // YouTube player states: 0 = ended, 1 = playing, 2 = paused
@@ -672,6 +708,7 @@ const Monitor = () => {
       }
     } else if (event.data === 1) {
       console.log('▶️ Video playing');
+      setIsPlaying(true);
 
       // Unmute if user has interacted
       if (hasUserInteraction && player) {
@@ -686,6 +723,7 @@ const Monitor = () => {
       }
     } else if (event.data === 2) {
       console.log('⏸️ Video paused');
+      setIsPlaying(false);
     }
   };
 
@@ -765,7 +803,7 @@ const Monitor = () => {
                 {/* Right: Instructions Section */}
                 <div className="flex flex-col justify-center p-8 md:p-12 space-y-6">
                   <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
-                    <span className="text-2xl">📱</span>
+                    <DevicePhoneMobileIcon className="w-7 h-7 sm:w-8 sm:h-8" />
                     วิธีใช้งาน
                   </h2>
 
@@ -830,7 +868,7 @@ const Monitor = () => {
                   {!hasUserInteraction && (
                     <div className="mt-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl px-4 py-3">
                       <p className="text-xs sm:text-sm text-yellow-200 flex items-center gap-2">
-                        <span>💡</span>
+                        <LightBulbIcon className="w-5 h-5" />
                         <span className="font-medium">กดที่หน้าจอเพื่อเปิดเสียง</span>
                       </p>
                     </div>
@@ -904,7 +942,11 @@ const Monitor = () => {
             }}
           >
             <div className="text-center bg-primary px-16 py-12 rounded-3xl shadow-2xl animate-pulse">
-              <div className="text-8xl mb-6">🔇➡️🔊</div>
+              <div className="flex items-center justify-center gap-4 mb-6">
+                <SpeakerXMarkIcon className="w-20 h-20" />
+                <ArrowRightIcon className="w-12 h-12" />
+                <SpeakerWaveIcon className="w-20 h-20" />
+              </div>
               <h2 className="text-5xl font-bold mb-6">กดเพื่อเริ่มใช้งาน</h2>
               <p className="text-2xl text-white/90">
                 {roomData.currentVideo ? 'วิดีโอพร้อมเล่น' : 'กดที่หน้าจอเพื่อเริ่มต้น'}
@@ -915,8 +957,8 @@ const Monitor = () => {
       </div>
 
       {/* Queue Display - Right Side Vertical */}
-      {roomData.queue.length > 0 && (
-        <div className="absolute top-0 right-0 h-full w-80 lg:w-96 bg-gradient-to-l from-black/90 via-black/80 to-transparent backdrop-blur-md p-6 overflow-y-auto">
+      {roomData.queue.length > 0 && showQueue && (
+        <div className="absolute top-0 right-0 h-full w-80 lg:w-96 bg-gradient-to-l from-black/90 via-black/80 to-transparent backdrop-blur-md p-6 overflow-y-auto transition-all duration-500">
           <div className="space-y-6">
             {/* Now Playing */}
             {roomData.currentVideo && (
@@ -937,7 +979,7 @@ const Monitor = () => {
             {roomData.queue.length > roomData.currentIndex + 1 && (
               <div>
                 <p className="text-xs text-gray-400 mb-3 uppercase tracking-wide flex items-center gap-2">
-                  <span>🎵</span>
+                  <MusicalNoteIcon className="w-5 h-5" />
                   <span>คิวถัดไป</span>
                   <span className="ml-auto text-xs bg-white/10 px-2 py-0.5 rounded-full">
                     {roomData.queue.length - roomData.currentIndex - 1} เพลง
