@@ -1028,28 +1028,28 @@ const Monitor = () => {
           <div className="absolute bottom-0 right-0 w-96 h-96 bg-accent rounded-full blur-3xl"></div>
         </div>
 
-        <div className="relative h-full flex flex-col items-center justify-center px-4 sm:px-6 md:px-8">
+        <div className="relative h-full flex flex-col items-center justify-center px-6 sm:px-8 md:px-12">
           {/* Logo/Title */}
-          <div className="text-center mb-8 md:mb-12">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-2 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+          <div className="text-center mb-6 sm:mb-8 md:mb-10">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-2 text-primary">
               YouOke TV
             </h1>
-            <p className="text-sm sm:text-base md:text-lg text-gray-400">
-              คาราโอเกะออนไลน์ ฟรี ไม่มีโฆษณา
+            <p className="text-sm sm:text-base text-gray-400">
+              คาราโอเกะออนไลน์
             </p>
           </div>
 
-          {/* Main Content Container - YouTube Style */}
-          <div className="w-full max-w-4xl mx-auto">
-            <div className="bg-gray-800/50 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-700/50 overflow-hidden">
+          {/* Main Content Container */}
+          <div className="w-full max-w-4xl mx-auto px-2 sm:px-4">
+            <div className="bg-base-200/50 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl border border-base-300/50 overflow-hidden">
               <div className="grid md:grid-cols-2 gap-0">
                 {/* Left: QR Code Section */}
-                <div className="flex flex-col items-center justify-center p-8 md:p-12 bg-gradient-to-br from-gray-800/80 to-gray-900/80">
+                <div className="flex flex-col items-center justify-center p-6 sm:p-8 md:p-10 lg:p-12 bg-base-300/30">
                   {qrCodeUrl && (
-                    <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-2xl mb-6">
+                    <div className="bg-white p-5 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl shadow-2xl mb-4 sm:mb-6">
                       <QRCodeSVG
                         value={qrCodeUrl}
-                        size={window.innerWidth < 640 ? 180 : 220}
+                        size={window.innerWidth < 640 ? 160 : window.innerWidth < 768 ? 180 : 220}
                         level="M"
                       />
                     </div>
@@ -1057,71 +1057,71 @@ const Monitor = () => {
 
                   {/* Room Code */}
                   <div className="text-center">
-                    <p className="text-xs sm:text-sm text-gray-400 mb-2">เลขห้อง</p>
-                    <p className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-widest text-primary">
+                    <p className="text-xs sm:text-sm text-base-content/60 mb-2">เลขห้อง</p>
+                    <p className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-widest text-primary">
                       {roomCode}
                     </p>
                   </div>
                 </div>
 
                 {/* Right: Instructions Section */}
-                <div className="flex flex-col justify-center p-8 md:p-12 space-y-6">
-                  <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
-                    <DevicePhoneMobileIcon className="w-7 h-7 sm:w-8 sm:h-8" />
+                <div className="flex flex-col justify-center p-6 sm:p-8 md:p-10 lg:p-12 space-y-4 sm:space-y-5 md:space-y-6">
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-base-content flex items-center gap-2">
+                    <DevicePhoneMobileIcon className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-primary" />
                     วิธีใช้งาน
                   </h2>
 
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     {/* Step 1 */}
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                        <span className="text-primary font-bold">1</span>
+                    <div className="flex items-start gap-2.5 sm:gap-3">
+                      <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                        <span className="text-primary font-bold text-sm sm:text-base">1</span>
                       </div>
-                      <div>
-                        <p className="text-sm sm:text-base text-gray-200">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm sm:text-base text-base-content/80">
                           <span className="font-semibold text-primary">Scan QR Code</span> ด้วยกล้องมือถือ
                         </p>
                       </div>
                     </div>
 
                     {/* Divider */}
-                    <div className="flex items-center gap-3 pl-11">
-                      <div className="flex-1 border-t border-gray-600"></div>
-                      <span className="text-xs text-gray-500">หรือ</span>
-                      <div className="flex-1 border-t border-gray-600"></div>
+                    <div className="flex items-center gap-2 sm:gap-3 pl-9 sm:pl-11">
+                      <div className="flex-1 border-t border-base-content/20"></div>
+                      <span className="text-xs text-base-content/50">หรือ</span>
+                      <div className="flex-1 border-t border-base-content/20"></div>
                     </div>
 
                     {/* Step 2 */}
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                        <span className="text-primary font-bold">2</span>
+                    <div className="flex items-start gap-2.5 sm:gap-3">
+                      <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                        <span className="text-primary font-bold text-sm sm:text-base">2</span>
                       </div>
-                      <div>
-                        <p className="text-sm sm:text-base text-gray-200">
-                          เปิด <span className="font-mono font-semibold text-accent">{baseUrl ? new URL(baseUrl).hostname : 'youoke.vercel.app'}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm sm:text-base text-base-content/80 break-words">
+                          เปิด <span className="font-mono font-semibold text-primary">{baseUrl ? new URL(baseUrl).hostname : 'youoke.vercel.app'}</span>
                         </p>
                       </div>
                     </div>
 
                     {/* Step 3 */}
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                        <span className="text-primary font-bold">3</span>
+                    <div className="flex items-start gap-2.5 sm:gap-3">
+                      <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                        <span className="text-primary font-bold text-sm sm:text-base">3</span>
                       </div>
-                      <div>
-                        <p className="text-sm sm:text-base text-gray-200">
-                          กดปุ่ม <span className="font-semibold">"Cast to TV"</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm sm:text-base text-base-content/80">
+                          กดปุ่ม <span className="font-semibold text-primary">"Cast to TV"</span>
                         </p>
                       </div>
                     </div>
 
                     {/* Step 4 */}
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                        <span className="text-primary font-bold">4</span>
+                    <div className="flex items-start gap-2.5 sm:gap-3">
+                      <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                        <span className="text-primary font-bold text-sm sm:text-base">4</span>
                       </div>
-                      <div>
-                        <p className="text-sm sm:text-base text-gray-200">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm sm:text-base text-base-content/80">
                           กรอกเลขห้อง <span className="font-bold text-primary">{roomCode}</span>
                         </p>
                       </div>
@@ -1130,9 +1130,9 @@ const Monitor = () => {
 
                   {/* Audio Hint */}
                   {!hasUserInteraction && (
-                    <div className="mt-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl px-4 py-3">
-                      <p className="text-xs sm:text-sm text-yellow-200 flex items-center gap-2">
-                        <LightBulbIcon className="w-5 h-5" />
+                    <div className="bg-primary/10 border border-primary/30 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3">
+                      <p className="text-xs sm:text-sm text-primary flex items-center gap-2">
+                        <LightBulbIcon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
                         <span className="font-medium">กดที่หน้าจอเพื่อเปิดเสียง</span>
                       </p>
                     </div>
@@ -1143,7 +1143,7 @@ const Monitor = () => {
           </div>
 
           {/* Status */}
-          <p className="text-base sm:text-lg text-gray-400 mt-8 animate-pulse flex items-center gap-2">
+          <p className="text-sm sm:text-base md:text-lg text-base-content/60 mt-6 sm:mt-8 animate-pulse flex items-center justify-center gap-2">
             <span className="w-2 h-2 bg-primary rounded-full animate-ping"></span>
             รอเชื่อมต่อจากมือถือ...
           </p>
