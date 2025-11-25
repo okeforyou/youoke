@@ -5,6 +5,7 @@ import { ref, off } from 'firebase/database';
 import { signInAnonymously } from 'firebase/auth';
 import { realtimeDb, auth } from '../firebase';
 import { CastCommand, CastCommandEnvelope } from '../types/castCommands';
+import { sendCommand } from '../utils/castCommands';
 import { QRCodeSVG } from 'qrcode.react';
 import {
   DevicePhoneMobileIcon,
@@ -20,6 +21,7 @@ import {
   BackwardIcon,
   ArrowsPointingOutIcon,
   ArrowsPointingInIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 
 interface QueueVideo {
@@ -27,6 +29,11 @@ interface QueueVideo {
   title: string;
   author?: string;
   key: number;
+  addedBy?: {
+    uid: string;
+    displayName: string;
+    isGuest: boolean;
+  };
 }
 
 interface RoomData {
@@ -46,6 +53,7 @@ const Monitor = () => {
   // Auto-generate room code if not provided
   const [roomCode, setRoomCode] = useState<string>('');
   const [roomData, setRoomData] = useState<RoomData | null>(null);
+  const [hostId, setHostId] = useState<string>('');
   const [isConnected, setIsConnected] = useState(false);
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [player, setPlayer] = useState<YouTubePlayer | null>(null);
@@ -218,6 +226,9 @@ const Monitor = () => {
               hasConnected,
             });
             setIsConnected(hasConnected);
+
+            // Store hostId to determine if Monitor can remove songs
+            setHostId(data.hostId || 'monitor');
 
             setRoomData({
               queue: queueData,
@@ -938,6 +949,24 @@ const Monitor = () => {
     }
   };
 
+  // Remove song from queue (only for host)
+  const handleRemoveSong = async (queueIndex: number) => {
+    if (hostId !== 'monitor') {
+      console.warn('⚠️ Only host can remove songs');
+      return;
+    }
+
+    try {
+      await sendCommand(roomCode, {
+        type: 'REMOVE_AT',
+        payload: { index: queueIndex },
+      }, 'monitor');
+      console.log('🗑️ Remove command sent for index:', queueIndex);
+    } catch (error) {
+      console.error('❌ Failed to remove song:', error);
+    }
+  };
+
   const handleToggleMute = async () => {
     if (!player || !roomData) return;
 
@@ -1062,6 +1091,18 @@ const Monitor = () => {
                       {roomCode}
                     </p>
                   </div>
+
+                  {/* Shareable Link */}
+                  {qrCodeUrl && (
+                    <div className="mt-4 sm:mt-6 text-center">
+                      <p className="text-xs text-white/50 mb-2">หรือแชร์ลิงก์นี้</p>
+                      <div className="bg-white/10 rounded-lg px-3 py-2 max-w-xs mx-auto">
+                        <p className="text-xs font-mono text-primary/90 truncate">
+                          {qrCodeUrl}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Right: Instructions Section */}
@@ -1333,7 +1374,7 @@ const Monitor = () => {
                     .map((video, index) => (
                       <div
                         key={video.key}
-                        className="bg-white/5 hover:bg-white/10 rounded-lg p-3 transition-all"
+                        className="bg-white/5 hover:bg-white/10 rounded-lg p-3 transition-all group"
                       >
                         <div className="flex items-start gap-3">
                           <div className="flex-shrink-0 w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center">
@@ -1350,7 +1391,23 @@ const Monitor = () => {
                                 {video.author}
                               </p>
                             )}
+                            {video.addedBy && (
+                              <p className="text-xs text-primary/80 truncate mt-0.5">
+                                โดย: {video.addedBy.displayName}
+                                {video.addedBy.isGuest && ' (Guest)'}
+                              </p>
+                            )}
                           </div>
+                          {/* Remove Button (only for host) */}
+                          {hostId === 'monitor' && (
+                            <button
+                              onClick={() => handleRemoveSong(roomData.currentIndex + 1 + index)}
+                              className="flex-shrink-0 w-7 h-7 rounded-full bg-error/20 hover:bg-error/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                              title="ลบเพลง"
+                            >
+                              <XMarkIcon className="w-4 h-4 text-error" />
+                            </button>
+                          )}
                         </div>
                       </div>
                     ))}

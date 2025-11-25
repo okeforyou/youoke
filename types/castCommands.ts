@@ -12,6 +12,11 @@ export interface QueueVideo {
   title: string;
   author?: string;
   key: number;
+  addedBy?: {
+    uid: string;           // User ID or guest ID
+    displayName: string;   // User's name or guest name
+    isGuest: boolean;      // true if not logged in
+  };
 }
 
 // Command Types

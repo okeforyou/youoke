@@ -25,12 +25,19 @@ interface CastContextValue {
   roomCode: string;
   isHost: boolean;
 
+  // User Info (for guest mode support)
+  userInfo: {
+    uid: string;
+    displayName: string;
+    isGuest: boolean;
+  } | null;
+
   // State (Read-only for Remote)
   state: CastState;
 
   // Room Actions
   createRoom: () => Promise<string>;
-  joinRoom: (code: string) => Promise<boolean>;
+  joinRoom: (code: string, options?: { guestName?: string }) => Promise<boolean>;
   leaveRoom: () => void;
 
   // Queue Operations (Send commands)
@@ -69,6 +76,13 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
   const [isConnected, setIsConnected] = useState(false);
   const [roomCode, setRoomCode] = useState('');
   const [isHost, setIsHost] = useState(false);
+
+  // User info (supports both logged-in and guest users)
+  const [userInfo, setUserInfo] = useState<{
+    uid: string;
+    displayName: string;
+    isGuest: boolean;
+  } | null>(null);
 
   // State from Firebase (read-only)
   const [state, setState] = useState<CastState>({
@@ -144,6 +158,13 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
         throw new Error(`Failed to create room: ${response.status}`);
       }
 
+      // Set user info for host
+      setUserInfo({
+        uid: user.uid,
+        displayName: user.displayName || user.email || 'Host',
+        isGuest: false,
+      });
+
       setRoomCode(newRoomCode);
       setIsHost(true);
       setIsConnected(true);
@@ -157,12 +178,12 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
   };
 
   // Join room
-  const joinRoom = async (code: string): Promise<boolean> => {
-    if (!realtimeDb || !user) {
-      throw new Error('Firebase or user not initialized');
+  const joinRoom = async (code: string, options?: { guestName?: string }): Promise<boolean> => {
+    if (!realtimeDb) {
+      throw new Error('Firebase not initialized');
     }
 
-    console.log('🔍 Attempting to join room:', code);
+    console.log('🔍 Attempting to join room:', code, options);
 
     try {
       // Use REST API instead of get() to bypass stack overflow
@@ -177,28 +198,61 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
         return false;
       }
 
-      const isHostUser = roomData.hostId === user.uid;
+      // Determine user info (logged-in user or guest)
+      let currentUserInfo: { uid: string; displayName: string; isGuest: boolean };
+
+      if (user) {
+        // Logged-in user
+        currentUserInfo = {
+          uid: user.uid,
+          displayName: user.displayName || user.email || 'Anonymous',
+          isGuest: false,
+        };
+      } else if (options?.guestName) {
+        // Guest user
+        currentUserInfo = {
+          uid: `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          displayName: options.guestName,
+          isGuest: true,
+        };
+      } else {
+        console.error('❌ Either user must be logged in or guestName must be provided');
+        return false;
+      }
+
+      const isHostUser = roomData.hostId === currentUserInfo.uid;
 
       // Add user to participants using REST API
       try {
-        const token = await user.getIdToken();
-        const participantURL = `${dbURL}/rooms/${code}/participants/${user.uid}.json?auth=${token}`;
+        const participantURL = `${dbURL}/rooms/${code}/participants/${currentUserInfo.uid}.json`;
 
-        await fetch(participantURL, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(true),
-        });
+        if (user) {
+          // Use auth token for logged-in users
+          const token = await user.getIdToken();
+          await fetch(`${participantURL}?auth=${token}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(true),
+          });
+        } else {
+          // No auth for guests (requires open Firebase rules for guests)
+          await fetch(participantURL, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(true),
+          });
+        }
         console.log('✅ Participant added to room');
       } catch (authError) {
         console.warn('⚠️ Could not add participant (auth issue), continuing anyway...', authError);
         // Continue - room join is more important than participant tracking
       }
 
+      setUserInfo(currentUserInfo);
       setRoomCode(code);
       setIsHost(isHostUser);
       setIsConnected(true);
-      console.log('✅ Joined room via REST API:', code, isHostUser ? 'as host' : 'as guest');
+      console.log('✅ Joined room via REST API:', code, isHostUser ? 'as host' : 'as guest', currentUserInfo);
 
       // Send CONNECT command to notify Monitor
       sendCommand(code, { type: 'CONNECT', payload: null });
@@ -216,6 +270,7 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
     setIsConnected(false);
     setRoomCode('');
     setIsHost(false);
+    setUserInfo(null);
     setState({
       queue: [],
       currentIndex: 0,
@@ -234,7 +289,11 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
   };
 
   const addToQueue = (video: SearchResult | RecommendedVideo) => {
-    const queueVideo: QueueVideo = { ...video, key: Date.now() };
+    const queueVideo: QueueVideo = {
+      ...video,
+      key: Date.now(),
+      addedBy: userInfo || undefined, // Add who added this song
+    };
     sendCommand(roomCode, {
       type: 'ADD_TO_QUEUE',
       payload: { video: queueVideo },
@@ -242,7 +301,11 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
   };
 
   const playNow = (video: SearchResult | RecommendedVideo) => {
-    const queueVideo: QueueVideo = { ...video, key: Date.now() };
+    const queueVideo: QueueVideo = {
+      ...video,
+      key: Date.now(),
+      addedBy: userInfo || undefined, // Add who added this song
+    };
     sendCommand(roomCode, {
       type: 'PLAY_NOW',
       payload: { video: queueVideo },
@@ -250,7 +313,11 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
   };
 
   const playNext = (video: SearchResult | RecommendedVideo) => {
-    const queueVideo: QueueVideo = { ...video, key: Date.now() };
+    const queueVideo: QueueVideo = {
+      ...video,
+      key: Date.now(),
+      addedBy: userInfo || undefined, // Add who added this song
+    };
     sendCommand(roomCode, {
       type: 'PLAY_NEXT',
       payload: { video: queueVideo },
@@ -310,6 +377,7 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
     isConnected,
     roomCode,
     isHost,
+    userInfo,
     state,
     createRoom,
     joinRoom,

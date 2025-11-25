@@ -89,6 +89,7 @@ function YoutubePlayer({
   const [showCastModeSelector, setShowCastModeSelector] = useState<boolean>(false);
   const [isDualMode, setIsDualMode] = useState<boolean>(false);
   const [castInputRoomCode, setCastInputRoomCode] = useState<string>('');
+  const [guestName, setGuestName] = useState<string>(''); // For non-logged-in users
   const [castError, setCastError] = useState<string>('');
   const [isJoiningRoom, setIsJoiningRoom] = useState<boolean>(false);
   const [isDebugOverlayOpen, setIsDebugOverlayOpen] = useState<boolean>(false);
@@ -134,6 +135,23 @@ function YoutubePlayer({
       clearTimeout(timeoutId);
     };
   }, []);
+
+  // Check for ?castRoom parameter (shareable link)
+  useEffect(() => {
+    if (isMoniter || isCasting) return;
+
+    const castRoomParam = router.query.castRoom;
+    if (castRoomParam && typeof castRoomParam === 'string') {
+      // Auto-fill room code and open Cast overlay
+      setCastInputRoomCode(castRoomParam);
+      setIsCastOverlayOpen(true);
+
+      // Remove query parameter to clean up URL
+      router.replace(router.pathname, undefined, { shallow: true });
+
+      console.log('📱 Auto-opened Cast overlay with room code:', castRoomParam);
+    }
+  }, [router.query.castRoom, isMoniter, isCasting]);
 
   // Check if Dual Mode is active
   useEffect(() => {
@@ -1001,14 +1019,23 @@ function YoutubePlayer({
       return;
     }
 
+    // Check guest name if not logged in
+    if (!isLogin && (!guestName || guestName.trim().length === 0)) {
+      setCastError('กรุณากรอกชื่อของคุณ');
+      return;
+    }
+
     setIsJoiningRoom(true);
     setCastError('');
 
     try {
-      const success = await joinRoom(castInputRoomCode);
+      // Pass guestName if not logged in
+      const options = !isLogin ? { guestName: guestName.trim() } : undefined;
+      const success = await joinRoom(castInputRoomCode, options);
       if (success) {
         setIsCastOverlayOpen(false);
         setCastInputRoomCode('');
+        setGuestName('');
         addToast('เชื่อมต่อสำเร็จ! 🎉');
       } else {
         setCastError('ไม่พบห้อง กรุณาตรวจสอบเลขห้องอีกครั้ง');
@@ -1040,6 +1067,7 @@ function YoutubePlayer({
                 setIsCastOverlayOpen(false);
                 setCastError('');
                 setCastInputRoomCode('');
+                setGuestName('');
               }}
               className="absolute top-2 right-2 btn btn-sm btn-circle btn-ghost z-10"
             >
@@ -1061,23 +1089,46 @@ function YoutubePlayer({
 
               {!isCasting ? (
                 <div className="space-y-3">
+                  {/* Guest Name Input (only if not logged in) */}
+                  {!isLogin && (
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                        ชื่อของคุณ
+                      </label>
+                      <input
+                        type="text"
+                        className="py-2.5 px-4 block w-full bg-base-200 border border-base-300 rounded-lg text-sm focus:border-primary focus:outline-none transition-colors"
+                        placeholder="ใส่ชื่อของคุณ"
+                        maxLength={20}
+                        value={guestName}
+                        onChange={(e) => setGuestName(e.target.value)}
+                        autoFocus
+                      />
+                    </div>
+                  )}
+
                   {/* Room Code Input */}
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    className="py-3 px-4 block w-full bg-base-200 border border-base-300 rounded-lg text-center text-2xl tracking-widest font-bold focus:border-primary focus:outline-none transition-colors"
-                    placeholder="0000"
-                    maxLength={4}
-                    value={castInputRoomCode}
-                    onChange={(e) => setCastInputRoomCode(e.target.value.replace(/\D/g, ''))}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
-                        handleCastJoinRoom();
-                      }
-                    }}
-                    autoFocus
-                  />
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                      เลขห้อง
+                    </label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      className="py-3 px-4 block w-full bg-base-200 border border-base-300 rounded-lg text-center text-2xl tracking-widest font-bold focus:border-primary focus:outline-none transition-colors"
+                      placeholder="0000"
+                      maxLength={4}
+                      value={castInputRoomCode}
+                      onChange={(e) => setCastInputRoomCode(e.target.value.replace(/\D/g, ''))}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          handleCastJoinRoom();
+                        }
+                      }}
+                      autoFocus={isLogin}
+                    />
+                  </div>
 
                   {/* Error Message */}
                   {castError && (
@@ -1090,7 +1141,7 @@ function YoutubePlayer({
                   <button
                     className="w-full py-2.5 px-4 text-white rounded-lg bg-primary hover:bg-primary/90 font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors text-sm"
                     onClick={handleCastJoinRoom}
-                    disabled={isJoiningRoom || castInputRoomCode.length !== 4}
+                    disabled={isJoiningRoom || castInputRoomCode.length !== 4 || (!isLogin && !guestName.trim())}
                   >
                     {isJoiningRoom ? (
                       <>
