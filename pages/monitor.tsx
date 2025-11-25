@@ -1041,10 +1041,10 @@ const Monitor = () => {
 
           {/* Main Content Container */}
           <div className="w-full max-w-4xl mx-auto px-2 sm:px-4">
-            <div className="bg-base-200/50 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl border border-base-300/50 overflow-hidden">
+            <div className="bg-black/95 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl border border-white/10 overflow-hidden">
               <div className="grid md:grid-cols-2 gap-0">
                 {/* Left: QR Code Section */}
-                <div className="flex flex-col items-center justify-center p-6 sm:p-8 md:p-10 lg:p-12 bg-base-300/30">
+                <div className="flex flex-col items-center justify-center p-6 sm:p-8 md:p-10 lg:p-12 bg-black">
                   {qrCodeUrl && (
                     <div className="bg-white p-5 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl shadow-2xl mb-4 sm:mb-6">
                       <QRCodeSVG
