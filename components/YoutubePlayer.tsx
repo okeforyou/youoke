@@ -1421,81 +1421,89 @@ function YoutubePlayer({
             />
           </div>
         ) : (
-          <YouTube
-            ref={playerRef}
-            videoId={videoId}
-            className={`w-full bg-black ${
-              !isFullscreen
-                ? "aspect-video cursor-zoom-in"
-                : "h-[calc(100dvh)] cursor-zoom-out"
-            } `}
-            iframeClassName={`w-full h-[calc(100dvh)] pointer-events-none`}
-            style={{
-              width: "100%",
-              height: "100%",
-              position: UseFullScreenCss ? "fixed" : "absolute",
-              zIndex: UseFullScreenCss ? 20 : 0,
-            }}
-            loading="lazy"
-            opts={{
-              playerVars: {
-                autoplay:
-                  isMoniter && playerState === PlayerStates.PAUSED ? 0 : 1,
-                controls: 0,
-                disablekb: 1,
-                enablejsapi: 1,
-                modestbranding: 1,
-                playsinline: isIphone && isFullScreenIphone ? 0 : 1,
-              },
-            }}
-            onStateChange={(ev) => {
-              updatePlayerState(ev.target);
-            }}
-            onEnd={() => {
-              nextSong();
-            }}
-          />
+          <>
+            {/* YouTube Player */}
+            <YouTube
+              ref={playerRef}
+              videoId={videoId}
+              className={`w-full bg-black ${
+                !isFullscreen
+                  ? "aspect-video cursor-zoom-in"
+                  : "h-[calc(100dvh)] cursor-zoom-out"
+              } `}
+              iframeClassName={`w-full h-[calc(100dvh)] pointer-events-none`}
+              style={{
+                width: "100%",
+                height: "100%",
+                position: UseFullScreenCss ? "fixed" : "absolute",
+                zIndex: UseFullScreenCss ? 20 : 0,
+              }}
+              loading="lazy"
+              opts={{
+                playerVars: {
+                  autoplay:
+                    isMoniter && playerState === PlayerStates.PAUSED ? 0 : 1,
+                  controls: 0,
+                  disablekb: 1,
+                  enablejsapi: 1,
+                  modestbranding: 1,
+                  playsinline: isIphone && isFullScreenIphone ? 0 : 1,
+                  fs: 0, // Disable YouTube native fullscreen
+                },
+              }}
+              onStateChange={(ev) => {
+                updatePlayerState(ev.target);
+              }}
+              onEnd={() => {
+                nextSong();
+              }}
+            />
+
+            {/* Controls Overlay - INSIDE player container */}
+            <div
+              className={`absolute inset-x-0 bottom-0 flex flex-row p-1 items-center z-30 transition-opacity duration-300 ${
+                isMouseMoving ? "opacity-100" : ""
+              } ${
+                (UseFullScreenCss || !isMouseMoving) &&
+                (isFullscreen || isFullScreenIphone)
+                  ? "opacity-0"
+                  : ""
+              }`}
+              style={
+                UseFullScreenCss || isMoniter
+                  ? {
+                      position: "fixed",
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: isMoniter ? "white" : "rgba(0, 0, 0, 0.5)",
+                    }
+                  : {
+                      background: "rgba(0, 0, 0, 0.5)",
+                    }
+              }
+              onClick={(e) => e.stopPropagation()}
+            >
+              {buttons.map((btn) => {
+                return (
+                  <button
+                    key={btn.label}
+                    className="btn btn-ghost font-normal text-white flex h-auto flex-col flex-1 overflow-hidden text-xs 2xl:text-sm p-1 gap-1 hover:bg-white/20"
+                    onClick={btn.onClick}
+                  >
+                    <btn.icon className="w-6 h-6 2xl:w-8 2xl:h-8" />
+                    {btn.label}
+                  </button>
+                );
+              })}
+              {extra}
+            </div>
+          </>
         )}
       </div>
 
       {!isLogin && !isMoniter && <BottomAds />}
       {!isLogin && !isMoniter && isShowAds && <VideoAds />}
-
-      <div
-        className={`flex-shrink-0 flex flex-row md:w-full p-1 items-center z-20 ${
-          isMouseMoving ? "hover:opacity-100" : ""
-        } ${
-          (UseFullScreenCss || !isMouseMoving) &&
-          (isFullscreen || isFullScreenIphone)
-            ? "opacity-0"
-            : ""
-        }`}
-        style={
-          UseFullScreenCss || isMoniter
-            ? {
-                position: "fixed",
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: isMoniter ? "white" : "initial",
-              }
-            : {}
-        }
-      >
-        {buttons.map((btn) => {
-          return (
-            <button
-              key={btn.label}
-              className="btn btn-ghost font-normal text-primary flex h-auto flex-col flex-1 overflow-hidden text-xs 2xl:text-sm p-1 gap-1 hover:bg-base-200"
-              onClick={btn.onClick}
-            >
-              <btn.icon className="w-6 h-6 2xl:w-8 2xl:h-8" />
-              {btn.label}
-            </button>
-          );
-        })}
-        {extra}
-      </div>
 
       {/* Debug Overlay */}
       <DebugOverlay
