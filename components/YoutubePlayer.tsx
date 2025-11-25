@@ -1459,51 +1459,92 @@ function YoutubePlayer({
               }}
             />
 
-            {/* Controls Overlay - INSIDE player container */}
-            <div
-              className={`absolute inset-x-0 bottom-0 flex flex-row p-1 items-center z-30 transition-opacity duration-300 ${
-                isMouseMoving ? "opacity-100" : ""
-              } ${
-                (UseFullScreenCss || !isMouseMoving) &&
-                (isFullscreen || isFullScreenIphone)
-                  ? "opacity-0"
-                  : ""
-              }`}
-              style={
-                UseFullScreenCss || isMoniter
-                  ? {
-                      position: "fixed",
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      background: isMoniter ? "white" : "rgba(0, 0, 0, 0.5)",
-                    }
-                  : {
-                      background: "rgba(0, 0, 0, 0.5)",
-                    }
-              }
-              onClick={(e) => e.stopPropagation()}
-            >
-              {buttons.map((btn) => {
-                return (
-                  <button
-                    key={btn.label}
-                    className="btn btn-ghost font-normal text-white flex h-auto flex-col flex-1 overflow-hidden text-xs 2xl:text-sm p-1 gap-1 hover:bg-white/20"
-                    onClick={btn.onClick}
-                  >
-                    <btn.icon className="w-6 h-6 2xl:w-8 2xl:h-8" />
-                    {btn.label}
-                  </button>
-                );
-              })}
-              {extra}
-            </div>
+            {/* Controls Overlay - ONLY for Monitor (inside player container) */}
+            {isMoniter && (
+              <div
+                className={`absolute inset-x-0 bottom-0 flex flex-row p-1 items-center z-30 transition-opacity duration-300 ${
+                  isMouseMoving ? "opacity-100" : ""
+                } ${
+                  (UseFullScreenCss || !isMouseMoving) &&
+                  (isFullscreen || isFullScreenIphone)
+                    ? "opacity-0"
+                    : ""
+                }`}
+                style={
+                  UseFullScreenCss || isMoniter
+                    ? {
+                        position: "fixed",
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: "white",
+                      }
+                    : {
+                        background: "rgba(0, 0, 0, 0.5)",
+                      }
+                }
+                onClick={(e) => e.stopPropagation()}
+              >
+                {buttons.map((btn) => {
+                  return (
+                    <button
+                      key={btn.label}
+                      className="btn btn-ghost font-normal text-primary flex h-auto flex-col flex-1 overflow-hidden text-xs 2xl:text-sm p-1 gap-1 hover:bg-base-200"
+                      onClick={btn.onClick}
+                    >
+                      <btn.icon className="w-6 h-6 2xl:w-8 2xl:h-8" />
+                      {btn.label}
+                    </button>
+                  );
+                })}
+                {extra}
+              </div>
+            )}
           </>
         )}
       </div>
 
       {!isLogin && !isMoniter && <BottomAds />}
       {!isLogin && !isMoniter && isShowAds && <VideoAds />}
+
+      {/* Controls for Remote - OUTSIDE player container (original position) */}
+      {!isMoniter && videoId && (
+        <div
+          className={`flex-shrink-0 flex flex-row md:w-full p-1 items-center z-20 ${
+            isMouseMoving ? "hover:opacity-100" : ""
+          } ${
+            (UseFullScreenCss || !isMouseMoving) &&
+            (isFullscreen || isFullScreenIphone)
+              ? "opacity-0"
+              : ""
+          }`}
+          style={
+            UseFullScreenCss
+              ? {
+                  position: "fixed",
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: "initial",
+                }
+              : {}
+          }
+        >
+          {buttons.map((btn) => {
+            return (
+              <button
+                key={btn.label}
+                className="btn btn-ghost font-normal text-primary flex h-auto flex-col flex-1 overflow-hidden text-xs 2xl:text-sm p-1 gap-1 hover:bg-base-200"
+                onClick={btn.onClick}
+              >
+                <btn.icon className="w-6 h-6 2xl:w-8 2xl:h-8" />
+                {btn.label}
+              </button>
+            );
+          })}
+          {extra}
+        </div>
+      )}
 
       {/* Debug Overlay */}
       <DebugOverlay
