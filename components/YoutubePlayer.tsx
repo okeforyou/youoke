@@ -1033,7 +1033,7 @@ function YoutubePlayer({
       isLogin &&
       !isMoniter && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-base-100 rounded-xl shadow-2xl max-w-lg w-full p-4 sm:p-6 relative my-auto max-h-[95vh] overflow-y-auto">
+          <div className="bg-base-100 rounded-xl shadow-2xl max-w-md w-full p-4 sm:p-5 relative my-auto max-h-[90vh] overflow-y-auto">
             {/* Close Button */}
             <button
               onClick={() => {
@@ -1041,94 +1041,80 @@ function YoutubePlayer({
                 setCastError('');
                 setCastInputRoomCode('');
               }}
-              className="absolute top-2 right-2 sm:top-4 sm:right-4 btn btn-sm btn-circle btn-ghost z-10"
+              className="absolute top-2 right-2 btn btn-sm btn-circle btn-ghost z-10"
             >
               <XMarkIcon className="w-5 h-5" />
             </button>
 
             {/* Content */}
-            <div className="space-y-3 sm:space-y-4">
+            <div className="space-y-4">
               {/* Title */}
-              <div className="text-center mb-3 sm:mb-4 pr-8">
-                <div className="text-3xl sm:text-4xl mb-2 sm:mb-3">📺</div>
-                <h2 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2">Web Monitor Cast</h2>
-                <p className="text-xs sm:text-sm text-gray-600">
-                  ควบคุมเต็มรูปแบบ - เพิ่ม/ลบเพลงได้แบบ real-time
+              <div className="text-center pr-8">
+                <div className="flex items-center justify-center gap-2 mb-3">
+                  <TvIcon className="w-6 h-6 text-primary" />
+                  <h2 className="text-lg sm:text-xl font-bold">Web Monitor Cast</h2>
+                </div>
+                <p className="text-xs text-gray-600">
+                  เปิด <span className="font-semibold">{baseUrl ? new URL(baseUrl).hostname : 'youoke.vercel.app'}/monitor</span> บนทีวี
                 </p>
               </div>
 
-              {/* Instructions */}
-              <div className="bg-info/10 rounded-lg p-3 sm:p-4 text-xs sm:text-sm">
-                <p className="font-semibold mb-2">วิธีใช้งาน:</p>
-                <ol className="list-decimal list-inside space-y-1 text-left break-words">
-                  <li>เปิด <span className="font-semibold break-all">{baseUrl ? new URL(baseUrl).hostname : 'youoke.vercel.app'}/monitor</span> บนทีวี</li>
-                  <li>ดูเลขห้อง 4 หลักที่แสดงบนทีวี</li>
-                  <li>กรอกเลขห้องด้านล่าง แล้วกดเข้าร่วม</li>
-                </ol>
-              </div>
-
               {!isCasting ? (
-                <div>
+                <div className="space-y-3">
                   {/* Room Code Input */}
-                  <div className="mb-4">
-                    <label className="block text-sm font-semibold mb-2">เลขห้อง (4 หลัก)</label>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      className="py-3 px-4 block w-full text-black bg-white border-2 border-gray-300 rounded-lg text-center text-2xl tracking-widest font-bold focus:border-primary focus:outline-none"
-                      placeholder="0000"
-                      maxLength={4}
-                      value={castInputRoomCode}
-                      onChange={(e) => setCastInputRoomCode(e.target.value.replace(/\D/g, ''))}
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          handleCastJoinRoom();
-                        }
-                      }}
-                      autoFocus
-                    />
-                  </div>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    className="py-3 px-4 block w-full bg-base-200 border border-base-300 rounded-lg text-center text-2xl tracking-widest font-bold focus:border-primary focus:outline-none transition-colors"
+                    placeholder="0000"
+                    maxLength={4}
+                    value={castInputRoomCode}
+                    onChange={(e) => setCastInputRoomCode(e.target.value.replace(/\D/g, ''))}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        handleCastJoinRoom();
+                      }
+                    }}
+                    autoFocus
+                  />
 
                   {/* Error Message */}
                   {castError && (
-                    <div className="mb-4 p-3 bg-error/10 border border-error/30 rounded-lg text-sm text-error">
+                    <div className="p-2.5 bg-error/10 border border-error/30 rounded-lg text-xs text-error">
                       {castError}
                     </div>
                   )}
 
                   {/* Join Button */}
                   <button
-                    className="w-full py-3 px-4 text-white rounded-lg bg-success hover:bg-success/90 font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
+                    className="w-full py-2.5 px-4 text-white rounded-lg bg-primary hover:bg-primary/90 font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors text-sm"
                     onClick={handleCastJoinRoom}
                     disabled={isJoiningRoom || castInputRoomCode.length !== 4}
                   >
                     {isJoiningRoom ? (
                       <>
-                        <ClockIcon className="w-5 h-5 animate-spin" />
+                        <ClockIcon className="w-4 h-4 animate-spin" />
                         <span>กำลังเข้าร่วม...</span>
                       </>
                     ) : (
-                      <>
-                        <RocketLaunchIcon className="w-5 h-5" />
-                        <span>เข้าร่วมห้อง</span>
-                      </>
+                      <span>เข้าร่วมห้อง</span>
                     )}
                   </button>
                 </div>
               ) : (
-                <div>
+                <div className="space-y-3">
                   {/* Connected Status */}
-                  <div className="bg-success/10 rounded-lg p-4 mb-4">
-                    <div className="flex items-center justify-center gap-2 text-lg font-bold text-success mb-2">
-                      <CheckCircleIcon className="w-6 h-6" />
+                  <div className="bg-base-200 rounded-lg p-3 border border-base-300">
+                    <div className="flex items-center justify-center gap-2 text-base font-semibold mb-1">
+                      <CheckCircleIcon className="w-5 h-5 text-primary" />
                       <span>เชื่อมต่อแล้ว</span>
                     </div>
-                    <div className="text-2xl font-bold text-center">ห้อง: {roomCode}</div>
+                    <div className="text-xl font-bold text-center">ห้อง: {roomCode}</div>
                   </div>
 
                   {/* Player Controls */}
-                  <div className="mb-4">
+                  <div>
                     <PlayerControls
                       isPlaying={firebaseCastState.controls.isPlaying}
                       onPlay={firebaseCastPlay}
@@ -1140,10 +1126,10 @@ function YoutubePlayer({
 
                   {/* Disconnect Button */}
                   <button
-                    className="w-full py-3 px-4 text-white rounded-lg bg-error hover:bg-error/90 font-semibold flex items-center justify-center gap-2 transition-colors"
+                    className="w-full py-2.5 px-4 text-white rounded-lg bg-error hover:bg-error/90 font-semibold flex items-center justify-center gap-2 transition-colors text-sm"
                     onClick={handleCastDisconnect}
                   >
-                    <XMarkIcon className="w-5 h-5" />
+                    <XMarkIcon className="w-4 h-4" />
                     <span>ตัดการเชื่อมต่อ</span>
                   </button>
                 </div>
