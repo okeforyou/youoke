@@ -22,6 +22,7 @@ import {
   RocketLaunchIcon,
   TvIcon,
   XMarkIcon,
+  UserGroupIcon,
 } from "@heroicons/react/24/outline";
 import { ArrowPathIcon } from "@heroicons/react/24/solid";
 
@@ -35,6 +36,7 @@ import { useRoomState } from "../hooks/room";
 import Alert, { AlertHandler } from "./Alert";
 import BottomAds from "./BottomAds";
 import { CastModeSelector } from "./CastModeSelector";
+import { ShareRoomModal } from "./ShareRoomModal";
 import VideoAds from "./VideoAds";
 import DebugOverlay, { addDebugLog } from "./DebugOverlay";
 import PlayerControls from "./PlayerControls";
@@ -93,6 +95,7 @@ function YoutubePlayer({
   const [castError, setCastError] = useState<string>('');
   const [isJoiningRoom, setIsJoiningRoom] = useState<boolean>(false);
   const [isDebugOverlayOpen, setIsDebugOverlayOpen] = useState<boolean>(false);
+  const [isShareRoomModalOpen, setIsShareRoomModalOpen] = useState<boolean>(false);
   const [baseUrl, setBaseUrl] = useState<string>('');
 
   const { playlist, curVideoId, setCurVideoId, setPlaylist } =
@@ -1317,9 +1320,9 @@ function YoutubePlayer({
         onClick={() => handleVideoClick()}
       >
         {isCasting && !isMoniter ? (
-          <div className="h-full w-full flex flex-col items-center justify-center p-4">
+          <div className="h-full w-full flex flex-col items-center justify-center p-4 gap-3">
             {/* Compact status banner - ไม่ซ้อนทับ controls */}
-            <div className="bg-base-100/95 backdrop-blur-sm rounded-lg shadow-lg px-4 py-3 max-w-sm mx-auto">
+            <div className="bg-base-100/95 backdrop-blur-sm rounded-lg shadow-lg px-4 py-3 max-w-sm w-full mx-auto">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-base-content/60 font-medium">กำลัง Cast ไป Monitor</p>
@@ -1338,6 +1341,18 @@ function YoutubePlayer({
                 </button>
               </div>
             </div>
+
+            {/* Share Room Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsShareRoomModalOpen(true);
+              }}
+              className="w-full max-w-sm px-4 py-3 bg-primary hover:bg-primary/90 text-white rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 shadow-lg"
+            >
+              <UserGroupIcon className="w-5 h-5" />
+              <span>เชิญเพื่อน - แชร์ห้อง</span>
+            </button>
           </div>
         ) : isGoogleCastConnected && !isMoniter ? (
           <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-accent/20 to-primary/20 backdrop-blur-sm p-4">
@@ -1486,6 +1501,14 @@ function YoutubePlayer({
       <DebugOverlay
         isVisible={isDebugOverlayOpen}
         onClose={() => setIsDebugOverlayOpen(false)}
+      />
+
+      {/* Share Room Modal */}
+      <ShareRoomModal
+        isOpen={isShareRoomModalOpen}
+        onClose={() => setIsShareRoomModalOpen(false)}
+        roomCode={roomCode}
+        shareUrl={baseUrl ? `${baseUrl}/?castRoom=${roomCode}` : ''}
       />
 
       {/* Debug Toggle Button - Removed to avoid blocking Dual Screen button */}
