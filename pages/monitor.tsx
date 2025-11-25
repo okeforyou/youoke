@@ -1057,7 +1057,7 @@ const Monitor = () => {
 
                   {/* Room Code */}
                   <div className="text-center">
-                    <p className="text-xs sm:text-sm text-base-content/60 mb-2">เลขห้อง</p>
+                    <p className="text-xs sm:text-sm text-white/70 mb-2">เลขห้อง</p>
                     <p className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-widest text-primary">
                       {roomCode}
                     </p>
@@ -1066,7 +1066,7 @@ const Monitor = () => {
 
                 {/* Right: Instructions Section */}
                 <div className="flex flex-col justify-center p-6 sm:p-8 md:p-10 lg:p-12 space-y-4 sm:space-y-5 md:space-y-6">
-                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-base-content flex items-center gap-2">
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white flex items-center gap-2">
                     <DevicePhoneMobileIcon className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-primary" />
                     วิธีใช้งาน
                   </h2>
@@ -1078,7 +1078,7 @@ const Monitor = () => {
                         <span className="text-primary font-bold text-sm sm:text-base">1</span>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm sm:text-base text-base-content/80">
+                        <p className="text-sm sm:text-base text-white">
                           <span className="font-semibold text-primary">Scan QR Code</span> ด้วยกล้องมือถือ
                         </p>
                       </div>
@@ -1086,9 +1086,9 @@ const Monitor = () => {
 
                     {/* Divider */}
                     <div className="flex items-center gap-2 sm:gap-3 pl-9 sm:pl-11">
-                      <div className="flex-1 border-t border-base-content/20"></div>
-                      <span className="text-xs text-base-content/50">หรือ</span>
-                      <div className="flex-1 border-t border-base-content/20"></div>
+                      <div className="flex-1 border-t border-white/30"></div>
+                      <span className="text-xs text-white/70">หรือ</span>
+                      <div className="flex-1 border-t border-white/30"></div>
                     </div>
 
                     {/* Step 2 */}
@@ -1097,7 +1097,7 @@ const Monitor = () => {
                         <span className="text-primary font-bold text-sm sm:text-base">2</span>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm sm:text-base text-base-content/80 break-words">
+                        <p className="text-sm sm:text-base text-white break-words">
                           เปิด <span className="font-mono font-semibold text-primary">{baseUrl ? new URL(baseUrl).hostname : 'youoke.vercel.app'}</span>
                         </p>
                       </div>
@@ -1109,7 +1109,7 @@ const Monitor = () => {
                         <span className="text-primary font-bold text-sm sm:text-base">3</span>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm sm:text-base text-base-content/80">
+                        <p className="text-sm sm:text-base text-white">
                           กดปุ่ม <span className="font-semibold text-primary">"Cast to TV"</span>
                         </p>
                       </div>
@@ -1121,7 +1121,7 @@ const Monitor = () => {
                         <span className="text-primary font-bold text-sm sm:text-base">4</span>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm sm:text-base text-base-content/80">
+                        <p className="text-sm sm:text-base text-white">
                           กรอกเลขห้อง <span className="font-bold text-primary">{roomCode}</span>
                         </p>
                       </div>
@@ -1133,7 +1133,7 @@ const Monitor = () => {
                     <div className="bg-primary/10 border border-primary/30 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3">
                       <p className="text-xs sm:text-sm text-primary flex items-center gap-2">
                         <LightBulbIcon className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-                        <span className="font-medium">กดที่หน้าจอเพื่อเปิดเสียง</span>
+                        <span className="font-medium">คลิกหน้าจอเพื่อเริ่มเสียง</span>
                       </p>
                     </div>
                   )}
@@ -1143,7 +1143,7 @@ const Monitor = () => {
           </div>
 
           {/* Status */}
-          <p className="text-sm sm:text-base md:text-lg text-base-content/60 mt-6 sm:mt-8 animate-pulse flex items-center justify-center gap-2">
+          <p className="text-sm sm:text-base md:text-lg text-white/70 mt-6 sm:mt-8 animate-pulse flex items-center justify-center gap-2">
             <span className="w-2 h-2 bg-primary rounded-full animate-ping"></span>
             รอเชื่อมต่อจากมือถือ...
           </p>
