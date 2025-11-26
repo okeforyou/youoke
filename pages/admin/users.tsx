@@ -45,9 +45,30 @@ const UsersPage: React.FC = () => {
     filterUsers();
   }, [users, searchTerm, filterRole, filterTier]);
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (skipCache = false) => {
     try {
       setLoading(true);
+
+      // Check cache first (5 minutes TTL)
+      const cacheKey = "admin_users";
+      if (!skipCache) {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          const { data, timestamp } = JSON.parse(cached);
+          const age = Date.now() - timestamp;
+          if (age < 5 * 60 * 1000) {
+            // Cache is fresh
+            setUsers(data);
+            setLoading(false);
+
+            // Refresh in background
+            setTimeout(() => fetchUsers(true), 100);
+            return;
+          }
+        }
+      }
+
+      // Fetch from Firestore
       const usersQuery = query(
         collection(db, "users"),
         orderBy("createdAt", "desc")
@@ -57,7 +78,17 @@ const UsersPage: React.FC = () => {
         uid: doc.id,
         ...doc.data(),
       })) as User[];
+
       setUsers(usersData);
+
+      // Cache the result
+      localStorage.setItem(
+        cacheKey,
+        JSON.stringify({
+          data: usersData,
+          timestamp: Date.now(),
+        })
+      );
     } catch (error) {
       console.error("Error fetching users:", error);
     } finally {
@@ -111,6 +142,10 @@ const UsersPage: React.FC = () => {
       setUsers((prev) =>
         prev.map((u) => (u.uid === editingUser.uid ? editingUser : u))
       );
+
+      // Clear cache to force refresh on next load
+      localStorage.removeItem("admin_users");
+
       setEditingUser(null);
       alert("User updated successfully!");
     } catch (error) {

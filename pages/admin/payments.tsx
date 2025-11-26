@@ -62,9 +62,30 @@ const PaymentsPage: React.FC = () => {
     filterPayments();
   }, [payments, filterStatus]);
 
-  const fetchPayments = async () => {
+  const fetchPayments = async (skipCache = false) => {
     try {
       setLoading(true);
+
+      // Check cache first (5 minutes TTL)
+      const cacheKey = "admin_payments";
+      if (!skipCache) {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          const { data, timestamp } = JSON.parse(cached);
+          const age = Date.now() - timestamp;
+          if (age < 5 * 60 * 1000) {
+            // Cache is fresh
+            setPayments(data);
+            setLoading(false);
+
+            // Refresh in background
+            setTimeout(() => fetchPayments(true), 100);
+            return;
+          }
+        }
+      }
+
+      // Fetch from Firestore
       const paymentsQuery = query(
         collection(db, "payments"),
         orderBy("createdAt", "desc")
@@ -75,33 +96,25 @@ const PaymentsPage: React.FC = () => {
         snapshot.docs.map(async (paymentDoc) => {
           const data = paymentDoc.data();
 
-          // Fetch user data
+          // Fetch user and plan data in parallel
+          const [userDoc, planDoc] = await Promise.all([
+            data.userId ? getDoc(doc(db, "users", data.userId)).catch(() => null) : Promise.resolve(null),
+            data.planId ? getDoc(doc(db, "plans", data.planId)).catch(() => null) : Promise.resolve(null),
+          ]);
+
+          // Extract user data
           let userEmail = "Unknown";
           let userName = "Unknown";
-          if (data.userId) {
-            try {
-              const userDoc = await getDoc(doc(db, "users", data.userId));
-              if (userDoc.exists()) {
-                const userData = userDoc.data();
-                userEmail = userData.email || "Unknown";
-                userName = userData.displayName || userData.email || "Unknown";
-              }
-            } catch (error) {
-              console.error("Error fetching user:", error);
-            }
+          if (userDoc?.exists()) {
+            const userData = userDoc.data();
+            userEmail = userData.email || "Unknown";
+            userName = userData.displayName || userData.email || "Unknown";
           }
 
-          // Fetch plan name
+          // Extract plan name
           let planName = data.planId;
-          if (data.planId) {
-            try {
-              const planDoc = await getDoc(doc(db, "plans", data.planId));
-              if (planDoc.exists()) {
-                planName = planDoc.data().displayName || data.planId;
-              }
-            } catch (error) {
-              console.error("Error fetching plan:", error);
-            }
+          if (planDoc?.exists()) {
+            planName = planDoc.data().displayName || data.planId;
           }
 
           return {
@@ -115,6 +128,15 @@ const PaymentsPage: React.FC = () => {
       );
 
       setPayments(paymentsData);
+
+      // Cache the result
+      localStorage.setItem(
+        cacheKey,
+        JSON.stringify({
+          data: paymentsData,
+          timestamp: Date.now(),
+        })
+      );
     } catch (error) {
       console.error("Error fetching payments:", error);
       // If payments collection doesn't exist yet, just set empty array
@@ -172,8 +194,9 @@ const PaymentsPage: React.FC = () => {
         });
       }
 
-      // Refresh payments
-      await fetchPayments();
+      // Clear cache and refresh payments
+      localStorage.removeItem("admin_payments");
+      await fetchPayments(true);
       setViewingPayment(null);
       alert("Payment approved successfully!");
     } catch (error) {
@@ -200,8 +223,9 @@ const PaymentsPage: React.FC = () => {
         updatedAt: Timestamp.now(),
       });
 
-      // Refresh payments
-      await fetchPayments();
+      // Clear cache and refresh payments
+      localStorage.removeItem("admin_payments");
+      await fetchPayments(true);
       setViewingPayment(null);
       setRejectionReason("");
       alert("Payment rejected");

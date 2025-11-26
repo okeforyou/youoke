@@ -38,15 +38,46 @@ const SubscriptionsPage: React.FC = () => {
     fetchPlans();
   }, []);
 
-  const fetchPlans = async () => {
+  const fetchPlans = async (skipCache = false) => {
     try {
       setLoading(true);
+
+      // Check cache first (5 minutes TTL)
+      const cacheKey = "admin_plans";
+      if (!skipCache) {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          const { data, timestamp } = JSON.parse(cached);
+          const age = Date.now() - timestamp;
+          if (age < 5 * 60 * 1000) {
+            // Cache is fresh
+            setPlans(data);
+            setLoading(false);
+
+            // Refresh in background
+            setTimeout(() => fetchPlans(true), 100);
+            return;
+          }
+        }
+      }
+
+      // Fetch from Firestore
       const snapshot = await getDocs(collection(db, "plans"));
       const plansData = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       })) as Plan[];
+
       setPlans(plansData);
+
+      // Cache the result
+      localStorage.setItem(
+        cacheKey,
+        JSON.stringify({
+          data: plansData,
+          timestamp: Date.now(),
+        })
+      );
     } catch (error) {
       console.error("Error fetching plans:", error);
     } finally {
@@ -79,6 +110,10 @@ const SubscriptionsPage: React.FC = () => {
       setPlans((prev) =>
         prev.map((p) => (p.id === editingPlan.id ? editingPlan : p))
       );
+
+      // Clear cache to force refresh on next load
+      localStorage.removeItem("admin_plans");
+
       setEditingPlan(null);
       alert("Plan updated successfully!");
     } catch (error) {
@@ -100,6 +135,9 @@ const SubscriptionsPage: React.FC = () => {
       setPlans((prev) =>
         prev.map((p) => (p.id === plan.id ? { ...p, [field]: newValue } : p))
       );
+
+      // Clear cache to force refresh on next load
+      localStorage.removeItem("admin_plans");
     } catch (error) {
       console.error("Error updating plan:", error);
       alert("Error updating plan");
