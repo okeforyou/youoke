@@ -53,12 +53,32 @@ const AdminDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Load from cache immediately
+    const cached = localStorage.getItem('admin_stats_cache');
+    if (cached) {
+      try {
+        const { data, timestamp } = JSON.parse(cached);
+        const age = Date.now() - timestamp;
+        // Use cache if less than 5 minutes old
+        if (age < 5 * 60 * 1000) {
+          setStats(data);
+          setLoading(false);
+          // Still fetch in background to update
+          fetchStats(true);
+          return;
+        }
+      } catch (e) {
+        console.error('Cache parse error:', e);
+      }
+    }
     fetchStats();
   }, []);
 
-  const fetchStats = async () => {
+  const fetchStats = async (background = false) => {
     try {
-      setLoading(true);
+      if (!background) {
+        setLoading(true);
+      }
 
       // Fetch all users
       const usersSnapshot = await getDocs(collection(db, "users"));
@@ -86,7 +106,7 @@ const AdminDashboard: React.FC = () => {
         console.log("No payments collection yet");
       }
 
-      setStats({
+      const newStats = {
         totalUsers,
         adminUsers,
         freeUsers,
@@ -95,7 +115,15 @@ const AdminDashboard: React.FC = () => {
         yearlySubscribers,
         lifetimeSubscribers,
         pendingPayments,
-      });
+      };
+
+      setStats(newStats);
+
+      // Save to cache
+      localStorage.setItem('admin_stats_cache', JSON.stringify({
+        data: newStats,
+        timestamp: Date.now(),
+      }));
     } catch (error) {
       console.error("Error fetching stats:", error);
     } finally {
