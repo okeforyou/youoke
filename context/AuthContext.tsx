@@ -2,6 +2,8 @@ import {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     signOut,
+    GoogleAuthProvider,
+    signInWithPopup,
 } from 'firebase/auth'
 import nookies from 'nookies'
 import React, { createContext, useContext, useEffect, useState } from 'react'
@@ -124,10 +126,19 @@ export const AuthContextProvider = ({
     return await signOut(auth);
   };
 
+  // Sign in with Google
+  const signInWithGoogle = async () => {
+    if (!auth) {
+      return Promise.reject(new Error('Firebase Auth not configured'));
+    }
+    const provider = new GoogleAuthProvider();
+    return signInWithPopup(auth, provider);
+  };
+
   // Wrap the children with the context provider
 
   return (
-    <AuthContext.Provider value={{ user, signUp, logIn, logOut }}>
+    <AuthContext.Provider value={{ user, signUp, logIn, logOut, signInWithGoogle }}>
       {loading ? null : children}
     </AuthContext.Provider>
   );
