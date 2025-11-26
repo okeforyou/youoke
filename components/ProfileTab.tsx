@@ -85,7 +85,7 @@ const ProfileTab: React.FC = () => {
     try {
       setLoading(true);
 
-      // Fetch user profile
+      // Fetch user profile first (fast)
       const userDoc = await getDoc(doc(db, "users", user!.uid));
       if (userDoc.exists()) {
         const userData = userDoc.data() as UserProfile;
@@ -100,21 +100,26 @@ const ProfileTab: React.FC = () => {
         }
       }
 
-      // Fetch payments
-      const paymentsQuery = query(
-        collection(db, "payments"),
-        where("userId", "==", user!.uid),
-        orderBy("createdAt", "desc")
-      );
-      const snapshot = await getDocs(paymentsQuery);
-      const paymentsData = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Payment[];
-      setPayments(paymentsData);
+      setLoading(false);
+
+      // Fetch payments in background (lazy load)
+      try {
+        const paymentsQuery = query(
+          collection(db, "payments"),
+          where("userId", "==", user!.uid),
+          orderBy("createdAt", "desc")
+        );
+        const snapshot = await getDocs(paymentsQuery);
+        const paymentsData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Payment[];
+        setPayments(paymentsData);
+      } catch (error) {
+        console.error("Error fetching payments:", error);
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
-    } finally {
       setLoading(false);
     }
   };
@@ -233,145 +238,85 @@ const ProfileTab: React.FC = () => {
   }
 
   return (
-    <div className="w-full h-full overflow-y-auto p-4 space-y-4 bg-gray-50">
+    <div className="w-full h-full overflow-y-auto p-3 space-y-3">
       {/* Profile Info */}
-      <div className="bg-white rounded-lg shadow-sm p-4">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-            <UserCircleIcon className="w-8 h-8 text-red-600" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h2 className="text-lg font-bold text-gray-900 truncate">
-              {profile?.displayName || "ผู้ใช้"}
-            </h2>
-            <p className="text-xs text-gray-600 truncate">{user?.email}</p>
-          </div>
-          {profile?.tier && getTierBadge(profile.tier)}
+      <div className="flex items-center gap-3 pb-3 border-b border-gray-200">
+        <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+          <UserCircleIcon className="w-8 h-8 text-red-600" />
         </div>
-
-        <div className="grid grid-cols-1 gap-2 text-sm">
-          <div className="flex items-center gap-2 text-gray-700">
-            <CalendarIcon className="w-4 h-4 text-gray-500" />
-            <span>สมาชิกเมื่อ: {formatDate(profile?.createdAt)}</span>
-          </div>
-          {profile?.isPremium && profile.subscriptionExpiry && (
-            <div className="flex items-center gap-2 text-green-700">
-              <CheckCircleIcon className="w-4 h-4" />
-              <span>
-                {profile.tier === "lifetime"
-                  ? "สมาชิกตลอดชีพ"
-                  : `หมดอายุ: ${formatDate(profile.subscriptionExpiry)}`}
-              </span>
-            </div>
-          )}
+        <div className="flex-1 min-w-0">
+          <h2 className="text-base font-bold text-gray-900 truncate">
+            {profile?.displayName || "ผู้ใช้"}
+          </h2>
+          <p className="text-xs text-gray-600 truncate">{user?.email}</p>
         </div>
+        {profile?.tier && getTierBadge(profile.tier)}
       </div>
 
-      {/* Plan Features */}
+      {/* Stats */}
       {plan && (
-        <div className="bg-white rounded-lg shadow-sm p-4">
-          <h3 className="text-md font-bold text-gray-900 mb-3 flex items-center gap-2">
-            <StarIcon className="w-5 h-5 text-yellow-500" />
-            สิทธิประโยชน์
-          </h3>
-          <div className="grid grid-cols-2 gap-2 mb-3 text-sm">
-            <div className="bg-gray-50 p-2 rounded">
-              <p className="text-gray-600 text-xs">ห้องสูงสุด</p>
-              <p className="font-bold text-gray-900">{plan.maxRooms} ห้อง</p>
-            </div>
-            <div className="bg-gray-50 p-2 rounded">
-              <p className="text-gray-600 text-xs">เพลงในคิว</p>
-              <p className="font-bold text-gray-900">
-                {plan.maxSongsInQueue} เพลง
-              </p>
-            </div>
+        <div className="grid grid-cols-2 gap-2 text-xs pb-3 border-b border-gray-200">
+          <div className="text-gray-700">
+            <CalendarIcon className="w-4 h-4 inline mr-1" />
+            {formatDate(profile?.createdAt)}
           </div>
-          <ul className="space-y-1 text-sm">
-            {plan.features.slice(0, 3).map((feature, idx) => (
-              <li key={idx} className="flex items-start gap-2">
-                <CheckCircleIcon className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
-                <span className="text-gray-700">{feature}</span>
-              </li>
-            ))}
-          </ul>
-          {profile?.tier === "free" && (
-            <a
-              href="/pricing"
-              className="block mt-3 w-full bg-red-500 text-white text-center px-4 py-2 rounded-lg hover:bg-red-600 transition-colors text-sm font-medium"
-            >
-              อัปเกรดเป็นพรีเมียม
-            </a>
-          )}
+          <div className="text-gray-700">
+            <span className="font-semibold">{plan.maxRooms}</span> ห้อง / <span className="font-semibold">{plan.maxSongsInQueue}</span> เพลง
+          </div>
         </div>
       )}
 
+      {profile?.tier === "free" && (
+        <a
+          href="/pricing"
+          className="block w-full bg-red-500 text-white text-center px-4 py-2 rounded-lg hover:bg-red-600 transition-colors text-sm font-medium"
+        >
+          ⭐ อัปเกรดเป็นพรีเมียม
+        </a>
+      )}
+
       {/* Payment History */}
-      <div className="bg-white rounded-lg shadow-sm p-4">
-        <h3 className="text-md font-bold text-gray-900 mb-3 flex items-center gap-2">
-          <CreditCardIcon className="w-5 h-5 text-gray-700" />
-          ประวัติการชำระเงิน ({payments.length})
-        </h3>
-        {payments.length === 0 ? (
-          <p className="text-sm text-gray-600">ยังไม่มีประวัติการชำระเงิน</p>
-        ) : (
-          <div className="space-y-2 max-h-64 overflow-y-auto">
-            {payments.slice(0, 5).map((payment) => (
+      {payments.length > 0 && (
+        <div className="pb-3 border-b border-gray-200">
+          <h3 className="text-sm font-bold text-gray-900 mb-2">
+            ประวัติการชำระเงิน ({payments.length})
+          </h3>
+          <div className="space-y-2">
+            {payments.slice(0, 3).map((payment) => (
               <div
                 key={payment.id}
-                className="border border-gray-200 rounded p-3 hover:bg-gray-50 transition-colors"
+                className="flex items-center justify-between text-xs"
               >
-                <div className="flex items-start justify-between mb-1">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
-                      {payment.planName || payment.planId}
-                    </p>
-                    <p className="text-xs text-gray-600">
-                      {formatDate(payment.createdAt)}
-                    </p>
-                  </div>
-                  {getStatusBadge(payment.status)}
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-700">
-                    ฿{payment.amount.toLocaleString()}
-                  </span>
-                  {payment.slipUrl && (
-                    <a
-                      href={payment.slipUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 text-xs"
-                    >
-                      ดูสลิป
-                    </a>
-                  )}
-                </div>
-                {payment.status === "rejected" && payment.rejectionReason && (
-                  <p className="text-xs text-red-600 mt-1">
-                    เหตุผล: {payment.rejectionReason}
+                <div className="flex-1 min-w-0 mr-2">
+                  <p className="font-medium text-gray-900 truncate">
+                    {payment.planName || payment.planId}
                   </p>
-                )}
+                  <p className="text-gray-600">
+                    ฿{payment.amount.toLocaleString()}
+                  </p>
+                </div>
+                {getStatusBadge(payment.status)}
               </div>
             ))}
-            {payments.length > 5 && (
+            {payments.length > 3 && (
               <a
                 href="/profile/history"
-                className="block text-center text-sm text-blue-600 hover:text-blue-800 mt-2"
+                className="block text-center text-xs text-blue-600 hover:text-blue-800"
               >
-                ดูทั้งหมด ({payments.length})
+                ดูทั้งหมด
               </a>
             )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Settings */}
-      <div className="bg-white rounded-lg shadow-sm p-4">
-        <h3 className="text-md font-bold text-gray-900 mb-3">การตั้งค่า</h3>
+      <div>
+        <h3 className="text-sm font-bold text-gray-900 mb-2">การตั้งค่า</h3>
 
         {/* Update Name */}
-        <form onSubmit={handleUpdateDisplayName} className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+        <form onSubmit={handleUpdateDisplayName} className="mb-3">
+          <label className="block text-xs font-medium text-gray-700 mb-1">
             เปลี่ยนชื่อผู้ใช้
           </label>
           <div className="flex gap-2">
@@ -379,14 +324,14 @@ const ProfileTab: React.FC = () => {
               type="text"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              className="flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-red-500 focus:border-transparent"
               placeholder="ชื่อผู้ใช้"
               required
             />
             <button
               type="submit"
               disabled={savingName || !displayName}
-              className="px-4 py-2 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1.5 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition-colors disabled:opacity-50"
             >
               {savingName ? "กำลังบันทึก..." : "บันทึก"}
             </button>
@@ -395,7 +340,7 @@ const ProfileTab: React.FC = () => {
 
         {/* Update Password */}
         <form onSubmit={handleUpdatePassword}>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-xs font-medium text-gray-700 mb-1">
             เปลี่ยนรหัสผ่าน
           </label>
           <div className="space-y-2">
@@ -403,7 +348,7 @@ const ProfileTab: React.FC = () => {
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-red-500 focus:border-transparent"
               placeholder="รหัสผ่านใหม่ (อย่างน้อย 6 ตัวอักษร)"
               minLength={6}
             />
@@ -411,7 +356,7 @@ const ProfileTab: React.FC = () => {
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+              className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-red-500 focus:border-transparent"
               placeholder="ยืนยันรหัสผ่านใหม่"
               minLength={6}
             />
@@ -428,7 +373,7 @@ const ProfileTab: React.FC = () => {
                 !confirmPassword ||
                 newPassword !== confirmPassword
               }
-              className="w-full px-4 py-2 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-3 py-1.5 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition-colors disabled:opacity-50"
             >
               {savingPassword ? "กำลังเปลี่ยน..." : "เปลี่ยนรหัสผ่าน"}
             </button>
