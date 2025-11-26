@@ -71,14 +71,16 @@ export default function BottomNavigation() {
           เข้าสู่ระบบ
         </button>
       ) : (
-        <button
+        <a
+          href="/profile"
+          target="_blank"
+          rel="noopener noreferrer"
           className="text-primary shrink"
-          onClick={() => router.push("/profile")}
           title="บัญชีของฉัน"
         >
           <UserCircleIcon className="w-6 h-6" />
           <span className="btm-nav-label">บัญชี</span>
-        </button>
+        </a>
       )}
     </div>
   );
