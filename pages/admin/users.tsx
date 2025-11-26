@@ -10,6 +10,8 @@ import {
 import React, { useEffect, useState } from "react";
 import { FiSearch, FiEdit2, FiCheck, FiX } from "react-icons/fi";
 
+import Icon from "../../components/Icon";
+
 import AdminLayout from "../../components/admin/AdminLayout";
 import { db } from "../../firebase";
 
@@ -155,7 +157,7 @@ const UsersPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Search */}
             <div className="relative">
-              <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Icon icon={FiSearch} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search by email or name..."
@@ -262,9 +264,9 @@ const UsersPage: React.FC = () => {
                           </span>
                         )}
                         {user.isActive ? (
-                          <FiCheck className="text-green-500" />
+                          <Icon icon={FiCheck} className="text-green-500" />
                         ) : (
-                          <FiX className="text-red-500" />
+                          <Icon icon={FiX} className="text-red-500" />
                         )}
                       </div>
                     </td>
@@ -276,7 +278,7 @@ const UsersPage: React.FC = () => {
                         onClick={() => handleEditUser(user)}
                         className="text-blue-600 hover:text-blue-900"
                       >
-                        <FiEdit2 size={18} />
+                        <Icon icon={FiEdit2} size={18} />
                       </button>
                     </td>
                   </tr>

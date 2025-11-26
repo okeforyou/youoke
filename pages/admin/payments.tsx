@@ -19,6 +19,8 @@ import {
   FiRefreshCw,
 } from "react-icons/fi";
 
+import Icon from "../../components/Icon";
+
 import AdminLayout from "../../components/admin/AdminLayout";
 import { db } from "../../firebase";
 
@@ -226,19 +228,19 @@ const PaymentsPage: React.FC = () => {
       case "pending":
         return (
           <span className="flex items-center gap-1 px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-medium">
-            <FiClock /> Pending
+            <Icon icon={FiClock} /> Pending
           </span>
         );
       case "approved":
         return (
           <span className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
-            <FiCheck /> Approved
+            <Icon icon={FiCheck} /> Approved
           </span>
         );
       case "rejected":
         return (
           <span className="flex items-center gap-1 px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">
-            <FiX /> Rejected
+            <Icon icon={FiX} /> Rejected
           </span>
         );
       default:
@@ -274,7 +276,7 @@ const PaymentsPage: React.FC = () => {
             onClick={fetchPayments}
             className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
           >
-            <FiRefreshCw />
+            <Icon icon={FiRefreshCw} />
             Refresh
           </button>
         </div>
@@ -289,7 +291,7 @@ const PaymentsPage: React.FC = () => {
                   {payments.filter((p) => p.status === "pending").length}
                 </p>
               </div>
-              <FiClock size={32} className="text-orange-500" />
+              <Icon icon={FiClock} size={32} className="text-orange-500" />
             </div>
           </div>
 
@@ -301,7 +303,7 @@ const PaymentsPage: React.FC = () => {
                   {payments.filter((p) => p.status === "approved").length}
                 </p>
               </div>
-              <FiCheck size={32} className="text-green-500" />
+              <Icon icon={FiCheck} size={32} className="text-green-500" />
             </div>
           </div>
 
@@ -313,7 +315,7 @@ const PaymentsPage: React.FC = () => {
                   {payments.filter((p) => p.status === "rejected").length}
                 </p>
               </div>
-              <FiX size={32} className="text-red-500" />
+              <Icon icon={FiX} size={32} className="text-red-500" />
             </div>
           </div>
         </div>
@@ -321,7 +323,7 @@ const PaymentsPage: React.FC = () => {
         {/* Filters */}
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex items-center gap-4">
-            <FiFilter className="text-gray-400" />
+            <Icon icon={FiFilter} className="text-gray-400" />
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
@@ -403,7 +405,7 @@ const PaymentsPage: React.FC = () => {
                           onClick={() => setViewingPayment(payment)}
                           className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
                         >
-                          <FiEye size={18} />
+                          <Icon icon={FiEye} size={18} />
                           View
                         </button>
                       </td>
@@ -536,14 +538,14 @@ const PaymentsPage: React.FC = () => {
                       onClick={() => handleApprovePayment(viewingPayment)}
                       className="flex-1 bg-green-500 text-white px-4 py-3 rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center gap-2 font-medium"
                     >
-                      <FiCheck size={20} />
+                      <Icon icon={FiCheck} size={20} />
                       Approve Payment
                     </button>
                     <button
                       onClick={() => handleRejectPayment(viewingPayment)}
                       className="flex-1 bg-red-500 text-white px-4 py-3 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center gap-2 font-medium"
                     >
-                      <FiX size={20} />
+                      <Icon icon={FiX} size={20} />
                       Reject Payment
                     </button>
                   </div>

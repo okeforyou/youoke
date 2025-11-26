@@ -10,6 +10,8 @@ import {
 import React, { useEffect, useState } from "react";
 import { FiEdit2, FiCheck, FiX, FiEye, FiEyeOff } from "react-icons/fi";
 
+import Icon from "../../components/Icon";
+
 import AdminLayout from "../../components/admin/AdminLayout";
 import { db } from "../../firebase";
 
@@ -190,7 +192,7 @@ const SubscriptionsPage: React.FC = () => {
                 <ul className="space-y-3">
                   {plan.features.map((feature, idx) => (
                     <li key={idx} className="flex items-start gap-2">
-                      <FiCheck className="text-green-500 mt-1 flex-shrink-0" />
+                      <Icon icon={FiCheck} className="text-green-500 mt-1 flex-shrink-0" />
                       <span className="text-sm text-gray-700">{feature}</span>
                     </li>
                   ))}
@@ -227,7 +229,7 @@ const SubscriptionsPage: React.FC = () => {
                         : "bg-gray-100 text-gray-800"
                     }`}
                   >
-                    {plan.isVisible ? <FiEye /> : <FiEyeOff />}
+                    {plan.isVisible ? <Icon icon={FiEye} /> : <Icon icon={FiEyeOff} />}
                   </button>
                 </div>
 
@@ -236,7 +238,7 @@ const SubscriptionsPage: React.FC = () => {
                   onClick={() => handleEditPlan(plan)}
                   className="w-full mt-4 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center gap-2"
                 >
-                  <FiEdit2 />
+                  <Icon icon={FiEdit2} />
                   Edit Plan
                 </button>
               </div>
@@ -360,7 +362,7 @@ const SubscriptionsPage: React.FC = () => {
                         onClick={() => removeFeature(idx)}
                         className="px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200"
                       >
-                        <FiX />
+                        <Icon icon={FiX} />
                       </button>
                     </div>
                   ))}

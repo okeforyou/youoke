@@ -2,6 +2,8 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { FiUsers, FiDollarSign, FiCheckCircle, FiTrendingUp } from "react-icons/fi";
 
+import Icon from "../../components/Icon";
+
 import AdminLayout from "../../components/admin/AdminLayout";
 import { db } from "../../firebase";
 
@@ -125,27 +127,27 @@ const AdminDashboard: React.FC = () => {
           <StatCard
             title="ผู้ใช้ทั้งหมด"
             value={stats.totalUsers}
-            icon={<FiUsers size={24} className="text-white" />}
+            icon={<Icon icon={FiUsers} size={24} className="text-white" />}
             color="bg-blue-500"
             subtitle={`${stats.adminUsers} admins`}
           />
           <StatCard
             title="Free Users"
             value={stats.freeUsers}
-            icon={<FiUsers size={24} className="text-white" />}
+            icon={<Icon icon={FiUsers} size={24} className="text-white" />}
             color="bg-gray-500"
           />
           <StatCard
             title="Premium Users"
             value={stats.premiumUsers}
-            icon={<FiTrendingUp size={24} className="text-white" />}
+            icon={<Icon icon={FiTrendingUp} size={24} className="text-white" />}
             color="bg-green-500"
             subtitle={`${stats.monthlySubscribers}M + ${stats.yearlySubscribers}Y + ${stats.lifetimeSubscribers}L`}
           />
           <StatCard
             title="Pending Payments"
             value={stats.pendingPayments}
-            icon={<FiCheckCircle size={24} className="text-white" />}
+            icon={<Icon icon={FiCheckCircle} size={24} className="text-white" />}
             color="bg-orange-500"
           />
         </div>
@@ -183,21 +185,21 @@ const AdminDashboard: React.FC = () => {
               href="/admin/users"
               className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
             >
-              <FiUsers size={20} className="text-blue-500" />
+              <Icon icon={FiUsers} size={20} className="text-blue-500" />
               <span className="font-medium text-gray-700">Manage Users</span>
             </a>
             <a
               href="/admin/payments"
               className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-colors"
             >
-              <FiCheckCircle size={20} className="text-orange-500" />
+              <Icon icon={FiCheckCircle} size={20} className="text-orange-500" />
               <span className="font-medium text-gray-700">Verify Payments</span>
             </a>
             <a
               href="/admin/subscriptions"
               className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors"
             >
-              <FiDollarSign size={20} className="text-green-500" />
+              <Icon icon={FiDollarSign} size={20} className="text-green-500" />
               <span className="font-medium text-gray-700">Manage Plans</span>
             </a>
           </div>
