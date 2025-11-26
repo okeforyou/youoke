@@ -2,12 +2,12 @@ import { useRouter } from 'next/router'
 
 import {
     ArrowLeftOnRectangleIcon,
-    ArrowRightOnRectangleIcon,
     ChatBubbleLeftIcon,
     MusicalNoteIcon,
     RectangleStackIcon,
     SparklesIcon,
     TrophyIcon,
+    UserCircleIcon,
 } from '@heroicons/react/24/outline'
 
 import { useAuth } from '../context/AuthContext'
@@ -73,11 +73,11 @@ export default function BottomNavigation() {
       ) : (
         <button
           className={`text-primary shrink`}
-          onClick={logOut}
-          title="ออกจากระบบ"
+          onClick={() => router.push("/profile")}
+          title="บัญชีของฉัน"
         >
-          <ArrowRightOnRectangleIcon className="w-6 h-6" />
-          ออก
+          <UserCircleIcon className="w-6 h-6" />
+          <span className="btm-nav-label">บัญชี</span>
         </button>
       )}
     </div>
