@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start -p ${PORT:-3000}",
     "lint": "next lint",
-    "serve": "node server.js"
+    "serve": "node server.js",
+    "seed:dev": "node scripts/seed-dev-data.js"
   },
   "engines": {
     "node": ">=18.0.0",
@@ -35,6 +36,7 @@
     "react": "18.3.1",
     "react-debounce-input": "^3.3.0",
     "react-dom": "18.3.1",
+    "react-icons": "^5.5.0",
     "react-query": "^3.39.3",
     "react-use": "^17.4.0",
     "react-youtube": "^10.1.0",
@@ -53,6 +55,7 @@
     "@types/youtube-player": "^5.5.6",
     "eslint": "^8.34.0",
     "eslint-config-next": "^13.1.6",
+    "firebase-admin": "^13.6.0",
     "tailwind-scrollbar": "^2.1.0",
     "typescript": "4.9.5"
   }

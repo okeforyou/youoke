@@ -12,6 +12,9 @@ import { auth } from '../firebase'
 interface UserType {
   email: string | null;
   uid: string | null;
+  role?: string | null;
+  tier?: string | null;
+  displayName?: string | null;
 }
 
 // Create auth context
@@ -27,7 +30,13 @@ export const AuthContextProvider = ({
   children: React.ReactNode;
 }) => {
   // Define the constants for the user and loading state
-  const [user, setUser] = useState<UserType>({ email: null, uid: null });
+  const [user, setUser] = useState<UserType>({
+    email: null,
+    uid: null,
+    role: null,
+    tier: null,
+    displayName: null,
+  });
   const [loading, setLoading] = useState<Boolean>(true);
 
   // listen for token changes
@@ -42,13 +51,25 @@ export const AuthContextProvider = ({
 
     return auth.onIdTokenChanged(async (user) => {
       if (!user) {
-        setUser({ email: null, uid: null });
+        setUser({
+          email: null,
+          uid: null,
+          role: null,
+          tier: null,
+          displayName: null,
+        });
         nookies.set(undefined, "token", "", { path: "/" });
       } else {
         const token = await user.getIdToken();
+        const idTokenResult = await user.getIdTokenResult();
+        const customClaims = idTokenResult.claims;
+
         setUser({
           email: user.email,
           uid: user.uid,
+          role: customClaims.role || null,
+          tier: customClaims.tier || null,
+          displayName: user.displayName,
         });
         nookies.set(undefined, "token", token, { path: "/" });
       }
@@ -93,7 +114,13 @@ export const AuthContextProvider = ({
     if (!auth) {
       return Promise.reject(new Error('Firebase Auth not configured'));
     }
-    setUser({ email: null, uid: null });
+    setUser({
+      email: null,
+      uid: null,
+      role: null,
+      tier: null,
+      displayName: null,
+    });
     return await signOut(auth);
   };
 
