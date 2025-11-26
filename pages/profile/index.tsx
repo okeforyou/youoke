@@ -41,19 +41,49 @@ const ProfilePage: React.FC = () => {
     try {
       setLoading(true);
 
-      // Fetch user profile
-      const userDoc = await getDoc(doc(db, "users", user!.uid));
+      // Check cache first (5 minutes TTL)
+      const cacheKey = `profile_${user!.uid}`;
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        const { data, timestamp } = JSON.parse(cached);
+        const age = Date.now() - timestamp;
+        if (age < 5 * 60 * 1000) { // 5 minutes
+          setProfile(data.profile);
+          setPlan(data.plan);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Parallel fetch (much faster!)
+      const [userDoc, tierData] = await Promise.all([
+        getDoc(doc(db, "users", user!.uid)),
+        user?.tier ? getDoc(doc(db, "plans", user.tier)) : Promise.resolve(null),
+      ]);
+
       if (userDoc.exists()) {
         const userData = userDoc.data() as UserProfile;
         setProfile(userData);
 
-        // Fetch plan details
-        if (userData.tier) {
+        let planData = null;
+
+        // If tier changed, fetch new plan
+        if (userData.tier && (!user?.tier || userData.tier !== user.tier)) {
           const planDoc = await getDoc(doc(db, "plans", userData.tier));
           if (planDoc.exists()) {
-            setPlan(planDoc.data() as Plan);
+            planData = planDoc.data() as Plan;
+            setPlan(planData);
           }
+        } else if (tierData?.exists()) {
+          planData = tierData.data() as Plan;
+          setPlan(planData);
         }
+
+        // Cache the result
+        localStorage.setItem(cacheKey, JSON.stringify({
+          data: { profile: userData, plan: planData },
+          timestamp: Date.now(),
+        }));
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
