@@ -8,43 +8,44 @@ import {
   FiCheckCircle,
   FiSettings,
   FiLogOut,
-  FiMenu,
   FiX,
 } from "react-icons/fi";
+import { IconType } from "react-icons";
 
 import { useAuth } from "../../context/AuthContext";
+import Icon from "../Icon";
 
 interface MenuItem {
   label: string;
   href: string;
-  icon: React.ReactNode;
+  icon: IconType;
 }
 
 const menuItems: MenuItem[] = [
   {
     label: "Dashboard",
     href: "/admin",
-    icon: <FiHome size={20} />,
+    icon: FiHome,
   },
   {
     label: "Users",
     href: "/admin/users",
-    icon: <FiUsers size={20} />,
+    icon: FiUsers,
   },
   {
     label: "Subscriptions",
     href: "/admin/subscriptions",
-    icon: <FiDollarSign size={20} />,
+    icon: FiDollarSign,
   },
   {
     label: "Payments",
     href: "/admin/payments",
-    icon: <FiCheckCircle size={20} />,
+    icon: FiCheckCircle,
   },
   {
     label: "Settings",
     href: "/admin/settings",
-    icon: <FiSettings size={20} />,
+    icon: FiSettings,
   },
 ];
 
@@ -103,7 +104,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) => {
             onClick={onToggle}
             className="lg:hidden text-gray-400 hover:text-white"
           >
-            <FiX size={24} />
+            <Icon icon={FiX} size={24} />
           </button>
         </div>
 
@@ -131,7 +132,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) => {
                   }
                 `}
               >
-                {item.icon}
+                <Icon icon={item.icon} size={20} />
                 <span className="font-medium">{item.label}</span>
               </div>
             </Link>
@@ -144,7 +145,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) => {
             onClick={handleLogout}
             className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition-colors duration-200"
           >
-            <FiLogOut size={20} />
+            <Icon icon={FiLogOut} size={20} />
             <span className="font-medium">Logout</span>
           </button>
         </div>
