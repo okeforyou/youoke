@@ -226,21 +226,6 @@ const ProfilePage: React.FC = () => {
             </div>
           )}
         </div>
-
-        {/* Logout Button */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <button
-            onClick={async () => {
-              if (confirm("คุณต้องการออกจากระบบหรือไม่?")) {
-                await logOut();
-                window.location.href = "/";
-              }
-            }}
-            className="w-full bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors font-medium"
-          >
-            ออกจากระบบ
-          </button>
-        </div>
       </div>
     </ProfileLayout>
   );

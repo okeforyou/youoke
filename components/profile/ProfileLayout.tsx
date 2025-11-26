@@ -1,96 +1,56 @@
-import Link from "next/link";
-import { useRouter } from "next/router";
-import React from "react";
-import { FiUser, FiClock, FiSettings } from "react-icons/fi";
+import React, { useState } from "react";
 
-import { useAuth } from "../../context/AuthContext";
-import Icon from "../Icon";
 import UserRoute from "../UserRoute";
+import ProfileSidebar from "./ProfileSidebar";
 
 interface ProfileLayoutProps {
   children: React.ReactNode;
 }
 
-interface TabItem {
-  label: string;
-  href: string;
-  icon: typeof FiUser;
-}
-
-const tabs: TabItem[] = [
-  {
-    label: "ข้อมูลส่วนตัว",
-    href: "/profile",
-    icon: FiUser,
-  },
-  {
-    label: "ประวัติการชำระเงิน",
-    href: "/profile/history",
-    icon: FiClock,
-  },
-  {
-    label: "ตั้งค่า",
-    href: "/profile/settings",
-    icon: FiSettings,
-  },
-];
-
 const ProfileLayout: React.FC<ProfileLayoutProps> = ({ children }) => {
-  const router = useRouter();
-  const { user } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const isActive = (href: string) => {
-    if (href === "/profile") {
-      return router.pathname === "/profile";
-    }
-    return router.pathname.startsWith(href);
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
   };
 
   return (
     <UserRoute>
-      <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <div className="bg-white border-b border-gray-200">
-          <div className="container mx-auto px-4 py-6 max-w-5xl">
-            <h1 className="text-3xl font-bold text-gray-900">บัญชีของฉัน</h1>
-            <p className="text-gray-600 mt-1">
-              {user?.displayName || user?.email}
-            </p>
-          </div>
-        </div>
+      <div className="flex h-screen bg-gray-100">
+        {/* Sidebar */}
+        <ProfileSidebar isOpen={sidebarOpen} onToggle={toggleSidebar} />
 
-        {/* Tabs Navigation */}
-        <div className="bg-white border-b border-gray-200">
-          <div className="container mx-auto px-4 max-w-5xl">
-            <nav className="flex space-x-8 overflow-x-auto">
-              {tabs.map((tab) => {
-                const active = isActive(tab.href);
-                return (
-                  <Link key={tab.href} href={tab.href}>
-                    <div
-                      className={`
-                        flex items-center gap-2 px-4 py-4 border-b-2 font-medium whitespace-nowrap cursor-pointer
-                        transition-colors duration-200
-                        ${
-                          active
-                            ? "border-red-500 text-red-600"
-                            : "border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300"
-                        }
-                      `}
-                    >
-                      <Icon icon={tab.icon} size={18} />
-                      <span>{tab.label}</span>
-                    </div>
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-        </div>
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Mobile Header */}
+          <header className="lg:hidden bg-white border-b border-gray-200 px-4 py-3">
+            <button
+              onClick={toggleSidebar}
+              className="text-gray-600 hover:text-gray-900"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </svg>
+            </button>
+          </header>
 
-        {/* Content */}
-        <div className="container mx-auto px-4 py-8 max-w-5xl">
-          {children}
+          {/* Content Area */}
+          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
+            <div className="container mx-auto px-4 py-8 max-w-7xl">
+              {children}
+            </div>
+          </main>
         </div>
       </div>
     </UserRoute>
