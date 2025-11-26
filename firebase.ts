@@ -65,4 +65,6 @@ try {
   storage = null;
 }
 
+// Export with common aliases
 export { app, auth, database, realtimeDb, storage };
+export { database as db }; // Alias for admin pages
