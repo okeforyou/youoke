@@ -26,7 +26,7 @@ interface Plan {
 }
 
 const ProfilePage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, logOut } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [plan, setPlan] = useState<Plan | null>(null);
   const [loading, setLoading] = useState(true);
@@ -225,6 +225,21 @@ const ProfilePage: React.FC = () => {
               </a>
             </div>
           )}
+        </div>
+
+        {/* Logout Button */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <button
+            onClick={async () => {
+              if (confirm("คุณต้องการออกจากระบบหรือไม่?")) {
+                await logOut();
+                window.location.href = "/";
+              }
+            }}
+            className="w-full bg-gray-100 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+          >
+            ออกจากระบบ
+          </button>
         </div>
       </div>
     </ProfileLayout>

@@ -31,7 +31,6 @@ import Alert, { AlertHandler } from "../components/Alert";
 import BottomNavigation from "../components/BottomNavigation";
 import ListPlaylistsGrid from "../components/ListPlaylistsGrid";
 import Modal, { ModalHandler } from "../components/Modal";
-import ProfileTab from "../components/ProfileTab";
 import SearchResultGrid from "../components/SearchResultGrid";
 import VideoHorizontalCard from "../components/VideoHorizontalCard";
 import { DraggablePlaylistItem } from "../components/DraggablePlaylistItem";
@@ -502,12 +501,6 @@ function HomePage() {
                     <ListSingerGrid key={1} showTab={false} />,
                     <ListTopicsGrid key={2} showTab={false} />,
                     <ListPlaylistsGrid key={3} />,
-                    null, // index 4 (unused)
-                    user?.uid ? <ProfileTab key={5} /> : (
-                      <div className="flex flex-col items-center justify-center h-full p-8">
-                        <p className="text-lg text-gray-600 mb-4">กรุณาเข้าสู่ระบบเพื่อดูข้อมูลบัญชี</p>
-                      </div>
-                    ), // index 5 - Profile
                   ][activeIndex]
                 }
 

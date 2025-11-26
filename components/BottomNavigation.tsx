@@ -72,8 +72,8 @@ export default function BottomNavigation() {
         </button>
       ) : (
         <button
-          className={`text-primary shrink ${activeIndex === 5 ? "active" : ""}`}
-          onClick={() => setActiveIndex(5)}
+          className="text-primary shrink"
+          onClick={() => router.push("/profile")}
           title="บัญชีของฉัน"
         >
           <UserCircleIcon className="w-6 h-6" />
