@@ -57,6 +57,8 @@ const PaymentsPage: React.FC = () => {
   const [filterStatus, setFilterStatus] = useState("all");
   const [viewingPayment, setViewingPayment] = useState<Payment | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
+  const [selectedPayments, setSelectedPayments] = useState<Set<string>>(new Set());
+  const [bulkRejectionReason, setBulkRejectionReason] = useState("");
 
   useEffect(() => {
     fetchPayments();
@@ -272,6 +274,122 @@ const PaymentsPage: React.FC = () => {
     }
   };
 
+  const togglePaymentSelection = (paymentId: string) => {
+    const newSelected = new Set(selectedPayments);
+    if (newSelected.has(paymentId)) {
+      newSelected.delete(paymentId);
+    } else {
+      newSelected.add(paymentId);
+    }
+    setSelectedPayments(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedPayments.size === pendingPayments.length) {
+      setSelectedPayments(new Set());
+    } else {
+      setSelectedPayments(new Set(pendingPayments.map((p) => p.id)));
+    }
+  };
+
+  const handleBulkApprove = async () => {
+    if (selectedPayments.size === 0) return;
+
+    if (!confirm(`ยืนยันการอนุมัติ ${selectedPayments.size} รายการ?`)) return;
+
+    try {
+      const selectedArray = Array.from(selectedPayments);
+      const paymentObjects = filteredPayments.filter((p) => selectedArray.includes(p.id));
+
+      // Approve all selected payments
+      await Promise.all(
+        paymentObjects.map(async (payment) => {
+          // Update payment status
+          const paymentRef = doc(db, "payments", payment.id);
+          await updateDoc(paymentRef, {
+            status: "approved",
+            approvedAt: Timestamp.now(),
+            approvedBy: "admin",
+            updatedAt: Timestamp.now(),
+          });
+
+          // Update user subscription
+          const userRef = doc(db, "users", payment.userId);
+          const userDoc = await getDoc(userRef);
+
+          if (userDoc.exists()) {
+            const planDoc = await getDoc(doc(db, "plans", payment.planId));
+            const planData = planDoc.data();
+
+            let subscriptionExpiry = null;
+            if (planData?.duration) {
+              const expiryDate = new Date();
+              expiryDate.setDate(expiryDate.getDate() + planData.duration);
+              subscriptionExpiry = Timestamp.fromDate(expiryDate);
+            }
+
+            await updateDoc(userRef, {
+              tier: payment.planId,
+              isPremium: true,
+              isActive: true,
+              subscriptionStart: Timestamp.now(),
+              subscriptionExpiry,
+              updatedAt: Timestamp.now(),
+            });
+          }
+        })
+      );
+
+      // Clear cache and refresh
+      localStorage.removeItem("admin_payments");
+      await fetchPayments(true);
+      setSelectedPayments(new Set());
+      alert(`อนุมัติ ${selectedArray.length} รายการเรียบร้อยแล้ว!`);
+    } catch (error) {
+      console.error("Error bulk approving:", error);
+      alert("เกิดข้อผิดพลาดในการอนุมัติ");
+    }
+  };
+
+  const handleBulkReject = async () => {
+    if (selectedPayments.size === 0) return;
+
+    if (!bulkRejectionReason.trim()) {
+      alert("กรุณาระบุเหตุผลในการปฏิเสธ");
+      return;
+    }
+
+    if (!confirm(`ยืนยันการปฏิเสธ ${selectedPayments.size} รายการ?`)) return;
+
+    try {
+      const selectedArray = Array.from(selectedPayments);
+
+      // Reject all selected payments
+      await Promise.all(
+        selectedArray.map(async (paymentId) => {
+          const paymentRef = doc(db, "payments", paymentId);
+          await updateDoc(paymentRef, {
+            status: "rejected",
+            rejectedAt: Timestamp.now(),
+            rejectedBy: "admin",
+            rejectionReason: bulkRejectionReason,
+            updatedAt: Timestamp.now(),
+          });
+        })
+      );
+
+      // Clear cache and refresh
+      localStorage.removeItem("admin_payments");
+      await fetchPayments(true);
+      setSelectedPayments(new Set());
+      setBulkRejectionReason("");
+      alert(`ปฏิเสธ ${selectedArray.length} รายการเรียบร้อยแล้ว`);
+    } catch (error) {
+      console.error("Error bulk rejecting:", error);
+      alert("เกิดข้อผิดพลาดในการปฏิเสธ");
+    }
+  };
+
   const handleExportCSV = () => {
     // Use filtered payments for export
     const dataToExport = filteredPayments.map((payment) => {
@@ -281,6 +399,8 @@ const PaymentsPage: React.FC = () => {
     });
     exportToCSV(dataToExport, "payments");
   };
+
+  const pendingPayments = filteredPayments.filter((p) => p.status === "pending");
 
   const formatDate = (timestamp: any) => {
     if (!timestamp) return "N/A";
@@ -417,6 +537,50 @@ const PaymentsPage: React.FC = () => {
           </div>
         </div>
 
+        {/* Bulk Actions Bar */}
+        {selectedPayments.size > 0 && (
+          <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <p className="font-bold text-blue-900">
+                  เลือกไว้ {selectedPayments.size} รายการ
+                </p>
+                <button
+                  onClick={() => setSelectedPayments(new Set())}
+                  className="text-sm text-blue-600 hover:text-blue-800 underline"
+                >
+                  ยกเลิกทั้งหมด
+                </button>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    placeholder="เหตุผลในการปฏิเสธ (ถ้าปฏิเสธ)"
+                    value={bulkRejectionReason}
+                    onChange={(e) => setBulkRejectionReason(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 text-sm"
+                  />
+                </div>
+                <button
+                  onClick={handleBulkApprove}
+                  className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium"
+                >
+                  <Icon icon={FiCheck} />
+                  Approve All
+                </button>
+                <button
+                  onClick={handleBulkReject}
+                  className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
+                >
+                  <Icon icon={FiX} />
+                  Reject All
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Payments Table */}
         {filteredPayments.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-12 text-center">
@@ -431,6 +595,16 @@ const PaymentsPage: React.FC = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
+                    {pendingPayments.length > 0 && (
+                      <th className="px-4 py-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedPayments.size === pendingPayments.length && pendingPayments.length > 0}
+                          onChange={toggleSelectAll}
+                          className="rounded border-gray-300 text-red-500 focus:ring-red-500"
+                        />
+                      </th>
+                    )}
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       User
                     </th>
@@ -454,6 +628,20 @@ const PaymentsPage: React.FC = () => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredPayments.map((payment) => (
                     <tr key={payment.id} className="hover:bg-gray-50">
+                      {pendingPayments.length > 0 && (
+                        <td className="px-4 py-4">
+                          {payment.status === "pending" ? (
+                            <input
+                              type="checkbox"
+                              checked={selectedPayments.has(payment.id)}
+                              onChange={() => togglePaymentSelection(payment.id)}
+                              className="rounded border-gray-300 text-red-500 focus:ring-red-500"
+                            />
+                          ) : (
+                            <div className="w-4"></div>
+                          )}
+                        </td>
+                      )}
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <div className="text-sm font-medium text-gray-900">
