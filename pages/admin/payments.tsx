@@ -17,12 +17,14 @@ import {
   FiEye,
   FiFilter,
   FiRefreshCw,
+  FiDownload,
 } from "react-icons/fi";
 
 import Icon from "../../components/Icon";
 
 import AdminLayout from "../../components/admin/AdminLayout";
 import { db } from "../../firebase";
+import { exportToCSV, flattenForCSV } from "../../utils/exportCSV";
 
 interface Payment {
   id: string;
@@ -235,6 +237,16 @@ const PaymentsPage: React.FC = () => {
     }
   };
 
+  const handleExportCSV = () => {
+    // Use filtered payments for export
+    const dataToExport = filteredPayments.map((payment) => {
+      // Remove slipUrl from export (it's a URL, not useful in CSV)
+      const { slipUrl, ...paymentData } = payment;
+      return flattenForCSV(paymentData);
+    });
+    exportToCSV(dataToExport, "payments");
+  };
+
   const formatDate = (timestamp: any) => {
     if (!timestamp) return "N/A";
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -296,13 +308,22 @@ const PaymentsPage: React.FC = () => {
               {payments.length})
             </p>
           </div>
-          <button
-            onClick={fetchPayments}
-            className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-          >
-            <Icon icon={FiRefreshCw} />
-            Refresh
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={handleExportCSV}
+              className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+            >
+              <Icon icon={FiDownload} />
+              Export CSV
+            </button>
+            <button
+              onClick={fetchPayments}
+              className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+            >
+              <Icon icon={FiRefreshCw} />
+              Refresh
+            </button>
+          </div>
         </div>
 
         {/* Stats Cards */}

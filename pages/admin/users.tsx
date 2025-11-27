@@ -8,12 +8,13 @@ import {
   orderBy,
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
-import { FiSearch, FiEdit2, FiCheck, FiX } from "react-icons/fi";
+import { FiSearch, FiEdit2, FiCheck, FiX, FiDownload } from "react-icons/fi";
 
 import Icon from "../../components/Icon";
 
 import AdminLayout from "../../components/admin/AdminLayout";
 import { db } from "../../firebase";
+import { exportToCSV, flattenForCSV } from "../../utils/exportCSV";
 
 interface User {
   uid: string;
@@ -154,6 +155,12 @@ const UsersPage: React.FC = () => {
     }
   };
 
+  const handleExportCSV = () => {
+    // Use filtered users for export
+    const dataToExport = filteredUsers.map((user) => flattenForCSV(user));
+    exportToCSV(dataToExport, "users");
+  };
+
   const formatDate = (timestamp: any) => {
     if (!timestamp) return "N/A";
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
@@ -185,6 +192,13 @@ const UsersPage: React.FC = () => {
               จัดการผู้ใช้ทั้งหมด ({filteredUsers.length} / {users.length})
             </p>
           </div>
+          <button
+            onClick={handleExportCSV}
+            className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+          >
+            <Icon icon={FiDownload} />
+            Export CSV
+          </button>
         </div>
 
         {/* Filters */}
