@@ -1,0 +1,21 @@
+{
+  "rules": {
+    "rooms": {
+      "$roomCode": {
+        ".read": true,
+        ".write": "auth != null",
+        "commands": {
+          ".indexOn": ["timestamp", "status"]
+        },
+        "state": {
+          ".read": true,
+          ".write": "auth != null"
+        },
+        "participants": {
+          ".read": true,
+          ".write": true
+        }
+      }
+    }
+  }
+}
