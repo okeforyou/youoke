@@ -1,6 +1,6 @@
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, query, where, orderBy, limit } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
-import { FiUsers, FiDollarSign, FiCheckCircle, FiTrendingUp } from "react-icons/fi";
+import { FiUsers, FiDollarSign, FiCheckCircle, FiTrendingUp, FiClock, FiX, FiActivity } from "react-icons/fi";
 
 import Icon from "../../components/Icon";
 
@@ -16,6 +16,17 @@ interface Stats {
   yearlySubscribers: number;
   lifetimeSubscribers: number;
   pendingPayments: number;
+  approvedPayments: number;
+  rejectedPayments: number;
+  totalRevenue: number;
+}
+
+interface RecentActivity {
+  id: string;
+  type: "user" | "payment";
+  action: string;
+  timestamp: any;
+  details: string;
 }
 
 interface StatCardProps {
@@ -49,7 +60,11 @@ const AdminDashboard: React.FC = () => {
     yearlySubscribers: 0,
     lifetimeSubscribers: 0,
     pendingPayments: 0,
+    approvedPayments: 0,
+    rejectedPayments: 0,
+    totalRevenue: 0,
   });
+  const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -93,18 +108,81 @@ const AdminDashboard: React.FC = () => {
       const yearlySubscribers = users.filter((u) => u.tier === "yearly").length;
       const lifetimeSubscribers = users.filter((u) => u.tier === "lifetime").length;
 
-      // Fetch pending payments (if payments collection exists)
+      // Fetch payment statistics
       let pendingPayments = 0;
+      let approvedPayments = 0;
+      let rejectedPayments = 0;
+      let totalRevenue = 0;
+      const activities: RecentActivity[] = [];
+
       try {
-        const paymentsQuery = query(
-          collection(db, "payments"),
-          where("status", "==", "pending")
-        );
-        const paymentsSnapshot = await getDocs(paymentsQuery);
-        pendingPayments = paymentsSnapshot.size;
+        // Fetch all payments
+        const paymentsSnapshot = await getDocs(collection(db, "payments"));
+        const payments = paymentsSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        // Calculate payment stats
+        pendingPayments = payments.filter((p: any) => p.status === "pending").length;
+        approvedPayments = payments.filter((p: any) => p.status === "approved").length;
+        rejectedPayments = payments.filter((p: any) => p.status === "rejected").length;
+
+        // Calculate total revenue (only approved payments)
+        totalRevenue = payments
+          .filter((p: any) => p.status === "approved")
+          .reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+
+        // Get recent approved payments for activities
+        const recentApproved = payments
+          .filter((p: any) => p.status === "approved")
+          .sort((a: any, b: any) => {
+            const aTime = a.approvedAt?.toMillis?.() || 0;
+            const bTime = b.approvedAt?.toMillis?.() || 0;
+            return bTime - aTime;
+          })
+          .slice(0, 5);
+
+        recentApproved.forEach((p: any) => {
+          activities.push({
+            id: p.id,
+            type: "payment",
+            action: "Payment Approved",
+            timestamp: p.approvedAt,
+            details: `${p.amount} THB - Plan: ${p.planId}`,
+          });
+        });
       } catch (error) {
         console.log("No payments collection yet");
       }
+
+      // Get recent users
+      try {
+        const recentUsersSnapshot = await getDocs(
+          query(collection(db, "users"), orderBy("createdAt", "desc"), limit(5))
+        );
+        recentUsersSnapshot.docs.forEach((doc) => {
+          const data = doc.data();
+          activities.push({
+            id: doc.id,
+            type: "user",
+            action: "New User Registered",
+            timestamp: data.createdAt,
+            details: `${data.displayName || data.email} - ${data.tier}`,
+          });
+        });
+      } catch (error) {
+        console.log("Error fetching recent users");
+      }
+
+      // Sort activities by timestamp
+      activities.sort((a, b) => {
+        const aTime = a.timestamp?.toMillis?.() || 0;
+        const bTime = b.timestamp?.toMillis?.() || 0;
+        return bTime - aTime;
+      });
+
+      setRecentActivities(activities.slice(0, 10));
 
       const newStats = {
         totalUsers,
@@ -115,6 +193,9 @@ const AdminDashboard: React.FC = () => {
         yearlySubscribers,
         lifetimeSubscribers,
         pendingPayments,
+        approvedPayments,
+        rejectedPayments,
+        totalRevenue,
       };
 
       setStats(newStats);
@@ -157,13 +238,7 @@ const AdminDashboard: React.FC = () => {
             value={stats.totalUsers}
             icon={<Icon icon={FiUsers} size={24} className="text-white" />}
             color="bg-blue-500"
-            subtitle={`${stats.adminUsers} admins`}
-          />
-          <StatCard
-            title="Free Users"
-            value={stats.freeUsers}
-            icon={<Icon icon={FiUsers} size={24} className="text-white" />}
-            color="bg-gray-500"
+            subtitle={`${stats.adminUsers} admins, ${stats.freeUsers} free`}
           />
           <StatCard
             title="Premium Users"
@@ -173,11 +248,52 @@ const AdminDashboard: React.FC = () => {
             subtitle={`${stats.monthlySubscribers}M + ${stats.yearlySubscribers}Y + ${stats.lifetimeSubscribers}L`}
           />
           <StatCard
+            title="Total Revenue"
+            value={`${stats.totalRevenue.toLocaleString()} ฿`}
+            icon={<Icon icon={FiDollarSign} size={24} className="text-white" />}
+            color="bg-purple-500"
+            subtitle={`${stats.approvedPayments} approved payments`}
+          />
+          <StatCard
             title="Pending Payments"
             value={stats.pendingPayments}
-            icon={<Icon icon={FiCheckCircle} size={24} className="text-white" />}
+            icon={<Icon icon={FiClock} size={24} className="text-white" />}
             color="bg-orange-500"
+            subtitle={`${stats.rejectedPayments} rejected`}
           />
+        </div>
+
+        {/* Payment Statistics */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-green-50 rounded-lg shadow p-6 border border-green-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-green-600 font-medium">Approved</p>
+                <p className="text-3xl font-bold text-green-900">{stats.approvedPayments}</p>
+              </div>
+              <Icon icon={FiCheckCircle} size={32} className="text-green-500" />
+            </div>
+          </div>
+
+          <div className="bg-orange-50 rounded-lg shadow p-6 border border-orange-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-orange-600 font-medium">Pending</p>
+                <p className="text-3xl font-bold text-orange-900">{stats.pendingPayments}</p>
+              </div>
+              <Icon icon={FiClock} size={32} className="text-orange-500" />
+            </div>
+          </div>
+
+          <div className="bg-red-50 rounded-lg shadow p-6 border border-red-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-red-600 font-medium">Rejected</p>
+                <p className="text-3xl font-bold text-red-900">{stats.rejectedPayments}</p>
+              </div>
+              <Icon icon={FiX} size={32} className="text-red-500" />
+            </div>
+          </div>
         </div>
 
         {/* Subscription Breakdown */}
@@ -203,6 +319,63 @@ const AdminDashboard: React.FC = () => {
               <span className="font-bold text-red-600">{stats.premiumUsers}</span>
             </div>
           </div>
+        </div>
+
+        {/* Recent Activities */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Icon icon={FiActivity} size={20} className="text-gray-700" />
+            <h2 className="text-xl font-bold text-gray-900">Recent Activities</h2>
+          </div>
+          {recentActivities.length === 0 ? (
+            <p className="text-gray-500 text-center py-4">No recent activities</p>
+          ) : (
+            <div className="space-y-3">
+              {recentActivities.map((activity) => (
+                <div
+                  key={activity.id}
+                  className="flex items-start gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <div
+                    className={`p-2 rounded-full ${
+                      activity.type === "payment"
+                        ? "bg-green-100"
+                        : "bg-blue-100"
+                    }`}
+                  >
+                    <Icon
+                      icon={activity.type === "payment" ? FiDollarSign : FiUsers}
+                      size={16}
+                      className={
+                        activity.type === "payment"
+                          ? "text-green-600"
+                          : "text-blue-600"
+                      }
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900">
+                      {activity.action}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate">
+                      {activity.details}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {activity.timestamp?.toDate
+                        ? activity.timestamp.toDate().toLocaleString("th-TH", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "N/A"}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Quick Actions */}
