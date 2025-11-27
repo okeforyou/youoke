@@ -1,4 +1,4 @@
-import { collection, getDocs, query, where, orderBy, limit } from "firebase/firestore";
+import { collection, getDocs, query, where, orderBy, limit, getCountFromServer, getAggregateFromServer, sum } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { FiUsers, FiDollarSign, FiCheckCircle, FiTrendingUp, FiClock, FiX, FiActivity } from "react-icons/fi";
 
@@ -74,12 +74,15 @@ const AdminDashboard: React.FC = () => {
       try {
         const { data, timestamp } = JSON.parse(cached);
         const age = Date.now() - timestamp;
-        // Use cache if less than 5 minutes old
-        if (age < 5 * 60 * 1000) {
-          setStats(data);
+        // Use cache if less than 30 minutes old (increased from 5)
+        if (age < 30 * 60 * 1000) {
+          setStats(data.stats);
+          setRecentActivities(data.activities);
           setLoading(false);
-          // Still fetch in background to update
-          fetchStats(true);
+          // Still fetch in background to update if cache is older than 5 minutes
+          if (age > 5 * 60 * 1000) {
+            fetchStats(true);
+          }
           return;
         }
       } catch (e) {
@@ -95,85 +98,92 @@ const AdminDashboard: React.FC = () => {
         setLoading(true);
       }
 
-      // Fetch all users
-      const usersSnapshot = await getDocs(collection(db, "users"));
-      const users = usersSnapshot.docs.map((doc) => doc.data());
+      console.time('fetchStats');
 
-      // Calculate stats
-      const totalUsers = users.length;
-      const adminUsers = users.filter((u) => u.role === "admin").length;
-      const freeUsers = users.filter((u) => u.tier === "free").length;
-      const premiumUsers = users.filter((u) => u.isPremium === true).length;
-      const monthlySubscribers = users.filter((u) => u.tier === "monthly").length;
-      const yearlySubscribers = users.filter((u) => u.tier === "yearly").length;
-      const lifetimeSubscribers = users.filter((u) => u.tier === "lifetime").length;
+      // Use parallel queries for better performance
+      const [
+        totalUsersCount,
+        adminCount,
+        freeCount,
+        premiumCount,
+        monthlyCount,
+        yearlyCount,
+        lifetimeCount,
+        pendingCount,
+        approvedCount,
+        rejectedCount,
+        revenueData,
+        recentUsers,
+        recentPayments,
+      ] = await Promise.all([
+        // User counts using getCountFromServer (much faster!)
+        getCountFromServer(collection(db, "users")),
+        getCountFromServer(query(collection(db, "users"), where("role", "==", "admin"))),
+        getCountFromServer(query(collection(db, "users"), where("tier", "==", "free"))),
+        getCountFromServer(query(collection(db, "users"), where("isPremium", "==", true))),
+        getCountFromServer(query(collection(db, "users"), where("tier", "==", "monthly"))),
+        getCountFromServer(query(collection(db, "users"), where("tier", "==", "yearly"))),
+        getCountFromServer(query(collection(db, "users"), where("tier", "==", "lifetime"))),
 
-      // Fetch payment statistics
-      let pendingPayments = 0;
-      let approvedPayments = 0;
-      let rejectedPayments = 0;
-      let totalRevenue = 0;
+        // Payment counts
+        getCountFromServer(query(collection(db, "payments"), where("status", "==", "pending"))),
+        getCountFromServer(query(collection(db, "payments"), where("status", "==", "approved"))),
+        getCountFromServer(query(collection(db, "payments"), where("status", "==", "rejected"))),
+
+        // Total revenue using aggregation
+        getAggregateFromServer(
+          query(collection(db, "payments"), where("status", "==", "approved")),
+          { totalRevenue: sum("amount") }
+        ).catch(() => ({ data: () => ({ totalRevenue: 0 }) })),
+
+        // Recent users (only fetch 10)
+        getDocs(query(collection(db, "users"), orderBy("createdAt", "desc"), limit(10))).catch(() => ({ docs: [] })),
+
+        // Recent approved payments (only fetch 10)
+        getDocs(query(collection(db, "payments"), where("status", "==", "approved"), orderBy("approvedAt", "desc"), limit(10))).catch(() => ({ docs: [] })),
+      ]);
+
+      console.timeEnd('fetchStats');
+
+      // Extract counts
+      const totalUsers = totalUsersCount.data().count;
+      const adminUsers = adminCount.data().count;
+      const freeUsers = freeCount.data().count;
+      const premiumUsers = premiumCount.data().count;
+      const monthlySubscribers = monthlyCount.data().count;
+      const yearlySubscribers = yearlyCount.data().count;
+      const lifetimeSubscribers = lifetimeCount.data().count;
+      const pendingPayments = pendingCount.data().count;
+      const approvedPayments = approvedCount.data().count;
+      const rejectedPayments = rejectedCount.data().count;
+      const totalRevenue = revenueData.data().totalRevenue || 0;
+
+      // Build recent activities
       const activities: RecentActivity[] = [];
 
-      try {
-        // Fetch all payments
-        const paymentsSnapshot = await getDocs(collection(db, "payments"));
-        const payments = paymentsSnapshot.docs.map((doc) => ({
+      // Add recent payments
+      recentPayments.docs.forEach((doc) => {
+        const data = doc.data();
+        activities.push({
           id: doc.id,
-          ...doc.data(),
-        }));
-
-        // Calculate payment stats
-        pendingPayments = payments.filter((p: any) => p.status === "pending").length;
-        approvedPayments = payments.filter((p: any) => p.status === "approved").length;
-        rejectedPayments = payments.filter((p: any) => p.status === "rejected").length;
-
-        // Calculate total revenue (only approved payments)
-        totalRevenue = payments
-          .filter((p: any) => p.status === "approved")
-          .reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
-
-        // Get recent approved payments for activities
-        const recentApproved = payments
-          .filter((p: any) => p.status === "approved")
-          .sort((a: any, b: any) => {
-            const aTime = a.approvedAt?.toMillis?.() || 0;
-            const bTime = b.approvedAt?.toMillis?.() || 0;
-            return bTime - aTime;
-          })
-          .slice(0, 5);
-
-        recentApproved.forEach((p: any) => {
-          activities.push({
-            id: p.id,
-            type: "payment",
-            action: "Payment Approved",
-            timestamp: p.approvedAt,
-            details: `${p.amount} THB - Plan: ${p.planId}`,
-          });
+          type: "payment",
+          action: "Payment Approved",
+          timestamp: data.approvedAt,
+          details: `${data.amount} THB - Plan: ${data.planId}`,
         });
-      } catch (error) {
-        console.log("No payments collection yet");
-      }
+      });
 
-      // Get recent users
-      try {
-        const recentUsersSnapshot = await getDocs(
-          query(collection(db, "users"), orderBy("createdAt", "desc"), limit(5))
-        );
-        recentUsersSnapshot.docs.forEach((doc) => {
-          const data = doc.data();
-          activities.push({
-            id: doc.id,
-            type: "user",
-            action: "New User Registered",
-            timestamp: data.createdAt,
-            details: `${data.displayName || data.email} - ${data.tier}`,
-          });
+      // Add recent users
+      recentUsers.docs.forEach((doc) => {
+        const data = doc.data();
+        activities.push({
+          id: doc.id,
+          type: "user",
+          action: "New User Registered",
+          timestamp: data.createdAt,
+          details: `${data.displayName || data.email} - ${data.tier}`,
         });
-      } catch (error) {
-        console.log("Error fetching recent users");
-      }
+      });
 
       // Sort activities by timestamp
       activities.sort((a, b) => {
@@ -182,7 +192,8 @@ const AdminDashboard: React.FC = () => {
         return bTime - aTime;
       });
 
-      setRecentActivities(activities.slice(0, 10));
+      const sortedActivities = activities.slice(0, 10);
+      setRecentActivities(sortedActivities);
 
       const newStats = {
         totalUsers,
@@ -200,9 +211,12 @@ const AdminDashboard: React.FC = () => {
 
       setStats(newStats);
 
-      // Save to cache
+      // Save to cache with activities
       localStorage.setItem('admin_stats_cache', JSON.stringify({
-        data: newStats,
+        data: {
+          stats: newStats,
+          activities: sortedActivities,
+        },
         timestamp: Date.now(),
       }));
     } catch (error) {

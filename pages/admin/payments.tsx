@@ -9,6 +9,11 @@ import {
   query,
   where,
   orderBy,
+  limit,
+  startAfter,
+  getCountFromServer,
+  QueryDocumentSnapshot,
+  DocumentData,
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import {
@@ -20,6 +25,8 @@ import {
   FiRefreshCw,
   FiDownload,
   FiTrash2,
+  FiChevronLeft,
+  FiChevronRight,
 } from "react-icons/fi";
 
 import Icon from "../../components/Icon";
@@ -27,6 +34,8 @@ import Icon from "../../components/Icon";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { db } from "../../firebase";
 import { exportToCSV, flattenForCSV } from "../../utils/exportCSV";
+
+const PAYMENTS_PER_PAGE = 20;
 
 interface Payment {
   id: string;
@@ -59,6 +68,12 @@ const PaymentsPage: React.FC = () => {
   const [rejectionReason, setRejectionReason] = useState("");
   const [selectedPayments, setSelectedPayments] = useState<Set<string>>(new Set());
   const [bulkRejectionReason, setBulkRejectionReason] = useState("");
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPayments, setTotalPayments] = useState(0);
+  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
+  const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
     fetchPayments();

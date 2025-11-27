@@ -7,9 +7,14 @@ import {
   Timestamp,
   query,
   orderBy,
+  limit,
+  startAfter,
+  getCountFromServer,
+  QueryDocumentSnapshot,
+  DocumentData,
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
-import { FiSearch, FiEdit2, FiCheck, FiX, FiDownload, FiTrash2 } from "react-icons/fi";
+import { FiSearch, FiEdit2, FiCheck, FiX, FiDownload, FiTrash2, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 
 import Icon from "../../components/Icon";
 
@@ -30,6 +35,8 @@ interface User {
   subscriptionExpiry?: any;
 }
 
+const USERS_PER_PAGE = 20;
+
 const UsersPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
@@ -39,6 +46,12 @@ const UsersPage: React.FC = () => {
   const [filterTier, setFilterTier] = useState("all");
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
+  const [firstDoc, setFirstDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
+
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -47,52 +60,134 @@ const UsersPage: React.FC = () => {
     filterUsers();
   }, [users, searchTerm, filterRole, filterTier]);
 
-  const fetchUsers = async (skipCache = false) => {
+  const fetchUsers = async (page = 1) => {
     try {
       setLoading(true);
 
-      // Check cache first (5 minutes TTL)
-      const cacheKey = "admin_users";
-      if (!skipCache) {
-        const cached = localStorage.getItem(cacheKey);
-        if (cached) {
-          const { data, timestamp } = JSON.parse(cached);
-          const age = Date.now() - timestamp;
-          if (age < 5 * 60 * 1000) {
-            // Cache is fresh
-            setUsers(data);
-            setLoading(false);
+      console.time('fetchUsers');
 
-            // Refresh in background
-            setTimeout(() => fetchUsers(true), 100);
-            return;
-          }
-        }
+      // Get total count (fast!)
+      const countSnapshot = await getCountFromServer(collection(db, "users"));
+      const total = countSnapshot.data().count;
+      setTotalUsers(total);
+
+      // Build query with pagination
+      let usersQuery = query(
+        collection(db, "users"),
+        orderBy("createdAt", "desc"),
+        limit(USERS_PER_PAGE)
+      );
+
+      // Fetch page data
+      const snapshot = await getDocs(usersQuery);
+
+      if (snapshot.empty) {
+        setUsers([]);
+        setLoading(false);
+        return;
       }
 
-      // Fetch from Firestore
-      const usersQuery = query(
-        collection(db, "users"),
-        orderBy("createdAt", "desc")
-      );
-      const snapshot = await getDocs(usersQuery);
+      // Store cursors for pagination
+      setFirstDoc(snapshot.docs[0]);
+      setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
+
       const usersData = snapshot.docs.map((doc) => ({
         uid: doc.id,
         ...doc.data(),
       })) as User[];
 
       setUsers(usersData);
+      setCurrentPage(page);
 
-      // Cache the result
-      localStorage.setItem(
-        cacheKey,
-        JSON.stringify({
-          data: usersData,
-          timestamp: Date.now(),
-        })
-      );
+      console.timeEnd('fetchUsers');
     } catch (error) {
       console.error("Error fetching users:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchNextPage = async () => {
+    if (!lastDoc || users.length < USERS_PER_PAGE) return;
+
+    try {
+      setLoading(true);
+      const usersQuery = query(
+        collection(db, "users"),
+        orderBy("createdAt", "desc"),
+        startAfter(lastDoc),
+        limit(USERS_PER_PAGE)
+      );
+
+      const snapshot = await getDocs(usersQuery);
+      if (snapshot.empty) {
+        setLoading(false);
+        return;
+      }
+
+      setFirstDoc(snapshot.docs[0]);
+      setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
+
+      const usersData = snapshot.docs.map((doc) => ({
+        uid: doc.id,
+        ...doc.data(),
+      })) as User[];
+
+      setUsers(usersData);
+      setCurrentPage((prev) => prev + 1);
+    } catch (error) {
+      console.error("Error fetching next page:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchPreviousPage = async () => {
+    if (!firstDoc || currentPage <= 1) return;
+
+    try {
+      setLoading(true);
+
+      // For going back, we need to query in reverse
+      // This is complex in Firestore, so let's just refetch from the beginning
+      // For a better solution, you'd need to maintain a stack of cursors
+
+      const targetPage = currentPage - 1;
+      const skip = (targetPage - 1) * USERS_PER_PAGE;
+
+      const usersQuery = query(
+        collection(db, "users"),
+        orderBy("createdAt", "desc"),
+        limit(USERS_PER_PAGE)
+      );
+
+      const snapshot = await getDocs(usersQuery);
+
+      // Skip to the target page
+      let currentSnapshot = snapshot;
+      for (let i = 1; i < targetPage; i++) {
+        const lastDocOfPage = currentSnapshot.docs[currentSnapshot.docs.length - 1];
+        const nextQuery = query(
+          collection(db, "users"),
+          orderBy("createdAt", "desc"),
+          startAfter(lastDocOfPage),
+          limit(USERS_PER_PAGE)
+        );
+        currentSnapshot = await getDocs(nextQuery);
+      }
+
+      setFirstDoc(currentSnapshot.docs[0]);
+      setLastDoc(currentSnapshot.docs[currentSnapshot.docs.length - 1]);
+
+      const usersData = currentSnapshot.docs.map((doc) => ({
+        uid: doc.id,
+        ...doc.data(),
+      })) as User[];
+
+      setUsers(usersData);
+      setCurrentPage(targetPage);
+    } catch (error) {
+      console.error("Error fetching previous page:", error);
     } finally {
       setLoading(false);
     }
@@ -217,7 +312,7 @@ const UsersPage: React.FC = () => {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
             <p className="text-gray-600 mt-1">
-              จัดการผู้ใช้ทั้งหมด ({filteredUsers.length} / {users.length})
+              จัดการผู้ใช้ทั้งหมด (แสดง {users.length} จาก {totalUsers} users, หน้า {currentPage} / {Math.ceil(totalUsers / USERS_PER_PAGE)})
             </p>
           </div>
           <button
@@ -373,6 +468,36 @@ const UsersPage: React.FC = () => {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Pagination Controls */}
+          <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between bg-gray-50">
+            <div className="text-sm text-gray-700">
+              แสดง <span className="font-medium">{(currentPage - 1) * USERS_PER_PAGE + 1}</span> ถึง{" "}
+              <span className="font-medium">{Math.min(currentPage * USERS_PER_PAGE, totalUsers)}</span> จาก{" "}
+              <span className="font-medium">{totalUsers}</span> users
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={fetchPreviousPage}
+                disabled={currentPage <= 1 || loading}
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                <Icon icon={FiChevronLeft} />
+                Previous
+              </button>
+              <span className="px-4 py-2 text-sm text-gray-700">
+                หน้า {currentPage} / {Math.ceil(totalUsers / USERS_PER_PAGE)}
+              </span>
+              <button
+                onClick={fetchNextPage}
+                disabled={users.length < USERS_PER_PAGE || loading}
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                Next
+                <Icon icon={FiChevronRight} />
+              </button>
+            </div>
           </div>
         </div>
       </div>
