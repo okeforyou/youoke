@@ -1,26 +1,27 @@
 #!/usr/bin/env node
 
 /**
- * Update Vercel Environment Variables to use Firebase PRODUCTION
+ * Update Vercel Environment Variables to use Firebase DEV
  * Uses Vercel CLI commands to update all Firebase-related variables
  *
- * IMPORTANT: This uses PRODUCTION Firebase project, not DEV!
+ * IMPORTANT: youoke.vercel.app uses DEV for development!
+ * Production (play.okeforyou.com) has real users - DON'T TOUCH!
  */
 
 const { execSync } = require('child_process');
 
-// Firebase PRODUCTION Configuration (from .env.production)
+// Firebase DEV Configuration (from .env)
 const env_vars = {
-  'NEXT_PUBLIC_FIREBASE_PUBLIC_API_KEY': 'AIzaSyAtUvNGX9ibvl4YCNURA9q3XYJusa-iYDc',
-  'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN': 'playokeforyou.firebaseapp.com',
-  'NEXT_PUBLIC_FIREBASE_PROJECT_ID': 'playokeforyou',
-  'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET': 'playokeforyou.firebasestorage.app',
-  'NEXT_PUBLIC_FIREBASE_DATABASE_URL': 'https://playokeforyou-default-rtdb.asia-southeast1.firebasedatabase.app',
+  'NEXT_PUBLIC_FIREBASE_PUBLIC_API_KEY': 'AIzaSyBBIhI9VCi3OEgP5mxWotuAJYqJ46MG2gw',
+  'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN': 'playokeforyou-dev.firebaseapp.com',
+  'NEXT_PUBLIC_FIREBASE_PROJECT_ID': 'playokeforyou-dev',
+  'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET': 'playokeforyou-dev.firebasestorage.app',
+  'NEXT_PUBLIC_FIREBASE_DATABASE_URL': 'https://playokeforyou-dev-default-rtdb.asia-southeast1.firebasedatabase.app',
 };
 
 const environments = ['production', 'preview', 'development'];
 
-console.log('🔥 Updating Vercel Environment Variables to Firebase PRODUCTION...\n');
+console.log('🔥 Updating Vercel Environment Variables to Firebase DEV...\n');
 
 // Update each variable for all environments
 for (const [name, value] of Object.entries(env_vars)) {
