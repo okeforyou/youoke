@@ -3,12 +3,13 @@ import {
   getDocs,
   doc,
   updateDoc,
+  deleteDoc,
   Timestamp,
   query,
   orderBy,
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
-import { FiSearch, FiEdit2, FiCheck, FiX, FiDownload } from "react-icons/fi";
+import { FiSearch, FiEdit2, FiCheck, FiX, FiDownload, FiTrash2 } from "react-icons/fi";
 
 import Icon from "../../components/Icon";
 
@@ -152,6 +153,33 @@ const UsersPage: React.FC = () => {
     } catch (error) {
       console.error("Error updating user:", error);
       alert("Error updating user");
+    }
+  };
+
+  const handleDeleteUser = async (user: User) => {
+    if (user.role === "admin") {
+      alert("ไม่สามารถลบ Admin ได้");
+      return;
+    }
+
+    if (!confirm(`ยืนยันการลบผู้ใช้ "${user.displayName || user.email}"?\n\nการดำเนินการนี้ไม่สามารถยกเลิกได้`)) {
+      return;
+    }
+
+    try {
+      const userRef = doc(db, "users", user.uid);
+      await deleteDoc(userRef);
+
+      // Update local state
+      setUsers((prev) => prev.filter((u) => u.uid !== user.uid));
+
+      // Clear cache to force refresh on next load
+      localStorage.removeItem("admin_users");
+
+      alert("ลบผู้ใช้เรียบร้อยแล้ว");
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      alert("เกิดข้อผิดพลาดในการลบผู้ใช้");
     }
   };
 
@@ -323,12 +351,23 @@ const UsersPage: React.FC = () => {
                       {formatDate(user.createdAt)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <button
-                        onClick={() => handleEditUser(user)}
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        <Icon icon={FiEdit2} size={18} />
-                      </button>
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => handleEditUser(user)}
+                          className="text-blue-600 hover:text-blue-900"
+                          title="Edit user"
+                        >
+                          <Icon icon={FiEdit2} size={18} />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteUser(user)}
+                          className="text-red-600 hover:text-red-900"
+                          title="Delete user"
+                          disabled={user.role === "admin"}
+                        >
+                          <Icon icon={FiTrash2} size={18} className={user.role === "admin" ? "opacity-30" : ""} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

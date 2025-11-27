@@ -3,6 +3,7 @@ import {
   getDocs,
   doc,
   updateDoc,
+  deleteDoc,
   getDoc,
   Timestamp,
   query,
@@ -18,6 +19,7 @@ import {
   FiFilter,
   FiRefreshCw,
   FiDownload,
+  FiTrash2,
 } from "react-icons/fi";
 
 import Icon from "../../components/Icon";
@@ -237,6 +239,39 @@ const PaymentsPage: React.FC = () => {
     }
   };
 
+  const handleDeletePayment = async (payment: Payment) => {
+    if (payment.status === "approved") {
+      if (!confirm("การชำระเงินนี้ได้รับการอนุมัติแล้ว\n\nยืนยันที่จะลบ?")) {
+        return;
+      }
+    }
+
+    if (!confirm(`ยืนยันการลบรายการชำระเงินของ "${payment.userName}"?\n\nการดำเนินการนี้ไม่สามารถยกเลิกได้`)) {
+      return;
+    }
+
+    try {
+      const paymentRef = doc(db, "payments", payment.id);
+      await deleteDoc(paymentRef);
+
+      // Update local state
+      setPayments((prev) => prev.filter((p) => p.id !== payment.id));
+
+      // Clear cache to force refresh on next load
+      localStorage.removeItem("admin_payments");
+
+      // Close modal if viewing this payment
+      if (viewingPayment?.id === payment.id) {
+        setViewingPayment(null);
+      }
+
+      alert("ลบรายการชำระเงินเรียบร้อยแล้ว");
+    } catch (error) {
+      console.error("Error deleting payment:", error);
+      alert("เกิดข้อผิดพลาดในการลบรายการชำระเงิน");
+    }
+  };
+
   const handleExportCSV = () => {
     // Use filtered payments for export
     const dataToExport = filteredPayments.map((payment) => {
@@ -317,7 +352,7 @@ const PaymentsPage: React.FC = () => {
               Export CSV
             </button>
             <button
-              onClick={fetchPayments}
+              onClick={() => fetchPayments(true)}
               className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
             >
               <Icon icon={FiRefreshCw} />
@@ -598,16 +633,23 @@ const PaymentsPage: React.FC = () => {
               )}
             </div>
 
-            {/* Close Button */}
-            <div className="mt-6">
+            {/* Close and Delete Buttons */}
+            <div className="mt-6 flex gap-3">
               <button
                 onClick={() => {
                   setViewingPayment(null);
                   setRejectionReason("");
                 }}
-                className="w-full bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
+                className="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
               >
                 Close
+              </button>
+              <button
+                onClick={() => handleDeletePayment(viewingPayment)}
+                className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors flex items-center gap-2"
+              >
+                <Icon icon={FiTrash2} />
+                Delete
               </button>
             </div>
           </div>

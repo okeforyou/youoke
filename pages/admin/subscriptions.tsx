@@ -4,12 +4,13 @@ import {
   doc,
   updateDoc,
   setDoc,
+  deleteDoc,
   Timestamp,
   query,
   orderBy,
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
-import { FiEdit2, FiCheck, FiX, FiEye, FiEyeOff, FiPlus } from "react-icons/fi";
+import { FiEdit2, FiCheck, FiX, FiEye, FiEyeOff, FiPlus, FiTrash2 } from "react-icons/fi";
 
 import Icon from "../../components/Icon";
 
@@ -155,6 +156,40 @@ const SubscriptionsPage: React.FC = () => {
     } catch (error) {
       console.error("Error updating plan:", error);
       alert("Error updating plan");
+    }
+  };
+
+  const handleDeletePlan = async (plan: Plan) => {
+    // Prevent deletion of core plans
+    const corePlans = ["free", "monthly", "yearly", "lifetime"];
+    if (corePlans.includes(plan.id)) {
+      alert(`ไม่สามารถลบ Plan "${plan.displayName}" ได้\n\nนี่คือ Plan หลักของระบบ`);
+      return;
+    }
+
+    if (!confirm(`ยืนยันการลบ Plan "${plan.displayName}"?\n\nการดำเนินการนี้ไม่สามารถยกเลิกได้`)) {
+      return;
+    }
+
+    try {
+      const planRef = doc(db, "plans", plan.id);
+      await deleteDoc(planRef);
+
+      // Update local state
+      setPlans((prev) => prev.filter((p) => p.id !== plan.id));
+
+      // Clear cache to force refresh on next load
+      localStorage.removeItem("admin_plans");
+
+      // Close modal if editing this plan
+      if (editingPlan?.id === plan.id) {
+        setEditingPlan(null);
+      }
+
+      alert("ลบ Plan เรียบร้อยแล้ว");
+    } catch (error) {
+      console.error("Error deleting plan:", error);
+      alert("เกิดข้อผิดพลาดในการลบ Plan");
     }
   };
 
@@ -530,19 +565,30 @@ const SubscriptionsPage: React.FC = () => {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={handleSavePlan}
-                className="flex-1 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
-              >
-                Save Changes
-              </button>
-              <button
-                onClick={() => setEditingPlan(null)}
-                className="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
-              >
-                Cancel
-              </button>
+            <div className="mt-6 space-y-3">
+              <div className="flex gap-3">
+                <button
+                  onClick={handleSavePlan}
+                  className="flex-1 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
+                >
+                  Save Changes
+                </button>
+                <button
+                  onClick={() => setEditingPlan(null)}
+                  className="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+              {!["free", "monthly", "yearly", "lifetime"].includes(editingPlan.id) && (
+                <button
+                  onClick={() => handleDeletePlan(editingPlan)}
+                  className="w-full px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Icon icon={FiTrash2} />
+                  Delete Plan
+                </button>
+              )}
             </div>
           </div>
         </div>
