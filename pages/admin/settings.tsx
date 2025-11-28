@@ -116,8 +116,28 @@ const SettingsPage: React.FC = () => {
   if (loading) {
     return (
       <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500"></div>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="h-9 w-64 bg-gray-200 rounded animate-pulse"></div>
+              <div className="h-5 w-48 bg-gray-100 rounded animate-pulse mt-2"></div>
+            </div>
+          </div>
+          <div className="space-y-6">
+            {[1, 2].map(i => (
+              <div key={i} className="bg-white rounded-lg shadow">
+                <div className="p-6 border-b border-gray-200">
+                  <div className="h-7 w-48 bg-gray-200 rounded animate-pulse"></div>
+                  <div className="h-4 w-64 bg-gray-100 rounded animate-pulse mt-2"></div>
+                </div>
+                <div className="p-6 space-y-4">
+                  {[1, 2, 3, 4].map(j => (
+                    <div key={j} className="h-16 bg-gray-100 rounded animate-pulse"></div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </AdminLayout>
     );
