@@ -54,20 +54,26 @@ const SettingsPage: React.FC = () => {
   const fetchSettings = async () => {
     try {
       setLoading(true);
+      console.time('fetchSettings');
 
-      // Fetch general settings
-      const generalDoc = await getDoc(doc(db, "settings", "general"));
+      // Fetch both settings in parallel (faster than sequential!)
+      const [generalDoc, featuresDoc] = await Promise.all([
+        getDoc(doc(db, "settings", "general")),
+        getDoc(doc(db, "settings", "features")),
+      ]);
+
       if (generalDoc.exists()) {
         setGeneralSettings(generalDoc.data() as GeneralSettings);
       }
 
-      // Fetch feature flags
-      const featuresDoc = await getDoc(doc(db, "settings", "features"));
       if (featuresDoc.exists()) {
         setFeatureFlags(featuresDoc.data() as FeatureFlags);
       }
+
+      console.timeEnd('fetchSettings');
     } catch (error) {
       console.error("Error fetching settings:", error);
+      console.timeEnd('fetchSettings');
     } finally {
       setLoading(false);
     }

@@ -56,18 +56,20 @@ const SubscriptionsPage: React.FC = () => {
   const fetchPlans = async (skipCache = false) => {
     try {
       setLoading(true);
+      console.time('fetchPlans');
 
-      // Check cache first (5 minutes TTL)
+      // Check cache first (30 minutes TTL - extended for better performance)
       const cacheKey = "admin_plans";
       if (!skipCache) {
         const cached = localStorage.getItem(cacheKey);
         if (cached) {
           const { data, timestamp } = JSON.parse(cached);
           const age = Date.now() - timestamp;
-          if (age < 5 * 60 * 1000) {
+          if (age < 30 * 60 * 1000) {
             // Cache is fresh
             setPlans(data);
             setLoading(false);
+            console.timeEnd('fetchPlans');
 
             // Refresh in background
             setTimeout(() => fetchPlans(true), 100);
@@ -76,7 +78,7 @@ const SubscriptionsPage: React.FC = () => {
         }
       }
 
-      // Fetch from Firestore
+      // Fetch from Firestore (usually only 4-5 plans, so this is fast)
       const snapshot = await getDocs(collection(db, "plans"));
       const plansData = snapshot.docs.map((doc) => ({
         id: doc.id,
@@ -93,8 +95,11 @@ const SubscriptionsPage: React.FC = () => {
           timestamp: Date.now(),
         })
       );
+
+      console.timeEnd('fetchPlans');
     } catch (error) {
       console.error("Error fetching plans:", error);
+      console.timeEnd('fetchPlans');
     } finally {
       setLoading(false);
     }
