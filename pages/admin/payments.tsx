@@ -83,59 +83,63 @@ const PaymentsPage: React.FC = () => {
     filterPayments();
   }, [payments, filterStatus]);
 
-  const fetchPayments = async (skipCache = false) => {
+  const fetchPayments = async () => {
     try {
       setLoading(true);
 
-      // Check cache first (5 minutes TTL)
-      const cacheKey = "admin_payments";
-      if (!skipCache) {
-        const cached = localStorage.getItem(cacheKey);
-        if (cached) {
-          const { data, timestamp } = JSON.parse(cached);
-          const age = Date.now() - timestamp;
-          if (age < 5 * 60 * 1000) {
-            // Cache is fresh
-            setPayments(data);
-            setLoading(false);
+      console.time('fetchPayments');
 
-            // Refresh in background
-            setTimeout(() => fetchPayments(true), 100);
-            return;
-          }
-        }
-      }
+      // Get total count (fast!)
+      const countSnapshot = await getCountFromServer(collection(db, "payments"));
+      const total = countSnapshot.data().count;
+      setTotalPayments(total);
 
-      // Fetch from Firestore
-      const paymentsQuery = query(
+      // Build query with pagination
+      let paymentsQuery = query(
         collection(db, "payments"),
-        orderBy("createdAt", "desc")
+        orderBy("createdAt", "desc"),
+        limit(PAYMENTS_PER_PAGE)
       );
+
+      // Fetch page data
       const snapshot = await getDocs(paymentsQuery);
 
+      if (snapshot.empty) {
+        setPayments([]);
+        setLoading(false);
+        return;
+      }
+
+      // Store cursor for pagination
+      setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
+      setHasMore(snapshot.docs.length === PAYMENTS_PER_PAGE);
+
+      // Process payments - try to use denormalized data first
       const paymentsData = await Promise.all(
         snapshot.docs.map(async (paymentDoc) => {
           const data = paymentDoc.data();
 
-          // Fetch user and plan data in parallel
-          const [userDoc, planDoc] = await Promise.all([
-            data.userId ? getDoc(doc(db, "users", data.userId)).catch(() => null) : Promise.resolve(null),
-            data.planId ? getDoc(doc(db, "plans", data.planId)).catch(() => null) : Promise.resolve(null),
-          ]);
+          // Try to use denormalized data first (faster!)
+          let userEmail = data.userEmail || "Unknown";
+          let userName = data.userName || "Unknown";
+          let planName = data.planName || data.planId;
 
-          // Extract user data
-          let userEmail = "Unknown";
-          let userName = "Unknown";
-          if (userDoc?.exists()) {
-            const userData = userDoc.data();
-            userEmail = userData.email || "Unknown";
-            userName = userData.displayName || userData.email || "Unknown";
-          }
+          // Only fetch if denormalized data is missing
+          if (!data.userEmail || !data.userName || !data.planName) {
+            const [userDoc, planDoc] = await Promise.all([
+              data.userId ? getDoc(doc(db, "users", data.userId)).catch(() => null) : Promise.resolve(null),
+              data.planId ? getDoc(doc(db, "plans", data.planId)).catch(() => null) : Promise.resolve(null),
+            ]);
 
-          // Extract plan name
-          let planName = data.planId;
-          if (planDoc?.exists()) {
-            planName = planDoc.data().displayName || data.planId;
+            if (userDoc?.exists()) {
+              const userData = userDoc.data();
+              userEmail = userData.email || "Unknown";
+              userName = userData.displayName || userData.email || "Unknown";
+            }
+
+            if (planDoc?.exists()) {
+              planName = planDoc.data().displayName || data.planId;
+            }
           }
 
           return {
@@ -149,22 +153,90 @@ const PaymentsPage: React.FC = () => {
       );
 
       setPayments(paymentsData);
+      setCurrentPage(1);
 
-      // Cache the result
-      localStorage.setItem(
-        cacheKey,
-        JSON.stringify({
-          data: paymentsData,
-          timestamp: Date.now(),
-        })
-      );
+      console.timeEnd('fetchPayments');
     } catch (error) {
       console.error("Error fetching payments:", error);
-      // If payments collection doesn't exist yet, just set empty array
       setPayments([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchNextPage = async () => {
+    if (!lastDoc || !hasMore || loading) return;
+
+    try {
+      setLoading(true);
+      const paymentsQuery = query(
+        collection(db, "payments"),
+        orderBy("createdAt", "desc"),
+        startAfter(lastDoc),
+        limit(PAYMENTS_PER_PAGE)
+      );
+
+      const snapshot = await getDocs(paymentsQuery);
+      if (snapshot.empty) {
+        setHasMore(false);
+        setLoading(false);
+        return;
+      }
+
+      setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
+      setHasMore(snapshot.docs.length === PAYMENTS_PER_PAGE);
+
+      // Process payments
+      const paymentsData = await Promise.all(
+        snapshot.docs.map(async (paymentDoc) => {
+          const data = paymentDoc.data();
+
+          let userEmail = data.userEmail || "Unknown";
+          let userName = data.userName || "Unknown";
+          let planName = data.planName || data.planId;
+
+          if (!data.userEmail || !data.userName || !data.planName) {
+            const [userDoc, planDoc] = await Promise.all([
+              data.userId ? getDoc(doc(db, "users", data.userId)).catch(() => null) : Promise.resolve(null),
+              data.planId ? getDoc(doc(db, "plans", data.planId)).catch(() => null) : Promise.resolve(null),
+            ]);
+
+            if (userDoc?.exists()) {
+              const userData = userDoc.data();
+              userEmail = userData.email || "Unknown";
+              userName = userData.displayName || userData.email || "Unknown";
+            }
+
+            if (planDoc?.exists()) {
+              planName = planDoc.data().displayName || data.planId;
+            }
+          }
+
+          return {
+            id: paymentDoc.id,
+            ...data,
+            userEmail,
+            userName,
+            planName,
+          } as Payment;
+        })
+      );
+
+      setPayments(paymentsData);
+      setCurrentPage((prev) => prev + 1);
+    } catch (error) {
+      console.error("Error fetching next page:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchPreviousPage = async () => {
+    if (currentPage <= 1 || loading) return;
+
+    // For simplicity, just reload from the beginning
+    // A full implementation would require storing previous cursors
+    await fetchPayments();
   };
 
   const filterPayments = () => {
@@ -217,7 +289,7 @@ const PaymentsPage: React.FC = () => {
 
       // Clear cache and refresh payments
       localStorage.removeItem("admin_payments");
-      await fetchPayments(true);
+      await fetchPayments();
       setViewingPayment(null);
       alert("Payment approved successfully!");
     } catch (error) {
@@ -246,7 +318,7 @@ const PaymentsPage: React.FC = () => {
 
       // Clear cache and refresh payments
       localStorage.removeItem("admin_payments");
-      await fetchPayments(true);
+      await fetchPayments();
       setViewingPayment(null);
       setRejectionReason("");
       alert("Payment rejected");
@@ -357,7 +429,7 @@ const PaymentsPage: React.FC = () => {
 
       // Clear cache and refresh
       localStorage.removeItem("admin_payments");
-      await fetchPayments(true);
+      await fetchPayments();
       setSelectedPayments(new Set());
       alert(`อนุมัติ ${selectedArray.length} รายการเรียบร้อยแล้ว!`);
     } catch (error) {
@@ -395,7 +467,7 @@ const PaymentsPage: React.FC = () => {
 
       // Clear cache and refresh
       localStorage.removeItem("admin_payments");
-      await fetchPayments(true);
+      await fetchPayments();
       setSelectedPayments(new Set());
       setBulkRejectionReason("");
       alert(`ปฏิเสธ ${selectedArray.length} รายการเรียบร้อยแล้ว`);
@@ -487,7 +559,7 @@ const PaymentsPage: React.FC = () => {
               Export CSV
             </button>
             <button
-              onClick={() => fetchPayments(true)}
+              onClick={() => fetchPayments()}
               className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
             >
               <Icon icon={FiRefreshCw} />
@@ -696,6 +768,44 @@ const PaymentsPage: React.FC = () => {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between bg-gray-50">
+              <div className="text-sm text-gray-700">
+                แสดง <span className="font-medium">{(currentPage - 1) * PAYMENTS_PER_PAGE + 1}</span> ถึง{" "}
+                <span className="font-medium">{Math.min(currentPage * PAYMENTS_PER_PAGE, totalPayments)}</span> จาก{" "}
+                <span className="font-medium">{totalPayments}</span> payments
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={fetchPreviousPage}
+                  disabled={currentPage <= 1 || loading}
+                  className={`flex items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
+                    currentPage <= 1 || loading
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                  }`}
+                >
+                  <Icon icon={FiChevronLeft} />
+                  Previous
+                </button>
+                <span className="px-4 py-2 text-sm text-gray-700">
+                  หน้า {currentPage} / {Math.ceil(totalPayments / PAYMENTS_PER_PAGE)}
+                </span>
+                <button
+                  onClick={fetchNextPage}
+                  disabled={!hasMore || loading}
+                  className={`flex items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
+                    !hasMore || loading
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                  }`}
+                >
+                  Next
+                  <Icon icon={FiChevronRight} />
+                </button>
+              </div>
             </div>
           </div>
         )}
