@@ -242,7 +242,6 @@ const SharedMonitor = () => {
                       disablekb: 1,
                       modestbranding: 1,
                       rel: 0,
-                      showinfo: 0,
                       fs: 0,
                       playsinline: 1,
                     },
