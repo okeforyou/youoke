@@ -22,7 +22,12 @@ import {
   ArrowsPointingOutIcon,
   ArrowsPointingInIcon,
   XMarkIcon,
+  ShareIcon,
+  ClipboardDocumentIcon,
+  CheckIcon,
 } from '@heroicons/react/24/outline';
+import { createShareToken, revokeShareToken, getActiveTokensForRoom, ShareToken } from '../services/shareService';
+import { getUserProfile } from '../services/userService';
 
 interface QueueVideo {
   videoId: string;
@@ -65,6 +70,12 @@ const Monitor = () => {
   const [forceShowQueue, setForceShowQueue] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Share Room states
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareTokens, setShareTokens] = useState<ShareToken[]>([]);
+  const [isCreatingToken, setIsCreatingToken] = useState(false);
+  const [copiedToken, setCopiedToken] = useState<string | null>(null);
 
   // Track previous queue length for temporary queue display
   const lastQueueLengthRef = useRef(0);
@@ -1024,6 +1035,72 @@ const Monitor = () => {
     }
   };
 
+  // Share Room functions
+  const handleCreateShareToken = async () => {
+    if (!roomCode) return;
+
+    setIsCreatingToken(true);
+    try {
+      // Get current user info (or use default for monitor)
+      const user = auth.currentUser;
+      let ownerName = 'Monitor User';
+
+      if (user && !user.isAnonymous) {
+        const userProfile = await getUserProfile(user.uid);
+        ownerName = userProfile?.displayName || user.email || 'Monitor User';
+      }
+
+      const token = await createShareToken(roomCode, user?.uid || 'monitor', ownerName);
+      console.log('✅ Share token created:', token);
+
+      // Reload tokens
+      await loadShareTokens();
+    } catch (error) {
+      console.error('❌ Failed to create share token:', error);
+      alert('Failed to create share link');
+    } finally {
+      setIsCreatingToken(false);
+    }
+  };
+
+  const handleRevokeShareToken = async (tokenId: string) => {
+    try {
+      await revokeShareToken(tokenId);
+      console.log('✅ Share token revoked:', tokenId);
+
+      // Reload tokens
+      await loadShareTokens();
+    } catch (error) {
+      console.error('❌ Failed to revoke share token:', error);
+      alert('Failed to revoke share link');
+    }
+  };
+
+  const loadShareTokens = async () => {
+    if (!roomCode) return;
+
+    try {
+      const tokens = await getActiveTokensForRoom(roomCode);
+      setShareTokens(tokens);
+    } catch (error) {
+      console.error('❌ Failed to load share tokens:', error);
+    }
+  };
+
+  const handleCopyShareLink = (token: ShareToken) => {
+    const shareUrl = `${baseUrl}/monitor/shared/${token.id}`;
+    navigator.clipboard.writeText(shareUrl);
+    setCopiedToken(token.id);
+    setTimeout(() => setCopiedToken(null), 2000);
+  };
+
+  // Load share tokens when modal opens
+  useEffect(() => {
+    if (showShareModal && roomCode) {
+      loadShareTokens();
+    }
+  }, [showShareModal, roomCode]);
+
   const opts = {
     height: '100%',
     width: '100%',
@@ -1103,6 +1180,17 @@ const Monitor = () => {
                       </div>
                     </div>
                   )}
+
+                  {/* Share Room Button */}
+                  <div className="mt-4 sm:mt-6">
+                    <button
+                      onClick={() => setShowShareModal(true)}
+                      className="w-full bg-primary hover:bg-primary/80 text-white px-4 py-3 rounded-lg transition-colors flex items-center justify-center gap-2 font-medium shadow-lg"
+                    >
+                      <ShareIcon className="w-5 h-5" />
+                      Share Room
+                    </button>
+                  </div>
                 </div>
 
                 {/* Right: Instructions Section */}
@@ -1427,6 +1515,110 @@ const Monitor = () => {
         </div>
         )}
       </div>
+
+      {/* Share Room Modal */}
+      {showShareModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+          <div className="bg-gradient-to-br from-gray-900 to-black border border-white/10 rounded-2xl p-6 max-w-lg w-full shadow-2xl">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                <ShareIcon className="w-6 h-6 text-primary" />
+                Share Room
+              </h2>
+              <button
+                onClick={() => setShowShareModal(false)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <XMarkIcon className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Create New Share Link */}
+            <div className="mb-6">
+              <button
+                onClick={handleCreateShareToken}
+                disabled={isCreatingToken}
+                className="w-full bg-primary hover:bg-primary/80 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-4 py-3 rounded-lg transition-colors flex items-center justify-center gap-2 font-medium"
+              >
+                {isCreatingToken ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <ShareIcon className="w-5 h-5" />
+                    Create New Share Link
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Active Share Links */}
+            {shareTokens.length > 0 ? (
+              <div className="space-y-3">
+                <h3 className="text-sm font-medium text-gray-400 mb-2">Active Share Links</h3>
+                {shareTokens.map((token) => (
+                  <div
+                    key={token.id}
+                    className="bg-white/5 border border-white/10 rounded-lg p-4"
+                  >
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-gray-400 mb-1">Share Link</p>
+                        <p className="text-sm font-mono text-primary/90 truncate">
+                          {baseUrl}/monitor/shared/{token.id}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleCopyShareLink(token)}
+                        className="flex-shrink-0 p-2 bg-primary/20 hover:bg-primary/30 rounded-lg transition-colors"
+                        title="Copy link"
+                      >
+                        {copiedToken === token.id ? (
+                          <CheckIcon className="w-5 h-5 text-green-400" />
+                        ) : (
+                          <ClipboardDocumentIcon className="w-5 h-5 text-primary" />
+                        )}
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-gray-500">
+                        Created: {new Date(token.createdAt).toLocaleString('th-TH')}
+                      </p>
+                      <button
+                        onClick={() => {
+                          if (confirm('Are you sure you want to revoke this share link?')) {
+                            handleRevokeShareToken(token.id);
+                          }
+                        }}
+                        className="text-xs text-red-400 hover:text-red-300 font-medium transition-colors"
+                      >
+                        Revoke
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-500 mb-2">No active share links</p>
+                <p className="text-sm text-gray-600">Create one to share this room with friends</p>
+              </div>
+            )}
+
+            {/* Info */}
+            <div className="mt-6 bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+              <p className="text-xs text-blue-300">
+                <strong>Note:</strong> Friends can access this room via share link without logging in.
+                You can revoke access anytime by clicking "Revoke".
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
