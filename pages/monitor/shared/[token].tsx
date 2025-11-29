@@ -48,6 +48,7 @@ const SharedMonitor = () => {
   const [hasUserInteraction, setHasUserInteraction] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showQueue, setShowQueue] = useState(true);
+  const [currentVideoId, setCurrentVideoId] = useState<string | null>(null);
 
   const lastQueueLengthRef = useRef(0);
   const playerContainerRef = useRef<HTMLDivElement>(null);
@@ -159,11 +160,11 @@ const SharedMonitor = () => {
     const isPlaying = roomData.controls.isPlaying;
 
     if (currentVideo && currentVideo.videoId) {
-      const currentVideoId = player.getVideoData()?.video_id;
-
+      // Check if we need to load a new video
       if (currentVideoId !== currentVideo.videoId) {
         console.log('🎬 Loading new video:', currentVideo.title);
         setIsLoadingVideo(true);
+        setCurrentVideoId(currentVideo.videoId);
         player.loadVideoById(currentVideo.videoId);
       } else if (isPlaying) {
         player.playVideo();
@@ -173,7 +174,7 @@ const SharedMonitor = () => {
         setIsPlaying(false);
       }
     }
-  }, [player, roomData]);
+  }, [player, roomData, currentVideoId]);
 
   // Render loading state
   if (isValidating) {
