@@ -484,20 +484,35 @@ function YoutubePlayer({
 
   // Auto-connect from QR Code scan
   useEffect(() => {
+    // Wait for router to be ready (important for iOS)
+    if (!router.isReady) {
+      console.log('⏳ Router not ready yet, waiting...');
+      return;
+    }
+
     const { castRoom } = router.query;
 
-    if (castRoom && typeof castRoom === 'string' && !isCasting) {
+    console.log('🔍 Checking castRoom parameter:', {
+      castRoom,
+      isCasting,
+      isMoniter,
+      routerQuery: router.query,
+    });
+
+    if (castRoom && typeof castRoom === 'string' && !isCasting && !isMoniter) {
       console.log('🎬 Opening Cast overlay from share link:', castRoom);
       setCastInputRoomCode(castRoom);
       setIsCastOverlayOpen(true);
 
-      // Remove castRoom from URL to clean up
-      router.replace('/', undefined, { shallow: true });
+      // Remove castRoom from URL to clean up (delay to ensure overlay opens first)
+      setTimeout(() => {
+        router.replace('/', undefined, { shallow: true });
+      }, 300);
 
       // Don't auto-join - let user enter guest name if not logged in
       // User will click "เข้าร่วมห้อง" button to join
     }
-  }, [router.query.castRoom, isCasting]);
+  }, [router.isReady, router.query.castRoom, isCasting, isMoniter]);
 
   // Enhanced Auto-Resume when returning from background (Mobile fix + Queue support)
   useEffect(() => {
@@ -1029,9 +1044,10 @@ function YoutubePlayer({
     // Don't show overlay at all when already casting (user sees "กำลัง Cast ไป Monitor" screen instead)
     if (isCasting || !isCastOverlayOpen) return null;
 
+    // Don't show on Monitor page
+    if (isMoniter) return null;
+
     return (
-      isLogin &&
-      !isMoniter && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
           <div className="bg-base-100 rounded-xl shadow-2xl max-w-md w-full p-4 sm:p-5 relative my-auto max-h-[90vh] overflow-y-auto">
             {/* Close Button */}
@@ -1161,7 +1177,6 @@ function YoutubePlayer({
             </div>
           </div>
         </div>
-      )
     );
   };
 
