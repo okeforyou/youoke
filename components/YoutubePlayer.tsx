@@ -502,30 +502,15 @@ function YoutubePlayer({
     const { castRoom } = router.query;
 
     if (castRoom && typeof castRoom === 'string' && castRoom.length === 4 && !isCasting) {
-      console.log('🎬 Auto-connecting to Cast room from QR:', castRoom);
+      console.log('🎬 Opening Cast overlay from share link:', castRoom);
       setCastInputRoomCode(castRoom);
       setIsCastOverlayOpen(true);
 
-      // Auto-join after a short delay (to show overlay)
-      const timer = setTimeout(async () => {
-        setIsJoiningRoom(true);
-        try {
-          const success = await joinRoom(castRoom);
-          if (success) {
-            setIsCastOverlayOpen(false);
-            addToast('เชื่อมต่อจาก QR Code สำเร็จ! 🎉');
-            // Remove castRoom from URL
-            router.replace('/', undefined, { shallow: true });
-          } else {
-            setCastError('ไม่พบห้อง กรุณาตรวจสอบ QR Code อีกครั้ง');
-          }
-        } catch (err) {
-          setCastError('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
-        }
-        setIsJoiningRoom(false);
-      }, 500);
+      // Remove castRoom from URL to clean up
+      router.replace('/', undefined, { shallow: true });
 
-      return () => clearTimeout(timer);
+      // Don't auto-join - let user enter guest name if not logged in
+      // User will click "เข้าร่วมห้อง" button to join
     }
   }, [router.query, isCasting]);
 

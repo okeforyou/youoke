@@ -40,7 +40,12 @@ export const AdsProvider = ({ children }) => {
       }
     };
 
-    if (!user?.uid) getAds();
+    // Don't show ads for non-logged-in users (especially from share links)
+    // if (!user?.uid) getAds();
+
+    // Only show ads if explicitly needed (e.g., free tier logged-in users)
+    // For now, disable ads for better UX when joining from share links
+    setIsLoading(false);
   }, [!!user?.uid]);
 
   return (
