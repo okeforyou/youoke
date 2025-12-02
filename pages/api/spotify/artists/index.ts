@@ -13,32 +13,58 @@ export default async function handler(
     let artistList: Artist[] = [];
     let artistCategories: ArtistCategory[] = [];
 
-    const playlistId = "4jn7rUR7AyqLFnAnHkkbfg";
+    // Use Spotify's Top 50 - Thailand playlist (updates daily)
+    // Alternative playlists for more variety:
+    // - Top 50 - Thailand: 37i9dQZEVXbMnz8KAMyVOI
+    // - Viral 50 - Thailand: 37i9dQZEVXbLjYEH7fRPUQ
+    const playlistIds = [
+      "37i9dQZEVXbMnz8KAMyVOI", // Top 50 - Thailand
+      "37i9dQZEVXbLjYEH7fRPUQ", // Viral 50 - Thailand
+    ];
 
-    // Fetching the specific playlist by ID
-    const playlistResponse = await axios.get(
-      `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+    const artistsSet = new Set<string>();
+    const artistsMap = new Map<string, { name: string; imageUrl: string }>();
+
+    // Fetch artists from multiple trending playlists
+    for (const playlistId of playlistIds) {
+      try {
+        const playlistResponse = await axios.get(
+          `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+            params: {
+              limit: 50, // Get top 50 tracks
+            },
+          }
+        );
+
+        const tracks = playlistResponse.data.items;
+
+        for (const item of tracks) {
+          const track = item?.track;
+          if (!track || !track.artists || !track.artists[0]) continue;
+
+          const artistName = track.artists[0].name;
+          const artistImage = track.album?.images?.[0]?.url || "";
+
+          // Store unique artists with their image
+          if (!artistsSet.has(artistName) && artistImage) {
+            artistsSet.add(artistName);
+            artistsMap.set(artistName, {
+              name: artistName,
+              imageUrl: artistImage,
+            });
+          }
+        }
+      } catch (error) {
+        console.error(`Error fetching playlist ${playlistId}:`, error.message);
+        // Continue with other playlists
       }
-    );
-
-    const tracks = playlistResponse.data.items;
-
-    const topHits = new Set<{ name: string; imageUrl: string }>();
-
-    for (const item of tracks) {
-      const track = item.track;
-
-      topHits.add({
-        name: track.artists[0].name,
-        imageUrl: track.album.images[0]?.url || "",
-      });
     }
 
-    artistList = Array.from(topHits).slice(0, 12);
+    artistList = Array.from(artistsMap.values()).slice(0, 12);
 
     const artists: GetTopArtists = {
       status: "success",
