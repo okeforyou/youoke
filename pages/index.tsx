@@ -49,6 +49,7 @@ import { useMyPlaylistState } from "../hooks/myPlaylist";
 import { useRoomState } from "../hooks/room";
 import { RecommendedVideo, SearchResult } from "../types/invidious";
 import { generateRandomString } from "../utils/random";
+import { QRCodeSVG } from 'qrcode.react';
 
 const ListSingerGrid = dynamic(() => import("../components/ListSingerGrid"), {
   loading: () => <div>Loading...</div>,
@@ -742,6 +743,19 @@ function HomePage() {
               <p className="text-sm text-gray-600">
                 แชร์ลิงก์นี้ให้เพื่อนๆ เพื่อให้เข้าร่วมห้องและควบคุม Monitor ด้วยกันได้
               </p>
+
+              {/* QR Code */}
+              {baseUrl && room && (
+                <div className="flex justify-center">
+                  <div className="bg-white p-4 rounded-lg shadow-md">
+                    <QRCodeSVG
+                      value={`${baseUrl}/?castRoom=${room}`}
+                      size={180}
+                      level="M"
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Share Link */}
               <div className="bg-gray-50 rounded-lg p-4 space-y-3">
