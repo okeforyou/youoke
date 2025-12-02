@@ -122,7 +122,7 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
                   Google Cast (Chromecast)
                 </h3>
                 <p className="text-xs text-gray-600">
-                  {isCastAvailable ? 'Auto-discover ไม่ต้องกรอกรหัส' : 'กำลังโหลด...'}
+                  {isCastAvailable ? 'Auto-discover ไม่ต้องกรอกรหัส' : 'ไม่รองรับ iOS/Safari - ใช้ Android Chrome'}
                 </p>
               </div>
             </div>
