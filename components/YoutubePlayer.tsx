@@ -98,6 +98,7 @@ function YoutubePlayer({
   const [isDebugOverlayOpen, setIsDebugOverlayOpen] = useState<boolean>(false);
   const [isShareRoomModalOpen, setIsShareRoomModalOpen] = useState<boolean>(false);
   const [baseUrl, setBaseUrl] = useState<string>('');
+  const wakeLockRef = useRef<any>(null); // Screen Wake Lock reference
 
   const { playlist, curVideoId, setCurVideoId, setPlaylist } =
     useKaraokeState();
@@ -131,6 +132,70 @@ function YoutubePlayer({
       setBaseUrl(window.location.origin);
     }
   }, []);
+
+  // Screen Wake Lock - Prevent screen from sleeping when casting (Remote only)
+  useEffect(() => {
+    // Only apply wake lock for Remote (not Monitor)
+    if (isMoniter) return;
+
+    const requestWakeLock = async () => {
+      // Only request wake lock when casting
+      if (!isCasting) {
+        // Release wake lock if not casting
+        if (wakeLockRef.current) {
+          try {
+            await wakeLockRef.current.release();
+            wakeLockRef.current = null;
+            console.log('📱 Screen wake lock released');
+          } catch (err) {
+            console.warn('⚠️ Failed to release wake lock:', err);
+          }
+        }
+        return;
+      }
+
+      // Check if Wake Lock API is supported
+      if (!('wakeLock' in navigator)) {
+        console.warn('⚠️ Screen Wake Lock API not supported');
+        return;
+      }
+
+      try {
+        // Request screen wake lock
+        wakeLockRef.current = await (navigator as any).wakeLock.request('screen');
+        console.log('✅ Screen wake lock activated - screen will not sleep during cast');
+
+        // Listen for wake lock release (e.g., when tab becomes hidden)
+        wakeLockRef.current.addEventListener('release', () => {
+          console.log('📱 Screen wake lock was released');
+        });
+      } catch (err) {
+        console.warn('⚠️ Failed to request wake lock:', err);
+      }
+    };
+
+    requestWakeLock();
+
+    // Re-request wake lock when visibility changes (e.g., returning to tab)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && isCasting && !wakeLockRef.current) {
+        console.log('📱 Tab visible again, re-requesting wake lock...');
+        requestWakeLock();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Cleanup
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (wakeLockRef.current) {
+        wakeLockRef.current.release().catch((err: any) => {
+          console.warn('⚠️ Failed to release wake lock on cleanup:', err);
+        });
+      }
+    };
+  }, [isCasting, isMoniter]);
 
   useEffect(() => {
     window.addEventListener("mousemove", handleMouseMove);
@@ -1307,12 +1372,12 @@ function YoutubePlayer({
       >
         {isCasting && !isMoniter ? (
           <div className="h-full w-full flex flex-col items-center justify-center p-4 gap-3 bg-gradient-to-br from-error to-red-600">
-            {/* Compact status banner - Dark theme for better contrast */}
-            <div className="bg-gradient-to-br from-gray-900 to-black backdrop-blur-sm rounded-xl shadow-2xl px-4 py-3 max-w-sm w-full mx-auto border-2 border-white/30">
+            {/* Compact status banner - White theme like the button below */}
+            <div className="bg-white rounded-xl shadow-2xl px-4 py-3 max-w-sm w-full mx-auto border-2 border-white/50">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs text-white/70 font-medium mb-0.5">กำลัง Cast ไป Monitor</p>
-                  <p className="text-sm font-bold text-white truncate">
+                  <p className="text-xs text-gray-500 font-medium mb-0.5">กำลัง Cast ไป Monitor</p>
+                  <p className="text-sm font-bold text-gray-900 truncate">
                     {firebaseCastState.currentVideo?.title || 'รอเพิ่มเพลง...'}
                   </p>
                 </div>
@@ -1321,7 +1386,7 @@ function YoutubePlayer({
                     e.stopPropagation();
                     handleCastDisconnect();
                   }}
-                  className="flex-shrink-0 px-3 py-2 bg-white hover:bg-gray-100 text-error rounded-lg font-bold text-xs transition-all hover:scale-105 shadow-lg"
+                  className="flex-shrink-0 px-3 py-2 bg-error hover:bg-error/90 text-white rounded-lg font-bold text-xs transition-all hover:scale-105 shadow-lg"
                 >
                   {userInfo?.isGuest ? 'ออกจากห้อง' : 'ตัดการเชื่อมต่อ'}
                 </button>
