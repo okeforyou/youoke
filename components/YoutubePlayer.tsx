@@ -1307,12 +1307,12 @@ function YoutubePlayer({
       >
         {isCasting && !isMoniter ? (
           <div className="h-full w-full flex flex-col items-center justify-center p-4 gap-3 bg-gradient-to-br from-error to-red-600">
-            {/* Compact status banner */}
-            <div className="bg-error/95 backdrop-blur-sm rounded-lg shadow-xl px-4 py-3 max-w-sm w-full mx-auto border-2 border-white/20">
+            {/* Compact status banner - Dark theme for better contrast */}
+            <div className="bg-gradient-to-br from-gray-900 to-black backdrop-blur-sm rounded-xl shadow-2xl px-4 py-3 max-w-sm w-full mx-auto border-2 border-white/30">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs text-white/80 font-medium">กำลัง Cast ไป Monitor</p>
-                  <p className="text-sm font-semibold text-white truncate">
+                  <p className="text-xs text-white/70 font-medium mb-0.5">กำลัง Cast ไป Monitor</p>
+                  <p className="text-sm font-bold text-white truncate">
                     {firebaseCastState.currentVideo?.title || 'รอเพิ่มเพลง...'}
                   </p>
                 </div>
@@ -1321,7 +1321,7 @@ function YoutubePlayer({
                     e.stopPropagation();
                     handleCastDisconnect();
                   }}
-                  className="flex-shrink-0 px-3 py-2 bg-white hover:bg-gray-100 text-error rounded-lg font-semibold text-xs transition-colors shadow-md"
+                  className="flex-shrink-0 px-3 py-2 bg-white hover:bg-gray-100 text-error rounded-lg font-bold text-xs transition-all hover:scale-105 shadow-lg"
                 >
                   {userInfo?.isGuest ? 'ออกจากห้อง' : 'ตัดการเชื่อมต่อ'}
                 </button>
@@ -1334,7 +1334,7 @@ function YoutubePlayer({
                 e.stopPropagation();
                 setIsShareRoomModalOpen(true);
               }}
-              className="w-full max-w-sm px-4 py-3 bg-white hover:bg-gray-100 text-primary rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 shadow-xl border-2 border-white/50"
+              className="w-full max-w-sm px-4 py-3 bg-white hover:bg-gray-100 text-primary rounded-xl font-bold transition-all hover:scale-105 flex items-center justify-center gap-2 shadow-2xl border-2 border-white/50"
             >
               <UserGroupIcon className="w-5 h-5" />
               <span>เชิญเพื่อน - แชร์ห้อง</span>
