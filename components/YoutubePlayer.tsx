@@ -139,22 +139,7 @@ function YoutubePlayer({
     };
   }, []);
 
-  // Check for ?castRoom parameter (shareable link)
-  useEffect(() => {
-    if (isMoniter || isCasting) return;
-
-    const castRoomParam = router.query.castRoom;
-    if (castRoomParam && typeof castRoomParam === 'string') {
-      // Auto-fill room code and open Cast overlay
-      setCastInputRoomCode(castRoomParam);
-      setIsCastOverlayOpen(true);
-
-      // Remove query parameter to clean up URL
-      router.replace(router.pathname, undefined, { shallow: true });
-
-      console.log('📱 Auto-opened Cast overlay with room code:', castRoomParam);
-    }
-  }, [router.query.castRoom, isMoniter, isCasting]);
+  // Removed duplicate castRoom handler - see line ~500 for the active one
 
   // Check if Dual Mode is active
   useEffect(() => {
@@ -501,7 +486,7 @@ function YoutubePlayer({
   useEffect(() => {
     const { castRoom } = router.query;
 
-    if (castRoom && typeof castRoom === 'string' && castRoom.length === 4 && !isCasting) {
+    if (castRoom && typeof castRoom === 'string' && !isCasting) {
       console.log('🎬 Opening Cast overlay from share link:', castRoom);
       setCastInputRoomCode(castRoom);
       setIsCastOverlayOpen(true);
@@ -512,7 +497,7 @@ function YoutubePlayer({
       // Don't auto-join - let user enter guest name if not logged in
       // User will click "เข้าร่วมห้อง" button to join
     }
-  }, [router.query, isCasting]);
+  }, [router.query.castRoom, isCasting]);
 
   // Enhanced Auto-Resume when returning from background (Mobile fix + Queue support)
   useEffect(() => {
