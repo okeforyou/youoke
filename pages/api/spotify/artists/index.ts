@@ -9,7 +9,9 @@ export default async function handler(
   res: NextApiResponse<GetTopArtists | { error: string }>
 ) {
   try {
+    console.log('🎵 [API] Fetching top artists from Spotify...');
     const accessToken = await getAccessToken();
+    console.log('✅ [API] Got Spotify access token:', accessToken ? 'Yes' : 'No');
     let artistList: Artist[] = [];
     let artistCategories: ArtistCategory[] = [];
 
@@ -28,6 +30,7 @@ export default async function handler(
     // Fetch artists from multiple trending playlists
     for (const playlistId of playlistIds) {
       try {
+        console.log(`📡 [API] Fetching playlist: ${playlistId}`);
         const playlistResponse = await axios.get(
           `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
           {
@@ -41,6 +44,7 @@ export default async function handler(
         );
 
         const tracks = playlistResponse.data.items;
+        console.log(`📦 [API] Got ${tracks.length} tracks from playlist ${playlistId}`);
 
         for (const item of tracks) {
           const track = item?.track;
@@ -58,13 +62,18 @@ export default async function handler(
             });
           }
         }
+        console.log(`✅ [API] Playlist ${playlistId} processed. Total unique artists: ${artistsMap.size}`);
       } catch (error) {
-        console.error(`Error fetching playlist ${playlistId}:`, error.message);
+        console.error(`❌ [API] Error fetching playlist ${playlistId}:`, error.message);
+        console.error(`❌ [API] Status:`, error.response?.status);
+        console.error(`❌ [API] Data:`, error.response?.data);
         // Continue with other playlists
       }
     }
 
     artistList = Array.from(artistsMap.values()).slice(0, 12);
+
+    console.log(`✅ [API] Found ${artistList.length} unique artists`);
 
     const artists: GetTopArtists = {
       status: "success",
@@ -74,6 +83,8 @@ export default async function handler(
 
     res.status(200).json(artists);
   } catch (error) {
+    console.error('❌ [API] Error fetching top artists:', error.message);
+    console.error('❌ [API] Full error:', error);
     res.status(500).json({ error: error.message });
   }
 }
