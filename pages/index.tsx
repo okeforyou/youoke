@@ -91,6 +91,7 @@ function HomePage() {
   const { room, setRoom } = useRoomState();
   const {
     isConnected: isCasting,
+    isHost: isCastHost,
     addToQueue: addToCastQueue,
     playNow: castPlayNow,
     playlist: castPlaylist,
@@ -368,8 +369,8 @@ function HomePage() {
           </span>
         )}
 
-        {/* Share Room button - only show when casting to Monitor */}
-        {isCasting && !isGoogleCastConnected && (
+        {/* Share Room button - only show for Owner when casting to Monitor */}
+        {isCasting && !isGoogleCastConnected && isCastHost && (
           <button
             onClick={() => setShowShareModal(true)}
             className="btn btn-xs btn-ghost text-primary gap-1"
@@ -380,7 +381,8 @@ function HomePage() {
           </button>
         )}
 
-        {!displayPlaylist?.length ? null : (
+        {/* Delete all button - only show for Owner or when not casting */}
+        {!displayPlaylist?.length ? null : (!isCasting || isCastHost) && (
           <div className="dropdown dropdown-end ml-auto">
             <label
               tabIndex={0}

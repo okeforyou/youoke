@@ -3,13 +3,15 @@
     "rooms": {
       "$roomCode": {
         ".read": true,
-        ".write": "auth != null",
+        ".write": true,
         "commands": {
+          ".read": true,
+          ".write": true,
           ".indexOn": ["timestamp", "status"]
         },
         "state": {
           ".read": true,
-          ".write": "auth != null"
+          ".write": true
         },
         "participants": {
           ".read": true,
