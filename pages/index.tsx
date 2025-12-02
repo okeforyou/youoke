@@ -23,10 +23,9 @@ import {
   BookmarkIcon,
   CheckCircleIcon,
   ChevronRightIcon,
-  PlusIcon,
-  RssIcon,
-  ShareIcon,
   ClipboardDocumentIcon,
+  PlusIcon,
+  ShareIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 
@@ -50,7 +49,6 @@ import { useMyPlaylistState } from "../hooks/myPlaylist";
 import { useRoomState } from "../hooks/room";
 import { RecommendedVideo, SearchResult } from "../types/invidious";
 import { generateRandomString } from "../utils/random";
-import { createShareToken, revokeShareToken, getActiveTokensForRoom, ShareToken } from "../services/shareService";
 
 const ListSingerGrid = dynamic(() => import("../components/ListSingerGrid"), {
   loading: () => <div>Loading...</div>,
@@ -117,9 +115,7 @@ function HomePage() {
 
   // Share Room states
   const [showShareModal, setShowShareModal] = useState(false);
-  const [shareTokens, setShareTokens] = useState<ShareToken[]>([]);
-  const [isCreatingToken, setIsCreatingToken] = useState(false);
-  const [copiedToken, setCopiedToken] = useState<string | null>(null);
+  const [copiedLink, setCopiedLink] = useState(false);
   const [baseUrl, setBaseUrl] = useState<string>('');
 
   useEffect(() => {
@@ -160,61 +156,13 @@ function HomePage() {
     }
   }, []);
 
-  // Share Room functions
-  const handleCreateShareToken = async () => {
-    if (!room) return;
-
-    setIsCreatingToken(true);
-    try {
-      const ownerName = user?.displayName || user?.email || 'Guest User';
-      const token = await createShareToken(room, user?.uid || 'anonymous', ownerName);
-      console.log('✅ Share token created:', token);
-
-      await loadShareTokens();
-    } catch (error) {
-      console.error('❌ Failed to create share token:', error);
-      alert('Failed to create share link');
-    } finally {
-      setIsCreatingToken(false);
-    }
-  };
-
-  const handleRevokeShareToken = async (tokenId: string) => {
-    try {
-      await revokeShareToken(tokenId);
-      console.log('✅ Share token revoked:', tokenId);
-
-      await loadShareTokens();
-    } catch (error) {
-      console.error('❌ Failed to revoke share token:', error);
-      alert('Failed to revoke share link');
-    }
-  };
-
-  const loadShareTokens = async () => {
-    if (!room) return;
-
-    try {
-      const tokens = await getActiveTokensForRoom(room);
-      setShareTokens(tokens);
-    } catch (error) {
-      console.error('❌ Failed to load share tokens:', error);
-    }
-  };
-
-  const handleCopyShareLink = (token: ShareToken) => {
-    const shareUrl = `${baseUrl}/shared/${token.id}`;
+  // Share Room function - using castRoom parameter
+  const handleCopyShareLink = () => {
+    const shareUrl = `${baseUrl}/?castRoom=${room}`;
     navigator.clipboard.writeText(shareUrl);
-    setCopiedToken(token.id);
-    setTimeout(() => setCopiedToken(null), 2000);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
   };
-
-  // Load share tokens when modal opens
-  useEffect(() => {
-    if (showShareModal && room) {
-      loadShareTokens();
-    }
-  }, [showShareModal, room]);
 
   function addVideoToPlaylist(video: SearchResult | RecommendedVideo) {
     if (isGoogleCastConnected) {
@@ -792,84 +740,46 @@ function HomePage() {
             {/* Body */}
             <div className="p-4 space-y-4">
               <p className="text-sm text-gray-600">
-                สร้างลิงก์แชร์เพื่อให้เพื่อนๆ เข้าร่วมห้องและควบคุม Monitor ด้วยกันได้
+                แชร์ลิงก์นี้ให้เพื่อนๆ เพื่อให้เข้าร่วมห้องและควบคุม Monitor ด้วยกันได้
               </p>
 
-              {/* Create Share Link Button */}
-              <button
-                onClick={handleCreateShareToken}
-                disabled={isCreatingToken}
-                className="btn btn-primary w-full gap-2"
-              >
-                <ShareIcon className="w-5 h-5" />
-                {isCreatingToken ? 'กำลังสร้าง...' : 'สร้างลิงก์แชร์ใหม่'}
-              </button>
-
-              {/* Active Share Tokens */}
-              {shareTokens.length > 0 && (
-                <div className="space-y-2">
-                  <h4 className="text-sm font-semibold text-gray-700">ลิงก์ที่ใช้งานได้</h4>
-                  {shareTokens.map((token) => (
-                    <div
-                      key={token.id}
-                      className="bg-gray-50 rounded-lg p-3 space-y-2"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-500">
-                          สร้างโดย: {token.ownerName}
-                        </span>
-                        <button
-                          onClick={() => handleRevokeShareToken(token.id)}
-                          className="text-xs text-red-600 hover:text-red-800"
-                        >
-                          ยกเลิก
-                        </button>
-                      </div>
-
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          readOnly
-                          value={`${baseUrl}/shared/${token.id}`}
-                          className="input input-sm input-bordered flex-1 text-xs"
-                        />
-                        <button
-                          onClick={() => handleCopyShareLink(token)}
-                          className="btn btn-sm btn-primary gap-1"
-                        >
-                          {copiedToken === token.id ? (
-                            <>
-                              <CheckCircleIcon className="w-4 h-4" />
-                              คัดลอกแล้ว
-                            </>
-                          ) : (
-                            <>
-                              <ClipboardDocumentIcon className="w-4 h-4" />
-                              คัดลอก
-                            </>
-                          )}
-                        </button>
-                      </div>
-
-                      <div className="text-xs text-gray-500">
-                        สร้างเมื่อ: {new Date(token.createdAt).toLocaleString('th-TH')}
-                      </div>
-                    </div>
-                  ))}
+              {/* Share Link */}
+              <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    readOnly
+                    value={`${baseUrl}/?castRoom=${room}`}
+                    className="input input-sm input-bordered flex-1 text-xs bg-white"
+                  />
+                  <button
+                    onClick={handleCopyShareLink}
+                    className="btn btn-sm btn-primary gap-1"
+                  >
+                    {copiedLink ? (
+                      <>
+                        <CheckCircleIcon className="w-4 h-4" />
+                        คัดลอกแล้ว
+                      </>
+                    ) : (
+                      <>
+                        <ClipboardDocumentIcon className="w-4 h-4" />
+                        คัดลอก
+                      </>
+                    )}
+                  </button>
                 </div>
-              )}
 
-              {shareTokens.length === 0 && (
-                <div className="text-center py-4 text-sm text-gray-500">
-                  ยังไม่มีลิงก์แชร์ที่ใช้งานได้
+                <div className="text-xs text-gray-500 text-center">
+                  รหัสห้อง: <span className="font-mono font-bold text-primary text-lg">{room}</span>
                 </div>
-              )}
+              </div>
             </div>
 
             {/* Footer */}
             <div className="p-4 border-t bg-gray-50 rounded-b-lg">
               <p className="text-xs text-gray-600">
-                ⚠️ ลิงก์แชร์จะทำให้ผู้อื่นสามารถควบคุม Monitor ของคุณได้ กรุณาแชร์ให้เฉพาะคนที่ไว้ใจ
+                ⚠️ ลิงก์นี้จะให้ผู้อื่นควบคุม Monitor ของคุณได้ กรุณาแชร์ให้เฉพาะคนที่ไว้ใจ
               </p>
             </div>
           </div>
