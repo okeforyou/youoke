@@ -201,18 +201,25 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
       // Determine user info (logged-in user or guest)
       let currentUserInfo: { uid: string; displayName: string; isGuest: boolean };
 
-      if (user) {
-        // Logged-in user
+      if (user && (user.displayName || user.email)) {
+        // Logged-in user with name/email
         currentUserInfo = {
           uid: user.uid,
-          displayName: user.displayName || user.email || 'Anonymous',
+          displayName: user.displayName || user.email || 'User',
           isGuest: false,
         };
       } else if (options?.guestName) {
-        // Guest user
+        // Guest user with custom name (includes anonymous auth users)
         currentUserInfo = {
-          uid: `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          uid: user?.uid || `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           displayName: options.guestName,
+          isGuest: true,
+        };
+      } else if (user) {
+        // Anonymous user without guest name (fallback)
+        currentUserInfo = {
+          uid: user.uid,
+          displayName: 'Anonymous',
           isGuest: true,
         };
       } else {

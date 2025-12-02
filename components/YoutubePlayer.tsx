@@ -61,6 +61,7 @@ function YoutubePlayer({
   const {
     isConnected: isCasting,
     roomCode,
+    userInfo,
     joinRoom,
     leaveRoom,
     play: firebaseCastPlay,
@@ -1164,13 +1165,13 @@ function YoutubePlayer({
                     />
                   </div>
 
-                  {/* Disconnect Button */}
+                  {/* Disconnect/Leave Button */}
                   <button
                     className="w-full py-2.5 px-4 text-white rounded-lg bg-error hover:bg-error/90 font-semibold flex items-center justify-center gap-2 transition-colors text-sm"
                     onClick={handleCastDisconnect}
                   >
                     <XMarkIcon className="w-4 h-4" />
-                    <span>ตัดการเชื่อมต่อ</span>
+                    <span>{userInfo?.isGuest ? 'ออกจากห้อง' : 'ตัดการเชื่อมต่อ'}</span>
                   </button>
                 </div>
               )}
@@ -1322,7 +1323,7 @@ function YoutubePlayer({
                   }}
                   className="flex-shrink-0 px-3 py-2 bg-error hover:bg-error/80 text-white rounded-lg font-semibold text-xs transition-colors"
                 >
-                  ตัดการเชื่อมต่อ
+                  {userInfo?.isGuest ? 'ออกจากห้อง' : 'ตัดการเชื่อมต่อ'}
                 </button>
               </div>
             </div>
