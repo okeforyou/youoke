@@ -25,6 +25,9 @@ import {
   ChevronRightIcon,
   PlusIcon,
   RssIcon,
+  ShareIcon,
+  ClipboardDocumentIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 
 import Alert, { AlertHandler } from "../components/Alert";
@@ -47,6 +50,7 @@ import { useMyPlaylistState } from "../hooks/myPlaylist";
 import { useRoomState } from "../hooks/room";
 import { RecommendedVideo, SearchResult } from "../types/invidious";
 import { generateRandomString } from "../utils/random";
+import { createShareToken, revokeShareToken, getActiveTokensForRoom, ShareToken } from "../services/shareService";
 
 const ListSingerGrid = dynamic(() => import("../components/ListSingerGrid"), {
   loading: () => <div>Loading...</div>,
@@ -111,6 +115,13 @@ function HomePage() {
   const [hasSyncedPlaylist, setHasSyncedPlaylist] = useState(false);
   const [showCastModeSelector, setShowCastModeSelector] = useState(false);
 
+  // Share Room states
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [shareTokens, setShareTokens] = useState<ShareToken[]>([]);
+  const [isCreatingToken, setIsCreatingToken] = useState(false);
+  const [copiedToken, setCopiedToken] = useState<string | null>(null);
+  const [baseUrl, setBaseUrl] = useState<string>('');
+
   useEffect(() => {
     if (!user?.uid) {
       setRoom("");
@@ -141,6 +152,69 @@ function HomePage() {
       setYouTubeCastPlaylist(playlist);
     }
   }, [playlist]);
+
+  // Detect base URL
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setBaseUrl(window.location.origin);
+    }
+  }, []);
+
+  // Share Room functions
+  const handleCreateShareToken = async () => {
+    if (!room) return;
+
+    setIsCreatingToken(true);
+    try {
+      const ownerName = user?.displayName || user?.email || 'Guest User';
+      const token = await createShareToken(room, user?.uid || 'anonymous', ownerName);
+      console.log('✅ Share token created:', token);
+
+      await loadShareTokens();
+    } catch (error) {
+      console.error('❌ Failed to create share token:', error);
+      alert('Failed to create share link');
+    } finally {
+      setIsCreatingToken(false);
+    }
+  };
+
+  const handleRevokeShareToken = async (tokenId: string) => {
+    try {
+      await revokeShareToken(tokenId);
+      console.log('✅ Share token revoked:', tokenId);
+
+      await loadShareTokens();
+    } catch (error) {
+      console.error('❌ Failed to revoke share token:', error);
+      alert('Failed to revoke share link');
+    }
+  };
+
+  const loadShareTokens = async () => {
+    if (!room) return;
+
+    try {
+      const tokens = await getActiveTokensForRoom(room);
+      setShareTokens(tokens);
+    } catch (error) {
+      console.error('❌ Failed to load share tokens:', error);
+    }
+  };
+
+  const handleCopyShareLink = (token: ShareToken) => {
+    const shareUrl = `${baseUrl}/shared/${token.id}`;
+    navigator.clipboard.writeText(shareUrl);
+    setCopiedToken(token.id);
+    setTimeout(() => setCopiedToken(null), 2000);
+  };
+
+  // Load share tokens when modal opens
+  useEffect(() => {
+    if (showShareModal && room) {
+      loadShareTokens();
+    }
+  }, [showShareModal, room]);
 
   function addVideoToPlaylist(video: SearchResult | RecommendedVideo) {
     if (isGoogleCastConnected) {
@@ -343,6 +417,18 @@ function HomePage() {
             คิวเพลง ( {displayPlaylist?.length || 0} เพลง )
             {(isGoogleCastConnected || isCasting) && <span className="text-xs ml-1">📺</span>}
           </span>
+        )}
+
+        {/* Share Room button - only show when casting to Monitor */}
+        {isCasting && !isGoogleCastConnected && (
+          <button
+            onClick={() => setShowShareModal(true)}
+            className="btn btn-xs btn-ghost text-primary gap-1"
+            title="แชร์ห้องให้เพื่อน"
+          >
+            <ShareIcon className="w-4 h-4" />
+            <span className="hidden lg:inline">แชร์</span>
+          </button>
         )}
 
         {!displayPlaylist?.length ? null : (
@@ -687,6 +773,108 @@ function HomePage() {
           window.open(youtubeURL, '_blank');
         }}
       />
+
+      {/* Share Room Modal */}
+      {showShareModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b">
+              <h3 className="text-lg font-semibold text-gray-900">แชร์ห้องให้เพื่อน</h3>
+              <button
+                onClick={() => setShowShareModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <XMarkIcon className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-4 space-y-4">
+              <p className="text-sm text-gray-600">
+                สร้างลิงก์แชร์เพื่อให้เพื่อนๆ เข้าร่วมห้องและควบคุม Monitor ด้วยกันได้
+              </p>
+
+              {/* Create Share Link Button */}
+              <button
+                onClick={handleCreateShareToken}
+                disabled={isCreatingToken}
+                className="btn btn-primary w-full gap-2"
+              >
+                <ShareIcon className="w-5 h-5" />
+                {isCreatingToken ? 'กำลังสร้าง...' : 'สร้างลิงก์แชร์ใหม่'}
+              </button>
+
+              {/* Active Share Tokens */}
+              {shareTokens.length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="text-sm font-semibold text-gray-700">ลิงก์ที่ใช้งานได้</h4>
+                  {shareTokens.map((token) => (
+                    <div
+                      key={token.id}
+                      className="bg-gray-50 rounded-lg p-3 space-y-2"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-500">
+                          สร้างโดย: {token.ownerName}
+                        </span>
+                        <button
+                          onClick={() => handleRevokeShareToken(token.id)}
+                          className="text-xs text-red-600 hover:text-red-800"
+                        >
+                          ยกเลิก
+                        </button>
+                      </div>
+
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          readOnly
+                          value={`${baseUrl}/shared/${token.id}`}
+                          className="input input-sm input-bordered flex-1 text-xs"
+                        />
+                        <button
+                          onClick={() => handleCopyShareLink(token)}
+                          className="btn btn-sm btn-primary gap-1"
+                        >
+                          {copiedToken === token.id ? (
+                            <>
+                              <CheckCircleIcon className="w-4 h-4" />
+                              คัดลอกแล้ว
+                            </>
+                          ) : (
+                            <>
+                              <ClipboardDocumentIcon className="w-4 h-4" />
+                              คัดลอก
+                            </>
+                          )}
+                        </button>
+                      </div>
+
+                      <div className="text-xs text-gray-500">
+                        สร้างเมื่อ: {new Date(token.createdAt).toLocaleString('th-TH')}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {shareTokens.length === 0 && (
+                <div className="text-center py-4 text-sm text-gray-500">
+                  ยังไม่มีลิงก์แชร์ที่ใช้งานได้
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t bg-gray-50 rounded-b-lg">
+              <p className="text-xs text-gray-600">
+                ⚠️ ลิงก์แชร์จะทำให้ผู้อื่นสามารถควบคุม Monitor ของคุณได้ กรุณาแชร์ให้เฉพาะคนที่ไว้ใจ
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
