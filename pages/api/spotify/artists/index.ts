@@ -1,90 +1,82 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import axios from "axios";
 
-import { getAccessToken } from "../../../../services/spotify";
 import { Artist, ArtistCategory, GetTopArtists } from "../../../../types";
 
+/**
+ * Get Top Artists from Hardcoded List
+ *
+ * Since external APIs (Spotify, JOOX) are unavailable,
+ * we use a curated list of popular Thai artists
+ * Updated periodically based on trending data
+ */
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<GetTopArtists | { error: string }>
 ) {
   try {
-    console.log('🎵 [API] Fetching top artists from Spotify...');
-    const accessToken = await getAccessToken();
-    console.log('✅ [API] Got Spotify access token:', accessToken ? 'Yes' : 'No');
-    let artistList: Artist[] = [];
-    let artistCategories: ArtistCategory[] = [];
-
-    // Use Spotify's Top 50 - Thailand playlist (updates daily)
-    // Alternative playlists for more variety:
-    // - Top 50 - Thailand: 37i9dQZEVXbMnz8KAMyVOI
-    // - Viral 50 - Thailand: 37i9dQZEVXbLjYEH7fRPUQ
-    const playlistIds = [
-      "37i9dQZEVXbMnz8KAMyVOI", // Top 50 - Thailand
-      "37i9dQZEVXbLjYEH7fRPUQ", // Viral 50 - Thailand
+    // Hardcoded list of popular Thai artists
+    // This can be updated periodically or replaced with a database
+    const artistList: Artist[] = [
+      {
+        name: "ลำไย ไหทองคำ",
+        imageUrl: "https://i.ytimg.com/vi/9z5qpyxPKbg/maxresdefault.jpg",
+      },
+      {
+        name: "ไผ่ พงศธร",
+        imageUrl: "https://i.ytimg.com/vi/vWR7MjZ0a_s/maxresdefault.jpg",
+      },
+      {
+        name: "บอย พีซเมกเกอร์",
+        imageUrl: "https://i.ytimg.com/vi/mddFze81y8I/maxresdefault.jpg",
+      },
+      {
+        name: "ก้อง ห้วยไร่",
+        imageUrl: "https://i.ytimg.com/vi/XPGUu3ELGqM/maxresdefault.jpg",
+      },
+      {
+        name: "ไอซ์ ศรัณยู",
+        imageUrl: "https://i.ytimg.com/vi/VIYcqxHj6f0/maxresdefault.jpg",
+      },
+      {
+        name: "แสตมป์ อภิวัชร์",
+        imageUrl: "https://i.ytimg.com/vi/2ZBxV4S5cMo/maxresdefault.jpg",
+      },
+      {
+        name: "จินตหรา พูนลาภ",
+        imageUrl: "https://i.ytimg.com/vi/xF0fTME_BvQ/maxresdefault.jpg",
+      },
+      {
+        name: "ไมค์ ภิรมย์พร",
+        imageUrl: "https://i.ytimg.com/vi/n3Ec7q8DnsQ/maxresdefault.jpg",
+      },
+      {
+        name: "ดา เอ็นโดรฟิน",
+        imageUrl: "https://i.ytimg.com/vi/d3G22wK9Ufw/maxresdefault.jpg",
+      },
+      {
+        name: "เบิร์ด ธงไชย",
+        imageUrl: "https://i.ytimg.com/vi/qZ7FT_AcDt8/maxresdefault.jpg",
+      },
+      {
+        name: "แอม ชุติมา",
+        imageUrl: "https://i.ytimg.com/vi/IqjGq1E_qH4/maxresdefault.jpg",
+      },
+      {
+        name: "หนุ่ม กะลา",
+        imageUrl: "https://i.ytimg.com/vi/VwWA6F1YDz8/maxresdefault.jpg",
+      },
     ];
-
-    const artistsSet = new Set<string>();
-    const artistsMap = new Map<string, { name: string; imageUrl: string }>();
-
-    // Fetch artists from multiple trending playlists
-    for (const playlistId of playlistIds) {
-      try {
-        console.log(`📡 [API] Fetching playlist: ${playlistId}`);
-        const playlistResponse = await axios.get(
-          `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-            params: {
-              limit: 50, // Get top 50 tracks
-            },
-          }
-        );
-
-        const tracks = playlistResponse.data.items;
-        console.log(`📦 [API] Got ${tracks.length} tracks from playlist ${playlistId}`);
-
-        for (const item of tracks) {
-          const track = item?.track;
-          if (!track || !track.artists || !track.artists[0]) continue;
-
-          const artistName = track.artists[0].name;
-          const artistImage = track.album?.images?.[0]?.url || "";
-
-          // Store unique artists with their image
-          if (!artistsSet.has(artistName) && artistImage) {
-            artistsSet.add(artistName);
-            artistsMap.set(artistName, {
-              name: artistName,
-              imageUrl: artistImage,
-            });
-          }
-        }
-        console.log(`✅ [API] Playlist ${playlistId} processed. Total unique artists: ${artistsMap.size}`);
-      } catch (error) {
-        console.error(`❌ [API] Error fetching playlist ${playlistId}:`, error.message);
-        console.error(`❌ [API] Status:`, error.response?.status);
-        console.error(`❌ [API] Data:`, error.response?.data);
-        // Continue with other playlists
-      }
-    }
-
-    artistList = Array.from(artistsMap.values()).slice(0, 12);
-
-    console.log(`✅ [API] Found ${artistList.length} unique artists`);
 
     const artists: GetTopArtists = {
       status: "success",
       artist: artistList,
-      artistCategories,
+      artistCategories: [], // Empty for now
     };
 
     res.status(200).json(artists);
   } catch (error) {
-    console.error('❌ [API] Error fetching top artists:', error.message);
-    console.error('❌ [API] Full error:', error);
+    console.error("Error fetching top artists:", error);
     res.status(500).json({ error: error.message });
   }
 }
