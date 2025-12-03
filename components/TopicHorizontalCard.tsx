@@ -24,11 +24,12 @@ export default function TopicHorizontalCard({
         {/* Album Cover - Left Side */}
         <figure className="relative w-full aspect-square">
           <Image
-            src={topic.coverImageURL || "/placeholder-album.png"}
+            unoptimized
+            src={topic.coverImageURL || "/assets/avatar.jpeg"}
+            priority
             alt={topic.title}
-            fill
-            sizes="(max-width: 768px) 33vw, 200px"
-            className="object-cover"
+            layout="fill"
+            className="bg-gray-400 col-span-1"
           />
           {/* Play Icon Overlay */}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">

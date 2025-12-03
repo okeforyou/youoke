@@ -22,11 +22,16 @@ export default function TopicGridCard({
       {/* Album Cover - Top */}
       <figure className="relative w-full aspect-square">
         <Image
-          src={topic.coverImageURL || "/placeholder-album.png"}
+          unoptimized
+          src={topic.coverImageURL || "/assets/avatar.jpeg"}
+          priority
           alt={topic.title}
-          fill
-          sizes="(max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
-          className="object-cover"
+          layout="fill"
+          className="animate-pulse bg-gray-400"
+          onLoad={(ev) => ev.currentTarget.classList.remove("animate-pulse")}
+          onErrorCapture={(ev) => {
+            ev.currentTarget.src = "/assets/avatar.jpeg";
+          }}
         />
       </figure>
 
