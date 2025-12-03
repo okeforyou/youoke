@@ -62,7 +62,7 @@ export default function ListTopicsGrid({ showTab = true }) {
             className={`p-2 rounded transition-all ${
               viewMode === "grid"
                 ? "text-gray-900 opacity-100"
-                : "text-gray-400 opacity-50 hover:opacity-70"
+                : "text-gray-500 opacity-75 hover:opacity-90"
             }`}
           >
             <Squares2X2Icon className="w-5 h-5" />
@@ -73,7 +73,7 @@ export default function ListTopicsGrid({ showTab = true }) {
             className={`p-2 rounded transition-all ${
               viewMode === "list"
                 ? "text-gray-900 opacity-100"
-                : "text-gray-400 opacity-50 hover:opacity-70"
+                : "text-gray-500 opacity-75 hover:opacity-90"
             }`}
           >
             <ListBulletIcon className="w-5 h-5" />
