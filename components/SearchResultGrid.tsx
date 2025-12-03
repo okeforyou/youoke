@@ -83,7 +83,7 @@ export default function SearchResultGrid({
       {renderList && renderList.length > 0 && (
         <div
           ref={divRef}
-          className="col-span-full bg-transparent px-2 pb-2 flex justify-end items-center"
+          className="col-span-full bg-transparent px-2 pt-2 pb-2 flex justify-end items-center"
         >
           <div className="flex gap-1">
             <button
@@ -158,8 +158,8 @@ export default function SearchResultGrid({
               <Fragment key={rcm.videoId}>
                 {/* The button to open modal */}
                 <label htmlFor="modal-video" onClick={() => onClick(rcm)}>
-                  <div className="card overflow-hidden bg-white shadow hover:shadow-md cursor-pointer flex-auto">
-                    <figure className="relative w-full aspect-video">
+                  <div className="card rounded-lg overflow-hidden bg-white shadow hover:shadow-md cursor-pointer flex-auto transition-shadow">
+                    <figure className="relative w-full aspect-square">
                       <Image
                         unoptimized
                         src={
@@ -170,14 +170,17 @@ export default function SearchResultGrid({
                         priority
                         alt={rcm.title}
                         layout="fill"
-                        className="bg-gray-400"
+                        className="animate-pulse bg-gray-400"
+                        onLoad={(ev) => ev.currentTarget.classList.remove("animate-pulse")}
                       />
                     </figure>
-                    <div className="card-body p-2">
-                      <h2 className="font-semibold text-sm 2xl:text-2xl line-clamp-2 h-[2.7em]">
+                    <div className="card-body p-2 gap-y-0">
+                      <h2 className="font-semibold text-sm 2xl:text-lg line-clamp-2">
                         {rcm.title}
                       </h2>
-                      <p className="text-xs 2xl:text-xl truncate">{rcm.author}</p>
+                      <h2 className="text-xs 2xl:text-lg text-gray-400">
+                        {rcm.author}
+                      </h2>
                     </div>
                   </div>
                 </label>
