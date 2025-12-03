@@ -5,10 +5,10 @@ import { getAccessToken } from "../../../../services/spotify";
 import { Artist, ArtistCategory, GetTopArtists } from "../../../../types";
 
 /**
- * Get Top Artists from Spotify Search
+ * Get Top Artists from Spotify Playlist
  *
- * Uses Spotify Search API to find trending Thai artists
- * Updates dynamically based on search popularity
+ * Uses Thailand Top 50 playlist to find artists with most trending songs
+ * Updates automatically when playlist is updated
  */
 export default async function handler(
   req: NextApiRequest,
@@ -20,70 +20,75 @@ export default async function handler(
     let artistList: Artist[] = [];
     let artistCategories: ArtistCategory[] = [];
 
-    // Use Spotify Search API for popular Thai artists
-    // Search for popular Thai music terms to find trending artists
-    const searchQueries = [
-      "ไทย", // Thai
-      "ลูกทุ่ง", // Luk Thung
-      "ป๊อป", // Pop
-      "แร็พ", // Rap
-    ];
+    // Use same playlist as trending hits for consistency
+    const playlistId = "3oLUwlQTdzsCkTK72wCbv9"; // Thailand Top 50
 
-    const artistsSet = new Set<string>();
-    const artistsMap = new Map<string, { name: string; imageUrl: string }>();
+    console.log(`🎵 Fetching playlist: ${playlistId}`);
+    const playlistResponse = await axios.get(
+      `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
 
-    // Search for popular Thai tracks
-    for (const query of searchQueries) {
-      try {
-        console.log(`🔍 Searching for: ${query}`);
-        const searchResponse = await axios.get(
-          `https://api.spotify.com/v1/search`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-            params: {
-              q: query,
-              type: "track",
-              market: "TH", // Thailand market
-              limit: 50,
-            },
-          }
-        );
+    const tracks = playlistResponse.data.items;
+    console.log(`📊 Got ${tracks.length} tracks from Thailand Top 50 playlist`);
 
-        const tracks = searchResponse.data.tracks?.items || [];
-        console.log(`📊 Got ${tracks.length} tracks for query "${query}"`);
+    // Helper function to check if text contains Thai characters
+    const hasThaiCharacters = (text: string) => {
+      return /[\u0E00-\u0E7F]/.test(text);
+    };
 
-        for (const track of tracks) {
-          if (!track || !track.artists || !track.artists[0]) continue;
+    // Count songs per artist and collect artist info
+    const artistMap = new Map<string, {
+      name: string;
+      imageUrl: string;
+      songCount: number;
+    }>();
 
-          const artistName = track.artists[0].name;
-          const artistImage = track.album?.images?.[0]?.url || "";
+    for (const item of tracks) {
+      if (!item?.track) continue;
 
-          // Store unique artists with their image
-          if (!artistsSet.has(artistName) && artistImage) {
-            artistsSet.add(artistName);
-            artistsMap.set(artistName, {
-              name: artistName,
-              imageUrl: artistImage,
-            });
-          }
+      const track = item.track;
+      const artistName = track.artists[0]?.name || "";
+      const trackName = track.name || "";
 
-          // Stop if we have enough artists
-          if (artistsMap.size >= 20) break;
-        }
+      // Filter: Only include artists with Thai characters in name OR song title
+      if (!hasThaiCharacters(artistName) && !hasThaiCharacters(trackName)) {
+        console.log(`⏭️  Skipping non-Thai artist: ${artistName}`);
+        continue;
+      }
 
-        // Stop if we have enough artists
-        if (artistsMap.size >= 20) break;
-      } catch (error) {
-        console.error(`❌ Error searching for "${query}":`, error.message);
-        console.error(`Error details:`, error.response?.data || error);
-        // Continue with other searches
+      const artistImage = track.album?.images?.[0]?.url || "";
+
+      if (artistMap.has(artistName)) {
+        // Increment song count for existing artist
+        const artist = artistMap.get(artistName)!;
+        artist.songCount++;
+      } else {
+        // Add new artist
+        artistMap.set(artistName, {
+          name: artistName,
+          imageUrl: artistImage,
+          songCount: 1,
+        });
       }
     }
 
-    artistList = Array.from(artistsMap.values()).slice(0, 12);
+    // Convert to array and sort by song count (most songs first)
+    const sortedArtists = Array.from(artistMap.values())
+      .sort((a, b) => b.songCount - a.songCount)
+      .slice(0, 12); // Top 12 artists
+
+    artistList = sortedArtists.map(artist => ({
+      name: artist.name,
+      imageUrl: artist.imageUrl,
+    }));
+
     console.log(`✅ Final artist list: ${artistList.length} artists`);
+    console.log(`Top artists:`, sortedArtists.map(a => `${a.name} (${a.songCount} songs)`));
 
     const artists: GetTopArtists = {
       status: "success",
