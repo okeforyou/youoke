@@ -38,7 +38,7 @@ export default function TopicHorizontalCard({
         </figure>
 
         {/* Song Info - Right Side (More space) */}
-        <div className="col-span-4 flex flex-col py-2 px-3 justify-center overflow-hidden">
+        <div className="col-span-4 flex flex-col py-2 pl-3 pr-2 justify-center overflow-hidden">
           <h2 className="font-semibold text-xs leading-tight line-clamp-1 text-gray-900">
             {topic.title}
           </h2>
