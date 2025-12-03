@@ -142,7 +142,7 @@ export default function SearchResultGrid({
 
       {/* Grid View */}
       {viewMode === "grid" && (
-        <>
+        <div className="relative grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 col-span-full">
           {isLoading && (
             <>
               {getSkeletonItems(16).map((s) => (
@@ -184,7 +184,7 @@ export default function SearchResultGrid({
               </Fragment>
             );
           })}
-        </>
+        </div>
       )}
     </>
   );
