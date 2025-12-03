@@ -16,6 +16,7 @@ export default async function handler(
 ) {
   try {
     const accessToken = await getAccessToken();
+    console.log("✅ Got access token:", accessToken.substring(0, 20) + "...");
     let artistList: Artist[] = [];
     let artistCategories: ArtistCategory[] = [];
 
@@ -34,6 +35,7 @@ export default async function handler(
     // Fetch artists from multiple trending playlists
     for (const playlistId of playlistIds) {
       try {
+        console.log(`🎵 Fetching playlist: ${playlistId}`);
         const playlistResponse = await axios.get(
           `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
           {
@@ -47,6 +49,7 @@ export default async function handler(
         );
 
         const tracks = playlistResponse.data.items;
+        console.log(`📊 Got ${tracks.length} tracks from playlist ${playlistId}`);
 
         for (const item of tracks) {
           const track = item?.track;
@@ -65,12 +68,14 @@ export default async function handler(
           }
         }
       } catch (error) {
-        console.error(`Error fetching playlist ${playlistId}:`, error.message);
+        console.error(`❌ Error fetching playlist ${playlistId}:`, error.message);
+        console.error(`Error details:`, error.response?.data || error);
         // Continue with other playlists
       }
     }
 
     artistList = Array.from(artistsMap.values()).slice(0, 12);
+    console.log(`✅ Final artist list: ${artistList.length} artists`);
 
     const artists: GetTopArtists = {
       status: "success",
