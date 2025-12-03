@@ -5,10 +5,10 @@ import { getAccessToken } from "../../../../services/spotify";
 import { Artist, ArtistCategory, GetTopArtists } from "../../../../types";
 
 /**
- * Get Top Artists from Spotify Top Charts
+ * Get Top Artists from Spotify Search
  *
- * Fetches trending artists from Spotify's official Top 50 Thailand playlist
- * Updates daily automatically
+ * Uses Spotify Search API to find trending Thai artists
+ * Updates dynamically based on search popularity
  */
 export default async function handler(
   req: NextApiRequest,
@@ -20,39 +20,41 @@ export default async function handler(
     let artistList: Artist[] = [];
     let artistCategories: ArtistCategory[] = [];
 
-    // Use Spotify's Top 50 - Thailand playlist (updates daily)
-    // Alternative playlists for more variety:
-    // - Top 50 - Thailand: 37i9dQZEVXbMnz8KAMyVOI
-    // - Viral 50 - Thailand: 37i9dQZEVXbLjYEH7fRPUQ
-    const playlistIds = [
-      "37i9dQZEVXbMnz8KAMyVOI", // Top 50 - Thailand
-      "37i9dQZEVXbLjYEH7fRPUQ", // Viral 50 - Thailand
+    // Use Spotify Search API for popular Thai artists
+    // Search for popular Thai music terms to find trending artists
+    const searchQueries = [
+      "ไทย", // Thai
+      "ลูกทุ่ง", // Luk Thung
+      "ป๊อป", // Pop
+      "แร็พ", // Rap
     ];
 
     const artistsSet = new Set<string>();
     const artistsMap = new Map<string, { name: string; imageUrl: string }>();
 
-    // Fetch artists from multiple trending playlists
-    for (const playlistId of playlistIds) {
+    // Search for popular Thai tracks
+    for (const query of searchQueries) {
       try {
-        console.log(`🎵 Fetching playlist: ${playlistId}`);
-        const playlistResponse = await axios.get(
-          `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+        console.log(`🔍 Searching for: ${query}`);
+        const searchResponse = await axios.get(
+          `https://api.spotify.com/v1/search`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
             params: {
-              limit: 50, // Get top 50 tracks
+              q: query,
+              type: "track",
+              market: "TH", // Thailand market
+              limit: 50,
             },
           }
         );
 
-        const tracks = playlistResponse.data.items;
-        console.log(`📊 Got ${tracks.length} tracks from playlist ${playlistId}`);
+        const tracks = searchResponse.data.tracks?.items || [];
+        console.log(`📊 Got ${tracks.length} tracks for query "${query}"`);
 
-        for (const item of tracks) {
-          const track = item?.track;
+        for (const track of tracks) {
           if (!track || !track.artists || !track.artists[0]) continue;
 
           const artistName = track.artists[0].name;
@@ -66,11 +68,17 @@ export default async function handler(
               imageUrl: artistImage,
             });
           }
+
+          // Stop if we have enough artists
+          if (artistsMap.size >= 20) break;
         }
+
+        // Stop if we have enough artists
+        if (artistsMap.size >= 20) break;
       } catch (error) {
-        console.error(`❌ Error fetching playlist ${playlistId}:`, error.message);
+        console.error(`❌ Error searching for "${query}":`, error.message);
         console.error(`Error details:`, error.response?.data || error);
-        // Continue with other playlists
+        // Continue with other searches
       }
     }
 
