@@ -81,7 +81,10 @@ export default function SearchResultGrid({
     <>
       {/* Header with Grid/List Toggle */}
       {renderList && renderList.length > 0 && (
-        <div className="col-span-full bg-transparent px-2 pb-2 flex justify-end items-center">
+        <div
+          ref={divRef}
+          className="col-span-full bg-transparent px-2 pb-2 flex justify-end items-center"
+        >
           <div className="flex gap-1">
             <button
               onClick={() => setViewMode("grid")}
@@ -126,18 +129,10 @@ export default function SearchResultGrid({
             return !rcm ? null : (
               <Fragment key={rcm.videoId}>
                 <label htmlFor="modal-video">
-                  <div
-                    ref={(ref) => {
-                      if (i === 0) {
-                        divRef.current = ref;
-                      }
-                    }}
-                  >
-                    <SearchResultHorizontalCard
-                      video={rcm}
-                      onClick={() => onClick(rcm)}
-                    />
-                  </div>
+                  <SearchResultHorizontalCard
+                    video={rcm}
+                    onClick={() => onClick(rcm)}
+                  />
                 </label>
               </Fragment>
             );
@@ -163,14 +158,7 @@ export default function SearchResultGrid({
               <Fragment key={rcm.videoId}>
                 {/* The button to open modal */}
                 <label htmlFor="modal-video" onClick={() => onClick(rcm)}>
-                  <div
-                    ref={(ref) => {
-                      if (i === 0) {
-                        divRef.current = ref;
-                      }
-                    }}
-                    className="card overflow-hidden bg-white shadow hover:shadow-md cursor-pointer flex-auto"
-                  >
+                  <div className="card overflow-hidden bg-white shadow hover:shadow-md cursor-pointer flex-auto">
                     <figure className="relative w-full aspect-video">
                       <Image
                         unoptimized
