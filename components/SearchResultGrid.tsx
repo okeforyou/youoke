@@ -148,7 +148,7 @@ export default function SearchResultGrid({
               {getSkeletonItems(16).map((s) => (
                 <div
                   key={s}
-                  className="card bg-gray-300 animate-pulse w-full aspect-w-4 aspect-h-3"
+                  className="card bg-gray-300 animate-pulse w-full aspect-square"
                 />
               ))}
             </>
