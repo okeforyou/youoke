@@ -55,20 +55,28 @@ export default function ListTopicsGrid({ showTab = true }) {
       <div className="col-span-full bg-transparent pl-2 pr-2 flex justify-between items-center">
         <h2 className="text-2xl">เพลงใหม่มาแรง</h2>
         {/* Grid/List Toggle */}
-        <div className="btn-group btn-group-sm">
+        <div className="flex gap-1">
           <button
-            className={`btn btn-sm ${viewMode === "grid" ? "btn-active" : ""}`}
             onClick={() => setViewMode("grid")}
             title="Grid View"
+            className={`p-2 rounded transition-all ${
+              viewMode === "grid"
+                ? "text-gray-900 opacity-100"
+                : "text-gray-400 opacity-50 hover:opacity-70"
+            }`}
           >
-            <Squares2X2Icon className="w-4 h-4" />
+            <Squares2X2Icon className="w-5 h-5" />
           </button>
           <button
-            className={`btn btn-sm ${viewMode === "list" ? "btn-active" : ""}`}
             onClick={() => setViewMode("list")}
             title="List View"
+            className={`p-2 rounded transition-all ${
+              viewMode === "list"
+                ? "text-gray-900 opacity-100"
+                : "text-gray-400 opacity-50 hover:opacity-70"
+            }`}
           >
-            <ListBulletIcon className="w-4 h-4" />
+            <ListBulletIcon className="w-5 h-5" />
           </button>
         </div>
       </div>
