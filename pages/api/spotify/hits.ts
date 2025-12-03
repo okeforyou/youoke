@@ -37,14 +37,27 @@ export default async function handler(
     const tracks = playlistResponse.data.items;
     console.log(`📊 Got ${tracks.length} tracks from Thailand Top 50 playlist`);
 
+    // Helper function to check if text contains Thai characters
+    const hasThaiCharacters = (text: string) => {
+      return /[\u0E00-\u0E7F]/.test(text);
+    };
+
     for (const item of tracks) {
       if (!item?.track) continue;
 
       const track = item.track;
+      const trackName = track.name || "";
+      const artistName = track.artists[0]?.name || "";
+
+      // Filter: Only include tracks with Thai characters in title OR artist name
+      if (!hasThaiCharacters(trackName) && !hasThaiCharacters(artistName)) {
+        console.log(`⏭️  Skipping non-Thai track: ${trackName} - ${artistName}`);
+        continue;
+      }
 
       topHits.push({
-        title: track.name,
-        artist_name: track.artists[0]?.name || "",
+        title: trackName,
+        artist_name: artistName,
         coverImageURL: track.album?.images?.[0]?.url || "",
       });
     }
