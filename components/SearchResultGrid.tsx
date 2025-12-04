@@ -83,8 +83,9 @@ export default function SearchResultGrid({
       {renderList && renderList.length > 0 && (
         <div
           ref={divRef}
-          className="col-span-full bg-transparent px-2 pt-2 pb-2 flex justify-end items-center"
+          className="col-span-full bg-transparent px-2 pt-2 pb-2 flex justify-between items-center"
         >
+          <h2 className="text-lg font-semibold text-gray-900">ผลการค้นหา</h2>
           <div className="flex gap-1">
             <button
               onClick={() => setViewMode("grid")}

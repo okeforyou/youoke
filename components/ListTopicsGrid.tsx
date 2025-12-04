@@ -53,7 +53,7 @@ export default function ListTopicsGrid({ showTab = true }) {
         )}
       </div>
       <div className="col-span-full bg-transparent pl-2 pr-2 flex justify-between items-center">
-        <h2 className="text-2xl">เพลงใหม่มาแรง</h2>
+        <h2 className="text-lg font-semibold text-gray-900">เพลงใหม่มาแรง</h2>
         {/* Grid/List Toggle */}
         <div className="flex gap-1">
           <button
