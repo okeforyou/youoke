@@ -525,16 +525,16 @@ function HomePage() {
                 className="modal-toggle"
               />
               <div className="modal modal-bottom sm:modal-middle">
-                <div className="flex flex-col modal-box max-h-[50%] overflow-hidden bg-base-200 px-4 py-4 relative">
+                <div className="flex flex-col modal-box max-h-[50%] overflow-hidden bg-base-200 relative">
                   {/* Close button X */}
                   <label
                     htmlFor="modal-playlist"
-                    className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                    className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-10"
                   >
                     ✕
                   </label>
 
-                  <div className="relative h-full overflow-y-auto flex flex-col">
+                  <div className="relative h-full overflow-y-auto flex flex-col pt-12 px-4 pb-4">
                     {PlaylistScreen}
                   </div>
                 </div>
