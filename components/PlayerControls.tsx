@@ -73,10 +73,10 @@ export default function PlayerControls({
       {buttons.map((btn, index) => (
         <button
           key={index}
-          className="btn btn-ghost font-normal text-primary flex h-auto flex-col flex-1 overflow-hidden text-xs 2xl:text-sm p-1 gap-1 hover:bg-base-200"
+          className="btn btn-ghost font-normal text-primary flex h-auto flex-col flex-1 overflow-hidden text-[10px] 2xl:text-xs p-1 gap-0.5 hover:bg-base-200"
           onClick={btn.onClick}
         >
-          <btn.icon className="w-6 h-6 2xl:w-8 2xl:h-8" />
+          <btn.icon className="w-5 h-5 2xl:w-6 2xl:h-6" />
           {btn.label}
         </button>
       ))}
