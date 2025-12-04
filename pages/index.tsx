@@ -383,16 +383,25 @@ function HomePage() {
       </div>
 
       <div className={`flex-shrink-0 pt-4 pb-12`}>
-        <DndContext
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={displayPlaylist?.map((_, index) => index.toString()) || []}
-            strategy={verticalListSortingStrategy}
+        {/* Empty state */}
+        {(!displayPlaylist || displayPlaylist.length === 0) ? (
+          <div className="flex items-center justify-center py-12 text-gray-500">
+            <div className="text-center">
+              <p className="text-sm">ยังไม่มีรายการคิวเพลง</p>
+              <p className="text-xs mt-1">เพิ่มเพลงเพื่อเริ่มเล่น</p>
+            </div>
+          </div>
+        ) : (
+          <DndContext
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
           >
-            <div className="grid grid-cols-1 gap-2">
-              {displayPlaylist?.map((video, videoIndex) => {
+            <SortableContext
+              items={displayPlaylist?.map((_, index) => index.toString()) || []}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="grid grid-cols-1 gap-2">
+                {displayPlaylist?.map((video, videoIndex) => {
                 // When casting, calculate real index in full queue (not sliced display)
                 // Google Cast: use videoIndex directly (full array)
                 // Firebase Cast: adjust for sliced array
@@ -422,10 +431,11 @@ function HomePage() {
                     }}
                   />
                 );
-              })}
-            </div>
-          </SortableContext>
-        </DndContext>
+                })}
+              </div>
+            </SortableContext>
+          </DndContext>
+        )}
       </div>
     </>
   );

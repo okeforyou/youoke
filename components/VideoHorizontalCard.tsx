@@ -16,10 +16,10 @@ export default function VideoHorizontalCard({
   return (
     <div className="relative bg-white hover:bg-base-100 rounded-lg border border-base-300 hover:border-primary overflow-hidden group transition-all shadow-sm">
       {/* Main content */}
-      <div className="grid grid-cols-3 overflow-hidden">
+      <div className="flex overflow-hidden">
         {/* Thumbnail with Play overlay */}
         <figure
-          className="relative w-full aspect-video cursor-pointer group/thumbnail"
+          className="relative w-32 flex-shrink-0 aspect-video cursor-pointer group/thumbnail"
           onClick={() => onPlayNow(video)}
         >
           <Image
@@ -32,17 +32,17 @@ export default function VideoHorizontalCard({
             priority
             alt={video?.title}
             layout="fill"
-            className="bg-gray-400 col-span-1"
+            className="bg-gray-400 object-cover"
           />
           {/* Play icon overlay */}
           <div className="absolute inset-0 bg-black/0 group-hover/thumbnail:bg-black/30 transition-all flex items-center justify-center">
-            <PlayIcon className="w-12 h-12 text-white opacity-0 group-hover/thumbnail:opacity-100 transition-opacity drop-shadow-lg" />
+            <PlayIcon className="w-10 h-10 text-white opacity-0 group-hover/thumbnail:opacity-100 transition-opacity drop-shadow-lg" />
           </div>
         </figure>
 
         {/* Song info */}
-        <div className="col-span-2 flex flex-col px-3 py-2.5 overflow-hidden gap-1.5 justify-center">
-          <h2 className="font-semibold text-sm 2xl:text-xl line-clamp-2 text-gray-900">
+        <div className="flex-1 flex flex-col px-3 py-2.5 overflow-hidden gap-1.5 justify-center">
+          <h2 className="font-semibold text-xs 2xl:text-lg line-clamp-2 text-gray-900">
             {video?.title}
           </h2>
           <div className="flex items-center gap-2">
