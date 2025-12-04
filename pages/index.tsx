@@ -363,7 +363,7 @@ function HomePage() {
     <>
       <div className="flex flex-row font-bold gap-2 items-center">
         {!isMobile && (
-          <span className="text-primary text-xs 2xl:text-xl">
+          <span className="text-white text-xs 2xl:text-xl">
             คิวเพลง ( {displayPlaylist?.length || 0} เพลง )
             {(isGoogleCastConnected || isCasting) && <span className="text-xs ml-1">📺</span>}
           </span>
@@ -373,7 +373,7 @@ function HomePage() {
         {isCasting && !isGoogleCastConnected && isCastHost && (
           <button
             onClick={() => setShowShareModal(true)}
-            className="btn btn-xs btn-ghost text-primary gap-1"
+            className="btn btn-xs btn-ghost text-white gap-1"
             title="แชร์ห้องให้เพื่อน"
           >
             <ShareIcon className="w-4 h-4" />
@@ -392,10 +392,10 @@ function HomePage() {
             </label>
             <div
               tabIndex={0}
-              className="card compact dropdown-content shadow bg-white ring-1 ring-primary rounded-box w-60"
+              className="card compact dropdown-content shadow bg-gray-800 ring-1 ring-gray-700 rounded-box w-60"
             >
               <div className="card-body">
-                <h2 className="card-title text-sm 2xl:text-xl">
+                <h2 className="card-title text-sm 2xl:text-xl text-white">
                   แน่ใจว่าต้องการลบเพลงทั้งหมด ?
                 </h2>
                 <div className="card-actions justify-end">
@@ -555,7 +555,7 @@ function HomePage() {
                 className="modal modal-bottom sm:modal-middle cursor-pointer"
               >
                 <label
-                  className="flex flex-col modal-box max-h-[50%] overflow-hidden bg-base-300 p-2"
+                  className="flex flex-col modal-box max-h-[50%] overflow-hidden bg-gray-900 p-2"
                   htmlFor=""
                 >
                   <div className="relative h-full overflow-y-auto flex flex-col">
@@ -573,7 +573,7 @@ function HomePage() {
                 className="modal modal-bottom sm:modal-middle cursor-pointer"
               >
                 <label
-                  className="modal-box relative px-2 py-4 pb-12 sm:p-4"
+                  className="modal-box relative px-2 py-4 pb-12 sm:p-4 bg-gray-900"
                   htmlFor=""
                 >
                   <div className="card gap-3 min-h-min">
@@ -592,10 +592,10 @@ function HomePage() {
                       />
                     </figure>
                     <div className="flex flex-col gap-1">
-                      <h2 className="font-semibold text-sm 2xl:text-xl line-clamp-2 text-gray-900">
+                      <h2 className="font-semibold text-sm 2xl:text-xl line-clamp-2 text-white">
                         {selectedVideo?.title}
                       </h2>
-                      <p className="text-xs 2xl:text-base text-gray-500">
+                      <p className="text-xs 2xl:text-base text-gray-300">
                         {selectedVideo?.author}
                       </p>
                     </div>
