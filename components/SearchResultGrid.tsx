@@ -142,13 +142,13 @@ export default function SearchResultGrid({
 
       {/* Grid View */}
       {viewMode === "grid" && (
-        <div className="relative grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 col-span-full">
+        <div className="relative grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 col-span-full auto-rows-fr">
           {isLoading && (
             <>
               {getSkeletonItems(16).map((s) => (
                 <div
                   key={s}
-                  className="card bg-gray-300 animate-pulse w-full aspect-square"
+                  className="card bg-gray-300 animate-pulse w-full aspect-video"
                 />
               ))}
             </>
@@ -158,8 +158,8 @@ export default function SearchResultGrid({
               <Fragment key={rcm.videoId}>
                 {/* The button to open modal */}
                 <label htmlFor="modal-video" onClick={() => onClick(rcm)}>
-                  <div className="card rounded-lg overflow-hidden bg-white shadow hover:shadow-md cursor-pointer flex-auto transition-shadow">
-                    <figure className="relative w-full aspect-square">
+                  <div className="card rounded-lg overflow-hidden bg-white shadow hover:shadow-md cursor-pointer flex flex-col h-full transition-shadow">
+                    <figure className="relative w-full aspect-video flex-shrink-0">
                       <Image
                         unoptimized
                         src={
@@ -174,11 +174,11 @@ export default function SearchResultGrid({
                         onLoad={(ev) => ev.currentTarget.classList.remove("animate-pulse")}
                       />
                     </figure>
-                    <div className="card-body p-2 gap-y-0">
-                      <h2 className="font-semibold text-sm 2xl:text-lg line-clamp-2">
+                    <div className="card-body p-2 gap-y-0 flex-1 flex flex-col">
+                      <h2 className="font-semibold text-xs sm:text-sm line-clamp-2 flex-1">
                         {rcm.title}
                       </h2>
-                      <h2 className="text-xs 2xl:text-lg text-gray-400">
+                      <h2 className="text-xs text-gray-400 truncate">
                         {rcm.author}
                       </h2>
                     </div>
