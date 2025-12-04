@@ -167,7 +167,7 @@ export default function ListSingerGrid({ showTab = true }) {
                     priority
                     alt={artist.name}
                     layout="fill"
-                    className="animate-pulse bg-gray-400 rounded-lg"
+                    className="animate-pulse bg-gray-400 rounded-lg object-cover"
                     onLoad={(ev) =>
                       ev.currentTarget.classList.remove("animate-pulse")
                     }
@@ -306,7 +306,7 @@ export default function ListSingerGrid({ showTab = true }) {
                     priority
                     alt={artist.name}
                     layout="fill"
-                    className="animate-pulse bg-gray-400"
+                    className="animate-pulse bg-gray-400 object-cover"
                     onLoad={(ev) =>
                       ev.currentTarget.classList.remove("animate-pulse")
                     }

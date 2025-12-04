@@ -170,7 +170,7 @@ export default function SearchResultGrid({
                         priority
                         alt={rcm.title}
                         layout="fill"
-                        className="animate-pulse bg-gray-400"
+                        className="animate-pulse bg-gray-400 object-cover"
                         onLoad={(ev) => ev.currentTarget.classList.remove("animate-pulse")}
                       />
                     </figure>

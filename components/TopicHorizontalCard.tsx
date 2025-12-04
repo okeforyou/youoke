@@ -29,7 +29,7 @@ export default function TopicHorizontalCard({
             priority
             alt={topic.title}
             layout="fill"
-            className="bg-gray-400"
+            className="bg-gray-400 object-cover"
           />
           {/* Play Icon Overlay */}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">

@@ -27,7 +27,7 @@ export default function TopicGridCard({
           priority
           alt={topic.title}
           layout="fill"
-          className="animate-pulse bg-gray-400"
+          className="animate-pulse bg-gray-400 object-cover"
           onLoad={(ev) => ev.currentTarget.classList.remove("animate-pulse")}
           onErrorCapture={(ev) => {
             ev.currentTarget.src = "/assets/avatar.jpeg";
