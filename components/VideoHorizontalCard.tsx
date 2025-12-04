@@ -14,7 +14,7 @@ export default function VideoHorizontalCard({
   onDelete = () => {},
 }: VideoHorizontalCardProps) {
   return (
-    <div className="relative bg-white shadow hover:shadow-md rounded overflow-hidden group">
+    <div className="relative bg-base-200/50 hover:bg-base-200 rounded-lg border border-base-300 hover:border-primary overflow-hidden group transition-all">
       {/* Main content */}
       <div className="grid grid-cols-3 overflow-hidden">
         {/* Thumbnail with Play overlay */}
@@ -46,19 +46,19 @@ export default function VideoHorizontalCard({
             {video?.title}
           </h2>
           <div className="flex items-center gap-2">
-            <p className="text-xs 2xl:text-xl truncate text-gray-500 flex-1">
+            <p className="text-xs 2xl:text-xl truncate text-gray-600 flex-1">
               {video?.author}
             </p>
-            {/* Delete button - Next to artist name */}
+            {/* Delete button - Icon style like Cast Modal */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onDelete(video);
               }}
-              className="flex-shrink-0 p-1 hover:bg-gray-100 rounded transition-colors"
+              className="flex-shrink-0 w-8 h-8 rounded-lg bg-error/10 hover:bg-error/20 flex items-center justify-center transition-colors"
               title="ลบออกจากคิว"
             >
-              <TrashIcon className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+              <TrashIcon className="w-4 h-4 text-error" />
             </button>
           </div>
         </div>
