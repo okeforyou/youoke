@@ -22,7 +22,7 @@ export default function TopicHorizontalCard({
     >
       <div className="grid grid-cols-3 overflow-hidden">
         {/* Album Cover - Left Side */}
-        <figure className="relative w-full aspect-square">
+        <figure className="relative w-full aspect-video">
           <Image
             unoptimized
             src={topic.coverImageURL || "/assets/avatar.jpeg"}
