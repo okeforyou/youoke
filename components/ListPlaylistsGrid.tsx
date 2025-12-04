@@ -510,53 +510,44 @@ export default function ListPlaylistsGrid() {
         title={<span className="text-clip">รายการ</span>}
         body={
           <div className="relative px-6 w-full">
-            <div className=" overflow-y-auto max-h-64 grid grid-cols-1 gap-2">
-              <div className="pb-4">เพลย์ลิสต์: {selectedItem?.name}</div>
+            <div className="overflow-y-auto max-h-64">
+              <div className="pb-4 text-gray-900">เพลย์ลิสต์: {selectedItem?.name}</div>
 
               {selectedItem?.playlists?.length === 0 && (
                 <div className="p-5 w-96"></div>
               )}
 
-              {selectedItem?.playlists?.map((video, index) => (
-                <div
-                  key={video.videoId + index}
-                  tabIndex={0}
-                  className="bg-white rounded"
-                >
-                  <div className="collapse-title p-0 flex-1 grid grid-cols-4 overflow-hidden">
-                    <figure className="relative aspect-video">
-                      <Image
-                        unoptimized
-                        src={`${process.env.NEXT_PUBLIC_INVIDIOUS_URL}vi/${video?.videoId}/mqdefault.jpg`}
-                        priority
-                        alt={video?.title}
-                        layout="fill"
-                        className="bg-gray-400 col-span-1"
-                      />
-                    </figure>
-
-                    <div className="col-span-2 flex flex-col p-[1vw] overflow-hidden gap-2">
-                      <h2 className="font-semibold text-sm  l line-clamp-2">
+              {/* Text-only song cards - 3 columns on mobile, 4 on larger screens */}
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+                {selectedItem?.playlists?.map((video, index) => (
+                  <div
+                    key={video.videoId + index}
+                    className="relative bg-base-200/50 hover:bg-base-200 rounded-lg border border-base-300 hover:border-primary transition-all group"
+                  >
+                    {/* Song title only */}
+                    <div className="p-3 min-h-[80px] flex items-center justify-center">
+                      <h2 className="font-semibold text-xs sm:text-sm text-gray-900 line-clamp-3 text-center">
                         {video?.title}
                       </h2>
-                      <p className="text-xs truncate">{video?.author}</p>
                     </div>
 
+                    {/* Delete button - show only for owned playlists */}
                     {activeIndex === 1 && (
-                      <div className="col-span-1 flex flex-col p-[1vw] overflow-hidden gap-2">
-                        <button
-                          className="text-white btn-primary btn-sm  text-sm  rounded shadow hover:shadow-lg outline-none focus:outline-none  ease-linear transition-all duration-150"
-                          onClick={() =>
-                            handleDeleteSong(selectedItem.id, video)
-                          }
-                        >
-                          ลบ
-                        </button>
-                      </div>
+                      <button
+                        className="absolute top-1 right-1 w-6 h-6 rounded-lg bg-error/10 hover:bg-error/20 flex items-center justify-center transition-colors"
+                        onClick={() =>
+                          handleDeleteSong(selectedItem.id, video)
+                        }
+                        title="ลบเพลง"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-error">
+                          <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clipRule="evenodd" />
+                        </svg>
+                      </button>
                     )}
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         }
