@@ -518,7 +518,7 @@ export default function ListPlaylistsGrid() {
               )}
 
               {/* Text-only song cards - 3 columns on mobile, 4 on larger screens */}
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-5 gap-2">
                 {selectedItem?.playlists?.map((video, index) => (
                   <div
                     key={video.videoId + index}

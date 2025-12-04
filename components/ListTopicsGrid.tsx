@@ -110,7 +110,7 @@ export default function ListTopicsGrid({ showTab = true }) {
 
       {/* Grid View */}
       {viewMode === "grid" && (
-        <div className="relative grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 pt-2 gap-2 col-span-full auto-rows-fr">
+        <div className="relative grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-5 pt-2 gap-2 col-span-full auto-rows-fr">
           {isLoading && (
             <>
               <div className="absolute inset-0 bg-gradient-to-t from-base-300 z-10" />
