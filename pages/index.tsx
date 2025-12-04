@@ -380,45 +380,9 @@ function HomePage() {
             <span className="hidden lg:inline">แชร์</span>
           </button>
         )}
-
-        {/* Delete all button - only show for Owner or when not casting */}
-        {!displayPlaylist?.length ? null : (!isCasting || isCastHost) && (
-          <div className="dropdown dropdown-end ml-auto">
-            <label
-              tabIndex={0}
-              className="btn btn-xs btn-ghost text-error 2xl:text-xl p-0"
-            >
-              ลบทั้งหมด
-            </label>
-            <div
-              tabIndex={0}
-              className="card compact dropdown-content shadow bg-base-100 ring-1 ring-base-300 rounded-box w-60"
-            >
-              <div className="card-body">
-                <h2 className="card-title text-sm 2xl:text-xl text-gray-900">
-                  แน่ใจว่าต้องการลบเพลงทั้งหมด ?
-                </h2>
-                <div className="card-actions justify-end">
-                  <button
-                    className="btn btn-xs btn-ghost text-primary 2xl:text-xl"
-                    onClick={() => {
-                      if (isCasting) {
-                        setCastPlaylist([]);
-                      } else {
-                        setPlaylist([]);
-                      }
-                    }}
-                  >
-                    ลบเลย
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
-      <div className={`flex-shrink-0  pt-2 pb-12  `}>
+      <div className={`flex-shrink-0 pt-4 pb-12`}>
         <DndContext
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
@@ -555,7 +519,7 @@ function HomePage() {
                 className="modal modal-bottom sm:modal-middle cursor-pointer"
               >
                 <label
-                  className="flex flex-col modal-box max-h-[50%] overflow-hidden bg-base-100 p-2"
+                  className="flex flex-col modal-box max-h-[50%] overflow-hidden bg-base-100 px-4 py-3"
                   htmlFor=""
                 >
                   <div className="relative h-full overflow-y-auto flex flex-col">
