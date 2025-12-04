@@ -14,7 +14,7 @@ export default function VideoHorizontalCard({
   onDelete = () => {},
 }: VideoHorizontalCardProps) {
   return (
-    <div className="relative bg-base-200/50 hover:bg-base-200 rounded-lg border border-base-300 hover:border-primary overflow-hidden group transition-all">
+    <div className="relative bg-white hover:bg-base-100 rounded-lg border border-base-300 hover:border-primary overflow-hidden group transition-all shadow-sm">
       {/* Main content */}
       <div className="grid grid-cols-3 overflow-hidden">
         {/* Thumbnail with Play overlay */}
@@ -41,12 +41,12 @@ export default function VideoHorizontalCard({
         </figure>
 
         {/* Song info */}
-        <div className="col-span-2 flex flex-col p-[1vw] overflow-hidden gap-2 justify-center">
-          <h2 className="font-semibold text-xs 2xl:text-xl line-clamp-2">
+        <div className="col-span-2 flex flex-col px-3 py-2.5 overflow-hidden gap-1.5 justify-center">
+          <h2 className="font-semibold text-sm 2xl:text-xl line-clamp-2 text-gray-900">
             {video?.title}
           </h2>
           <div className="flex items-center gap-2">
-            <p className="text-xs 2xl:text-xl truncate text-gray-600 flex-1">
+            <p className="text-xs 2xl:text-lg truncate text-gray-500 flex-1">
               {video?.author}
             </p>
             {/* Delete button - Icon style like Cast Modal */}

@@ -519,8 +519,9 @@ function HomePage() {
                 className="modal modal-bottom sm:modal-middle cursor-pointer"
               >
                 <label
-                  className="flex flex-col modal-box max-h-[50%] overflow-hidden bg-base-100 px-4 py-3"
+                  className="flex flex-col modal-box max-h-[50%] overflow-hidden bg-base-200 px-4 py-4"
                   htmlFor=""
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <div className="relative h-full overflow-y-auto flex flex-col">
                     {PlaylistScreen}
