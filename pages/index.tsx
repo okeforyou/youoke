@@ -534,7 +534,7 @@ function HomePage() {
                     ✕
                   </label>
 
-                  <div className="relative h-full overflow-y-auto flex flex-col pt-8 px-2 pb-2">
+                  <div className="relative h-full overflow-y-auto flex flex-col pt-8">
                     {PlaylistScreen}
                   </div>
                 </div>
