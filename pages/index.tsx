@@ -525,7 +525,7 @@ function HomePage() {
                 className="modal-toggle"
               />
               <div className="modal modal-bottom sm:modal-middle">
-                <div className="flex flex-col modal-box max-h-[50%] w-full max-w-full overflow-hidden bg-base-200 relative">
+                <div className="flex flex-col modal-box max-h-[50%] w-full max-w-full overflow-hidden bg-base-200 relative px-2 pt-10 pb-2">
                   {/* Close button X */}
                   <label
                     htmlFor="modal-playlist"
@@ -534,7 +534,7 @@ function HomePage() {
                     ✕
                   </label>
 
-                  <div className="relative h-full overflow-y-auto flex flex-col pt-8">
+                  <div className="relative h-full overflow-y-auto flex flex-col">
                     {PlaylistScreen}
                   </div>
                 </div>
