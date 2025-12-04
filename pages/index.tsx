@@ -440,7 +440,7 @@ function HomePage() {
 
                 return (
                   <DraggablePlaylistItem
-                    key={videoIndex}
+                    key={video.videoId}
                     video={video}
                     videoIndex={videoIndex}
                     onPlayNow={() => skipVideoTo(video, realIndex)}
