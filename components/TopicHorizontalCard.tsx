@@ -22,14 +22,14 @@ export default function TopicHorizontalCard({
     >
       <div className="grid grid-cols-3 overflow-hidden">
         {/* Album Cover - Left Side */}
-        <figure className="relative w-full aspect-video">
+        <figure className="relative w-full aspect-square">
           <Image
             unoptimized
             src={topic.coverImageURL || "/assets/avatar.jpeg"}
             priority
             alt={topic.title}
             layout="fill"
-            className="bg-gray-400"
+            className="bg-gray-400 object-cover"
           />
           {/* Play Icon Overlay */}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
