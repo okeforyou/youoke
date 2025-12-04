@@ -134,7 +134,7 @@ export default function ListSingerGrid({ showTab = true }) {
           </nav>
         )}
       </div>
-      <div className="col-span-full  bg-transparent  pl-2 text-2xl">
+      <div className="col-span-full  bg-transparent  pl-2 text-lg font-semibold text-gray-900">
         ศิลปินยอดนิยม
       </div>
       <div
@@ -186,7 +186,7 @@ export default function ListSingerGrid({ showTab = true }) {
           );
         })}
       </div>
-      <div className="col-span-full  bg-transparent p-2 pl-2 text-2xl">
+      <div className="col-span-full  bg-transparent p-2 pl-2 text-lg font-semibold text-gray-900">
         แนวเพลง
       </div>
 
@@ -229,7 +229,7 @@ export default function ListSingerGrid({ showTab = true }) {
       </div>
       <div
         ref={playlistRef}
-        className="col-span-full  bg-transparent p-2 pl-2 text-2xl"
+        className="col-span-full  bg-transparent p-2 pl-2 text-lg font-semibold text-gray-900"
       >
         เพลย์ลิสต์
       </div>
@@ -281,7 +281,7 @@ export default function ListSingerGrid({ showTab = true }) {
       )}
       <div
         ref={songlistRef}
-        className="col-span-full bg-transparent p-4 pb-2 pl-2 text-2xl"
+        className="col-span-full bg-transparent p-4 pb-2 pl-2 text-lg font-semibold text-gray-900"
       >
         {(topArtistsData?.artistCategories || []).find(
           (cat) => cat.tag_id === tagId
