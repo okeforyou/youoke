@@ -562,7 +562,7 @@ function HomePage() {
                 className="modal modal-bottom sm:modal-middle cursor-pointer"
               >
                 <label
-                  className="modal-box relative px-2 py-4 pb-12 sm:p-4 bg-base-100"
+                  className="modal-box relative px-4 py-4 pb-12 sm:p-4 bg-base-100"
                   htmlFor=""
                 >
                   <div className="card gap-3 min-h-min">
