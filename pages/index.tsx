@@ -468,15 +468,20 @@ function HomePage() {
                 </div>
                 {/* END Search Input */}
                 {/* START Karaoke Switch */}
-                <div className="form-control w-26 lg:w-32 2xl:w-32">
-                  <label className="cursor-pointer label flex-col lg:flex-row gap-1 justify-start">
+                <div className="form-control w-auto lg:w-32 2xl:w-32">
+                  <label className="cursor-pointer label flex-row gap-1 justify-start">
                     <input
                       type="checkbox"
                       className="toggle toggle-primary toggle-sm"
                       checked={isKaraoke}
                       onChange={(e) => setIsKaraoke(e.target.checked)}
                     />
-                    <span className="label-text text-primary-content ml-2 text-xs 2xl:text-base ">
+                    {/* Icon for mobile */}
+                    <span className="label-text text-primary-content ml-2 text-base lg:hidden">
+                      {isKaraoke ? "🎤" : "🎵"}
+                    </span>
+                    {/* Text for desktop */}
+                    <span className="label-text text-primary-content ml-2 text-xs 2xl:text-base hidden lg:inline">
                       {isKaraoke ? "คาราโอเกะ" : "เพลง"}
                     </span>
                   </label>
