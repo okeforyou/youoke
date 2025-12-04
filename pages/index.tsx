@@ -471,23 +471,26 @@ function HomePage() {
                 {/* END Search Input */}
                 {/* START Karaoke Switch */}
                 <div className="form-control w-auto lg:w-32 2xl:w-32">
-                  <label className="cursor-pointer label flex-col gap-1 justify-center items-center">
+                  <label className="cursor-pointer label flex-row gap-1 justify-start items-center">
+                    {/* Icons for mobile - both sides */}
+                    <MusicalNoteIcon
+                      className={`w-4 h-4 lg:hidden transition-opacity ${
+                        !isKaraoke ? "text-primary-content opacity-100" : "text-primary-content opacity-30"
+                      }`}
+                    />
                     <input
                       type="checkbox"
                       className="toggle toggle-primary toggle-sm"
                       checked={isKaraoke}
                       onChange={(e) => setIsKaraoke(e.target.checked)}
                     />
-                    {/* Icon for mobile */}
-                    <span className="lg:hidden">
-                      {isKaraoke ? (
-                        <MicrophoneIcon className="w-4 h-4 text-primary-content" />
-                      ) : (
-                        <MusicalNoteIcon className="w-4 h-4 text-primary-content" />
-                      )}
-                    </span>
+                    <MicrophoneIcon
+                      className={`w-4 h-4 lg:hidden transition-opacity ${
+                        isKaraoke ? "text-primary-content opacity-100" : "text-primary-content opacity-30"
+                      }`}
+                    />
                     {/* Text for desktop */}
-                    <span className="label-text text-primary-content text-xs 2xl:text-base hidden lg:inline">
+                    <span className="label-text text-primary-content ml-2 text-xs 2xl:text-base hidden lg:inline">
                       {isKaraoke ? "คาราโอเกะ" : "เพลง"}
                     </span>
                   </label>
