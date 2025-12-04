@@ -528,15 +528,14 @@ function HomePage() {
                 htmlFor="modal-playlist"
                 className="modal modal-bottom sm:modal-middle cursor-pointer"
               >
-                <label
+                <div
                   className="flex flex-col modal-box max-h-[50%] overflow-hidden bg-base-200 px-4 py-4"
-                  htmlFor=""
                   onClick={(e) => e.stopPropagation()}
                 >
                   <div className="relative h-full overflow-y-auto flex flex-col">
                     {PlaylistScreen}
                   </div>
-                </label>
+                </div>
               </label>
               <input
                 type="checkbox"
