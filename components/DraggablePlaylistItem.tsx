@@ -34,7 +34,12 @@ export function DraggablePlaylistItem({
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="flex items-center gap-2">
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center gap-2"
+      onClick={(e) => e.stopPropagation()}
+    >
       {/* Drag Handle - ด้านซ้ายสุด */}
       <div
         {...attributes}

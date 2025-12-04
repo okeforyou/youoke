@@ -45,28 +45,23 @@ export default function VideoHorizontalCard({
 
         {/* Song info */}
         <div
-          className="col-span-2 flex flex-col px-3 py-2 overflow-hidden gap-1.5 justify-center"
+          className="col-span-2 flex flex-row items-center px-3 py-2 overflow-hidden gap-2"
           onClick={(e) => e.stopPropagation()}
         >
-          <h2 className="font-semibold text-xs 2xl:text-lg line-clamp-2 text-gray-900">
+          <h2 className="font-semibold text-xs 2xl:text-lg line-clamp-2 text-gray-900 flex-1">
             {video?.title}
           </h2>
-          <div className="flex items-center gap-2">
-            <p className="text-xs 2xl:text-base truncate text-gray-500 flex-1">
-              {video?.author}
-            </p>
-            {/* Delete button - Icon style like Cast Modal */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(video);
-              }}
-              className="flex-shrink-0 w-8 h-8 rounded-lg bg-error/10 hover:bg-error/20 flex items-center justify-center transition-colors"
-              title="ลบออกจากคิว"
-            >
-              <TrashIcon className="w-4 h-4 text-error" />
-            </button>
-          </div>
+          {/* Delete button - Icon style like Cast Modal */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(video);
+            }}
+            className="flex-shrink-0 w-8 h-8 rounded-lg bg-error/10 hover:bg-error/20 flex items-center justify-center transition-colors"
+            title="ลบออกจากคิว"
+          >
+            <TrashIcon className="w-4 h-4 text-error" />
+          </button>
         </div>
       </div>
     </div>
