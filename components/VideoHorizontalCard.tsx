@@ -19,8 +19,11 @@ export default function VideoHorizontalCard({
       <div className="grid grid-cols-3 overflow-hidden">
         {/* Thumbnail with Play overlay */}
         <figure
-          className="relative w-full aspect-video cursor-pointer group/thumbnail"
-          onClick={() => onPlayNow(video)}
+          className="relative w-full aspect-video cursor-pointer group/thumbnail bg-gray-200"
+          onClick={(e) => {
+            e.stopPropagation();
+            onPlayNow(video);
+          }}
         >
           <Image
             unoptimized
@@ -32,7 +35,7 @@ export default function VideoHorizontalCard({
             priority
             alt={video?.title}
             layout="fill"
-            className="bg-gray-400 object-cover"
+            className="object-contain"
           />
           {/* Play icon overlay */}
           <div className="absolute inset-0 bg-black/0 group-hover/thumbnail:bg-black/30 transition-all flex items-center justify-center">
@@ -41,7 +44,10 @@ export default function VideoHorizontalCard({
         </figure>
 
         {/* Song info */}
-        <div className="col-span-2 flex flex-col px-3 py-2 overflow-hidden gap-1.5 justify-center">
+        <div
+          className="col-span-2 flex flex-col px-3 py-2 overflow-hidden gap-1.5 justify-center"
+          onClick={(e) => e.stopPropagation()}
+        >
           <h2 className="font-semibold text-xs 2xl:text-lg line-clamp-2 text-gray-900">
             {video?.title}
           </h2>
