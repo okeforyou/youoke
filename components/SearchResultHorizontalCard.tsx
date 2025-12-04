@@ -20,9 +20,9 @@ export default function SearchResultHorizontalCard({
       className="relative bg-white shadow hover:shadow-md rounded overflow-hidden group cursor-pointer transition-shadow"
       onClick={onClick}
     >
-      <div className="grid grid-cols-5 overflow-hidden">
-        {/* Thumbnail - Left Side (Smaller) */}
-        <figure className="relative w-full aspect-square">
+      <div className="grid grid-cols-3 overflow-hidden">
+        {/* Thumbnail - Left Side */}
+        <figure className="relative w-full aspect-video">
           <Image
             unoptimized
             src={
@@ -33,7 +33,7 @@ export default function SearchResultHorizontalCard({
             priority
             alt={video.title}
             layout="fill"
-            className="bg-gray-400 object-cover"
+            className="bg-gray-400"
           />
           {/* Play Icon Overlay */}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
@@ -41,9 +41,9 @@ export default function SearchResultHorizontalCard({
           </div>
         </figure>
 
-        {/* Video Info - Right Side (More space) */}
-        <div className="col-span-4 flex flex-col py-2 pl-3 pr-2 justify-center overflow-hidden">
-          <h2 className="font-semibold text-xs leading-tight line-clamp-1 text-gray-900">
+        {/* Video Info - Right Side */}
+        <div className="col-span-2 flex flex-col py-2 pl-3 pr-2 justify-center overflow-hidden">
+          <h2 className="font-semibold text-xs leading-tight line-clamp-2 text-gray-900">
             {video.title}
           </h2>
           <p className="text-xs text-gray-500 truncate mt-0.5">
