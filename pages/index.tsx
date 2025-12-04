@@ -576,20 +576,29 @@ function HomePage() {
                   className="modal-box relative px-2 py-4 pb-12 sm:p-4"
                   htmlFor=""
                 >
-                  <div className="card gap-2 min-h-min">
-                    <h2 className="card-title text-sm 2xl:text-2xl">
-                      {selectedVideo?.title}
-                    </h2>
-                    <figure className="relative w-full aspect-video">
+                  <div className="card gap-3 min-h-min">
+                    <figure className="relative w-full aspect-video rounded-lg overflow-hidden">
                       <Image
                         unoptimized
-                        src={`${process.env.NEXT_PUBLIC_INVIDIOUS_URL}vi/${selectedVideo?.videoId}/mqdefault.jpg`}
+                        src={
+                          selectedVideo?.videoThumbnails?.find((t) => t.quality === "medium")?.url ||
+                          selectedVideo?.videoThumbnails?.[0]?.url ||
+                          `https://i.ytimg.com/vi/${selectedVideo?.videoId}/mqdefault.jpg`
+                        }
                         priority
                         alt={selectedVideo?.title}
                         layout="fill"
-                        className="bg-gray-400"
+                        className="bg-gray-400 object-cover"
                       />
                     </figure>
+                    <div className="flex flex-col gap-1">
+                      <h2 className="font-semibold text-sm 2xl:text-xl line-clamp-2 text-gray-900">
+                        {selectedVideo?.title}
+                      </h2>
+                      <p className="text-xs 2xl:text-base text-gray-500">
+                        {selectedVideo?.author}
+                      </p>
+                    </div>
                     <div className="card-body p-0">
                       <div className="card-actions">
                         <label
