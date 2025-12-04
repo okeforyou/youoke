@@ -524,19 +524,21 @@ function HomePage() {
                 id="modal-playlist"
                 className="modal-toggle"
               />
-              <label
-                htmlFor="modal-playlist"
-                className="modal modal-bottom sm:modal-middle cursor-pointer"
-              >
-                <div
-                  className="flex flex-col modal-box max-h-[50%] overflow-hidden bg-base-200 px-4 py-4"
-                  onClick={(e) => e.stopPropagation()}
-                >
+              <div className="modal modal-bottom sm:modal-middle">
+                <div className="flex flex-col modal-box max-h-[50%] overflow-hidden bg-base-200 px-4 py-4 relative">
+                  {/* Close button X */}
+                  <label
+                    htmlFor="modal-playlist"
+                    className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                  >
+                    ✕
+                  </label>
+
                   <div className="relative h-full overflow-y-auto flex flex-col">
                     {PlaylistScreen}
                   </div>
                 </div>
-              </label>
+              </div>
               <input
                 type="checkbox"
                 id="modal-video"
