@@ -450,7 +450,7 @@ function HomePage() {
           <div className="order-2 sm:order-1 flex flex-col h-full w-full overflow-hidden border-gray-300 sm:border-solid border-r border-none">
             <div className="flex flex-col h-full overflow-hidden relative">
               {/* START Search Bar */}
-              <div className="flex flex-row gap-2 p-1 justify-between items-center bg-primary">
+              <div className="flex flex-row gap-2 px-2 py-1 justify-between items-center bg-primary">
                 {/* START Search Input */}
                 <div className="form-control flex-1">
                   <div className="input-group">
@@ -498,15 +498,14 @@ function HomePage() {
                 {/* END Karaoke Switch */}
                 <label
                   htmlFor="modal-playlist"
-                  className="btn btn-ghost text-primary-content flex-col gap-1 w-20 p-0 sm:hidden"
+                  className="btn btn-ghost text-primary-content w-auto p-2 sm:hidden"
                 >
                   <div className="relative">
                     <ListBulletIcon className="h-6 w-6" />
-                    <span className="badge absolute -top-2 -right-2 text-xs p-1">
+                    <span className="badge badge-sm absolute -top-1 -right-1 text-[10px] px-1">
                       {displayPlaylist?.length || 0}
                     </span>
                   </div>
-                  <span className="text-[10px] leading-none">คิวเพลง</span>
                 </label>
               </div>
               {/* END Search Bar */}
