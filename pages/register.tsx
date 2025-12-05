@@ -4,10 +4,6 @@ import Head from "next/head";
 import {
   ExclamationCircleIcon,
   CheckCircleIcon,
-  UserIcon,
-  EnvelopeIcon,
-  LockClosedIcon,
-  PhoneIcon,
 } from "@heroicons/react/24/outline";
 import { useAuth } from "../context/AuthContext";
 import Alert, { AlertHandler } from "../components/Alert";
@@ -19,8 +15,6 @@ interface RegisterData {
   email: string;
   password: string;
   confirmPassword: string;
-  fullName: string;
-  phone: string;
 }
 
 export default function RegisterPage() {
@@ -32,8 +26,6 @@ export default function RegisterPage() {
     email: "",
     password: "",
     confirmPassword: "",
-    fullName: "",
-    phone: "",
   });
 
   const [selectedPlan, setSelectedPlan] = useState<PricingPackage | null>(null);
@@ -92,8 +84,6 @@ export default function RegisterPage() {
       await createUserProfile({
         uid: user.uid,
         email: data.email,
-        fullName: data.fullName,
-        phone: data.phone,
         plan: (selectedPlan?.id as SubscriptionPlan) || "free",
       });
 
@@ -132,8 +122,7 @@ export default function RegisterPage() {
         await createUserProfile({
           uid: user.uid,
           email: user.email || "",
-          fullName: user.displayName || "ผู้ใช้ Google",
-          phone: "", // Google doesn't provide phone by default
+          fullName: user.displayName || undefined,
           plan: (selectedPlan?.id as SubscriptionPlan) || "free",
         });
       }
@@ -164,8 +153,6 @@ export default function RegisterPage() {
     data.email &&
     data.password &&
     data.confirmPassword &&
-    data.fullName &&
-    data.phone &&
     data.password === data.confirmPassword &&
     agreedToTerms &&
     !loading;
@@ -213,35 +200,26 @@ export default function RegisterPage() {
 
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              สมัครสมาชิก
-            </h1>
-            <p className="text-base-content/70">
-              เริ่มต้นใช้งาน YouOke Karaoke Online
-            </p>
+            <h1 className="text-3xl font-bold mb-2">สมัครสมาชิก</h1>
+            <p className="text-base-content/60">กรอกข้อมูลเพื่อเริ่มใช้งาน</p>
           </div>
 
           {/* Selected Plan Card */}
-          {selectedPlan && (
-            <div className="card bg-base-100 shadow-lg mb-6">
-              <div className="card-body">
-                <h3 className="card-title text-lg">แพ็กเกจที่เลือก</h3>
+          {selectedPlan && selectedPlan.id !== "free" && (
+            <div className="card bg-gradient-to-br from-primary/10 to-secondary/10 border-2 border-primary/20 mb-6">
+              <div className="card-body p-5">
                 <div className="flex items-center justify-between">
                   <div>
+                    <div className="text-sm text-base-content/60 mb-1">แพ็กเกจที่เลือก</div>
                     <div className="text-2xl font-bold text-primary">
-                      {selectedPlan.name}
-                    </div>
-                    <div className="text-sm text-base-content/60">
-                      {selectedPlan.price === 0
-                        ? "ฟรี"
-                        : `${selectedPlan.price.toLocaleString("th-TH")} ฿`}
+                      {selectedPlan.name} - {selectedPlan.price.toLocaleString("th-TH")} ฿
                     </div>
                   </div>
                   <button
                     onClick={() => router.push("/pricing")}
-                    className="btn btn-sm btn-outline"
+                    className="btn btn-sm btn-ghost"
                   >
-                    เปลี่ยนแพ็กเกจ
+                    เปลี่ยน
                   </button>
                 </div>
               </div>
@@ -252,33 +230,10 @@ export default function RegisterPage() {
           <div className="card bg-base-100 shadow-xl">
             <div className="card-body">
               <form onSubmit={handleRegister} className="space-y-4">
-                {/* Full Name */}
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-medium">
-                      <UserIcon className="w-4 h-4 inline mr-1" />
-                      ชื่อ-นามสกุล
-                    </span>
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="นาย/นาง ชื่อ นามสกุล"
-                    className="input input-bordered w-full"
-                    value={data.fullName}
-                    onChange={(e) =>
-                      setData({ ...data, fullName: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-
                 {/* Email */}
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text font-medium">
-                      <EnvelopeIcon className="w-4 h-4 inline mr-1" />
-                      อีเมล
-                    </span>
+                    <span className="label-text font-medium">อีเมล</span>
                   </label>
                   <input
                     type="email"
@@ -290,41 +245,14 @@ export default function RegisterPage() {
                   />
                 </div>
 
-                {/* Phone */}
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-medium">
-                      <PhoneIcon className="w-4 h-4 inline mr-1" />
-                      เบอร์โทรศัพท์
-                    </span>
-                  </label>
-                  <input
-                    type="tel"
-                    placeholder="0812345678"
-                    pattern="[0-9]{10}"
-                    className="input input-bordered w-full"
-                    value={data.phone}
-                    onChange={(e) => setData({ ...data, phone: e.target.value })}
-                    required
-                  />
-                  <label className="label">
-                    <span className="label-text-alt text-base-content/60">
-                      10 หลัก (ไม่ต้องใส่เครื่องหมาย -)
-                    </span>
-                  </label>
-                </div>
-
                 {/* Password */}
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text font-medium">
-                      <LockClosedIcon className="w-4 h-4 inline mr-1" />
-                      รหัสผ่าน
-                    </span>
+                    <span className="label-text font-medium">รหัสผ่าน</span>
                   </label>
                   <input
                     type="password"
-                    placeholder="••••••••"
+                    placeholder="อย่างน้อย 6 ตัวอักษร"
                     className="input input-bordered w-full"
                     value={data.password}
                     onChange={(e) =>
@@ -333,24 +261,16 @@ export default function RegisterPage() {
                     required
                     minLength={6}
                   />
-                  <label className="label">
-                    <span className="label-text-alt text-base-content/60">
-                      อย่างน้อย 6 ตัวอักษร
-                    </span>
-                  </label>
                 </div>
 
                 {/* Confirm Password */}
                 <div className="form-control">
                   <label className="label">
-                    <span className="label-text font-medium">
-                      <LockClosedIcon className="w-4 h-4 inline mr-1" />
-                      ยืนยันรหัสผ่าน
-                    </span>
+                    <span className="label-text font-medium">ยืนยันรหัสผ่าน</span>
                   </label>
                   <input
                     type="password"
-                    placeholder="••••••••"
+                    placeholder="ใส่รหัสผ่านอีกครั้ง"
                     className={`input input-bordered w-full ${
                       data.confirmPassword &&
                       data.password !== data.confirmPassword
@@ -382,20 +302,20 @@ export default function RegisterPage() {
                       checked={agreedToTerms}
                       onChange={(e) => setAgreedToTerms(e.target.checked)}
                     />
-                    <span className="label-text">
-                      ฉันยอมรับ{" "}
+                    <span className="label-text text-sm">
+                      ยอมรับ{" "}
                       <a
                         href="https://okeforyou.com/terms"
                         target="_blank"
-                        className="link link-primary"
+                        className="link"
                       >
-                        ข้อกำหนดและเงื่อนไข
-                      </a>{" "}
-                      และ{" "}
+                        ข้อกำหนด
+                      </a>
+                      {" และ "}
                       <a
                         href="https://okeforyou.com/privacy"
                         target="_blank"
-                        className="link link-primary"
+                        className="link"
                       >
                         นโยบายความเป็นส่วนตัว
                       </a>
@@ -403,13 +323,29 @@ export default function RegisterPage() {
                   </label>
                 </div>
 
-                <div className="divider">หรือ</div>
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  disabled={!canSubmit}
+                  className="btn btn-primary w-full btn-lg"
+                >
+                  {loading ? (
+                    <>
+                      <span className="loading loading-spinner"></span>
+                      กำลังสมัคร...
+                    </>
+                  ) : (
+                    "สมัครสมาชิก"
+                  )}
+                </button>
+
+                <div className="divider text-sm text-base-content/50">หรือ</div>
 
                 {/* Google Sign-In Button */}
                 <button
                   type="button"
                   onClick={handleGoogleSignIn}
-                  disabled={googleLoading}
+                  disabled={googleLoading || !agreedToTerms}
                   className="btn btn-outline w-full gap-2"
                 >
                   {googleLoading ? (
@@ -439,24 +375,6 @@ export default function RegisterPage() {
                       </svg>
                       <span>สมัครด้วย Google</span>
                     </>
-                  )}
-                </button>
-
-                <div className="divider"></div>
-
-                {/* Submit Button */}
-                <button
-                  type="submit"
-                  disabled={!canSubmit}
-                  className="btn btn-primary w-full"
-                >
-                  {loading ? (
-                    <>
-                      <span className="loading loading-spinner"></span>
-                      กำลังสมัครสมาชิก...
-                    </>
-                  ) : (
-                    "สมัครสมาชิกด้วยอีเมล"
                   )}
                 </button>
 

@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { CheckCircleIcon, SparklesIcon, ArrowLeftIcon } from "@heroicons/react/24/solid";
+import { CheckCircleIcon, ArrowLeftIcon } from "@heroicons/react/24/solid";
 import Head from "next/head";
 import { useAuth } from "../context/AuthContext";
 
@@ -13,9 +13,7 @@ const SIMPLE_PACKAGES = [
     features: [
       "ฟังเพลงไม่จำกัด",
       "ไม่มีโฆษณา",
-      "คุณภาพวิดีโอสูงสุด 1080p",
-      "บันทึก Playlist ไม่จำกัด",
-      "รองรับ Cast ข้ามอุปกรณ์",
+      "คุณภาพ HD 1080p",
     ],
     popular: false,
   },
@@ -29,10 +27,8 @@ const SIMPLE_PACKAGES = [
     saveAmount: 198, // (99 * 12) - 990
     features: [
       "ทุกฟีเจอร์แบบรายเดือน",
-      "ประหยัดกว่า 17% (198 บาท/ปี)",
-      "รองรับ 3 อุปกรณ์พร้อมกัน",
-      "ดาวน์โหลดเพลงฟังออฟไลน์",
-      "ไม่ต้องกังวลเรื่องต่ออายุทุกเดือน",
+      "ประหยัดกว่า 17%",
+      "ใช้ได้ 3 อุปกรณ์",
     ],
     popular: true,
   },
@@ -82,11 +78,11 @@ export default function PricingSimplePage() {
 
           {/* Header */}
           <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <h1 className="text-3xl md:text-4xl font-bold mb-3">
               เลือกแพ็กเกจที่เหมาะกับคุณ
             </h1>
-            <p className="text-lg text-base-content/70 max-w-2xl mx-auto">
-              ร้องเพลงไม่จำกัด คุณภาพสูง ไม่มีโฆษณา
+            <p className="text-base text-base-content/60">
+              ฟังเพลงไม่จำกัด ไม่มีโฆษณา
             </p>
           </div>
 
@@ -101,50 +97,40 @@ export default function PricingSimplePage() {
               >
                 {/* Popular Badge */}
                 {pkg.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <div className="badge badge-primary badge-lg gap-1 px-4 py-3">
-                      <SparklesIcon className="w-4 h-4" />
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <div className="badge badge-warning badge-md px-3 py-2 font-semibold">
                       คุ้มที่สุด
                     </div>
                   </div>
                 )}
 
-                <div className="card-body p-8">
+                <div className="card-body p-6">
                   {/* Package Name */}
-                  <h2 className="card-title text-3xl justify-center mb-4">
+                  <h2 className="text-2xl font-bold text-center mb-4">
                     {pkg.name}
                   </h2>
 
                   {/* Price */}
                   <div className="text-center mb-6">
-                    <div className="flex items-baseline justify-center gap-2">
-                      <span className="text-5xl font-bold text-primary">
+                    <div className="flex items-baseline justify-center gap-1">
+                      <span className="text-4xl font-bold text-primary">
                         {formatPrice(pkg.price)}
                       </span>
-                      <span className="text-2xl text-base-content/60">฿</span>
+                      <span className="text-xl text-base-content/60">฿</span>
                     </div>
-                    <div className="text-sm text-base-content/60 mt-2">
-                      ({formatPrice(pkg.pricePerMonth)}฿/เดือน)
-                    </div>
-
-                    {/* Discount Badge */}
-                    {pkg.discount && (
-                      <div className="mt-3">
-                        <div className="badge badge-secondary gap-1">
-                          ประหยัด {formatPrice(pkg.saveAmount)}฿
-                        </div>
+                    {pkg.id === "yearly" && (
+                      <div className="text-sm text-base-content/50 mt-1">
+                        {formatPrice(pkg.pricePerMonth)}฿/เดือน
                       </div>
                     )}
                   </div>
 
-                  <div className="divider my-4"></div>
-
                   {/* Features */}
-                  <ul className="space-y-4 mb-8 flex-grow">
+                  <ul className="space-y-3 mb-6">
                     {pkg.features.map((feature, index) => (
-                      <li key={index} className="flex items-start gap-3">
-                        <CheckCircleIcon className="w-6 h-6 text-success flex-shrink-0 mt-0.5" />
-                        <span className="text-base">{feature}</span>
+                      <li key={index} className="flex items-start gap-2">
+                        <CheckCircleIcon className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                        <span className="text-sm">{feature}</span>
                       </li>
                     ))}
                   </ul>
@@ -152,8 +138,8 @@ export default function PricingSimplePage() {
                   {/* CTA Button */}
                   <button
                     onClick={() => handleSelectPackage(pkg.id)}
-                    className={`btn btn-block btn-lg ${
-                      pkg.popular ? "btn-primary" : "btn-secondary"
+                    className={`btn btn-block ${
+                      pkg.popular ? "btn-primary" : "btn-neutral"
                     }`}
                   >
                     เลือกแพ็กเกจนี้
@@ -164,94 +150,14 @@ export default function PricingSimplePage() {
           </div>
 
           {/* Payment Info */}
-          <div className="max-w-4xl mx-auto">
-            <div className="card bg-base-100 shadow-lg">
-              <div className="card-body">
-                <h3 className="card-title text-xl mb-4">
-                  ข้อมูลการชำระเงิน
-                </h3>
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <h4 className="font-semibold mb-2">ธนาคารกสิกรไทย</h4>
-                    <p className="text-sm text-base-content/70">
-                      เลขที่บัญชี: 123-4-56789-0
-                      <br />
-                      ชื่อบัญชี: บริษัท โอเคฟอร์ยู จำกัด
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-2">ธนาคารไทยพาณิชย์</h4>
-                    <p className="text-sm text-base-content/70">
-                      เลขที่บัญชี: 987-6-54321-0
-                      <br />
-                      ชื่อบัญชี: บริษัท โอเคฟอร์ยู จำกัด
-                    </p>
-                  </div>
-                </div>
-                <div className="alert alert-info mt-4">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    className="stroke-current shrink-0 w-6 h-6"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    ></path>
-                  </svg>
-                  <span className="text-sm">
-                    หลังโอนเงินแล้ว กรุณาอัปโหลดหลักฐานการโอนเงินเพื่อรอการอนุมัติ
-                    (ภายใน 24 ชั่วโมง)
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Simple FAQ */}
-          <div className="mt-12 max-w-4xl mx-auto">
-            <div className="text-center mb-8">
-              <h3 className="text-2xl font-bold">คำถามที่พบบ่อย</h3>
-            </div>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="card bg-base-100">
-                <div className="card-body">
-                  <h4 className="font-semibold">
-                    ใช้เวลานานแค่ไหนในการอนุมัติ?
-                  </h4>
-                  <p className="text-sm text-base-content/70">
-                    ปกติภายใน 24 ชั่วโมง (วันทำการ)
-                  </p>
-                </div>
-              </div>
-              <div className="card bg-base-100">
-                <div className="card-body">
-                  <h4 className="font-semibold">
-                    ยกเลิกหรือคืนเงินได้หรือไม่?
-                  </h4>
-                  <p className="text-sm text-base-content/70">
-                    สามารถยกเลิกได้ตลอดเวลา แต่ไม่คืนเงิน
-                  </p>
-                </div>
-              </div>
-              <div className="card bg-base-100">
-                <div className="card-body">
-                  <h4 className="font-semibold">ต่ออายุอย่างไร?</h4>
-                  <p className="text-sm text-base-content/70">
-                    เมื่อหมดอายุ เลือกแพ็กเกจใหม่และชำระเงินอีกครั้ง
-                  </p>
-                </div>
-              </div>
-              <div className="card bg-base-100">
-                <div className="card-body">
-                  <h4 className="font-semibold">ลองใช้ฟรีได้ไหม?</h4>
-                  <p className="text-sm text-base-content/70">
-                    Guest ฟังได้ 3 เพลง/วัน ไม่ต้องสมัคร
-                  </p>
-                </div>
+          <div className="max-w-3xl mx-auto">
+            <div className="card bg-base-200/50">
+              <div className="card-body p-6 text-center">
+                <p className="text-sm text-base-content/70">
+                  หลังเลือกแพ็กเกจ คุณจะได้รับรายละเอียดการชำระเงิน
+                  <br />
+                  <span className="text-base-content/60">อนุมัติภายใน 24 ชั่วโมง</span>
+                </p>
               </div>
             </div>
           </div>

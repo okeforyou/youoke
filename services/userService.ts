@@ -26,8 +26,8 @@ const USERS_COLLECTION = "users";
 export async function createUserProfile(data: {
   uid: string;
   email: string;
-  fullName: string;
-  phone: string;
+  fullName?: string;
+  phone?: string;
   plan: SubscriptionPlan;
 }): Promise<UserProfile> {
   if (!db) throw new Error("Firebase not initialized");
@@ -39,10 +39,14 @@ export async function createUserProfile(data: {
     status: data.plan === "free" ? "active" : "pending", // FREE = active ทันที, ที่เหลือรอ payment
   };
 
+  // Use email username as displayName if fullName not provided
+  const emailUsername = data.email.split("@")[0];
+  const displayName = data.fullName || emailUsername || "ผู้ใช้";
+
   const userProfile: UserProfile = {
     uid: data.uid,
     email: data.email,
-    displayName: data.fullName,
+    displayName,
     phone: data.phone,
     role: data.plan === "free" ? "free" : "premium",
     subscription,

@@ -4,10 +4,7 @@ import Head from "next/head";
 import {
   ExclamationCircleIcon,
   CheckCircleIcon,
-  PhotoIcon,
   BanknotesIcon,
-  CalendarIcon,
-  ClockIcon,
 } from "@heroicons/react/24/outline";
 import { useAuth } from "../context/AuthContext";
 import Alert, { AlertHandler } from "../components/Alert";
@@ -17,13 +14,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../firebase";
 import { createPayment } from "../services/paymentService";
 
-interface PaymentData {
-  bankName: string;
-  transferDate: string;
-  transferTime: string;
-  amount: string;
-  note: string;
-}
+// Simplified - no form data needed, just file upload
 
 export default function PaymentPage() {
   const router = useRouter();
@@ -31,13 +22,6 @@ export default function PaymentPage() {
   const { user } = useAuth();
 
   const [selectedPlan, setSelectedPlan] = useState<PricingPackage | null>(null);
-  const [paymentData, setPaymentData] = useState<PaymentData>({
-    bankName: "",
-    transferDate: "",
-    transferTime: "",
-    amount: "",
-    note: "",
-  });
   const [paymentProofFile, setPaymentProofFile] = useState<File | null>(null);
   const [paymentProofPreview, setPaymentProofPreview] = useState<string>("");
   const [loading, setLoading] = useState(false);
@@ -67,11 +51,6 @@ export default function PaymentPage() {
       const pkg = await getPricingPackage(planQuery as string);
       if (pkg) {
         setSelectedPlan(pkg);
-        // Auto-fill amount
-        setPaymentData((prev) => ({
-          ...prev,
-          amount: pkg.price.toString(),
-        }));
       } else {
         router.push("/pricing");
       }
@@ -149,15 +128,15 @@ export default function PaymentPage() {
       // Upload payment proof image
       const paymentProofURL = await uploadPaymentProof();
 
-      // Save payment to Firestore
+      // Save payment to Firestore with auto-filled data
       await createPayment({
         userId: user.uid,
         plan: selectedPlan.id as SubscriptionPlan,
-        amount: parseFloat(paymentData.amount),
-        bankName: paymentData.bankName,
-        transferDate: paymentData.transferDate,
-        transferTime: paymentData.transferTime,
-        note: paymentData.note,
+        amount: selectedPlan.price, // Auto-fill from plan
+        bankName: "", // Optional
+        transferDate: new Date().toISOString().split('T')[0], // Today's date
+        transferTime: new Date().toTimeString().split(' ')[0], // Current time
+        note: "", // Optional
         paymentProof: paymentProofURL,
       });
 
@@ -174,14 +153,7 @@ export default function PaymentPage() {
     }
   }
 
-  const canSubmit =
-    paymentData.bankName &&
-    paymentData.transferDate &&
-    paymentData.transferTime &&
-    paymentData.amount &&
-    paymentProofFile &&
-    !loading &&
-    !uploading;
+  const canSubmit = paymentProofFile && !loading && !uploading;
 
   if (!selectedPlan) {
     return (
@@ -230,205 +202,84 @@ export default function PaymentPage() {
 
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              อัปโหลดหลักฐานการชำระเงิน
+            <h1 className="text-3xl font-bold mb-2">
+              ยืนยันการชำระเงิน
             </h1>
-            <p className="text-base-content/70">
-              กรุณาอัปโหลดหลักฐานการโอนเงินเพื่อรอการอนุมัติ
+            <p className="text-base-content/60">
+              โอนเงินและอัปโหลดหลักฐาน
             </p>
           </div>
 
           {/* Selected Plan Info */}
-          <div className="card bg-primary text-primary-content shadow-lg mb-6">
-            <div className="card-body">
-              <h3 className="card-title text-2xl">แพ็กเกจ {selectedPlan.name}</h3>
-              <div className="flex items-baseline gap-2">
-                <span className="text-5xl font-bold">
+          <div className="card bg-gradient-to-br from-primary/20 to-secondary/20 border-2 border-primary/30 shadow-lg mb-6">
+            <div className="card-body p-6 text-center">
+              <div className="text-sm text-base-content/60 mb-2">ยอดที่ต้องชำระ</div>
+              <div className="flex items-baseline justify-center gap-2 mb-2">
+                <span className="text-5xl font-bold text-primary">
                   {selectedPlan.price.toLocaleString("th-TH")}
                 </span>
-                <span className="text-2xl">฿</span>
+                <span className="text-2xl text-base-content/60">฿</span>
               </div>
-              <div className="text-sm opacity-80">
-                {selectedPlan.duration === 365
-                  ? "1 ปี"
-                  : selectedPlan.duration === 30
-                  ? "30 วัน"
-                  : "ตลอดชีพ"}
+              <div className="text-sm text-base-content/70">
+                แพ็กเกจ {selectedPlan.name}
               </div>
             </div>
           </div>
 
-          {/* Bank Account Info */}
+          {/* QR Code & Bank Info */}
           <div className="card bg-base-100 shadow-lg mb-6">
-            <div className="card-body">
-              <h3 className="card-title text-lg mb-4">
-                <BanknotesIcon className="w-6 h-6" />
-                ข้อมูลบัญชีสำหรับโอนเงิน
+            <div className="card-body p-6">
+              <h3 className="text-lg font-semibold text-center mb-4">
+                สแกน QR Code เพื่อชำระเงิน
               </h3>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="bg-base-200 p-4 rounded-lg">
-                  <h4 className="font-semibold mb-2 text-primary">
-                    ธนาคารกสิกรไทย
-                  </h4>
-                  <p className="text-sm">
-                    <strong>เลขที่บัญชี:</strong> 123-4-56789-0
-                    <br />
-                    <strong>ชื่อบัญชี:</strong> บริษัท โอเคฟอร์ยู จำกัด
-                  </p>
+
+              {/* QR Code Placeholder */}
+              <div className="flex justify-center mb-4">
+                <div className="bg-base-200 p-6 rounded-lg">
+                  <div className="w-48 h-48 bg-white flex items-center justify-center border-2 border-base-300 rounded">
+                    <div className="text-center text-base-content/40">
+                      <BanknotesIcon className="w-16 h-16 mx-auto mb-2" />
+                      <div className="text-xs">QR Code</div>
+                      <div className="text-xs">PromptPay</div>
+                    </div>
+                  </div>
                 </div>
-                <div className="bg-base-200 p-4 rounded-lg">
-                  <h4 className="font-semibold mb-2 text-secondary">
-                    ธนาคารไทยพาณิชย์
-                  </h4>
-                  <p className="text-sm">
-                    <strong>เลขที่บัญชี:</strong> 987-6-54321-0
-                    <br />
-                    <strong>ชื่อบัญชี:</strong> บริษัท โอเคฟอร์ยู จำกัด
-                  </p>
+              </div>
+
+              <div className="divider text-sm">หรือโอนผ่านบัญชีธนาคาร</div>
+
+              {/* Bank Info - Compact */}
+              <div className="space-y-2 text-center text-sm">
+                <div>
+                  <div className="font-semibold">ธนาคารกสิกรไทย</div>
+                  <div className="text-base-content/70">123-4-56789-0</div>
+                </div>
+                <div className="text-xs text-base-content/60">
+                  บริษัท โอเคฟอร์ยู จำกัด
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Payment Form */}
+          {/* Payment Form - Simplified */}
           <div className="card bg-base-100 shadow-xl">
-            <div className="card-body">
+            <div className="card-body p-6">
+              <h3 className="text-lg font-semibold mb-4">อัปโหลดหลักฐานการโอนเงิน</h3>
+
               <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Bank Name */}
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-medium">
-                      <BanknotesIcon className="w-4 h-4 inline mr-1" />
-                      ธนาคารที่โอน
-                    </span>
-                  </label>
-                  <select
-                    className="select select-bordered w-full"
-                    value={paymentData.bankName}
-                    onChange={(e) =>
-                      setPaymentData({ ...paymentData, bankName: e.target.value })
-                    }
-                    required
-                  >
-                    <option value="">เลือกธนาคาร</option>
-                    <option value="กสิกรไทย">ธนาคารกสิกรไทย</option>
-                    <option value="ไทยพาณิชย์">ธนาคารไทยพาณิชย์</option>
-                    <option value="กรุงเทพ">ธนาคารกรุงเทพ</option>
-                    <option value="กรุงไทย">ธนาคารกรุงไทย</option>
-                    <option value="ทหารไทยธนชาต">ธนาคารทหารไทยธนชาต</option>
-                    <option value="กรุงศรีอยุธยา">ธนาคารกรุงศรีอยุธยา</option>
-                    <option value="อื่นๆ">อื่นๆ</option>
-                  </select>
-                </div>
-
-                {/* Transfer Date & Time */}
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text font-medium">
-                        <CalendarIcon className="w-4 h-4 inline mr-1" />
-                        วันที่โอน
-                      </span>
-                    </label>
-                    <input
-                      type="date"
-                      className="input input-bordered w-full"
-                      value={paymentData.transferDate}
-                      onChange={(e) =>
-                        setPaymentData({
-                          ...paymentData,
-                          transferDate: e.target.value,
-                        })
-                      }
-                      required
-                    />
-                  </div>
-                  <div className="form-control">
-                    <label className="label">
-                      <span className="label-text font-medium">
-                        <ClockIcon className="w-4 h-4 inline mr-1" />
-                        เวลาโอน
-                      </span>
-                    </label>
-                    <input
-                      type="time"
-                      className="input input-bordered w-full"
-                      value={paymentData.transferTime}
-                      onChange={(e) =>
-                        setPaymentData({
-                          ...paymentData,
-                          transferTime: e.target.value,
-                        })
-                      }
-                      required
-                    />
-                  </div>
-                </div>
-
-                {/* Amount */}
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-medium">จำนวนเงิน (฿)</span>
-                  </label>
-                  <input
-                    type="number"
-                    className="input input-bordered w-full"
-                    value={paymentData.amount}
-                    onChange={(e) =>
-                      setPaymentData({ ...paymentData, amount: e.target.value })
-                    }
-                    required
-                    min="0"
-                    step="0.01"
-                  />
-                  <label className="label">
-                    <span className="label-text-alt text-base-content/60">
-                      ยอดที่ต้องชำระ: {selectedPlan.price.toLocaleString("th-TH")}{" "}
-                      ฿
-                    </span>
-                  </label>
-                </div>
-
-                {/* Note */}
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-medium">
-                      หมายเหตุ (ถ้ามี)
-                    </span>
-                  </label>
-                  <textarea
-                    className="textarea textarea-bordered h-20"
-                    placeholder="ข้อมูลเพิ่มเติม..."
-                    value={paymentData.note}
-                    onChange={(e) =>
-                      setPaymentData({ ...paymentData, note: e.target.value })
-                    }
-                  ></textarea>
-                </div>
-
-                <div className="divider">หลักฐานการโอนเงิน</div>
-
                 {/* Payment Proof Upload */}
                 <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-medium">
-                      <PhotoIcon className="w-4 h-4 inline mr-1" />
-                      รูปภาพหลักฐานการโอน
-                    </span>
-                  </label>
-
                   <input
                     ref={fileInputRef}
                     type="file"
                     accept="image/*"
                     onChange={handleFileSelect}
-                    className="file-input file-input-bordered w-full"
+                    className="file-input file-input-bordered file-input-primary w-full"
                     required
                   />
-
                   <label className="label">
                     <span className="label-text-alt text-base-content/60">
-                      รองรับ: JPG, PNG, GIF (ไม่เกิน 5MB)
+                      รองรับไฟล์: JPG, PNG (ไม่เกิน 5MB)
                     </span>
                   </label>
 
@@ -438,24 +289,22 @@ export default function PaymentPage() {
                       <img
                         src={paymentProofPreview}
                         alt="Payment proof preview"
-                        className="rounded-lg border border-base-300 max-h-96 mx-auto"
+                        className="rounded-lg border border-base-300 max-h-80 mx-auto"
                       />
                     </div>
                   )}
                 </div>
 
-                <div className="divider"></div>
-
                 {/* Submit Button */}
                 <button
                   type="submit"
                   disabled={!canSubmit}
-                  className="btn btn-primary w-full"
+                  className="btn btn-success w-full btn-lg text-white"
                 >
                   {uploading ? (
                     <>
                       <span className="loading loading-spinner"></span>
-                      กำลังอัปโหลดรูปภาพ...
+                      กำลังอัปโหลด...
                     </>
                   ) : loading ? (
                     <>
@@ -463,30 +312,14 @@ export default function PaymentPage() {
                       กำลังส่งข้อมูล...
                     </>
                   ) : (
-                    "ส่งหลักฐานการชำระเงิน"
+                    "ยืนยันการชำระเงิน"
                   )}
                 </button>
 
-                {/* Info Alert */}
-                <div className="alert alert-info">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    className="stroke-current shrink-0 w-6 h-6"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    ></path>
-                  </svg>
-                  <span className="text-sm">
-                    หลังจากส่งหลักฐานแล้ว ระบบจะตรวจสอบและอนุมัติภายใน 24
-                    ชั่วโมง (วันทำการ)
-                  </span>
-                </div>
+                {/* Info */}
+                <p className="text-center text-sm text-base-content/60">
+                  ระบบจะตรวจสอบและอนุมัติภายใน 24 ชั่วโมง
+                </p>
               </form>
             </div>
           </div>
