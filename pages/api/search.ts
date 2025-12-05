@@ -43,12 +43,11 @@ const getRandomUserAgent = () =>
 
 // Invidious instances for web scraping (no API key needed!)
 // Ordered by reliability and speed
+// Updated 2025-12-05 based on official list: https://docs.invidious.io/instances/
 const INVIDIOUS_INSTANCES = [
-  "https://vid.puffyan.us",
-  "https://yewtu.be",
-  "https://invidious.privacyredirect.com",
-  "https://inv.nadeko.net",
-  "https://invidious.projectsegfau.lt",
+  "https://invidious.f5.si", // 🇯🇵 Japan - Fast and reliable
+  "https://inv.perditum.com", // 🇦🇱 Albania - Working well
+  "https://inv.nadeko.net", // 🇨🇱 Chile - Slower but reliable
 ];
 
 // Web scraping fallback - works without API keys!
