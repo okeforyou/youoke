@@ -1,4 +1,5 @@
 import {
+  addDoc,
   arrayUnion,
   collection,
   doc,
@@ -109,11 +110,16 @@ function HomePage() {
   const isMobile = useIsMobile();
 
   const addPlaylistModalRef = useRef<ModalHandler>(null);
+  const createPlaylistModalRef = useRef<ModalHandler>(null);
   const alertRef = useRef<AlertHandler>(null);
 
   const [selectedVideo, setSelectedVideo] = useState<
     SearchResult | RecommendedVideo
   >();
+  const [newPlaylistData, setNewPlaylistData] = useState({
+    name: "",
+    type: "ส่วนตัว",
+  });
   const [hasSyncedPlaylist, setHasSyncedPlaylist] = useState(false);
   const [showCastModeSelector, setShowCastModeSelector] = useState(false);
 
@@ -262,6 +268,36 @@ function HomePage() {
       console.error(error);
     }
   };
+
+  const handleCreateNewPlaylist = async () => {
+    if (!newPlaylistData.name.trim()) {
+      alert("กรุณากรอกชื่อเพลย์ลิสต์");
+      return;
+    }
+
+    try {
+      const playlistsRef = collection(database, "playlists");
+      const playlistDoc = {
+        name: newPlaylistData.name,
+        createdBy: user.uid,
+        playlists: [selectedVideo], // เพิ่มเพลงที่เลือกเข้าไปทันที
+        type: ["ส่วนตัว", "private"].includes(newPlaylistData.type) ? "private" : "public",
+        createdAt: new Date(),
+      };
+
+      await addDoc(playlistsRef, playlistDoc);
+      await getMyPlaylists();
+      createPlaylistModalRef.current.close();
+      addPlaylistModalRef.current.close();
+      alertRef?.current.open();
+      // Reset form
+      setNewPlaylistData({ name: "", type: "ส่วนตัว" });
+    } catch (error) {
+      console.error(error);
+      alert("เกิดข้อผิดพลาดในการสร้างเพลย์ลิสต์");
+    }
+  };
+
   const scrollbarCls =
     "scrollbar scrollbar-w-1 scrollbar-thumb-gray-400 hover:scrollbar-thumb-gray-500 scrollbar-track-base-300 scrollbar-thumb-rounded";
 
@@ -639,7 +675,21 @@ function HomePage() {
                 title={<>เลือกเพลย์ลิสต์ที่ต้องการ</>}
                 body={
                   <div className="relative px-8 flex-auto w-96">
-                    <div className="pb-4">{selectedVideo?.title}</div>
+                    <div className="pb-4 text-gray-900">{selectedVideo?.title}</div>
+
+                    {/* Create New Playlist Button */}
+                    <button
+                      className="w-full btn btn-outline btn-primary btn-sm mb-3 gap-2"
+                      onClick={() => {
+                        createPlaylistModalRef.current.open();
+                      }}
+                    >
+                      <PlusIcon className="w-4 h-4" />
+                      สร้างเพลย์ลิสต์ใหม่
+                    </button>
+
+                    <div className="border-t border-gray-300 mb-3"></div>
+
                     <div className="py-2 overflow-y-auto max-h-64">
                       {myPlaylist.map((p, index) => (
                         <label
@@ -663,6 +713,51 @@ function HomePage() {
                     onClick={getMyPlaylists}
                   >
                     รีเฟรช
+                  </button>
+                }
+              />
+
+              {/* Modal สร้างเพลย์ลิสต์ใหม่ */}
+              <Modal
+                ref={createPlaylistModalRef}
+                title={<>สร้างเพลย์ลิสต์</>}
+                body={
+                  <div className="relative p-6 flex-auto w-96 grid gap-2">
+                    <input
+                      id="new-playlist-name"
+                      className="py-3 px-4 block w-full bg-gray-100 rounded-lg text-sm disabled:opacity-50 border-0 disabled:pointer-events-none"
+                      placeholder="ชื่อเพลย์ลิสต์"
+                      required
+                      value={newPlaylistData.name}
+                      onChange={(e) => {
+                        setNewPlaylistData({
+                          ...newPlaylistData,
+                          name: e.target.value,
+                        });
+                      }}
+                    />
+                    <select
+                      className="py-3 px-4 pe-9 block w-full bg-gray-100 border-transparent rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
+                      value={newPlaylistData.type}
+                      onChange={(e) => {
+                        setNewPlaylistData({
+                          ...newPlaylistData,
+                          type: e.target.value,
+                        });
+                      }}
+                    >
+                      <option>ส่วนตัว</option>
+                      <option>สาธารณะ</option>
+                    </select>
+                  </div>
+                }
+                footer={
+                  <button
+                    className="text-white btn-primary font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+                    type="submit"
+                    onClick={handleCreateNewPlaylist}
+                  >
+                    สร้าง
                   </button>
                 }
               />
