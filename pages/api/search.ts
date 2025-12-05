@@ -1,4 +1,5 @@
 import axios from "axios";
+import { scrapeYouTubeSearchWithRetry } from "../../utils/youtubeScraper";
 
 interface VideoThumbnail {
   quality: string;
@@ -41,6 +42,36 @@ const getRandomUserAgent = () =>
 //   }
 // }
 
+// ===================================================
+// PRIMARY METHOD: Direct YouTube Scraping (FREE & STABLE!)
+// ===================================================
+// This is our main search method inspired by bemusic.
+// Scrapes youtube.com directly instead of using unstable Invidious instances.
+// Benefits: FREE, UNLIMITED, MORE STABLE, NO API KEYS NEEDED!
+async function searchWithYouTubeDirect(q: string): Promise<Video[]> {
+  console.log(`[YouTube Direct] Scraping youtube.com for: ${q}`);
+
+  try {
+    const results = await scrapeYouTubeSearchWithRetry(q, 2, 10000);
+
+    const videos: Video[] = results.map((result) => ({
+      videoId: result.videoId,
+      title: result.title,
+      author: result.author || "Unknown",
+      videoThumbnails: result.videoThumbnails,
+    }));
+
+    console.log(`[YouTube Direct] ✅ SUCCESS - Found ${videos.length} videos`);
+    return videos;
+  } catch (error: any) {
+    console.error(`[YouTube Direct] ❌ FAILED: ${error.message}`);
+    throw error;
+  }
+}
+
+// ===================================================
+// FALLBACK 1: Invidious Web Scraping
+// ===================================================
 // Invidious instances for web scraping (no API key needed!)
 // WARNING: Most instances are down due to YouTube blocking
 // Updated 2025-12-05 based on official list: https://docs.invidious.io/instances/
@@ -52,7 +83,7 @@ const INVIDIOUS_INSTANCES = [
 
 // Web scraping fallback - works without API keys!
 // Try all instances in parallel for faster results
-async function searchWithWebScraping(q: string): Promise<Video[]> {
+async function searchWithInvidiousScraping(q: string): Promise<Video[]> {
   console.log(`[Web Scraping] Trying ${INVIDIOUS_INSTANCES.length} instances in parallel`);
 
   const parseVideosFromHTML = (html: string): Video[] => {
@@ -136,6 +167,9 @@ async function searchWithWebScraping(q: string): Promise<Video[]> {
   }
 }
 
+// ===================================================
+// FALLBACK 2: YouTube Data API v3 (OPTIONAL)
+// ===================================================
 // YouTube API Keys - support multiple keys for rotation (OPTIONAL)
 function getYouTubeApiKeys(): string[] {
   const multiKeys = process.env.YOUTUBE_API_KEYS;
@@ -153,13 +187,13 @@ function getYouTubeApiKeys(): string[] {
 let currentKeyIndex = 0;
 const failedKeys = new Set<string>();
 
-async function searchWithYouTube(q: string, type: string, region: string): Promise<Video[]> {
+async function searchWithYouTubeAPI(q: string, type: string, region: string): Promise<Video[]> {
   const apiKeys = getYouTubeApiKeys();
 
   if (apiKeys.length === 0) {
-    // No API keys configured - use web scraping instead
-    console.log("No YouTube API keys configured, using web scraping");
-    return searchWithWebScraping(q);
+    // No API keys configured - throw error to try next fallback
+    console.log("[YouTube API] No API keys configured");
+    throw new Error("No YouTube API keys configured");
   }
 
   // Try each key in rotation
@@ -232,28 +266,75 @@ async function searchWithYouTube(q: string, type: string, region: string): Promi
       attempts++;
 
       if (attempts >= maxAttempts) {
-        // All YouTube API keys failed - fallback to web scraping
-        console.log("All YouTube API keys exhausted, falling back to web scraping");
-        return searchWithWebScraping(q);
+        // All YouTube API keys exhausted
+        console.log("[YouTube API] All API keys exhausted");
+        throw new Error("All YouTube API keys exhausted");
       }
     }
   }
 
-  throw new Error("Search failed");
+  throw new Error("YouTube API search failed");
 }
 
+// ===================================================
+// MAIN HANDLER with FALLBACK CHAIN
+// ===================================================
 export default async function handler(req, res) {
   const { q, type, region } = req.query;
+
   try {
     if (!q) return res.status(200).json([]);
 
-    const videos = await searchWithYouTube(q as string, type as string, region as string);
-    res.status(200).json(videos);
+    console.log(`\n========================================`);
+    console.log(`Search request: "${q}"`);
+    console.log(`========================================\n`);
+
+    let videos: Video[] = [];
+    let lastError: Error | null = null;
+
+    // PRIMARY: Try YouTube Direct Scraping first (FREE & STABLE!)
+    try {
+      console.log("🎯 [PRIMARY] Trying YouTube Direct Scraping...");
+      videos = await searchWithYouTubeDirect(q as string);
+      console.log(`✅ SUCCESS with YouTube Direct Scraping (${videos.length} results)\n`);
+      return res.status(200).json(videos);
+    } catch (error: any) {
+      console.error(`❌ YouTube Direct Scraping failed: ${error.message}`);
+      lastError = error;
+    }
+
+    // FALLBACK 1: Try Invidious Scraping
+    try {
+      console.log("🔄 [FALLBACK 1] Trying Invidious Scraping...");
+      videos = await searchWithInvidiousScraping(q as string);
+      console.log(`✅ SUCCESS with Invidious Scraping (${videos.length} results)\n`);
+      return res.status(200).json(videos);
+    } catch (error: any) {
+      console.error(`❌ Invidious Scraping failed: ${error.message}`);
+      lastError = error;
+    }
+
+    // FALLBACK 2: Try YouTube API (if configured)
+    try {
+      console.log("🔄 [FALLBACK 2] Trying YouTube API...");
+      videos = await searchWithYouTubeAPI(q as string, type as string, region as string);
+      console.log(`✅ SUCCESS with YouTube API (${videos.length} results)\n`);
+      return res.status(200).json(videos);
+    } catch (error: any) {
+      console.error(`❌ YouTube API failed: ${error.message}`);
+      lastError = error;
+    }
+
+    // All methods failed
+    console.error("❌❌❌ ALL SEARCH METHODS FAILED ❌❌❌\n");
+    throw lastError || new Error("All search methods failed");
+
   } catch (error: any) {
     console.error("Search API error:", error.message);
     res.status(500).json({
       error: error.message || "Search failed",
-      hint: "Please configure YOUTUBE_API_KEY or YOUTUBE_API_KEYS environment variable"
+      details: "All search methods (YouTube Direct, Invidious, YouTube API) failed",
+      hint: "Try again later or contact support"
     });
   }
 }
