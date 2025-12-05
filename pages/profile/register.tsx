@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
 import { EnvelopeIcon, LockClosedIcon } from "@heroicons/react/24/outline";
-import ProfileLayout from "../../components/profile/ProfileLayout";
+import SimpleLayout from "../../components/SimpleLayout";
 import { useAuth } from "../../context/AuthContext";
 import { createUserProfile } from "../../services/userService";
 
@@ -87,8 +87,8 @@ export default function RegisterPage() {
   const passwordsMatch = !confirmPassword || password === confirmPassword;
 
   return (
-    <ProfileLayout>
-      <div className="max-w-md mx-auto">
+    <SimpleLayout>
+      <div className="max-w-md mx-auto px-4 py-8">
         {/* Header with Icon */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary mb-4">
@@ -253,6 +253,6 @@ export default function RegisterPage() {
           </p>
         </div>
       </div>
-    </ProfileLayout>
+    </SimpleLayout>
   );
 }
