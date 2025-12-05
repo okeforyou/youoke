@@ -42,12 +42,12 @@ const getRandomUserAgent = () =>
 // }
 
 // Invidious instances for web scraping (no API key needed!)
-// Ordered by reliability and speed
+// WARNING: Most instances are down due to YouTube blocking
 // Updated 2025-12-05 based on official list: https://docs.invidious.io/instances/
+// Only 2 official instances remain active as of Dec 2025
 const INVIDIOUS_INSTANCES = [
-  "https://invidious.f5.si", // 🇯🇵 Japan - Fast and reliable
-  "https://inv.perditum.com", // 🇦🇱 Albania - Working well
-  "https://inv.nadeko.net", // 🇨🇱 Chile - Slower but reliable
+  "https://yewtu.be", // 🇩🇪 Germany - Official instance
+  "https://inv.nadeko.net", // 🇨🇱 Chile - Official instance
 ];
 
 // Web scraping fallback - works without API keys!
@@ -108,7 +108,7 @@ async function searchWithWebScraping(q: string): Promise<Video[]> {
       const response = await axios.get(`${instance}/search`, {
         params: { q },
         headers: { "User-Agent": getRandomUserAgent() },
-        timeout: 4000, // 4 seconds timeout
+        timeout: 8000, // 8 seconds timeout (instances are slower now)
         responseType: "text",
       });
 
