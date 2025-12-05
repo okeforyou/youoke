@@ -120,6 +120,7 @@ function HomePage() {
     name: "",
     type: "ส่วนตัว",
   });
+  const [isCreatingPlaylist, setIsCreatingPlaylist] = useState(false);
   const [hasSyncedPlaylist, setHasSyncedPlaylist] = useState(false);
   const [showCastModeSelector, setShowCastModeSelector] = useState(false);
 
@@ -275,6 +276,10 @@ function HomePage() {
       return;
     }
 
+    if (isCreatingPlaylist) return; // Prevent multiple clicks
+
+    setIsCreatingPlaylist(true);
+
     try {
       const playlistsRef = collection(database, "playlists");
       const playlistDoc = {
@@ -285,16 +290,27 @@ function HomePage() {
         createdAt: new Date(),
       };
 
+      console.log('🎵 Creating playlist:', newPlaylistData.name);
       await addDoc(playlistsRef, playlistDoc);
+      console.log('✅ Playlist created successfully');
+
       await getMyPlaylists();
-      createPlaylistModalRef.current.close();
-      addPlaylistModalRef.current.close();
-      alertRef?.current.open();
+      console.log('📝 Playlist list refreshed');
+
+      // Close modals and show success alert
+      createPlaylistModalRef.current?.close();
+      addPlaylistModalRef.current?.close();
+      alertRef?.current?.open();
+
+      console.log('🔔 Modals closed, alert shown');
+
       // Reset form
       setNewPlaylistData({ name: "", type: "ส่วนตัว" });
     } catch (error) {
-      console.error(error);
+      console.error('❌ Error creating playlist:', error);
       alert("เกิดข้อผิดพลาดในการสร้างเพลย์ลิสต์");
+    } finally {
+      setIsCreatingPlaylist(false);
     }
   };
 
@@ -753,11 +769,12 @@ function HomePage() {
                 }
                 footer={
                   <button
-                    className="text-white btn-primary font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+                    className="text-white btn-primary font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                     type="submit"
                     onClick={handleCreateNewPlaylist}
+                    disabled={isCreatingPlaylist}
                   >
-                    สร้าง
+                    {isCreatingPlaylist ? "กำลังสร้าง..." : "สร้าง"}
                   </button>
                 }
               />
