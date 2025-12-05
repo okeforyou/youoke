@@ -35,7 +35,8 @@ export default function RegisterPage() {
       await createUserProfile({
         uid: user.uid,
         email: email,
-        displayName: email.split("@")[0],
+        fullName: email.split("@")[0],
+        phone: "",
         plan: "free",
       });
 
@@ -68,7 +69,8 @@ export default function RegisterPage() {
         await createUserProfile({
           uid: user.uid,
           email: user.email || "",
-          displayName: user.displayName || "ผู้ใช้ Google",
+          fullName: user.displayName || "ผู้ใช้ Google",
+          phone: "",
           plan: "free",
         });
       }
