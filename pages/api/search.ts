@@ -42,94 +42,99 @@ const getRandomUserAgent = () =>
 // }
 
 // Invidious instances for web scraping (no API key needed!)
+// Ordered by reliability and speed
 const INVIDIOUS_INSTANCES = [
+  "https://vid.puffyan.us",
+  "https://yewtu.be",
   "https://invidious.privacyredirect.com",
   "https://inv.nadeko.net",
-  "https://yewtu.be",
-  "https://vid.puffyan.us",
   "https://invidious.projectsegfau.lt",
 ];
 
 // Web scraping fallback - works without API keys!
+// Try all instances in parallel for faster results
 async function searchWithWebScraping(q: string): Promise<Video[]> {
-  const errors: string[] = [];
+  console.log(`[Web Scraping] Trying ${INVIDIOUS_INSTANCES.length} instances in parallel`);
 
-  for (const instance of INVIDIOUS_INSTANCES) {
+  const parseVideosFromHTML = (html: string): Video[] => {
+    const videos: Video[] = [];
+    const videoBlocks = html.split('<div class="h-box">').slice(1);
+
+    videoBlocks.forEach((block) => {
+      const getMatch = (regex: RegExp) => block.match(regex)?.[1]?.trim() || "";
+
+      const videoId = getMatch(/href="\/watch\?v=([^"]+)"/);
+      const title = getMatch(/<a href="\/watch\?v=[^"]+"><p dir="auto">([^<]+)<\/p>/);
+      const author = getMatch(/<p class="channel-name"[^>]*dir="auto">([^<\n]+)/);
+
+      if (videoId && title) {
+        videos.push({
+          videoId,
+          title,
+          author,
+          videoThumbnails: [
+            {
+              quality: "maxres",
+              url: `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`,
+              width: 1280,
+              height: 720,
+            },
+            {
+              quality: "medium",
+              url: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`,
+              width: 320,
+              height: 180,
+            },
+            {
+              quality: "default",
+              url: `https://i.ytimg.com/vi/${videoId}/default.jpg`,
+              width: 120,
+              height: 90,
+            },
+          ],
+        });
+      }
+    });
+
+    return videos;
+  };
+
+  // Try all instances in parallel - first one to respond wins!
+  const promises = INVIDIOUS_INSTANCES.map(async (instance) => {
     try {
-      console.log(`[Web Scraping] Trying ${instance}`);
-
       if (!instance || instance === "undefined") {
-        console.error(`[Web Scraping] Invalid instance: ${instance}`);
-        continue;
+        throw new Error("Invalid instance");
       }
 
       const response = await axios.get(`${instance}/search`, {
         params: { q },
         headers: { "User-Agent": getRandomUserAgent() },
-        timeout: 5000, // Reduce timeout for faster failover
+        timeout: 4000, // 4 seconds timeout
         responseType: "text",
       });
 
-      const html = response.data as string;
-      const videos: Video[] = [];
-
-      // Extract video blocks
-      const videoBlocks = html.split('<div class="h-box">').slice(1);
-
-      videoBlocks.forEach((block) => {
-        const getMatch = (regex: RegExp) => block.match(regex)?.[1]?.trim() || "";
-
-        const videoId = getMatch(/href="\/watch\?v=([^"]+)"/);
-        const title = getMatch(/<a href="\/watch\?v=[^"]+"><p dir="auto">([^<]+)<\/p>/);
-        const author = getMatch(/<p class="channel-name"[^>]*dir="auto">([^<\n]+)/);
-
-        if (videoId && title) {
-          videos.push({
-            videoId,
-            title,
-            author,
-            videoThumbnails: [
-              {
-                quality: "maxres",
-                url: `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`,
-                width: 1280,
-                height: 720,
-              },
-              {
-                quality: "medium",
-                url: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`,
-                width: 320,
-                height: 180,
-              },
-              {
-                quality: "default",
-                url: `https://i.ytimg.com/vi/${videoId}/default.jpg`,
-                width: 120,
-                height: 90,
-              },
-            ],
-          });
-        }
-      });
+      const videos = parseVideosFromHTML(response.data as string);
 
       if (videos.length > 0) {
-        console.log(`[Web Scraping] ✅ SUCCESS! Scraped ${videos.length} videos from ${instance}`);
+        console.log(`[Web Scraping] ✅ SUCCESS from ${instance} (${videos.length} videos)`);
         return videos;
       } else {
-        errors.push(`${instance}: No videos found in HTML`);
-        console.log(`[Web Scraping] No videos extracted from ${instance}`);
+        throw new Error("No videos found");
       }
     } catch (error: any) {
-      const errorMsg = `${instance}: ${error.message}`;
-      errors.push(errorMsg);
-      console.error(`[Web Scraping] ❌ Failed ${errorMsg}`);
-      continue;
+      console.error(`[Web Scraping] ❌ ${instance} failed: ${error.message}`);
+      throw error;
     }
-  }
+  });
 
-  const fullError = `All web scraping sources failed:\n${errors.join('\n')}`;
-  console.error(`[Web Scraping] ${fullError}`);
-  throw new Error(fullError);
+  // Return the first successful result
+  try {
+    const result = await Promise.any(promises);
+    return result;
+  } catch (error: any) {
+    console.error(`[Web Scraping] All instances failed`);
+    throw new Error("All web scraping sources failed");
+  }
 }
 
 // YouTube API Keys - support multiple keys for rotation (OPTIONAL)
