@@ -41,30 +41,20 @@ export default function BottomNavigation() {
         <RectangleStackIcon className="w-6 h-6" />
         <span className="btm-nav-label ">เพลย์ลิสต์</span>
       </button>
-      {/* TODO: Uncomment when subscription system is ready */}
-      {/* <button
+      <button
         className="text-warning shrink"
         onClick={() => router.push("/pricing")}
         title="สมัครสมาชิก"
       >
         <SparklesIcon className="w-6 h-6" />
         <span className="btm-nav-label">สมาชิก</span>
-      </button> */}
-      <a
-        className={`text-primary shrink`}
-        href="https://okeforyou.com/contact/"
-        target="_blank"
-        rel="noopener"
-      >
-        <ChatBubbleLeftIcon className="w-6 h-6" />
-        ติดต่อ
-      </a>
+      </button>
       {!user.uid ? (
         <button
           title="เข้าสู่ระบบ"
           className={`text-primary shrink`}
           onClick={() => {
-            router.push("/profile/login");
+            router.push("/login");
           }}
         >
           <ArrowLeftOnRectangleIcon className="w-6 h-6" />

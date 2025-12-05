@@ -33,6 +33,7 @@ import { useToast } from "../context/ToastContext";
 import useIsMobile from "../hooks/isMobile";
 import { useKaraokeState } from "../hooks/karaoke";
 import { useRoomState } from "../hooks/room";
+import { useGuestLimit } from "../hooks/useGuestLimit";
 import Alert, { AlertHandler } from "./Alert";
 import BottomAds from "./BottomAds";
 import { CastModeSelector } from "./CastModeSelector";
@@ -40,6 +41,7 @@ import { ShareRoomModal } from "./ShareRoomModal";
 import VideoAds from "./VideoAds";
 import DebugOverlay, { addDebugLog } from "./DebugOverlay";
 import PlayerControls from "./PlayerControls";
+import GuestLimitModal from "./GuestLimitModal";
 
 function YoutubePlayer({
   videoId,
@@ -58,6 +60,17 @@ function YoutubePlayer({
   const [playerState, setPlayerState] = useState<number>();
   const { user } = useAuth();
   const isLogin = !!user.uid;
+
+  // Guest Limit (3 songs per day for non-logged-in users)
+  const {
+    canPlayNext,
+    incrementPlayCount,
+    isLimitReached,
+    remainingPlays,
+    playedCount,
+    guestLimit,
+  } = useGuestLimit();
+  const [showGuestLimitModal, setShowGuestLimitModal] = useState(false);
   const {
     isConnected: isCasting,
     roomCode,
@@ -243,12 +256,28 @@ function YoutubePlayer({
     // These lines will not execute if this component gets unmounted.
     if (muteState.status === "fulfilled") setIsMuted(muteState.value);
     if (playerState.status === "fulfilled") {
-      setPlayerState(playerState.value);
+      const newState = playerState.value;
+      setPlayerState(newState);
+
+      // Guest Limit Check: When starting to play a new song
+      if (newState === YouTube.PlayerState.PLAYING && !isLogin) {
+        if (!canPlayNext()) {
+          // Guest has reached limit - pause and show modal
+          console.log(`🚫 Guest limit reached (${playedCount}/${guestLimit})`);
+          player.pauseVideo();
+          setShowGuestLimitModal(true);
+          return;
+        } else {
+          // Guest can still play - increment count
+          console.log(`✅ Guest playing song ${playedCount + 1}/${guestLimit}`);
+          incrementPlayCount();
+        }
+      }
 
       // Update Media Session playback state for Android lock screen
       // Allow for both local and Cast modes (skip only Monitor/Dual modes)
       if ('mediaSession' in navigator && !isMoniter && !isDualMode) {
-        switch (playerState.value) {
+        switch (newState) {
           case YouTube.PlayerState.PLAYING:
           case YouTube.PlayerState.BUFFERING:
             navigator.mediaSession.playbackState = 'playing';
@@ -1609,6 +1638,14 @@ function YoutubePlayer({
         onClose={() => setIsShareRoomModalOpen(false)}
         roomCode={roomCode}
         shareUrl={baseUrl ? `${baseUrl}/?castRoom=${roomCode}` : ''}
+      />
+
+      {/* Guest Limit Modal */}
+      <GuestLimitModal
+        isOpen={showGuestLimitModal}
+        onClose={() => setShowGuestLimitModal(false)}
+        playedCount={playedCount}
+        guestLimit={guestLimit}
       />
 
       {/* Debug Toggle Button - Removed to avoid blocking Dual Screen button */}
