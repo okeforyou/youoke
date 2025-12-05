@@ -64,23 +64,23 @@ export default function BottomNavigation() {
           title="เข้าสู่ระบบ"
           className={`text-primary shrink`}
           onClick={() => {
-            router.push("/login");
+            router.push("/profile/login");
           }}
         >
           <ArrowLeftOnRectangleIcon className="w-6 h-6" />
           เข้าสู่ระบบ
         </button>
       ) : (
-        <a
-          href="/profile"
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
           className="text-primary shrink"
           title="บัญชีของฉัน"
+          onClick={() => {
+            router.push("/profile");
+          }}
         >
           <UserCircleIcon className="w-6 h-6" />
           <span className="btm-nav-label">บัญชี</span>
-        </a>
+        </button>
       )}
     </div>
   );
