@@ -7,6 +7,7 @@ import {
   ChevronRightIcon,
   HomeIcon,
   CreditCardIcon,
+  ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/solid";
 import { useAuth } from "../context/AuthContext";
 import { useEffect } from "react";
@@ -52,33 +53,31 @@ export default function AccountPage() {
             <div className="avatar placeholder mb-4">
               <div className="bg-primary text-primary-content rounded-full w-24">
                 <span className="text-3xl">
-                  {user.displayName?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || "U"}
+                  {user.email?.charAt(0).toUpperCase() || "U"}
                 </span>
               </div>
             </div>
-            <h1 className="text-3xl font-bold mb-2">
-              {user.displayName || "ผู้ใช้"}
-            </h1>
+            <h1 className="text-3xl font-bold mb-2">บัญชีของฉัน</h1>
             <p className="text-base-content/60">{user.email}</p>
           </div>
 
           {/* Menu Cards */}
           <div className="space-y-3">
-            {/* Profile Card */}
+            {/* Subscription Status Card */}
             <button
-              onClick={() => router.push("/profile")}
+              onClick={() => router.push("/subscription")}
               className="card bg-base-100 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-[1.02] w-full"
             >
               <div className="card-body p-5">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="bg-primary/10 p-3 rounded-full">
-                      <UserCircleIcon className="w-7 h-7 text-primary" />
+                      <CreditCardIcon className="w-7 h-7 text-primary" />
                     </div>
                     <div className="text-left">
-                      <h3 className="font-semibold text-lg">ข้อมูลส่วนตัว</h3>
+                      <h3 className="font-semibold text-lg">สถานะสมาชิก</h3>
                       <p className="text-sm text-base-content/60">
-                        ดูสถานะสมาชิกและข้อมูลบัญชี
+                        ดูแพ็กเกจและวันหมดอายุ
                       </p>
                     </div>
                   </div>
@@ -99,13 +98,36 @@ export default function AccountPage() {
                       <SparklesIcon className="w-7 h-7 text-white" />
                     </div>
                     <div className="text-left">
-                      <h3 className="font-semibold text-lg">จัดการสมาชิก</h3>
+                      <h3 className="font-semibold text-lg">จัดการแพ็กเกจ</h3>
                       <p className="text-sm text-base-content/60">
                         เลือกแพ็กเกจ, อัพเกรด หรือต่ออายุ
                       </p>
                     </div>
                   </div>
                   <ChevronRightIcon className="w-6 h-6 text-primary" />
+                </div>
+              </div>
+            </button>
+
+            {/* Line@ Contact Card */}
+            <button
+              onClick={() => window.open("https://line.me/R/ti/p/@okeforyou", "_blank")}
+              className="card bg-success/10 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-[1.02] w-full border-2 border-success/20"
+            >
+              <div className="card-body p-5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="bg-success p-3 rounded-full">
+                      <ChatBubbleLeftRightIcon className="w-7 h-7 text-white" />
+                    </div>
+                    <div className="text-left">
+                      <h3 className="font-semibold text-lg">ติดต่อเรา</h3>
+                      <p className="text-sm text-base-content/60">
+                        สอบถามปัญหา หรือขอความช่วยเหลือ
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronRightIcon className="w-6 h-6 text-success" />
                 </div>
               </div>
             </button>
