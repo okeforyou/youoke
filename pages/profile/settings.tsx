@@ -202,14 +202,40 @@ const SettingsPage: React.FC = () => {
           </form>
         </div>
 
+        {/* Subscription Info */}
+        <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-6">
+          <h3 className="font-bold text-purple-900 mb-4 text-lg">
+            🎵 แพ็กเกจของคุณ
+          </h3>
+          <div className="grid gap-3">
+            <div className="bg-white rounded-lg p-4 shadow-sm">
+              <div className="text-sm text-gray-600 mb-1">แพ็กเกจปัจจุบัน</div>
+              <div className="text-lg font-bold text-gray-900 uppercase">
+                {user?.tier || "FREE"}
+              </div>
+            </div>
+            <div className="bg-white rounded-lg p-4 shadow-sm">
+              <div className="text-sm text-gray-600 mb-1">วันหมดอายุ</div>
+              <div className="text-lg font-bold text-gray-900">
+                {user?.expiryDate
+                  ? new Date(user.expiryDate).toLocaleDateString('th-TH', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })
+                  : "ไม่มีกำหนด"}
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Account Info */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
           <h3 className="font-bold text-blue-900 mb-2">
-            💡 เกี่ยวกับบัญชีของคุณ
+            💡 ข้อมูลบัญชี
           </h3>
           <ul className="text-sm text-blue-800 space-y-1">
             <li>• อีเมล: {user?.email}</li>
-            <li>• สมาชิก: {user?.tier || "free"}</li>
             <li>
               • หากต้องการเปลี่ยนรหัสผ่าน แนะนำให้ออกจากระบบแล้วเข้าสู่ระบบใหม่ก่อน
             </li>
