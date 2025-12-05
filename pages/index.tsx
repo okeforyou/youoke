@@ -514,7 +514,7 @@ function HomePage() {
                       placeholder="ค้นหาเพลง"
                       className="input w-full appearance-none rounded-l xl:text-xl"
                       value={searchTerm}
-                      debounceTimeout={5000}
+                      debounceTimeout={500}
                       onChange={(ev) => setSearchTerm(ev.target.value)}
                       inputMode="search"
                     />
