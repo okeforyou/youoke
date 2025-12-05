@@ -7,6 +7,7 @@ import {
   CalendarIcon,
   SparklesIcon,
   ArrowRightOnRectangleIcon,
+  ArrowLeftIcon,
 } from "@heroicons/react/24/solid";
 import { useAuth } from "../context/AuthContext";
 import { getUserProfile } from "../services/userService";
@@ -131,6 +132,15 @@ export default function ProfileSimplePage() {
 
       <div className="min-h-screen bg-gradient-to-br from-base-200 via-base-100 to-base-200 pb-24">
         <div className="container mx-auto px-4 py-8 max-w-2xl">
+          {/* Back Button */}
+          <button
+            onClick={() => router.push("/account")}
+            className="btn btn-ghost btn-sm gap-2 mb-6"
+          >
+            <ArrowLeftIcon className="w-4 h-4" />
+            กลับ
+          </button>
+
           {/* Header */}
           <div className="text-center mb-8">
             <div className="avatar placeholder mb-4">
@@ -253,7 +263,7 @@ export default function ProfileSimplePage() {
             {/* Renew / Upgrade */}
             {(isExpiringSoon() || isExpired() || profile.subscription.plan === "free") && (
               <button
-                onClick={() => router.push("/pricing-simple")}
+                onClick={() => router.push("/pricing")}
                 className="btn btn-primary btn-block btn-lg gap-2"
               >
                 <SparklesIcon className="w-5 h-5" />
@@ -262,23 +272,6 @@ export default function ProfileSimplePage() {
                   : "ต่ออายุสมาชิก"}
               </button>
             )}
-
-            {/* Back to Home */}
-            <button
-              onClick={() => router.push("/")}
-              className="btn btn-ghost btn-block"
-            >
-              กลับหน้าหลัก
-            </button>
-
-            {/* Logout */}
-            <button
-              onClick={handleLogout}
-              className="btn btn-outline btn-error btn-block gap-2"
-            >
-              <ArrowRightOnRectangleIcon className="w-5 h-5" />
-              ออกจากระบบ
-            </button>
           </div>
 
           {/* User Info (for debugging) */}

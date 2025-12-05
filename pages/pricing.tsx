@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
 import { CheckCircleIcon, SparklesIcon, ArrowLeftIcon } from "@heroicons/react/24/solid";
 import Head from "next/head";
+import { useAuth } from "../context/AuthContext";
 
 const SIMPLE_PACKAGES = [
   {
@@ -39,6 +40,7 @@ const SIMPLE_PACKAGES = [
 
 export default function PricingSimplePage() {
   const router = useRouter();
+  const { user } = useAuth();
 
   function handleSelectPackage(packageId: string) {
     router.push(`/register?plan=${packageId}`);
@@ -46,6 +48,15 @@ export default function PricingSimplePage() {
 
   function formatPrice(price: number): string {
     return price.toLocaleString("th-TH");
+  }
+
+  function handleBack() {
+    // If logged in, go back to account menu. Otherwise, go to home.
+    if (user?.uid) {
+      router.push("/account");
+    } else {
+      router.push("/");
+    }
   }
 
   return (
@@ -62,11 +73,11 @@ export default function PricingSimplePage() {
         <div className="container mx-auto px-4 py-12 max-w-6xl">
           {/* Back Button */}
           <button
-            onClick={() => router.push("/")}
+            onClick={handleBack}
             className="btn btn-ghost btn-sm gap-2 mb-8"
           >
             <ArrowLeftIcon className="w-4 h-4" />
-            กลับหน้าหลัก
+            {user?.uid ? "กลับ" : "กลับหน้าหลัก"}
           </button>
 
           {/* Header */}

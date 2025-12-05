@@ -41,14 +41,6 @@ export default function BottomNavigation() {
         <RectangleStackIcon className="w-6 h-6" />
         <span className="btm-nav-label ">เพลย์ลิสต์</span>
       </button>
-      <button
-        className="text-warning shrink"
-        onClick={() => router.push("/pricing")}
-        title="สมัครสมาชิก"
-      >
-        <SparklesIcon className="w-6 h-6" />
-        <span className="btm-nav-label">สมาชิก</span>
-      </button>
       {!user.uid ? (
         <button
           title="เข้าสู่ระบบ"
@@ -65,7 +57,7 @@ export default function BottomNavigation() {
           className="text-primary shrink"
           title="บัญชีของฉัน"
           onClick={() => {
-            router.push("/profile");
+            router.push("/account");
           }}
         >
           <UserCircleIcon className="w-6 h-6" />
