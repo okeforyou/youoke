@@ -111,7 +111,7 @@ export default function AccountPage() {
 
             {/* Line@ Contact Card */}
             <button
-              onClick={() => window.open("https://line.me/R/ti/p/@okeforyou", "_blank")}
+              onClick={() => window.open("https://line.me/R/ti/p/@243lercy", "_blank")}
               className="card bg-success/10 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-[1.02] w-full border-2 border-success/20"
             >
               <div className="card-body p-5">
