@@ -42,7 +42,7 @@ export default function BottomNavigation() {
         <span className="btm-nav-label ">เพลย์ลิสต์</span>
       </button>
       <button
-        className="text-success shrink"
+        className="text-primary shrink"
         title="ติดต่อเรา"
         onClick={() => window.open("https://line.me/R/ti/p/@243lercy", "_blank")}
       >
