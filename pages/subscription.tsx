@@ -1,13 +1,42 @@
 import { useRouter } from "next/router";
 import Head from "next/head";
 import { ArrowLeftIcon } from "@heroicons/react/24/solid";
-import { UserProfile } from "../types/subscription";
+import { UserProfile, SubscriptionPlan, SubscriptionStatus, UserRole } from "../types/subscription";
 import { GetServerSideProps } from "next";
 import { adminDb } from "../firebase-admin";
 import nookies from "nookies";
 
+// Serialized version of UserProfile for SSR (dates as strings)
+interface SerializedUserProfile {
+  uid: string;
+  email: string;
+  displayName: string;
+  phone?: string;
+  photoURL?: string;
+  role: UserRole;
+  subscription: {
+    plan: SubscriptionPlan;
+    startDate: string | null;
+    endDate: string | null;
+    status: SubscriptionStatus;
+    paymentProof?: string;
+  };
+  settings?: {
+    autoPlayQueue: boolean;
+    defaultVolume: number;
+    quality: "auto" | "720p" | "480p" | "360p";
+    theme: "light" | "dark";
+    notifications: {
+      expiryReminder: boolean;
+      newAds: boolean;
+    };
+  };
+  createdAt: string | null;
+  updatedAt: string | null;
+}
+
 interface Props {
-  profile: UserProfile | null;
+  profile: SerializedUserProfile | null;
   error?: string;
 }
 
