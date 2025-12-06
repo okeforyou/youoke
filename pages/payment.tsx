@@ -4,7 +4,7 @@ import Head from "next/head";
 import {
   ExclamationCircleIcon,
   CheckCircleIcon,
-  BanknotesIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { useAuth } from "../context/AuthContext";
 import Alert, { AlertHandler } from "../components/Alert";
@@ -14,22 +14,16 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../firebase";
 import { createPayment } from "../services/paymentService";
 
-// Simplified - no form data needed, just file upload
-
 export default function PaymentPage() {
   const router = useRouter();
   const { plan: planQuery } = router.query;
   const { user } = useAuth();
 
   const [selectedPlan, setSelectedPlan] = useState<PricingPackage | null>(null);
-  const [paymentProofFile, setPaymentProofFile] = useState<File | null>(null);
-  const [paymentProofPreview, setPaymentProofPreview] = useState<string>("");
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
 
   const successRef = useRef<AlertHandler>(null);
   const errorRef = useRef<AlertHandler>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // Redirect if not logged in
@@ -60,84 +54,20 @@ export default function PaymentPage() {
     }
   }
 
-  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      alert("กรุณาอัปโหลดไฟล์รูปภาพเท่านั้น");
-      return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert("ขนาดไฟล์ต้องไม่เกิน 5MB");
-      return;
-    }
-
-    setPaymentProofFile(file);
-
-    // Create preview
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPaymentProofPreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-  }
-
-  async function uploadPaymentProof(): Promise<string> {
-    if (!paymentProofFile || !user?.uid) {
-      throw new Error("No file or user");
-    }
-
-    setUploading(true);
-
-    try {
-      // Create unique filename
-      const timestamp = Date.now();
-      const fileName = `payment-proofs/${user.uid}/${timestamp}_${paymentProofFile.name}`;
-      const storageRef = ref(storage, fileName);
-
-      // Upload file
-      await uploadBytes(storageRef, paymentProofFile);
-
-      // Get download URL
-      const downloadURL = await getDownloadURL(storageRef);
-
-      return downloadURL;
-    } catch (error) {
-      console.error("Error uploading file:", error);
-      throw error;
-    } finally {
-      setUploading(false);
-    }
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-
-    if (!paymentProofFile) {
-      alert("กรุณาอัปโหลดหลักฐานการโอนเงิน");
-      return;
-    }
-
+  async function handleConfirmPayment() {
     setLoading(true);
 
     try {
-      // Upload payment proof image
-      const paymentProofURL = await uploadPaymentProof();
-
-      // Save payment to Firestore with auto-filled data
+      // Save payment to Firestore
       await createPayment({
         userId: user.uid,
         plan: selectedPlan.id as SubscriptionPlan,
-        amount: selectedPlan.price, // Auto-fill from plan
-        bankName: "", // Optional
-        transferDate: new Date().toISOString().split('T')[0], // Today's date
-        transferTime: new Date().toTimeString().split(' ')[0], // Current time
-        note: "", // Optional
-        paymentProof: paymentProofURL,
+        amount: selectedPlan.price,
+        bankName: "",
+        transferDate: new Date().toISOString().split('T')[0],
+        transferTime: new Date().toTimeString().split(' ')[0],
+        note: "",
+        paymentProof: "",
       });
 
       successRef.current?.open();
@@ -153,7 +83,9 @@ export default function PaymentPage() {
     }
   }
 
-  const canSubmit = paymentProofFile && !loading && !uploading;
+  function handleClose() {
+    router.push("/pricing");
+  }
 
   if (!selectedPlan) {
     return (
@@ -166,23 +98,18 @@ export default function PaymentPage() {
   return (
     <>
       <Head>
-        <title>อัปโหลดหลักฐานการชำระเงิน - YouOke</title>
+        <title>ยืนยันการชำระเงิน - YouOke</title>
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-base-200 via-base-100 to-base-200 py-8">
-        <div className="container mx-auto px-4 max-w-3xl">
-          {/* Alerts */}
+      <div className="min-h-screen bg-base-200 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
           <Alert
             ref={successRef}
             timer={2500}
             headline="สำเร็จ!"
             headlineColor="text-green-600"
             bgColor="bg-green-100"
-            content={
-              <span className="text-sm">
-                ส่งหลักฐานการชำระเงินสำเร็จ! รอการอนุมัติภายใน 24 ชั่วโมง
-              </span>
-            }
+            content={<span className="text-sm">ยืนยันการชำระเงินสำเร็จ!</span>}
             icon={<CheckCircleIcon />}
           />
 
@@ -192,146 +119,70 @@ export default function PaymentPage() {
             headline="ผิดพลาด"
             headlineColor="text-red-600"
             bgColor="bg-red-100"
-            content={
-              <span className="text-sm">
-                ไม่สามารถส่งหลักฐานได้ กรุณาลองใหม่อีกครั้ง
-              </span>
-            }
+            content={<span className="text-sm">ไม่สามารถดำเนินการได้</span>}
             icon={<ExclamationCircleIcon />}
           />
 
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold mb-2">
-              ยืนยันการชำระเงิน
-            </h1>
-            <p className="text-base-content/60">
-              โอนเงินและอัปโหลดหลักฐาน
-            </p>
-          </div>
+          <div className="card bg-base-100 shadow-2xl">
+            <div className="card-body p-6 relative">
+              {/* Close Button */}
+              <button
+                onClick={handleClose}
+                className="btn btn-sm btn-circle btn-ghost absolute right-4 top-4"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
 
-          {/* Selected Plan Info */}
-          <div className="card bg-gradient-to-br from-primary/20 to-secondary/20 border-2 border-primary/30 shadow-lg mb-6">
-            <div className="card-body p-6 text-center">
-              <div className="text-sm text-base-content/60 mb-2">ยอดที่ต้องชำระ</div>
-              <div className="flex items-baseline justify-center gap-2 mb-2">
-                <span className="text-5xl font-bold text-primary">
-                  {selectedPlan.price.toLocaleString("th-TH")}
-                </span>
-                <span className="text-2xl text-base-content/60">฿</span>
+              {/* Header */}
+              <div className="text-center mb-6 mt-2">
+                <h2 className="text-xl font-bold mb-2">ยืนยันการชำระเงิน</h2>
+                <p className="text-sm text-base-content/60">
+                  คุณกำลังจะสมัครแพ็กเกจ {selectedPlan.name}
+                </p>
               </div>
-              <div className="text-sm text-base-content/70">
-                แพ็กเกจ {selectedPlan.name}
-              </div>
-            </div>
-          </div>
 
-          {/* QR Code & Bank Info */}
-          <div className="card bg-base-100 shadow-lg mb-6">
-            <div className="card-body p-6">
-              <h3 className="text-lg font-semibold text-center mb-4">
-                สแกน QR Code เพื่อชำระเงิน
-              </h3>
-
-              {/* QR Code Placeholder */}
-              <div className="flex justify-center mb-4">
-                <div className="bg-base-200 p-6 rounded-lg">
-                  <div className="w-48 h-48 bg-white flex items-center justify-center border-2 border-base-300 rounded">
-                    <div className="text-center text-base-content/40">
-                      <BanknotesIcon className="w-16 h-16 mx-auto mb-2" />
-                      <div className="text-xs">QR Code</div>
-                      <div className="text-xs">PromptPay</div>
-                    </div>
+              {/* QR Code */}
+              <div className="bg-base-300 p-6 rounded-lg mb-6">
+                <div className="text-center text-sm mb-3">
+                  สแกน QR Code เพื่อชำระเงิน
+                </div>
+                <div className="bg-white w-48 h-48 mx-auto flex items-center justify-center border-4 border-base-100">
+                  {/* QR Code Placeholder - Replace with actual QR if needed */}
+                  <div className="text-9xl">⬛</div>
+                </div>
+                <div className="text-center mt-4">
+                  <div className="text-3xl font-bold">
+                    ฿{selectedPlan.price.toLocaleString("th-TH", { minimumFractionDigits: 2 })}
                   </div>
                 </div>
               </div>
 
-              <div className="divider text-sm">หรือโอนผ่านบัญชีธนาคาร</div>
+              {/* Confirm Button */}
+              <button
+                onClick={handleConfirmPayment}
+                disabled={loading}
+                className="btn btn-success btn-block btn-lg text-white mb-4"
+              >
+                {loading ? (
+                  <>
+                    <span className="loading loading-spinner"></span>
+                    กำลังดำเนินการ...
+                  </>
+                ) : (
+                  "ยืนยันการชำระเงิน"
+                )}
+              </button>
 
-              {/* Bank Info - Compact */}
-              <div className="space-y-2 text-center text-sm">
-                <div>
-                  <div className="font-semibold">ธนาคารกสิกรไทย</div>
-                  <div className="text-base-content/70">123-4-56789-0</div>
-                </div>
-                <div className="text-xs text-base-content/60">
-                  บริษัท โอเคฟอร์ยู จำกัด
-                </div>
+              {/* Back Link */}
+              <div className="text-center">
+                <button
+                  onClick={handleClose}
+                  className="text-sm text-base-content/60 hover:text-base-content"
+                >
+                  กลับไปเลือกแพ็กเกจอื่น
+                </button>
               </div>
             </div>
-          </div>
-
-          {/* Payment Form - Simplified */}
-          <div className="card bg-base-100 shadow-xl">
-            <div className="card-body p-6">
-              <h3 className="text-lg font-semibold mb-4">อัปโหลดหลักฐานการโอนเงิน</h3>
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Payment Proof Upload */}
-                <div className="form-control">
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileSelect}
-                    className="file-input file-input-bordered file-input-primary w-full"
-                    required
-                  />
-                  <label className="label">
-                    <span className="label-text-alt text-base-content/60">
-                      รองรับไฟล์: JPG, PNG (ไม่เกิน 5MB)
-                    </span>
-                  </label>
-
-                  {/* Image Preview */}
-                  {paymentProofPreview && (
-                    <div className="mt-4">
-                      <img
-                        src={paymentProofPreview}
-                        alt="Payment proof preview"
-                        className="rounded-lg border border-base-300 max-h-80 mx-auto"
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {/* Submit Button */}
-                <button
-                  type="submit"
-                  disabled={!canSubmit}
-                  className="btn btn-success w-full btn-lg text-white"
-                >
-                  {uploading ? (
-                    <>
-                      <span className="loading loading-spinner"></span>
-                      กำลังอัปโหลด...
-                    </>
-                  ) : loading ? (
-                    <>
-                      <span className="loading loading-spinner"></span>
-                      กำลังส่งข้อมูล...
-                    </>
-                  ) : (
-                    "ยืนยันการชำระเงิน"
-                  )}
-                </button>
-
-                {/* Info */}
-                <p className="text-center text-sm text-base-content/60">
-                  ระบบจะตรวจสอบและอนุมัติภายใน 24 ชั่วโมง
-                </p>
-              </form>
-            </div>
-          </div>
-
-          {/* Back Button */}
-          <div className="text-center mt-6">
-            <button
-              onClick={() => router.push("/")}
-              className="btn btn-ghost btn-sm"
-            >
-              ← กลับหน้าหลัก
-            </button>
           </div>
         </div>
       </div>
