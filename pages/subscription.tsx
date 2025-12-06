@@ -176,7 +176,19 @@ export default function SubscriptionPage() {
       </Head>
 
       <div className="min-h-screen bg-gradient-to-br from-base-200 via-base-100 to-base-200 pb-24">
-        <div className="container mx-auto px-4 py-8 max-w-2xl">
+        <div className="container mx-auto px-4 py-8 max-w-2xl transition-opacity duration-300 opacity-0 animate-[fadeIn_0.3s_ease-in_forwards]">
+          <style jsx>{`
+            @keyframes fadeIn {
+              from {
+                opacity: 0;
+                transform: translateY(10px);
+              }
+              to {
+                opacity: 1;
+                transform: translateY(0);
+              }
+            }
+          `}</style>
           {/* Back Button */}
           <button
             onClick={() => router.push("/account")}

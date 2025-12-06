@@ -1,7 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApps } from 'firebase/app'
 // https://firebase.google.com/docs/web/setup#available-libraries
-import { getAuth } from 'firebase/auth'
+import { getAuth, setPersistence, indexedDBLocalPersistence } from 'firebase/auth'
 import { getFirestore, enableIndexedDbPersistence, enableMultiTabIndexedDbPersistence } from 'firebase/firestore'
 import { getDatabase } from 'firebase/database'
 import { getStorage } from 'firebase/storage'
@@ -41,6 +41,13 @@ try {
     database = getFirestore(app);
     realtimeDb = getDatabase(app);
     storage = getStorage(app);
+
+    // Enable auth persistence for instant auth checks
+    if (typeof window !== 'undefined' && auth) {
+      setPersistence(auth, indexedDBLocalPersistence).catch((err) => {
+        console.warn('Auth persistence failed:', err);
+      });
+    }
 
     // Enable offline persistence for faster loads
     if (typeof window !== 'undefined' && database) {
