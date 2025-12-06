@@ -2,7 +2,7 @@
 import { initializeApp, getApps } from 'firebase/app'
 // https://firebase.google.com/docs/web/setup#available-libraries
 import { getAuth } from 'firebase/auth'
-import { getFirestore } from 'firebase/firestore'
+import { getFirestore, enableIndexedDbPersistence, enableMultiTabIndexedDbPersistence } from 'firebase/firestore'
 import { getDatabase } from 'firebase/database'
 import { getStorage } from 'firebase/storage'
 
@@ -41,6 +41,17 @@ try {
     database = getFirestore(app);
     realtimeDb = getDatabase(app);
     storage = getStorage(app);
+
+    // Enable offline persistence for faster loads
+    if (typeof window !== 'undefined' && database) {
+      enableMultiTabIndexedDbPersistence(database).catch((err) => {
+        if (err.code === 'failed-precondition') {
+          console.warn('Persistence failed: Multiple tabs open');
+        } else if (err.code === 'unimplemented') {
+          console.warn('Persistence not available in this browser');
+        }
+      });
+    }
   } else if (getApps().length > 0) {
     app = getApps()[0];
     auth = getAuth(app);

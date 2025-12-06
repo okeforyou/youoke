@@ -9,6 +9,8 @@ import {
   where,
   getDocs,
   serverTimestamp,
+  getDocFromCache,
+  getDocFromServer,
 } from "firebase/firestore";
 import {
   UserProfile,
@@ -19,6 +21,10 @@ import {
 } from "../types/subscription";
 
 const USERS_COLLECTION = "users";
+
+// In-memory cache for user profiles (5 minutes TTL)
+const profileCache = new Map<string, { data: UserProfile; timestamp: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 /**
  * สร้าง user profile ใหม่ (เรียกหลัง Firebase Auth สร้าง user แล้ว)
@@ -77,26 +83,60 @@ export async function createUserProfile(data: {
 }
 
 /**
- * ดึงข้อมูล user profile
+ * ดึงข้อมูล user profile (with caching)
  */
-export async function getUserProfile(uid: string): Promise<UserProfile | null> {
+export async function getUserProfile(uid: string, forceRefresh = false): Promise<UserProfile | null> {
   if (!db) {
     console.warn("Firebase not initialized");
     return null;
   }
 
+  // Check memory cache first (unless force refresh)
+  if (!forceRefresh) {
+    const cached = profileCache.get(uid);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      console.log('✅ Using cached profile for:', uid);
+      return cached.data;
+    }
+  }
+
   try {
     const userRef = doc(db, USERS_COLLECTION, uid);
-    const snapshot = await getDoc(userRef);
+
+    // Try cache first, then server
+    let snapshot;
+    try {
+      snapshot = await getDocFromCache(userRef);
+      console.log('📦 Using Firestore cache for:', uid);
+    } catch {
+      snapshot = await getDocFromServer(userRef);
+      console.log('🌐 Fetched from server for:', uid);
+    }
 
     if (!snapshot.exists()) {
       return null;
     }
 
-    return snapshot.data() as UserProfile;
+    const profile = snapshot.data() as UserProfile;
+
+    // Update memory cache
+    profileCache.set(uid, { data: profile, timestamp: Date.now() });
+
+    return profile;
   } catch (error) {
     console.error("Error fetching user profile:", error);
     return null;
+  }
+}
+
+/**
+ * Clear profile cache (call after profile update)
+ */
+export function clearProfileCache(uid?: string) {
+  if (uid) {
+    profileCache.delete(uid);
+  } else {
+    profileCache.clear();
   }
 }
 
@@ -114,6 +154,9 @@ export async function updateUserSubscription(
     subscription: subscription,
     updatedAt: serverTimestamp(),
   });
+
+  // Clear cache after update
+  clearProfileCache(uid);
 }
 
 /**
@@ -210,6 +253,9 @@ export async function updateUserProfile(
     ...data,
     updatedAt: serverTimestamp(),
   });
+
+  // Clear cache after update
+  clearProfileCache(uid);
 }
 
 /**
