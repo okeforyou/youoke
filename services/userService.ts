@@ -1,17 +1,14 @@
-import { database as db } from "../firebase";
+import { realtimeDb } from "../firebase";
 import {
-  collection,
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
+  ref,
+  get,
+  set,
+  update,
   query,
-  where,
-  getDocs,
+  orderByChild,
+  equalTo,
   serverTimestamp,
-  getDocFromCache,
-  getDocFromServer,
-} from "firebase/firestore";
+} from "firebase/database";
 import {
   UserProfile,
   Subscription,
@@ -20,7 +17,7 @@ import {
   UserRole,
 } from "../types/subscription";
 
-const USERS_COLLECTION = "users";
+const USERS_PATH = "users";
 
 // In-memory cache for user profiles (5 minutes TTL)
 const profileCache = new Map<string, { data: UserProfile; timestamp: number }>();
@@ -36,32 +33,20 @@ export async function createUserProfile(data: {
   phone?: string;
   plan: SubscriptionPlan;
 }): Promise<UserProfile> {
-  if (!db) throw new Error("Firebase not initialized");
+  if (!realtimeDb) throw new Error("Firebase not initialized");
 
   const subscription: Subscription = {
     plan: data.plan,
     startDate: null,
     endDate: null,
-    status: data.plan === "free" ? "active" : "pending", // FREE = active ทันที, ที่เหลือรอ payment
+    status: data.plan === "free" ? "active" : "pending",
   };
 
   // Use email username as displayName if fullName not provided
   const emailUsername = data.email.split("@")[0];
   const displayName = data.fullName || emailUsername || "ผู้ใช้";
 
-  const userProfile: UserProfile = {
-    uid: data.uid,
-    email: data.email,
-    displayName,
-    phone: data.phone,
-    role: data.plan === "free" ? "free" : "premium",
-    subscription,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
-
-  // Remove undefined fields before saving to Firestore
-  const firestoreData: any = {
+  const dbData: any = {
     uid: data.uid,
     email: data.email,
     displayName,
@@ -73,20 +58,30 @@ export async function createUserProfile(data: {
 
   // Only add phone if it's not undefined
   if (data.phone !== undefined) {
-    firestoreData.phone = data.phone;
+    dbData.phone = data.phone;
   }
 
-  const userRef = doc(db, USERS_COLLECTION, data.uid);
-  await setDoc(userRef, firestoreData);
+  const userRef = ref(realtimeDb, `${USERS_PATH}/${data.uid}`);
+  await set(userRef, dbData);
 
-  return userProfile;
+  // Return profile for immediate use
+  return {
+    uid: data.uid,
+    email: data.email,
+    displayName,
+    phone: data.phone,
+    role: data.plan === "free" ? "free" : "premium",
+    subscription,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
 }
 
 /**
  * ดึงข้อมูล user profile (with caching)
  */
 export async function getUserProfile(uid: string, forceRefresh = false): Promise<UserProfile | null> {
-  if (!db) {
+  if (!realtimeDb) {
     console.warn("Firebase not initialized");
     return null;
   }
@@ -95,29 +90,21 @@ export async function getUserProfile(uid: string, forceRefresh = false): Promise
   if (!forceRefresh) {
     const cached = profileCache.get(uid);
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-      console.log('✅ Using cached profile for:', uid);
+      console.log('⚡ Using memory cache (instant)');
       return cached.data;
     }
   }
 
   try {
-    const userRef = doc(db, USERS_COLLECTION, uid);
-
-    // Try cache first, then server
-    let snapshot;
-    try {
-      snapshot = await getDocFromCache(userRef);
-      console.log('📦 Using Firestore cache for:', uid);
-    } catch {
-      snapshot = await getDocFromServer(userRef);
-      console.log('🌐 Fetched from server for:', uid);
-    }
+    const userRef = ref(realtimeDb, `${USERS_PATH}/${uid}`);
+    const snapshot = await get(userRef);
 
     if (!snapshot.exists()) {
       return null;
     }
 
-    const profile = snapshot.data() as UserProfile;
+    const profile = snapshot.val() as UserProfile;
+    console.log('🚀 Fetched from Realtime DB (fast!)');
 
     // Update memory cache
     profileCache.set(uid, { data: profile, timestamp: Date.now() });
@@ -147,10 +134,10 @@ export async function updateUserSubscription(
   uid: string,
   subscription: Partial<Subscription>
 ): Promise<void> {
-  if (!db) throw new Error("Firebase not initialized");
+  if (!realtimeDb) throw new Error("Firebase not initialized");
 
-  const userRef = doc(db, USERS_COLLECTION, uid);
-  await updateDoc(userRef, {
+  const userRef = ref(realtimeDb, `${USERS_PATH}/${uid}`);
+  await update(userRef, {
     subscription: subscription,
     updatedAt: serverTimestamp(),
   });
@@ -168,9 +155,9 @@ export async function activateSubscription(
   startDate: Date,
   endDate: Date | null
 ): Promise<void> {
-  if (!db) throw new Error("Firebase not initialized");
+  if (!realtimeDb) throw new Error("Firebase not initialized");
 
-  const userRef = doc(db, USERS_COLLECTION, uid);
+  const userRef = ref(realtimeDb, `${USERS_PATH}/${uid}`);
 
   const subscription: Subscription = {
     plan,
@@ -179,62 +166,76 @@ export async function activateSubscription(
     status: "active",
   };
 
-  await updateDoc(userRef, {
+  await update(userRef, {
     subscription,
-    role: "premium", // เปลี่ยนเป็น premium
+    role: "premium",
     updatedAt: serverTimestamp(),
   });
+
+  clearProfileCache(uid);
 }
 
 /**
  * ยกเลิก subscription
  */
 export async function cancelSubscription(uid: string): Promise<void> {
-  if (!db) throw new Error("Firebase not initialized");
+  if (!realtimeDb) throw new Error("Firebase not initialized");
 
-  const userRef = doc(db, USERS_COLLECTION, uid);
-  await updateDoc(userRef, {
-    "subscription.status": "cancelled",
+  const userRef = ref(realtimeDb, `${USERS_PATH}/${uid}/subscription`);
+  await update(userRef, {
+    status: "cancelled",
+  });
+
+  const mainRef = ref(realtimeDb, `${USERS_PATH}/${uid}`);
+  await update(mainRef, {
     updatedAt: serverTimestamp(),
   });
+
+  clearProfileCache(uid);
 }
 
 /**
  * เช็คว่า subscription หมดอายุแล้วหรือยัง และอัปเดตสถานะ
  */
 export async function checkAndUpdateExpiredSubscriptions(): Promise<void> {
-  if (!db) throw new Error("Firebase not initialized");
+  if (!realtimeDb) throw new Error("Firebase not initialized");
 
-  const usersRef = collection(db, USERS_COLLECTION);
-  const q = query(
-    usersRef,
-    where("subscription.status", "==", "active")
-  );
+  const usersRef = ref(realtimeDb, USERS_PATH);
+  const snapshot = await get(usersRef);
 
-  const snapshot = await getDocs(q);
+  if (!snapshot.exists()) {
+    return;
+  }
+
+  const users = snapshot.val();
   const now = new Date();
+  const updatePromises = [];
 
-  const updatePromises = snapshot.docs.map(async (docSnapshot) => {
-    const user = docSnapshot.data() as UserProfile;
+  for (const uid in users) {
+    const user = users[uid] as UserProfile;
 
-    // Skip lifetime subscriptions
-    if (!user.subscription.endDate) {
-      return;
+    // Skip if not active or lifetime
+    if (user.subscription?.status !== "active" || !user.subscription?.endDate) {
+      continue;
     }
 
     const endDate = new Date(user.subscription.endDate);
 
     // ถ้าหมดอายุแล้ว
     if (now > endDate) {
-      const userRef = doc(db, USERS_COLLECTION, user.uid);
-      await updateDoc(userRef, {
-        "subscription.status": "expired",
-        role: "free", // ลดเป็น free
-        updatedAt: serverTimestamp(),
-      });
-      console.log(`Expired subscription for user ${user.uid}`);
+      const userRef = ref(realtimeDb, `${USERS_PATH}/${uid}`);
+      updatePromises.push(
+        update(userRef, {
+          "subscription/status": "expired",
+          role: "free",
+          updatedAt: serverTimestamp(),
+        }).then(() => {
+          console.log(`Expired subscription for user ${uid}`);
+          clearProfileCache(uid);
+        })
+      );
     }
-  });
+  }
 
   await Promise.all(updatePromises);
 }
@@ -246,10 +247,10 @@ export async function updateUserProfile(
   uid: string,
   data: Partial<Omit<UserProfile, "uid" | "email" | "createdAt">>
 ): Promise<void> {
-  if (!db) throw new Error("Firebase not initialized");
+  if (!realtimeDb) throw new Error("Firebase not initialized");
 
-  const userRef = doc(db, USERS_COLLECTION, uid);
-  await updateDoc(userRef, {
+  const userRef = ref(realtimeDb, `${USERS_PATH}/${uid}`);
+  await update(userRef, {
     ...data,
     updatedAt: serverTimestamp(),
   });
@@ -262,25 +263,34 @@ export async function updateUserProfile(
  * ดึง users ทั้งหมด (สำหรับ admin)
  */
 export async function getAllUsers(): Promise<UserProfile[]> {
-  if (!db) throw new Error("Firebase not initialized");
+  if (!realtimeDb) throw new Error("Firebase not initialized");
 
-  const usersRef = collection(db, USERS_COLLECTION);
-  const snapshot = await getDocs(usersRef);
+  const usersRef = ref(realtimeDb, USERS_PATH);
+  const snapshot = await get(usersRef);
 
-  return snapshot.docs.map((doc) => doc.data() as UserProfile);
+  if (!snapshot.exists()) {
+    return [];
+  }
+
+  const users = snapshot.val();
+  return Object.values(users);
 }
 
 /**
  * ดึง users ตาม role
  */
 export async function getUsersByRole(role: UserRole): Promise<UserProfile[]> {
-  if (!db) throw new Error("Firebase not initialized");
+  if (!realtimeDb) throw new Error("Firebase not initialized");
 
-  const usersRef = collection(db, USERS_COLLECTION);
-  const q = query(usersRef, where("role", "==", role));
-  const snapshot = await getDocs(q);
+  const usersRef = ref(realtimeDb, USERS_PATH);
+  const snapshot = await get(usersRef);
 
-  return snapshot.docs.map((doc) => doc.data() as UserProfile);
+  if (!snapshot.exists()) {
+    return [];
+  }
+
+  const users = snapshot.val();
+  return Object.values(users).filter((user: any) => user.role === role);
 }
 
 /**
@@ -289,11 +299,15 @@ export async function getUsersByRole(role: UserRole): Promise<UserProfile[]> {
 export async function getUsersBySubscriptionStatus(
   status: SubscriptionStatus
 ): Promise<UserProfile[]> {
-  if (!db) throw new Error("Firebase not initialized");
+  if (!realtimeDb) throw new Error("Firebase not initialized");
 
-  const usersRef = collection(db, USERS_COLLECTION);
-  const q = query(usersRef, where("subscription.status", "==", status));
-  const snapshot = await getDocs(q);
+  const usersRef = ref(realtimeDb, USERS_PATH);
+  const snapshot = await get(usersRef);
 
-  return snapshot.docs.map((doc) => doc.data() as UserProfile);
+  if (!snapshot.exists()) {
+    return [];
+  }
+
+  const users = snapshot.val();
+  return Object.values(users).filter((user: any) => user.subscription?.status === status);
 }
