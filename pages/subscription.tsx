@@ -24,6 +24,21 @@ export default function SubscriptionPage() {
   async function loadProfile() {
     if (!user?.uid) return;
 
+    // 1. Load from localStorage FIRST (instant!)
+    const cacheKey = `user_profile_${user.uid}`;
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      try {
+        const cachedData = JSON.parse(cached);
+        setProfile(cachedData);
+        setLoading(false);
+        console.log('⚡ Loaded from localStorage (instant)');
+      } catch (e) {
+        console.error('Failed to parse cached profile:', e);
+      }
+    }
+
+    // 2. Fetch fresh data in background
     try {
       let data = await getUserProfile(user.uid);
 
@@ -37,7 +52,12 @@ export default function SubscriptionPage() {
         });
       }
 
-      setProfile(data);
+      if (data) {
+        // 3. Update both state and localStorage
+        setProfile(data);
+        localStorage.setItem(cacheKey, JSON.stringify(data));
+        console.log('✅ Updated with fresh data');
+      }
     } catch (error) {
       console.error("Error loading profile:", error);
     } finally {
