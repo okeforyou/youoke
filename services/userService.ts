@@ -290,7 +290,7 @@ export async function getUsersByRole(role: UserRole): Promise<UserProfile[]> {
   }
 
   const users = snapshot.val();
-  return Object.values(users).filter((user: any) => user.role === role);
+  return Object.values(users).filter((user: any) => user.role === role) as UserProfile[];
 }
 
 /**
@@ -309,5 +309,5 @@ export async function getUsersBySubscriptionStatus(
   }
 
   const users = snapshot.val();
-  return Object.values(users).filter((user: any) => user.subscription?.status === status);
+  return Object.values(users).filter((user: any) => user.subscription?.status === status) as UserProfile[];
 }
