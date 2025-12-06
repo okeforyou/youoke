@@ -133,30 +133,34 @@ export default function SubscriptionPage() {
           <div className="card bg-base-100 shadow-xl mb-6">
             <div className="card-body p-6">
               {/* Package Row */}
-              <div className="flex justify-between items-center mb-4 pb-4 border-b border-base-300">
+              <div className="flex justify-between items-start mb-4 pb-4 border-b border-base-300">
                 <span className="text-base-content/70">แพ็กเกจ:</span>
-                <span className="font-semibold text-lg">
-                  Oke for You Premium ({getPackageName(profile.subscription.plan)})
+                <span className="font-semibold text-right">
+                  YouOke Premium ({getPackageName(profile.subscription.plan)})
                 </span>
+              </div>
+
+              {/* Bong Pun Row - Empty for now */}
+              <div className="flex justify-between items-center mb-4 pb-4 border-b border-base-300">
+                <span className="text-base-content/70">บ่วงปุ๊น:</span>
+                <span className="text-base-content/40">-</span>
               </div>
 
               {/* Status Row */}
               <div className="flex justify-between items-center mb-4 pb-4 border-b border-base-300">
                 <span className="text-base-content/70">สถานะ:</span>
-                <span className={`font-semibold text-lg ${getStatusColor(profile.subscription.status)}`}>
+                <span className={`font-semibold ${getStatusColor(profile.subscription.status)}`}>
                   {getStatusText(profile.subscription.status)}
                 </span>
               </div>
 
               {/* Expiry Date Row */}
-              {profile.subscription.endDate && (
-                <div className="flex justify-between items-center">
-                  <span className="text-base-content/70">การชำระเงินครั้งถัดไป:</span>
-                  <span className="font-semibold text-lg">
-                    {formatDate(profile.subscription.endDate)}
-                  </span>
-                </div>
-              )}
+              <div className="flex justify-between items-center">
+                <span className="text-base-content/70">การชำระเงินครั้งถัดไป:</span>
+                <span className="font-semibold">
+                  {profile.subscription.endDate ? formatDate(profile.subscription.endDate) : "-"}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -165,7 +169,7 @@ export default function SubscriptionPage() {
             onClick={() => router.push("/pricing")}
             className="btn btn-neutral btn-block btn-lg"
           >
-            จัดการอนุมัติสมาชิก
+            จัดการแพลนสมาชิก
           </button>
 
           {/* User Info (for debugging) */}
