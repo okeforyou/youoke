@@ -116,9 +116,40 @@ export default function SubscriptionPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-base-200">
-        <div className="loading loading-spinner loading-lg text-primary"></div>
-      </div>
+      <>
+        <Head>
+          <title>สถานะสมาชิก - Oke for You คาราโอเกะออนไลน์</title>
+        </Head>
+
+        <div className="min-h-screen bg-gradient-to-br from-base-200 via-base-100 to-base-200 pb-24">
+          <div className="container mx-auto px-4 py-8 max-w-2xl">
+            {/* Back Button Skeleton */}
+            <div className="mb-6">
+              <div className="h-8 w-20 bg-base-300/50 rounded animate-pulse"></div>
+            </div>
+
+            {/* Header Skeleton */}
+            <div className="text-center mb-8">
+              <div className="h-9 w-48 bg-base-300/50 rounded mx-auto animate-pulse"></div>
+            </div>
+
+            {/* Card Skeleton */}
+            <div className="card bg-base-100 shadow-xl mb-6">
+              <div className="card-body p-6 space-y-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className={`flex justify-between items-center ${i < 4 ? 'pb-4 border-b border-base-300' : ''}`}>
+                    <div className="h-5 w-24 bg-base-300/50 rounded animate-pulse"></div>
+                    <div className="h-5 w-32 bg-base-300/50 rounded animate-pulse"></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Button Skeleton */}
+            <div className="h-14 w-full bg-base-300/50 rounded-lg animate-pulse"></div>
+          </div>
+        </div>
+      </>
     );
   }
 
