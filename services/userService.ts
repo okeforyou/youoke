@@ -54,12 +54,24 @@ export async function createUserProfile(data: {
     updatedAt: new Date(),
   };
 
-  const userRef = doc(db, USERS_COLLECTION, data.uid);
-  await setDoc(userRef, {
-    ...userProfile,
+  // Remove undefined fields before saving to Firestore
+  const firestoreData: any = {
+    uid: data.uid,
+    email: data.email,
+    displayName,
+    role: data.plan === "free" ? "free" : "premium",
+    subscription,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-  });
+  };
+
+  // Only add phone if it's not undefined
+  if (data.phone !== undefined) {
+    firestoreData.phone = data.phone;
+  }
+
+  const userRef = doc(db, USERS_COLLECTION, data.uid);
+  await setDoc(userRef, firestoreData);
 
   return userProfile;
 }
