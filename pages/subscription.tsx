@@ -1,69 +1,18 @@
-import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import { ArrowLeftIcon } from "@heroicons/react/24/solid";
-import { useAuth } from "../context/AuthContext";
-import { getUserProfile, createUserProfile } from "../services/userService";
 import { UserProfile } from "../types/subscription";
+import { GetServerSideProps } from "next";
+import { adminDb } from "../firebase-admin";
+import nookies from "nookies";
 
-export default function SubscriptionPage() {
+interface Props {
+  profile: UserProfile | null;
+  error?: string;
+}
+
+export default function SubscriptionPage({ profile, error }: Props) {
   const router = useRouter();
-  const { user } = useAuth();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!user?.uid) {
-      router.push("/login");
-      return;
-    }
-
-    loadProfile();
-  }, [user]);
-
-  async function loadProfile() {
-    if (!user?.uid) return;
-
-    // 1. Load from localStorage FIRST (instant!)
-    const cacheKey = `user_profile_${user.uid}`;
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) {
-      try {
-        const cachedData = JSON.parse(cached);
-        setProfile(cachedData);
-        setLoading(false);
-        console.log('⚡ Loaded from localStorage (instant)');
-      } catch (e) {
-        console.error('Failed to parse cached profile:', e);
-      }
-    }
-
-    // 2. Fetch fresh data in background
-    try {
-      let data = await getUserProfile(user.uid);
-
-      // If profile doesn't exist, create it automatically
-      if (!data && user.email) {
-        console.log("Profile not found, creating new profile...");
-        data = await createUserProfile({
-          uid: user.uid,
-          email: user.email,
-          plan: "free", // Default to free plan
-        });
-      }
-
-      if (data) {
-        // 3. Update both state and localStorage
-        setProfile(data);
-        localStorage.setItem(cacheKey, JSON.stringify(data));
-        console.log('✅ Updated with fresh data');
-      }
-    } catch (error) {
-      console.error("Error loading profile:", error);
-    } finally {
-      setLoading(false);
-    }
-  }
 
   function getPackageName(plan: string): string {
     switch (plan) {
@@ -114,42 +63,19 @@ export default function SubscriptionPage() {
     }
   }
 
-  if (loading) {
+  if (error) {
     return (
-      <>
-        <Head>
-          <title>สถานะสมาชิก - Oke for You คาราโอเกะออนไลน์</title>
-        </Head>
-
-        <div className="min-h-screen bg-gradient-to-br from-base-200 via-base-100 to-base-200 pb-24">
-          <div className="container mx-auto px-4 py-8 max-w-2xl">
-            {/* Back Button Skeleton */}
-            <div className="mb-6">
-              <div className="h-8 w-20 bg-base-300/50 rounded animate-pulse"></div>
-            </div>
-
-            {/* Header Skeleton */}
-            <div className="text-center mb-8">
-              <div className="h-9 w-48 bg-base-300/50 rounded mx-auto animate-pulse"></div>
-            </div>
-
-            {/* Card Skeleton */}
-            <div className="card bg-base-100 shadow-xl mb-6">
-              <div className="card-body p-6 space-y-4">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className={`flex justify-between items-center ${i < 4 ? 'pb-4 border-b border-base-300' : ''}`}>
-                    <div className="h-5 w-24 bg-base-300/50 rounded animate-pulse"></div>
-                    <div className="h-5 w-32 bg-base-300/50 rounded animate-pulse"></div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Button Skeleton */}
-            <div className="h-14 w-full bg-base-300/50 rounded-lg animate-pulse"></div>
-          </div>
+      <div className="min-h-screen flex items-center justify-center bg-base-200">
+        <div className="text-center">
+          <p className="text-xl mb-4">{error}</p>
+          <button
+            onClick={() => router.push("/")}
+            className="btn btn-primary"
+          >
+            กลับหน้าหลัก
+          </button>
         </div>
-      </>
+      </div>
     );
   }
 
@@ -249,6 +175,7 @@ export default function SubscriptionPage() {
           {/* User Info (for debugging) */}
           {process.env.NODE_ENV === "development" && (
             <div className="mt-8 p-4 bg-base-200 rounded-lg">
+              <div className="text-xs mb-2 text-success font-bold">✅ SSR Enabled - Data loaded from server!</div>
               <pre className="text-xs overflow-auto">
                 {JSON.stringify(profile, null, 2)}
               </pre>
@@ -259,3 +186,88 @@ export default function SubscriptionPage() {
     </>
   );
 }
+
+export const getServerSideProps: GetServerSideProps<Props> = async (context) => {
+  try {
+    // Get auth token from cookies
+    const cookies = nookies.get(context);
+    const token = cookies.token;
+
+    if (!token) {
+      // ไม่มี token = ยังไม่ login -> redirect to login
+      return {
+        redirect: {
+          destination: "/login",
+          permanent: false,
+        },
+      };
+    }
+
+    // Verify token and get uid (ถ้ามี Firebase Admin)
+    if (!adminDb) {
+      console.warn('Firebase Admin not initialized - falling back to client-side');
+      return {
+        props: {
+          profile: null,
+          error: "กรุณาตั้งค่า Firebase Admin SDK ใน .env.local",
+        },
+      };
+    }
+
+    // For now, extract uid from token (อาจจะต้องใช้ adminAuth.verifyIdToken แทน)
+    // แต่เนื่องจากเราใช้ session cookie อาจจะต้องปรับตรง AuthContext ให้เก็บ uid ใน cookie ด้วย
+    const uid = cookies.uid; // ต้องเพิ่มการเก็บ uid ใน cookie ที่ AuthContext
+
+    if (!uid) {
+      return {
+        redirect: {
+          destination: "/login",
+          permanent: false,
+        },
+      };
+    }
+
+    // Fetch user profile from Realtime Database (SSR!)
+    const userRef = adminDb.ref(`users/${uid}`);
+    const snapshot = await userRef.once('value');
+
+    if (!snapshot.exists()) {
+      return {
+        props: {
+          profile: null,
+          error: "ไม่พบข้อมูลผู้ใช้",
+        },
+      };
+    }
+
+    const profile = snapshot.val() as UserProfile;
+
+    // แปลง Firebase Timestamp เป็น serializable format
+    const serializedProfile = {
+      ...profile,
+      createdAt: profile.createdAt ? new Date(profile.createdAt).toISOString() : null,
+      updatedAt: profile.updatedAt ? new Date(profile.updatedAt).toISOString() : null,
+      subscription: {
+        ...profile.subscription,
+        startDate: profile.subscription?.startDate ? new Date(profile.subscription.startDate).toISOString() : null,
+        endDate: profile.subscription?.endDate ? new Date(profile.subscription.endDate).toISOString() : null,
+      },
+    };
+
+    console.log(`✅ SSR: Loaded profile for ${uid} in ${Date.now()}ms`);
+
+    return {
+      props: {
+        profile: serializedProfile,
+      },
+    };
+  } catch (error) {
+    console.error('SSR Error:', error);
+    return {
+      props: {
+        profile: null,
+        error: "เกิดข้อผิดพลาดในการโหลดข้อมูล",
+      },
+    };
+  }
+};

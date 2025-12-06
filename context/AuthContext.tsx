@@ -61,6 +61,7 @@ export const AuthContextProvider = ({
           displayName: null,
         });
         nookies.set(undefined, "token", "", { path: "/" });
+        nookies.set(undefined, "uid", "", { path: "/" }); // Clear uid cookie
       } else {
         const token = await user.getIdToken();
         const idTokenResult = await user.getIdTokenResult();
@@ -74,6 +75,7 @@ export const AuthContextProvider = ({
           displayName: user.displayName,
         });
         nookies.set(undefined, "token", token, { path: "/" });
+        nookies.set(undefined, "uid", user.uid, { path: "/" }); // Store uid for SSR
       }
       setLoading(false);
     });
