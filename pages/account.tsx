@@ -2,12 +2,7 @@ import { useRouter } from "next/router";
 import Head from "next/head";
 import {
   UserCircleIcon,
-  SparklesIcon,
   ArrowRightOnRectangleIcon,
-  ChevronRightIcon,
-  HomeIcon,
-  CreditCardIcon,
-  ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/solid";
 import { useAuth } from "../context/AuthContext";
 import { useEffect } from "react";
@@ -46,122 +41,67 @@ export default function AccountPage() {
         <title>บัญชีของฉัน - Oke for You คาราโอเกะออนไลน์</title>
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-base-200 via-base-100 to-base-200 pb-24">
-        <div className="container mx-auto px-4 py-8 max-w-2xl">
-          {/* Header with Avatar */}
-          <div className="text-center mb-8">
-            <div className="avatar placeholder mb-4">
-              <div className="bg-primary text-primary-content rounded-full w-24">
-                <span className="text-3xl">
+      <div className="min-h-screen bg-base-200 pb-24">
+        <div className="container mx-auto px-4 py-8 max-w-md">
+          {/* Header - Simple */}
+          <div className="text-center mb-6">
+            <div className="avatar placeholder mb-3">
+              <div className="bg-primary text-primary-content rounded-full w-20">
+                <span className="text-2xl">
                   {user.email?.charAt(0).toUpperCase() || "U"}
                 </span>
               </div>
             </div>
-            <h1 className="text-3xl font-bold mb-2">บัญชีของฉัน</h1>
-            <p className="text-base-content/60">{user.email}</p>
+            <h1 className="text-2xl font-bold">โปรไฟล์</h1>
+            <p className="text-sm text-base-content/60 mt-1">{user.email}</p>
           </div>
 
-          {/* Menu Cards */}
-          <div className="space-y-3">
-            {/* Subscription Status Card */}
-            <button
-              onClick={() => router.push("/subscription")}
-              className="card bg-base-100 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-[1.02] w-full"
-            >
-              <div className="card-body p-5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="bg-primary/10 p-3 rounded-full">
-                      <CreditCardIcon className="w-7 h-7 text-primary" />
-                    </div>
-                    <div className="text-left">
-                      <h3 className="font-semibold text-lg">สถานะสมาชิก</h3>
-                      <p className="text-sm text-base-content/60">
-                        ดูแพ็กเกจและวันหมดอายุ
-                      </p>
-                    </div>
-                  </div>
-                  <ChevronRightIcon className="w-6 h-6 text-base-content/30" />
+          {/* Single Card with All Options */}
+          <div className="card bg-base-100 shadow-lg mb-4">
+            <div className="card-body p-0">
+              {/* Subscription Status */}
+              <button
+                onClick={() => router.push("/subscription")}
+                className="w-full text-left px-6 py-4 hover:bg-base-200 transition-colors border-b border-base-200"
+              >
+                <div className="font-medium">สถานะสมาชิก</div>
+                <div className="text-sm text-base-content/60 mt-1">
+                  ดูแพ็กเกจและวันหมดอายุ
                 </div>
-              </div>
-            </button>
+              </button>
 
-            {/* Pricing/Membership Card */}
-            <button
-              onClick={() => router.push("/pricing")}
-              className="card bg-gradient-to-r from-primary/10 to-secondary/10 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-[1.02] w-full border-2 border-primary/20"
-            >
-              <div className="card-body p-5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="bg-primary p-3 rounded-full">
-                      <SparklesIcon className="w-7 h-7 text-white" />
-                    </div>
-                    <div className="text-left">
-                      <h3 className="font-semibold text-lg">จัดการแพ็กเกจ</h3>
-                      <p className="text-sm text-base-content/60">
-                        เลือกแพ็กเกจ, อัพเกรด หรือต่ออายุ
-                      </p>
-                    </div>
-                  </div>
-                  <ChevronRightIcon className="w-6 h-6 text-primary" />
+              {/* Manage Package */}
+              <button
+                onClick={() => router.push("/pricing")}
+                className="w-full text-left px-6 py-4 hover:bg-base-200 transition-colors border-b border-base-200"
+              >
+                <div className="font-medium">จัดการแพ็กเกจ</div>
+                <div className="text-sm text-base-content/60 mt-1">
+                  เลือกแพ็กเกจ, อัพเกรด หรือต่ออายุ
                 </div>
-              </div>
-            </button>
+              </button>
 
-            {/* Line@ Contact Card */}
-            <button
-              onClick={() => window.open("https://line.me/R/ti/p/@243lercy", "_blank")}
-              className="card bg-success/10 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-[1.02] w-full border-2 border-success/20"
-            >
-              <div className="card-body p-5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="bg-success p-3 rounded-full">
-                      <ChatBubbleLeftRightIcon className="w-7 h-7 text-white" />
-                    </div>
-                    <div className="text-left">
-                      <h3 className="font-semibold text-lg">ติดต่อเรา</h3>
-                      <p className="text-sm text-base-content/60">
-                        สอบถามปัญหา หรือขอความช่วยเหลือ
-                      </p>
-                    </div>
-                  </div>
-                  <ChevronRightIcon className="w-6 h-6 text-success" />
+              {/* Contact */}
+              <button
+                onClick={() => window.open("https://line.me/R/ti/p/@243lercy", "_blank")}
+                className="w-full text-left px-6 py-4 hover:bg-base-200 transition-colors"
+              >
+                <div className="font-medium">ติดต่อเรา</div>
+                <div className="text-sm text-base-content/60 mt-1">
+                  สอบถามปัญหา หรือขอความช่วยเหลือ
                 </div>
-              </div>
-            </button>
-
-            <div className="divider my-6"></div>
-
-            {/* Back to Home */}
-            <button
-              onClick={() => router.push("/")}
-              className="btn btn-ghost btn-block justify-start gap-3 h-auto py-4"
-            >
-              <HomeIcon className="w-6 h-6" />
-              <span className="text-base">กลับหน้าหลัก</span>
-            </button>
-
-            {/* Logout */}
-            <button
-              onClick={handleLogout}
-              className="btn btn-outline btn-error btn-block justify-start gap-3 h-auto py-4"
-            >
-              <ArrowRightOnRectangleIcon className="w-6 h-6" />
-              <span className="text-base">ออกจากระบบ</span>
-            </button>
+              </button>
+            </div>
           </div>
 
-          {/* Footer Info */}
-          <div className="mt-8 text-center">
-            <p className="text-sm text-base-content/50">
-              Oke for You - คาราโอเกะออนไลน์
-            </p>
-            <p className="text-xs text-base-content/40 mt-1">
-              เวอร์ชัน 1.0.0
-            </p>
-          </div>
+          {/* Logout Button */}
+          <button
+            onClick={handleLogout}
+            className="btn btn-outline btn-error btn-block"
+          >
+            <ArrowRightOnRectangleIcon className="w-5 h-5" />
+            ออกจากระบบ
+          </button>
         </div>
       </div>
     </>
