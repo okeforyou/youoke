@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import Head from "next/head";
 import { ArrowLeftIcon } from "@heroicons/react/24/solid";
 import { useAuth } from "../context/AuthContext";
-import { getUserProfile } from "../services/userService";
+import { getUserProfile, createUserProfile } from "../services/userService";
 import { UserProfile } from "../types/subscription";
 
 export default function SubscriptionPage() {
@@ -25,7 +25,18 @@ export default function SubscriptionPage() {
     if (!user?.uid) return;
 
     try {
-      const data = await getUserProfile(user.uid);
+      let data = await getUserProfile(user.uid);
+
+      // If profile doesn't exist, create it automatically
+      if (!data && user.email) {
+        console.log("Profile not found, creating new profile...");
+        data = await createUserProfile({
+          uid: user.uid,
+          email: user.email,
+          plan: "free", // Default to free plan
+        });
+      }
+
       setProfile(data);
     } catch (error) {
       console.error("Error loading profile:", error);

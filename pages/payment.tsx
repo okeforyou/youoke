@@ -141,19 +141,33 @@ export default function PaymentPage() {
                 </p>
               </div>
 
-              {/* QR Code */}
+              {/* Bank Details */}
               <div className="bg-base-300 p-6 rounded-lg mb-6">
-                <div className="text-center text-sm mb-3">
-                  สแกน QR Code เพื่อชำระเงิน
-                </div>
-                <div className="bg-white w-48 h-48 mx-auto flex items-center justify-center border-4 border-base-100">
-                  {/* QR Code Placeholder - Replace with actual QR if needed */}
-                  <div className="text-9xl">⬛</div>
-                </div>
-                <div className="text-center mt-4">
-                  <div className="text-3xl font-bold">
-                    ฿{selectedPlan.price.toLocaleString("th-TH", { minimumFractionDigits: 2 })}
+                <div className="text-center mb-4">
+                  <div className="text-lg font-bold mb-4">
+                    ราคา: ฿{selectedPlan.price.toLocaleString("th-TH", { minimumFractionDigits: 2 })}
                   </div>
+                </div>
+
+                <div className="bg-base-100 p-4 rounded-lg space-y-3 text-sm">
+                  <div>
+                    <div className="text-base-content/60 mb-1">ชื่อบัญชี</div>
+                    <div className="font-semibold">บุญยานันทน์ ชูพินิจ</div>
+                  </div>
+
+                  <div>
+                    <div className="text-base-content/60 mb-1">ธนาคาร</div>
+                    <div className="font-semibold">ธนาคารกรุงเทพ</div>
+                  </div>
+
+                  <div>
+                    <div className="text-base-content/60 mb-1">เลขที่บัญชี</div>
+                    <div className="font-semibold text-lg">090-0-601717</div>
+                  </div>
+                </div>
+
+                <div className="text-center mt-4 text-xs text-base-content/60">
+                  โปรดโอนเงินตามจำนวนที่ระบุ
                 </div>
               </div>
 
