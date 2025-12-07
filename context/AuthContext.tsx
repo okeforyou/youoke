@@ -60,8 +60,10 @@ export const AuthContextProvider = ({
           tier: null,
           displayName: null,
         });
-        nookies.set(undefined, "token", "", { path: "/" });
-        nookies.set(undefined, "uid", "", { path: "/" }); // Clear uid cookie
+
+        // Clear cookies using document.cookie
+        document.cookie = 'token=; path=/; max-age=0';
+        document.cookie = 'uid=; path=/; max-age=0';
       } else {
         const token = await user.getIdToken();
         const idTokenResult = await user.getIdTokenResult();
@@ -74,8 +76,12 @@ export const AuthContextProvider = ({
           tier: customClaims.tier || null,
           displayName: user.displayName,
         });
-        nookies.set(undefined, "token", token, { path: "/" });
-        nookies.set(undefined, "uid", user.uid, { path: "/" }); // Store uid for SSR
+
+        // Set cookies using document.cookie (client-side)
+        document.cookie = `token=${token}; path=/; max-age=3600; SameSite=Lax`;
+        document.cookie = `uid=${user.uid}; path=/; max-age=3600; SameSite=Lax`;
+
+        console.log('✅ Cookies set:', { tokenLength: token.length, uid: user.uid });
       }
       setLoading(false);
     });
