@@ -43,6 +43,9 @@ interface Props {
 export default function SubscriptionPage({ profile, error }: Props) {
   const router = useRouter();
 
+  // 🔍 Debug: Check if SSR data is received
+  console.log('🔍 SSR Data:', { profile, error });
+
   function getPackageName(plan: string): string {
     switch (plan) {
       case "monthly":
@@ -217,13 +220,16 @@ export default function SubscriptionPage({ profile, error }: Props) {
 }
 
 export const getServerSideProps: GetServerSideProps<Props> = async (context) => {
+  console.log('🚀 [SSR] getServerSideProps started');
+
   try {
     // Get auth token from cookies
     const cookies = nookies.get(context);
     const token = cookies.token;
+    console.log('🍪 [SSR] Token from cookies:', token ? `${token.substring(0, 20)}...` : 'NO TOKEN');
 
     if (!token) {
-      // ไม่มี token = ยังไม่ login -> redirect to login
+      console.log('❌ [SSR] No token found -> redirect to login');
       return {
         redirect: {
           destination: "/login",
@@ -234,7 +240,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
 
     // Verify token and get uid using Firebase Admin Auth
     if (!adminDb || !adminAuth) {
-      console.warn('Firebase Admin not initialized - falling back to client-side');
+      console.error('❌ [SSR] Firebase Admin not initialized!');
       return {
         props: {
           profile: null,
@@ -243,14 +249,17 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
       };
     }
 
+    console.log('✅ [SSR] Firebase Admin initialized');
+
     // Verify the token and extract uid
     let uid: string;
     try {
+      console.log('🔐 [SSR] Verifying token...');
       const decodedToken = await adminAuth.verifyIdToken(token);
       uid = decodedToken.uid;
-      console.log(`✅ SSR: Verified token for uid: ${uid}`);
-    } catch (verifyError) {
-      console.error('Token verification failed:', verifyError);
+      console.log(`✅ [SSR] Token verified! UID: ${uid}`);
+    } catch (verifyError: any) {
+      console.error('❌ [SSR] Token verification failed:', verifyError.message);
       return {
         redirect: {
           destination: "/login",
@@ -260,10 +269,12 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
     }
 
     // Fetch user profile from Realtime Database (SSR!)
+    console.log(`📡 [SSR] Fetching profile from database for uid: ${uid}`);
     const userRef = adminDb.ref(`users/${uid}`);
     const snapshot = await userRef.once('value');
 
     if (!snapshot.exists()) {
+      console.log('❌ [SSR] Profile not found in database');
       return {
         props: {
           profile: null,
@@ -273,6 +284,11 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
     }
 
     const profile = snapshot.val() as UserProfile;
+    console.log('✅ [SSR] Profile fetched successfully:', {
+      email: profile.email,
+      role: profile.role,
+      plan: profile.subscription?.plan,
+    });
 
     // แปลง Firebase Timestamp เป็น serializable format
     const serializedProfile = {
@@ -286,15 +302,16 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
       },
     };
 
-    console.log(`✅ SSR: Loaded profile for ${uid} in ${Date.now()}ms`);
+    console.log(`✅ [SSR] Returning serialized profile for ${uid}`);
 
     return {
       props: {
         profile: serializedProfile,
       },
     };
-  } catch (error) {
-    console.error('SSR Error:', error);
+  } catch (error: any) {
+    console.error('❌ [SSR] Unexpected error:', error.message);
+    console.error('Stack:', error.stack);
     return {
       props: {
         profile: null,
