@@ -1,5 +1,5 @@
 {
-  "name": "nextjs-karaoke-online",
+  "name": "youoke",
   "version": "0.1.1",
   "private": true,
   "scripts": {
@@ -19,6 +19,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@heroicons/react": "^2.0.14",
+    "@opentelemetry/api": "^1.9.0",
     "@react-hookz/web": "^22.0.0",
     "@tailwindcss/line-clamp": "^0.4.2",
     "@vercel/analytics": "^0.1.8",
