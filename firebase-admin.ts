@@ -9,21 +9,28 @@ if (!admin.apps.length) {
       : undefined;
 
     if (!privateKey || !process.env.FIREBASE_CLIENT_EMAIL || !process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
-      console.warn('Firebase Admin not configured - missing credentials');
-    } else {
-      admin.initializeApp({
-        credential: admin.credential.cert({
-          projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-          privateKey: privateKey,
-        }),
-        databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
+      console.error('❌ Firebase Admin - Missing environment variables:', {
+        hasPrivateKey: !!privateKey,
+        hasClientEmail: !!process.env.FIREBASE_CLIENT_EMAIL,
+        hasProjectId: !!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+        hasDatabaseURL: !!process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
       });
-
-      console.log('✅ Firebase Admin initialized');
+      throw new Error('Firebase Admin credentials not configured');
     }
+
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: privateKey,
+      }),
+      databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
+    });
+
+    console.log('✅ Firebase Admin initialized successfully');
   } catch (error) {
-    console.error('Firebase Admin initialization error:', error);
+    console.error('❌ Firebase Admin initialization error:', error);
+    throw error;
   }
 }
 
