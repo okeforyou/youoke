@@ -3,7 +3,7 @@ import Head from "next/head";
 import { ArrowLeftIcon } from "@heroicons/react/24/solid";
 import { UserProfile, SubscriptionPlan, SubscriptionStatus, UserRole } from "../types/subscription";
 import { GetServerSideProps } from "next";
-import { adminDb } from "../firebase-admin";
+import { adminDb, adminAuth } from "../firebase-admin";
 import nookies from "nookies";
 
 // Serialized version of UserProfile for SSR (dates as strings)
@@ -232,8 +232,8 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
       };
     }
 
-    // Verify token and get uid (ถ้ามี Firebase Admin)
-    if (!adminDb) {
+    // Verify token and get uid using Firebase Admin Auth
+    if (!adminDb || !adminAuth) {
       console.warn('Firebase Admin not initialized - falling back to client-side');
       return {
         props: {
@@ -243,11 +243,14 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
       };
     }
 
-    // For now, extract uid from token (อาจจะต้องใช้ adminAuth.verifyIdToken แทน)
-    // แต่เนื่องจากเราใช้ session cookie อาจจะต้องปรับตรง AuthContext ให้เก็บ uid ใน cookie ด้วย
-    const uid = cookies.uid; // ต้องเพิ่มการเก็บ uid ใน cookie ที่ AuthContext
-
-    if (!uid) {
+    // Verify the token and extract uid
+    let uid: string;
+    try {
+      const decodedToken = await adminAuth.verifyIdToken(token);
+      uid = decodedToken.uid;
+      console.log(`✅ SSR: Verified token for uid: ${uid}`);
+    } catch (verifyError) {
+      console.error('Token verification failed:', verifyError);
       return {
         redirect: {
           destination: "/login",
