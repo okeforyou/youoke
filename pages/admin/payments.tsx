@@ -1,20 +1,5 @@
-import {
-  collection,
-  getDocs,
-  doc,
-  updateDoc,
-  deleteDoc,
-  getDoc,
-  Timestamp,
-  query,
-  where,
-  orderBy,
-  limit,
-  startAfter,
-  getCountFromServer,
-  QueryDocumentSnapshot,
-  DocumentData,
-} from "firebase/firestore";
+import { doc, updateDoc, deleteDoc, getDoc, Timestamp } from "firebase/firestore";
+import { GetServerSideProps } from "next";
 import React, { useEffect, useState } from "react";
 import {
   FiCheck,
@@ -28,11 +13,13 @@ import {
   FiChevronLeft,
   FiChevronRight,
 } from "react-icons/fi";
+import nookies from "nookies";
 
 import Icon from "../../components/Icon";
 
 import AdminLayout from "../../components/admin/AdminLayout";
 import { db } from "../../firebase";
+import { adminAuth, adminDb, adminFirestore } from "../../firebase-admin";
 import { exportToCSV, flattenForCSV } from "../../utils/exportCSV";
 
 const PAYMENTS_PER_PAGE = 20;
@@ -59,184 +46,77 @@ interface Payment {
   rejectionReason?: string;
 }
 
-const PaymentsPage: React.FC = () => {
-  const [payments, setPayments] = useState<Payment[]>([]);
+// Serialized version for SSR (dates as ISO strings)
+interface SerializedPayment {
+  id: string;
+  userId: string;
+  userEmail?: string;
+  userName?: string;
+  planId: string;
+  planName?: string;
+  amount: number;
+  currency: string;
+  status: "pending" | "approved" | "rejected";
+  paymentMethod: string;
+  transactionId?: string;
+  slipUrl?: string;
+  note?: string;
+  createdAt: string | null;
+  approvedAt?: string | null;
+  approvedBy?: string;
+  rejectedAt?: string | null;
+  rejectedBy?: string;
+  rejectionReason?: string;
+}
+
+interface Props {
+  payments: SerializedPayment[];
+  totalPayments: number;
+  error?: string;
+}
+
+const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayments: initialTotal, error }) => {
+  // Convert serialized payments back to Payment objects with proper dates
+  const deserializePayments = (serialized: SerializedPayment[]): Payment[] => {
+    return serialized.map(p => ({
+      ...p,
+      createdAt: p.createdAt ? new Date(p.createdAt) : null,
+      approvedAt: p.approvedAt ? new Date(p.approvedAt) : undefined,
+      rejectedAt: p.rejectedAt ? new Date(p.rejectedAt) : undefined,
+    }));
+  };
+
+  const [payments, setPayments] = useState<Payment[]>(deserializePayments(initialPayments));
   const [filteredPayments, setFilteredPayments] = useState<Payment[]>([]);
-  const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("all");
   const [viewingPayment, setViewingPayment] = useState<Payment | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [selectedPayments, setSelectedPayments] = useState<Set<string>>(new Set());
   const [bulkRejectionReason, setBulkRejectionReason] = useState("");
 
-  // Pagination state
+  // Client-side pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPayments, setTotalPayments] = useState(0);
-  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
-  const [hasMore, setHasMore] = useState(true);
-
-  useEffect(() => {
-    fetchPayments();
-  }, []);
 
   useEffect(() => {
     filterPayments();
   }, [payments, filterStatus]);
 
-  const fetchPayments = async () => {
-    try {
-      setLoading(true);
+  // Client-side pagination - calculate paginated data
+  const totalPages = Math.ceil(filteredPayments.length / PAYMENTS_PER_PAGE);
+  const startIndex = (currentPage - 1) * PAYMENTS_PER_PAGE;
+  const endIndex = startIndex + PAYMENTS_PER_PAGE;
+  const paginatedPayments = filteredPayments.slice(startIndex, endIndex);
 
-      console.time('fetchPayments');
-
-      // Get total count (fast!)
-      const countSnapshot = await getCountFromServer(collection(db, "payments"));
-      const total = countSnapshot.data().count;
-      setTotalPayments(total);
-
-      // Build query with pagination
-      let paymentsQuery = query(
-        collection(db, "payments"),
-        orderBy("createdAt", "desc"),
-        limit(PAYMENTS_PER_PAGE)
-      );
-
-      // Fetch page data
-      const snapshot = await getDocs(paymentsQuery);
-
-      if (snapshot.empty) {
-        setPayments([]);
-        setLoading(false);
-        return;
-      }
-
-      // Store cursor for pagination
-      setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
-      setHasMore(snapshot.docs.length === PAYMENTS_PER_PAGE);
-
-      // Process payments - try to use denormalized data first
-      const paymentsData = await Promise.all(
-        snapshot.docs.map(async (paymentDoc) => {
-          const data = paymentDoc.data();
-
-          // Try to use denormalized data first (faster!)
-          let userEmail = data.userEmail || "Unknown";
-          let userName = data.userName || "Unknown";
-          let planName = data.planName || data.planId;
-
-          // Only fetch if denormalized data is missing
-          if (!data.userEmail || !data.userName || !data.planName) {
-            const [userDoc, planDoc] = await Promise.all([
-              data.userId ? getDoc(doc(db, "users", data.userId)).catch(() => null) : Promise.resolve(null),
-              data.planId ? getDoc(doc(db, "plans", data.planId)).catch(() => null) : Promise.resolve(null),
-            ]);
-
-            if (userDoc?.exists()) {
-              const userData = userDoc.data();
-              userEmail = userData.email || "Unknown";
-              userName = userData.displayName || userData.email || "Unknown";
-            }
-
-            if (planDoc?.exists()) {
-              planName = planDoc.data().displayName || data.planId;
-            }
-          }
-
-          return {
-            id: paymentDoc.id,
-            ...data,
-            userEmail,
-            userName,
-            planName,
-          } as Payment;
-        })
-      );
-
-      setPayments(paymentsData);
-      setCurrentPage(1);
-
-      console.timeEnd('fetchPayments');
-    } catch (error) {
-      console.error("Error fetching payments:", error);
-      setPayments([]);
-    } finally {
-      setLoading(false);
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(prev => prev + 1);
     }
   };
 
-  const fetchNextPage = async () => {
-    if (!lastDoc || !hasMore || loading) return;
-
-    try {
-      setLoading(true);
-      const paymentsQuery = query(
-        collection(db, "payments"),
-        orderBy("createdAt", "desc"),
-        startAfter(lastDoc),
-        limit(PAYMENTS_PER_PAGE)
-      );
-
-      const snapshot = await getDocs(paymentsQuery);
-      if (snapshot.empty) {
-        setHasMore(false);
-        setLoading(false);
-        return;
-      }
-
-      setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
-      setHasMore(snapshot.docs.length === PAYMENTS_PER_PAGE);
-
-      // Process payments
-      const paymentsData = await Promise.all(
-        snapshot.docs.map(async (paymentDoc) => {
-          const data = paymentDoc.data();
-
-          let userEmail = data.userEmail || "Unknown";
-          let userName = data.userName || "Unknown";
-          let planName = data.planName || data.planId;
-
-          if (!data.userEmail || !data.userName || !data.planName) {
-            const [userDoc, planDoc] = await Promise.all([
-              data.userId ? getDoc(doc(db, "users", data.userId)).catch(() => null) : Promise.resolve(null),
-              data.planId ? getDoc(doc(db, "plans", data.planId)).catch(() => null) : Promise.resolve(null),
-            ]);
-
-            if (userDoc?.exists()) {
-              const userData = userDoc.data();
-              userEmail = userData.email || "Unknown";
-              userName = userData.displayName || userData.email || "Unknown";
-            }
-
-            if (planDoc?.exists()) {
-              planName = planDoc.data().displayName || data.planId;
-            }
-          }
-
-          return {
-            id: paymentDoc.id,
-            ...data,
-            userEmail,
-            userName,
-            planName,
-          } as Payment;
-        })
-      );
-
-      setPayments(paymentsData);
-      setCurrentPage((prev) => prev + 1);
-    } catch (error) {
-      console.error("Error fetching next page:", error);
-    } finally {
-      setLoading(false);
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(prev => prev - 1);
     }
-  };
-
-  const fetchPreviousPage = async () => {
-    if (currentPage <= 1 || loading) return;
-
-    // For simplicity, just reload from the beginning
-    // A full implementation would require storing previous cursors
-    await fetchPayments();
   };
 
   const filterPayments = () => {
@@ -247,6 +127,7 @@ const PaymentsPage: React.FC = () => {
     }
 
     setFilteredPayments(filtered);
+    setCurrentPage(1); // Reset to first page when filter changes
   };
 
   const handleApprovePayment = async (payment: Payment) => {
@@ -287,11 +168,9 @@ const PaymentsPage: React.FC = () => {
         });
       }
 
-      // Clear cache and refresh payments
-      localStorage.removeItem("admin_payments");
-      await fetchPayments();
-      setViewingPayment(null);
+      // Refresh page to get updated data
       alert("Payment approved successfully!");
+      window.location.reload();
     } catch (error) {
       console.error("Error approving payment:", error);
       alert("Error approving payment");
@@ -316,12 +195,9 @@ const PaymentsPage: React.FC = () => {
         updatedAt: Timestamp.now(),
       });
 
-      // Clear cache and refresh payments
-      localStorage.removeItem("admin_payments");
-      await fetchPayments();
-      setViewingPayment(null);
-      setRejectionReason("");
+      // Refresh page to get updated data
       alert("Payment rejected");
+      window.location.reload();
     } catch (error) {
       console.error("Error rejecting payment:", error);
       alert("Error rejecting payment");
@@ -343,18 +219,9 @@ const PaymentsPage: React.FC = () => {
       const paymentRef = doc(db, "payments", payment.id);
       await deleteDoc(paymentRef);
 
-      // Update local state
-      setPayments((prev) => prev.filter((p) => p.id !== payment.id));
-
-      // Clear cache to force refresh on next load
-      localStorage.removeItem("admin_payments");
-
-      // Close modal if viewing this payment
-      if (viewingPayment?.id === payment.id) {
-        setViewingPayment(null);
-      }
-
+      // Refresh page to get updated data
       alert("ลบรายการชำระเงินเรียบร้อยแล้ว");
+      window.location.reload();
     } catch (error) {
       console.error("Error deleting payment:", error);
       alert("เกิดข้อผิดพลาดในการลบรายการชำระเงิน");
@@ -427,11 +294,9 @@ const PaymentsPage: React.FC = () => {
         })
       );
 
-      // Clear cache and refresh
-      localStorage.removeItem("admin_payments");
-      await fetchPayments();
-      setSelectedPayments(new Set());
+      // Refresh page to get updated data
       alert(`อนุมัติ ${selectedArray.length} รายการเรียบร้อยแล้ว!`);
+      window.location.reload();
     } catch (error) {
       console.error("Error bulk approving:", error);
       alert("เกิดข้อผิดพลาดในการอนุมัติ");
@@ -465,12 +330,9 @@ const PaymentsPage: React.FC = () => {
         })
       );
 
-      // Clear cache and refresh
-      localStorage.removeItem("admin_payments");
-      await fetchPayments();
-      setSelectedPayments(new Set());
-      setBulkRejectionReason("");
+      // Refresh page to get updated data
       alert(`ปฏิเสธ ${selectedArray.length} รายการเรียบร้อยแล้ว`);
+      window.location.reload();
     } catch (error) {
       console.error("Error bulk rejecting:", error);
       alert("เกิดข้อผิดพลาดในการปฏิเสธ");
@@ -526,11 +388,20 @@ const PaymentsPage: React.FC = () => {
     }
   };
 
-  if (loading) {
+  // Show error if any
+  if (error) {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500"></div>
+          <div className="text-center">
+            <p className="text-red-600 text-lg font-medium">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+            >
+              รีโหลดหน้า
+            </button>
+          </div>
         </div>
       </AdminLayout>
     );
@@ -547,7 +418,7 @@ const PaymentsPage: React.FC = () => {
             </h1>
             <p className="text-gray-600 mt-1">
               ตรวจสอบและอนุมัติการชำระเงิน ({filteredPayments.length} /{" "}
-              {payments.length})
+              {initialTotal})
             </p>
           </div>
           <div className="flex gap-3">
@@ -559,7 +430,7 @@ const PaymentsPage: React.FC = () => {
               Export CSV
             </button>
             <button
-              onClick={() => fetchPayments()}
+              onClick={() => window.location.reload()}
               className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
             >
               <Icon icon={FiRefreshCw} />
@@ -713,7 +584,7 @@ const PaymentsPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredPayments.map((payment) => (
+                  {paginatedPayments.map((payment) => (
                     <tr key={payment.id} className="hover:bg-gray-50">
                       {pendingPayments.length > 0 && (
                         <td className="px-4 py-4">
@@ -773,16 +644,16 @@ const PaymentsPage: React.FC = () => {
             {/* Pagination Controls */}
             <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between bg-gray-50">
               <div className="text-sm text-gray-700">
-                แสดง <span className="font-medium">{(currentPage - 1) * PAYMENTS_PER_PAGE + 1}</span> ถึง{" "}
-                <span className="font-medium">{Math.min(currentPage * PAYMENTS_PER_PAGE, totalPayments)}</span> จาก{" "}
-                <span className="font-medium">{totalPayments}</span> payments
+                แสดง <span className="font-medium">{startIndex + 1}</span> ถึง{" "}
+                <span className="font-medium">{Math.min(endIndex, filteredPayments.length)}</span> จาก{" "}
+                <span className="font-medium">{filteredPayments.length}</span> payments
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={fetchPreviousPage}
-                  disabled={currentPage <= 1 || loading}
+                  onClick={goToPreviousPage}
+                  disabled={currentPage <= 1}
                   className={`flex items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
-                    currentPage <= 1 || loading
+                    currentPage <= 1
                       ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                       : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
                   }`}
@@ -791,13 +662,13 @@ const PaymentsPage: React.FC = () => {
                   Previous
                 </button>
                 <span className="px-4 py-2 text-sm text-gray-700">
-                  หน้า {currentPage} / {Math.ceil(totalPayments / PAYMENTS_PER_PAGE)}
+                  หน้า {currentPage} / {totalPages || 1}
                 </span>
                 <button
-                  onClick={fetchNextPage}
-                  disabled={!hasMore || loading}
+                  onClick={goToNextPage}
+                  disabled={currentPage >= totalPages}
                   className={`flex items-center gap-1 px-4 py-2 rounded-lg transition-colors ${
-                    !hasMore || loading
+                    currentPage >= totalPages
                       ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                       : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
                   }`}
@@ -970,6 +841,135 @@ const PaymentsPage: React.FC = () => {
       )}
     </AdminLayout>
   );
+};
+
+// Server-Side Props
+export const getServerSideProps: GetServerSideProps<Props> = async (context) => {
+  console.log('🚀 [SSR] admin/payments getServerSideProps started');
+
+  try {
+    // 1. Check authentication
+    const cookies = nookies.get(context);
+    const token = cookies.token;
+
+    if (!token) {
+      console.log('❌ [SSR] No token found, redirecting to login');
+      return {
+        redirect: {
+          destination: "/login",
+          permanent: false,
+        },
+      };
+    }
+
+    // 2. Verify token and check if user is admin
+    const decodedToken = await adminAuth.verifyIdToken(token);
+    const uid = decodedToken.uid;
+
+    const userRef = adminDb.ref(`users/${uid}`);
+    const userSnapshot = await userRef.once('value');
+    const userData = userSnapshot.val();
+
+    if (!userData || userData.role !== 'admin') {
+      console.log('❌ [SSR] User is not admin, redirecting to home');
+      return {
+        redirect: {
+          destination: "/",
+          permanent: false,
+        },
+      };
+    }
+
+    console.log('✅ [SSR] Admin authenticated:', uid);
+
+    // 3. Fetch payments from Firestore
+    const paymentsSnapshot = await adminFirestore
+      .collection('payments')
+      .orderBy('createdAt', 'desc')
+      .get();
+
+    console.log('📦 [SSR] Fetched', paymentsSnapshot.size, 'payments');
+
+    // 4. Process payments and denormalize if needed
+    const paymentsData: SerializedPayment[] = await Promise.all(
+      paymentsSnapshot.docs.map(async (paymentDoc) => {
+        const data = paymentDoc.data();
+
+        // Use denormalized data if available
+        let userEmail = data.userEmail || "Unknown";
+        let userName = data.userName || "Unknown";
+        let planName = data.planName || data.planId;
+
+        // Only fetch if denormalized data is missing
+        if (!data.userEmail || !data.userName) {
+          try {
+            const userSnapshot = await adminDb.ref(`users/${data.userId}`).once('value');
+            const userData = userSnapshot.val();
+            if (userData) {
+              userEmail = userData.email || "Unknown";
+              userName = userData.displayName || userData.email || "Unknown";
+            }
+          } catch (error) {
+            console.error('Error fetching user data for payment:', paymentDoc.id, error);
+          }
+        }
+
+        // Fetch plan name if missing
+        if (!data.planName && data.planId) {
+          try {
+            const planDoc = await adminFirestore.collection('plans').doc(data.planId).get();
+            if (planDoc.exists) {
+              const planData = planDoc.data();
+              planName = planData?.displayName || data.planId;
+            }
+          } catch (error) {
+            console.error('Error fetching plan data for payment:', paymentDoc.id, error);
+          }
+        }
+
+        // Serialize the payment data
+        return {
+          id: paymentDoc.id,
+          userId: data.userId,
+          userEmail,
+          userName,
+          planId: data.planId,
+          planName,
+          amount: data.amount,
+          currency: data.currency,
+          status: data.status,
+          paymentMethod: data.paymentMethod,
+          transactionId: data.transactionId,
+          slipUrl: data.slipUrl,
+          note: data.note,
+          createdAt: data.createdAt?.toDate?.()?.toISOString() || null,
+          approvedAt: data.approvedAt?.toDate?.()?.toISOString() || null,
+          approvedBy: data.approvedBy,
+          rejectedAt: data.rejectedAt?.toDate?.()?.toISOString() || null,
+          rejectedBy: data.rejectedBy,
+          rejectionReason: data.rejectionReason,
+        } as SerializedPayment;
+      })
+    );
+
+    console.log('✅ [SSR] admin/payments getServerSideProps completed in', paymentsSnapshot.size, 'payments');
+
+    return {
+      props: {
+        payments: paymentsData,
+        totalPayments: paymentsData.length,
+      },
+    };
+  } catch (error: any) {
+    console.error('❌ [SSR] Error in getServerSideProps:', error);
+    return {
+      props: {
+        payments: [],
+        totalPayments: 0,
+        error: "เกิดข้อผิดพลาดในการโหลดข้อมูล",
+      },
+    };
+  }
 };
 
 export default PaymentsPage;
