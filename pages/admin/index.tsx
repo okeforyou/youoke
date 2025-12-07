@@ -1,11 +1,11 @@
-import { collection, getDocs, query, where, orderBy, limit, getCountFromServer, getAggregateFromServer, sum } from "firebase/firestore";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { FiUsers, FiDollarSign, FiCheckCircle, FiTrendingUp, FiClock, FiX, FiActivity } from "react-icons/fi";
+import { GetServerSideProps } from "next";
+import nookies from "nookies";
 
 import Icon from "../../components/Icon";
-
 import AdminLayout from "../../components/admin/AdminLayout";
-import { db } from "../../firebase";
+import { adminAuth, adminDb, adminFirestore } from "../../firebase-admin";
 
 interface Stats {
   totalUsers: number;
@@ -29,6 +29,21 @@ interface RecentActivity {
   details: string;
 }
 
+// Serialized version for SSR
+interface SerializedActivity {
+  id: string;
+  type: "user" | "payment";
+  action: string;
+  timestamp: string | null;
+  details: string;
+}
+
+interface Props {
+  stats: Stats;
+  recentActivities: SerializedActivity[];
+  error?: string;
+}
+
 interface StatCardProps {
   title: string;
   value: number | string;
@@ -50,187 +65,27 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color, subtitle
   </div>
 );
 
-const AdminDashboard: React.FC = () => {
-  const [stats, setStats] = useState<Stats>({
-    totalUsers: 0,
-    adminUsers: 0,
-    freeUsers: 0,
-    premiumUsers: 0,
-    monthlySubscribers: 0,
-    yearlySubscribers: 0,
-    lifetimeSubscribers: 0,
-    pendingPayments: 0,
-    approvedPayments: 0,
-    rejectedPayments: 0,
-    totalRevenue: 0,
-  });
-  const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
-  const [loading, setLoading] = useState(true);
+const AdminDashboard: React.FC<Props> = ({ stats, recentActivities: serializedActivities, error }) => {
+  // Convert serialized activities back to objects with proper dates
+  const recentActivities = serializedActivities.map(a => ({
+    ...a,
+    timestamp: a.timestamp ? new Date(a.timestamp) : null,
+  }));
 
-  useEffect(() => {
-    // Load from cache immediately
-    const cached = localStorage.getItem('admin_stats_cache');
-    if (cached) {
-      try {
-        const { data, timestamp } = JSON.parse(cached);
-        const age = Date.now() - timestamp;
-        // Use cache if less than 30 minutes old (increased from 5)
-        if (age < 30 * 60 * 1000) {
-          setStats(data.stats);
-          setRecentActivities(data.activities);
-          setLoading(false);
-          // Still fetch in background to update if cache is older than 5 minutes
-          if (age > 5 * 60 * 1000) {
-            fetchStats(true);
-          }
-          return;
-        }
-      } catch (e) {
-        console.error('Cache parse error:', e);
-      }
-    }
-    fetchStats();
-  }, []);
-
-  const fetchStats = async (background = false) => {
-    try {
-      if (!background) {
-        setLoading(true);
-      }
-
-      console.time('fetchStats');
-
-      // Use parallel queries for better performance
-      const [
-        totalUsersCount,
-        adminCount,
-        freeCount,
-        premiumCount,
-        monthlyCount,
-        yearlyCount,
-        lifetimeCount,
-        pendingCount,
-        approvedCount,
-        rejectedCount,
-        revenueData,
-        recentUsers,
-        recentPayments,
-      ] = await Promise.all([
-        // User counts using getCountFromServer (much faster!)
-        getCountFromServer(collection(db, "users")),
-        getCountFromServer(query(collection(db, "users"), where("role", "==", "admin"))),
-        getCountFromServer(query(collection(db, "users"), where("tier", "==", "free"))),
-        getCountFromServer(query(collection(db, "users"), where("isPremium", "==", true))),
-        getCountFromServer(query(collection(db, "users"), where("tier", "==", "monthly"))),
-        getCountFromServer(query(collection(db, "users"), where("tier", "==", "yearly"))),
-        getCountFromServer(query(collection(db, "users"), where("tier", "==", "lifetime"))),
-
-        // Payment counts
-        getCountFromServer(query(collection(db, "payments"), where("status", "==", "pending"))),
-        getCountFromServer(query(collection(db, "payments"), where("status", "==", "approved"))),
-        getCountFromServer(query(collection(db, "payments"), where("status", "==", "rejected"))),
-
-        // Total revenue using aggregation
-        getAggregateFromServer(
-          query(collection(db, "payments"), where("status", "==", "approved")),
-          { totalRevenue: sum("amount") }
-        ).catch(() => ({ data: () => ({ totalRevenue: 0 }) })),
-
-        // Recent users (only fetch 10)
-        getDocs(query(collection(db, "users"), orderBy("createdAt", "desc"), limit(10))).catch(() => ({ docs: [] })),
-
-        // Recent approved payments (only fetch 10)
-        getDocs(query(collection(db, "payments"), where("status", "==", "approved"), orderBy("approvedAt", "desc"), limit(10))).catch(() => ({ docs: [] })),
-      ]);
-
-      console.timeEnd('fetchStats');
-
-      // Extract counts
-      const totalUsers = totalUsersCount.data().count;
-      const adminUsers = adminCount.data().count;
-      const freeUsers = freeCount.data().count;
-      const premiumUsers = premiumCount.data().count;
-      const monthlySubscribers = monthlyCount.data().count;
-      const yearlySubscribers = yearlyCount.data().count;
-      const lifetimeSubscribers = lifetimeCount.data().count;
-      const pendingPayments = pendingCount.data().count;
-      const approvedPayments = approvedCount.data().count;
-      const rejectedPayments = rejectedCount.data().count;
-      const totalRevenue = revenueData.data().totalRevenue || 0;
-
-      // Build recent activities
-      const activities: RecentActivity[] = [];
-
-      // Add recent payments
-      recentPayments.docs.forEach((doc) => {
-        const data = doc.data();
-        activities.push({
-          id: doc.id,
-          type: "payment",
-          action: "Payment Approved",
-          timestamp: data.approvedAt,
-          details: `${data.amount} THB - Plan: ${data.planId}`,
-        });
-      });
-
-      // Add recent users
-      recentUsers.docs.forEach((doc) => {
-        const data = doc.data();
-        activities.push({
-          id: doc.id,
-          type: "user",
-          action: "New User Registered",
-          timestamp: data.createdAt,
-          details: `${data.displayName || data.email} - ${data.tier}`,
-        });
-      });
-
-      // Sort activities by timestamp
-      activities.sort((a, b) => {
-        const aTime = a.timestamp?.toMillis?.() || 0;
-        const bTime = b.timestamp?.toMillis?.() || 0;
-        return bTime - aTime;
-      });
-
-      const sortedActivities = activities.slice(0, 10);
-      setRecentActivities(sortedActivities);
-
-      const newStats = {
-        totalUsers,
-        adminUsers,
-        freeUsers,
-        premiumUsers,
-        monthlySubscribers,
-        yearlySubscribers,
-        lifetimeSubscribers,
-        pendingPayments,
-        approvedPayments,
-        rejectedPayments,
-        totalRevenue,
-      };
-
-      setStats(newStats);
-
-      // Save to cache with activities
-      localStorage.setItem('admin_stats_cache', JSON.stringify({
-        data: {
-          stats: newStats,
-          activities: sortedActivities,
-        },
-        timestamp: Date.now(),
-      }));
-    } catch (error) {
-      console.error("Error fetching stats:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
+  // Show error if any
+  if (error) {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500"></div>
+          <div className="text-center">
+            <p className="text-red-600 text-lg font-medium">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+            >
+              รีโหลดหน้า
+            </button>
+          </div>
         </div>
       </AdminLayout>
     );
@@ -422,6 +277,204 @@ const AdminDashboard: React.FC = () => {
       </div>
     </AdminLayout>
   );
+};
+
+// Server-Side Props
+export const getServerSideProps: GetServerSideProps<Props> = async (context) => {
+  console.log('🚀 [SSR] admin/index getServerSideProps started');
+
+  try {
+    // 1. Check authentication
+    const cookies = nookies.get(context);
+    const token = cookies.token;
+
+    if (!token) {
+      console.log('❌ [SSR] No token found, redirecting to login');
+      return {
+        redirect: {
+          destination: "/login",
+          permanent: false,
+        },
+      };
+    }
+
+    // 2. Verify token and check if user is admin
+    const decodedToken = await adminAuth.verifyIdToken(token);
+    const uid = decodedToken.uid;
+
+    const userRef = adminDb.ref(`users/${uid}`);
+    const userSnapshot = await userRef.once('value');
+    const userData = userSnapshot.val();
+
+    if (!userData || userData.role !== 'admin') {
+      console.log('❌ [SSR] User is not admin, redirecting to home');
+      return {
+        redirect: {
+          destination: "/",
+          permanent: false,
+        },
+      };
+    }
+
+    console.log('✅ [SSR] Admin authenticated:', uid);
+
+    // 3. Fetch all stats in parallel
+    const startTime = Date.now();
+
+    // Fetch all users from Realtime Database
+    const usersRef = adminDb.ref('users');
+    const usersSnapshot = await usersRef.once('value');
+    const usersData = usersSnapshot.val() || {};
+    const usersArray = Object.entries(usersData);
+
+    // Calculate user stats
+    let totalUsers = 0;
+    let adminUsers = 0;
+    let freeUsers = 0;
+    let premiumUsers = 0;
+    let monthlySubscribers = 0;
+    let yearlySubscribers = 0;
+    let lifetimeSubscribers = 0;
+
+    usersArray.forEach(([uid, user]: [string, any]) => {
+      totalUsers++;
+      if (user.role === 'admin') adminUsers++;
+
+      const tier = user.subscription?.plan || user.tier || 'free';
+      const isActive = user.subscription?.status === 'active' || user.isPremium;
+
+      if (tier === 'free') freeUsers++;
+      if (isActive && tier !== 'free') {
+        premiumUsers++;
+        if (tier === 'monthly') monthlySubscribers++;
+        else if (tier === 'yearly') yearlySubscribers++;
+        else if (tier === 'lifetime') lifetimeSubscribers++;
+      }
+    });
+
+    // Fetch payments from Firestore
+    const paymentsSnapshot = await adminFirestore.collection('payments').get();
+
+    let pendingPayments = 0;
+    let approvedPayments = 0;
+    let rejectedPayments = 0;
+    let totalRevenue = 0;
+
+    const recentApprovedPayments: any[] = [];
+
+    paymentsSnapshot.docs.forEach(doc => {
+      const data = doc.data();
+      if (data.status === 'pending') pendingPayments++;
+      else if (data.status === 'approved') {
+        approvedPayments++;
+        totalRevenue += data.amount || 0;
+        recentApprovedPayments.push({
+          id: doc.id,
+          ...data,
+        });
+      }
+      else if (data.status === 'rejected') rejectedPayments++;
+    });
+
+    // Sort recent payments by approvedAt
+    recentApprovedPayments.sort((a, b) => {
+      const aTime = a.approvedAt?.toMillis?.() || 0;
+      const bTime = b.approvedAt?.toMillis?.() || 0;
+      return bTime - aTime;
+    });
+
+    // Get top 10 recent approved payments
+    const top10Payments = recentApprovedPayments.slice(0, 10);
+
+    // Get recent users (sort by createdAt)
+    const recentUsers = usersArray
+      .map(([uid, user]: [string, any]) => ({
+        id: uid,
+        displayName: user.displayName,
+        email: user.email,
+        tier: user.subscription?.plan || user.tier || 'free',
+        createdAt: user.createdAt,
+      }))
+      .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+      .slice(0, 10);
+
+    // Build activities
+    const activities: SerializedActivity[] = [];
+
+    // Add recent payments
+    top10Payments.forEach((payment) => {
+      activities.push({
+        id: payment.id,
+        type: "payment",
+        action: "Payment Approved",
+        timestamp: payment.approvedAt?.toDate?.()?.toISOString() || null,
+        details: `${payment.amount} THB - Plan: ${payment.planId}`,
+      });
+    });
+
+    // Add recent users
+    recentUsers.forEach((user) => {
+      activities.push({
+        id: user.id,
+        type: "user",
+        action: "New User Registered",
+        timestamp: user.createdAt ? new Date(user.createdAt).toISOString() : null,
+        details: `${user.displayName || user.email} - ${user.tier}`,
+      });
+    });
+
+    // Sort activities by timestamp
+    activities.sort((a, b) => {
+      const aTime = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+      const bTime = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+      return bTime - aTime;
+    });
+
+    const finalActivities = activities.slice(0, 10);
+
+    const endTime = Date.now();
+    console.log(`✅ [SSR] admin/index getServerSideProps completed in ${endTime - startTime}ms`);
+
+    return {
+      props: {
+        stats: {
+          totalUsers,
+          adminUsers,
+          freeUsers,
+          premiumUsers,
+          monthlySubscribers,
+          yearlySubscribers,
+          lifetimeSubscribers,
+          pendingPayments,
+          approvedPayments,
+          rejectedPayments,
+          totalRevenue,
+        },
+        recentActivities: finalActivities,
+      },
+    };
+  } catch (error: any) {
+    console.error('❌ [SSR] Error in getServerSideProps:', error);
+    return {
+      props: {
+        stats: {
+          totalUsers: 0,
+          adminUsers: 0,
+          freeUsers: 0,
+          premiumUsers: 0,
+          monthlySubscribers: 0,
+          yearlySubscribers: 0,
+          lifetimeSubscribers: 0,
+          pendingPayments: 0,
+          approvedPayments: 0,
+          rejectedPayments: 0,
+          totalRevenue: 0,
+        },
+        recentActivities: [],
+        error: "เกิดข้อผิดพลาดในการโหลดข้อมูล",
+      },
+    };
+  }
 };
 
 export default AdminDashboard;
