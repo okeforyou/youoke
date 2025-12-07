@@ -1,25 +1,14 @@
-import {
-  collection,
-  getDocs,
-  doc,
-  updateDoc,
-  deleteDoc,
-  Timestamp,
-  query,
-  orderBy,
-  limit,
-  startAfter,
-  getCountFromServer,
-  QueryDocumentSnapshot,
-  DocumentData,
-} from "firebase/firestore";
+import { doc, updateDoc, deleteDoc, Timestamp } from "firebase/firestore";
+import { GetServerSideProps } from "next";
 import React, { useEffect, useState } from "react";
 import { FiSearch, FiEdit2, FiCheck, FiX, FiDownload, FiTrash2, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import nookies from "nookies";
 
 import Icon from "../../components/Icon";
 
 import AdminLayout from "../../components/admin/AdminLayout";
 import { db } from "../../firebase";
+import { adminAuth, adminDb } from "../../firebase-admin";
 import { exportToCSV, flattenForCSV } from "../../utils/exportCSV";
 
 interface User {
@@ -35,166 +24,57 @@ interface User {
   subscriptionExpiry?: any;
 }
 
+// Serialized version for SSR
+interface SerializedUser {
+  uid: string;
+  email: string;
+  displayName: string;
+  role: string;
+  tier?: string;
+  isPremium?: boolean;
+  isActive?: boolean;
+  isLegacy?: boolean;
+  createdAt: string | null;
+  subscriptionExpiry?: string | null;
+}
+
+interface Props {
+  users: SerializedUser[];
+  totalUsers: number;
+  error?: string;
+}
+
 const USERS_PER_PAGE = 20;
 
-const UsersPage: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
+const UsersPage: React.FC<Props> = ({ users: initialUsers, totalUsers: initialTotal, error }) => {
+  // Convert serialized users back to User objects
+  const convertedUsers: User[] = initialUsers.map(u => ({
+    ...u,
+    tier: u.tier || 'free',
+    isPremium: u.isPremium || false,
+    isActive: u.isActive !== false, // default true
+    isLegacy: u.isLegacy || false,
+    createdAt: u.createdAt ? new Date(u.createdAt) : new Date(),
+    subscriptionExpiry: u.subscriptionExpiry ? new Date(u.subscriptionExpiry) : undefined,
+  }));
+
+  const [allUsers] = useState<User[]>(convertedUsers);
+  const [filteredUsers, setFilteredUsers] = useState<User[]>(convertedUsers);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterRole, setFilterRole] = useState("all");
   const [filterTier, setFilterTier] = useState("all");
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
-  // Pagination state
+  // Client-side pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalUsers, setTotalUsers] = useState(0);
-  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
-  const [firstDoc, setFirstDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  const totalUsers = initialTotal;
 
   useEffect(() => {
     filterUsers();
-  }, [users, searchTerm, filterRole, filterTier]);
-
-  const fetchUsers = async (page = 1) => {
-    try {
-      setLoading(true);
-
-      console.time('fetchUsers');
-
-      // Get total count (fast!)
-      const countSnapshot = await getCountFromServer(collection(db, "users"));
-      const total = countSnapshot.data().count;
-      setTotalUsers(total);
-
-      // Build query with pagination
-      let usersQuery = query(
-        collection(db, "users"),
-        orderBy("createdAt", "desc"),
-        limit(USERS_PER_PAGE)
-      );
-
-      // Fetch page data
-      const snapshot = await getDocs(usersQuery);
-
-      if (snapshot.empty) {
-        setUsers([]);
-        setLoading(false);
-        return;
-      }
-
-      // Store cursors for pagination
-      setFirstDoc(snapshot.docs[0]);
-      setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
-
-      const usersData = snapshot.docs.map((doc) => ({
-        uid: doc.id,
-        ...doc.data(),
-      })) as User[];
-
-      setUsers(usersData);
-      setCurrentPage(page);
-
-      console.timeEnd('fetchUsers');
-    } catch (error) {
-      console.error("Error fetching users:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchNextPage = async () => {
-    if (!lastDoc || users.length < USERS_PER_PAGE) return;
-
-    try {
-      setLoading(true);
-      const usersQuery = query(
-        collection(db, "users"),
-        orderBy("createdAt", "desc"),
-        startAfter(lastDoc),
-        limit(USERS_PER_PAGE)
-      );
-
-      const snapshot = await getDocs(usersQuery);
-      if (snapshot.empty) {
-        setLoading(false);
-        return;
-      }
-
-      setFirstDoc(snapshot.docs[0]);
-      setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
-
-      const usersData = snapshot.docs.map((doc) => ({
-        uid: doc.id,
-        ...doc.data(),
-      })) as User[];
-
-      setUsers(usersData);
-      setCurrentPage((prev) => prev + 1);
-    } catch (error) {
-      console.error("Error fetching next page:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchPreviousPage = async () => {
-    if (!firstDoc || currentPage <= 1) return;
-
-    try {
-      setLoading(true);
-
-      // For going back, we need to query in reverse
-      // This is complex in Firestore, so let's just refetch from the beginning
-      // For a better solution, you'd need to maintain a stack of cursors
-
-      const targetPage = currentPage - 1;
-      const skip = (targetPage - 1) * USERS_PER_PAGE;
-
-      const usersQuery = query(
-        collection(db, "users"),
-        orderBy("createdAt", "desc"),
-        limit(USERS_PER_PAGE)
-      );
-
-      const snapshot = await getDocs(usersQuery);
-
-      // Skip to the target page
-      let currentSnapshot = snapshot;
-      for (let i = 1; i < targetPage; i++) {
-        const lastDocOfPage = currentSnapshot.docs[currentSnapshot.docs.length - 1];
-        const nextQuery = query(
-          collection(db, "users"),
-          orderBy("createdAt", "desc"),
-          startAfter(lastDocOfPage),
-          limit(USERS_PER_PAGE)
-        );
-        currentSnapshot = await getDocs(nextQuery);
-      }
-
-      setFirstDoc(currentSnapshot.docs[0]);
-      setLastDoc(currentSnapshot.docs[currentSnapshot.docs.length - 1]);
-
-      const usersData = currentSnapshot.docs.map((doc) => ({
-        uid: doc.id,
-        ...doc.data(),
-      })) as User[];
-
-      setUsers(usersData);
-      setCurrentPage(targetPage);
-    } catch (error) {
-      console.error("Error fetching previous page:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [searchTerm, filterRole, filterTier, allUsers]);
 
   const filterUsers = () => {
-    let filtered = [...users];
+    let filtered = [...allUsers];
 
     // Search filter
     if (searchTerm) {
@@ -216,6 +96,27 @@ const UsersPage: React.FC = () => {
     }
 
     setFilteredUsers(filtered);
+    setCurrentPage(1); // Reset to page 1 when filtering
+  };
+
+  // Client-side pagination
+  const paginatedUsers = filteredUsers.slice(
+    (currentPage - 1) * USERS_PER_PAGE,
+    currentPage * USERS_PER_PAGE
+  );
+
+  const totalPages = Math.ceil(filteredUsers.length / USERS_PER_PAGE);
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
   };
 
   const handleEditUser = (user: User) => {
@@ -226,25 +127,13 @@ const UsersPage: React.FC = () => {
     if (!editingUser) return;
 
     try {
-      const userRef = doc(db, "users", editingUser.uid);
-      await updateDoc(userRef, {
-        role: editingUser.role,
-        tier: editingUser.tier,
-        isPremium: editingUser.isPremium,
-        isActive: editingUser.isActive,
-        updatedAt: Timestamp.now(),
-      });
-
-      // Update local state
-      setUsers((prev) =>
-        prev.map((u) => (u.uid === editingUser.uid ? editingUser : u))
-      );
-
-      // Clear cache to force refresh on next load
-      localStorage.removeItem("admin_users");
-
+      // Note: User data is in Realtime Database, not Firestore
+      // This will need to use adminDb instead
+      alert("ฟังก์ชันนี้ต้องแก้ไขให้ใช้ Realtime Database API endpoint");
       setEditingUser(null);
-      alert("User updated successfully!");
+
+      // TODO: Create API route to update user in Realtime Database
+      // For now, just close the modal
     } catch (error) {
       console.error("Error updating user:", error);
       alert("Error updating user");
@@ -262,16 +151,10 @@ const UsersPage: React.FC = () => {
     }
 
     try {
-      const userRef = doc(db, "users", user.uid);
-      await deleteDoc(userRef);
+      // Note: User data is in Realtime Database, not Firestore
+      alert("ฟังก์ชันนี้ต้องแก้ไขให้ใช้ Realtime Database API endpoint");
 
-      // Update local state
-      setUsers((prev) => prev.filter((u) => u.uid !== user.uid));
-
-      // Clear cache to force refresh on next load
-      localStorage.removeItem("admin_users");
-
-      alert("ลบผู้ใช้เรียบร้อยแล้ว");
+      // TODO: Create API route to delete user in Realtime Database
     } catch (error) {
       console.error("Error deleting user:", error);
       alert("เกิดข้อผิดพลาดในการลบผู้ใช้");
@@ -294,11 +177,19 @@ const UsersPage: React.FC = () => {
     });
   };
 
-  if (loading) {
+  if (error) {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500"></div>
+          <div className="text-center">
+            <p className="text-xl text-red-600 mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="btn btn-primary"
+            >
+              Reload
+            </button>
+          </div>
         </div>
       </AdminLayout>
     );
@@ -312,7 +203,7 @@ const UsersPage: React.FC = () => {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
             <p className="text-gray-600 mt-1">
-              จัดการผู้ใช้ทั้งหมด (แสดง {users.length} จาก {totalUsers} users, หน้า {currentPage} / {Math.ceil(totalUsers / USERS_PER_PAGE)})
+              จัดการผู้ใช้ทั้งหมด ({filteredUsers.length} users แสดง, หน้า {currentPage} / {totalPages})
             </p>
           </div>
           <button
@@ -392,7 +283,7 @@ const UsersPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredUsers.map((user) => (
+                {paginatedUsers.map((user) => (
                   <tr key={user.uid} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>
@@ -474,24 +365,24 @@ const UsersPage: React.FC = () => {
           <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between bg-gray-50">
             <div className="text-sm text-gray-700">
               แสดง <span className="font-medium">{(currentPage - 1) * USERS_PER_PAGE + 1}</span> ถึง{" "}
-              <span className="font-medium">{Math.min(currentPage * USERS_PER_PAGE, totalUsers)}</span> จาก{" "}
-              <span className="font-medium">{totalUsers}</span> users
+              <span className="font-medium">{Math.min(currentPage * USERS_PER_PAGE, filteredUsers.length)}</span> จาก{" "}
+              <span className="font-medium">{filteredUsers.length}</span> users (ทั้งหมด {totalUsers} users)
             </div>
             <div className="flex items-center gap-2">
               <button
-                onClick={fetchPreviousPage}
-                disabled={currentPage <= 1 || loading}
+                onClick={goToPreviousPage}
+                disabled={currentPage <= 1}
                 className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 <Icon icon={FiChevronLeft} />
                 Previous
               </button>
               <span className="px-4 py-2 text-sm text-gray-700">
-                หน้า {currentPage} / {Math.ceil(totalUsers / USERS_PER_PAGE)}
+                หน้า {currentPage} / {totalPages}
               </span>
               <button
-                onClick={fetchNextPage}
-                disabled={users.length < USERS_PER_PAGE || loading}
+                onClick={goToNextPage}
+                disabled={currentPage >= totalPages}
                 className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 Next
@@ -606,6 +497,137 @@ const UsersPage: React.FC = () => {
       )}
     </AdminLayout>
   );
+};
+
+export const getServerSideProps: GetServerSideProps<Props> = async (context) => {
+  console.log('🚀 [SSR] admin/users getServerSideProps started');
+
+  try {
+    // 1. Check authentication
+    const cookies = nookies.get(context);
+    const token = cookies.token;
+
+    if (!token) {
+      console.log('❌ [SSR] No token found -> redirect to login');
+      return {
+        redirect: {
+          destination: "/login",
+          permanent: false,
+        },
+      };
+    }
+
+    if (!adminDb || !adminAuth) {
+      console.error('❌ [SSR] Firebase Admin not initialized!');
+      return {
+        props: {
+          users: [],
+          totalUsers: 0,
+          error: "Firebase Admin not initialized",
+        },
+      };
+    }
+
+    // 2. Verify token and check if user is admin
+    let decodedToken;
+    try {
+      decodedToken = await adminAuth.verifyIdToken(token);
+      console.log(`✅ [SSR] Token verified! UID: ${decodedToken.uid}`);
+    } catch (verifyError: any) {
+      console.error('❌ [SSR] Token verification failed:', verifyError.message);
+      return {
+        redirect: {
+          destination: "/login",
+          permanent: false,
+        },
+      };
+    }
+
+    // 3. Check if user is admin
+    const userRef = adminDb.ref(`users/${decodedToken.uid}`);
+    const userSnapshot = await userRef.once('value');
+
+    if (!userSnapshot.exists()) {
+      console.log('❌ [SSR] User profile not found');
+      return {
+        redirect: {
+          destination: "/login",
+          permanent: false,
+        },
+      };
+    }
+
+    const userData = userSnapshot.val();
+    if (userData.role !== 'admin') {
+      console.log('❌ [SSR] User is not admin');
+      return {
+        redirect: {
+          destination: "/",
+          permanent: false,
+        },
+      };
+    }
+
+    console.log('✅ [SSR] User is admin, fetching all users...');
+
+    // 4. Fetch all users from Realtime Database
+    const usersRef = adminDb.ref('users');
+    const snapshot = await usersRef.once('value');
+
+    if (!snapshot.exists()) {
+      console.log('⚠️ [SSR] No users found in database');
+      return {
+        props: {
+          users: [],
+          totalUsers: 0,
+        },
+      };
+    }
+
+    const usersData = snapshot.val();
+    const usersArray: SerializedUser[] = Object.keys(usersData).map(uid => {
+      const user = usersData[uid];
+      return {
+        uid,
+        email: user.email || '',
+        displayName: user.displayName || user.email?.split('@')[0] || 'Unknown',
+        role: user.role || 'user',
+        tier: user.subscription?.plan || 'free',
+        isPremium: user.subscription?.status === 'active' && user.subscription?.plan !== 'free',
+        isActive: user.subscription?.status === 'active',
+        isLegacy: user.isLegacy || false,
+        createdAt: user.createdAt ? new Date(user.createdAt).toISOString() : null,
+        subscriptionExpiry: user.subscription?.endDate
+          ? new Date(user.subscription.endDate).toISOString()
+          : null,
+      };
+    });
+
+    // Sort by createdAt descending (newest first)
+    usersArray.sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA;
+    });
+
+    console.log(`✅ [SSR] Fetched ${usersArray.length} users successfully`);
+
+    return {
+      props: {
+        users: usersArray,
+        totalUsers: usersArray.length,
+      },
+    };
+  } catch (error: any) {
+    console.error('❌ [SSR] Unexpected error:', error.message);
+    return {
+      props: {
+        users: [],
+        totalUsers: 0,
+        error: "เกิดข้อผิดพลาดในการโหลดข้อมูล",
+      },
+    };
+  }
 };
 
 export default UsersPage;
