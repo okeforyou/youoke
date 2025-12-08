@@ -230,8 +230,8 @@ const AdminDashboard: React.FC<Props> = ({ stats, recentActivities: serializedAc
                       {activity.details}
                     </p>
                     <p className="text-xs text-gray-400 mt-1">
-                      {activity.timestamp?.toDate
-                        ? activity.timestamp.toDate().toLocaleString("th-TH", {
+                      {activity.timestamp
+                        ? activity.timestamp.toLocaleString("th-TH", {
                             year: "numeric",
                             month: "short",
                             day: "numeric",
