@@ -11,11 +11,14 @@ import {
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { FiEdit2, FiCheck, FiX, FiEye, FiEyeOff, FiPlus, FiTrash2 } from "react-icons/fi";
+import { GetServerSideProps } from "next";
+import nookies from "nookies";
 
 import Icon from "../../components/Icon";
 
 import AdminLayout from "../../components/admin/AdminLayout";
 import { db } from "../../firebase";
+import { adminAuth, adminDb, adminFirestore } from "../../firebase-admin";
 
 interface Plan {
   id: string;
@@ -31,9 +34,13 @@ interface Plan {
   isVisible: boolean;
 }
 
-const SubscriptionsPage: React.FC = () => {
-  const [plans, setPlans] = useState<Plan[]>([]);
-  const [loading, setLoading] = useState(true);
+interface Props {
+  plans: Plan[];
+  error?: string;
+}
+
+const SubscriptionsPage: React.FC<Props> = ({ plans: initialPlans, error }) => {
+  const [plans, setPlans] = useState<Plan[]>(initialPlans);
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
   const [creatingPlan, setCreatingPlan] = useState(false);
   const [newPlan, setNewPlan] = useState<Omit<Plan, "id">>({
@@ -49,61 +56,6 @@ const SubscriptionsPage: React.FC = () => {
     isVisible: true,
   });
 
-  useEffect(() => {
-    fetchPlans();
-  }, []);
-
-  const fetchPlans = async (skipCache = false) => {
-    try {
-      setLoading(true);
-      console.time('fetchPlans');
-
-      // Check cache first (30 minutes TTL - extended for better performance)
-      const cacheKey = "admin_plans";
-      if (!skipCache) {
-        const cached = localStorage.getItem(cacheKey);
-        if (cached) {
-          const { data, timestamp } = JSON.parse(cached);
-          const age = Date.now() - timestamp;
-          if (age < 30 * 60 * 1000) {
-            // Cache is fresh
-            setPlans(data);
-            setLoading(false);
-            console.timeEnd('fetchPlans');
-
-            // Refresh in background
-            setTimeout(() => fetchPlans(true), 100);
-            return;
-          }
-        }
-      }
-
-      // Fetch from Firestore (usually only 4-5 plans, so this is fast)
-      const snapshot = await getDocs(collection(db, "plans"));
-      const plansData = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Plan[];
-
-      setPlans(plansData);
-
-      // Cache the result
-      localStorage.setItem(
-        cacheKey,
-        JSON.stringify({
-          data: plansData,
-          timestamp: Date.now(),
-        })
-      );
-
-      console.timeEnd('fetchPlans');
-    } catch (error) {
-      console.error("Error fetching plans:", error);
-      console.timeEnd('fetchPlans');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleEditPlan = (plan: Plan) => {
     setEditingPlan({ ...plan });
@@ -126,16 +78,8 @@ const SubscriptionsPage: React.FC = () => {
         updatedAt: Timestamp.now(),
       });
 
-      // Update local state
-      setPlans((prev) =>
-        prev.map((p) => (p.id === editingPlan.id ? editingPlan : p))
-      );
-
-      // Clear cache to force refresh on next load
-      localStorage.removeItem("admin_plans");
-
-      setEditingPlan(null);
       alert("Plan updated successfully!");
+      window.location.reload();
     } catch (error) {
       console.error("Error updating plan:", error);
       alert("Error updating plan");
@@ -151,13 +95,7 @@ const SubscriptionsPage: React.FC = () => {
         updatedAt: Timestamp.now(),
       });
 
-      // Update local state
-      setPlans((prev) =>
-        prev.map((p) => (p.id === plan.id ? { ...p, [field]: newValue } : p))
-      );
-
-      // Clear cache to force refresh on next load
-      localStorage.removeItem("admin_plans");
+      window.location.reload();
     } catch (error) {
       console.error("Error updating plan:", error);
       alert("Error updating plan");
@@ -180,18 +118,8 @@ const SubscriptionsPage: React.FC = () => {
       const planRef = doc(db, "plans", plan.id);
       await deleteDoc(planRef);
 
-      // Update local state
-      setPlans((prev) => prev.filter((p) => p.id !== plan.id));
-
-      // Clear cache to force refresh on next load
-      localStorage.removeItem("admin_plans");
-
-      // Close modal if editing this plan
-      if (editingPlan?.id === plan.id) {
-        setEditingPlan(null);
-      }
-
       alert("ลบ Plan เรียบร้อยแล้ว");
+      window.location.reload();
     } catch (error) {
       console.error("Error deleting plan:", error);
       alert("เกิดข้อผิดพลาดในการลบ Plan");
@@ -212,24 +140,8 @@ const SubscriptionsPage: React.FC = () => {
         updatedAt: Timestamp.now(),
       });
 
-      // Clear cache and refresh
-      localStorage.removeItem("admin_plans");
-      await fetchPlans(true);
-
-      setCreatingPlan(false);
-      setNewPlan({
-        name: "",
-        displayName: "",
-        price: 0,
-        currency: "THB",
-        duration: 30,
-        features: [],
-        maxRooms: 1,
-        maxSongsInQueue: 10,
-        isActive: true,
-        isVisible: true,
-      });
       alert("Plan created successfully!");
+      window.location.reload();
     } catch (error) {
       console.error("Error creating plan:", error);
       alert("Error creating plan");
@@ -285,30 +197,19 @@ const SubscriptionsPage: React.FC = () => {
     });
   };
 
-  if (loading && plans.length === 0) {
+  // Show error if any
+  if (error) {
     return (
       <AdminLayout>
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="h-9 w-64 bg-gray-200 rounded animate-pulse"></div>
-              <div className="h-5 w-48 bg-gray-100 rounded animate-pulse mt-2"></div>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} className="bg-white rounded-lg shadow-lg overflow-hidden border-2 border-gray-200">
-                <div className="bg-gray-200 p-6 animate-pulse">
-                  <div className="h-8 w-32 bg-gray-300 rounded"></div>
-                  <div className="h-10 w-24 bg-gray-300 rounded mt-4"></div>
-                </div>
-                <div className="p-6 space-y-3">
-                  {[1, 2, 3].map(j => (
-                    <div key={j} className="h-4 bg-gray-100 rounded animate-pulse"></div>
-                  ))}
-                </div>
-              </div>
-            ))}
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <p className="text-red-600 text-lg font-medium">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+            >
+              รีโหลดหน้า
+            </button>
           </div>
         </div>
       </AdminLayout>
@@ -821,6 +722,70 @@ const SubscriptionsPage: React.FC = () => {
       )}
     </AdminLayout>
   );
+};
+
+// Server-Side Props
+export const getServerSideProps: GetServerSideProps<Props> = async (context) => {
+  console.log('🚀 [SSR] admin/subscriptions getServerSideProps started');
+
+  try {
+    // 1. Check authentication
+    const cookies = nookies.get(context);
+    const token = cookies.token;
+
+    if (!token) {
+      console.log('❌ [SSR] No token found, redirecting to login');
+      return {
+        redirect: {
+          destination: "/login",
+          permanent: false,
+        },
+      };
+    }
+
+    // 2. Verify token and check if user is admin
+    const decodedToken = await adminAuth.verifyIdToken(token);
+    const uid = decodedToken.uid;
+
+    const userRef = adminDb.ref(`users/${uid}`);
+    const userSnapshot = await userRef.once('value');
+    const userData = userSnapshot.val();
+
+    if (!userData || userData.role !== 'admin') {
+      console.log('❌ [SSR] User is not admin, redirecting to home');
+      return {
+        redirect: {
+          destination: "/",
+          permanent: false,
+        },
+      };
+    }
+
+    console.log('✅ [SSR] Admin authenticated:', uid);
+
+    // 3. Fetch plans from Firestore
+    const plansSnapshot = await adminFirestore.collection('plans').get();
+    const plansData: Plan[] = plansSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Plan[];
+
+    console.log(`✅ [SSR] Fetched ${plansData.length} plans successfully`);
+
+    return {
+      props: {
+        plans: plansData,
+      },
+    };
+  } catch (error: any) {
+    console.error('❌ [SSR] Error in getServerSideProps:', error);
+    return {
+      props: {
+        plans: [],
+        error: "เกิดข้อผิดพลาดในการโหลดข้อมูล",
+      },
+    };
+  }
 };
 
 export default SubscriptionsPage;

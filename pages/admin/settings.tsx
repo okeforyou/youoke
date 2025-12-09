@@ -1,11 +1,14 @@
 import { doc, getDoc, updateDoc, Timestamp } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { FiSave, FiRefreshCw } from "react-icons/fi";
+import { GetServerSideProps } from "next";
+import nookies from "nookies";
 
 import Icon from "../../components/Icon";
 
 import AdminLayout from "../../components/admin/AdminLayout";
 import { db } from "../../firebase";
+import { adminAuth, adminDb, adminFirestore } from "../../firebase-admin";
 
 interface GeneralSettings {
   siteName: string;
@@ -25,59 +28,16 @@ interface FeatureFlags {
   midiPlayerEnabled: boolean;
 }
 
-const SettingsPage: React.FC = () => {
-  const [generalSettings, setGeneralSettings] = useState<GeneralSettings>({
-    siteName: "YouOke",
-    siteDescription: "คาราโอเกะออนไลน์",
-    maintenanceMode: false,
-    allowGuestAccess: true,
-    maxGuestsPerRoom: 10,
-    defaultLanguage: "th",
-  });
+interface Props {
+  generalSettings: GeneralSettings;
+  featureFlags: FeatureFlags;
+  error?: string;
+}
 
-  const [featureFlags, setFeatureFlags] = useState<FeatureFlags>({
-    castModeEnabled: true,
-    queueManagementEnabled: true,
-    shareRoomEnabled: true,
-    voiceControlEnabled: false,
-    lyricsEnabled: false,
-    midiPlayerEnabled: false,
-  });
-
-  const [loading, setLoading] = useState(true);
+const SettingsPage: React.FC<Props> = ({ generalSettings: initialGeneral, featureFlags: initialFlags, error }) => {
+  const [generalSettings, setGeneralSettings] = useState<GeneralSettings>(initialGeneral);
+  const [featureFlags, setFeatureFlags] = useState<FeatureFlags>(initialFlags);
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => {
-    fetchSettings();
-  }, []);
-
-  const fetchSettings = async () => {
-    try {
-      setLoading(true);
-      console.time('fetchSettings');
-
-      // Fetch both settings in parallel (faster than sequential!)
-      const [generalDoc, featuresDoc] = await Promise.all([
-        getDoc(doc(db, "settings", "general")),
-        getDoc(doc(db, "settings", "features")),
-      ]);
-
-      if (generalDoc.exists()) {
-        setGeneralSettings(generalDoc.data() as GeneralSettings);
-      }
-
-      if (featuresDoc.exists()) {
-        setFeatureFlags(featuresDoc.data() as FeatureFlags);
-      }
-
-      console.timeEnd('fetchSettings');
-    } catch (error) {
-      console.error("Error fetching settings:", error);
-      console.timeEnd('fetchSettings');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSaveGeneralSettings = async () => {
     try {
@@ -88,10 +48,10 @@ const SettingsPage: React.FC = () => {
         updatedAt: Timestamp.now(),
       });
       alert("General settings saved successfully!");
+      window.location.reload();
     } catch (error) {
       console.error("Error saving general settings:", error);
       alert("Error saving settings");
-    } finally {
       setSaving(false);
     }
   };
@@ -105,38 +65,27 @@ const SettingsPage: React.FC = () => {
         updatedAt: Timestamp.now(),
       });
       alert("Feature flags saved successfully!");
+      window.location.reload();
     } catch (error) {
       console.error("Error saving feature flags:", error);
       alert("Error saving settings");
-    } finally {
       setSaving(false);
     }
   };
 
-  if (loading) {
+  // Show error if any
+  if (error) {
     return (
       <AdminLayout>
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="h-9 w-64 bg-gray-200 rounded animate-pulse"></div>
-              <div className="h-5 w-48 bg-gray-100 rounded animate-pulse mt-2"></div>
-            </div>
-          </div>
-          <div className="space-y-6">
-            {[1, 2].map(i => (
-              <div key={i} className="bg-white rounded-lg shadow">
-                <div className="p-6 border-b border-gray-200">
-                  <div className="h-7 w-48 bg-gray-200 rounded animate-pulse"></div>
-                  <div className="h-4 w-64 bg-gray-100 rounded animate-pulse mt-2"></div>
-                </div>
-                <div className="p-6 space-y-4">
-                  {[1, 2, 3, 4].map(j => (
-                    <div key={j} className="h-16 bg-gray-100 rounded animate-pulse"></div>
-                  ))}
-                </div>
-              </div>
-            ))}
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <p className="text-red-600 text-lg font-medium">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+            >
+              รีโหลดหน้า
+            </button>
           </div>
         </div>
       </AdminLayout>
@@ -153,7 +102,7 @@ const SettingsPage: React.FC = () => {
             <p className="text-gray-600 mt-1">จัดการการตั้งค่าระบบ</p>
           </div>
           <button
-            onClick={fetchSettings}
+            onClick={() => window.location.reload()}
             className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
           >
             <Icon icon={FiRefreshCw} />
@@ -471,6 +420,112 @@ const SettingsPage: React.FC = () => {
       </div>
     </AdminLayout>
   );
+};
+
+// Server-Side Props
+export const getServerSideProps: GetServerSideProps<Props> = async (context) => {
+  console.log('🚀 [SSR] admin/settings getServerSideProps started');
+
+  try {
+    // 1. Check authentication
+    const cookies = nookies.get(context);
+    const token = cookies.token;
+
+    if (!token) {
+      console.log('❌ [SSR] No token found, redirecting to login');
+      return {
+        redirect: {
+          destination: "/login",
+          permanent: false,
+        },
+      };
+    }
+
+    // 2. Verify token and check if user is admin
+    const decodedToken = await adminAuth.verifyIdToken(token);
+    const uid = decodedToken.uid;
+
+    const userRef = adminDb.ref(`users/${uid}`);
+    const userSnapshot = await userRef.once('value');
+    const userData = userSnapshot.val();
+
+    if (!userData || userData.role !== 'admin') {
+      console.log('❌ [SSR] User is not admin, redirecting to home');
+      return {
+        redirect: {
+          destination: "/",
+          permanent: false,
+        },
+      };
+    }
+
+    console.log('✅ [SSR] Admin authenticated:', uid);
+
+    // 3. Fetch settings from Firestore (both in parallel)
+    const [generalDoc, featuresDoc] = await Promise.all([
+      adminFirestore.collection('settings').doc('general').get(),
+      adminFirestore.collection('settings').doc('features').get(),
+    ]);
+
+    // Default values in case documents don't exist
+    const defaultGeneral: GeneralSettings = {
+      siteName: "YouOke",
+      siteDescription: "คาราโอเกะออนไลน์",
+      maintenanceMode: false,
+      allowGuestAccess: true,
+      maxGuestsPerRoom: 10,
+      defaultLanguage: "th",
+    };
+
+    const defaultFeatures: FeatureFlags = {
+      castModeEnabled: true,
+      queueManagementEnabled: true,
+      shareRoomEnabled: true,
+      voiceControlEnabled: false,
+      lyricsEnabled: false,
+      midiPlayerEnabled: false,
+    };
+
+    const generalSettings = generalDoc.exists()
+      ? (generalDoc.data() as GeneralSettings)
+      : defaultGeneral;
+
+    const featureFlags = featuresDoc.exists()
+      ? (featuresDoc.data() as FeatureFlags)
+      : defaultFeatures;
+
+    console.log(`✅ [SSR] Fetched settings successfully`);
+
+    return {
+      props: {
+        generalSettings,
+        featureFlags,
+      },
+    };
+  } catch (error: any) {
+    console.error('❌ [SSR] Error in getServerSideProps:', error);
+    return {
+      props: {
+        generalSettings: {
+          siteName: "YouOke",
+          siteDescription: "คาราโอเกะออนไลน์",
+          maintenanceMode: false,
+          allowGuestAccess: true,
+          maxGuestsPerRoom: 10,
+          defaultLanguage: "th",
+        },
+        featureFlags: {
+          castModeEnabled: true,
+          queueManagementEnabled: true,
+          shareRoomEnabled: true,
+          voiceControlEnabled: false,
+          lyricsEnabled: false,
+          midiPlayerEnabled: false,
+        },
+        error: "เกิดข้อผิดพลาดในการโหลดข้อมูล",
+      },
+    };
+  }
 };
 
 export default SettingsPage;
