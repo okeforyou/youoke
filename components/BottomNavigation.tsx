@@ -19,30 +19,34 @@ export default function BottomNavigation() {
 
   // Helper function to handle navigation to home page with active index
   const navigateToHome = (index: number) => {
+    setActiveIndex(index);
     if (router.pathname !== '/') {
       router.push('/');
     }
-    setActiveIndex(index);
   };
+
+  // Check if current page is home
+  const isHomePage = router.pathname === '/';
+  const isAccountPage = router.pathname === '/account';
 
   return (
     <div className="btm-nav fixed bottom-0 w-full sm:w-1/2 h-1/9 text-sm z-50">
       <button
-        className={`text-primary shrink ${activeIndex === 1 ? "active" : ""}`}
+        className={`text-primary shrink ${isHomePage && activeIndex === 1 ? "active" : ""}`}
         onClick={() => navigateToHome(1)}
       >
         <MusicalNoteIcon className="w-6 h-6" />
         <span className="btm-nav-label">แนะนำ</span>
       </button>
       <button
-        className={`text-primary shrink ${activeIndex === 2 ? "active" : ""}`}
+        className={`text-primary shrink ${isHomePage && activeIndex === 2 ? "active" : ""}`}
         onClick={() => navigateToHome(2)}
       >
         <TrophyIcon className="w-6 h-6" />
         <span className="btm-nav-label">มาแรง</span>
       </button>
       <button
-        className={`text-primary shrink ${activeIndex === 3 ? "active" : ""}`}
+        className={`text-primary shrink ${isHomePage && activeIndex === 3 ? "active" : ""}`}
         onClick={() => navigateToHome(3)}
       >
         <RectangleStackIcon className="w-6 h-6" />
@@ -67,7 +71,7 @@ export default function BottomNavigation() {
         </button>
       ) : (
         <button
-          className="text-primary shrink"
+          className={`text-primary shrink ${isAccountPage ? "active" : ""}`}
           title="บัญชีของฉัน"
           onClick={() => router.push("/account")}
         >
