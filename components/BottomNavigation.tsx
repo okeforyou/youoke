@@ -30,7 +30,7 @@ export default function BottomNavigation() {
   const isAccountPage = router.pathname === '/account';
 
   return (
-    <div className="btm-nav fixed bottom-0 w-full sm:w-1/2 h-1/9 text-sm z-50">
+    <div className="btm-nav fixed bottom-0 w-full sm:w-1/2 h-1/9 text-sm z-50 lg:hidden">
       <button
         className={`text-primary shrink ${isHomePage && activeIndex === 1 ? "active" : ""}`}
         onClick={() => navigateToHome(1)}

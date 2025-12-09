@@ -458,39 +458,91 @@ export default function AccountPage({ user, recentPayments, error }: Props) {
         <title>บัญชีของฉัน - Oke for You</title>
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-base-200 via-base-100 to-base-200 pb-24">
-        <div className="container mx-auto px-4 py-8 max-w-6xl">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-base-content">
-              สวัสดี, {user.displayName}! 👋
-            </h1>
-            <p className="text-base-content/60 mt-1">จัดการบัญชีและข้อมูลของคุณ</p>
+      <div className="min-h-screen bg-gradient-to-br from-base-200 via-base-100 to-base-200 pb-24 lg:pb-8">
+        <div className="container mx-auto px-4 py-6 lg:py-12 max-w-5xl">
+          {/* Header with Avatar */}
+          <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6 mb-8 lg:mb-12">
+            {/* Avatar */}
+            <div className="avatar placeholder">
+              <div className="bg-gradient-to-br from-primary to-primary/70 text-primary-content rounded-full w-20 h-20 lg:w-24 lg:h-24 shadow-lg">
+                <span className="text-3xl lg:text-4xl font-bold">
+                  {user.displayName?.charAt(0).toUpperCase() || "U"}
+                </span>
+              </div>
+            </div>
+
+            {/* User Info */}
+            <div className="flex-1 text-center lg:text-left">
+              <h1 className="text-3xl lg:text-4xl font-bold text-base-content mb-2">
+                {user.displayName}
+              </h1>
+              <p className="text-base-content/60 text-sm lg:text-base">{user.email}</p>
+
+              {/* Status Badge */}
+              <div className="mt-3 flex justify-center lg:justify-start gap-2">
+                {isPremium ? (
+                  <div className="badge badge-success badge-lg gap-1">
+                    <SparklesIcon className="w-4 h-4" />
+                    Premium
+                  </div>
+                ) : (
+                  <div className="badge badge-ghost badge-lg">Free</div>
+                )}
+                <div className="badge badge-outline badge-lg">
+                  {getPlanName(user.subscription.plan)}
+                </div>
+              </div>
+            </div>
+
+            {/* Logout Button - Desktop Only */}
+            <div className="hidden lg:block">
+              <button
+                onClick={handleLogout}
+                className="btn btn-outline btn-error gap-2"
+              >
+                <ArrowRightOnRectangleIcon className="w-5 h-5" />
+                ออกจากระบบ
+              </button>
+            </div>
           </div>
 
-          {/* Tabs */}
-          <div className="tabs tabs-boxed bg-base-100 mb-6 p-2 shadow-lg border border-base-300">
-            <button
-              className={`tab tab-lg flex-1 ${activeTab === 0 ? "tab-active" : ""}`}
-              onClick={() => setActiveTab(0)}
-            >
-              <HomeIcon className="w-5 h-5 mr-2" />
-              ภาพรวม
-            </button>
-            <button
-              className={`tab tab-lg flex-1 ${activeTab === 1 ? "tab-active" : ""}`}
-              onClick={() => setActiveTab(1)}
-            >
-              <UserCircleIcon className="w-5 h-5 mr-2" />
-              โปรไฟล์
-            </button>
-            <button
-              className={`tab tab-lg flex-1 ${activeTab === 2 ? "tab-active" : ""}`}
-              onClick={() => setActiveTab(2)}
-            >
-              <CreditCardIcon className="w-5 h-5 mr-2" />
-              แพ็คเกจ
-            </button>
+          {/* Tabs - Improved Design */}
+          <div className="bg-base-100 rounded-2xl shadow-xl border border-base-300 p-1 mb-6">
+            <div className="flex gap-1">
+              <button
+                className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2
+                  ${activeTab === 0
+                    ? "bg-primary text-primary-content shadow-md"
+                    : "text-base-content/60 hover:text-base-content hover:bg-base-200"
+                  }`}
+                onClick={() => setActiveTab(0)}
+              >
+                <HomeIcon className="w-5 h-5" />
+                <span className="hidden sm:inline">ภาพรวม</span>
+              </button>
+              <button
+                className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2
+                  ${activeTab === 1
+                    ? "bg-primary text-primary-content shadow-md"
+                    : "text-base-content/60 hover:text-base-content hover:bg-base-200"
+                  }`}
+                onClick={() => setActiveTab(1)}
+              >
+                <UserCircleIcon className="w-5 h-5" />
+                <span className="hidden sm:inline">โปรไฟล์</span>
+              </button>
+              <button
+                className={`flex-1 py-3 px-4 rounded-xl font-medium transition-all duration-200 flex items-center justify-center gap-2
+                  ${activeTab === 2
+                    ? "bg-primary text-primary-content shadow-md"
+                    : "text-base-content/60 hover:text-base-content hover:bg-base-200"
+                  }`}
+                onClick={() => setActiveTab(2)}
+              >
+                <CreditCardIcon className="w-5 h-5" />
+                <span className="hidden sm:inline">แพ็คเกจ</span>
+              </button>
+            </div>
           </div>
 
           {/* Tab Content */}
@@ -500,8 +552,8 @@ export default function AccountPage({ user, recentPayments, error }: Props) {
             {activeTab === 2 && <PricingTab />}
           </div>
 
-          {/* Logout Button */}
-          <div className="mt-8">
+          {/* Logout Button - Mobile Only */}
+          <div className="lg:hidden mt-8">
             <button
               onClick={handleLogout}
               className="btn btn-outline btn-error btn-block btn-lg gap-2"
