@@ -6,7 +6,7 @@ import { useState } from "react";
 import { SparklesIcon, HomeIcon, CalendarIcon, CreditCardIcon, ClockIcon } from "@heroicons/react/24/solid";
 
 import { adminAuth, adminDb, adminFirestore } from "../firebase-admin";
-import BottomNavigation from "../components/BottomNavigation";
+import UserNavigation from "../components/UserNavigation";
 
 // Types
 interface UserSubscription {
@@ -292,7 +292,7 @@ export default function DashboardPage({ user, recentPayments, error }: Props) {
         </div>
       </div>
 
-      <BottomNavigation />
+      <UserNavigation />
     </>
   );
 }

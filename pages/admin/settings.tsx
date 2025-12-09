@@ -486,11 +486,11 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
       midiPlayerEnabled: false,
     };
 
-    const generalSettings = generalDoc.exists()
+    const generalSettings = generalDoc.exists
       ? (generalDoc.data() as GeneralSettings)
       : defaultGeneral;
 
-    const featureFlags = featuresDoc.exists()
+    const featureFlags = featuresDoc.exists
       ? (featuresDoc.data() as FeatureFlags)
       : defaultFeatures;
 

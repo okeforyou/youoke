@@ -12,7 +12,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { getUserProfile } from "../services/userService";
 import { UserProfile } from "../types/subscription";
-import BottomNavigation from "../components/BottomNavigation";
+import UserNavigation from "../components/UserNavigation";
 
 export default function ProfileSimplePage() {
   const router = useRouter();
@@ -285,7 +285,7 @@ export default function ProfileSimplePage() {
         </div>
       </div>
 
-      <BottomNavigation />
+      <UserNavigation />
     </>
   );
 }
