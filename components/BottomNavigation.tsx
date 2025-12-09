@@ -18,7 +18,7 @@ export default function BottomNavigation() {
   const router = useRouter();
 
   return (
-    <div className="btm-nav absolute bottom-0 w-full sm:w-1/2 h-1/9 text-sm z-20">
+    <div className="btm-nav fixed bottom-0 w-full sm:w-1/2 h-1/9 text-sm z-50">
       <button
         className={`text-primary shrink ${activeIndex === 1 ? "active" : ""}`}
         onClick={() => setActiveIndex(1)}
