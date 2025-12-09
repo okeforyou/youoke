@@ -17,25 +17,33 @@ export default function BottomNavigation() {
   const { user } = useAuth();
   const router = useRouter();
 
+  // Helper function to handle navigation to home page with active index
+  const navigateToHome = (index: number) => {
+    if (router.pathname !== '/') {
+      router.push('/');
+    }
+    setActiveIndex(index);
+  };
+
   return (
     <div className="btm-nav fixed bottom-0 w-full sm:w-1/2 h-1/9 text-sm z-50">
       <button
         className={`text-primary shrink ${activeIndex === 1 ? "active" : ""}`}
-        onClick={() => setActiveIndex(1)}
+        onClick={() => navigateToHome(1)}
       >
         <MusicalNoteIcon className="w-6 h-6" />
         <span className="btm-nav-label">แนะนำ</span>
       </button>
       <button
         className={`text-primary shrink ${activeIndex === 2 ? "active" : ""}`}
-        onClick={() => setActiveIndex(2)}
+        onClick={() => navigateToHome(2)}
       >
         <TrophyIcon className="w-6 h-6" />
         <span className="btm-nav-label">มาแรง</span>
       </button>
       <button
         className={`text-primary shrink ${activeIndex === 3 ? "active" : ""}`}
-        onClick={() => setActiveIndex(3)}
+        onClick={() => navigateToHome(3)}
       >
         <RectangleStackIcon className="w-6 h-6" />
         <span className="btm-nav-label">เพลย์ลิสต์</span>
