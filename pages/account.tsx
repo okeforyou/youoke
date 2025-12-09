@@ -15,7 +15,11 @@ export default function AccountPage() {
     // Redirect to login if not authenticated
     if (!user?.uid) {
       router.push("/login");
+      return;
     }
+
+    // Redirect to dashboard (new user area)
+    router.push("/dashboard");
   }, [user, router]);
 
   async function handleLogout() {
