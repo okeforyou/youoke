@@ -1,5 +1,5 @@
 import React from 'react';
-import { PricingPackage } from '../types/subscription';
+import { PricingPackage } from '../../types/subscription';
 
 /**
  * Package Card Component - Displays subscription plan in a card format
