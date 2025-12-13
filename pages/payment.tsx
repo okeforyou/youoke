@@ -13,6 +13,7 @@ import { PricingPackage, SubscriptionPlan } from "../types/subscription";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../firebase";
 import { createPayment } from "../services/paymentService";
+import PackageCard from "../components/subscription/PackageCard";
 
 export default function PaymentPage() {
   const router = useRouter();
@@ -137,15 +138,25 @@ export default function PaymentPage() {
               <div className="text-center mb-6 mt-2">
                 <h2 className="text-xl font-bold mb-2">ยืนยันการชำระเงิน</h2>
                 <p className="text-sm text-base-content/60">
-                  คุณกำลังจะสมัครแพ็กเกจ {selectedPlan.name}
+                  กรุณาตรวจสอบแพ็กเกจที่เลือกและโอนเงิน
                 </p>
+              </div>
+
+              {/* Selected Package Card */}
+              <div className="mb-6">
+                <PackageCard
+                  plan={selectedPlan}
+                  isCurrentPlan={false}
+                  buttonText="แพ็กเกจที่เลือก"
+                  maxFeatures={5}
+                />
               </div>
 
               {/* Bank Details */}
               <div className="bg-base-300 p-6 rounded-lg mb-6">
                 <div className="text-center mb-4">
-                  <div className="text-lg font-bold mb-4">
-                    ราคา: ฿{selectedPlan.price.toLocaleString("th-TH", { minimumFractionDigits: 2 })}
+                  <div className="text-lg font-bold">
+                    โอนเงินจำนวน ฿{selectedPlan.price.toLocaleString("th-TH", { minimumFractionDigits: 2 })}
                   </div>
                 </div>
 

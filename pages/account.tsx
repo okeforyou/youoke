@@ -17,6 +17,7 @@ import {
 import { adminAuth, adminDb, adminFirestore } from "../firebase-admin";
 import { useAuth } from "../context/AuthContext";
 import BottomNavigation from "../components/BottomNavigation";
+import PackageCard from "../components/subscription/PackageCard";
 
 // Types
 interface UserSubscription {
@@ -304,89 +305,17 @@ export default function AccountPage({ user, recentPayments, plans, error }: Prop
                     {!isPremium ? "เลือกแพ็คเกจที่เหมาะกับคุณ" : "ต่ออายุสมาชิก"}
                   </h2>
 
-                  {/* Compact Package Cards (inspired by pricing popup) */}
+                  {/* Package Cards Grid - Using PackageCard Component */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-                    {plans.map((plan) => {
-                      const isCurrentPlan = plan.id === user.subscription.plan;
-
-                      return (
-                        <div
-                          key={plan.id}
-                          className={`relative cursor-pointer rounded-lg border-2 p-4 transition-all ${
-                            isCurrentPlan
-                              ? "border-success bg-success/10"
-                              : plan.popular
-                              ? "border-primary bg-primary/5"
-                              : "border-base-300 hover:border-primary/50"
-                          }`}
-                        >
-                          {/* Badges */}
-                          <div className="flex gap-2 mb-3">
-                            {isCurrentPlan && (
-                              <div className="badge badge-success badge-sm px-2 py-1 font-medium">
-                                กำลังใช้งาน
-                              </div>
-                            )}
-                            {plan.popular && !isCurrentPlan && (
-                              <div className="badge badge-warning badge-sm px-2 py-1 font-medium">
-                                คุ้มที่สุด
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="flex items-center justify-between mb-4">
-                            <div>
-                              <div className="font-semibold text-lg">{plan.displayName}</div>
-                              <div className="text-sm text-base-content/60">{plan.duration}</div>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-2xl font-bold text-primary">฿{plan.price}</div>
-                            </div>
-                          </div>
-
-                          {/* Features - Show only first 3 for compact view */}
-                          <ul className="space-y-1.5 mb-4">
-                            {plan.features.slice(0, 3).map((feature, index) => (
-                              <li key={index} className="flex items-start gap-2 text-xs">
-                                <svg
-                                  className="w-4 h-4 text-success flex-shrink-0 mt-0.5"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M5 13l4 4L19 7"
-                                  />
-                                </svg>
-                                <span>{feature}</span>
-                              </li>
-                            ))}
-                            {plan.features.length > 3 && (
-                              <li className="text-xs text-base-content/60 ml-6">
-                                และอีก {plan.features.length - 3} ฟีเจอร์
-                              </li>
-                            )}
-                          </ul>
-
-                          <button
-                            onClick={() => handleSelectPlan(plan.id)}
-                            disabled={isCurrentPlan}
-                            className={`btn btn-block btn-sm ${
-                              isCurrentPlan
-                                ? "btn-disabled"
-                                : plan.popular
-                                ? "btn-primary"
-                                : "btn-outline btn-primary"
-                            }`}
-                          >
-                            {isCurrentPlan ? "แพ็คเกจปัจจุบัน" : "เลือกแพ็คเกจนี้"}
-                          </button>
-                        </div>
-                      );
-                    })}
+                    {plans.map((plan) => (
+                      <PackageCard
+                        key={plan.id}
+                        plan={plan}
+                        isCurrentPlan={plan.id === user.subscription.plan}
+                        onSelect={handleSelectPlan}
+                        maxFeatures={3}
+                      />
+                    ))}
                   </div>
                 </div>
               </div>

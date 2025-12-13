@@ -10,6 +10,7 @@ import Alert, { AlertHandler } from "../components/Alert";
 import { getPricingPackages } from "../services/pricingService";
 import { PricingPackage, SubscriptionPlan } from "../types/subscription";
 import { createUserProfile } from "../services/userService";
+import PackageCard from "../components/subscription/PackageCard";
 
 interface RegisterData {
   email: string;
@@ -206,23 +207,22 @@ export default function RegisterPage() {
 
           {/* Selected Plan Card */}
           {selectedPlan && selectedPlan.id !== "free" && (
-            <div className="card bg-gradient-to-br from-primary/10 to-secondary/10 border-2 border-primary/20 mb-6">
-              <div className="card-body p-5">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-sm text-base-content/60 mb-1">แพ็กเกจที่เลือก</div>
-                    <div className="text-2xl font-bold text-primary">
-                      {selectedPlan.name} - {selectedPlan.price.toLocaleString("th-TH")} ฿
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => router.push("/pricing")}
-                    className="btn btn-sm btn-ghost"
-                  >
-                    เปลี่ยน
-                  </button>
-                </div>
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-semibold">แพ็กเกจที่เลือก</h3>
+                <button
+                  onClick={() => router.push("/pricing")}
+                  className="btn btn-sm btn-outline btn-primary"
+                >
+                  เปลี่ยนแพ็กเกจ
+                </button>
               </div>
+              <PackageCard
+                plan={selectedPlan}
+                isCurrentPlan={false}
+                buttonText="แพ็กเกจที่เลือก"
+                maxFeatures={4}
+              />
             </div>
           )}
 
