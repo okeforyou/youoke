@@ -18,6 +18,7 @@ import { adminAuth, adminDb, adminFirestore } from "../firebase-admin";
 import { useAuth } from "../context/AuthContext";
 import BottomNavigation from "../components/BottomNavigation";
 import PackageCard from "../components/subscription/PackageCard";
+import { PricingPackage } from "../types/subscription";
 
 // Types
 interface UserSubscription {
@@ -35,15 +36,6 @@ interface RecentPayment {
   createdAt: string | null;
 }
 
-interface Plan {
-  id: string;
-  displayName: string;
-  price: number;
-  duration: string;
-  features: string[];
-  popular?: boolean;
-}
-
 interface Props {
   user: {
     uid: string;
@@ -52,7 +44,7 @@ interface Props {
     subscription: UserSubscription;
   };
   recentPayments: RecentPayment[];
-  plans: Plan[];
+  plans: PricingPackage[];
   error?: string;
 }
 
@@ -459,21 +451,25 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
       .get();
 
     // Filter active and visible plans, then sort by price
-    const plans: Plan[] = plansSnapshot.docs
+    const plans: PricingPackage[] = plansSnapshot.docs
+      .filter((doc) => {
+        const data = doc.data();
+        const isActive = data.isActive || false;
+        const isVisible = data.isVisible !== false;
+        return isActive && isVisible;
+      })
       .map((doc) => {
         const data = doc.data();
         return {
           id: doc.id,
+          name: data.name || data.displayName || doc.id,
           displayName: data.displayName || data.name || doc.id,
           price: data.price || 0,
           duration: data.duration || "",
           features: data.features || [],
           popular: data.popular || false,
-          isActive: data.isActive || false,
-          isVisible: data.isVisible !== false, // Default to true if not specified
         };
       })
-      .filter((plan) => plan.isActive && plan.isVisible)
       .sort((a, b) => a.price - b.price);
 
     // 5. Fetch recent payments (last 5)
