@@ -1,4 +1,5 @@
 import React from 'react';
+import { PricingPackage } from '../types/subscription';
 
 /**
  * Package Card Component - Displays subscription plan in a card format
@@ -10,15 +11,6 @@ import React from 'react';
  *
  * Design System: See CONTRIBUTING.md
  */
-
-export interface PricingPackage {
-  id: string;
-  displayName: string;
-  price: number;
-  duration: string;
-  features: string[];
-  popular?: boolean;
-}
 
 export interface PackageCardProps {
   /** The pricing package to display */
@@ -47,7 +39,7 @@ export default function PackageCard({
 
   const handleClick = () => {
     if (!isCurrentPlan && onSelect) {
-      onSelect(plan.id);
+      onSelect(String(plan.id));
     }
   };
 
@@ -102,8 +94,8 @@ export default function PackageCard({
       {/* Plan Name & Price */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <div className="font-semibold text-lg">{plan.displayName}</div>
-          <div className="text-sm text-base-content/60">{plan.duration}</div>
+          <div className="font-semibold text-lg">{plan.displayName || plan.name}</div>
+          <div className="text-sm text-base-content/60">{String(plan.duration)}</div>
         </div>
         <div className="text-right">
           <div className="text-2xl font-bold text-primary">฿{plan.price}</div>

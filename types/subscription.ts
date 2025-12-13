@@ -52,10 +52,11 @@ export interface UserProfile {
 }
 
 export interface PricingPackage {
-  id: SubscriptionPlan;
+  id: SubscriptionPlan | string;
   name: string;
+  displayName?: string; // For display purposes (fallback to name if not set)
   price: number;
-  duration: number; // days, 0 = lifetime
+  duration: number | string; // days (number) or label (string), 0 = lifetime
   features: string[];
   popular?: boolean;
   discount?: {
