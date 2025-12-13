@@ -97,13 +97,19 @@ export async function initializePricing(): Promise<void> {
  * คำนวณวันหมดอายุจากแพ็กเกจ
  */
 export function calculateExpiryDate(plan: PricingPackage, startDate = new Date()): Date | null {
-  if (plan.duration === 0) {
-    // Lifetime - ไม่มีวันหมดอายุ
+  // Convert duration to number
+  const durationDays = typeof plan.duration === 'number'
+    ? plan.duration
+    : parseInt(String(plan.duration), 10);
+
+  // Check if duration is 0 or invalid
+  if (durationDays === 0 || isNaN(durationDays)) {
+    // Lifetime or invalid - ไม่มีวันหมดอายุ
     return null;
   }
 
   const expiryDate = new Date(startDate);
-  expiryDate.setDate(expiryDate.getDate() + plan.duration);
+  expiryDate.setDate(expiryDate.getDate() + durationDays);
   return expiryDate;
 }
 
