@@ -122,9 +122,9 @@ export default function AccountPage({ user, recentPayments, plans, error }: Prop
     }
   };
 
-  // Handle plan selection
+  // Handle plan selection - Go directly to payment page for logged-in users
   const handleSelectPlan = (planId: string) => {
-    router.push(`/register?plan=${planId}`);
+    router.push(`/payment?plan=${planId}`);
   };
 
   return (
@@ -167,17 +167,6 @@ export default function AccountPage({ user, recentPayments, plans, error }: Prop
                   {getPlanName(user.subscription.plan)}
                 </div>
               </div>
-            </div>
-
-            {/* Logout Button - Desktop Only */}
-            <div className="hidden lg:block">
-              <button
-                onClick={handleLogout}
-                className="btn btn-outline btn-error gap-2"
-              >
-                <ArrowRightOnRectangleIcon className="w-5 h-5" />
-                ออกจากระบบ
-              </button>
             </div>
           </div>
 
@@ -315,33 +304,52 @@ export default function AccountPage({ user, recentPayments, plans, error }: Prop
                     {!isPremium ? "เลือกแพ็คเกจที่เหมาะกับคุณ" : "ต่ออายุสมาชิก"}
                   </h2>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
-                    {plans.map((plan) => (
-                      <div
-                        key={plan.id}
-                        className={`card border-2 ${
-                          plan.popular
-                            ? "border-primary bg-primary/5"
-                            : "border-base-300 bg-base-100"
-                        } hover:shadow-lg transition-all`}
-                      >
-                        <div className="card-body">
-                          {plan.popular && (
-                            <div className="badge badge-primary badge-sm mb-2">แนะนำ</div>
-                          )}
-                          <h3 className="card-title text-xl">{plan.displayName}</h3>
-                          <div className="my-4">
-                            <div className="text-3xl font-bold text-primary">
-                              ฿{plan.price}
-                            </div>
-                            <div className="text-sm text-base-content/60">{plan.duration}</div>
+                  {/* Compact Package Cards (inspired by pricing popup) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                    {plans.map((plan) => {
+                      const isCurrentPlan = plan.id === user.subscription.plan;
+
+                      return (
+                        <div
+                          key={plan.id}
+                          className={`relative cursor-pointer rounded-lg border-2 p-4 transition-all ${
+                            isCurrentPlan
+                              ? "border-success bg-success/10"
+                              : plan.popular
+                              ? "border-primary bg-primary/5"
+                              : "border-base-300 hover:border-primary/50"
+                          }`}
+                        >
+                          {/* Badges */}
+                          <div className="flex gap-2 mb-3">
+                            {isCurrentPlan && (
+                              <div className="badge badge-success badge-sm px-2 py-1 font-medium">
+                                กำลังใช้งาน
+                              </div>
+                            )}
+                            {plan.popular && !isCurrentPlan && (
+                              <div className="badge badge-warning badge-sm px-2 py-1 font-medium">
+                                คุ้มที่สุด
+                              </div>
+                            )}
                           </div>
-                          <div className="divider my-2"></div>
-                          <ul className="space-y-2 mb-4">
-                            {plan.features.map((feature, index) => (
-                              <li key={index} className="flex items-start gap-2 text-sm">
+
+                          <div className="flex items-center justify-between mb-4">
+                            <div>
+                              <div className="font-semibold text-lg">{plan.displayName}</div>
+                              <div className="text-sm text-base-content/60">{plan.duration}</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-2xl font-bold text-primary">฿{plan.price}</div>
+                            </div>
+                          </div>
+
+                          {/* Features - Show only first 3 for compact view */}
+                          <ul className="space-y-1.5 mb-4">
+                            {plan.features.slice(0, 3).map((feature, index) => (
+                              <li key={index} className="flex items-start gap-2 text-xs">
                                 <svg
-                                  className="w-5 h-5 text-success flex-shrink-0 mt-0.5"
+                                  className="w-4 h-4 text-success flex-shrink-0 mt-0.5"
                                   fill="none"
                                   viewBox="0 0 24 24"
                                   stroke="currentColor"
@@ -356,18 +364,29 @@ export default function AccountPage({ user, recentPayments, plans, error }: Prop
                                 <span>{feature}</span>
                               </li>
                             ))}
+                            {plan.features.length > 3 && (
+                              <li className="text-xs text-base-content/60 ml-6">
+                                และอีก {plan.features.length - 3} ฟีเจอร์
+                              </li>
+                            )}
                           </ul>
+
                           <button
                             onClick={() => handleSelectPlan(plan.id)}
-                            className={`btn btn-block ${
-                              plan.popular ? "btn-primary" : "btn-outline btn-primary"
+                            disabled={isCurrentPlan}
+                            className={`btn btn-block btn-sm ${
+                              isCurrentPlan
+                                ? "btn-disabled"
+                                : plan.popular
+                                ? "btn-primary"
+                                : "btn-outline btn-primary"
                             }`}
                           >
-                            เลือกแพ็คเกจนี้
+                            {isCurrentPlan ? "แพ็คเกจปัจจุบัน" : "เลือกแพ็คเกจนี้"}
                           </button>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -447,8 +466,8 @@ export default function AccountPage({ user, recentPayments, plans, error }: Prop
               </div>
             </div>
 
-            {/* Logout Button - Mobile Only */}
-            <div className="lg:hidden">
+            {/* Logout Button */}
+            <div>
               <button
                 onClick={handleLogout}
                 className="btn btn-outline btn-error btn-block btn-lg gap-2"
