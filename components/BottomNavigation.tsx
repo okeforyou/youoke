@@ -25,6 +25,20 @@ export default function BottomNavigation() {
     }
   };
 
+  // Helper function to handle navigation to account page
+  const navigateToAccount = () => {
+    if (router.pathname !== '/account') {
+      router.push('/account');
+    }
+  };
+
+  // Helper function to handle navigation to login page
+  const navigateToLogin = () => {
+    if (router.pathname !== '/login') {
+      router.push('/login');
+    }
+  };
+
   // Check if current page is home
   const isHomePage = router.pathname === '/';
   const isAccountPage = router.pathname === '/account';
@@ -64,7 +78,7 @@ export default function BottomNavigation() {
         <button
           title="เข้าสู่ระบบ"
           className="text-primary"
-          onClick={() => router.push("/login")}
+          onClick={navigateToLogin}
         >
           <ArrowLeftOnRectangleIcon className="w-6 h-6" />
           <span className="btm-nav-label">เข้าสู่ระบบ</span>
@@ -73,7 +87,7 @@ export default function BottomNavigation() {
         <button
           className={`text-primary ${isAccountPage ? "active" : ""}`}
           title="บัญชีของฉัน"
-          onClick={() => router.push("/account")}
+          onClick={navigateToAccount}
         >
           <UserCircleIcon className="w-6 h-6" />
           <span className="btm-nav-label">บัญชี</span>
