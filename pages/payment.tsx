@@ -1,19 +1,13 @@
 import { useRouter } from "next/router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Head from "next/head";
 import {
-  ExclamationCircleIcon,
-  CheckCircleIcon,
   XMarkIcon,
   ChatBubbleLeftIcon,
 } from "@heroicons/react/24/outline";
 import { useAuth } from "../context/AuthContext";
-import Alert, { AlertHandler } from "../components/Alert";
 import { getPricingPackage } from "../services/pricingService";
-import { PricingPackage, SubscriptionPlan } from "../types/subscription";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from "../firebase";
-import { createPayment } from "../services/paymentService";
+import { PricingPackage } from "../types/subscription";
 import PackageCard from "../components/subscription/PackageCard";
 
 export default function PaymentPage() {
@@ -22,13 +16,6 @@ export default function PaymentPage() {
   const { user } = useAuth();
 
   const [selectedPlan, setSelectedPlan] = useState<PricingPackage | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [uploadSuccess, setUploadSuccess] = useState(false);
-  const [paymentProofFile, setPaymentProofFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-
-  const successRef = useRef<AlertHandler>(null);
-  const errorRef = useRef<AlertHandler>(null);
 
   useEffect(() => {
     // Redirect if not logged in
@@ -56,68 +43,6 @@ export default function PaymentPage() {
     } catch (error) {
       console.error("Error loading plan:", error);
       router.push("/pricing");
-    }
-  }
-
-  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (file) {
-      setPaymentProofFile(file);
-      // Create preview URL
-      const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
-    }
-  }
-
-  async function handleConfirmPayment() {
-    if (!paymentProofFile) {
-      alert("กรุณาแนบหลักฐานการโอนเงิน");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      // 1. Upload image to Firebase Storage
-      const timestamp = Date.now();
-      const fileName = `payment-proofs/${user.uid}/${timestamp}_${paymentProofFile.name}`;
-      const storageRef = ref(storage, fileName);
-
-      await uploadBytes(storageRef, paymentProofFile);
-      const downloadURL = await getDownloadURL(storageRef);
-
-      // 2. Save payment to Firestore
-      await createPayment({
-        userId: user.uid,
-        plan: selectedPlan.id as SubscriptionPlan,
-        amount: selectedPlan.price,
-        bankName: "ธนาคารกรุงเทพ",
-        transferDate: new Date().toISOString().split('T')[0],
-        transferTime: new Date().toTimeString().split(' ')[0],
-        note: "",
-        paymentProof: downloadURL,
-      });
-
-      setUploadSuccess(true);
-      successRef.current?.open();
-    } catch (error: any) {
-      console.error("Payment submission error:", error);
-
-      // Show specific error message
-      let errorMessage = "ไม่สามารถดำเนินการได้";
-      if (error.code === 'storage/unauthorized') {
-        errorMessage = "ไม่มีสิทธิ์อัปโหลดไฟล์ กรุณาติดต่อผู้ดูแลระบบ";
-      } else if (error.code === 'storage/canceled') {
-        errorMessage = "ยกเลิกการอัปโหลด";
-      } else if (error.code === 'storage/unknown') {
-        errorMessage = "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ";
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-
-      alert(`เกิดข้อผิดพลาด: ${errorMessage}\n\nกรุณาลองใหม่อีกครั้งหรือติดต่อทาง LINE@`);
-      errorRef.current?.open();
-      setLoading(false);
     }
   }
 
@@ -156,26 +81,6 @@ export default function PaymentPage() {
 
       <div className="min-h-screen bg-base-200 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          <Alert
-            ref={successRef}
-            timer={2500}
-            headline="สำเร็จ!"
-            headlineColor="text-green-600"
-            bgColor="bg-green-100"
-            content={<span className="text-sm">ยืนยันการชำระเงินสำเร็จ!</span>}
-            icon={<CheckCircleIcon />}
-          />
-
-          <Alert
-            ref={errorRef}
-            timer={3000}
-            headline="ผิดพลาด"
-            headlineColor="text-red-600"
-            bgColor="bg-red-100"
-            content={<span className="text-sm">ไม่สามารถดำเนินการได้</span>}
-            icon={<ExclamationCircleIcon />}
-          />
-
           <div className="card bg-base-100 shadow-2xl">
             <div className="card-body p-6 relative">
               {/* Close Button */}
@@ -234,92 +139,44 @@ export default function PaymentPage() {
                 </div>
               </div>
 
-              {/* Upload Payment Proof */}
-              {!uploadSuccess && (
-                <div className="mb-6">
-                  <label className="block text-sm font-medium mb-2">
-                    แนบหลักฐานการโอนเงิน
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileSelect}
-                    className="file-input file-input-bordered file-input-primary w-full"
-                  />
-
-                  {/* Preview */}
-                  {previewUrl && (
-                    <div className="mt-4">
-                      <img
-                        src={previewUrl}
-                        alt="Payment proof preview"
-                        className="w-full max-w-sm mx-auto rounded-lg border-2 border-base-300"
-                      />
-                    </div>
-                  )}
+              {/* Instructions */}
+              <div className="alert alert-info mb-6">
+                <div className="text-sm">
+                  <strong>ขั้นตอนการชำระเงิน:</strong>
+                  <ol className="list-decimal list-inside mt-2 space-y-1">
+                    <li>โอนเงินตามจำนวนที่ระบุ</li>
+                    <li>กดปุ่ม "แจ้งชำระเงินทาง LINE@"</li>
+                    <li>แนบสลิปการโอนเงินในแชท LINE</li>
+                    <li>รอการยืนยันจากแอดมิน (ภายใน 24 ชม.)</li>
+                  </ol>
                 </div>
-              )}
-
-              {/* Success State - Show after upload */}
-              {uploadSuccess && (
-                <div className="alert alert-success mb-6">
-                  <CheckCircleIcon className="w-6 h-6" />
-                  <div>
-                    <h3 className="font-bold">อัปโหลดหลักฐานสำเร็จ!</h3>
-                    <div className="text-sm">
-                      เพื่อให้เราตรวจสอบและเปิดใช้งานแพ็กเกจให้คุณเร็วขึ้น
-                      <br />
-                      กรุณาแจ้งการชำระเงินทาง LINE@
-                    </div>
-                  </div>
-                </div>
-              )}
+              </div>
 
               {/* Action Buttons */}
-              {!uploadSuccess ? (
-                <button
-                  onClick={handleConfirmPayment}
-                  disabled={loading || !paymentProofFile}
-                  className="btn btn-primary btn-block btn-lg mb-4"
-                >
-                  {loading ? (
-                    <>
-                      <span className="loading loading-spinner"></span>
-                      กำลังอัปโหลด...
-                    </>
-                  ) : (
-                    "ยืนยันและอัปโหลดหลักฐาน"
-                  )}
-                </button>
-              ) : (
-                <>
-                  <button
-                    onClick={handleNotifyLineOA}
-                    className="btn btn-success btn-block btn-lg mb-4"
-                  >
-                    <ChatBubbleLeftIcon className="w-6 h-6" />
-                    แจ้งชำระเงินทาง LINE@
-                  </button>
-                  <button
-                    onClick={() => router.push("/")}
-                    className="btn btn-outline btn-block"
-                  >
-                    กลับหน้าหลัก
-                  </button>
-                </>
-              )}
+              <button
+                onClick={handleNotifyLineOA}
+                className="btn btn-success btn-block btn-lg mb-4"
+              >
+                <ChatBubbleLeftIcon className="w-6 h-6" />
+                แจ้งชำระเงินทาง LINE@
+              </button>
 
-              {/* Back Link - Only show before upload */}
-              {!uploadSuccess && (
-                <div className="text-center">
-                  <button
-                    onClick={handleClose}
-                    className="text-sm text-base-content/60 hover:text-base-content"
-                  >
-                    กลับไปเลือกแพ็กเกจอื่น
-                  </button>
-                </div>
-              )}
+              <button
+                onClick={() => router.push("/")}
+                className="btn btn-outline btn-block mb-4"
+              >
+                กลับหน้าหลัก
+              </button>
+
+              {/* Back Link */}
+              <div className="text-center">
+                <button
+                  onClick={handleClose}
+                  className="text-sm text-base-content/60 hover:text-base-content"
+                >
+                  กลับไปเลือกแพ็กเกจอื่น
+                </button>
+              </div>
             </div>
           </div>
         </div>
