@@ -1,4 +1,5 @@
 import { useRouter } from 'next/router'
+import { useTransition } from 'react'
 
 import {
     ArrowLeftOnRectangleIcon,
@@ -16,6 +17,7 @@ export default function BottomNavigation() {
   const { activeIndex, setActiveIndex } = useKaraokeState();
   const { user } = useAuth();
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
   // Helper function to handle navigation to home page with active index
   const navigateToHome = (index: number) => {
@@ -26,19 +28,17 @@ export default function BottomNavigation() {
   };
 
   // Helper function to handle navigation to account page
-  const navigateToAccount = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log('Account button clicked!'); // Debug
-    router.push('/account');
+  const navigateToAccount = () => {
+    startTransition(() => {
+      router.push('/account');
+    });
   };
 
   // Helper function to handle navigation to login page
-  const navigateToLogin = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log('Login button clicked!'); // Debug
-    router.push('/login');
+  const navigateToLogin = () => {
+    startTransition(() => {
+      router.push('/login');
+    });
   };
 
   // Check if current page is home
@@ -84,8 +84,13 @@ export default function BottomNavigation() {
           type="button"
           className="flex flex-col items-center justify-center gap-1 min-h-[64px] text-primary p-2"
           onClick={navigateToLogin}
+          disabled={isPending}
         >
-          <ArrowLeftOnRectangleIcon className="w-6 h-6 pointer-events-none" />
+          {isPending ? (
+            <span className="loading loading-spinner loading-sm"></span>
+          ) : (
+            <ArrowLeftOnRectangleIcon className="w-6 h-6 pointer-events-none" />
+          )}
           <span className="btm-nav-label pointer-events-none">เข้าสู่ระบบ</span>
         </button>
       ) : (
@@ -93,8 +98,13 @@ export default function BottomNavigation() {
           type="button"
           className={`flex flex-col items-center justify-center gap-1 min-h-[64px] text-primary p-2 ${isAccountPage ? "active" : ""}`}
           onClick={navigateToAccount}
+          disabled={isPending}
         >
-          <UserCircleIcon className="w-6 h-6 pointer-events-none" />
+          {isPending ? (
+            <span className="loading loading-spinner loading-sm"></span>
+          ) : (
+            <UserCircleIcon className="w-6 h-6 pointer-events-none" />
+          )}
           <span className="btm-nav-label pointer-events-none">บัญชี</span>
         </button>
       )}
