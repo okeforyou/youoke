@@ -100,8 +100,22 @@ export default function PaymentPage() {
 
       setUploadSuccess(true);
       successRef.current?.open();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Payment submission error:", error);
+
+      // Show specific error message
+      let errorMessage = "ไม่สามารถดำเนินการได้";
+      if (error.code === 'storage/unauthorized') {
+        errorMessage = "ไม่มีสิทธิ์อัปโหลดไฟล์ กรุณาติดต่อผู้ดูแลระบบ";
+      } else if (error.code === 'storage/canceled') {
+        errorMessage = "ยกเลิกการอัปโหลด";
+      } else if (error.code === 'storage/unknown') {
+        errorMessage = "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      alert(`เกิดข้อผิดพลาด: ${errorMessage}\n\nกรุณาลองใหม่อีกครั้งหรือติดต่อทาง LINE@`);
       errorRef.current?.open();
       setLoading(false);
     }
