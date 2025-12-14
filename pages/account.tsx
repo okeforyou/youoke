@@ -450,12 +450,21 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
       .collection("plans")
       .get();
 
+    // Create a Map to cache plan data (avoids N+1 query problem in payment lookups)
+    const plansMap = new Map<string, { displayName: string }>();
+
     // Filter active and visible plans, then sort by price
     const plans: PricingPackage[] = plansSnapshot.docs
       .filter((doc) => {
         const data = doc.data();
         const isActive = data.isActive || false;
         const isVisible = data.isVisible !== false;
+
+        // Cache ALL plan data for payment lookups (not just visible ones)
+        plansMap.set(doc.id, {
+          displayName: data.displayName || data.name || doc.id,
+        });
+
         return isActive && isVisible;
       })
       .map((doc) => {
@@ -480,35 +489,27 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
       .limit(5)
       .get();
 
-    const recentPayments: RecentPayment[] = await Promise.all(
-      paymentsSnapshot.docs.map(async (doc) => {
-        const data = doc.data();
+    // ⚡ Performance optimization: Use cached plan data instead of querying each plan
+    const recentPayments: RecentPayment[] = paymentsSnapshot.docs.map((doc) => {
+      const data = doc.data();
 
-        // Get plan name
-        let planName = data.planId;
-        if (data.planName) {
-          planName = data.planName;
-        } else if (data.planId) {
-          try {
-            const planDoc = await adminFirestore.collection("plans").doc(data.planId).get();
-            if (planDoc.exists) {
-              const planData = planDoc.data();
-              planName = planData?.displayName || data.planId;
-            }
-          } catch (error) {
-            console.error("Error fetching plan:", error);
-          }
-        }
+      // Get plan name from cache (no additional queries needed!)
+      let planName = data.planId;
+      if (data.planName) {
+        planName = data.planName;
+      } else if (data.planId && plansMap.has(data.planId)) {
+        // Use cached data instead of querying Firestore
+        planName = plansMap.get(data.planId)!.displayName;
+      }
 
-        return {
-          id: doc.id,
-          amount: data.amount || 0,
-          status: data.status || "pending",
-          planName,
-          createdAt: data.createdAt?.toDate?.()?.toISOString() || null,
-        };
-      })
-    );
+      return {
+        id: doc.id,
+        amount: data.amount || 0,
+        status: data.status || "pending",
+        planName,
+        createdAt: data.createdAt?.toDate?.()?.toISOString() || null,
+      };
+    });
 
     console.log(`✅ [SSR] Fetched user data, ${plans.length} plans, and ${recentPayments.length} payments`);
 
