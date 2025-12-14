@@ -44,30 +44,30 @@ export default function BottomNavigation() {
   const isAccountPage = router.pathname === '/account';
 
   return (
-    <div className="btm-nav fixed bottom-0 w-full sm:w-1/2 text-sm z-50">
+    <div className="btm-nav fixed bottom-0 w-full sm:w-1/2 text-sm z-50 h-16">
       <button
-        className={`text-primary ${isHomePage && activeIndex === 1 ? "active" : ""}`}
+        className={`flex flex-col items-center justify-center gap-1 min-h-[64px] text-primary ${isHomePage && activeIndex === 1 ? "active" : ""}`}
         onClick={() => navigateToHome(1)}
       >
         <MusicalNoteIcon className="w-6 h-6" />
         <span className="btm-nav-label">แนะนำ</span>
       </button>
       <button
-        className={`text-primary ${isHomePage && activeIndex === 2 ? "active" : ""}`}
+        className={`flex flex-col items-center justify-center gap-1 min-h-[64px] text-primary ${isHomePage && activeIndex === 2 ? "active" : ""}`}
         onClick={() => navigateToHome(2)}
       >
         <TrophyIcon className="w-6 h-6" />
         <span className="btm-nav-label">มาแรง</span>
       </button>
       <button
-        className={`text-primary ${isHomePage && activeIndex === 3 ? "active" : ""}`}
+        className={`flex flex-col items-center justify-center gap-1 min-h-[64px] text-primary ${isHomePage && activeIndex === 3 ? "active" : ""}`}
         onClick={() => navigateToHome(3)}
       >
         <RectangleStackIcon className="w-6 h-6" />
         <span className="btm-nav-label">เพลย์ลิสต์</span>
       </button>
       <button
-        className="text-primary"
+        className="flex flex-col items-center justify-center gap-1 min-h-[64px] text-primary"
         title="ติดต่อเรา"
         onClick={() => window.open("https://line.me/R/ti/p/@243lercy", "_blank")}
       >
@@ -77,7 +77,7 @@ export default function BottomNavigation() {
       {!user.uid ? (
         <button
           title="เข้าสู่ระบบ"
-          className="text-primary"
+          className="flex flex-col items-center justify-center gap-1 min-h-[64px] text-primary"
           onClick={navigateToLogin}
         >
           <ArrowLeftOnRectangleIcon className="w-6 h-6" />
@@ -85,7 +85,7 @@ export default function BottomNavigation() {
         </button>
       ) : (
         <button
-          className={`text-primary ${isAccountPage ? "active" : ""}`}
+          className={`flex flex-col items-center justify-center gap-1 min-h-[64px] text-primary ${isAccountPage ? "active" : ""}`}
           title="บัญชีของฉัน"
           onClick={navigateToAccount}
         >
