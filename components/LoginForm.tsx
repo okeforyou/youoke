@@ -1,11 +1,16 @@
 import { useRouter } from "next/router";
 import { useRef, useState } from "react";
 
-import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
+import {
+  ExclamationCircleIcon,
+  EnvelopeIcon,
+  LockClosedIcon,
+} from "@heroicons/react/24/outline";
 
 import { useAuth } from "../context/AuthContext";
 import { LoginType } from "../types/AuthTypes";
 import Alert, { AlertHandler } from "./Alert";
+import Input from "./ui/Input";
 
 const LoginForm = () => {
   const [data, setData] = useState<LoginType>({
@@ -65,55 +70,42 @@ const LoginForm = () => {
             <div className="flex justify-center items-center">
               <img src="icon-512.png" alt="icon" width={120} height={120} />
             </div>
-            <div className="mb-5">
-              <label
-                htmlFor="email"
-                className="mb-2 block text-sm font-medium text-gray-900 dark:text-white"
-              >
-                อีเมล
-              </label>
-              <input
-                type="email"
-                name="email"
-                id="email"
-                className="valid:[&:not(:placeholder-shown)]:border-gray-300 [&:not(:placeholder-shown):not(:focus):invalid~span]:block invalid:[&:not(:placeholder-shown):not(:focus)]:border-red-400 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 placeholder-gray-300 focus:border-gray-300 focus:outline-none dark:border-gray-500 dark:bg-gray-600 dark:text-white dark:placeholder-gray-400"
-                autoComplete="off"
-                required
-                pattern="[a-z0-9._+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
-                placeholder="name@gmail.com"
-                onChange={(e: any) => {
-                  setData({
-                    ...data,
-                    email: e.target.value,
-                  });
-                }}
-              />
-              <span className="mt-1 hidden text-sm text-red-400">
-                โปรดใส่อีเมล
-              </span>
-            </div>
-            <div className="mb-5">
-              <label
-                htmlFor="password"
-                className="mb-2 block text-sm font-medium text-gray-900 dark:text-white"
-              >
-                รหัสผ่าน
-              </label>
-              <input
-                type="password"
-                name="password"
-                id="password"
-                placeholder="••••••••"
-                className="valid:[&:not(:placeholder-shown)]:border-gray-300 [&:not(:placeholder-shown):not(:focus):invalid~span]:block invalid:[&:not(:placeholder-shown):not(:focus)]:border-red-400 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 placeholder-gray-300 focus:border-gray-300 focus:outline-none focus:ring-primary dark:border-gray-500 dark:bg-gray-600 dark:text-white dark:placeholder-gray-400"
-                required
-                onChange={(e: any) => {
-                  setData({
-                    ...data,
-                    password: e.target.value,
-                  });
-                }}
-              />
-            </div>
+            <Input
+              type="email"
+              label="อีเมล"
+              name="email"
+              id="email"
+              placeholder="name@gmail.com"
+              value={data.email}
+              onChange={(e: any) => {
+                setData({
+                  ...data,
+                  email: e.target.value,
+                });
+              }}
+              leftIcon={<EnvelopeIcon className="w-5 h-5" />}
+              autoComplete="off"
+              required
+              pattern="[a-z0-9._+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+              containerClassName="mb-5"
+            />
+            <Input
+              type="password"
+              label="รหัสผ่าน"
+              name="password"
+              id="password"
+              placeholder="••••••••"
+              value={data.password}
+              onChange={(e: any) => {
+                setData({
+                  ...data,
+                  password: e.target.value,
+                });
+              }}
+              leftIcon={<LockClosedIcon className="w-5 h-5" />}
+              required
+              containerClassName="mb-5"
+            />
 
             <button
               type="submit"

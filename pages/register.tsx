@@ -4,6 +4,8 @@ import Head from "next/head";
 import {
   ExclamationCircleIcon,
   CheckCircleIcon,
+  EnvelopeIcon,
+  LockClosedIcon,
 } from "@heroicons/react/24/outline";
 import { useAuth } from "../context/AuthContext";
 import Alert, { AlertHandler } from "../components/Alert";
@@ -11,6 +13,7 @@ import { getPricingPackages } from "../services/pricingService";
 import { PricingPackage, SubscriptionPlan } from "../types/subscription";
 import { createUserProfile } from "../services/userService";
 import PackageCard from "../components/subscription/PackageCard";
+import Input from "../components/ui/Input";
 
 interface RegisterData {
   email: string;
@@ -231,67 +234,43 @@ export default function RegisterPage() {
             <div className="card-body">
               <form onSubmit={handleRegister} className="space-y-4">
                 {/* Email */}
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-medium">อีเมล</span>
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="name@example.com"
-                    className="input input-bordered w-full"
-                    value={data.email}
-                    onChange={(e) => setData({ ...data, email: e.target.value })}
-                    required
-                  />
-                </div>
+                <Input
+                  type="email"
+                  label="อีเมล"
+                  placeholder="name@example.com"
+                  value={data.email}
+                  onChange={(e) => setData({ ...data, email: e.target.value })}
+                  leftIcon={<EnvelopeIcon className="w-5 h-5" />}
+                  required
+                />
 
                 {/* Password */}
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-medium">รหัสผ่าน</span>
-                  </label>
-                  <input
-                    type="password"
-                    placeholder="อย่างน้อย 6 ตัวอักษร"
-                    className="input input-bordered w-full"
-                    value={data.password}
-                    onChange={(e) =>
-                      setData({ ...data, password: e.target.value })
-                    }
-                    required
-                    minLength={6}
-                  />
-                </div>
+                <Input
+                  type="password"
+                  label="รหัสผ่าน"
+                  placeholder="อย่างน้อย 6 ตัวอักษร"
+                  value={data.password}
+                  onChange={(e) => setData({ ...data, password: e.target.value })}
+                  leftIcon={<LockClosedIcon className="w-5 h-5" />}
+                  required
+                  minLength={6}
+                />
 
                 {/* Confirm Password */}
-                <div className="form-control">
-                  <label className="label">
-                    <span className="label-text font-medium">ยืนยันรหัสผ่าน</span>
-                  </label>
-                  <input
-                    type="password"
-                    placeholder="ใส่รหัสผ่านอีกครั้ง"
-                    className={`input input-bordered w-full ${
-                      data.confirmPassword &&
-                      data.password !== data.confirmPassword
-                        ? "input-error"
-                        : ""
-                    }`}
-                    value={data.confirmPassword}
-                    onChange={(e) =>
-                      setData({ ...data, confirmPassword: e.target.value })
-                    }
-                    required
-                  />
-                  {data.confirmPassword &&
-                    data.password !== data.confirmPassword && (
-                      <label className="label">
-                        <span className="label-text-alt text-error">
-                          รหัสผ่านไม่ตรงกัน
-                        </span>
-                      </label>
-                    )}
-                </div>
+                <Input
+                  type="password"
+                  label="ยืนยันรหัสผ่าน"
+                  placeholder="ใส่รหัสผ่านอีกครั้ง"
+                  value={data.confirmPassword}
+                  onChange={(e) => setData({ ...data, confirmPassword: e.target.value })}
+                  leftIcon={<LockClosedIcon className="w-5 h-5" />}
+                  error={
+                    data.confirmPassword && data.password !== data.confirmPassword
+                      ? "รหัสผ่านไม่ตรงกัน"
+                      : undefined
+                  }
+                  required
+                />
 
                 {/* Terms & Conditions */}
                 <div className="form-control">
