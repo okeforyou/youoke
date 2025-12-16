@@ -20,6 +20,7 @@ import BottomNavigation from "../components/BottomNavigation";
 import PackageCard from "../components/subscription/PackageCard";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
+import Badge from "../components/ui/Badge";
 import { PricingPackage } from "../types/subscription";
 
 // Types
@@ -151,31 +152,31 @@ export default function AccountPage({ user, recentPayments, plans, error }: Prop
               {/* Status Badge */}
               <div className="mt-3 flex justify-center lg:justify-start gap-2">
                 {isPremium ? (
-                  <div className="badge badge-success badge-lg gap-1">
+                  <Badge variant="success" size="lg" className="gap-1">
                     <SparklesIcon className="w-4 h-4" />
                     Premium
-                  </div>
+                  </Badge>
                 ) : (
-                  <div className="badge badge-ghost badge-lg">Free</div>
+                  <Badge variant="ghost" size="lg">Free</Badge>
                 )}
-                <div className="badge badge-outline badge-lg">
+                <Badge variant="outline" size="lg">
                   {getPlanName(user.subscription.plan)}
-                </div>
+                </Badge>
               </div>
             </div>
           </div>
 
           {/* Section 1: Subscription Status */}
           <div className="space-y-6">
-            <div className="card bg-base-100 shadow-xl border border-base-300">
-              <div className="card-body">
+            <Card variant="default">
+              <Card.Body>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="card-title text-2xl">
                     <SparklesIcon className="w-6 h-6 text-primary" />
                     สถานะสมาชิก
                   </h2>
-                  {isPremium && <div className="badge badge-success badge-lg">Premium</div>}
-                  {!isPremium && <div className="badge badge-ghost badge-lg">Free</div>}
+                  {isPremium && <Badge variant="success" size="lg">Premium</Badge>}
+                  {!isPremium && <Badge variant="ghost" size="lg">Free</Badge>}
                 </div>
 
                 <div className="divider my-2"></div>
@@ -287,13 +288,13 @@ export default function AccountPage({ user, recentPayments, plans, error }: Prop
                     <span>แพ็กเกจของคุณหมดอายุแล้ว กรุณาต่ออายุเพื่อใช้งานต่อ</span>
                   </div>
                 )}
-              </div>
-            </div>
+              </Card.Body>
+            </Card>
 
             {/* Section 2: Available Packages */}
             {(!isPremium || isExpiringSoon || isExpired) && (
-              <div className="card bg-base-100 shadow-xl border border-base-300">
-                <div className="card-body">
+              <Card variant="default">
+                <Card.Body>
                   <h2 className="card-title text-2xl mb-4">
                     <CreditCardIcon className="w-6 h-6 text-primary" />
                     {!isPremium ? "เลือกแพ็คเกจที่เหมาะกับคุณ" : "ต่ออายุสมาชิก"}
@@ -311,13 +312,13 @@ export default function AccountPage({ user, recentPayments, plans, error }: Prop
                       />
                     ))}
                   </div>
-                </div>
-              </div>
+                </Card.Body>
+              </Card>
             )}
 
             {/* Section 3: Payment History */}
-            <div className="card bg-base-100 shadow-xl border border-base-300">
-              <div className="card-body">
+            <Card variant="default">
+              <Card.Body>
                 <h2 className="card-title text-2xl mb-4">
                   <ClockIcon className="w-6 h-6 text-primary" />
                   ประวัติการชำระเงิน
@@ -352,13 +353,13 @@ export default function AccountPage({ user, recentPayments, plans, error }: Prop
                             <td className="font-semibold text-primary">{payment.amount} บาท</td>
                             <td>
                               {payment.status === "approved" && (
-                                <div className="badge badge-success">อนุมัติแล้ว</div>
+                                <Badge variant="success">อนุมัติแล้ว</Badge>
                               )}
                               {payment.status === "pending" && (
-                                <div className="badge badge-warning">รออนุมัติ</div>
+                                <Badge variant="warning">รออนุมัติ</Badge>
                               )}
                               {payment.status === "rejected" && (
-                                <div className="badge badge-error">ปฏิเสธ</div>
+                                <Badge variant="error">ปฏิเสธ</Badge>
                               )}
                             </td>
                           </tr>
@@ -367,12 +368,12 @@ export default function AccountPage({ user, recentPayments, plans, error }: Prop
                     </table>
                   </div>
                 )}
-              </div>
-            </div>
+              </Card.Body>
+            </Card>
 
             {/* Quick Actions - Home Link */}
-            <div className="card bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20">
-              <div className="card-body">
+            <Card variant="gradient">
+              <Card.Body>
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="text-center sm:text-left">
                     <h3 className="text-xl font-bold mb-1">พร้อมร้องคาราโอเกะแล้วหรือยัง?</h3>
@@ -388,8 +389,8 @@ export default function AccountPage({ user, recentPayments, plans, error }: Prop
                     ไปหน้าหลัก
                   </Button>
                 </div>
-              </div>
-            </div>
+              </Card.Body>
+            </Card>
 
             {/* Logout Button */}
             <div>
