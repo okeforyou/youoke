@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { getPricingPackages } from "../services/pricingService";
 import { PricingPackage } from "../types/subscription";
 import PackageCard from "../components/subscription/PackageCard";
+import Button from "../components/ui/Button";
 
 export default function PricingPage() {
   const router = useRouter();
@@ -74,12 +75,15 @@ export default function PricingPage() {
           <div className="card bg-base-100 shadow-2xl">
             <div className="card-body p-6 relative">
               {/* Close Button */}
-              <button
+              <Button
                 onClick={handleClose}
-                className="btn btn-sm btn-circle btn-ghost absolute right-4 top-4 z-10"
+                variant="ghost"
+                size="sm"
+                circle
+                className="absolute right-4 top-4 z-10"
               >
                 <XMarkIcon className="w-5 h-5" />
-              </button>
+              </Button>
 
               {/* Header */}
               <div className="text-center mb-6 mt-2">
@@ -118,13 +122,15 @@ export default function PricingPage() {
                   </div>
 
                   {/* Continue Button */}
-                  <button
+                  <Button
                     onClick={handleContinue}
                     disabled={!selectedPlan}
-                    className="btn btn-primary btn-block btn-lg"
+                    variant="primary"
+                    size="lg"
+                    block
                   >
                     ดำเนินการต่อ
-                  </button>
+                  </Button>
                 </>
               )}
 

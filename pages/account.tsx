@@ -18,6 +18,7 @@ import { adminAuth, adminDb, adminFirestore } from "../firebase-admin";
 import { useAuth } from "../context/AuthContext";
 import BottomNavigation from "../components/BottomNavigation";
 import PackageCard from "../components/subscription/PackageCard";
+import Button from "../components/ui/Button";
 import { PricingPackage } from "../types/subscription";
 
 // Types
@@ -57,9 +58,9 @@ export default function AccountPage({ user, recentPayments, plans, error }: Prop
       <div className="min-h-screen flex items-center justify-center bg-base-200">
         <div className="text-center">
           <p className="text-xl text-error mb-4">{error}</p>
-          <button onClick={() => window.location.reload()} className="btn btn-primary">
+          <Button onClick={() => window.location.reload()} variant="primary">
             รีโหลดหน้า
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -376,26 +377,31 @@ export default function AccountPage({ user, recentPayments, plans, error }: Prop
                     <h3 className="text-xl font-bold mb-1">พร้อมร้องคาราโอเกะแล้วหรือยัง?</h3>
                     <p className="text-base-content/60">กลับไปหน้าหลักเพื่อเลือกเพลง</p>
                   </div>
-                  <button
+                  <Button
                     onClick={() => router.push("/")}
-                    className="btn btn-primary gap-2 btn-lg"
+                    variant="primary"
+                    size="lg"
+                    className="gap-2"
                   >
                     <HomeIcon className="w-5 h-5" />
                     ไปหน้าหลัก
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
 
             {/* Logout Button */}
             <div>
-              <button
+              <Button
                 onClick={handleLogout}
-                className="btn btn-outline btn-error btn-block btn-lg gap-2"
+                variant="outline"
+                size="lg"
+                block
+                className="btn-error gap-2"
               >
                 <ArrowRightOnRectangleIcon className="w-5 h-5" />
                 ออกจากระบบ
-              </button>
+              </Button>
             </div>
           </div>
         </div>

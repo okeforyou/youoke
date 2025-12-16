@@ -9,6 +9,7 @@ import { useAuth } from "../context/AuthContext";
 import { getPricingPackage } from "../services/pricingService";
 import { PricingPackage } from "../types/subscription";
 import PackageCard from "../components/subscription/PackageCard";
+import Button from "../components/ui/Button";
 
 export default function PaymentPage() {
   const router = useRouter();
@@ -84,12 +85,15 @@ export default function PaymentPage() {
           <div className="card bg-base-100 shadow-2xl">
             <div className="card-body p-6 relative">
               {/* Close Button */}
-              <button
+              <Button
                 onClick={handleClose}
-                className="btn btn-sm btn-circle btn-ghost absolute right-4 top-4"
+                variant="ghost"
+                size="sm"
+                circle
+                className="absolute right-4 top-4"
               >
                 <XMarkIcon className="w-5 h-5" />
-              </button>
+              </Button>
 
               {/* Header */}
               <div className="text-center mb-6 mt-2">
@@ -153,20 +157,25 @@ export default function PaymentPage() {
               </div>
 
               {/* Action Buttons */}
-              <button
+              <Button
                 onClick={handleNotifyLineOA}
-                className="btn btn-success btn-block btn-lg mb-4"
+                variant="success"
+                size="lg"
+                block
+                className="mb-4"
               >
                 <ChatBubbleLeftIcon className="w-6 h-6" />
                 แจ้งชำระเงินทาง LINE@
-              </button>
+              </Button>
 
-              <button
+              <Button
                 onClick={() => router.push("/")}
-                className="btn btn-outline btn-block mb-4"
+                variant="outline"
+                block
+                className="mb-4"
               >
                 กลับหน้าหลัก
-              </button>
+              </Button>
 
               {/* Back Link */}
               <div className="text-center">
