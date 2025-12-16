@@ -10,6 +10,7 @@ import { getPricingPackage } from "../services/pricingService";
 import { PricingPackage } from "../types/subscription";
 import PackageCard from "../components/subscription/PackageCard";
 import Button from "../components/ui/Button";
+import Card from "../components/ui/Card";
 
 export default function PaymentPage() {
   const router = useRouter();
@@ -82,8 +83,8 @@ export default function PaymentPage() {
 
       <div className="min-h-screen bg-base-200 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          <div className="card bg-base-100 shadow-2xl">
-            <div className="card-body p-6 relative">
+          <Card variant="elevated">
+            <Card.Body padding="md" className="relative">
               {/* Close Button */}
               <Button
                 onClick={handleClose}
@@ -186,8 +187,8 @@ export default function PaymentPage() {
                   กลับไปเลือกแพ็กเกจอื่น
                 </button>
               </div>
-            </div>
-          </div>
+            </Card.Body>
+          </Card>
         </div>
       </div>
     </>

@@ -7,6 +7,7 @@ import { getPricingPackages } from "../services/pricingService";
 import { PricingPackage } from "../types/subscription";
 import PackageCard from "../components/subscription/PackageCard";
 import Button from "../components/ui/Button";
+import Card from "../components/ui/Card";
 
 export default function PricingPage() {
   const router = useRouter();
@@ -72,8 +73,8 @@ export default function PricingPage() {
 
       <div className="min-h-screen bg-base-200 flex items-center justify-center p-4">
         <div className="w-full max-w-4xl">
-          <div className="card bg-base-100 shadow-2xl">
-            <div className="card-body p-6 relative">
+          <Card variant="elevated">
+            <Card.Body padding="md" className="relative">
               {/* Close Button */}
               <Button
                 onClick={handleClose}
@@ -140,8 +141,8 @@ export default function PricingPage() {
                   <p>ไม่พบแพ็กเกจที่ใช้งานได้</p>
                 </div>
               )}
-            </div>
-          </div>
+            </Card.Body>
+          </Card>
         </div>
       </div>
     </>

@@ -19,6 +19,7 @@ import { useAuth } from "../context/AuthContext";
 import BottomNavigation from "../components/BottomNavigation";
 import PackageCard from "../components/subscription/PackageCard";
 import Button from "../components/ui/Button";
+import Card from "../components/ui/Card";
 import { PricingPackage } from "../types/subscription";
 
 // Types
