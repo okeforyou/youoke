@@ -246,7 +246,102 @@ Components Usage Summary:
 
 ---
 
-## 🟢 SPRINT 3: MIDI Feature - Phase 1 (FUTURE)
+## 🔴 SPRINT 3: Complete Core UI Components (CURRENT)
+
+**Goal:** Finish Phase 1 - Build remaining Core UI components (Input, Alert, Modal)
+
+**Approach:** Component Library First (continue from Sprint 2)
+- Create Input component with full validation support
+- Create Alert component for notifications
+- Create Modal component for dialogs/popups
+- Maintain DaisyUI styling (no design changes)
+
+**Duration:** 2-3 days
+**Status:** 🟡 IN PROGRESS (Dec 16, 2025)
+
+### Phase 1.1: Input Component (Day 1)
+
+**Goal:** Create reusable form input component with validation
+
+#### 📝 TO DO
+- [ ] **Analyze existing form patterns**
+  - Review login.tsx, register.tsx input fields
+  - Document current patterns and states
+  - Plan component API
+  - **Duration:** 30 min
+
+- [ ] **Create Input Component**
+  - File: `components/ui/Input.tsx`
+  - Types: text, email, password, number, tel
+  - States: default, focus, error, disabled, readonly
+  - Features: label, placeholder, helper text, error message
+  - Icons: left icon, right icon support
+  - Variants: bordered (default), filled, underlined
+  - Sizes: sm, md, lg
+  - **Duration:** 2-3 hours
+
+- [ ] **Replace inputs in login.tsx**
+  - Email input → Input component
+  - Password input → Input component
+  - Test login flow
+  - **Duration:** 30 min
+
+- [ ] **Replace inputs in register.tsx**
+  - Email, password, confirm password → Input components
+  - Test registration flow
+  - **Duration:** 30 min
+
+### Phase 1.2: Alert Component (Day 2)
+
+**Goal:** Create notification/message component
+
+#### 📝 TO DO
+- [ ] **Create Alert Component**
+  - File: `components/ui/Alert.tsx`
+  - Variants: info, success, warning, error
+  - Features: icon, title, description, close button
+  - Sizes: sm, md, lg
+  - **Duration:** 1-2 hours
+
+- [ ] **Add to error states**
+  - Use in login/register error messages
+  - Use in payment confirmation
+  - **Duration:** 1 hour
+
+### Phase 1.3: Modal Component (Day 2-3)
+
+**Goal:** Create popup/dialog component
+
+#### 📝 TO DO
+- [ ] **Create Modal Component**
+  - File: `components/ui/Modal.tsx`
+  - Sizes: sm, md, lg, xl, fullscreen
+  - Features: title, body, footer, close button
+  - Backdrop: click to close (optional)
+  - Animations: fade in/out
+  - **Duration:** 2-3 hours
+
+- [ ] **Refactor pricing popup**
+  - Replace current popup with Modal component
+  - Test on mobile/desktop
+  - **Duration:** 1 hour
+
+### Success Criteria
+```
+✅ Input component created with full validation
+✅ Alert component created with 4 variants
+✅ Modal component created with animations
+✅ Login/Register forms use Input component
+✅ Error states use Alert component
+✅ Pricing popup uses Modal component
+✅ All TypeScript errors resolved
+✅ Mobile responsive
+✅ No visual changes (preserve existing design)
+```
+
+---
+
+## 🟢 SPRINT 4: MIDI Feature - Phase 1 (FUTURE)
 
 **Goal:** Implement Google Drive integration for MIDI files
 
