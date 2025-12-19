@@ -1,8 +1,16 @@
 import { database as db } from "../firebase";
 import { collection, getDocs, doc, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
-import { PricingPackage, DEFAULT_PRICING_PACKAGES } from "../types/subscription";
+import { PricingPackage } from "../types/subscription";
+import { DEFAULT_PRICING_PACKAGES } from "../utils/constants";
 
 const PRICING_COLLECTION = "pricing";
+
+// Re-export subscription utility functions for backward compatibility
+export {
+  calculateExpiryDate,
+  isSubscriptionExpired,
+  getDaysRemaining,
+} from "../utils/subscription";
 
 /**
  * ดึงราคาทั้งหมดจาก Firestore
@@ -91,47 +99,4 @@ export async function initializePricing(): Promise<void> {
   }
 
   console.log("Pricing initialized successfully");
-}
-
-/**
- * คำนวณวันหมดอายุจากแพ็กเกจ
- */
-export function calculateExpiryDate(plan: PricingPackage, startDate = new Date()): Date | null {
-  // Convert duration to number
-  const durationDays = typeof plan.duration === 'number'
-    ? plan.duration
-    : parseInt(String(plan.duration), 10);
-
-  // Check if duration is 0 or invalid
-  if (durationDays === 0 || isNaN(durationDays)) {
-    // Lifetime or invalid - ไม่มีวันหมดอายุ
-    return null;
-  }
-
-  const expiryDate = new Date(startDate);
-  expiryDate.setDate(expiryDate.getDate() + durationDays);
-  return expiryDate;
-}
-
-/**
- * เช็คว่าสมาชิกหมดอายุหรือยัง
- */
-export function isSubscriptionExpired(endDate: Date | null): boolean {
-  if (!endDate) return false; // Lifetime ไม่หมดอายุ
-
-  return new Date() > new Date(endDate);
-}
-
-/**
- * คำนวณจำนวนวันที่เหลือ
- */
-export function getDaysRemaining(endDate: Date | null): number | null {
-  if (!endDate) return null; // Lifetime
-
-  const now = new Date();
-  const end = new Date(endDate);
-  const diffTime = end.getTime() - now.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-  return diffDays > 0 ? diffDays : 0;
 }
