@@ -1,10 +1,9 @@
 import { doc, getDoc, updateDoc, Timestamp } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
-import { FiSave, FiRefreshCw } from "react-icons/fi";
+import { ArrowDownTrayIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 import { GetServerSideProps } from "next";
 import nookies from "nookies";
 
-import Icon from "../../components/Icon";
 
 import AdminLayout from "../../components/admin/AdminLayout";
 import { db } from "../../firebase";
@@ -105,7 +104,7 @@ const SettingsPage: React.FC<Props> = ({ generalSettings: initialGeneral, featur
             onClick={() => window.location.reload()}
             className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
           >
-            <Icon icon={FiRefreshCw} />
+            <ArrowPathIcon className="w-5 h-5" />
             Refresh
           </button>
         </div>
@@ -249,7 +248,7 @@ const SettingsPage: React.FC<Props> = ({ generalSettings: initialGeneral, featur
                 disabled={saving}
                 className="w-full bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Icon icon={FiSave} />
+                <ArrowDownTrayIcon className="w-5 h-5" />
                 {saving ? "Saving..." : "Save General Settings"}
               </button>
             </div>
@@ -397,7 +396,7 @@ const SettingsPage: React.FC<Props> = ({ generalSettings: initialGeneral, featur
                 disabled={saving}
                 className="w-full bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Icon icon={FiSave} />
+                <ArrowDownTrayIcon className="w-5 h-5" />
                 {saving ? "Saving..." : "Save Feature Flags"}
               </button>
             </div>

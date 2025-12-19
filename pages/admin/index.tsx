@@ -1,9 +1,15 @@
 import React from "react";
-import { FiUsers, FiDollarSign, FiCheckCircle, FiTrendingUp, FiClock, FiX, FiActivity } from "react-icons/fi";
+import {
+  UsersIcon,
+  CurrencyDollarIcon,
+  CheckCircleIcon,
+  ArrowTrendingUpIcon,
+  ClockIcon,
+  XMarkIcon,
+  ChartBarIcon,
+} from "@heroicons/react/24/outline";
 import { GetServerSideProps } from "next";
 import nookies from "nookies";
-
-import Icon from "../../components/Icon";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { adminAuth, adminDb, adminFirestore } from "../../firebase-admin";
 
@@ -105,28 +111,28 @@ const AdminDashboard: React.FC<Props> = ({ stats, recentActivities: serializedAc
           <StatCard
             title="ผู้ใช้ทั้งหมด"
             value={stats.totalUsers}
-            icon={<Icon icon={FiUsers} size={24} className="text-white" />}
+            icon={<UsersIcon className="w-6 h-6 text-white" />}
             color="bg-blue-500"
             subtitle={`${stats.adminUsers} admins, ${stats.freeUsers} free`}
           />
           <StatCard
             title="Premium Users"
             value={stats.premiumUsers}
-            icon={<Icon icon={FiTrendingUp} size={24} className="text-white" />}
+            icon={<ArrowTrendingUpIcon className="w-6 h-6 text-white" />}
             color="bg-green-500"
             subtitle={`${stats.monthlySubscribers}M + ${stats.yearlySubscribers}Y + ${stats.lifetimeSubscribers}L`}
           />
           <StatCard
             title="Total Revenue"
             value={`${stats.totalRevenue.toLocaleString()} ฿`}
-            icon={<Icon icon={FiDollarSign} size={24} className="text-white" />}
+            icon={<CurrencyDollarIcon className="w-6 h-6 text-white" />}
             color="bg-purple-500"
             subtitle={`${stats.approvedPayments} approved payments`}
           />
           <StatCard
             title="Pending Payments"
             value={stats.pendingPayments}
-            icon={<Icon icon={FiClock} size={24} className="text-white" />}
+            icon={<ClockIcon className="w-6 h-6 text-white" />}
             color="bg-orange-500"
             subtitle={`${stats.rejectedPayments} rejected`}
           />
@@ -140,7 +146,7 @@ const AdminDashboard: React.FC<Props> = ({ stats, recentActivities: serializedAc
                 <p className="text-sm text-green-600 font-medium">Approved</p>
                 <p className="text-3xl font-bold text-green-900">{stats.approvedPayments}</p>
               </div>
-              <Icon icon={FiCheckCircle} size={32} className="text-green-500" />
+              <CheckCircleIcon className="w-8 h-8 text-green-500" />
             </div>
           </div>
 
@@ -150,7 +156,7 @@ const AdminDashboard: React.FC<Props> = ({ stats, recentActivities: serializedAc
                 <p className="text-sm text-orange-600 font-medium">Pending</p>
                 <p className="text-3xl font-bold text-orange-900">{stats.pendingPayments}</p>
               </div>
-              <Icon icon={FiClock} size={32} className="text-orange-500" />
+              <ClockIcon className="w-8 h-8 text-orange-500" />
             </div>
           </div>
 
@@ -160,7 +166,7 @@ const AdminDashboard: React.FC<Props> = ({ stats, recentActivities: serializedAc
                 <p className="text-sm text-red-600 font-medium">Rejected</p>
                 <p className="text-3xl font-bold text-red-900">{stats.rejectedPayments}</p>
               </div>
-              <Icon icon={FiX} size={32} className="text-red-500" />
+              <XMarkIcon className="w-8 h-8 text-red-500" />
             </div>
           </div>
         </div>
@@ -193,7 +199,7 @@ const AdminDashboard: React.FC<Props> = ({ stats, recentActivities: serializedAc
         {/* Recent Activities */}
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center gap-2 mb-4">
-            <Icon icon={FiActivity} size={20} className="text-gray-700" />
+            <ChartBarIcon className="w-5 h-5 text-gray-700" />
             <h2 className="text-xl font-bold text-gray-900">Recent Activities</h2>
           </div>
           {recentActivities.length === 0 ? (
@@ -212,15 +218,11 @@ const AdminDashboard: React.FC<Props> = ({ stats, recentActivities: serializedAc
                         : "bg-blue-100"
                     }`}
                   >
-                    <Icon
-                      icon={activity.type === "payment" ? FiDollarSign : FiUsers}
-                      size={16}
-                      className={
-                        activity.type === "payment"
-                          ? "text-green-600"
-                          : "text-blue-600"
-                      }
-                    />
+                    {activity.type === "payment" ? (
+                      <CurrencyDollarIcon className="w-4 h-4 text-green-600" />
+                    ) : (
+                      <UsersIcon className="w-4 h-4 text-blue-600" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-gray-900">
@@ -255,21 +257,21 @@ const AdminDashboard: React.FC<Props> = ({ stats, recentActivities: serializedAc
               href="/admin/users"
               className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
             >
-              <Icon icon={FiUsers} size={20} className="text-blue-500" />
+              <UsersIcon className="w-5 h-5 text-blue-500" />
               <span className="font-medium text-gray-700">Manage Users</span>
             </a>
             <a
               href="/admin/payments"
               className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-colors"
             >
-              <Icon icon={FiCheckCircle} size={20} className="text-orange-500" />
+              <CheckCircleIcon className="w-5 h-5 text-orange-500" />
               <span className="font-medium text-gray-700">Verify Payments</span>
             </a>
             <a
               href="/admin/subscriptions"
               className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors"
             >
-              <Icon icon={FiDollarSign} size={20} className="text-green-500" />
+              <CurrencyDollarIcon className="w-5 h-5 text-green-500" />
               <span className="font-medium text-gray-700">Manage Plans</span>
             </a>
           </div>

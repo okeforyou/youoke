@@ -2,50 +2,48 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import React from "react";
 import {
-  FiHome,
-  FiUsers,
-  FiDollarSign,
-  FiCheckCircle,
-  FiSettings,
-  FiLogOut,
-  FiX,
-} from "react-icons/fi";
-import { IconType } from "react-icons";
+  HomeIcon,
+  UsersIcon,
+  CurrencyDollarIcon,
+  CheckCircleIcon,
+  Cog6ToothIcon,
+  ArrowRightOnRectangleIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 
 import { useAuth } from "../../context/AuthContext";
-import Icon from "../Icon";
 
 interface MenuItem {
   label: string;
   href: string;
-  icon: IconType;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
 }
 
 const menuItems: MenuItem[] = [
   {
     label: "Dashboard",
     href: "/admin",
-    icon: FiHome,
+    icon: HomeIcon,
   },
   {
     label: "Users",
     href: "/admin/users",
-    icon: FiUsers,
+    icon: UsersIcon,
   },
   {
     label: "Subscriptions",
     href: "/admin/subscriptions",
-    icon: FiDollarSign,
+    icon: CurrencyDollarIcon,
   },
   {
     label: "Payments",
     href: "/admin/payments",
-    icon: FiCheckCircle,
+    icon: CheckCircleIcon,
   },
   {
     label: "Settings",
     href: "/admin/settings",
-    icon: FiSettings,
+    icon: Cog6ToothIcon,
   },
 ];
 
@@ -104,7 +102,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) => {
             onClick={onToggle}
             className="lg:hidden text-gray-400 hover:text-white"
           >
-            <Icon icon={FiX} size={24} />
+            <XMarkIcon className="w-6 h-6" />
           </button>
         </div>
 
@@ -132,7 +130,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) => {
                   }
                 `}
               >
-                <Icon icon={item.icon} size={20} />
+                <item.icon className="w-5 h-5" />
                 <span className="font-medium">{item.label}</span>
               </div>
             </Link>
@@ -145,7 +143,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) => {
             onClick={handleLogout}
             className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition-colors duration-200"
           >
-            <Icon icon={FiLogOut} size={20} />
+            <ArrowRightOnRectangleIcon className="w-5 h-5" />
             <span className="font-medium">Logout</span>
           </button>
         </div>

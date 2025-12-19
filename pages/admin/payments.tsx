@@ -2,20 +2,18 @@ import { doc, updateDoc, deleteDoc, getDoc, Timestamp } from "firebase/firestore
 import { GetServerSideProps } from "next";
 import React, { useEffect, useState } from "react";
 import {
-  FiCheck,
-  FiX,
-  FiClock,
-  FiEye,
-  FiFilter,
-  FiRefreshCw,
-  FiDownload,
-  FiTrash2,
-  FiChevronLeft,
-  FiChevronRight,
-} from "react-icons/fi";
+  CheckIcon,
+  XMarkIcon,
+  ClockIcon,
+  EyeIcon,
+  FunnelIcon,
+  ArrowPathIcon,
+  ArrowDownTrayIcon,
+  TrashIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from "@heroicons/react/24/outline";
 import nookies from "nookies";
-
-import Icon from "../../components/Icon";
 
 import AdminLayout from "../../components/admin/AdminLayout";
 import { db } from "../../firebase";
@@ -368,19 +366,19 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
       case "pending":
         return (
           <span className="flex items-center gap-1 px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-medium">
-            <Icon icon={FiClock} /> Pending
+            <ClockIcon className="w-5 h-5" /> Pending
           </span>
         );
       case "approved":
         return (
           <span className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
-            <Icon icon={FiCheck} /> Approved
+            <CheckIcon className="w-5 h-5" /> Approved
           </span>
         );
       case "rejected":
         return (
           <span className="flex items-center gap-1 px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">
-            <Icon icon={FiX} /> Rejected
+            <XMarkIcon className="w-5 h-5" /> Rejected
           </span>
         );
       default:
@@ -426,14 +424,14 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
               onClick={handleExportCSV}
               className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
             >
-              <Icon icon={FiDownload} />
+              <ArrowDownTrayIcon className="w-5 h-5" />
               Export CSV
             </button>
             <button
               onClick={() => window.location.reload()}
               className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
             >
-              <Icon icon={FiRefreshCw} />
+              <ArrowPathIcon className="w-5 h-5" />
               Refresh
             </button>
           </div>
@@ -449,7 +447,7 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
                   {payments.filter((p) => p.status === "pending").length}
                 </p>
               </div>
-              <Icon icon={FiClock} size={32} className="text-orange-500" />
+              <ClockIcon className="w-8 h-8 text-orange-500" />
             </div>
           </div>
 
@@ -461,7 +459,7 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
                   {payments.filter((p) => p.status === "approved").length}
                 </p>
               </div>
-              <Icon icon={FiCheck} size={32} className="text-green-500" />
+              <CheckIcon className="w-8 h-8 text-green-500" />
             </div>
           </div>
 
@@ -473,7 +471,7 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
                   {payments.filter((p) => p.status === "rejected").length}
                 </p>
               </div>
-              <Icon icon={FiX} size={32} className="text-red-500" />
+              <XMarkIcon className="w-8 h-8 text-red-500" />
             </div>
           </div>
         </div>
@@ -481,7 +479,7 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
         {/* Filters */}
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex items-center gap-4">
-            <Icon icon={FiFilter} className="text-gray-400" />
+            <FunnelIcon className="w-5 h-5 text-gray-400" />
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
@@ -524,14 +522,14 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
                   onClick={handleBulkApprove}
                   className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium"
                 >
-                  <Icon icon={FiCheck} />
+                  <CheckIcon className="w-5 h-5" />
                   Approve All
                 </button>
                 <button
                   onClick={handleBulkReject}
                   className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
                 >
-                  <Icon icon={FiX} />
+                  <XMarkIcon className="w-5 h-5" />
                   Reject All
                 </button>
               </div>
@@ -631,7 +629,7 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
                           onClick={() => setViewingPayment(payment)}
                           className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
                         >
-                          <Icon icon={FiEye} size={18} />
+                          <EyeIcon className="w-5 h-5" />
                           View
                         </button>
                       </td>
@@ -658,7 +656,7 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
                       : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
                   }`}
                 >
-                  <Icon icon={FiChevronLeft} />
+                  <ChevronLeftIcon className="w-5 h-5" />
                   Previous
                 </button>
                 <span className="px-4 py-2 text-sm text-gray-700">
@@ -674,7 +672,7 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
                   }`}
                 >
                   Next
-                  <Icon icon={FiChevronRight} />
+                  <ChevronRightIcon className="w-5 h-5" />
                 </button>
               </div>
             </div>
@@ -802,14 +800,14 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
                       onClick={() => handleApprovePayment(viewingPayment)}
                       className="flex-1 bg-green-500 text-white px-4 py-3 rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center gap-2 font-medium"
                     >
-                      <Icon icon={FiCheck} size={20} />
+                      <CheckIcon className="w-5 h-5" />
                       Approve Payment
                     </button>
                     <button
                       onClick={() => handleRejectPayment(viewingPayment)}
                       className="flex-1 bg-red-500 text-white px-4 py-3 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center gap-2 font-medium"
                     >
-                      <Icon icon={FiX} size={20} />
+                      <XMarkIcon className="w-5 h-5" />
                       Reject Payment
                     </button>
                   </div>
@@ -832,7 +830,7 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
                 onClick={() => handleDeletePayment(viewingPayment)}
                 className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors flex items-center gap-2"
               >
-                <Icon icon={FiTrash2} />
+                <TrashIcon className="w-5 h-5" />
                 Delete
               </button>
             </div>

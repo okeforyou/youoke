@@ -10,11 +10,17 @@ import {
   orderBy,
 } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
-import { FiEdit2, FiCheck, FiX, FiEye, FiEyeOff, FiPlus, FiTrash2 } from "react-icons/fi";
+import {
+  PencilIcon,
+  CheckIcon,
+  XMarkIcon,
+  EyeIcon,
+  EyeSlashIcon,
+  PlusIcon,
+  TrashIcon,
+} from "@heroicons/react/24/outline";
 import { GetServerSideProps } from "next";
 import nookies from "nookies";
-
-import Icon from "../../components/Icon";
 
 import AdminLayout from "../../components/admin/AdminLayout";
 import { db } from "../../firebase";
@@ -233,7 +239,7 @@ const SubscriptionsPage: React.FC<Props> = ({ plans: initialPlans, error }) => {
             onClick={() => setCreatingPlan(true)}
             className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
           >
-            <Icon icon={FiPlus} />
+            <PlusIcon className="w-5 h-5" />
             Create New Plan
           </button>
         </div>
@@ -273,7 +279,7 @@ const SubscriptionsPage: React.FC<Props> = ({ plans: initialPlans, error }) => {
                 <ul className="space-y-3">
                   {plan.features.map((feature, idx) => (
                     <li key={idx} className="flex items-start gap-2">
-                      <Icon icon={FiCheck} className="text-green-500 mt-1 flex-shrink-0" />
+                      <CheckIcon className="w-5 h-5 text-green-500 mt-1 flex-shrink-0" />
                       <span className="text-sm text-gray-700">{feature}</span>
                     </li>
                   ))}
@@ -310,7 +316,7 @@ const SubscriptionsPage: React.FC<Props> = ({ plans: initialPlans, error }) => {
                         : "bg-gray-100 text-gray-800"
                     }`}
                   >
-                    {plan.isVisible ? <Icon icon={FiEye} /> : <Icon icon={FiEyeOff} />}
+                    {plan.isVisible ? <EyeIcon className="w-5 h-5" /> : <EyeSlashIcon className="w-5 h-5" />}
                   </button>
                 </div>
 
@@ -319,7 +325,7 @@ const SubscriptionsPage: React.FC<Props> = ({ plans: initialPlans, error }) => {
                   onClick={() => handleEditPlan(plan)}
                   className="w-full mt-4 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center gap-2"
                 >
-                  <Icon icon={FiEdit2} />
+                  <PencilIcon className="w-5 h-5" />
                   Edit Plan
                 </button>
               </div>
@@ -443,7 +449,7 @@ const SubscriptionsPage: React.FC<Props> = ({ plans: initialPlans, error }) => {
                         onClick={() => removeFeature(idx)}
                         className="px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200"
                       >
-                        <Icon icon={FiX} />
+                        <XMarkIcon className="w-5 h-5" />
                       </button>
                     </div>
                   ))}
@@ -511,7 +517,7 @@ const SubscriptionsPage: React.FC<Props> = ({ plans: initialPlans, error }) => {
                   onClick={() => handleDeletePlan(editingPlan)}
                   className="w-full px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors flex items-center justify-center gap-2"
                 >
-                  <Icon icon={FiTrash2} />
+                  <TrashIcon className="w-5 h-5" />
                   Delete Plan
                 </button>
               )}
@@ -655,7 +661,7 @@ const SubscriptionsPage: React.FC<Props> = ({ plans: initialPlans, error }) => {
                         onClick={() => removeNewPlanFeature(idx)}
                         className="px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200"
                       >
-                        <Icon icon={FiX} />
+                        <XMarkIcon className="w-5 h-5" />
                       </button>
                     </div>
                   ))}

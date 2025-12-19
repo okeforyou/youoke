@@ -37,7 +37,6 @@
     "react": "18.3.1",
     "react-debounce-input": "^3.3.0",
     "react-dom": "18.3.1",
-    "react-icons": "^5.5.0",
     "react-query": "^3.39.3",
     "react-use": "^17.4.0",
     "react-youtube": "^10.1.0",
@@ -49,6 +48,7 @@
   },
   "devDependencies": {
     "@builder.io/partytown": "^0.7.5",
+    "@next/bundle-analyzer": "^16.1.0",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@types/chromecast-caf-sender": "^1.0.11",
     "@types/node": "^18.11.18",

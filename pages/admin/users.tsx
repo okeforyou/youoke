@@ -1,10 +1,17 @@
 import { doc, updateDoc, deleteDoc, Timestamp } from "firebase/firestore";
 import { GetServerSideProps } from "next";
 import React, { useEffect, useState } from "react";
-import { FiSearch, FiEdit2, FiCheck, FiX, FiDownload, FiTrash2, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import {
+  MagnifyingGlassIcon,
+  PencilIcon,
+  CheckIcon,
+  XMarkIcon,
+  ArrowDownTrayIcon,
+  TrashIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from "@heroicons/react/24/outline";
 import nookies from "nookies";
-
-import Icon from "../../components/Icon";
 
 import AdminLayout from "../../components/admin/AdminLayout";
 import { db } from "../../firebase";
@@ -210,7 +217,7 @@ const UsersPage: React.FC<Props> = ({ users: initialUsers, totalUsers: initialTo
             onClick={handleExportCSV}
             className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
           >
-            <Icon icon={FiDownload} />
+            <ArrowDownTrayIcon className="w-5 h-5" />
             Export CSV
           </button>
         </div>
@@ -220,7 +227,7 @@ const UsersPage: React.FC<Props> = ({ users: initialUsers, totalUsers: initialTo
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Search */}
             <div className="relative">
-              <Icon icon={FiSearch} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
                 placeholder="Search by email or name..."
@@ -327,9 +334,9 @@ const UsersPage: React.FC<Props> = ({ users: initialUsers, totalUsers: initialTo
                           </span>
                         )}
                         {user.isActive ? (
-                          <Icon icon={FiCheck} className="text-green-500" />
+                          <CheckIcon className="w-5 h-5 text-green-500" />
                         ) : (
-                          <Icon icon={FiX} className="text-red-500" />
+                          <XMarkIcon className="w-5 h-5 text-red-500" />
                         )}
                       </div>
                     </td>
@@ -343,7 +350,7 @@ const UsersPage: React.FC<Props> = ({ users: initialUsers, totalUsers: initialTo
                           className="text-blue-600 hover:text-blue-900"
                           title="Edit user"
                         >
-                          <Icon icon={FiEdit2} size={18} />
+                          <PencilIcon className="w-5 h-5" />
                         </button>
                         <button
                           onClick={() => handleDeleteUser(user)}
@@ -351,7 +358,7 @@ const UsersPage: React.FC<Props> = ({ users: initialUsers, totalUsers: initialTo
                           title="Delete user"
                           disabled={user.role === "admin"}
                         >
-                          <Icon icon={FiTrash2} size={18} className={user.role === "admin" ? "opacity-30" : ""} />
+                          <TrashIcon className={`w-5 h-5 ${user.role === "admin" ? "opacity-30" : ""}`} />
                         </button>
                       </div>
                     </td>
@@ -374,7 +381,7 @@ const UsersPage: React.FC<Props> = ({ users: initialUsers, totalUsers: initialTo
                 disabled={currentPage <= 1}
                 className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                <Icon icon={FiChevronLeft} />
+                <ChevronLeftIcon className="w-5 h-5" />
                 Previous
               </button>
               <span className="px-4 py-2 text-sm text-gray-700">
@@ -386,7 +393,7 @@ const UsersPage: React.FC<Props> = ({ users: initialUsers, totalUsers: initialTo
                 className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
                 Next
-                <Icon icon={FiChevronRight} />
+                <ChevronRightIcon className="w-5 h-5" />
               </button>
             </div>
           </div>
