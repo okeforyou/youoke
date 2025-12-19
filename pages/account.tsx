@@ -16,11 +16,12 @@ import {
 
 import { adminAuth, adminDb, adminFirestore } from "../firebase-admin";
 import { useAuth } from "../context/AuthContext";
-import BottomNavigation from "../components/BottomNavigation";
 import PackageCard from "../components/subscription/PackageCard";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import Badge from "../components/ui/Badge";
+import AppShell from "../components/layout/AppShell";
+import EmptyState from "../components/layout/EmptyState";
 import { PricingPackage } from "../types/subscription";
 
 // Types
@@ -129,8 +130,7 @@ export default function AccountPage({ user, recentPayments, plans, error }: Prop
         <title>บัญชีของฉัน - Oke for You</title>
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-base-200 via-base-100 to-base-200 pb-24 lg:pb-8">
-        <div className="container mx-auto px-4 py-6 lg:py-12 max-w-5xl">
+      <AppShell background="gradient" maxWidth="5xl">
           {/* Header with Avatar */}
           <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6 mb-8 lg:mb-12">
             {/* Avatar */}
@@ -325,10 +325,11 @@ export default function AccountPage({ user, recentPayments, plans, error }: Prop
                 </h2>
 
                 {recentPayments.length === 0 ? (
-                  <div className="text-center py-12 text-base-content/60">
-                    <CreditCardIcon className="w-16 h-16 mx-auto mb-4 opacity-30" />
-                    <p>ยังไม่มีประวัติการชำระเงิน</p>
-                  </div>
+                  <EmptyState
+                    icon="payment"
+                    title="ยังไม่มีประวัติการชำระเงิน"
+                    description="รายการชำระเงินของคุณจะแสดงที่นี่"
+                  />
                 ) : (
                   <div className="overflow-x-auto">
                     <table className="table">
@@ -406,10 +407,7 @@ export default function AccountPage({ user, recentPayments, plans, error }: Prop
               </Button>
             </div>
           </div>
-        </div>
-      </div>
-
-      <BottomNavigation />
+      </AppShell>
     </>
   );
 }

@@ -8,6 +8,8 @@ import { PricingPackage } from "../types/subscription";
 import PackageCard from "../components/subscription/PackageCard";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
+import LoadingScreen from "../components/layout/LoadingScreen";
+import EmptyState from "../components/layout/EmptyState";
 
 export default function PricingPage() {
   const router = useRouter();
@@ -95,11 +97,7 @@ export default function PricingPage() {
               </div>
 
               {/* Loading State */}
-              {loading && (
-                <div className="flex items-center justify-center py-12">
-                  <div className="loading loading-spinner loading-lg text-primary"></div>
-                </div>
-              )}
+              {loading && <LoadingScreen variant="inline" text="กำลังโหลดแพ็กเกจ..." />}
 
               {/* Package Options - Grid Layout */}
               {!loading && packages.length > 0 && (
@@ -137,9 +135,12 @@ export default function PricingPage() {
 
               {/* Empty State */}
               {!loading && packages.length === 0 && (
-                <div className="text-center py-12 text-base-content/60">
-                  <p>ไม่พบแพ็กเกจที่ใช้งานได้</p>
-                </div>
+                <EmptyState
+                  icon="folder"
+                  title="ไม่พบแพ็กเกจที่ใช้งานได้"
+                  description="กรุณาติดต่อผู้ดูแลระบบ"
+                  size="sm"
+                />
               )}
             </Card.Body>
           </Card>

@@ -11,6 +11,7 @@ import { PricingPackage } from "../types/subscription";
 import PackageCard from "../components/subscription/PackageCard";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
+import LoadingScreen from "../components/layout/LoadingScreen";
 
 export default function PaymentPage() {
   const router = useRouter();
@@ -68,11 +69,7 @@ export default function PaymentPage() {
   }
 
   if (!selectedPlan) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-base-200">
-        <div className="loading loading-spinner loading-lg text-primary"></div>
-      </div>
-    );
+    return <LoadingScreen variant="fullscreen" text="กำลังโหลดข้อมูลแพ็กเกจ..." />;
   }
 
   return (
