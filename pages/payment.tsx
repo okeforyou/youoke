@@ -12,6 +12,8 @@ import PackageCard from "../components/subscription/PackageCard";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import LoadingScreen from "../components/layout/LoadingScreen";
+import { BANK_INFO, APP_CONFIG } from "../utils/constants";
+import { formatCurrency } from "../utils/formatting";
 
 export default function PaymentPage() {
   const router = useRouter();
@@ -51,15 +53,15 @@ export default function PaymentPage() {
 
   function handleNotifyLineOA() {
     const planName = selectedPlan.displayName || selectedPlan.name;
-    const price = selectedPlan.price;
+    const price = formatCurrency(selectedPlan.price);
     const email = user.email;
 
-    const message = `สวัสดีครับ ได้ชำระเงินแพ็กเกจ ${planName} จำนวน ${price} บาทแล้ว
+    const message = `สวัสดีครับ ได้ชำระเงินแพ็กเกจ ${planName} จำนวน ${price} แล้ว
 อีเมล: ${email}
 กรุณาเปิดใช้งานแพ็กเกจให้ด้วยครับ`;
 
     const encodedMessage = encodeURIComponent(message);
-    const lineUrl = `https://line.me/R/ti/p/@243lercy?text=${encodedMessage}`;
+    const lineUrl = APP_CONFIG.support.lineUrl + `?text=${encodedMessage}`;
 
     window.open(lineUrl, "_blank");
   }
@@ -115,24 +117,24 @@ export default function PaymentPage() {
               <div className="bg-base-300 p-6 rounded-lg mb-6">
                 <div className="text-center mb-4">
                   <div className="text-lg font-bold">
-                    โอนเงินจำนวน ฿{selectedPlan.price.toLocaleString("th-TH", { minimumFractionDigits: 2 })}
+                    โอนเงินจำนวน {formatCurrency(selectedPlan.price)}
                   </div>
                 </div>
 
                 <div className="bg-base-100 p-4 rounded-lg space-y-3 text-sm">
                   <div>
                     <div className="text-base-content/60 mb-1">ชื่อบัญชี</div>
-                    <div className="font-semibold">บุญยานันทน์ ชูพินิจ</div>
+                    <div className="font-semibold">{BANK_INFO.accountName}</div>
                   </div>
 
                   <div>
                     <div className="text-base-content/60 mb-1">ธนาคาร</div>
-                    <div className="font-semibold">ธนาคารกรุงเทพ</div>
+                    <div className="font-semibold">{BANK_INFO.bankName}</div>
                   </div>
 
                   <div>
                     <div className="text-base-content/60 mb-1">เลขที่บัญชี</div>
-                    <div className="font-semibold text-lg">090-0-601717</div>
+                    <div className="font-semibold text-lg">{BANK_INFO.accountNumber}</div>
                   </div>
                 </div>
 
