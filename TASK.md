@@ -501,7 +501,91 @@ Total: 974 lines of reusable layout infrastructure
 
 ---
 
-## 🟢 SPRINT 5: MIDI Feature - Phase 1 (FUTURE)
+## 🔴 SPRINT 5: Utilities & Services (CURRENT)
+
+**Goal:** Complete Phase 2 - Create Utilities and Refactor Services
+
+**Approach:** Extract common utilities and standardize service patterns
+- Create shared utility functions (formatting, validation, subscription)
+- Move constants to dedicated file
+- Standardize service error handling
+- Add type safety to utilities
+
+**Duration:** 2-3 days (Estimated)
+**Status:** 🟡 IN PROGRESS (Dec 19, 2025)
+
+### Phase 2.1: Utility Functions
+
+**Goal:** Create reusable utility functions to reduce code duplication
+
+#### 📝 TO DO
+- [ ] **Create utils/formatting.ts** (1 hour)
+  - formatCurrency(amount: number): string
+  - formatDate(date: Date, format: string): string
+  - formatTimeRemaining(endDate: Date): string
+  - pluralize(count: number, singular: string, plural: string): string
+
+- [ ] **Create utils/validation.ts** (1 hour)
+  - validateEmail(email: string): boolean
+  - validatePassword(password: string): ValidationResult
+  - validatePhone(phone: string): boolean
+
+- [ ] **Create utils/subscription.ts** (1-2 hours)
+  - Move from pricingService.ts:
+    - calculateExpiryDate(plan, startDate): Date | null
+    - isSubscriptionExpired(endDate): boolean
+    - getDaysRemaining(endDate): number | null
+  - Add new functions:
+    - getPlanDisplayName(plan): string
+    - canUpgradeTo(currentPlan, targetPlan): boolean
+    - getSubscriptionStatus(subscription): SubscriptionStatus
+
+- [ ] **Create utils/constants.ts** (30 min)
+  - Move from types/subscription.ts:
+    - DEFAULT_PRICING_PACKAGES
+    - BANK_INFO
+  - Add new:
+    - APP_CONFIG (name, version, support email)
+
+- [ ] **Update imports in affected files** (30 min)
+  - Update pricingService.ts imports
+  - Update pages/account.tsx imports
+  - Update pages/payment.tsx imports
+
+### Phase 2.2: Service Layer Refactor
+
+**Goal:** Standardize service patterns and error handling
+
+#### 📝 TO DO
+- [ ] **Audit existing services**
+  - Review paymentService.ts patterns
+  - Review pricingService.ts patterns
+  - Review userService.ts patterns
+  - Review playlistService.ts patterns
+
+- [ ] **Create service utilities**
+  - serviceHelper.ts with error handling wrappers
+  - Standardize response types
+  - Add retry logic for failures
+
+- [ ] **Add new services** (Optional)
+  - notificationService.ts (toast messages)
+  - storageService.ts (localStorage wrapper)
+
+### Success Criteria
+```
+✅ 4 utility files created (formatting, validation, subscription, constants)
+✅ All subscription functions moved to utils/
+✅ All constants moved to utils/constants.ts
+✅ TypeScript compilation successful
+✅ All imports updated correctly
+✅ Service patterns standardized
+✅ Code duplication reduced
+```
+
+---
+
+## 🟢 SPRINT 6: MIDI Feature - Phase 1 (FUTURE)
 
 **Goal:** Implement Google Drive integration for MIDI files
 
