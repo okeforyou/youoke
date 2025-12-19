@@ -718,7 +718,101 @@ Commits:
 
 ---
 
-## 🟢 SPRINT 7: MIDI Feature - Phase 1 (FUTURE)
+## ✅ SPRINT 7: Account Page Refactor (COMPLETED)
+
+**Goal:** Replace duplicate utility functions with centralized utils
+
+**Approach:** Use utils/formatting.ts and utils/subscription.ts
+- Account page already uses AppShell + component library
+- SSR performance already optimized (plansMap cache)
+- Only needed to replace duplicate functions
+
+**Duration:** <1 day
+**Status:** ✅ COMPLETED (Dec 19, 2025)
+
+### Completed Tasks
+
+#### ✅ Account Page Refactor
+- [x] **Read and audit account page** (pages/account.tsx - 564 lines)
+  - Already uses: AppShell, Card, Badge, Button, PackageCard, EmptyState
+  - Already optimized: SSR with plansMap cache (prevents N+1 queries)
+  - Found 3 duplicate functions
+
+- [x] **Replace duplicate utils with imports**
+  - getDaysRemaining() → utils/subscription.ts
+  - formatDate() → utils/formatting.ts
+  - getPlanName() → getPlanDisplayName() from utils/subscription.ts
+  - isExpiringSoon logic → checkExpiringSoon() from utils/subscription.ts
+
+### Sprint 7 Results
+```
+✅ Account page refactored
+✅ Code reduction: -28 lines (removed 3 duplicate functions)
+✅ Centralized utils for consistency
+✅ Type-safe utility functions
+✅ No breaking changes
+
+Files Modified:
+- pages/account.tsx: Replaced 3 duplicate functions with utils imports
+
+Commits:
+- 7a6504a1: Refactor Account Page - Use utility functions from utils/
+```
+
+---
+
+## ✅ SPRINT 8 & 9: Pricing & Payment Pages (COMPLETED)
+
+**Goal:** Review and refactor pricing/payment pages
+
+**Approach:** Audit pages, use centralized constants and formatting
+- Pricing page already perfect (uses components, loading states)
+- Payment page needs to use BANK_INFO and formatCurrency
+
+**Duration:** <1 day
+**Status:** ✅ COMPLETED (Dec 19, 2025)
+
+### Completed Tasks
+
+#### ✅ Pricing Page Analysis
+- [x] **Read and audit pricing page** (pages/pricing.tsx - 152 lines)
+  - ✅ Already uses: Card, Button, PackageCard, LoadingScreen, EmptyState
+  - ✅ Already has loading states
+  - ✅ Clean code - no duplicate utils
+  - ✅ Modal-style centered layout (max-w-4xl)
+  - **Decision:** No changes needed - already perfect
+
+#### ✅ Payment Page Refactor
+- [x] **Read and audit payment page** (pages/payment.tsx - 194 lines)
+  - Found: Hardcoded bank info, manual currency formatting
+
+- [x] **Replace hardcoded values with utils**
+  - Bank info → BANK_INFO from utils/constants
+  - Currency formatting → formatCurrency() from utils/formatting
+  - LINE URL → APP_CONFIG.support.lineUrl from utils/constants
+
+### Sprint 8 & 9 Results
+```
+✅ Pricing page: Already perfect - no changes
+✅ Payment page: Refactored to use centralized utils
+✅ Code quality improved
+✅ Single source of truth for bank info and config
+
+Files Modified:
+- pages/payment.tsx: Use BANK_INFO, formatCurrency, APP_CONFIG
+
+Commits:
+- 54bebfb4: Refactor Payment Page - Use utility functions from utils/
+
+Key Insights:
+- Pricing & Payment pages use modal-style layout (centered, Close button)
+- AppShell NOT suitable for modal/popup pages
+- AppShell perfect for: Account, full-page layouts
+```
+
+---
+
+## 🟢 SPRINT 10: MIDI Feature - Phase 1 (FUTURE)
 
 **Goal:** Implement Google Drive integration for MIDI files
 
