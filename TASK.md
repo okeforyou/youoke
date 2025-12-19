@@ -362,7 +362,124 @@ Total Code Reduction: -107 lines / +78 lines = -29 net lines
 
 ---
 
-## 🟢 SPRINT 4: MIDI Feature - Phase 1 (FUTURE)
+## 🔴 SPRINT 4: Layout Components (CURRENT)
+
+**Goal:** Complete Phase 1.3 - Build Layout Components
+
+**Approach:** Continue Component Library approach from Sprint 2-3
+- Create Layout wrapper components
+- Error handling and loading states
+- Consistent page structure
+- Maintain DaisyUI styling
+
+**Duration:** 2-3 days
+**Status:** 🟡 IN PROGRESS (Dec 16, 2025)
+
+### Phase 1.3.1: AppShell & PageHeader
+
+**Goal:** Create consistent layout structure
+
+#### 📝 TO DO
+- [ ] **Analyze existing layout patterns**
+  - Review _app.tsx and page wrappers
+  - Document BottomNavigation usage
+  - Plan AppShell structure
+  - **Duration:** 30 min
+
+- [ ] **Create AppShell Component**
+  - File: `components/layout/AppShell.tsx`
+  - Features:
+    - Main layout wrapper with BottomNavigation
+    - Handle page transitions
+    - Responsive padding/margins
+    - Optional sidebar support (future)
+  - **Duration:** 1-2 hours
+
+- [ ] **Create PageHeader Component**
+  - File: `components/layout/PageHeader.tsx`
+  - Features:
+    - Title with optional back button
+    - Optional subtitle/description
+    - Optional action buttons (settings, help)
+    - Breadcrumbs support (optional)
+  - Sizes: sm, md, lg
+  - **Duration:** 1-2 hours
+
+### Phase 1.3.2: Loading & Error States
+
+**Goal:** Improve UX with loading and error handling
+
+#### 📝 TO DO
+- [ ] **Create LoadingScreen Component**
+  - File: `components/layout/LoadingScreen.tsx`
+  - Variants:
+    - Full page loading (spinner + logo)
+    - Inline loading (smaller spinner)
+    - Skeleton screens (cards, lists)
+  - **Duration:** 1-2 hours
+
+- [ ] **Create ErrorBoundary Component**
+  - File: `components/layout/ErrorBoundary.tsx`
+  - Features:
+    - Catch React errors
+    - Display friendly error message
+    - Reset button to recover
+    - Log errors to console (dev mode)
+  - **Duration:** 1-2 hours
+
+- [ ] **Create EmptyState Component**
+  - File: `components/layout/EmptyState.tsx`
+  - Use cases:
+    - No search results
+    - Empty playlist/queue
+    - No payment history
+  - Features: icon, title, description, action button
+  - **Duration:** 1 hour
+
+### Phase 1.3.3: Apply Layout Components
+
+**Goal:** Refactor existing pages to use new components
+
+#### 📝 TO DO
+- [ ] **Wrap pages with AppShell**
+  - Update _app.tsx or individual pages
+  - Test navigation and transitions
+  - **Duration:** 30 min
+
+- [ ] **Add PageHeader to pages**
+  - account.tsx → PageHeader with title
+  - pricing.tsx → PageHeader with title
+  - payment.tsx → PageHeader with back button
+  - **Duration:** 1 hour
+
+- [ ] **Add loading states**
+  - account.tsx → LoadingScreen during data fetch
+  - Search page → Skeleton cards
+  - **Duration:** 1 hour
+
+- [ ] **Add error handling**
+  - Wrap pages with ErrorBoundary
+  - Add EmptyState to account payment history
+  - **Duration:** 1 hour
+
+### Success Criteria
+```
+✅ AppShell component created
+✅ PageHeader component created with variants
+✅ LoadingScreen component with skeleton support
+✅ ErrorBoundary component with error recovery
+✅ EmptyState component for empty views
+✅ 3+ pages use AppShell
+✅ 3+ pages use PageHeader
+✅ Loading states implemented
+✅ Error boundaries implemented
+✅ All TypeScript checks passed
+✅ Mobile responsive
+```
+
+---
+
+## 🟢 SPRINT 5: MIDI Feature - Phase 1 (FUTURE)
 
 **Goal:** Implement Google Drive integration for MIDI files
 
