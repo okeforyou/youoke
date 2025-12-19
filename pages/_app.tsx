@@ -1,17 +1,14 @@
 import '../styles/global.css'
 
 import Head from 'next/head'
-import { useRouter } from 'next/router'
 import { QueryClient, QueryClientProvider } from 'react-query'
 
 import { Analytics } from '@vercel/analytics/react'
 
 import GoogleAnalytics from '../components/GoogleAnalytics'
+import ConditionalCastProviders from '../components/ConditionalCastProviders'
 import { AdsProvider } from '../context/AdsContext'
 import { AuthContextProvider } from '../context/AuthContext'
-import { CastProvider } from '../context/CastContext'
-import { FirebaseCastProvider } from '../context/FirebaseCastContext'
-import { YouTubeCastProvider } from '../context/YouTubeCastContext'
 import { ToastProvider } from '../context/ToastContext'
 
 // Create a client
@@ -24,10 +21,6 @@ const queryClient = new QueryClient({
 });
 
 function App({ Component, pageProps }) {
-  const router = useRouter();
-
-  // Monitor page should NOT have Google Cast (it's a receiver, not a sender)
-  const isMonitorPage = router.pathname === '/monitor';
   return (
     <AuthContextProvider>
       <ToastProvider>
@@ -51,7 +44,7 @@ function App({ Component, pageProps }) {
             />
             <meta
               property="og:description"
-              content="คาราโอเกะออนไลน์ฟรี ไม่ต้องติดตั้ง ทำงานโดยตรงในเบราว์เซอร์ ใช้ได้กับอุปกรณ์หลากหลาย ฐานข้อมูลเพลงจาก Youtube ครบถ้วนและมีคุณภาพสูง 
+              content="คาราโอเกะออนไลน์ฟรี ไม่ต้องติดตั้ง ทำงานโดยตรงในเบราว์เซอร์ ใช้ได้กับอุปกรณ์หลากหลาย ฐานข้อมูลเพลงจาก Youtube ครบถ้วนและมีคุณภาพสูง
           "
             />
             <meta property="og:image" content="/assets/og-image.png" />
@@ -66,7 +59,7 @@ function App({ Component, pageProps }) {
             />
             <meta
               property="twitter:description"
-              content="คาราโอเกะออนไลน์ฟรี ไม่ต้องติดตั้ง ทำงานโดยตรงในเบราว์เซอร์ ใช้ได้กับอุปกรณ์หลากหลาย ฐานข้อมูลเพลงจาก Youtube ครบถ้วนและมีคุณภาพสูง 
+              content="คาราโอเกะออนไลน์ฟรี ไม่ต้องติดตั้ง ทำงานโดยตรงในเบราว์เซอร์ ใช้ได้กับอุปกรณ์หลากหลาย ฐานข้อมูลเพลงจาก Youtube ครบถ้วนและมีคุณภาพสูง
           "
             />
             <meta property="twitter:image" content="/assets/og-image.png" />
@@ -85,23 +78,12 @@ function App({ Component, pageProps }) {
             </>
           )}
           <QueryClientProvider client={queryClient}>
-            {isMonitorPage ? (
-              // Monitor page: No Cast providers (has its own Firebase logic)
+            {/* ConditionalCastProviders handles dynamic loading of Cast contexts */}
+            <ConditionalCastProviders>
               <AdsProvider>
                 <Component {...pageProps} />
               </AdsProvider>
-            ) : (
-              // Other pages: Full Cast stack
-              <CastProvider>
-                <FirebaseCastProvider>
-                  <YouTubeCastProvider>
-                    <AdsProvider>
-                      <Component {...pageProps} />
-                    </AdsProvider>
-                  </YouTubeCastProvider>
-                </FirebaseCastProvider>
-              </CastProvider>
-            )}
+            </ConditionalCastProviders>
             {/* <ReactQueryDevtools /> */}
           </QueryClientProvider>
           <Analytics />
