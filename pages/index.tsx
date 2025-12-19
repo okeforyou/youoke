@@ -37,7 +37,6 @@ import BottomNavigation from "../components/BottomNavigation";
 import ListPlaylistsGrid from "../components/ListPlaylistsGrid";
 import Modal, { ModalHandler } from "../components/Modal";
 import SearchResultGrid from "../components/SearchResultGrid";
-import VideoHorizontalCard from "../components/VideoHorizontalCard";
 import { DraggablePlaylistItem } from "../components/DraggablePlaylistItem";
 import YoutubePlayer from "../components/YoutubePlayer";
 import { CastModeSelector } from "../components/CastModeSelector";
@@ -257,7 +256,7 @@ function HomePage() {
     if (searchTerm) setActiveIndex(0);
   }, [searchTerm]);
 
-  const addVideoToMyPlaylist = async (key, data) => {
+  const addVideoToMyPlaylist = async (key: string, data: SearchResult | RecommendedVideo) => {
     const docRef = doc(database, "playlists", key);
     try {
       await updateDoc(docRef, {
@@ -664,7 +663,7 @@ function HomePage() {
                           <label
                             htmlFor="modal-video"
                             className="btn btn-primary flex-auto gap-2 btn-sm"
-                            onClick={(e) => {
+                            onClick={() => {
                               addPlaylistModalRef?.current.open();
                             }}
                           >
