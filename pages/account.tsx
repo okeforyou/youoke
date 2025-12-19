@@ -23,6 +23,8 @@ import Badge from "../components/ui/Badge";
 import AppShell from "../components/layout/AppShell";
 import EmptyState from "../components/layout/EmptyState";
 import { PricingPackage } from "../types/subscription";
+import { formatDate } from "../utils/formatting";
+import { getDaysRemaining, getPlanDisplayName, isExpiringSoon as checkExpiringSoon } from "../utils/subscription";
 
 // Types
 interface UserSubscription {
@@ -69,45 +71,15 @@ export default function AccountPage({ user, recentPayments, plans, error }: Prop
     );
   }
 
-  // Calculate days remaining
-  const getDaysRemaining = (): number | null => {
-    if (!user.subscription.endDate) return null;
-    const end = new Date(user.subscription.endDate);
-    const now = new Date();
-    const diff = end.getTime() - now.getTime();
-    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-    return days;
-  };
-
-  const daysRemaining = getDaysRemaining();
+  // Use utility functions from utils/
+  const daysRemaining = user.subscription.endDate
+    ? getDaysRemaining(new Date(user.subscription.endDate))
+    : null;
   const isPremium = user.subscription.status === "active" && user.subscription.plan !== "free";
-  const isExpiringSoon = daysRemaining !== null && daysRemaining > 0 && daysRemaining <= 7;
+  const isExpiringSoon = user.subscription.endDate
+    ? checkExpiringSoon(new Date(user.subscription.endDate), 7)
+    : false;
   const isExpired = daysRemaining !== null && daysRemaining < 0;
-
-  // Format date
-  const formatDate = (dateStr: string | null): string => {
-    if (!dateStr) return "-";
-    const d = new Date(dateStr);
-    return d.toLocaleDateString("th-TH", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  // Get plan name
-  const getPlanName = (plan: string): string => {
-    switch (plan) {
-      case "monthly":
-        return "รายเดือน";
-      case "yearly":
-        return "รายปี";
-      case "lifetime":
-        return "ตลอดชีพ";
-      default:
-        return "ฟรี";
-    }
-  };
 
   // Handle logout
   const handleLogout = async () => {
@@ -160,7 +132,7 @@ export default function AccountPage({ user, recentPayments, plans, error }: Prop
                   <Badge variant="ghost" size="lg">Free</Badge>
                 )}
                 <Badge variant="outline" size="lg">
-                  {getPlanName(user.subscription.plan)}
+                  {getPlanDisplayName(user.subscription.plan as any)}
                 </Badge>
               </div>
             </div>
@@ -191,7 +163,7 @@ export default function AccountPage({ user, recentPayments, plans, error }: Prop
                     <div className="flex-grow">
                       <div className="text-sm text-base-content/60">แพ็คเกจปัจจุบัน</div>
                       <div className="text-xl font-bold text-primary">
-                        {getPlanName(user.subscription.plan)}
+                        {getPlanDisplayName(user.subscription.plan as any)}
                       </div>
                     </div>
                   </div>
@@ -205,7 +177,7 @@ export default function AccountPage({ user, recentPayments, plans, error }: Prop
                       <div className="flex-grow">
                         <div className="text-sm text-base-content/60">วันที่สมัคร</div>
                         <div className="text-lg font-semibold">
-                          {formatDate(user.subscription.startDate)}
+                          {formatDate(user.subscription.startDate ? new Date(user.subscription.startDate) : null)}
                         </div>
                       </div>
                     </div>
@@ -220,7 +192,7 @@ export default function AccountPage({ user, recentPayments, plans, error }: Prop
                       <div className="flex-grow">
                         <div className="text-sm text-base-content/60">วันหมดอายุ</div>
                         <div className="text-lg font-semibold">
-                          {formatDate(user.subscription.endDate)}
+                          {formatDate(user.subscription.endDate ? new Date(user.subscription.endDate) : null)}
                         </div>
                         {daysRemaining !== null && daysRemaining > 0 && (
                           <div className="text-sm text-success mt-1">
@@ -347,7 +319,7 @@ export default function AccountPage({ user, recentPayments, plans, error }: Prop
                             <td>
                               <div className="flex items-center gap-2">
                                 <ClockIcon className="w-4 h-4 text-base-content/40" />
-                                {formatDate(payment.createdAt)}
+                                {formatDate(payment.createdAt ? new Date(payment.createdAt) : null)}
                               </div>
                             </td>
                             <td className="font-medium">{payment.planName}</td>
