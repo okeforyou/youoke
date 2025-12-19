@@ -34,7 +34,6 @@ import {
 
 import Alert, { AlertHandler } from "../components/Alert";
 import BottomNavigation from "../components/BottomNavigation";
-import ListPlaylistsGrid from "../components/ListPlaylistsGrid";
 import Modal, { ModalHandler } from "../components/Modal";
 import SearchResultGrid from "../components/SearchResultGrid";
 import { DraggablePlaylistItem } from "../components/DraggablePlaylistItem";
@@ -51,14 +50,21 @@ import { useMyPlaylistState } from "../hooks/myPlaylist";
 import { useRoomState } from "../hooks/room";
 import { RecommendedVideo, SearchResult } from "../types/invidious";
 import { generateRandomString } from "../utils/random";
-import { QRCodeSVG } from 'qrcode.react';
 
+// Dynamic imports for components used in tabs/modals (reduces initial bundle)
 const ListSingerGrid = dynamic(() => import("../components/ListSingerGrid"), {
   loading: () => <div>Loading...</div>,
 });
 const ListTopicsGrid = dynamic(() => import("../components/ListTopicsGrid"), {
   loading: () => <div>Loading...</div>,
 });
+const ListPlaylistsGrid = dynamic(() => import("../components/ListPlaylistsGrid"), {
+  loading: () => <div>Loading...</div>,
+});
+const QRCodeSVG = dynamic(
+  () => import('qrcode.react').then((mod) => mod.QRCodeSVG),
+  { ssr: false, loading: () => <div className="w-[180px] h-[180px] bg-gray-200 animate-pulse" /> }
+);
 
 function HomePage() {
   const {
