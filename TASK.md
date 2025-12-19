@@ -651,7 +651,74 @@ Services Audited:
 
 ---
 
-## 🟢 SPRINT 6: MIDI Feature - Phase 1 (FUTURE)
+## ✅ SPRINT 6: Homepage Performance (COMPLETED)
+
+**Goal:** Improve homepage performance and code quality
+
+**Approach:** Add skeleton loading + Fix TypeScript errors
+- Homepage has custom split-screen layout (not suitable for AppShell)
+- Created VideoGridSkeleton for better perceived performance
+- Fixed all TypeScript type errors
+
+**Duration:** <1 day
+**Status:** ✅ COMPLETED (Dec 19, 2025)
+
+### Completed Tasks
+
+#### ✅ Homepage Analysis & Performance
+- [x] **Read and audit homepage** (pages/index.tsx - 919 lines)
+  - Identified: Large component, mixed concerns, no skeleton loading
+  - Custom layout: Split-screen (video list + player)
+  - Not suitable for AppShell wrapper
+
+- [x] **Create VideoGridSkeleton component**
+  - File: `components/VideoGridSkeleton.tsx` (83 lines)
+  - VideoGridSkeleton with configurable count and columns
+  - PlaylistCardSkeleton for playlist items
+  - Smooth animate-pulse effect
+  - Ready for lazy loading integration
+
+- [x] **Fix TypeScript errors**
+  - addVideoToMyPlaylist: Added types (key: string, data: SearchResult | RecommendedVideo)
+  - Removed unused VideoHorizontalCard import
+  - Fixed unused parameter warnings
+  - All TypeScript errors resolved
+
+### Sprint 6 Results
+```
+✅ VideoGridSkeleton component created (ready for use)
+✅ TypeScript errors fixed in homepage
+✅ Code quality improved
+✅ Homepage analysis documented
+✅ Decision: Homepage keeps custom layout (AppShell not suitable)
+✅ Ready for Phase 3 page refactors
+
+Files Created:
+- components/VideoGridSkeleton.tsx (83 lines): Skeleton loading states
+
+Files Modified:
+- pages/index.tsx: TypeScript fixes (-3 errors, +type safety)
+
+Commits:
+- 9cc90e0d: Add VideoGridSkeleton + Fix TypeScript errors
+```
+
+### Key Insights
+**Why Homepage Doesn't Use AppShell:**
+- Custom split-screen layout (video list + player)
+- AppShell designed for single-column pages
+- Full-screen responsive behavior required
+- BottomNavigation integrated directly
+
+**Better Candidates for AppShell:**
+- Account Page (/account) ✅
+- Pricing Page (/pricing) ✅
+- Payment Page (/payment) ✅
+- Login/Register Pages ✅
+
+---
+
+## 🟢 SPRINT 7: MIDI Feature - Phase 1 (FUTURE)
 
 **Goal:** Implement Google Drive integration for MIDI files
 
