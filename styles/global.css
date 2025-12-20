@@ -209,3 +209,43 @@ textarea {
 .animate-scale-in {
   animation: scale-in 0.3s ease-out;
 }
+
+/* ⚡ Sprint 20: Accessibility - Focus Indicators */
+
+/* Clear focus indicators for keyboard navigation */
+*:focus-visible {
+  @apply outline-2 outline-offset-2 outline-primary;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible {
+  @apply ring-2 ring-primary ring-offset-2;
+}
+
+/* Skip to main content link for screen readers */
+.skip-to-main {
+  @apply absolute -top-full left-0 z-[9999] bg-primary text-white px-4 py-2 rounded;
+  @apply focus:top-4 focus:left-4 transition-all;
+}
+
+/* Improve text contrast for better readability */
+.text-contrast-high {
+  color: #1a1a1a;
+}
+
+/* Screen reader only class */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

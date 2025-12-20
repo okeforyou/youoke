@@ -86,28 +86,32 @@ export default function SearchResultGrid({
           className="col-span-full bg-transparent px-2 pt-2 pb-2 flex justify-between items-center"
         >
           <h2 className="text-lg font-semibold text-gray-900">ผลการค้นหา</h2>
-          <div className="flex gap-1">
+          <div className="flex gap-1" role="group" aria-label="View mode toggle">
             <button
               onClick={() => setViewMode("grid")}
               title="Grid View"
+              aria-label="Switch to grid view"
+              aria-pressed={viewMode === "grid"}
               className={`p-2 rounded btn-hover ${
                 viewMode === "grid"
                   ? "text-gray-900 opacity-100"
                   : "text-gray-500 opacity-75 hover:opacity-90"
               }`}
             >
-              <Squares2X2Icon className="w-5 h-5" />
+              <Squares2X2Icon className="w-5 h-5" aria-hidden="true" />
             </button>
             <button
               onClick={() => setViewMode("list")}
               title="List View"
+              aria-label="Switch to list view"
+              aria-pressed={viewMode === "list"}
               className={`p-2 rounded btn-hover ${
                 viewMode === "list"
                   ? "text-gray-900 opacity-100"
                   : "text-gray-500 opacity-75 hover:opacity-90"
               }`}
             >
-              <ListBulletIcon className="w-5 h-5" />
+              <ListBulletIcon className="w-5 h-5" aria-hidden="true" />
             </button>
           </div>
         </div>

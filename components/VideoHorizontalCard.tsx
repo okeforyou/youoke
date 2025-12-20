@@ -24,6 +24,15 @@ export default function VideoHorizontalCard({
             e.stopPropagation();
             onPlayNow(video);
           }}
+          role="button"
+          tabIndex={0}
+          aria-label={`Play ${video?.title}`}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onPlayNow(video);
+            }
+          }}
         >
           <Image
             src={
@@ -61,8 +70,9 @@ export default function VideoHorizontalCard({
             }}
             className="flex-shrink-0 w-8 h-8 rounded-lg bg-error/10 hover:bg-error/20 flex items-center justify-center btn-hover"
             title="ลบออกจากคิว"
+            aria-label={`Remove ${video?.title} from queue`}
           >
-            <TrashIcon className="w-4 h-4 text-error" />
+            <TrashIcon className="w-4 h-4 text-error" aria-hidden="true" />
           </button>
         </div>
       </div>
