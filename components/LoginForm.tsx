@@ -117,7 +117,7 @@ const LoginForm = () => {
             <button
               type="submit"
               disabled={!canSubmit}
-              className="btn btn-primary mb-8 mt-2 w-full rounded-lg px-5 py-3 text-center text-sm font-medium text-white focus:outline-none focus:ring-4 focus:ring-primary disabled:cursor-not-allowed disabled:bg-gray-100  disabled:text-gray-400 group-invalid:pointer-events-none group-invalid:bg-gray-100 group-invalid:text-gray-400 group-invalid:opacity-70"
+              className="btn btn-primary mb-8 mt-2 w-full rounded-lg px-5 py-3 text-center text-sm font-medium text-white focus:outline-none focus:ring-4 focus:ring-primary disabled:cursor-not-allowed disabled:bg-gray-100  disabled:text-gray-400 group-invalid:pointer-events-none group-invalid:bg-gray-100 group-invalid:text-gray-400 group-invalid:opacity-70 btn-hover"
             >
               เข้าสู่ระบบ
             </button>
@@ -126,7 +126,7 @@ const LoginForm = () => {
             onClick={() => {
               router.push("/register");
             }}
-            className="btn  btn-primary  mb-8 mt-2 w-full rounded-lg px-5 py-3 text-center text-sm font-medium text-white focus:outline-none focus:ring-4    group-invalid:pointer-events-none group-invalid:bg-gray-100 group-invalid:text-gray-400 group-invalid:opacity-70"
+            className="btn  btn-primary  mb-8 mt-2 w-full rounded-lg px-5 py-3 text-center text-sm font-medium text-white focus:outline-none focus:ring-4    group-invalid:pointer-events-none group-invalid:bg-gray-100 group-invalid:text-gray-400 group-invalid:opacity-70 btn-hover"
           >
             สมัครสมาชิก
           </button>
@@ -141,7 +141,7 @@ const LoginForm = () => {
             type="button"
             onClick={handleGoogleSignIn}
             disabled={googleLoading}
-            className="flex items-center justify-center gap-3 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-5 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-4 focus:ring-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex items-center justify-center gap-3 w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-5 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-4 focus:ring-gray-200 disabled:cursor-not-allowed disabled:opacity-50 btn-hover"
           >
             {googleLoading ? (
               <>

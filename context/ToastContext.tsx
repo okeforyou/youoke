@@ -83,14 +83,17 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
       {children}
       <div className="toast toast-top toast-end z-[9999]">
         {toasts.map((toast) => (
-          <div key={toast.id} className={getToastStyles(toast.type)}>
+          <div
+            key={toast.id}
+            className={`${getToastStyles(toast.type)} animate-in slide-in-from-right-5 fade-in duration-300`}
+          >
             <div className="flex items-center gap-2">
               {getIcon(toast.type)}
               <span>{toast.message}</span>
             </div>
             <button
               onClick={() => removeToast(toast.id)}
-              className="btn btn-sm btn-ghost btn-circle"
+              className="btn btn-sm btn-ghost btn-circle hover:scale-110 transition-transform"
             >
               <XMarkIcon className="w-4 h-4" />
             </button>

@@ -14,7 +14,7 @@ export default function VideoHorizontalCard({
   onDelete = () => {},
 }: VideoHorizontalCardProps) {
   return (
-    <div className="relative bg-white hover:bg-base-100 rounded-lg border border-base-300 hover:border-primary overflow-hidden group transition-all shadow-sm">
+    <div className="relative bg-white hover:bg-base-100 rounded-lg border border-base-300 hover:border-primary overflow-hidden group shadow-sm card-hover">
       {/* Main content */}
       <div className="grid grid-cols-3 overflow-hidden">
         {/* Thumbnail with Play overlay */}
@@ -59,7 +59,7 @@ export default function VideoHorizontalCard({
               e.stopPropagation();
               onDelete(video);
             }}
-            className="flex-shrink-0 w-8 h-8 rounded-lg bg-error/10 hover:bg-error/20 flex items-center justify-center transition-colors"
+            className="flex-shrink-0 w-8 h-8 rounded-lg bg-error/10 hover:bg-error/20 flex items-center justify-center btn-hover"
             title="ลบออกจากคิว"
           >
             <TrashIcon className="w-4 h-4 text-error" />

@@ -90,7 +90,7 @@ export default function SearchResultGrid({
             <button
               onClick={() => setViewMode("grid")}
               title="Grid View"
-              className={`p-2 rounded transition-all ${
+              className={`p-2 rounded btn-hover ${
                 viewMode === "grid"
                   ? "text-gray-900 opacity-100"
                   : "text-gray-500 opacity-75 hover:opacity-90"
@@ -101,7 +101,7 @@ export default function SearchResultGrid({
             <button
               onClick={() => setViewMode("list")}
               title="List View"
-              className={`p-2 rounded transition-all ${
+              className={`p-2 rounded btn-hover ${
                 viewMode === "list"
                   ? "text-gray-900 opacity-100"
                   : "text-gray-500 opacity-75 hover:opacity-90"
@@ -159,7 +159,7 @@ export default function SearchResultGrid({
               <Fragment key={rcm.videoId}>
                 {/* The button to open modal */}
                 <label htmlFor="modal-video" onClick={() => onClick(rcm)}>
-                  <div className="card rounded-lg overflow-hidden bg-white shadow hover:shadow-md cursor-pointer flex flex-col h-full transition-shadow">
+                  <div className="card rounded-lg overflow-hidden bg-white shadow cursor-pointer flex flex-col h-full card-hover">
                     <figure className="relative w-full aspect-video flex-shrink-0">
                       <Image
                         src={

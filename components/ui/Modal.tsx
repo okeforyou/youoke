@@ -135,7 +135,7 @@ export default function Modal({
       className="modal modal-bottom sm:modal-middle"
       onClick={handleBackdropClick}
     >
-      <div className={`${getSizeClasses()} ${className}`}>
+      <div className={`${getSizeClasses()} ${className} animate-scale-in`}>
         {/* Header */}
         {(title || showCloseButton) && (
           <div className="flex items-center justify-between mb-4">
@@ -144,7 +144,7 @@ export default function Modal({
               <button
                 type="button"
                 onClick={onClose}
-                className="btn btn-sm btn-circle btn-ghost absolute right-4 top-4"
+                className="btn btn-sm btn-circle btn-ghost absolute right-4 top-4 btn-hover"
                 aria-label="Close"
               >
                 <XMarkIcon className="w-5 h-5" />
