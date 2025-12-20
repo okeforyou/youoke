@@ -1,5 +1,6 @@
 import { useRouter } from "next/router";
 import { useRef, useState } from "react";
+import Image from "next/image";
 
 import {
   ExclamationCircleIcon,
@@ -68,7 +69,13 @@ const LoginForm = () => {
 
           <form action="" onSubmit={handleLogin} className="group">
             <div className="flex justify-center items-center">
-              <img src="icon-512.png" alt="icon" width={120} height={120} />
+              <Image
+                src="/icon-512.png"
+                alt="YouOke Logo"
+                width={120}
+                height={120}
+                priority
+              />
             </div>
             <Input
               type="email"

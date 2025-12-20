@@ -1,4 +1,5 @@
 import React, { ReactNode } from 'react';
+import Image from 'next/image';
 
 /**
  * LoadingScreen Component - Loading states for better UX
@@ -49,13 +50,14 @@ export default function LoadingScreen({
       <div className={`min-h-screen flex flex-col items-center justify-center bg-base-100 ${className}`}>
         <div className="text-center">
           {/* Logo */}
-          <div className="mb-6">
-            <img
+          <div className="mb-6 flex justify-center">
+            <Image
               src="/icon-512.png"
               alt="YouOke"
               width={120}
               height={120}
-              className="mx-auto opacity-80"
+              className="opacity-80"
+              priority
             />
           </div>
 

@@ -1,6 +1,7 @@
 import { doc, updateDoc, deleteDoc, getDoc, Timestamp } from "firebase/firestore";
 import { GetServerSideProps } from "next";
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import {
   CheckIcon,
   XMarkIcon,
@@ -796,11 +797,16 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
               {viewingPayment.slipUrl && (
                 <div>
                   <h3 className="font-bold text-gray-900 mb-2">Payment Slip</h3>
-                  <img
-                    src={viewingPayment.slipUrl}
-                    alt="Payment Slip"
-                    className="w-full max-w-md mx-auto rounded-lg border border-gray-300"
-                  />
+                  <div className="relative w-full max-w-md mx-auto">
+                    <Image
+                      src={viewingPayment.slipUrl}
+                      alt="Payment Slip"
+                      width={500}
+                      height={700}
+                      className="w-full h-auto rounded-lg border border-gray-300"
+                      unoptimized
+                    />
+                  </div>
                 </div>
               )}
 

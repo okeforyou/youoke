@@ -172,6 +172,8 @@ export default function SearchResultGrid({
                         sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, 20vw"
                         className="object-cover"
                         loading={i < 6 ? "eager" : "lazy"}
+                        placeholder="blur"
+                        blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PC9zdmc+"
                         onLoad={(ev) => ev.currentTarget.classList.remove("animate-pulse")}
                       />
                     </figure>
