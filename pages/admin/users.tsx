@@ -72,6 +72,10 @@ const UsersPage: React.FC<Props> = ({ users: initialUsers, totalUsers: initialTo
   const [filterTier, setFilterTier] = useState("all");
   const [editingUser, setEditingUser] = useState<User | null>(null);
 
+  // Loading states
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   // Client-side pagination
   const [currentPage, setCurrentPage] = useState(1);
   const totalUsers = initialTotal;
@@ -133,6 +137,7 @@ const UsersPage: React.FC<Props> = ({ users: initialUsers, totalUsers: initialTo
   const handleSaveUser = async () => {
     if (!editingUser) return;
 
+    setIsSaving(true);
     try {
       // Note: User data is in Realtime Database, not Firestore
       // This will need to use adminDb instead
@@ -144,6 +149,8 @@ const UsersPage: React.FC<Props> = ({ users: initialUsers, totalUsers: initialTo
     } catch (error) {
       console.error("Error updating user:", error);
       alert("Error updating user");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -157,6 +164,7 @@ const UsersPage: React.FC<Props> = ({ users: initialUsers, totalUsers: initialTo
       return;
     }
 
+    setIsDeleting(true);
     try {
       // Note: User data is in Realtime Database, not Firestore
       alert("ฟังก์ชันนี้ต้องแก้ไขให้ใช้ Realtime Database API endpoint");
@@ -165,6 +173,8 @@ const UsersPage: React.FC<Props> = ({ users: initialUsers, totalUsers: initialTo
     } catch (error) {
       console.error("Error deleting user:", error);
       alert("เกิดข้อผิดพลาดในการลบผู้ใช้");
+    } finally {
+      setIsDeleting(false);
     }
   };
 

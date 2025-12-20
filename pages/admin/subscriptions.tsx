@@ -49,6 +49,13 @@ const SubscriptionsPage: React.FC<Props> = ({ plans: initialPlans, error }) => {
   const [plans, setPlans] = useState<Plan[]>(initialPlans);
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
   const [creatingPlan, setCreatingPlan] = useState(false);
+
+  // Loading states
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [togglingPlanId, setTogglingPlanId] = useState<string | null>(null);
+
   const [newPlan, setNewPlan] = useState<Omit<Plan, "id">>({
     name: "",
     displayName: "",
@@ -70,6 +77,7 @@ const SubscriptionsPage: React.FC<Props> = ({ plans: initialPlans, error }) => {
   const handleSavePlan = async () => {
     if (!editingPlan) return;
 
+    setIsSaving(true);
     try {
       const planRef = doc(db, "plans", editingPlan.id);
       await updateDoc(planRef, {
@@ -89,10 +97,13 @@ const SubscriptionsPage: React.FC<Props> = ({ plans: initialPlans, error }) => {
     } catch (error) {
       console.error("Error updating plan:", error);
       alert("Error updating plan");
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const togglePlanStatus = async (plan: Plan, field: "isActive" | "isVisible") => {
+    setTogglingPlanId(plan.id);
     try {
       const planRef = doc(db, "plans", plan.id);
       const newValue = !plan[field];
@@ -105,6 +116,8 @@ const SubscriptionsPage: React.FC<Props> = ({ plans: initialPlans, error }) => {
     } catch (error) {
       console.error("Error updating plan:", error);
       alert("Error updating plan");
+    } finally {
+      setTogglingPlanId(null);
     }
   };
 
@@ -120,6 +133,7 @@ const SubscriptionsPage: React.FC<Props> = ({ plans: initialPlans, error }) => {
       return;
     }
 
+    setIsDeleting(true);
     try {
       const planRef = doc(db, "plans", plan.id);
       await deleteDoc(planRef);
@@ -129,6 +143,8 @@ const SubscriptionsPage: React.FC<Props> = ({ plans: initialPlans, error }) => {
     } catch (error) {
       console.error("Error deleting plan:", error);
       alert("เกิดข้อผิดพลาดในการลบ Plan");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -138,6 +154,7 @@ const SubscriptionsPage: React.FC<Props> = ({ plans: initialPlans, error }) => {
       return;
     }
 
+    setIsCreating(true);
     try {
       const planRef = doc(db, "plans", newPlan.name);
       await setDoc(planRef, {
@@ -151,6 +168,8 @@ const SubscriptionsPage: React.FC<Props> = ({ plans: initialPlans, error }) => {
     } catch (error) {
       console.error("Error creating plan:", error);
       alert("Error creating plan");
+    } finally {
+      setIsCreating(false);
     }
   };
 

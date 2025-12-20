@@ -36,11 +36,14 @@ interface Props {
 const SettingsPage: React.FC<Props> = ({ generalSettings: initialGeneral, featureFlags: initialFlags, error }) => {
   const [generalSettings, setGeneralSettings] = useState<GeneralSettings>(initialGeneral);
   const [featureFlags, setFeatureFlags] = useState<FeatureFlags>(initialFlags);
-  const [saving, setSaving] = useState(false);
+
+  // Loading states (separate for each operation)
+  const [isSavingGeneral, setIsSavingGeneral] = useState(false);
+  const [isSavingFeatures, setIsSavingFeatures] = useState(false);
 
   const handleSaveGeneralSettings = async () => {
+    setIsSavingGeneral(true);
     try {
-      setSaving(true);
       const generalRef = doc(db, "settings", "general");
       await updateDoc(generalRef, {
         ...generalSettings,
@@ -51,13 +54,14 @@ const SettingsPage: React.FC<Props> = ({ generalSettings: initialGeneral, featur
     } catch (error) {
       console.error("Error saving general settings:", error);
       alert("Error saving settings");
-      setSaving(false);
+    } finally {
+      setIsSavingGeneral(false);
     }
   };
 
   const handleSaveFeatureFlags = async () => {
+    setIsSavingFeatures(true);
     try {
-      setSaving(true);
       const featuresRef = doc(db, "settings", "features");
       await updateDoc(featuresRef, {
         ...featureFlags,
@@ -68,7 +72,8 @@ const SettingsPage: React.FC<Props> = ({ generalSettings: initialGeneral, featur
     } catch (error) {
       console.error("Error saving feature flags:", error);
       alert("Error saving settings");
-      setSaving(false);
+    } finally {
+      setIsSavingFeatures(false);
     }
   };
 
@@ -245,11 +250,11 @@ const SettingsPage: React.FC<Props> = ({ generalSettings: initialGeneral, featur
             <div className="pt-4">
               <button
                 onClick={handleSaveGeneralSettings}
-                disabled={saving}
+                disabled={isSavingGeneral}
                 className="w-full bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ArrowDownTrayIcon className="w-5 h-5" />
-                {saving ? "Saving..." : "Save General Settings"}
+                {isSavingGeneral ? "Saving..." : "Save General Settings"}
               </button>
             </div>
           </div>
@@ -393,11 +398,11 @@ const SettingsPage: React.FC<Props> = ({ generalSettings: initialGeneral, featur
             <div className="pt-4">
               <button
                 onClick={handleSaveFeatureFlags}
-                disabled={saving}
+                disabled={isSavingFeatures}
                 className="w-full bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ArrowDownTrayIcon className="w-5 h-5" />
-                {saving ? "Saving..." : "Save Feature Flags"}
+                {isSavingFeatures ? "Saving..." : "Save Feature Flags"}
               </button>
             </div>
           </div>

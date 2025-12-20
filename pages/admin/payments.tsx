@@ -95,6 +95,13 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
   // Client-side pagination
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Loading states
+  const [isApproving, setIsApproving] = useState(false);
+  const [isRejecting, setIsRejecting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isBulkApproving, setIsBulkApproving] = useState(false);
+  const [isBulkRejecting, setIsBulkRejecting] = useState(false);
+
   useEffect(() => {
     filterPayments();
   }, [payments, filterStatus]);
@@ -131,6 +138,7 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
   const handleApprovePayment = async (payment: Payment) => {
     if (!confirm("ยืนยันการอนุมัติการชำระเงินนี้?")) return;
 
+    setIsApproving(true);
     try {
       // Update payment status
       const paymentRef = doc(db, "payments", payment.id);
@@ -172,6 +180,8 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
     } catch (error) {
       console.error("Error approving payment:", error);
       alert("Error approving payment");
+    } finally {
+      setIsApproving(false);
     }
   };
 
@@ -183,6 +193,7 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
 
     if (!confirm("ยืนยันการปฏิเสธการชำระเงินนี้?")) return;
 
+    setIsRejecting(true);
     try {
       const paymentRef = doc(db, "payments", payment.id);
       await updateDoc(paymentRef, {
@@ -199,6 +210,8 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
     } catch (error) {
       console.error("Error rejecting payment:", error);
       alert("Error rejecting payment");
+    } finally {
+      setIsRejecting(false);
     }
   };
 
@@ -213,6 +226,7 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
       return;
     }
 
+    setIsDeleting(true);
     try {
       const paymentRef = doc(db, "payments", payment.id);
       await deleteDoc(paymentRef);
@@ -223,6 +237,8 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
     } catch (error) {
       console.error("Error deleting payment:", error);
       alert("เกิดข้อผิดพลาดในการลบรายการชำระเงิน");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -249,6 +265,7 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
 
     if (!confirm(`ยืนยันการอนุมัติ ${selectedPayments.size} รายการ?`)) return;
 
+    setIsBulkApproving(true);
     try {
       const selectedArray = Array.from(selectedPayments);
       const paymentObjects = filteredPayments.filter((p) => selectedArray.includes(p.id));
@@ -298,6 +315,8 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
     } catch (error) {
       console.error("Error bulk approving:", error);
       alert("เกิดข้อผิดพลาดในการอนุมัติ");
+    } finally {
+      setIsBulkApproving(false);
     }
   };
 
@@ -311,6 +330,7 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
 
     if (!confirm(`ยืนยันการปฏิเสธ ${selectedPayments.size} รายการ?`)) return;
 
+    setIsBulkRejecting(true);
     try {
       const selectedArray = Array.from(selectedPayments);
 
@@ -334,6 +354,8 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
     } catch (error) {
       console.error("Error bulk rejecting:", error);
       alert("เกิดข้อผิดพลาดในการปฏิเสธ");
+    } finally {
+      setIsBulkRejecting(false);
     }
   };
 
@@ -520,17 +542,37 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
                 </div>
                 <button
                   onClick={handleBulkApprove}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium"
+                  disabled={isBulkApproving || isBulkRejecting}
+                  className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <CheckIcon className="w-5 h-5" />
-                  Approve All
+                  {isBulkApproving ? (
+                    <>
+                      <ArrowPathIcon className="w-5 h-5 animate-spin" />
+                      Approving...
+                    </>
+                  ) : (
+                    <>
+                      <CheckIcon className="w-5 h-5" />
+                      Approve All
+                    </>
+                  )}
                 </button>
                 <button
                   onClick={handleBulkReject}
-                  className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
+                  disabled={isBulkApproving || isBulkRejecting}
+                  className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <XMarkIcon className="w-5 h-5" />
-                  Reject All
+                  {isBulkRejecting ? (
+                    <>
+                      <ArrowPathIcon className="w-5 h-5 animate-spin" />
+                      Rejecting...
+                    </>
+                  ) : (
+                    <>
+                      <XMarkIcon className="w-5 h-5" />
+                      Reject All
+                    </>
+                  )}
                 </button>
               </div>
             </div>
@@ -798,17 +840,37 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
                   <div className="flex gap-3">
                     <button
                       onClick={() => handleApprovePayment(viewingPayment)}
-                      className="flex-1 bg-green-500 text-white px-4 py-3 rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center gap-2 font-medium"
+                      disabled={isApproving || isRejecting}
+                      className="flex-1 bg-green-500 text-white px-4 py-3 rounded-lg hover:bg-green-600 transition-colors flex items-center justify-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <CheckIcon className="w-5 h-5" />
-                      Approve Payment
+                      {isApproving ? (
+                        <>
+                          <ArrowPathIcon className="w-5 h-5 animate-spin" />
+                          Approving...
+                        </>
+                      ) : (
+                        <>
+                          <CheckIcon className="w-5 h-5" />
+                          Approve Payment
+                        </>
+                      )}
                     </button>
                     <button
                       onClick={() => handleRejectPayment(viewingPayment)}
-                      className="flex-1 bg-red-500 text-white px-4 py-3 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center gap-2 font-medium"
+                      disabled={isApproving || isRejecting}
+                      className="flex-1 bg-red-500 text-white px-4 py-3 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <XMarkIcon className="w-5 h-5" />
-                      Reject Payment
+                      {isRejecting ? (
+                        <>
+                          <ArrowPathIcon className="w-5 h-5 animate-spin" />
+                          Rejecting...
+                        </>
+                      ) : (
+                        <>
+                          <XMarkIcon className="w-5 h-5" />
+                          Reject Payment
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>
@@ -828,10 +890,20 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
               </button>
               <button
                 onClick={() => handleDeletePayment(viewingPayment)}
-                className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors flex items-center gap-2"
+                disabled={isDeleting}
+                className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <TrashIcon className="w-5 h-5" />
-                Delete
+                {isDeleting ? (
+                  <>
+                    <ArrowPathIcon className="w-5 h-5 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <TrashIcon className="w-5 h-5" />
+                    Delete
+                  </>
+                )}
               </button>
             </div>
           </div>
