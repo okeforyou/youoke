@@ -10,7 +10,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { GetServerSideProps } from "next";
 import nookies from "nookies";
-import AdminLayout from "../../components/admin/AdminLayout";
+import AdminLayout from "../../components/admin/LazyAdminLayout";
 import { adminAuth, adminDb, adminFirestore } from "../../firebase-admin";
 
 interface Stats {

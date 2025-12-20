@@ -35,10 +35,21 @@ import {
 import Alert, { AlertHandler } from "../components/Alert";
 import BottomNavigation from "../components/BottomNavigation";
 import Modal, { ModalHandler } from "../components/Modal";
-import SearchResultGrid from "../components/SearchResultGrid";
 import { DraggablePlaylistItem } from "../components/DraggablePlaylistItem";
 import YoutubePlayer from "../components/YoutubePlayer";
 import { CastModeSelector } from "../components/CastModeSelector";
+
+// ⚡ Lazy load SearchResultGrid (only loaded when user searches)
+const SearchResultGrid = dynamic(() => import("../components/SearchResultGrid"), {
+  loading: () => (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
+      {[...Array(8)].map((_, i) => (
+        <div key={i} className="bg-gray-200 rounded-lg animate-pulse h-48" />
+      ))}
+    </div>
+  ),
+  ssr: false,
+});
 import { useAuth } from "../context/AuthContext";
 import { useCast } from "../context/CastContext";
 import { useFirebaseCast } from "../context/FirebaseCastContext";

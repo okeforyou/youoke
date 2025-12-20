@@ -15,7 +15,7 @@ import {
 } from "@heroicons/react/24/outline";
 import nookies from "nookies";
 
-import AdminLayout from "../../components/admin/AdminLayout";
+import AdminLayout from "../../components/admin/LazyAdminLayout";
 import { db } from "../../firebase";
 import { adminAuth, adminDb, adminFirestore } from "../../firebase-admin";
 import { exportToCSV, flattenForCSV } from "../../utils/exportCSV";

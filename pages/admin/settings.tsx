@@ -5,7 +5,7 @@ import { GetServerSideProps } from "next";
 import nookies from "nookies";
 
 
-import AdminLayout from "../../components/admin/AdminLayout";
+import AdminLayout from "../../components/admin/LazyAdminLayout";
 import { db } from "../../firebase";
 import { adminAuth, adminDb, adminFirestore } from "../../firebase-admin";
 import { useToast } from "../../context/ToastContext";
