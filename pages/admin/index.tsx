@@ -324,6 +324,12 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
     const startTime = Date.now();
 
     // Fetch all users from Realtime Database
+    // TODO: OPTIMIZATION - Consider migrating to Firestore for better querying
+    // Realtime DB doesn't support complex queries, so we fetch all users
+    // For large user bases (>10k), consider:
+    // 1. Pagination
+    // 2. Pre-computed statistics (updated by Cloud Functions)
+    // 3. Firestore migration for better query support
     const usersRef = adminDb.ref('users');
     const usersSnapshot = await usersRef.once('value');
     const usersData = usersSnapshot.val() || {};
@@ -355,6 +361,11 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
     });
 
     // Fetch payments from Firestore
+    // TODO: OPTIMIZATION - Currently fetches ALL payments, should use:
+    // 1. Separate queries with where() for each status
+    // 2. Use limit() for recent payments only
+    // 3. Consider aggregation counters updated by Cloud Functions
+    // Current approach: Fetch all → Filter in memory (works for small datasets)
     const paymentsSnapshot = await adminFirestore.collection('payments').get();
 
     let pendingPayments = 0;
