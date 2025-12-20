@@ -1027,7 +1027,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
       }
 
       // Get plan name from cache or use denormalized data
-      let planName = data.planName || data.planId;
+      let planName: string = data.planName || data.planId || "Unknown Plan";
       if (!data.planName && data.planId && plansCache.has(data.planId)) {
         planName = plansCache.get(data.planId)!;
       }
@@ -1035,24 +1035,24 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
       // Serialize the payment data
       return {
         id: paymentDoc.id,
-        userId: data.userId,
+        userId: data.userId || "Unknown",
         userEmail,
         userName,
-        planId: data.planId,
+        planId: data.planId || null,
         planName,
-        amount: data.amount,
-        currency: data.currency,
-        status: data.status,
-        paymentMethod: data.paymentMethod,
-        transactionId: data.transactionId,
-        slipUrl: data.slipUrl,
-        note: data.note,
+        amount: data.amount || 0,
+        currency: data.currency || "THB",
+        status: data.status || "pending",
+        paymentMethod: data.paymentMethod || null,
+        transactionId: data.transactionId || null,
+        slipUrl: data.slipUrl || null,
+        note: data.note || null,
         createdAt: data.createdAt?.toDate?.()?.toISOString() || null,
         approvedAt: data.approvedAt?.toDate?.()?.toISOString() || null,
-        approvedBy: data.approvedBy,
+        approvedBy: data.approvedBy || null,
         rejectedAt: data.rejectedAt?.toDate?.()?.toISOString() || null,
-        rejectedBy: data.rejectedBy,
-        rejectionReason: data.rejectionReason,
+        rejectedBy: data.rejectedBy || null,
+        rejectionReason: data.rejectionReason || null,
       } as SerializedPayment;
     });
 

@@ -472,7 +472,7 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
       const data = doc.data();
 
       // Get plan name from cache (no additional queries needed!)
-      let planName = data.planId;
+      let planName: string = data.planId || "Unknown Plan";
       if (data.planName) {
         planName = data.planName;
       } else if (data.planId && plansMap.has(data.planId)) {

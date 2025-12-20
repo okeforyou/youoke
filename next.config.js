@@ -7,7 +7,7 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: ['i.ytimg.com', 'firebasestorage.googleapis.com'],
+    domains: ['i.ytimg.com', 'firebasestorage.googleapis.com', 'i.scdn.co'],
   },
   async rewrites() {
     return [

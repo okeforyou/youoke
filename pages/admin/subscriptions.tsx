@@ -829,10 +829,22 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
 
     // 3. Fetch plans from Firestore
     const plansSnapshot = await adminFirestore.collection('plans').get();
-    const plansData: Plan[] = plansSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    })) as Plan[];
+    const plansData: Plan[] = plansSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        name: data.name || '',
+        displayName: data.displayName || data.name || '',
+        price: data.price || 0,
+        currency: data.currency || 'THB',
+        duration: data.duration !== undefined ? data.duration : null,
+        features: data.features || [],
+        maxRooms: data.maxRooms || 0,
+        maxSongsInQueue: data.maxSongsInQueue || 0,
+        isActive: data.isActive !== undefined ? data.isActive : true,
+        isVisible: data.isVisible !== undefined ? data.isVisible : true,
+      };
+    });
 
     console.log(`✅ [SSR] Fetched ${plansData.length} plans successfully`);
 

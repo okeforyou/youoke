@@ -492,12 +492,27 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
       midiPlayerEnabled: false,
     };
 
-    const generalSettings = generalDoc.exists
-      ? (generalDoc.data() as GeneralSettings)
+    // Extract only the fields we need (avoid Firestore Timestamps)
+    const generalSettings: GeneralSettings = generalDoc.exists
+      ? {
+          siteName: generalDoc.data()?.siteName || defaultGeneral.siteName,
+          siteDescription: generalDoc.data()?.siteDescription || defaultGeneral.siteDescription,
+          maintenanceMode: generalDoc.data()?.maintenanceMode ?? defaultGeneral.maintenanceMode,
+          allowGuestAccess: generalDoc.data()?.allowGuestAccess ?? defaultGeneral.allowGuestAccess,
+          maxGuestsPerRoom: generalDoc.data()?.maxGuestsPerRoom || defaultGeneral.maxGuestsPerRoom,
+          defaultLanguage: generalDoc.data()?.defaultLanguage || defaultGeneral.defaultLanguage,
+        }
       : defaultGeneral;
 
-    const featureFlags = featuresDoc.exists
-      ? (featuresDoc.data() as FeatureFlags)
+    const featureFlags: FeatureFlags = featuresDoc.exists
+      ? {
+          castModeEnabled: featuresDoc.data()?.castModeEnabled ?? defaultFeatures.castModeEnabled,
+          queueManagementEnabled: featuresDoc.data()?.queueManagementEnabled ?? defaultFeatures.queueManagementEnabled,
+          shareRoomEnabled: featuresDoc.data()?.shareRoomEnabled ?? defaultFeatures.shareRoomEnabled,
+          voiceControlEnabled: featuresDoc.data()?.voiceControlEnabled ?? defaultFeatures.voiceControlEnabled,
+          lyricsEnabled: featuresDoc.data()?.lyricsEnabled ?? defaultFeatures.lyricsEnabled,
+          midiPlayerEnabled: featuresDoc.data()?.midiPlayerEnabled ?? defaultFeatures.midiPlayerEnabled,
+        }
       : defaultFeatures;
 
     console.log(`✅ [SSR] Fetched settings successfully`);
