@@ -10,6 +10,7 @@ import {
   TrashIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 import nookies from "nookies";
 
@@ -364,11 +365,15 @@ const UsersPage: React.FC<Props> = ({ users: initialUsers, totalUsers: initialTo
                         </button>
                         <button
                           onClick={() => handleDeleteUser(user)}
-                          className="text-red-600 hover:text-red-900"
+                          className="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed"
                           title="Delete user"
-                          disabled={user.role === "admin"}
+                          disabled={user.role === "admin" || isDeleting}
                         >
-                          <TrashIcon className={`w-5 h-5 ${user.role === "admin" ? "opacity-30" : ""}`} />
+                          {isDeleting ? (
+                            <ArrowPathIcon className="w-5 h-5 animate-spin" />
+                          ) : (
+                            <TrashIcon className={`w-5 h-5 ${user.role === "admin" ? "opacity-30" : ""}`} />
+                          )}
                         </button>
                       </div>
                     </td>
@@ -498,9 +503,17 @@ const UsersPage: React.FC<Props> = ({ users: initialUsers, totalUsers: initialTo
             <div className="flex gap-3 mt-6">
               <button
                 onClick={handleSaveUser}
-                className="flex-1 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
+                disabled={isSaving}
+                className="flex-1 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Save Changes
+                {isSaving ? (
+                  <>
+                    <ArrowPathIcon className="w-5 h-5 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save Changes"
+                )}
               </button>
               <button
                 onClick={() => setEditingUser(null)}

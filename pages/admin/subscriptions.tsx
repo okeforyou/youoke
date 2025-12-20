@@ -18,6 +18,7 @@ import {
   EyeSlashIcon,
   PlusIcon,
   TrashIcon,
+  ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 import { GetServerSideProps } from "next";
 import nookies from "nookies";
@@ -319,23 +320,33 @@ const SubscriptionsPage: React.FC<Props> = ({ plans: initialPlans, error }) => {
                 <div className="mt-6 flex gap-2">
                   <button
                     onClick={() => togglePlanStatus(plan, "isActive")}
-                    className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                    disabled={togglingPlanId === plan.id}
+                    className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                       plan.isActive
                         ? "bg-green-100 text-green-800"
                         : "bg-gray-100 text-gray-800"
                     }`}
                   >
-                    {plan.isActive ? "Active" : "Inactive"}
+                    {togglingPlanId === plan.id ? (
+                      <ArrowPathIcon className="w-4 h-4 animate-spin inline" />
+                    ) : (
+                      plan.isActive ? "Active" : "Inactive"
+                    )}
                   </button>
                   <button
                     onClick={() => togglePlanStatus(plan, "isVisible")}
-                    className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                    disabled={togglingPlanId === plan.id}
+                    className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                       plan.isVisible
                         ? "bg-blue-100 text-blue-800"
                         : "bg-gray-100 text-gray-800"
                     }`}
                   >
-                    {plan.isVisible ? <EyeIcon className="w-5 h-5" /> : <EyeSlashIcon className="w-5 h-5" />}
+                    {togglingPlanId === plan.id ? (
+                      <ArrowPathIcon className="w-4 h-4 animate-spin inline" />
+                    ) : (
+                      plan.isVisible ? <EyeIcon className="w-5 h-5" /> : <EyeSlashIcon className="w-5 h-5" />
+                    )}
                   </button>
                 </div>
 
@@ -520,9 +531,17 @@ const SubscriptionsPage: React.FC<Props> = ({ plans: initialPlans, error }) => {
               <div className="flex gap-3">
                 <button
                   onClick={handleSavePlan}
-                  className="flex-1 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
+                  disabled={isSaving}
+                  className="flex-1 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Save Changes
+                  {isSaving ? (
+                    <>
+                      <ArrowPathIcon className="w-5 h-5 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
                 </button>
                 <button
                   onClick={() => setEditingPlan(null)}
@@ -534,10 +553,20 @@ const SubscriptionsPage: React.FC<Props> = ({ plans: initialPlans, error }) => {
               {!["free", "monthly", "yearly", "lifetime"].includes(editingPlan.id) && (
                 <button
                   onClick={() => handleDeletePlan(editingPlan)}
-                  className="w-full px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors flex items-center justify-center gap-2"
+                  disabled={isDeleting}
+                  className="w-full px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <TrashIcon className="w-5 h-5" />
-                  Delete Plan
+                  {isDeleting ? (
+                    <>
+                      <ArrowPathIcon className="w-5 h-5 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <TrashIcon className="w-5 h-5" />
+                      Delete Plan
+                    </>
+                  )}
                 </button>
               )}
             </div>
@@ -731,9 +760,17 @@ const SubscriptionsPage: React.FC<Props> = ({ plans: initialPlans, error }) => {
             <div className="flex gap-3 mt-6">
               <button
                 onClick={handleCreatePlan}
-                className="flex-1 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
+                disabled={isCreating}
+                className="flex-1 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Create Plan
+                {isCreating ? (
+                  <>
+                    <ArrowPathIcon className="w-5 h-5 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  "Create Plan"
+                )}
               </button>
               <button
                 onClick={() => setCreatingPlan(false)}
