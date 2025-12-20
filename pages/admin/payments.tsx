@@ -964,67 +964,91 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
 
     console.log('📦 [SSR] Fetched', paymentsSnapshot.size, 'payments');
 
-    // 4. Process payments and denormalize if needed
-    const paymentsData: SerializedPayment[] = await Promise.all(
-      paymentsSnapshot.docs.map(async (paymentDoc) => {
-        const data = paymentDoc.data();
+    // 4. ⚡ OPTIMIZATION: Batch fetch plans and users to avoid N+1 queries
 
-        // Use denormalized data if available
-        let userEmail = data.userEmail || "Unknown";
-        let userName = data.userName || "Unknown";
-        let planName = data.planName || data.planId;
+    // 4.1 Fetch ALL plans once and create cache
+    const plansSnapshot = await adminFirestore.collection('plans').get();
+    const plansCache = new Map<string, string>();
+    plansSnapshot.docs.forEach(doc => {
+      const data = doc.data();
+      plansCache.set(doc.id, data.displayName || doc.id);
+    });
+    console.log(`📦 [SSR] Cached ${plansCache.size} plans`);
 
-        // Only fetch if denormalized data is missing
-        if (!data.userEmail || !data.userName) {
-          try {
-            const userSnapshot = await adminDb.ref(`users/${data.userId}`).once('value');
-            const userData = userSnapshot.val();
-            if (userData) {
-              userEmail = userData.email || "Unknown";
-              userName = userData.displayName || userData.email || "Unknown";
-            }
-          } catch (error) {
-            console.error('Error fetching user data for payment:', paymentDoc.id, error);
+    // 4.2 Get unique user IDs that need fetching
+    const uniqueUserIds = new Set<string>();
+    paymentsSnapshot.docs.forEach(doc => {
+      const data = doc.data();
+      if (!data.userEmail || !data.userName) {
+        uniqueUserIds.add(data.userId);
+      }
+    });
+
+    // 4.3 Batch fetch users (only missing ones)
+    const usersCache = new Map<string, { email: string; displayName: string }>();
+    if (uniqueUserIds.size > 0) {
+      console.log(`📦 [SSR] Fetching ${uniqueUserIds.size} missing users`);
+      const userFetches = Array.from(uniqueUserIds).map(async (userId) => {
+        try {
+          const userSnapshot = await adminDb.ref(`users/${userId}`).once('value');
+          const userData = userSnapshot.val();
+          if (userData) {
+            usersCache.set(userId, {
+              email: userData.email || "Unknown",
+              displayName: userData.displayName || userData.email || "Unknown"
+            });
           }
+        } catch (error) {
+          console.error('Error fetching user:', userId, error);
         }
+      });
+      await Promise.all(userFetches);
+      console.log(`✅ [SSR] Cached ${usersCache.size} users`);
+    }
 
-        // Fetch plan name if missing
-        if (!data.planName && data.planId) {
-          try {
-            const planDoc = await adminFirestore.collection('plans').doc(data.planId).get();
-            if (planDoc.exists) {
-              const planData = planDoc.data();
-              planName = planData?.displayName || data.planId;
-            }
-          } catch (error) {
-            console.error('Error fetching plan data for payment:', paymentDoc.id, error);
-          }
-        }
+    // 4.4 Process payments using cached data (no more queries!)
+    const paymentsData: SerializedPayment[] = paymentsSnapshot.docs.map(paymentDoc => {
+      const data = paymentDoc.data();
 
-        // Serialize the payment data
-        return {
-          id: paymentDoc.id,
-          userId: data.userId,
-          userEmail,
-          userName,
-          planId: data.planId,
-          planName,
-          amount: data.amount,
-          currency: data.currency,
-          status: data.status,
-          paymentMethod: data.paymentMethod,
-          transactionId: data.transactionId,
-          slipUrl: data.slipUrl,
-          note: data.note,
-          createdAt: data.createdAt?.toDate?.()?.toISOString() || null,
-          approvedAt: data.approvedAt?.toDate?.()?.toISOString() || null,
-          approvedBy: data.approvedBy,
-          rejectedAt: data.rejectedAt?.toDate?.()?.toISOString() || null,
-          rejectedBy: data.rejectedBy,
-          rejectionReason: data.rejectionReason,
-        } as SerializedPayment;
-      })
-    );
+      // Get user data from cache or use denormalized data
+      let userEmail = data.userEmail || "Unknown";
+      let userName = data.userName || "Unknown";
+
+      if ((!data.userEmail || !data.userName) && usersCache.has(data.userId)) {
+        const cachedUser = usersCache.get(data.userId)!;
+        userEmail = cachedUser.email;
+        userName = cachedUser.displayName;
+      }
+
+      // Get plan name from cache or use denormalized data
+      let planName = data.planName || data.planId;
+      if (!data.planName && data.planId && plansCache.has(data.planId)) {
+        planName = plansCache.get(data.planId)!;
+      }
+
+      // Serialize the payment data
+      return {
+        id: paymentDoc.id,
+        userId: data.userId,
+        userEmail,
+        userName,
+        planId: data.planId,
+        planName,
+        amount: data.amount,
+        currency: data.currency,
+        status: data.status,
+        paymentMethod: data.paymentMethod,
+        transactionId: data.transactionId,
+        slipUrl: data.slipUrl,
+        note: data.note,
+        createdAt: data.createdAt?.toDate?.()?.toISOString() || null,
+        approvedAt: data.approvedAt?.toDate?.()?.toISOString() || null,
+        approvedBy: data.approvedBy,
+        rejectedAt: data.rejectedAt?.toDate?.()?.toISOString() || null,
+        rejectedBy: data.rejectedBy,
+        rejectionReason: data.rejectionReason,
+      } as SerializedPayment;
+    });
 
     console.log('✅ [SSR] admin/payments getServerSideProps completed in', paymentsSnapshot.size, 'payments');
 
