@@ -337,19 +337,16 @@ export default function ListPlaylistsGrid() {
             }}
           >
             <Image
-              unoptimized
               src={
                 item?.playlists?.length
                   ? `${process.env.NEXT_PUBLIC_INVIDIOUS_URL}vi/${item.playlists[0]?.videoId}/mqdefault.jpg` // item.playlists[0]["videoThumbnails"][0].url
                   : "/icon-cover.png"
               }
-              priority
               alt={item.name}
-              layout="fill"
-              className="animate-pulse bg-gray-400 "
-              onLoad={(ev) =>
-                ev.currentTarget.classList.remove("animate-pulse")
-              }
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+              className="object-cover"
+              loading="lazy"
               onErrorCapture={(ev) => {
                 ev.currentTarget.src = "/icon-cover.png";
               }}

@@ -162,15 +162,12 @@ export default function ListSingerGrid({ showTab = true }) {
               >
                 <figure className="relative w-full aspect-square">
                   <Image
-                    unoptimized
                     src={artist.imageUrl}
-                    priority
                     alt={artist.name}
-                    layout="fill"
-                    className="animate-pulse bg-gray-400 rounded-lg object-cover"
-                    onLoad={(ev) =>
-                      ev.currentTarget.classList.remove("animate-pulse")
-                    }
+                    fill
+                    sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, 20vw"
+                    className="rounded-lg object-cover"
+                    loading="lazy"
                     onErrorCapture={(ev) => {
                       ev.currentTarget.src = "/assets/avatar.jpeg";
                     }}
@@ -301,15 +298,12 @@ export default function ListSingerGrid({ showTab = true }) {
               >
                 <figure className="relative w-full aspect-square">
                   <Image
-                    unoptimized
                     src={artist.imageUrl}
-                    priority
                     alt={artist.name}
-                    layout="fill"
-                    className="animate-pulse bg-gray-400 object-cover"
-                    onLoad={(ev) =>
-                      ev.currentTarget.classList.remove("animate-pulse")
-                    }
+                    fill
+                    sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+                    className="object-cover"
+                    loading="lazy"
                     onErrorCapture={(ev) => {
                       ev.currentTarget.src = "/assets/avatar.jpeg";
                     }}

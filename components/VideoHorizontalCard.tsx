@@ -26,16 +26,16 @@ export default function VideoHorizontalCard({
           }}
         >
           <Image
-            unoptimized
             src={
               video?.videoThumbnails?.find((t) => t.quality === "medium")?.url ||
               video?.videoThumbnails?.[0]?.url ||
               `https://i.ytimg.com/vi/${video?.videoId}/mqdefault.jpg`
             }
-            priority
             alt={video?.title}
-            layout="fill"
+            fill
+            sizes="(max-width: 640px) 50vw, 33vw"
             className="object-contain"
+            loading="lazy"
           />
           {/* Play icon overlay */}
           <div className="absolute inset-0 bg-black/0 group-hover/thumbnail:bg-black/30 transition-all flex items-center justify-center">

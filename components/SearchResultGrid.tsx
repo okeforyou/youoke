@@ -162,16 +162,16 @@ export default function SearchResultGrid({
                   <div className="card rounded-lg overflow-hidden bg-white shadow hover:shadow-md cursor-pointer flex flex-col h-full transition-shadow">
                     <figure className="relative w-full aspect-video flex-shrink-0">
                       <Image
-                        unoptimized
                         src={
                           rcm.videoThumbnails?.find((t) => t.quality === "medium")?.url ||
                           rcm.videoThumbnails?.[0]?.url ||
                           `https://i.ytimg.com/vi/${rcm.videoId}/mqdefault.jpg`
                         }
-                        priority
                         alt={rcm.title}
-                        layout="fill"
-                        className="animate-pulse bg-gray-400 object-cover"
+                        fill
+                        sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, 20vw"
+                        className="object-cover"
+                        loading={i < 6 ? "eager" : "lazy"}
                         onLoad={(ev) => ev.currentTarget.classList.remove("animate-pulse")}
                       />
                     </figure>
