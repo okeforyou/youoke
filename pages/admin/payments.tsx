@@ -19,6 +19,7 @@ import AdminLayout from "../../components/admin/AdminLayout";
 import { db } from "../../firebase";
 import { adminAuth, adminDb, adminFirestore } from "../../firebase-admin";
 import { exportToCSV, flattenForCSV } from "../../utils/exportCSV";
+import { useToast } from "../../context/ToastContext";
 
 const PAYMENTS_PER_PAGE = 20;
 
@@ -102,6 +103,9 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
   const [isBulkApproving, setIsBulkApproving] = useState(false);
   const [isBulkRejecting, setIsBulkRejecting] = useState(false);
 
+  // Toast notifications
+  const toast = useToast();
+
   useEffect(() => {
     filterPayments();
   }, [payments, filterStatus]);
@@ -175,11 +179,11 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
       }
 
       // Refresh page to get updated data
-      alert("Payment approved successfully!");
-      window.location.reload();
+      toast?.success("Payment approved successfully!");
+      setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
       console.error("Error approving payment:", error);
-      alert("Error approving payment");
+      toast?.error("Error approving payment");
     } finally {
       setIsApproving(false);
     }
@@ -187,7 +191,7 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
 
   const handleRejectPayment = async (payment: Payment) => {
     if (!rejectionReason.trim()) {
-      alert("กรุณาระบุเหตุผลในการปฏิเสธ");
+      toast?.warning("กรุณาระบุเหตุผลในการปฏิเสธ");
       return;
     }
 
@@ -205,11 +209,11 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
       });
 
       // Refresh page to get updated data
-      alert("Payment rejected");
-      window.location.reload();
+      toast?.success("Payment rejected");
+      setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
       console.error("Error rejecting payment:", error);
-      alert("Error rejecting payment");
+      toast?.error("Error rejecting payment");
     } finally {
       setIsRejecting(false);
     }
@@ -232,11 +236,11 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
       await deleteDoc(paymentRef);
 
       // Refresh page to get updated data
-      alert("ลบรายการชำระเงินเรียบร้อยแล้ว");
-      window.location.reload();
+      toast?.success("ลบรายการชำระเงินเรียบร้อยแล้ว");
+      setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
       console.error("Error deleting payment:", error);
-      alert("เกิดข้อผิดพลาดในการลบรายการชำระเงิน");
+      toast?.error("เกิดข้อผิดพลาดในการลบรายการชำระเงิน");
     } finally {
       setIsDeleting(false);
     }
@@ -310,11 +314,11 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
       );
 
       // Refresh page to get updated data
-      alert(`อนุมัติ ${selectedArray.length} รายการเรียบร้อยแล้ว!`);
-      window.location.reload();
+      toast?.success(`อนุมัติ ${selectedArray.length} รายการเรียบร้อยแล้ว!`);
+      setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
       console.error("Error bulk approving:", error);
-      alert("เกิดข้อผิดพลาดในการอนุมัติ");
+      toast?.error("เกิดข้อผิดพลาดในการอนุมัติ");
     } finally {
       setIsBulkApproving(false);
     }
@@ -324,7 +328,7 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
     if (selectedPayments.size === 0) return;
 
     if (!bulkRejectionReason.trim()) {
-      alert("กรุณาระบุเหตุผลในการปฏิเสธ");
+      toast?.warning("กรุณาระบุเหตุผลในการปฏิเสธ");
       return;
     }
 
@@ -349,11 +353,11 @@ const PaymentsPage: React.FC<Props> = ({ payments: initialPayments, totalPayment
       );
 
       // Refresh page to get updated data
-      alert(`ปฏิเสธ ${selectedArray.length} รายการเรียบร้อยแล้ว`);
-      window.location.reload();
+      toast?.success(`ปฏิเสธ ${selectedArray.length} รายการเรียบร้อยแล้ว`);
+      setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
       console.error("Error bulk rejecting:", error);
-      alert("เกิดข้อผิดพลาดในการปฏิเสธ");
+      toast?.error("เกิดข้อผิดพลาดในการปฏิเสธ");
     } finally {
       setIsBulkRejecting(false);
     }

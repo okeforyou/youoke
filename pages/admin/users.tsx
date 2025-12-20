@@ -18,6 +18,7 @@ import AdminLayout from "../../components/admin/AdminLayout";
 import { db } from "../../firebase";
 import { adminAuth, adminDb } from "../../firebase-admin";
 import { exportToCSV, flattenForCSV } from "../../utils/exportCSV";
+import { useToast } from "../../context/ToastContext";
 
 interface User {
   uid: string;
@@ -55,6 +56,7 @@ interface Props {
 const USERS_PER_PAGE = 20;
 
 const UsersPage: React.FC<Props> = ({ users: initialUsers, totalUsers: initialTotal, error }) => {
+  const toast = useToast();
   // Convert serialized users back to User objects
   const convertedUsers: User[] = initialUsers.map(u => ({
     ...u,
@@ -142,14 +144,14 @@ const UsersPage: React.FC<Props> = ({ users: initialUsers, totalUsers: initialTo
     try {
       // Note: User data is in Realtime Database, not Firestore
       // This will need to use adminDb instead
-      alert("ฟังก์ชันนี้ต้องแก้ไขให้ใช้ Realtime Database API endpoint");
+      toast?.warning("ฟังก์ชันนี้ต้องแก้ไขให้ใช้ Realtime Database API endpoint");
       setEditingUser(null);
 
       // TODO: Create API route to update user in Realtime Database
       // For now, just close the modal
     } catch (error) {
       console.error("Error updating user:", error);
-      alert("Error updating user");
+      toast?.error("Error updating user");
     } finally {
       setIsSaving(false);
     }
@@ -157,7 +159,7 @@ const UsersPage: React.FC<Props> = ({ users: initialUsers, totalUsers: initialTo
 
   const handleDeleteUser = async (user: User) => {
     if (user.role === "admin") {
-      alert("ไม่สามารถลบ Admin ได้");
+      toast?.warning("ไม่สามารถลบ Admin ได้");
       return;
     }
 
@@ -168,12 +170,12 @@ const UsersPage: React.FC<Props> = ({ users: initialUsers, totalUsers: initialTo
     setIsDeleting(true);
     try {
       // Note: User data is in Realtime Database, not Firestore
-      alert("ฟังก์ชันนี้ต้องแก้ไขให้ใช้ Realtime Database API endpoint");
+      toast?.warning("ฟังก์ชันนี้ต้องแก้ไขให้ใช้ Realtime Database API endpoint");
 
       // TODO: Create API route to delete user in Realtime Database
     } catch (error) {
       console.error("Error deleting user:", error);
-      alert("เกิดข้อผิดพลาดในการลบผู้ใช้");
+      toast?.error("เกิดข้อผิดพลาดในการลบผู้ใช้");
     } finally {
       setIsDeleting(false);
     }

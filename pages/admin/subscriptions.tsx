@@ -26,6 +26,7 @@ import nookies from "nookies";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { db } from "../../firebase";
 import { adminAuth, adminDb, adminFirestore } from "../../firebase-admin";
+import { useToast } from "../../context/ToastContext";
 
 interface Plan {
   id: string;
@@ -47,6 +48,7 @@ interface Props {
 }
 
 const SubscriptionsPage: React.FC<Props> = ({ plans: initialPlans, error }) => {
+  const toast = useToast();
   const [plans, setPlans] = useState<Plan[]>(initialPlans);
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
   const [creatingPlan, setCreatingPlan] = useState(false);
@@ -93,11 +95,11 @@ const SubscriptionsPage: React.FC<Props> = ({ plans: initialPlans, error }) => {
         updatedAt: Timestamp.now(),
       });
 
-      alert("Plan updated successfully!");
-      window.location.reload();
+      toast?.success("Plan updated successfully!");
+      setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
       console.error("Error updating plan:", error);
-      alert("Error updating plan");
+      toast?.error("Error updating plan");
     } finally {
       setIsSaving(false);
     }
@@ -113,10 +115,10 @@ const SubscriptionsPage: React.FC<Props> = ({ plans: initialPlans, error }) => {
         updatedAt: Timestamp.now(),
       });
 
-      window.location.reload();
+      setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
       console.error("Error updating plan:", error);
-      alert("Error updating plan");
+      toast?.error("Error updating plan");
     } finally {
       setTogglingPlanId(null);
     }
@@ -126,7 +128,7 @@ const SubscriptionsPage: React.FC<Props> = ({ plans: initialPlans, error }) => {
     // Prevent deletion of core plans
     const corePlans = ["free", "monthly", "yearly", "lifetime"];
     if (corePlans.includes(plan.id)) {
-      alert(`ไม่สามารถลบ Plan "${plan.displayName}" ได้\n\nนี่คือ Plan หลักของระบบ`);
+      toast?.warning(`ไม่สามารถลบ Plan "${plan.displayName}" ได้ - นี่คือ Plan หลักของระบบ`);
       return;
     }
 
@@ -139,11 +141,11 @@ const SubscriptionsPage: React.FC<Props> = ({ plans: initialPlans, error }) => {
       const planRef = doc(db, "plans", plan.id);
       await deleteDoc(planRef);
 
-      alert("ลบ Plan เรียบร้อยแล้ว");
-      window.location.reload();
+      toast?.success("ลบ Plan เรียบร้อยแล้ว");
+      setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
       console.error("Error deleting plan:", error);
-      alert("เกิดข้อผิดพลาดในการลบ Plan");
+      toast?.error("เกิดข้อผิดพลาดในการลบ Plan");
     } finally {
       setIsDeleting(false);
     }
@@ -151,7 +153,7 @@ const SubscriptionsPage: React.FC<Props> = ({ plans: initialPlans, error }) => {
 
   const handleCreatePlan = async () => {
     if (!newPlan.name || !newPlan.displayName) {
-      alert("กรุณากรอก Plan ID และ Display Name");
+      toast?.warning("กรุณากรอก Plan ID และ Display Name");
       return;
     }
 
@@ -164,11 +166,11 @@ const SubscriptionsPage: React.FC<Props> = ({ plans: initialPlans, error }) => {
         updatedAt: Timestamp.now(),
       });
 
-      alert("Plan created successfully!");
-      window.location.reload();
+      toast?.success("Plan created successfully!");
+      setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
       console.error("Error creating plan:", error);
-      alert("Error creating plan");
+      toast?.error("Error creating plan");
     } finally {
       setIsCreating(false);
     }

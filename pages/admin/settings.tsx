@@ -8,6 +8,7 @@ import nookies from "nookies";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { db } from "../../firebase";
 import { adminAuth, adminDb, adminFirestore } from "../../firebase-admin";
+import { useToast } from "../../context/ToastContext";
 
 interface GeneralSettings {
   siteName: string;
@@ -34,6 +35,7 @@ interface Props {
 }
 
 const SettingsPage: React.FC<Props> = ({ generalSettings: initialGeneral, featureFlags: initialFlags, error }) => {
+  const toast = useToast();
   const [generalSettings, setGeneralSettings] = useState<GeneralSettings>(initialGeneral);
   const [featureFlags, setFeatureFlags] = useState<FeatureFlags>(initialFlags);
 
@@ -49,11 +51,11 @@ const SettingsPage: React.FC<Props> = ({ generalSettings: initialGeneral, featur
         ...generalSettings,
         updatedAt: Timestamp.now(),
       });
-      alert("General settings saved successfully!");
-      window.location.reload();
+      toast?.success("General settings saved successfully!");
+      setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
       console.error("Error saving general settings:", error);
-      alert("Error saving settings");
+      toast?.error("Error saving settings");
     } finally {
       setIsSavingGeneral(false);
     }
@@ -67,11 +69,11 @@ const SettingsPage: React.FC<Props> = ({ generalSettings: initialGeneral, featur
         ...featureFlags,
         updatedAt: Timestamp.now(),
       });
-      alert("Feature flags saved successfully!");
-      window.location.reload();
+      toast?.success("Feature flags saved successfully!");
+      setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
       console.error("Error saving feature flags:", error);
-      alert("Error saving settings");
+      toast?.error("Error saving settings");
     } finally {
       setIsSavingFeatures(false);
     }
