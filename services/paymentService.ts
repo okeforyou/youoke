@@ -15,6 +15,16 @@ import {
 import { Payment, PaymentStatus, SubscriptionPlan } from "../types/subscription";
 import { activateSubscription } from "./userService";
 import { getPricingPackage, calculateExpiryDate } from "./pricingService";
+import {
+  ServiceResult,
+  ServiceError,
+  ServiceErrorCode,
+  success,
+  failure,
+  retryWithResult,
+  withFirestore,
+  logServiceOperation,
+} from "../utils/serviceHelper";
 
 const PAYMENTS_COLLECTION = "payments";
 
@@ -30,87 +40,86 @@ export async function createPayment(data: {
   transferDate?: string;
   transferTime?: string;
   note?: string;
-}): Promise<Payment> {
-  if (!db) throw new Error("Firebase not initialized");
+}): Promise<ServiceResult<Payment>> {
+  return withFirestore(async () => {
+    // Generate payment ID
+    const paymentId = `PAY-${Date.now()}-${data.userId.substring(0, 6)}`;
 
-  // Generate payment ID
-  const paymentId = `PAY-${Date.now()}-${data.userId.substring(0, 6)}`;
+    const payment: Payment = {
+      id: paymentId,
+      userId: data.userId,
+      plan: data.plan,
+      amount: data.amount,
+      paymentProof: data.paymentProof,
+      status: "pending",
+      transactionDate: new Date(),
+      bankName: data.bankName,
+      transferTime: data.transferTime
+        ? `${data.transferDate} ${data.transferTime}`
+        : data.transferDate,
+      note: data.note,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
 
-  const payment: Payment = {
-    id: paymentId,
-    userId: data.userId,
-    plan: data.plan,
-    amount: data.amount,
-    paymentProof: data.paymentProof,
-    status: "pending",
-    transactionDate: new Date(),
-    bankName: data.bankName,
-    transferTime: data.transferTime
-      ? `${data.transferDate} ${data.transferTime}`
-      : data.transferDate,
-    note: data.note,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
+    const paymentRef = doc(db!, PAYMENTS_COLLECTION, paymentId);
+    await setDoc(paymentRef, {
+      ...payment,
+      transactionDate: serverTimestamp(),
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
 
-  const paymentRef = doc(db, PAYMENTS_COLLECTION, paymentId);
-  await setDoc(paymentRef, {
-    ...payment,
-    transactionDate: serverTimestamp(),
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
-
-  return payment;
+    logServiceOperation("createPayment", { paymentId, userId: data.userId, plan: data.plan });
+    return success(payment);
+  }, "PAYMENT_CREATE_FAILED");
 }
 
 /**
  * ดึงข้อมูล payment
  */
-export async function getPayment(paymentId: string): Promise<Payment | null> {
-  if (!db) {
-    console.warn("Firebase not initialized");
-    return null;
-  }
-
-  try {
-    const paymentRef = doc(db, PAYMENTS_COLLECTION, paymentId);
+export async function getPayment(paymentId: string): Promise<ServiceResult<Payment>> {
+  return withFirestore(async () => {
+    const paymentRef = doc(db!, PAYMENTS_COLLECTION, paymentId);
     const snapshot = await getDoc(paymentRef);
 
     if (!snapshot.exists()) {
-      return null;
+      return failure(
+        new ServiceError(
+          "Payment not found",
+          "PAYMENT_NOT_FOUND"
+        )
+      );
     }
 
-    return snapshot.data() as Payment;
-  } catch (error) {
-    console.error("Error fetching payment:", error);
-    return null;
-  }
+    const payment = snapshot.data() as Payment;
+    logServiceOperation("getPayment", { paymentId });
+    return success(payment);
+  }, "PAYMENT_FETCH_FAILED");
 }
 
 /**
  * ดึง payments ทั้งหมดของ user
  */
-export async function getUserPayments(userId: string): Promise<Payment[]> {
-  if (!db) {
-    console.warn("Firebase not initialized");
-    return [];
-  }
+export async function getUserPayments(userId: string): Promise<ServiceResult<Payment[]>> {
+  return retryWithResult(
+    async () => {
+      return withFirestore(async () => {
+        const paymentsRef = collection(db!, PAYMENTS_COLLECTION);
+        const q = query(
+          paymentsRef,
+          where("userId", "==", userId),
+          orderBy("createdAt", "desc")
+        );
+        const snapshot = await getDocs(q);
 
-  try {
-    const paymentsRef = collection(db, PAYMENTS_COLLECTION);
-    const q = query(
-      paymentsRef,
-      where("userId", "==", userId),
-      orderBy("createdAt", "desc")
-    );
-    const snapshot = await getDocs(q);
-
-    return snapshot.docs.map((doc) => doc.data() as Payment);
-  } catch (error) {
-    console.error("Error fetching user payments:", error);
-    return [];
-  }
+        const payments = snapshot.docs.map((doc) => doc.data() as Payment);
+        logServiceOperation("getUserPayments", { userId, count: payments.length });
+        return success(payments);
+      }, "PAYMENT_FETCH_FAILED");
+    },
+    { maxRetries: 2, initialDelay: 500 }
+  );
 }
 
 /**
@@ -118,24 +127,31 @@ export async function getUserPayments(userId: string): Promise<Payment[]> {
  */
 export async function getPaymentsByStatus(
   status: PaymentStatus
-): Promise<Payment[]> {
-  if (!db) throw new Error("Firebase not initialized");
+): Promise<ServiceResult<Payment[]>> {
+  return retryWithResult(
+    async () => {
+      return withFirestore(async () => {
+        const paymentsRef = collection(db!, PAYMENTS_COLLECTION);
+        const q = query(
+          paymentsRef,
+          where("status", "==", status),
+          orderBy("createdAt", "desc")
+        );
+        const snapshot = await getDocs(q);
 
-  const paymentsRef = collection(db, PAYMENTS_COLLECTION);
-  const q = query(
-    paymentsRef,
-    where("status", "==", status),
-    orderBy("createdAt", "desc")
+        const payments = snapshot.docs.map((doc) => doc.data() as Payment);
+        logServiceOperation("getPaymentsByStatus", { status, count: payments.length });
+        return success(payments);
+      }, "PAYMENT_FETCH_FAILED");
+    },
+    { maxRetries: 2, initialDelay: 500 }
   );
-  const snapshot = await getDocs(q);
-
-  return snapshot.docs.map((doc) => doc.data() as Payment);
 }
 
 /**
  * ดึง pending payments ทั้งหมด (สำหรับ admin approval)
  */
-export async function getPendingPayments(): Promise<Payment[]> {
+export async function getPendingPayments(): Promise<ServiceResult<Payment[]>> {
   return getPaymentsByStatus("pending");
 }
 
@@ -145,44 +161,64 @@ export async function getPendingPayments(): Promise<Payment[]> {
 export async function approvePayment(
   paymentId: string,
   adminUid: string
-): Promise<void> {
-  if (!db) throw new Error("Firebase not initialized");
+): Promise<ServiceResult<void>> {
+  return withFirestore(async () => {
+    // 1. Get payment details
+    const paymentResult = await getPayment(paymentId);
+    if (!paymentResult.success || !paymentResult.data) {
+      return failure(
+        new ServiceError(
+          "Payment not found",
+          "PAYMENT_NOT_FOUND"
+        )
+      );
+    }
 
-  // 1. Get payment details
-  const payment = await getPayment(paymentId);
-  if (!payment) {
-    throw new Error("Payment not found");
-  }
+    const payment = paymentResult.data;
+    if (payment.status !== "pending") {
+      return failure(
+        new ServiceError(
+          "Payment is not pending",
+          "PAYMENT_NOT_PENDING"
+        )
+      );
+    }
 
-  if (payment.status !== "pending") {
-    throw new Error("Payment is not pending");
-  }
+    // 2. Get pricing package to calculate expiry date
+    const pricingResult = await getPricingPackage(payment.plan);
+    if (!pricingResult.success || !pricingResult.data) {
+      return failure(
+        new ServiceError(
+          "Pricing package not found",
+          "PRICING_NOT_FOUND"
+        )
+      );
+    }
 
-  // 2. Get pricing package to calculate expiry date
-  const pricingPackage = await getPricingPackage(payment.plan);
-  if (!pricingPackage) {
-    throw new Error("Pricing package not found");
-  }
+    const pricingPackage = pricingResult.data;
 
-  // 3. Calculate subscription dates
-  const startDate = new Date();
-  const endDate = calculateExpiryDate(pricingPackage, startDate);
+    // 3. Calculate subscription dates
+    const startDate = new Date();
+    const endDate = calculateExpiryDate(pricingPackage, startDate);
 
-  // 4. Update payment status
-  const paymentRef = doc(db, PAYMENTS_COLLECTION, paymentId);
-  await updateDoc(paymentRef, {
-    status: "approved",
-    approvedBy: adminUid,
-    approvedAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
+    // 4. Update payment status
+    const paymentRef = doc(db!, PAYMENTS_COLLECTION, paymentId);
+    await updateDoc(paymentRef, {
+      status: "approved",
+      approvedBy: adminUid,
+      approvedAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
 
-  // 5. Activate user subscription
-  await activateSubscription(payment.userId, payment.plan, startDate, endDate);
+    // 5. Activate user subscription
+    const activationResult = await activateSubscription(payment.userId, payment.plan, startDate, endDate);
+    if (!activationResult.success) {
+      return failure(activationResult.error!);
+    }
 
-  console.log(
-    `Payment ${paymentId} approved by admin ${adminUid}, subscription activated`
-  );
+    logServiceOperation("approvePayment", { paymentId, adminUid, userId: payment.userId });
+    return success(undefined);
+  }, "PAYMENT_APPROVE_FAILED");
 }
 
 /**
@@ -192,66 +228,91 @@ export async function rejectPayment(
   paymentId: string,
   adminUid: string,
   reason: string
-): Promise<void> {
-  if (!db) throw new Error("Firebase not initialized");
+): Promise<ServiceResult<void>> {
+  return withFirestore(async () => {
+    const paymentResult = await getPayment(paymentId);
+    if (!paymentResult.success || !paymentResult.data) {
+      return failure(
+        new ServiceError(
+          "Payment not found",
+          "PAYMENT_NOT_FOUND"
+        )
+      );
+    }
 
-  const payment = await getPayment(paymentId);
-  if (!payment) {
-    throw new Error("Payment not found");
-  }
+    const payment = paymentResult.data;
+    if (payment.status !== "pending") {
+      return failure(
+        new ServiceError(
+          "Payment is not pending",
+          "PAYMENT_NOT_PENDING"
+        )
+      );
+    }
 
-  if (payment.status !== "pending") {
-    throw new Error("Payment is not pending");
-  }
+    const paymentRef = doc(db!, PAYMENTS_COLLECTION, paymentId);
+    await updateDoc(paymentRef, {
+      status: "rejected",
+      approvedBy: adminUid,
+      approvedAt: serverTimestamp(),
+      rejectedReason: reason,
+      updatedAt: serverTimestamp(),
+    });
 
-  const paymentRef = doc(db, PAYMENTS_COLLECTION, paymentId);
-  await updateDoc(paymentRef, {
-    status: "rejected",
-    approvedBy: adminUid,
-    approvedAt: serverTimestamp(),
-    rejectedReason: reason,
-    updatedAt: serverTimestamp(),
-  });
-
-  console.log(`Payment ${paymentId} rejected by admin ${adminUid}: ${reason}`);
+    logServiceOperation("rejectPayment", { paymentId, adminUid, reason });
+    return success(undefined);
+  }, "PAYMENT_REJECT_FAILED");
 }
 
 /**
  * ดึง payments ทั้งหมด (Admin only)
  */
-export async function getAllPayments(): Promise<Payment[]> {
-  if (!db) throw new Error("Firebase not initialized");
+export async function getAllPayments(): Promise<ServiceResult<Payment[]>> {
+  return retryWithResult(
+    async () => {
+      return withFirestore(async () => {
+        const paymentsRef = collection(db!, PAYMENTS_COLLECTION);
+        const q = query(paymentsRef, orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
 
-  const paymentsRef = collection(db, PAYMENTS_COLLECTION);
-  const q = query(paymentsRef, orderBy("createdAt", "desc"));
-  const snapshot = await getDocs(q);
-
-  return snapshot.docs.map((doc) => doc.data() as Payment);
+        const payments = snapshot.docs.map((doc) => doc.data() as Payment);
+        logServiceOperation("getAllPayments", { count: payments.length });
+        return success(payments);
+      }, "PAYMENT_FETCH_FAILED");
+    },
+    { maxRetries: 2, initialDelay: 500 }
+  );
 }
 
 /**
  * Get payment statistics (Admin dashboard)
  */
-export async function getPaymentStats(): Promise<{
+export async function getPaymentStats(): Promise<ServiceResult<{
   total: number;
   pending: number;
   approved: number;
   rejected: number;
   totalRevenue: number;
-}> {
-  if (!db) throw new Error("Firebase not initialized");
+}>> {
+  return withFirestore(async () => {
+    const allPaymentsResult = await getAllPayments();
+    if (!allPaymentsResult.success || !allPaymentsResult.data) {
+      return failure(allPaymentsResult.error!);
+    }
 
-  const allPayments = await getAllPayments();
+    const allPayments = allPaymentsResult.data;
 
-  const stats = {
-    total: allPayments.length,
-    pending: allPayments.filter((p) => p.status === "pending").length,
-    approved: allPayments.filter((p) => p.status === "approved").length,
-    rejected: allPayments.filter((p) => p.status === "rejected").length,
-    totalRevenue: allPayments
-      .filter((p) => p.status === "approved")
-      .reduce((sum, p) => sum + p.amount, 0),
-  };
+    const stats = {
+      total: allPayments.length,
+      pending: allPayments.filter((p) => p.status === "pending").length,
+      approved: allPayments.filter((p) => p.status === "approved").length,
+      rejected: allPayments.filter((p) => p.status === "rejected").length,
+      totalRevenue: allPayments
+        .filter((p) => p.status === "approved")
+        .reduce((sum, p) => sum + p.amount, 0),
+    };
 
-  return stats;
+    logServiceOperation("getPaymentStats", stats);
+    return success(stats);
+  }, "PAYMENT_STATS_FAILED");
 }
