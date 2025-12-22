@@ -93,7 +93,6 @@ const LoginForm = () => {
               leftIcon={<EnvelopeIcon className="w-5 h-5" />}
               autoComplete="off"
               required
-              pattern="[a-z0-9._+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
               containerClassName="mb-5"
             />
             <Input
