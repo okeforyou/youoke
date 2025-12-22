@@ -2,8 +2,8 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Head from "next/head";
 import {
-  XMarkIcon,
   ChatBubbleLeftIcon,
+  BanknotesIcon,
 } from "@heroicons/react/24/outline";
 import { useAuth } from "../context/AuthContext";
 import { getPricingPackage } from "../services/pricingService";
@@ -11,7 +11,10 @@ import { PricingPackage } from "../types/subscription";
 import PackageCard from "../components/subscription/PackageCard";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
+import Alert from "../components/ui/Alert";
 import LoadingScreen from "../components/layout/LoadingScreen";
+import AppShell from "../components/layout/AppShell";
+import PageHeader from "../components/layout/PageHeader";
 import { BANK_INFO, APP_CONFIG } from "../utils/constants";
 import { formatCurrency } from "../utils/formatting";
 
@@ -80,89 +83,77 @@ export default function PaymentPage() {
         <title>ยืนยันการชำระเงิน - YouOke</title>
       </Head>
 
-      <div className="min-h-screen bg-base-200 flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <Card variant="elevated">
-            <Card.Body padding="md" className="relative">
-              {/* Close Button */}
-              <Button
-                onClick={handleClose}
-                variant="ghost"
-                size="sm"
-                circle
-                className="absolute right-4 top-4"
-              >
-                <XMarkIcon className="w-5 h-5" />
-              </Button>
+      <AppShell background="gradient" maxWidth="2xl" showBottomNav>
+        <PageHeader
+          title="ยืนยันการชำระเงิน"
+          subtitle="กรุณาโอนเงินและแจ้งชำระผ่าน LINE@"
+          showBack
+          onBack={() => router.push("/pricing")}
+        />
 
-              {/* Header */}
-              <div className="text-center mb-6 mt-2">
-                <h2 className="text-xl font-bold mb-2">ยืนยันการชำระเงิน</h2>
-                <p className="text-sm text-base-content/60">
-                  กรุณาตรวจสอบแพ็กเกจที่เลือกและโอนเงิน
-                </p>
-              </div>
+        {/* Selected Package Card */}
+        <Card className="mb-6">
+          <Card.Body padding="sm">
+            <h3 className="text-lg font-semibold mb-3">แพ็กเกจที่เลือก</h3>
+            <PackageCard
+              plan={selectedPlan}
+              isCurrentPlan={false}
+              buttonText="แพ็กเกจที่เลือก"
+              maxFeatures={5}
+            />
+          </Card.Body>
+        </Card>
 
-              {/* Selected Package Card */}
-              <div className="mb-6">
-                <PackageCard
-                  plan={selectedPlan}
-                  isCurrentPlan={false}
-                  buttonText="แพ็กเกจที่เลือก"
-                  maxFeatures={5}
-                />
-              </div>
-
-              {/* Bank Details */}
-              <div className="bg-base-300 p-6 rounded-lg mb-6">
-                <div className="text-center mb-4">
-                  <div className="text-lg font-bold">
-                    โอนเงินจำนวน {formatCurrency(selectedPlan.price)}
+        {/* Bank Details */}
+        <Card variant="elevated" className="mb-6">
+          <Card.Body>
+            <Alert variant="info" icon={<BanknotesIcon className="w-6 h-6" />}>
+              <Alert.Title>ข้อมูลบัญชีธนาคาร</Alert.Title>
+              <Alert.Description>
+                <div className="space-y-2 mt-3">
+                  <div className="flex justify-between">
+                    <span className="text-base-content/70">ชื่อบัญชี:</span>
+                    <span className="font-semibold">{BANK_INFO.accountName}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-base-content/70">ธนาคาร:</span>
+                    <span className="font-semibold">{BANK_INFO.bankName}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-base-content/70">เลขที่บัญชี:</span>
+                    <span className="font-semibold text-lg">{BANK_INFO.accountNumber}</span>
+                  </div>
+                  <div className="divider my-2"></div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-base-content/70">จำนวนเงิน:</span>
+                    <span className="text-2xl font-bold text-primary">
+                      {formatCurrency(selectedPlan.price)}
+                    </span>
                   </div>
                 </div>
+              </Alert.Description>
+            </Alert>
+          </Card.Body>
+        </Card>
 
-                <div className="bg-base-100 p-4 rounded-lg space-y-3 text-sm">
-                  <div>
-                    <div className="text-base-content/60 mb-1">ชื่อบัญชี</div>
-                    <div className="font-semibold">{BANK_INFO.accountName}</div>
-                  </div>
+        {/* Instructions */}
+        <Card variant="elevated" className="mb-6">
+          <Card.Body>
+            <h3 className="text-lg font-semibold mb-3">ขั้นตอนการชำระเงิน</h3>
+            <ol className="list-decimal list-inside space-y-2 text-base-content/80">
+              <li>โอนเงินตามจำนวนที่ระบุ</li>
+              <li>กดปุ่ม "แจ้งชำระเงินทาง LINE@"</li>
+              <li>แนบสลิปการโอนเงินในแชท LINE</li>
+              <li>รอการยืนยันจากแอดมิน (ภายใน 24 ชม.)</li>
+            </ol>
 
-                  <div>
-                    <div className="text-base-content/60 mb-1">ธนาคาร</div>
-                    <div className="font-semibold">{BANK_INFO.bankName}</div>
-                  </div>
-
-                  <div>
-                    <div className="text-base-content/60 mb-1">เลขที่บัญชี</div>
-                    <div className="font-semibold text-lg">{BANK_INFO.accountNumber}</div>
-                  </div>
-                </div>
-
-                <div className="text-center mt-4 text-xs text-base-content/60">
-                  โปรดโอนเงินตามจำนวนที่ระบุ
-                </div>
-              </div>
-
-              {/* Instructions */}
-              <div className="alert alert-info mb-6">
-                <div className="text-sm">
-                  <strong>ขั้นตอนการชำระเงิน:</strong>
-                  <ol className="list-decimal list-inside mt-2 space-y-1">
-                    <li>โอนเงินตามจำนวนที่ระบุ</li>
-                    <li>กดปุ่ม "แจ้งชำระเงินทาง LINE@"</li>
-                    <li>แนบสลิปการโอนเงินในแชท LINE</li>
-                    <li>รอการยืนยันจากแอดมิน (ภายใน 24 ชม.)</li>
-                  </ol>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
+            {/* Action Buttons */}
+            <div className="mt-6 space-y-3">
               <Button
                 onClick={handleNotifyLineOA}
                 variant="success"
                 size="lg"
                 block
-                className="mb-4"
               >
                 <ChatBubbleLeftIcon className="w-6 h-6" />
                 แจ้งชำระเงินทาง LINE@
@@ -170,26 +161,15 @@ export default function PaymentPage() {
 
               <Button
                 onClick={() => router.push("/")}
-                variant="outline"
+                variant="ghost"
                 block
-                className="mb-4"
               >
                 กลับหน้าหลัก
               </Button>
-
-              {/* Back Link */}
-              <div className="text-center">
-                <button
-                  onClick={handleClose}
-                  className="text-sm text-base-content/60 hover:text-base-content"
-                >
-                  กลับไปเลือกแพ็กเกจอื่น
-                </button>
-              </div>
-            </Card.Body>
-          </Card>
-        </div>
-      </div>
+            </div>
+          </Card.Body>
+        </Card>
+      </AppShell>
     </>
   );
 }

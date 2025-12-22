@@ -1,5 +1,4 @@
 import { useRouter } from "next/router";
-import { XMarkIcon } from "@heroicons/react/24/solid";
 import Head from "next/head";
 import { useAuth } from "../context/AuthContext";
 import { useEffect, useState } from "react";
@@ -10,6 +9,8 @@ import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import LoadingScreen from "../components/layout/LoadingScreen";
 import EmptyState from "../components/layout/EmptyState";
+import AppShell from "../components/layout/AppShell";
+import PageHeader from "../components/layout/PageHeader";
 
 export default function PricingPage() {
   const router = useRouter();
@@ -73,79 +74,67 @@ export default function PricingPage() {
         <title>เลือกแพ็กเกจ - Oke for You</title>
       </Head>
 
-      <div className="min-h-screen bg-base-200 flex items-center justify-center p-4">
-        <div className="w-full max-w-4xl">
-          <Card variant="elevated">
-            <Card.Body padding="md" className="relative">
-              {/* Close Button */}
-              <Button
-                onClick={handleClose}
-                variant="ghost"
-                size="sm"
-                circle
-                className="absolute right-4 top-4 z-10"
-              >
-                <XMarkIcon className="w-5 h-5" />
-              </Button>
+      <AppShell background="gradient" maxWidth="4xl" showBottomNav>
+        <PageHeader
+          title="เลือกแพ็กเกจของคุณ"
+          subtitle="ปลดล็อกทุกฟีเจอร์และเริ่มร้องคาราโอเกะแบบไม่มีขีดจำกัด!"
+          showBack
+          onBack={handleClose}
+        />
 
-              {/* Header */}
-              <div className="text-center mb-6 mt-2">
-                <h2 className="text-2xl font-bold mb-2">เลือกแพ็กเกจของคุณ</h2>
-                <p className="text-sm text-base-content/60">
-                  ปลดล็อกทุกฟีเจอร์และเริ่มร้องคาราโอเกะแบบไม่มีขีดจำกัด!
-                </p>
+        {/* Loading State */}
+        {loading && <LoadingScreen variant="inline" text="กำลังโหลดแพ็กเกจ..." />}
+
+        {/* Package Options - Grid Layout */}
+        {!loading && packages.length > 0 && (
+          <Card variant="elevated">
+            <Card.Body>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                {packages.map((pkg) => (
+                  <div
+                    key={pkg.id}
+                    className={`transition-all ${
+                      selectedPlan === pkg.id ? "ring-2 ring-primary ring-offset-2 rounded-lg" : ""
+                    }`}
+                  >
+                    <PackageCard
+                      plan={pkg}
+                      isCurrentPlan={false}
+                      onSelect={handleSelectPlan}
+                      maxFeatures={5}
+                    />
+                  </div>
+                ))}
               </div>
 
-              {/* Loading State */}
-              {loading && <LoadingScreen variant="inline" text="กำลังโหลดแพ็กเกจ..." />}
-
-              {/* Package Options - Grid Layout */}
-              {!loading && packages.length > 0 && (
-                <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                    {packages.map((pkg) => (
-                      <div
-                        key={pkg.id}
-                        className={`transition-all ${
-                          selectedPlan === pkg.id ? "ring-2 ring-primary ring-offset-2 rounded-lg" : ""
-                        }`}
-                      >
-                        <PackageCard
-                          plan={pkg}
-                          isCurrentPlan={false}
-                          onSelect={handleSelectPlan}
-                          maxFeatures={5}
-                        />
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Continue Button */}
-                  <Button
-                    onClick={handleContinue}
-                    disabled={!selectedPlan}
-                    variant="primary"
-                    size="lg"
-                    block
-                  >
-                    ดำเนินการต่อ
-                  </Button>
-                </>
-              )}
-
-              {/* Empty State */}
-              {!loading && packages.length === 0 && (
-                <EmptyState
-                  icon="folder"
-                  title="ไม่พบแพ็กเกจที่ใช้งานได้"
-                  description="กรุณาติดต่อผู้ดูแลระบบ"
-                  size="sm"
-                />
-              )}
+              {/* Continue Button */}
+              <Button
+                onClick={handleContinue}
+                disabled={!selectedPlan}
+                variant="primary"
+                size="lg"
+                block
+              >
+                ดำเนินการต่อ
+              </Button>
             </Card.Body>
           </Card>
-        </div>
-      </div>
+        )}
+
+        {/* Empty State */}
+        {!loading && packages.length === 0 && (
+          <Card variant="elevated">
+            <Card.Body>
+              <EmptyState
+                icon="folder"
+                title="ไม่พบแพ็กเกจที่ใช้งานได้"
+                description="กรุณาติดต่อผู้ดูแลระบบ"
+                size="sm"
+              />
+            </Card.Body>
+          </Card>
+        )}
+      </AppShell>
     </>
   );
 }
