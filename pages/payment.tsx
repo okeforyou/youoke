@@ -42,9 +42,9 @@ export default function PaymentPage() {
 
   async function loadPlan() {
     try {
-      const pkg = await getPricingPackage(planQuery as string);
-      if (pkg) {
-        setSelectedPlan(pkg);
+      const result = await getPricingPackage(planQuery as string);
+      if (result.success && result.data) {
+        setSelectedPlan(result.data);
       } else {
         router.push("/pricing");
       }
@@ -107,31 +107,32 @@ export default function PaymentPage() {
         {/* Bank Details */}
         <Card variant="elevated" className="mb-6">
           <Card.Body>
-            <Alert variant="info" icon={<BanknotesIcon className="w-6 h-6" />}>
-              <Alert.Title>ข้อมูลบัญชีธนาคาร</Alert.Title>
-              <Alert.Description>
-                <div className="space-y-2 mt-3">
-                  <div className="flex justify-between">
-                    <span className="text-base-content/70">ชื่อบัญชี:</span>
-                    <span className="font-semibold">{BANK_INFO.accountName}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-base-content/70">ธนาคาร:</span>
-                    <span className="font-semibold">{BANK_INFO.bankName}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-base-content/70">เลขที่บัญชี:</span>
-                    <span className="font-semibold text-lg">{BANK_INFO.accountNumber}</span>
-                  </div>
-                  <div className="divider my-2"></div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-base-content/70">จำนวนเงิน:</span>
-                    <span className="text-2xl font-bold text-primary">
-                      {formatCurrency(selectedPlan.price)}
-                    </span>
-                  </div>
+            <Alert
+              variant="info"
+              icon={<BanknotesIcon className="w-6 h-6" />}
+              title="ข้อมูลบัญชีธนาคาร"
+            >
+              <div className="space-y-2 mt-3">
+                <div className="flex justify-between">
+                  <span className="text-base-content/70">ชื่อบัญชี:</span>
+                  <span className="font-semibold">{BANK_INFO.accountName}</span>
                 </div>
-              </Alert.Description>
+                <div className="flex justify-between">
+                  <span className="text-base-content/70">ธนาคาร:</span>
+                  <span className="font-semibold">{BANK_INFO.bankName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-base-content/70">เลขที่บัญชี:</span>
+                  <span className="font-semibold text-lg">{BANK_INFO.accountNumber}</span>
+                </div>
+                <div className="divider my-2"></div>
+                <div className="flex justify-between items-center">
+                  <span className="text-base-content/70">จำนวนเงิน:</span>
+                  <span className="text-2xl font-bold text-primary">
+                    {formatCurrency(selectedPlan.price)}
+                  </span>
+                </div>
+              </div>
             </Alert>
           </Card.Body>
         </Card>

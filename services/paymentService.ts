@@ -22,7 +22,7 @@ import {
   success,
   failure,
   retryWithResult,
-  withFirestore,
+  withFirestoreWrapper,
   logServiceOperation,
 } from "../utils/serviceHelper";
 
@@ -41,7 +41,7 @@ export async function createPayment(data: {
   transferTime?: string;
   note?: string;
 }): Promise<ServiceResult<Payment>> {
-  return withFirestore(async () => {
+  return withFirestoreWrapper(async () => {
     // Generate payment ID
     const paymentId = `PAY-${Date.now()}-${data.userId.substring(0, 6)}`;
 
@@ -79,7 +79,7 @@ export async function createPayment(data: {
  * ดึงข้อมูล payment
  */
 export async function getPayment(paymentId: string): Promise<ServiceResult<Payment>> {
-  return withFirestore(async () => {
+  return withFirestoreWrapper(async () => {
     const paymentRef = doc(db!, PAYMENTS_COLLECTION, paymentId);
     const snapshot = await getDoc(paymentRef);
 
@@ -104,21 +104,21 @@ export async function getPayment(paymentId: string): Promise<ServiceResult<Payme
 export async function getUserPayments(userId: string): Promise<ServiceResult<Payment[]>> {
   return retryWithResult(
     async () => {
-      return withFirestore(async () => {
-        const paymentsRef = collection(db!, PAYMENTS_COLLECTION);
-        const q = query(
-          paymentsRef,
-          where("userId", "==", userId),
-          orderBy("createdAt", "desc")
-        );
-        const snapshot = await getDocs(q);
+      const paymentsRef = collection(db!, PAYMENTS_COLLECTION);
+      const q = query(
+        paymentsRef,
+        where("userId", "==", userId),
+        orderBy("createdAt", "desc")
+      );
+      const snapshot = await getDocs(q);
 
-        const payments = snapshot.docs.map((doc) => doc.data() as Payment);
-        logServiceOperation("getUserPayments", { userId, count: payments.length });
-        return success(payments);
-      }, "PAYMENT_FETCH_FAILED");
+      const payments = snapshot.docs.map((doc) => doc.data() as Payment);
+      logServiceOperation("getUserPayments", { userId, count: payments.length });
+      return payments;
     },
-    { maxRetries: 2, initialDelay: 500 }
+    "getUserPayments",
+    2,
+    500
   );
 }
 
@@ -130,21 +130,21 @@ export async function getPaymentsByStatus(
 ): Promise<ServiceResult<Payment[]>> {
   return retryWithResult(
     async () => {
-      return withFirestore(async () => {
-        const paymentsRef = collection(db!, PAYMENTS_COLLECTION);
-        const q = query(
-          paymentsRef,
-          where("status", "==", status),
-          orderBy("createdAt", "desc")
-        );
-        const snapshot = await getDocs(q);
+      const paymentsRef = collection(db!, PAYMENTS_COLLECTION);
+      const q = query(
+        paymentsRef,
+        where("status", "==", status),
+        orderBy("createdAt", "desc")
+      );
+      const snapshot = await getDocs(q);
 
-        const payments = snapshot.docs.map((doc) => doc.data() as Payment);
-        logServiceOperation("getPaymentsByStatus", { status, count: payments.length });
-        return success(payments);
-      }, "PAYMENT_FETCH_FAILED");
+      const payments = snapshot.docs.map((doc) => doc.data() as Payment);
+      logServiceOperation("getPaymentsByStatus", { status, count: payments.length });
+      return payments;
     },
-    { maxRetries: 2, initialDelay: 500 }
+    "getPaymentsByStatus",
+    2,
+    500
   );
 }
 
@@ -162,7 +162,7 @@ export async function approvePayment(
   paymentId: string,
   adminUid: string
 ): Promise<ServiceResult<void>> {
-  return withFirestore(async () => {
+  return withFirestoreWrapper(async () => {
     // 1. Get payment details
     const paymentResult = await getPayment(paymentId);
     if (!paymentResult.success || !paymentResult.data) {
@@ -229,7 +229,7 @@ export async function rejectPayment(
   adminUid: string,
   reason: string
 ): Promise<ServiceResult<void>> {
-  return withFirestore(async () => {
+  return withFirestoreWrapper(async () => {
     const paymentResult = await getPayment(paymentId);
     if (!paymentResult.success || !paymentResult.data) {
       return failure(
@@ -270,17 +270,17 @@ export async function rejectPayment(
 export async function getAllPayments(): Promise<ServiceResult<Payment[]>> {
   return retryWithResult(
     async () => {
-      return withFirestore(async () => {
-        const paymentsRef = collection(db!, PAYMENTS_COLLECTION);
-        const q = query(paymentsRef, orderBy("createdAt", "desc"));
-        const snapshot = await getDocs(q);
+      const paymentsRef = collection(db!, PAYMENTS_COLLECTION);
+      const q = query(paymentsRef, orderBy("createdAt", "desc"));
+      const snapshot = await getDocs(q);
 
-        const payments = snapshot.docs.map((doc) => doc.data() as Payment);
-        logServiceOperation("getAllPayments", { count: payments.length });
-        return success(payments);
-      }, "PAYMENT_FETCH_FAILED");
+      const payments = snapshot.docs.map((doc) => doc.data() as Payment);
+      logServiceOperation("getAllPayments", { count: payments.length });
+      return payments;
     },
-    { maxRetries: 2, initialDelay: 500 }
+    "getAllPayments",
+    2,
+    500
   );
 }
 
@@ -294,7 +294,7 @@ export async function getPaymentStats(): Promise<ServiceResult<{
   rejected: number;
   totalRevenue: number;
 }>> {
-  return withFirestore(async () => {
+  return withFirestoreWrapper(async () => {
     const allPaymentsResult = await getAllPayments();
     if (!allPaymentsResult.success || !allPaymentsResult.data) {
       return failure(allPaymentsResult.error!);

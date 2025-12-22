@@ -26,18 +26,20 @@ export default function PricingPage() {
   async function loadPackages() {
     try {
       setLoading(true);
-      const data = await getPricingPackages();
+      const result = await getPricingPackages();
 
-      // Filter out free plan for pricing page
-      const paidPlans = data.filter((p) => p.id !== "free");
-      setPackages(paidPlans);
+      if (result.success && result.data) {
+        // Filter out free plan for pricing page
+        const paidPlans = result.data.filter((p) => p.id !== "free");
+        setPackages(paidPlans);
 
-      // Set default selected plan to popular or first paid plan
-      const popularPlan = paidPlans.find((p) => p.popular);
-      if (popularPlan) {
-        setSelectedPlan(popularPlan.id);
-      } else if (paidPlans.length > 0) {
-        setSelectedPlan(paidPlans[0].id);
+        // Set default selected plan to popular or first paid plan
+        const popularPlan = paidPlans.find((p) => p.popular);
+        if (popularPlan) {
+          setSelectedPlan(popularPlan.id);
+        } else if (paidPlans.length > 0) {
+          setSelectedPlan(paidPlans[0].id);
+        }
       }
     } catch (error) {
       console.error("Error loading packages:", error);
@@ -74,7 +76,7 @@ export default function PricingPage() {
         <title>เลือกแพ็กเกจ - Oke for You</title>
       </Head>
 
-      <AppShell background="gradient" maxWidth="4xl" showBottomNav>
+      <AppShell background="gradient" maxWidth="5xl" showBottomNav>
         <PageHeader
           title="เลือกแพ็กเกจของคุณ"
           subtitle="ปลดล็อกทุกฟีเจอร์และเริ่มร้องคาราโอเกะแบบไม่มีขีดจำกัด!"

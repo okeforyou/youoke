@@ -8,7 +8,7 @@ import {
   success,
   failure,
   retryWithResult,
-  withFirestore,
+  withFirestoreWrapper,
   logServiceOperation,
   SimpleCache,
 } from "../utils/serviceHelper";
@@ -40,34 +40,34 @@ export async function getPricingPackages(): Promise<ServiceResult<PricingPackage
 
   return retryWithResult(
     async () => {
-      return withFirestore(async () => {
-        const snapshot = await getDocs(collection(db!, PRICING_COLLECTION));
+      const snapshot = await getDocs(collection(db!, PRICING_COLLECTION));
 
-        if (snapshot.empty) {
-          console.log("No pricing in Firestore, initializing with defaults");
-          const initResult = await initializePricing();
-          if (!initResult.success) {
-            return failure(initResult.error!);
-          }
-
-          // Cache default packages
-          pricingCache.set("all-packages", DEFAULT_PRICING_PACKAGES);
-          logServiceOperation("getPricingPackages", { source: "initialized", count: DEFAULT_PRICING_PACKAGES.length });
-          return success(DEFAULT_PRICING_PACKAGES);
+      if (snapshot.empty) {
+        console.log("No pricing in Firestore, initializing with defaults");
+        const initResult = await initializePricing();
+        if (!initResult.success) {
+          throw initResult.error || new Error("Failed to initialize pricing");
         }
 
-        const packages = snapshot.docs.map((doc) => ({
-          ...doc.data(),
-          id: doc.id,
-        })) as PricingPackage[];
+        // Cache default packages
+        pricingCache.set("all-packages", DEFAULT_PRICING_PACKAGES);
+        logServiceOperation("getPricingPackages", { source: "initialized", count: DEFAULT_PRICING_PACKAGES.length });
+        return DEFAULT_PRICING_PACKAGES;
+      }
 
-        // Update cache
-        pricingCache.set("all-packages", packages);
-        logServiceOperation("getPricingPackages", { source: "firestore", count: packages.length });
-        return success(packages);
-      }, "PRICING_FETCH_FAILED", DEFAULT_PRICING_PACKAGES);
+      const packages = snapshot.docs.map((doc) => ({
+        ...doc.data(),
+        id: doc.id,
+      })) as PricingPackage[];
+
+      // Update cache
+      pricingCache.set("all-packages", packages);
+      logServiceOperation("getPricingPackages", { source: "firestore", count: packages.length });
+      return packages;
     },
-    { maxRetries: 2, initialDelay: 500 }
+    "getPricingPackages",
+    2,
+    500
   );
 }
 
@@ -106,7 +106,7 @@ export function clearPricingCache(): void {
  * สร้างหรืออัปเดตแพ็กเกจ (Admin only)
  */
 export async function savePricingPackage(pkg: PricingPackage): Promise<ServiceResult<void>> {
-  return withFirestore(async () => {
+  return withFirestoreWrapper(async () => {
     const docRef = doc(db!, PRICING_COLLECTION, pkg.id);
     await setDoc(docRef, pkg, { merge: true });
 
@@ -122,7 +122,7 @@ export async function savePricingPackage(pkg: PricingPackage): Promise<ServiceRe
  * อัปเดตราคา (Admin only)
  */
 export async function updatePrice(planId: string, newPrice: number): Promise<ServiceResult<void>> {
-  return withFirestore(async () => {
+  return withFirestoreWrapper(async () => {
     const docRef = doc(db!, PRICING_COLLECTION, planId);
     await updateDoc(docRef, { price: newPrice });
 
@@ -138,7 +138,7 @@ export async function updatePrice(planId: string, newPrice: number): Promise<Ser
  * ลบแพ็กเกจ (Admin only)
  */
 export async function deletePricingPackage(planId: string): Promise<ServiceResult<void>> {
-  return withFirestore(async () => {
+  return withFirestoreWrapper(async () => {
     const docRef = doc(db!, PRICING_COLLECTION, planId);
     await deleteDoc(docRef);
 
@@ -154,7 +154,7 @@ export async function deletePricingPackage(planId: string): Promise<ServiceResul
  * Initialize pricing in Firestore (ครั้งแรก)
  */
 export async function initializePricing(): Promise<ServiceResult<void>> {
-  return withFirestore(async () => {
+  return withFirestoreWrapper(async () => {
     console.log("Initializing pricing packages in Firestore...");
 
     for (const pkg of DEFAULT_PRICING_PACKAGES) {

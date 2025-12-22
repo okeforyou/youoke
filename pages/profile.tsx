@@ -33,8 +33,10 @@ export default function ProfileSimplePage() {
     if (!user?.uid) return;
 
     try {
-      const data = await getUserProfile(user.uid);
-      setProfile(data);
+      const result = await getUserProfile(user.uid);
+      if (result.success && result.data) {
+        setProfile(result.data);
+      }
     } catch (error) {
       console.error("Error loading profile:", error);
     } finally {

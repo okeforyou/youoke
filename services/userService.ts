@@ -22,7 +22,7 @@ import {
   success,
   failure,
   retryWithResult,
-  withRealtimeDB,
+  withRealtimeDBWrapper,
   logServiceOperation,
   SimpleCache,
 } from "../utils/serviceHelper";
@@ -42,7 +42,7 @@ export async function createUserProfile(data: {
   phone?: string;
   plan: SubscriptionPlan;
 }): Promise<ServiceResult<UserProfile>> {
-  return withRealtimeDB(async () => {
+  return withRealtimeDBWrapper(async () => {
     const subscription: Subscription = {
       plan: data.plan,
       startDate: null,
@@ -108,30 +108,28 @@ export async function getUserProfile(uid: string, forceRefresh = false): Promise
 
   return retryWithResult(
     async () => {
-      return withRealtimeDB(async () => {
-        const userRef = ref(realtimeDb!, `${USERS_PATH}/${uid}`);
-        const snapshot = await get(userRef);
+      const userRef = ref(realtimeDb!, `${USERS_PATH}/${uid}`);
+      const snapshot = await get(userRef);
 
-        if (!snapshot.exists()) {
-          return failure(
-            new ServiceError(
-              "User profile not found",
-              "USER_NOT_FOUND"
-            )
-          );
-        }
+      if (!snapshot.exists()) {
+        throw new ServiceError(
+          "User profile not found",
+          "USER_NOT_FOUND"
+        );
+      }
 
-        const profile = snapshot.val() as UserProfile;
-        console.log('🚀 Fetched from Realtime DB (fast!)');
+      const profile = snapshot.val() as UserProfile;
+      console.log('🚀 Fetched from Realtime DB (fast!)');
 
-        // Update memory cache
-        profileCache.set(uid, profile);
+      // Update memory cache
+      profileCache.set(uid, profile);
 
-        logServiceOperation("getUserProfile", { uid, source: "database" });
-        return success(profile);
-      }, "USER_FETCH_FAILED");
+      logServiceOperation("getUserProfile", { uid, source: "database" });
+      return profile;
     },
-    { maxRetries: 2, initialDelay: 500 }
+    "getUserProfile",
+    2,
+    500
   );
 }
 
@@ -154,7 +152,7 @@ export async function updateUserSubscription(
   uid: string,
   subscription: Partial<Subscription>
 ): Promise<ServiceResult<void>> {
-  return withRealtimeDB(async () => {
+  return withRealtimeDBWrapper(async () => {
     const userRef = ref(realtimeDb!, `${USERS_PATH}/${uid}`);
     await update(userRef, {
       subscription: subscription,
@@ -178,7 +176,7 @@ export async function activateSubscription(
   startDate: Date,
   endDate: Date | null
 ): Promise<ServiceResult<void>> {
-  return withRealtimeDB(async () => {
+  return withRealtimeDBWrapper(async () => {
     const userRef = ref(realtimeDb!, `${USERS_PATH}/${uid}`);
 
     const subscription: Subscription = {
@@ -205,7 +203,7 @@ export async function activateSubscription(
  * ยกเลิก subscription
  */
 export async function cancelSubscription(uid: string): Promise<ServiceResult<void>> {
-  return withRealtimeDB(async () => {
+  return withRealtimeDBWrapper(async () => {
     const userRef = ref(realtimeDb!, `${USERS_PATH}/${uid}/subscription`);
     await update(userRef, {
       status: "cancelled",
@@ -227,7 +225,7 @@ export async function cancelSubscription(uid: string): Promise<ServiceResult<voi
  * เช็คว่า subscription หมดอายุแล้วหรือยัง และอัปเดตสถานะ
  */
 export async function checkAndUpdateExpiredSubscriptions(): Promise<ServiceResult<number>> {
-  return withRealtimeDB(async () => {
+  return withRealtimeDBWrapper(async () => {
     const usersRef = ref(realtimeDb!, USERS_PATH);
     const snapshot = await get(usersRef);
 
@@ -282,7 +280,7 @@ export async function updateUserProfile(
   uid: string,
   data: Partial<Omit<UserProfile, "uid" | "email" | "createdAt">>
 ): Promise<ServiceResult<void>> {
-  return withRealtimeDB(async () => {
+  return withRealtimeDBWrapper(async () => {
     const userRef = ref(realtimeDb!, `${USERS_PATH}/${uid}`);
     await update(userRef, {
       ...data,
@@ -303,21 +301,21 @@ export async function updateUserProfile(
 export async function getAllUsers(): Promise<ServiceResult<UserProfile[]>> {
   return retryWithResult(
     async () => {
-      return withRealtimeDB(async () => {
-        const usersRef = ref(realtimeDb!, USERS_PATH);
-        const snapshot = await get(usersRef);
+      const usersRef = ref(realtimeDb!, USERS_PATH);
+      const snapshot = await get(usersRef);
 
-        if (!snapshot.exists()) {
-          logServiceOperation("getAllUsers", { count: 0 });
-          return success([]);
-        }
+      if (!snapshot.exists()) {
+        logServiceOperation("getAllUsers", { count: 0 });
+        return [];
+      }
 
-        const users = Object.values(snapshot.val()) as UserProfile[];
-        logServiceOperation("getAllUsers", { count: users.length });
-        return success(users);
-      }, "USER_FETCH_ALL_FAILED");
+      const users = Object.values(snapshot.val()) as UserProfile[];
+      logServiceOperation("getAllUsers", { count: users.length });
+      return users;
     },
-    { maxRetries: 2, initialDelay: 500 }
+    "getAllUsers",
+    2,
+    500
   );
 }
 
@@ -327,21 +325,21 @@ export async function getAllUsers(): Promise<ServiceResult<UserProfile[]>> {
 export async function getUsersByRole(role: UserRole): Promise<ServiceResult<UserProfile[]>> {
   return retryWithResult(
     async () => {
-      return withRealtimeDB(async () => {
-        const usersRef = ref(realtimeDb!, USERS_PATH);
-        const snapshot = await get(usersRef);
+      const usersRef = ref(realtimeDb!, USERS_PATH);
+      const snapshot = await get(usersRef);
 
-        if (!snapshot.exists()) {
-          logServiceOperation("getUsersByRole", { role, count: 0 });
-          return success([]);
-        }
+      if (!snapshot.exists()) {
+        logServiceOperation("getUsersByRole", { role, count: 0 });
+        return [];
+      }
 
-        const users = Object.values(snapshot.val()).filter((user: any) => user.role === role) as UserProfile[];
-        logServiceOperation("getUsersByRole", { role, count: users.length });
-        return success(users);
-      }, "USER_FETCH_BY_ROLE_FAILED");
+      const users = Object.values(snapshot.val()).filter((user: any) => user.role === role) as UserProfile[];
+      logServiceOperation("getUsersByRole", { role, count: users.length });
+      return users;
     },
-    { maxRetries: 2, initialDelay: 500 }
+    "getUsersByRole",
+    2,
+    500
   );
 }
 
@@ -353,20 +351,20 @@ export async function getUsersBySubscriptionStatus(
 ): Promise<ServiceResult<UserProfile[]>> {
   return retryWithResult(
     async () => {
-      return withRealtimeDB(async () => {
-        const usersRef = ref(realtimeDb!, USERS_PATH);
-        const snapshot = await get(usersRef);
+      const usersRef = ref(realtimeDb!, USERS_PATH);
+      const snapshot = await get(usersRef);
 
-        if (!snapshot.exists()) {
-          logServiceOperation("getUsersBySubscriptionStatus", { status, count: 0 });
-          return success([]);
-        }
+      if (!snapshot.exists()) {
+        logServiceOperation("getUsersBySubscriptionStatus", { status, count: 0 });
+        return [];
+      }
 
-        const users = Object.values(snapshot.val()).filter((user: any) => user.subscription?.status === status) as UserProfile[];
-        logServiceOperation("getUsersBySubscriptionStatus", { status, count: users.length });
-        return success(users);
-      }, "USER_FETCH_BY_STATUS_FAILED");
+      const users = Object.values(snapshot.val()).filter((user: any) => user.subscription?.status === status) as UserProfile[];
+      logServiceOperation("getUsersBySubscriptionStatus", { status, count: users.length });
+      return users;
     },
-    { maxRetries: 2, initialDelay: 500 }
+    "getUsersBySubscriptionStatus",
+    2,
+    500
   );
 }

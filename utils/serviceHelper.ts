@@ -7,6 +7,7 @@
 
 import { Database } from 'firebase/database';
 import { Firestore } from 'firebase/firestore';
+import { database as db, realtimeDb } from '../firebase';
 
 /**
  * Standard service response type
@@ -130,6 +131,56 @@ export async function withFirestore<T>(
 }
 
 /**
+ * Simplified withFirestore - auto-injects db parameter
+ * This is used by service layer that returns ServiceResult
+ *
+ * @example
+ * export async function createPayment(data): Promise<ServiceResult<Payment>> {
+ *   return withFirestoreWrapper(async () => {
+ *     const paymentRef = doc(db!, PAYMENTS_COLLECTION, paymentId);
+ *     await setDoc(paymentRef, payment);
+ *     return success(payment);
+ *   }, "PAYMENT_CREATE_FAILED");
+ * }
+ */
+export async function withFirestoreWrapper<T>(
+  operation: () => Promise<ServiceResult<T>>,
+  _errorCode?: string,
+  _fallback?: T
+): Promise<ServiceResult<T>> {
+  // Check if Firebase is initialized
+  if (!checkFirestoreInitialized(db)) {
+    const error = new ServiceError(
+      'Firebase Firestore not initialized',
+      ServiceErrorCode.FIREBASE_NOT_INITIALIZED
+    );
+    console.error('[withFirestoreWrapper] Firebase not initialized');
+    return {
+      data: _fallback || null,
+      error,
+      success: false,
+    };
+  }
+
+  // Execute operation (it already handles ServiceResult pattern)
+  try {
+    return await operation();
+  } catch (error) {
+    const serviceError = new ServiceError(
+      'Failed to execute operation',
+      _errorCode || ServiceErrorCode.UNKNOWN_ERROR,
+      error
+    );
+    console.error('[withFirestoreWrapper] Error:', error);
+    return {
+      data: _fallback || null,
+      error: serviceError,
+      success: false,
+    };
+  }
+}
+
+/**
  * Wrapper for Realtime Database operations with automatic error handling
  *
  * @example
@@ -178,6 +229,56 @@ export async function withRealtimeDB<T>(
     console.error(`[${operationName}] Error:`, error);
     return {
       data: null,
+      error: serviceError,
+      success: false,
+    };
+  }
+}
+
+/**
+ * Simplified withRealtimeDB - auto-injects db parameter
+ * This is used by service layer that returns ServiceResult
+ *
+ * @example
+ * export async function createUserProfile(data): Promise<ServiceResult<UserProfile>> {
+ *   return withRealtimeDBWrapper(async () => {
+ *     const userRef = ref(realtimeDb!, `users/${uid}`);
+ *     await set(userRef, profile);
+ *     return success(profile);
+ *   }, "USER_CREATE_FAILED");
+ * }
+ */
+export async function withRealtimeDBWrapper<T>(
+  operation: () => Promise<ServiceResult<T>>,
+  _errorCode?: string,
+  _fallback?: T
+): Promise<ServiceResult<T>> {
+  // Check if Firebase is initialized
+  if (!checkRealtimeDBInitialized(realtimeDb)) {
+    const error = new ServiceError(
+      'Firebase Realtime Database not initialized',
+      ServiceErrorCode.FIREBASE_NOT_INITIALIZED
+    );
+    console.error('[withRealtimeDBWrapper] Firebase not initialized');
+    return {
+      data: _fallback || null,
+      error,
+      success: false,
+    };
+  }
+
+  // Execute operation (it already handles ServiceResult pattern)
+  try {
+    return await operation();
+  } catch (error) {
+    const serviceError = new ServiceError(
+      'Failed to execute operation',
+      _errorCode || ServiceErrorCode.UNKNOWN_ERROR,
+      error
+    );
+    console.error('[withRealtimeDBWrapper] Error:', error);
+    return {
+      data: _fallback || null,
       error: serviceError,
       success: false,
     };
@@ -350,12 +451,14 @@ export class SimpleCache<T> {
  * Log service operation for debugging
  *
  * @example
+ * logServiceOperation('getUserProfile', { uid: '123' });
  * logServiceOperation('getUserProfile', { uid: '123' }, 'Started');
+ * logServiceOperation('getUserProfile', { uid: '123' }, 'Failed', error);
  */
 export function logServiceOperation(
   operation: string,
   params: Record<string, unknown>,
-  status: 'Started' | 'Success' | 'Failed',
+  status: 'Started' | 'Success' | 'Failed' = 'Success',
   error?: Error
 ): void {
   const timestamp = new Date().toISOString();

@@ -56,12 +56,14 @@ export default function RegisterPage() {
 
   async function loadPricing() {
     try {
-      const data = await getPricingPackages();
-      setPackages(data);
+      const result = await getPricingPackages();
+      if (result.success && result.data) {
+        setPackages(result.data);
 
-      // Default to FREE if no plan selected
-      if (!planQuery) {
-        setSelectedPlan(data.find((p) => p.id === "free") || null);
+        // Default to FREE if no plan selected
+        if (!planQuery) {
+          setSelectedPlan(result.data.find((p) => p.id === "free") || null);
+        }
       }
     } catch (error) {
       console.error("Error loading pricing:", error);
