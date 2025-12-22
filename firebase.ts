@@ -6,19 +6,26 @@ import { getFirestore, enableIndexedDbPersistence, enableMultiTabIndexedDbPersis
 import { getDatabase } from 'firebase/database'
 import { getStorage } from 'firebase/storage'
 
-// Force rebuild to pick up new environment variables (Nov 22, 2025)
+// Force rebuild to pick up new environment variables (Dec 22, 2025)
+// CRITICAL FIX: Trim all whitespace/newlines from env vars (Vercel sometimes adds \n)
+
+// Helper to sanitize env vars - trim whitespace and newlines
+const sanitizeEnv = (value: string | undefined): string => {
+  return value?.trim() || '';
+};
 
 // Sanitize DATABASE_URL - remove trailing slash if present
-const rawDatabaseURL = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL ||
-  `https://${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'dummy-project'}.firebaseio.com`;
+const rawDatabaseURL = sanitizeEnv(process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL) ||
+  `https://${sanitizeEnv(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) || 'dummy-project'}.firebaseio.com`;
 const databaseURL = rawDatabaseURL.replace(/\/$/, '');  // Remove trailing slash
 
 // Your web app's Firebase configuration
+// IMPORTANT: All env vars are trimmed to prevent newline issues (403 errors)
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_PUBLIC_API_KEY || 'dummy-api-key',
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || 'dummy.firebaseapp.com',
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'dummy-project',
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || 'dummy.appspot.com',
+  apiKey: sanitizeEnv(process.env.NEXT_PUBLIC_FIREBASE_PUBLIC_API_KEY) || 'dummy-api-key',
+  authDomain: sanitizeEnv(process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN) || 'dummy.firebaseapp.com',
+  projectId: sanitizeEnv(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) || 'dummy-project',
+  storageBucket: sanitizeEnv(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET) || 'dummy.appspot.com',
 
   // IMPORTANT: Must include region in databaseURL (asia-southeast1)
   // Fallback URL without region will cause "Maximum call stack size exceeded" error
