@@ -86,12 +86,17 @@ export default function RegisterPage() {
       const userCredential = await signUp(data.email, data.password);
       const user = userCredential.user;
 
-      // Save user profile to Firestore
-      await createUserProfile({
+      // Save user profile to Realtime Database
+      const profileResult = await createUserProfile({
         uid: user.uid,
         email: data.email,
         plan: (selectedPlan?.id as SubscriptionPlan) || "free",
       });
+
+      // Check if profile creation was successful
+      if (!profileResult.success) {
+        throw new Error(profileResult.error?.message || "ไม่สามารถสร้างโปรไฟล์ผู้ใช้ได้");
+      }
 
       const successMessage = selectedPlan?.id === "free"
         ? "สมัครสมาชิกสำเร็จ! กำลังพาคุณไปหน้าหลัก..."
@@ -129,12 +134,17 @@ export default function RegisterPage() {
 
       // Only create profile if it doesn't exist (new user)
       if (!existingProfile) {
-        await createUserProfile({
+        const profileResult = await createUserProfile({
           uid: user.uid,
           email: user.email || "",
           fullName: user.displayName || undefined,
           plan: (selectedPlan?.id as SubscriptionPlan) || "free",
         });
+
+        // Check if profile creation was successful
+        if (!profileResult.success) {
+          throw new Error(profileResult.error?.message || "ไม่สามารถสร้างโปรไฟล์ผู้ใช้ได้");
+        }
       }
 
       const successMessage = existingProfile
