@@ -389,6 +389,16 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
   console.log("🚀 [SSR] account getServerSideProps started");
 
   try {
+    // Check if Firebase Admin is initialized
+    if (!adminAuth || !adminDb || !adminFirestore) {
+      console.error("❌ [SSR] Firebase Admin not initialized:", {
+        hasAuth: !!adminAuth,
+        hasDb: !!adminDb,
+        hasFirestore: !!adminFirestore,
+      });
+      throw new Error("Firebase Admin SDK not initialized");
+    }
+
     // 1. Check authentication
     const cookies = nookies.get(context);
     const token = cookies.token;
