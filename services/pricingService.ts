@@ -13,7 +13,7 @@ import {
   SimpleCache,
 } from "../utils/serviceHelper";
 
-const PRICING_COLLECTION = "pricing";
+const PRICING_COLLECTION = "plans";
 
 // Use SimpleCache instead of custom cache
 const pricingCache = new SimpleCache<PricingPackage[]>(5 * 60 * 1000); // 5 minutes
