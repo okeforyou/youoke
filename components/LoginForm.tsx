@@ -54,9 +54,9 @@ const LoginForm = () => {
   const canSubmit = [...Object.values(allData)].every(Boolean);
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-900">
-      <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
-        <div className="w-full max-w-sm rounded-lg border border-gray-200 bg-white p-4 py-8 shadow-md dark:border-gray-700 dark:bg-gray-800 sm:p-6 sm:py-10 md:p-8 md:py-14">
+    <div className="w-full max-w-md mx-auto">
+      <div className="flex flex-col items-center justify-center px-6 py-8">
+        <div className="w-full">
           <Alert
             ref={errRef}
             timer={2500}
