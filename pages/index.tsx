@@ -543,7 +543,7 @@ function HomePage() {
                 {/* END Search Input */}
 
                 {/* START Karaoke Switch - Rounded Pill */}
-                <div className="flex items-center gap-2 px-3 py-2 bg-base-100 border border-base-300 rounded-full hover:border-base-content/30 transition-all">
+                <div className="flex items-center gap-2 px-3 py-2 bg-base-200 rounded-full transition-all">
                   <MusicalNoteIcon
                     className={`w-4 h-4 lg:hidden transition-all ${
                       !isKaraoke ? "text-base-content opacity-100 scale-110" : "text-base-content/30 opacity-50"

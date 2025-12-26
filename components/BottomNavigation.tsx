@@ -49,7 +49,7 @@ export default function BottomNavigation() {
     <div className="btm-nav fixed bottom-0 w-full sm:w-1/2 lg:hidden text-sm z-50 h-16">
       <button
         type="button"
-        className={`flex flex-col items-center justify-center gap-1 min-h-[64px] text-primary p-2 ${isHomePage && activeIndex === 1 ? "active" : ""}`}
+        className={`flex flex-col items-center justify-center gap-1 min-h-[64px] text-primary p-2 ${isHomePage && (activeIndex === 0 || activeIndex === 1) ? "active" : ""}`}
         onClick={() => navigateToHome(1)}
       >
         <MusicalNoteIcon className="w-6 h-6 pointer-events-none" />

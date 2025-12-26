@@ -105,15 +105,9 @@ export default function Sidebar({ activeTab = 0, onTabChange, className = '' }: 
             เมนูหลัก
           </p>
           <NavLink
-            icon={HomeIcon}
-            label="หน้าหลัก"
-            active={isHomePage && activeTab === 0}
-            onClick={() => handleTabChange(0)}
-          />
-          <NavLink
             icon={MusicalNoteIcon}
             label="แนะนำ"
-            active={isHomePage && activeTab === 1}
+            active={isHomePage && (activeTab === 0 || activeTab === 1)}
             onClick={() => handleTabChange(1)}
           />
           <NavLink
