@@ -171,6 +171,23 @@ function HomePage() {
   const [currentTime, setCurrentTime] = useState("0:00");
   const [duration, setDuration] = useState("0:00");
 
+  // Current video object (for MiniPlayer - since playlist removes played videos)
+  const [currentVideo, setCurrentVideo] = useState<SearchResult | RecommendedVideo | null>(null);
+
+  // Update currentVideo when curVideoId changes
+  useEffect(() => {
+    if (curVideoId && playlist) {
+      // Try to find video in playlist
+      const video = playlist.find(v => v.videoId === curVideoId);
+      if (video) {
+        setCurrentVideo(video);
+      }
+      // If not found in playlist, keep the previous currentVideo (it was removed from playlist after playing)
+    } else if (!curVideoId) {
+      setCurrentVideo(null);
+    }
+  }, [curVideoId, playlist]);
+
   // Helper function to format time (seconds to MM:SS)
   const formatTime = (seconds: number): string => {
     if (!seconds || isNaN(seconds)) return "0:00";
@@ -1080,44 +1097,34 @@ function HomePage() {
       )}
 
       {/* Mini Player - Mobile Only (< XL) */}
-      {!isXlScreen && curVideoId && playlist && playlist.length > 0 && (() => {
-        const currentVideo = playlist.find(v => v.videoId === curVideoId);
-        const currentIndex = playlist.findIndex(v => v.videoId === curVideoId);
-        const hasNext = currentIndex >= 0 && currentIndex < playlist.length - 1;
-        const hasPrevious = currentIndex > 0;
-
-        return currentVideo ? (
-          <MiniPlayer
-            currentVideo={currentVideo}
-            hasNext={hasNext}
-            hasPrevious={hasPrevious}
-            isPlaying={isPlaying}
-            progress={progress}
-            currentTime={currentTime}
-            duration={duration}
-            onPlayPause={handleMobilePlayPause}
-            onNext={() => {
-              if (hasNext) {
-                setCurVideoId(playlist[currentIndex + 1].videoId);
-              }
-            }}
-            onPrevious={() => {
-              if (hasPrevious) {
-                setCurVideoId(playlist[currentIndex - 1].videoId);
-              }
-            }}
-            onOpenQueue={() => {
-              // Open playlist modal
-              const modal = document.getElementById('modal-playlist') as HTMLInputElement;
-              if (modal) modal.checked = true;
-            }}
-            onExpand={() => {
-              // Open video player modal
-              setShowVideoPlayerModal(true);
-            }}
-          />
-        ) : null;
-      })()}
+      {!isXlScreen && curVideoId && currentVideo && (
+        <MiniPlayer
+          currentVideo={currentVideo}
+          hasNext={playlist && playlist.length > 0}
+          hasPrevious={false} // Can't go back to removed videos
+          isPlaying={isPlaying}
+          progress={progress}
+          currentTime={currentTime}
+          duration={duration}
+          onPlayPause={handleMobilePlayPause}
+          onNext={() => {
+            // Play next song (will trigger playlist logic in YoutubePlayer)
+            setCurVideoId("");
+          }}
+          onPrevious={() => {
+            // Previous not supported with current playlist logic
+          }}
+          onOpenQueue={() => {
+            // Open playlist modal
+            const modal = document.getElementById('modal-playlist') as HTMLInputElement;
+            if (modal) modal.checked = true;
+          }}
+          onExpand={() => {
+            // Open video player modal
+            setShowVideoPlayerModal(true);
+          }}
+        />
+      )}
 
       {/* Bottom Navigation - Mobile Only */}
       <BottomNavigation />
