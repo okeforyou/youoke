@@ -521,73 +521,69 @@ function HomePage() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col lg:flex-row bg-base-300 overflow-hidden">
+      <main className="flex-1 flex flex-col lg:flex-row bg-base-100 overflow-hidden">
         {/* Content Section (Search + Grid Results) */}
-        <div className="flex-1 flex flex-col overflow-hidden border-gray-300 lg:border-solid border-r border-none">
+        <div className="flex-1 flex flex-col overflow-hidden bg-base-100">
             <div className="flex flex-col h-full overflow-hidden relative">
-              {/* START Search Bar */}
-              <div className="flex flex-row gap-2 px-2 py-3 justify-between items-center bg-base-100 border-b border-base-300">
-                {/* START Search Input */}
-                <div className="form-control flex-1">
-                  <div className="input-group">
-                    <span className="px-2 sm:px-4 text-base-content/60">
-                      <MagnifyingGlassIcon className="w-6 h-6" />
-                    </span>
-                    <DebounceInput
-                      type="search"
-                      placeholder="ค้นหาเพลง"
-                      className="input w-full appearance-none rounded-l xl:text-xl"
-                      value={searchTerm}
-                      debounceTimeout={500}
-                      onChange={(ev) => setSearchTerm(ev.target.value)}
-                      inputMode="search"
-                    />
-                  </div>
+              {/* START Search Bar - YouTube Style */}
+              <div className="flex flex-row gap-3 px-4 py-3 items-center bg-base-100">
+                {/* START Search Input - Rounded */}
+                <div className="flex-1 flex items-center gap-2 px-4 py-2 bg-base-100 border border-base-300 rounded-full hover:border-base-content/30 hover:shadow-sm transition-all">
+                  <MagnifyingGlassIcon className="w-5 h-5 text-base-content/60 flex-shrink-0" />
+                  <DebounceInput
+                    type="search"
+                    placeholder="ค้นหาเพลง"
+                    className="input input-ghost w-full p-0 h-auto min-h-0 text-base xl:text-lg focus:outline-none bg-transparent"
+                    value={searchTerm}
+                    debounceTimeout={500}
+                    onChange={(ev) => setSearchTerm(ev.target.value)}
+                    inputMode="search"
+                  />
                 </div>
                 {/* END Search Input */}
-                {/* START Karaoke Switch */}
-                <div className="form-control w-auto lg:w-32 2xl:w-32">
-                  <label className="cursor-pointer label flex-row gap-1 justify-start items-center">
-                    {/* Icons for mobile - both sides */}
-                    <MusicalNoteIcon
-                      className={`w-4 h-4 lg:hidden transition-opacity ${
-                        !isKaraoke ? "text-base-content opacity-100" : "text-base-content/30 opacity-30"
-                      }`}
-                    />
-                    <input
-                      type="checkbox"
-                      className="toggle toggle-primary toggle-sm"
-                      checked={isKaraoke}
-                      onChange={(e) => setIsKaraoke(e.target.checked)}
-                    />
-                    <MicrophoneIcon
-                      className={`w-4 h-4 lg:hidden transition-opacity ${
-                        isKaraoke ? "text-base-content opacity-100" : "text-base-content/30 opacity-30"
-                      }`}
-                    />
-                    {/* Text for desktop */}
-                    <span className="label-text text-base-content ml-2 text-xs 2xl:text-base hidden lg:inline">
-                      {isKaraoke ? "คาราโอเกะ" : "เพลง"}
-                    </span>
-                  </label>
+
+                {/* START Karaoke Switch - Rounded Pill */}
+                <div className="flex items-center gap-2 px-3 py-2 bg-base-100 border border-base-300 rounded-full hover:border-base-content/30 transition-all">
+                  <MusicalNoteIcon
+                    className={`w-4 h-4 lg:hidden transition-all ${
+                      !isKaraoke ? "text-base-content opacity-100 scale-110" : "text-base-content/30 opacity-50"
+                    }`}
+                  />
+                  <input
+                    type="checkbox"
+                    className="toggle toggle-primary toggle-sm"
+                    checked={isKaraoke}
+                    onChange={(e) => setIsKaraoke(e.target.checked)}
+                  />
+                  <MicrophoneIcon
+                    className={`w-4 h-4 lg:hidden transition-all ${
+                      isKaraoke ? "text-base-content opacity-100 scale-110" : "text-base-content/30 opacity-50"
+                    }`}
+                  />
+                  <span className="label-text text-base-content text-sm font-medium hidden lg:inline whitespace-nowrap">
+                    {isKaraoke ? "คาราโอเกะ" : "เพลง"}
+                  </span>
                 </div>
                 {/* END Karaoke Switch */}
+
+                {/* Queue button - Mobile only */}
                 <label
                   htmlFor="modal-playlist"
-                  className="btn btn-ghost text-base-content w-auto p-2 sm:hidden"
+                  className="btn btn-circle btn-ghost text-base-content sm:hidden"
                 >
                   <div className="relative">
-                    <ListBulletIcon className="h-6 w-6" />
-                    <span className="badge badge-sm badge-primary absolute -top-1 -right-1 text-[10px] px-1">
+                    <ListBulletIcon className="h-5 w-5" />
+                    <span className="badge badge-sm badge-primary absolute -top-1 -right-1 text-[10px] px-1 min-h-0 h-4">
                       {displayPlaylist?.length || 0}
                     </span>
                   </div>
                 </label>
               </div>
               {/* END Search Bar */}
+
               {/* Recommend Videos List */}
               <div
-                className={`relative grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-3 2xl:grid-cols-4 auto-rows-min gap-2 w-full h-screen p-2 pb-20 lg:pb-2 ${scrollbarCls}`}
+                className={`relative grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-3 2xl:grid-cols-4 auto-rows-min gap-3 w-full h-screen px-4 py-2 pb-20 lg:pb-4 ${scrollbarCls}`}
                 style={{ overflowY: "scroll" }}
               >
                 {/* START Video Row Item */}
@@ -808,7 +804,7 @@ function HomePage() {
           {/* END Recommend Videos List */}
 
         {/* Video Player + Queue Section - Desktop XL+ Only */}
-        <aside className="hidden xl:flex xl:w-96 2xl:w-[450px] flex-col overflow-hidden border-l border-base-300">
+        <aside className="hidden xl:flex xl:w-96 2xl:w-[450px] flex-col overflow-hidden border-l border-base-300 bg-base-100">
           {/* Video Player */}
           <YoutubePlayer
             videoId={curVideoId}
@@ -817,7 +813,7 @@ function HomePage() {
           />
 
           {/* Queue/Playlist */}
-          <div className={`flex-1 w-full p-2 overflow-y-scroll flex flex-col ${scrollbarCls}`}>
+          <div className={`flex-1 w-full px-3 py-2 overflow-y-scroll flex flex-col ${scrollbarCls}`}>
             {PlaylistScreen}
           </div>
         </aside>
