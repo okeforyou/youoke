@@ -20,7 +20,7 @@ import PackageCard from "../components/subscription/PackageCard";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import Badge from "../components/ui/Badge";
-import AppShell from "../components/layout/AppShell";
+import MainLayout from "../components/layout/MainLayout";
 import EmptyState from "../components/layout/EmptyState";
 import { PricingPackage } from "../types/subscription";
 import { formatDate } from "../utils/formatting";
@@ -102,7 +102,7 @@ export default function AccountPage({ user, recentPayments, plans, error }: Prop
         <title>บัญชีของฉัน - Oke for You</title>
       </Head>
 
-      <AppShell background="gradient" maxWidth="5xl">
+      <MainLayout maxWidth="xl" activeTab={undefined}>
           {/* Header with Avatar */}
           <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6 mb-8 lg:mb-12">
             {/* Avatar */}
@@ -379,7 +379,7 @@ export default function AccountPage({ user, recentPayments, plans, error }: Prop
               </Button>
             </div>
           </div>
-      </AppShell>
+      </MainLayout>
     </>
   );
 }

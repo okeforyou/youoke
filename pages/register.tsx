@@ -14,7 +14,7 @@ import PackageCard from "../components/subscription/PackageCard";
 import Input from "../components/ui/Input";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
-import AppShell from "../components/layout/AppShell";
+import MainLayout from "../components/layout/MainLayout";
 import PageHeader from "../components/layout/PageHeader";
 
 interface RegisterData {
@@ -188,7 +188,7 @@ export default function RegisterPage() {
         <title>สมัครสมาชิก - YouOke Karaoke Online</title>
       </Head>
 
-      <AppShell background="gradient" maxWidth="2xl" showBottomNav>
+      <MainLayout centered maxWidth="2xl" activeTab={undefined}>
         <PageHeader
           title="สมัครสมาชิก"
           subtitle="กรอกข้อมูลเพื่อเริ่มใช้งาน"
@@ -354,7 +354,7 @@ export default function RegisterPage() {
             </form>
           </Card.Body>
         </Card>
-      </AppShell>
+      </MainLayout>
     </>
   );
 }

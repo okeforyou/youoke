@@ -9,7 +9,7 @@ import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import LoadingScreen from "../components/layout/LoadingScreen";
 import EmptyState from "../components/layout/EmptyState";
-import AppShell from "../components/layout/AppShell";
+import MainLayout from "../components/layout/MainLayout";
 import PageHeader from "../components/layout/PageHeader";
 
 export default function PricingPage() {
@@ -76,7 +76,7 @@ export default function PricingPage() {
         <title>เลือกแพ็กเกจ - Oke for You</title>
       </Head>
 
-      <AppShell background="gradient" maxWidth="5xl" showBottomNav>
+      <MainLayout maxWidth="2xl" activeTab={undefined}>
         <PageHeader
           title="เลือกแพ็กเกจของคุณ"
           subtitle="ปลดล็อกทุกฟีเจอร์และเริ่มร้องคาราโอเกะแบบไม่มีขีดจำกัด!"
@@ -136,7 +136,7 @@ export default function PricingPage() {
             </Card.Body>
           </Card>
         )}
-      </AppShell>
+      </MainLayout>
     </>
   );
 }
