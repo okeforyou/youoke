@@ -151,6 +151,19 @@ function HomePage() {
   // Video Player Modal for mobile
   const [showVideoPlayerModal, setShowVideoPlayerModal] = useState(false);
 
+  // Track XL breakpoint (1280px) for conditional player rendering
+  const [isXlScreen, setIsXlScreen] = useState(false);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsXlScreen(window.innerWidth >= 1280); // XL breakpoint
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
   // Mobile player control - ref and state for MiniPlayer
   const mobilePlayerRef = useRef<YouTube>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -893,7 +906,7 @@ function HomePage() {
           {/* END Recommend Videos List */}
 
         {/* Video Player + Queue Section - Desktop XL+ Only */}
-        {!showVideoPlayerModal && (
+        {isXlScreen && !showVideoPlayerModal && (
           <aside className="hidden xl:flex xl:w-96 2xl:w-[450px] flex-col overflow-hidden border-l border-base-300 bg-base-100">
             {/* Video Player */}
             <YoutubePlayer
@@ -1022,7 +1035,7 @@ function HomePage() {
       )}
 
       {/* Mobile Video Player - Always rendered (hidden when modal closed) */}
-      {curVideoId && (
+      {!isXlScreen && curVideoId && (
         <div
           className={`fixed xl:hidden transition-all duration-300 ${
             showVideoPlayerModal
@@ -1067,7 +1080,7 @@ function HomePage() {
       )}
 
       {/* Mini Player - Mobile Only (< XL) */}
-      {curVideoId && playlist && playlist.length > 0 && (() => {
+      {!isXlScreen && curVideoId && playlist && playlist.length > 0 && (() => {
         const currentVideo = playlist.find(v => v.videoId === curVideoId);
         const currentIndex = playlist.findIndex(v => v.videoId === curVideoId);
         const hasNext = currentIndex >= 0 && currentIndex < playlist.length - 1;
