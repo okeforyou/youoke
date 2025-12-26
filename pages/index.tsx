@@ -183,6 +183,17 @@ function HomePage() {
     }
   }, [playlist, curVideoId]);
 
+  // Sync currentIndex when curVideoId changes (in case changed externally)
+  useEffect(() => {
+    if (curVideoId && playlist && playlist.length > 0) {
+      const index = playlist.findIndex(v => v.videoId === curVideoId);
+      if (index !== -1 && index !== currentIndex) {
+        // Found video at different index, sync it
+        setCurrentIndex(index);
+      }
+    }
+  }, [curVideoId, playlist]);
+
   // Get current video from playlist using currentIndex
   const currentVideo = playlist && currentIndex >= 0 && currentIndex < playlist.length
     ? playlist[currentIndex]
@@ -364,10 +375,14 @@ function HomePage() {
       console.log('▶️ Play now on Firebase Cast:', video.title);
       castPlayNow(video);
     } else {
-      // Local play now
-      if (!curVideoId) setCurVideoId(video.videoId);
-      const newPlaylist = playlist?.filter((_, index) => index !== videoIndex);
-      setPlaylist([{ key: new Date().getTime(), ...video }, ...newPlaylist]);
+      // Local play now - add to beginning of playlist
+      const videoWithKey = { key: new Date().getTime(), ...video };
+      const newPlaylist = videoIndex !== undefined
+        ? playlist?.filter((_, index) => index !== videoIndex)
+        : playlist;
+      setPlaylist([videoWithKey, ...newPlaylist]);
+      setCurVideoId(video.videoId);
+      setCurrentIndex(0); // Playing first item
     }
   }
 
@@ -389,9 +404,11 @@ function HomePage() {
       console.log('⏭️ Skip to on Firebase Cast:', video.title);
       castPlayNow(video);
     } else {
-      // Local mode
-      setCurVideoId(video.videoId);
-      setPlaylist(playlist?.slice(videoIndex + 1));
+      // Local mode - jump to index in playlist
+      if (videoIndex !== undefined) {
+        setCurVideoId(video.videoId);
+        setCurrentIndex(videoIndex);
+      }
     }
   }
 
@@ -567,10 +584,16 @@ function HomePage() {
       // Note: Firebase Cast context doesn't expose updateCurrentIndexSilent yet
       // The receiver will handle index updates via sync
     } else {
-      // Local playlist - reorder
-      // For local mode, curVideoId is used (not index-based), so no index update needed
+      // Local playlist - reorder and update currentIndex
       const newPlaylist = arrayMove(playlist, oldIndex, newIndex);
+      const newCurrentIndex = calculateNewCurrentIndex(oldIndex, newIndex, currentIndex);
+
       setPlaylist(newPlaylist);
+
+      // Update currentIndex if it changed
+      if (newCurrentIndex !== currentIndex) {
+        setCurrentIndex(newCurrentIndex);
+      }
     }
   };
 
@@ -640,8 +663,26 @@ function HomePage() {
                         // Firebase Cast (Web Monitor) - use real index
                         castRemoveAt(realIndex);
                       } else {
-                        // Local playback - use real index
+                        // Local playback - update playlist and currentIndex
                         setPlaylist(playlist.filter((_, index) => index !== realIndex));
+
+                        // Update currentIndex based on removed position
+                        if (realIndex < currentIndex) {
+                          // Removed before current - shift index down
+                          setCurrentIndex(currentIndex - 1);
+                        } else if (realIndex === currentIndex) {
+                          // Removed current song - play next (same index)
+                          if (playlist.length > 1) {
+                            // Has other songs, play next
+                            const nextVideo = playlist[currentIndex + 1] || playlist[0];
+                            setCurVideoId(nextVideo.videoId);
+                          } else {
+                            // Last song removed
+                            setCurVideoId("");
+                            setCurrentIndex(0);
+                          }
+                        }
+                        // else: removed after current, currentIndex stays same
                       }
                     }}
                   />
