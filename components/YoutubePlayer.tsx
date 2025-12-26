@@ -1583,6 +1583,17 @@ function YoutubePlayer({
       {!isLogin && !isMoniter && <BottomAds />}
       {!isLogin && !isMoniter && isShowAds && <VideoAds />}
 
+      {/* Exit Fullscreen Button - Always visible in fullscreen mode */}
+      {!isMoniter && videoId && (isFullscreen || isFullScreenIphone) && (
+        <button
+          onClick={handleFullscreenButtonClick}
+          className="fixed top-4 right-4 z-[100] btn btn-circle btn-sm bg-black/50 text-white border-white/30 hover:bg-black/70"
+          style={UseFullScreenCss ? { position: "fixed" } : {}}
+        >
+          <ArrowsPointingInIcon className="w-5 h-5" />
+        </button>
+      )}
+
       {/* Controls for Remote - OUTSIDE player container (original position) */}
       {!isMoniter && videoId && (
         <div
