@@ -308,15 +308,9 @@ function YoutubePlayer({
     // No socket connection needed for standalone player
   }, []);
 
-  useEffect(() => {
-    if (playlist?.length && !curVideoId) {
-      // playing first video
-      const [video, ...newPlaylist] = playlist;
-      setCurVideoId(video.videoId);
-      // then remove it from playlist
-      setPlaylist(newPlaylist);
-    }
-  }, [playlist, curVideoId]);
+  // Removed: Old logic that removed songs from playlist
+  // Now using currentIndex in parent component (index.tsx)
+  // Parent component manages: playlist, curVideoId, currentIndex
 
   useEffect(() => {
     //Play Now - Firebase Cast handles sync now

@@ -84,11 +84,13 @@ function HomePage() {
   const {
     playlist,
     curVideoId,
+    currentIndex,
     searchTerm,
     isKaraoke,
     activeIndex,
     setPlaylist,
     setCurVideoId,
+    setCurrentIndex,
     setSearchTerm,
     setIsKaraoke,
     setActiveIndex,
@@ -171,22 +173,20 @@ function HomePage() {
   const [currentTime, setCurrentTime] = useState("0:00");
   const [duration, setDuration] = useState("0:00");
 
-  // Current video object (for MiniPlayer - since playlist removes played videos)
-  const [currentVideo, setCurrentVideo] = useState<SearchResult | RecommendedVideo | null>(null);
-
-  // Update currentVideo when curVideoId changes
+  // Auto-play first song when playlist has items but nothing is playing
   useEffect(() => {
-    if (curVideoId && playlist) {
-      // Try to find video in playlist
-      const video = playlist.find(v => v.videoId === curVideoId);
-      if (video) {
-        setCurrentVideo(video);
-      }
-      // If not found in playlist, keep the previous currentVideo (it was removed from playlist after playing)
-    } else if (!curVideoId) {
-      setCurrentVideo(null);
+    if (playlist && playlist.length > 0 && !curVideoId) {
+      // Play first song
+      const firstVideo = playlist[0];
+      setCurVideoId(firstVideo.videoId);
+      setCurrentIndex(0);
     }
-  }, [curVideoId, playlist]);
+  }, [playlist, curVideoId]);
+
+  // Get current video from playlist using currentIndex
+  const currentVideo = playlist && currentIndex >= 0 && currentIndex < playlist.length
+    ? playlist[currentIndex]
+    : null;
 
   // Helper function to format time (seconds to MM:SS)
   const formatTime = (seconds: number): string => {
@@ -194,6 +194,31 @@ function HomePage() {
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Playlist navigation functions
+  const playNext = () => {
+    if (!playlist || playlist.length === 0) return;
+    const nextIndex = currentIndex + 1;
+    if (nextIndex < playlist.length) {
+      const nextVideo = playlist[nextIndex];
+      setCurVideoId(nextVideo.videoId);
+      setCurrentIndex(nextIndex);
+    } else {
+      // End of playlist
+      setCurVideoId("");
+      setCurrentIndex(0);
+    }
+  };
+
+  const playPrevious = () => {
+    if (!playlist || playlist.length === 0) return;
+    const prevIndex = currentIndex - 1;
+    if (prevIndex >= 0) {
+      const prevVideo = playlist[prevIndex];
+      setCurVideoId(prevVideo.videoId);
+      setCurrentIndex(prevIndex);
+    }
   };
 
   // Mobile player control functions
@@ -928,7 +953,7 @@ function HomePage() {
             {/* Video Player */}
             <YoutubePlayer
               videoId={curVideoId}
-              nextSong={() => setCurVideoId("")}
+              nextSong={playNext}
               className="flex-shrink-0"
             />
 
@@ -1078,7 +1103,7 @@ function HomePage() {
             <div className="flex-1 flex flex-col overflow-hidden">
               <YoutubePlayer
                 videoId={curVideoId}
-                nextSong={() => setCurVideoId("")}
+                nextSong={playNext}
                 className="flex-shrink-0"
                 externalPlayerRef={mobilePlayerRef}
               />
@@ -1100,20 +1125,15 @@ function HomePage() {
       {!isXlScreen && curVideoId && currentVideo && (
         <MiniPlayer
           currentVideo={currentVideo}
-          hasNext={playlist && playlist.length > 0}
-          hasPrevious={false} // Can't go back to removed videos
+          hasNext={currentIndex < playlist.length - 1}
+          hasPrevious={currentIndex > 0}
           isPlaying={isPlaying}
           progress={progress}
           currentTime={currentTime}
           duration={duration}
           onPlayPause={handleMobilePlayPause}
-          onNext={() => {
-            // Play next song (will trigger playlist logic in YoutubePlayer)
-            setCurVideoId("");
-          }}
-          onPrevious={() => {
-            // Previous not supported with current playlist logic
-          }}
+          onNext={playNext}
+          onPrevious={playPrevious}
           onOpenQueue={() => {
             // Open playlist modal
             const modal = document.getElementById('modal-playlist') as HTMLInputElement;

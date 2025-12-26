@@ -10,6 +10,12 @@ export function useKaraokeState() {
     { defaultValue: "" }
   );
 
+  // Add currentIndex to track position in playlist (instead of removing songs)
+  const { value: currentIndex, set: setCurrentIndex } = useLocalStorageValue(
+    "currentIndex",
+    { defaultValue: 0 }
+  );
+
   const { value: searchTerm, set: setSearchTerm } = useLocalStorageValue(
     "searchTerm",
     { defaultValue: "" }
@@ -26,11 +32,13 @@ export function useKaraokeState() {
   return {
     playlist,
     curVideoId,
+    currentIndex,
     searchTerm,
     isKaraoke,
     activeIndex,
     setPlaylist,
     setCurVideoId,
+    setCurrentIndex,
     setSearchTerm,
     setIsKaraoke,
     setActiveIndex,
