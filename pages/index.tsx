@@ -39,6 +39,7 @@ import { DraggablePlaylistItem } from "../components/DraggablePlaylistItem";
 import YoutubePlayer from "../components/YoutubePlayer";
 import { CastModeSelector } from "../components/CastModeSelector";
 import Sidebar from "../components/layout/Sidebar";
+import MiniPlayer from "../components/MiniPlayer";
 
 // ⚡ Lazy load SearchResultGrid (only loaded when user searches)
 const SearchResultGrid = dynamic(() => import("../components/SearchResultGrid"), {
@@ -929,6 +930,42 @@ function HomePage() {
           </div>
         </div>
       )}
+
+      {/* Mini Player - Mobile Only (< XL) */}
+      {curVideoId && (() => {
+        const currentVideo = playlist.find(v => v.videoId === curVideoId);
+        const currentIndex = playlist.findIndex(v => v.videoId === curVideoId);
+        const hasNext = currentIndex < playlist.length - 1;
+        const hasPrevious = currentIndex > 0;
+
+        return currentVideo ? (
+          <MiniPlayer
+            currentVideo={currentVideo}
+            hasNext={hasNext}
+            hasPrevious={hasPrevious}
+            onNext={() => {
+              if (hasNext) {
+                setCurVideoId(playlist[currentIndex + 1].videoId);
+              }
+            }}
+            onPrevious={() => {
+              if (hasPrevious) {
+                setCurVideoId(playlist[currentIndex - 1].videoId);
+              }
+            }}
+            onOpenQueue={() => {
+              // Open playlist modal
+              const modal = document.getElementById('modal-playlist') as HTMLInputElement;
+              if (modal) modal.checked = true;
+            }}
+            onExpand={() => {
+              // Open playlist modal (same as onOpenQueue for now)
+              const modal = document.getElementById('modal-playlist') as HTMLInputElement;
+              if (modal) modal.checked = true;
+            }}
+          />
+        ) : null;
+      })()}
 
       {/* Bottom Navigation - Mobile Only */}
       <BottomNavigation />
