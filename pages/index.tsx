@@ -38,6 +38,7 @@ import Modal, { ModalHandler } from "../components/Modal";
 import { DraggablePlaylistItem } from "../components/DraggablePlaylistItem";
 import YoutubePlayer from "../components/YoutubePlayer";
 import { CastModeSelector } from "../components/CastModeSelector";
+import Sidebar from "../components/layout/Sidebar";
 
 // ⚡ Lazy load SearchResultGrid (only loaded when user searches)
 const SearchResultGrid = dynamic(() => import("../components/SearchResultGrid"), {
@@ -511,11 +512,18 @@ function HomePage() {
   );
 
   return (
-    <div className="text-sm 2xl:text-xl w-full max-h-screen overflow-hidden">
-      <main className="bg-base-300 h-full">
-        <div className="relative flex flex-col sm:flex-row h-screen overflow-hidden">
-          {/* START Recommend Videos List */}
-          <div className="order-2 sm:order-1 flex flex-col h-full w-full overflow-hidden border-gray-300 sm:border-solid border-r border-none">
+    <div className="flex h-screen overflow-hidden text-sm 2xl:text-xl">
+      {/* Sidebar - Desktop Only */}
+      <Sidebar
+        className="hidden lg:flex"
+        activeTab={activeIndex}
+        onTabChange={setActiveIndex}
+      />
+
+      {/* Main Content Area */}
+      <main className="flex-1 flex flex-col lg:flex-row bg-base-300 overflow-hidden">
+        {/* Content Section (Search + Grid Results) */}
+        <div className="flex-1 flex flex-col overflow-hidden border-gray-300 lg:border-solid border-r border-none">
             <div className="flex flex-col h-full overflow-hidden relative">
               {/* START Search Bar */}
               <div className="flex flex-row gap-2 px-2 py-1 justify-between items-center bg-primary">
@@ -579,7 +587,7 @@ function HomePage() {
               {/* END Search Bar */}
               {/* Recommend Videos List */}
               <div
-                className={`relative grid grid-cols-2 xl:grid-cols-3 auto-rows-min gap-2 w-full h-screen p-2 pb-20   ${scrollbarCls}`}
+                className={`relative grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-3 2xl:grid-cols-4 auto-rows-min gap-2 w-full h-screen p-2 pb-20 lg:pb-2 ${scrollbarCls}`}
                 style={{ overflowY: "scroll" }}
               >
                 {/* START Video Row Item */}
@@ -795,26 +803,24 @@ function HomePage() {
                 }
               />
             </div>
-
-            <BottomNavigation />
           </div>
 
           {/* END Recommend Videos List */}
+
+        {/* Video Player + Queue Section - Desktop XL+ Only */}
+        <aside className="hidden xl:flex xl:w-96 2xl:w-[450px] flex-col overflow-hidden border-l border-base-300">
           {/* Video Player */}
-          <div className="relative order-1 sm:order-2 w-full flex flex-row sm:flex-col flex-grow flex-shrink-0 sm:max-w-[50vw] lg:max-w-[50vw] 2xl:max-w-[50vw] sm:min-w-[400px] sm:h-screen overflow-hidden">
-            {/* Always show YoutubePlayer - it handles both local and cast modes */}
-            <YoutubePlayer
-              videoId={curVideoId}
-              nextSong={() => setCurVideoId("")}
-              className="flex flex-col flex-1 sm:flex-grow-0"
-            />
-            <div
-              className={`max-h-full w-full p-2 overflow-y-scroll hidden sm:flex flex-col ${scrollbarCls}`}
-            >
-              {PlaylistScreen}
-            </div>
+          <YoutubePlayer
+            videoId={curVideoId}
+            nextSong={() => setCurVideoId("")}
+            className="flex-shrink-0"
+          />
+
+          {/* Queue/Playlist */}
+          <div className={`flex-1 w-full p-2 overflow-y-scroll flex flex-col ${scrollbarCls}`}>
+            {PlaylistScreen}
           </div>
-        </div>
+        </aside>
       </main>
 
       {/* Cast Mode Selector Modal */}
@@ -927,6 +933,9 @@ function HomePage() {
           </div>
         </div>
       )}
+
+      {/* Bottom Navigation - Mobile Only */}
+      <BottomNavigation />
     </div>
   );
 }

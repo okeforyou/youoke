@@ -46,7 +46,7 @@ export default function BottomNavigation() {
   const isAccountPage = router.pathname === '/account';
 
   return (
-    <div className="btm-nav fixed bottom-0 w-full sm:w-1/2 text-sm z-50 h-16">
+    <div className="btm-nav fixed bottom-0 w-full sm:w-1/2 lg:hidden text-sm z-50 h-16">
       <button
         type="button"
         className={`flex flex-col items-center justify-center gap-1 min-h-[64px] text-primary p-2 ${isHomePage && activeIndex === 1 ? "active" : ""}`}
