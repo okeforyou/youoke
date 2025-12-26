@@ -134,7 +134,15 @@ export default function MiniPlayer({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onPlayPause?.();
+              if (onPlayPause) {
+                onPlayPause();
+              } else {
+                // Fallback: Find and click the YoutubePlayer play/pause button
+                const playButtons = document.querySelectorAll('[aria-label*="Play"], [aria-label*="Pause"]');
+                if (playButtons.length > 0) {
+                  (playButtons[0] as HTMLElement).click();
+                }
+              }
             }}
             className="btn btn-ghost btn-sm btn-circle"
             aria-label={isPlaying ? 'Pause' : 'Play'}

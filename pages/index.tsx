@@ -936,25 +936,30 @@ function HomePage() {
         </div>
       )}
 
-      {/* Video Player Modal - Mobile Only */}
-      {showVideoPlayerModal && curVideoId && (
+      {/* Mobile Video Player - Always rendered (hidden when modal closed) */}
+      {curVideoId && (
         <div
-          className="fixed inset-0 z-[60] bg-black xl:hidden"
-          onClick={() => setShowVideoPlayerModal(false)}
+          className={`fixed xl:hidden transition-all duration-300 ${
+            showVideoPlayerModal
+              ? 'inset-0 z-[60] bg-black opacity-100 pointer-events-auto'
+              : 'bottom-0 left-0 right-0 opacity-0 pointer-events-none -z-10'
+          }`}
         >
           <div className="h-full flex flex-col">
-            {/* Close Button */}
-            <div className="flex justify-between items-center p-4 bg-black/90">
-              <h3 className="text-white font-semibold">กำลังเล่น</h3>
-              <button
-                onClick={() => setShowVideoPlayerModal(false)}
-                className="btn btn-ghost btn-sm btn-circle text-white"
-              >
-                <XMarkIcon className="w-6 h-6" />
-              </button>
-            </div>
+            {/* Close Button - Only visible when modal open */}
+            {showVideoPlayerModal && (
+              <div className="flex justify-between items-center p-4 bg-black/90">
+                <h3 className="text-white font-semibold">กำลังเล่น</h3>
+                <button
+                  onClick={() => setShowVideoPlayerModal(false)}
+                  className="btn btn-ghost btn-sm btn-circle text-white"
+                >
+                  <XMarkIcon className="w-6 h-6" />
+                </button>
+              </div>
+            )}
 
-            {/* Video Player */}
+            {/* Video Player - Always rendered */}
             <div className="flex-1 flex flex-col overflow-hidden">
               <YoutubePlayer
                 videoId={curVideoId}
@@ -962,12 +967,14 @@ function HomePage() {
                 className="flex-shrink-0"
               />
 
-              {/* Playlist in Modal */}
-              <div className={`flex-1 overflow-y-auto bg-base-200 ${scrollbarCls}`}>
-                <div className="p-3">
-                  {PlaylistScreen}
+              {/* Playlist - Only visible when modal open */}
+              {showVideoPlayerModal && (
+                <div className={`flex-1 overflow-y-auto bg-base-200 ${scrollbarCls}`}>
+                  <div className="p-3">
+                    {PlaylistScreen}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
