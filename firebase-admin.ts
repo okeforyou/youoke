@@ -4,27 +4,35 @@ import * as admin from 'firebase-admin';
 if (!admin.apps.length) {
   try {
     // สำหรับ Vercel: ใช้ environment variables
+    // ⚠️ IMPORTANT: Trim all values to remove trailing newlines from Vercel
     const privateKey = process.env.FIREBASE_PRIVATE_KEY
-      ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
+      ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n').trim()
       : undefined;
 
-    if (!privateKey || !process.env.FIREBASE_CLIENT_EMAIL || !process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
+    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL?.trim();
+    const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID?.trim();
+    const databaseURL = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL?.trim();
+
+    if (!privateKey || !clientEmail || !projectId) {
       console.error('❌ Firebase Admin - Missing environment variables:', {
         hasPrivateKey: !!privateKey,
-        hasClientEmail: !!process.env.FIREBASE_CLIENT_EMAIL,
-        hasProjectId: !!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-        hasDatabaseURL: !!process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
+        hasClientEmail: !!clientEmail,
+        hasProjectId: !!projectId,
+        hasDatabaseURL: !!databaseURL,
+        // Debug: show actual values (first 20 chars only for security)
+        clientEmailPreview: clientEmail?.substring(0, 20),
+        projectIdPreview: projectId?.substring(0, 20),
       });
       throw new Error('Firebase Admin credentials not configured');
     }
 
     admin.initializeApp({
       credential: admin.credential.cert({
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        projectId: projectId,
+        clientEmail: clientEmail,
         privateKey: privateKey,
       }),
-      databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
+      databaseURL: databaseURL,
     });
 
     console.log('✅ Firebase Admin initialized successfully');
