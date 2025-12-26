@@ -49,24 +49,6 @@ export default function MiniPlayer({
     return null;
   }
 
-  // Helper to find and click YoutubePlayer controls
-  const triggerPlayerControl = (action: 'play' | 'pause' | 'next' | 'previous') => {
-    // Try to find player controls by common patterns
-    const selectors: Record<string, string> = {
-      play: '[aria-label*="play" i]:not([aria-label*="playlist" i])',
-      pause: '[aria-label*="pause" i]',
-      next: '[aria-label*="next" i], [aria-label*="skip" i]',
-      previous: '[aria-label*="previous" i], [aria-label*="back" i]',
-    };
-
-    const buttons = document.querySelectorAll(selectors[action]);
-    if (buttons.length > 0) {
-      (buttons[0] as HTMLElement).click();
-      return true;
-    }
-    return false;
-  };
-
   // Get thumbnail URL
   const getThumbnailUrl = () => {
     if (currentVideo.videoThumbnails && currentVideo.videoThumbnails.length > 0) {
@@ -152,12 +134,7 @@ export default function MiniPlayer({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              if (onPlayPause) {
-                onPlayPause();
-              } else {
-                // Trigger player control directly
-                triggerPlayerControl(isPlaying ? 'pause' : 'play');
-              }
+              onPlayPause?.();
             }}
             className="btn btn-ghost btn-sm btn-circle"
             aria-label={isPlaying ? 'Pause' : 'Play'}

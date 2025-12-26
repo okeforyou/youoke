@@ -49,9 +49,11 @@ function YoutubePlayer({
   className = "",
   extra = null,
   isMoniter = false,
+  externalPlayerRef = null, // Optional external ref for parent control
 }) {
   const router = useRouter();
-  const playerRef = useRef<YouTube>();
+  const internalPlayerRef = useRef<YouTube>();
+  const playerRef = externalPlayerRef || internalPlayerRef;
   const fullscreenRef = useRef<HTMLDivElement>();
   const [show, toggleFullscreen] = useToggle(false);
   const isFullscreen = useFullscreen(fullscreenRef, show, {

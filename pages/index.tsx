@@ -14,6 +14,7 @@ import { useEffect, useRef, useState, useMemo } from "react";
 import { DebounceInput } from "react-debounce-input";
 import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import YouTube from 'react-youtube';
 
 import {
   BarsArrowUpIcon,
@@ -149,6 +150,90 @@ function HomePage() {
 
   // Video Player Modal for mobile
   const [showVideoPlayerModal, setShowVideoPlayerModal] = useState(false);
+
+  // Mobile player control - ref and state for MiniPlayer
+  const mobilePlayerRef = useRef<YouTube>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [currentTime, setCurrentTime] = useState("0:00");
+  const [duration, setDuration] = useState("0:00");
+
+  // Helper function to format time (seconds to MM:SS)
+  const formatTime = (seconds: number): string => {
+    if (!seconds || isNaN(seconds)) return "0:00";
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  // Mobile player control functions
+  const handleMobilePlay = async () => {
+    try {
+      const player = mobilePlayerRef.current?.getInternalPlayer();
+      if (!player) return;
+      await player.playVideo();
+      setIsPlaying(true);
+    } catch (error) {
+      console.error('Error playing video:', error);
+    }
+  };
+
+  const handleMobilePause = async () => {
+    try {
+      const player = mobilePlayerRef.current?.getInternalPlayer();
+      if (!player) return;
+      await player.pauseVideo();
+      setIsPlaying(false);
+    } catch (error) {
+      console.error('Error pausing video:', error);
+    }
+  };
+
+  const handleMobilePlayPause = () => {
+    if (isPlaying) {
+      handleMobilePause();
+    } else {
+      handleMobilePlay();
+    }
+  };
+
+  // Update player state periodically
+  useEffect(() => {
+    if (!curVideoId) return;
+
+    const updatePlayerState = async () => {
+      try {
+        const player = mobilePlayerRef.current?.getInternalPlayer();
+        if (!player) return;
+
+        const [state, currentTimeVal, durationVal] = await Promise.all([
+          player.getPlayerState(),
+          player.getCurrentTime(),
+          player.getDuration(),
+        ]);
+
+        // Update playing state (1 = PLAYING)
+        setIsPlaying(state === 1);
+
+        // Update progress
+        if (durationVal > 0) {
+          setProgress((currentTimeVal / durationVal) * 100);
+          setCurrentTime(formatTime(currentTimeVal));
+          setDuration(formatTime(durationVal));
+        }
+      } catch (error) {
+        // Ignore errors (player might not be ready yet)
+      }
+    };
+
+    // Update immediately
+    updatePlayerState();
+
+    // Update every second
+    const interval = setInterval(updatePlayerState, 1000);
+
+    return () => clearInterval(interval);
+  }, [curVideoId]);
 
   useEffect(() => {
     if (!user?.uid) {
@@ -965,6 +1050,7 @@ function HomePage() {
                 videoId={curVideoId}
                 nextSong={() => setCurVideoId("")}
                 className="flex-shrink-0"
+                externalPlayerRef={mobilePlayerRef}
               />
 
               {/* Playlist - Only visible when modal open */}
@@ -992,6 +1078,11 @@ function HomePage() {
             currentVideo={currentVideo}
             hasNext={hasNext}
             hasPrevious={hasPrevious}
+            isPlaying={isPlaying}
+            progress={progress}
+            currentTime={currentTime}
+            duration={duration}
+            onPlayPause={handleMobilePlayPause}
             onNext={() => {
               if (hasNext) {
                 setCurVideoId(playlist[currentIndex + 1].videoId);
