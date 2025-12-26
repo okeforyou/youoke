@@ -61,9 +61,9 @@ export const AuthContextProvider = ({
           displayName: null,
         });
 
-        // Clear cookies using document.cookie
-        document.cookie = 'token=; path=/; max-age=0';
-        document.cookie = 'uid=; path=/; max-age=0';
+        // Clear cookies using nookies
+        nookies.destroy(undefined, 'token', { path: '/' });
+        nookies.destroy(undefined, 'uid', { path: '/' });
       } else {
         const token = await user.getIdToken();
         const idTokenResult = await user.getIdTokenResult();
@@ -77,11 +77,28 @@ export const AuthContextProvider = ({
           displayName: user.displayName,
         });
 
-        // Set cookies using document.cookie (client-side)
-        document.cookie = `token=${token}; path=/; max-age=3600; SameSite=Lax`;
-        document.cookie = `uid=${user.uid}; path=/; max-age=3600; SameSite=Lax`;
+        // Set cookies using nookies for better SSR compatibility
+        // Use longer expiry (7 days) and ensure cookies work across requests
+        const isSecure = typeof window !== 'undefined' && window.location.protocol === 'https:';
+        nookies.set(undefined, 'token', token, {
+          path: '/',
+          maxAge: 7 * 24 * 60 * 60, // 7 days
+          sameSite: 'lax',
+          secure: isSecure,
+        });
+        nookies.set(undefined, 'uid', user.uid, {
+          path: '/',
+          maxAge: 7 * 24 * 60 * 60,
+          sameSite: 'lax',
+          secure: isSecure,
+        });
 
-        console.log('✅ Cookies set:', { tokenLength: token.length, uid: user.uid });
+        console.log('✅ Cookies set:', {
+          tokenLength: token.length,
+          uid: user.uid,
+          secure: isSecure,
+          domain: typeof window !== 'undefined' ? window.location.hostname : 'server',
+        });
       }
       setLoading(false);
     });
