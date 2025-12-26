@@ -46,8 +46,11 @@ export default function MiniPlayer({
 }: MiniPlayerProps) {
   // Don't render if no video is playing
   if (!currentVideo) {
+    console.log('MiniPlayer: No currentVideo, not rendering');
     return null;
   }
+
+  console.log('MiniPlayer: Rendering with video:', currentVideo.title);
 
   // Get thumbnail URL
   const getThumbnailUrl = () => {
@@ -64,7 +67,7 @@ export default function MiniPlayer({
 
   return (
     <div
-      className={`fixed bottom-16 left-0 right-0 xl:hidden z-30 bg-base-200 border-t border-base-300 ${className}`}
+      className={`fixed bottom-16 left-0 right-0 xl:hidden z-[45] bg-base-200 border-t-2 border-t-red-500 shadow-lg ${className}`}
       onClick={(e) => {
         // Prevent click propagation to controls
         if ((e.target as HTMLElement).tagName !== 'BUTTON') {

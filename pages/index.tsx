@@ -932,11 +932,13 @@ function HomePage() {
       )}
 
       {/* Mini Player - Mobile Only (< XL) */}
-      {curVideoId && (() => {
+      {curVideoId && playlist && playlist.length > 0 && (() => {
         const currentVideo = playlist.find(v => v.videoId === curVideoId);
         const currentIndex = playlist.findIndex(v => v.videoId === curVideoId);
-        const hasNext = currentIndex < playlist.length - 1;
+        const hasNext = currentIndex >= 0 && currentIndex < playlist.length - 1;
         const hasPrevious = currentIndex > 0;
+
+        console.log('MiniPlayer Debug:', { curVideoId, currentVideo, currentIndex, playlistLength: playlist.length });
 
         return currentVideo ? (
           <MiniPlayer
