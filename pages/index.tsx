@@ -526,11 +526,11 @@ function HomePage() {
         <div className="flex-1 flex flex-col overflow-hidden border-gray-300 lg:border-solid border-r border-none">
             <div className="flex flex-col h-full overflow-hidden relative">
               {/* START Search Bar */}
-              <div className="flex flex-row gap-2 px-2 py-1 justify-between items-center bg-primary">
+              <div className="flex flex-row gap-2 px-2 py-3 justify-between items-center bg-base-100 border-b border-base-300">
                 {/* START Search Input */}
                 <div className="form-control flex-1">
                   <div className="input-group">
-                    <span className="px-2 sm:px-4">
+                    <span className="px-2 sm:px-4 text-base-content/60">
                       <MagnifyingGlassIcon className="w-6 h-6" />
                     </span>
                     <DebounceInput
@@ -551,7 +551,7 @@ function HomePage() {
                     {/* Icons for mobile - both sides */}
                     <MusicalNoteIcon
                       className={`w-4 h-4 lg:hidden transition-opacity ${
-                        !isKaraoke ? "text-primary-content opacity-100" : "text-primary-content opacity-30"
+                        !isKaraoke ? "text-base-content opacity-100" : "text-base-content/30 opacity-30"
                       }`}
                     />
                     <input
@@ -562,11 +562,11 @@ function HomePage() {
                     />
                     <MicrophoneIcon
                       className={`w-4 h-4 lg:hidden transition-opacity ${
-                        isKaraoke ? "text-primary-content opacity-100" : "text-primary-content opacity-30"
+                        isKaraoke ? "text-base-content opacity-100" : "text-base-content/30 opacity-30"
                       }`}
                     />
                     {/* Text for desktop */}
-                    <span className="label-text text-primary-content ml-2 text-xs 2xl:text-base hidden lg:inline">
+                    <span className="label-text text-base-content ml-2 text-xs 2xl:text-base hidden lg:inline">
                       {isKaraoke ? "คาราโอเกะ" : "เพลง"}
                     </span>
                   </label>
@@ -574,11 +574,11 @@ function HomePage() {
                 {/* END Karaoke Switch */}
                 <label
                   htmlFor="modal-playlist"
-                  className="btn btn-ghost text-primary-content w-auto p-2 sm:hidden"
+                  className="btn btn-ghost text-base-content w-auto p-2 sm:hidden"
                 >
                   <div className="relative">
                     <ListBulletIcon className="h-6 w-6" />
-                    <span className="badge badge-sm absolute -top-1 -right-1 text-[10px] px-1">
+                    <span className="badge badge-sm badge-primary absolute -top-1 -right-1 text-[10px] px-1">
                       {displayPlaylist?.length || 0}
                     </span>
                   </div>
