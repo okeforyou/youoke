@@ -808,19 +808,21 @@ function HomePage() {
           {/* END Recommend Videos List */}
 
         {/* Video Player + Queue Section - Desktop XL+ Only */}
-        <aside className="hidden xl:flex xl:w-96 2xl:w-[450px] flex-col overflow-hidden border-l border-base-300 bg-base-100">
-          {/* Video Player */}
-          <YoutubePlayer
-            videoId={curVideoId}
-            nextSong={() => setCurVideoId("")}
-            className="flex-shrink-0"
-          />
+        {!showVideoPlayerModal && (
+          <aside className="hidden xl:flex xl:w-96 2xl:w-[450px] flex-col overflow-hidden border-l border-base-300 bg-base-100">
+            {/* Video Player */}
+            <YoutubePlayer
+              videoId={curVideoId}
+              nextSong={() => setCurVideoId("")}
+              className="flex-shrink-0"
+            />
 
-          {/* Queue/Playlist */}
-          <div className={`flex-1 w-full px-3 py-2 overflow-y-scroll flex flex-col ${scrollbarCls}`}>
-            {PlaylistScreen}
-          </div>
-        </aside>
+            {/* Queue/Playlist */}
+            <div className={`flex-1 w-full px-3 py-2 overflow-y-scroll flex flex-col ${scrollbarCls}`}>
+              {PlaylistScreen}
+            </div>
+          </aside>
+        )}
       </main>
 
       {/* Cast Mode Selector Modal */}
@@ -977,8 +979,6 @@ function HomePage() {
         const currentIndex = playlist.findIndex(v => v.videoId === curVideoId);
         const hasNext = currentIndex >= 0 && currentIndex < playlist.length - 1;
         const hasPrevious = currentIndex > 0;
-
-        console.log('MiniPlayer Debug:', { curVideoId, currentVideo, currentIndex, playlistLength: playlist.length });
 
         return currentVideo ? (
           <MiniPlayer
