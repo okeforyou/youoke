@@ -147,6 +147,9 @@ function HomePage() {
   const [copiedLink, setCopiedLink] = useState(false);
   const [baseUrl, setBaseUrl] = useState<string>('');
 
+  // Video Player Modal for mobile
+  const [showVideoPlayerModal, setShowVideoPlayerModal] = useState(false);
+
   useEffect(() => {
     if (!user?.uid) {
       setRoom("");
@@ -931,6 +934,43 @@ function HomePage() {
         </div>
       )}
 
+      {/* Video Player Modal - Mobile Only */}
+      {showVideoPlayerModal && curVideoId && (
+        <div
+          className="fixed inset-0 z-[60] bg-black xl:hidden"
+          onClick={() => setShowVideoPlayerModal(false)}
+        >
+          <div className="h-full flex flex-col">
+            {/* Close Button */}
+            <div className="flex justify-between items-center p-4 bg-black/90">
+              <h3 className="text-white font-semibold">กำลังเล่น</h3>
+              <button
+                onClick={() => setShowVideoPlayerModal(false)}
+                className="btn btn-ghost btn-sm btn-circle text-white"
+              >
+                <XMarkIcon className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Video Player */}
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <YoutubePlayer
+                videoId={curVideoId}
+                nextSong={() => setCurVideoId("")}
+                className="flex-shrink-0"
+              />
+
+              {/* Playlist in Modal */}
+              <div className={`flex-1 overflow-y-auto bg-base-200 ${scrollbarCls}`}>
+                <div className="p-3">
+                  {PlaylistScreen}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Mini Player - Mobile Only (< XL) */}
       {curVideoId && playlist && playlist.length > 0 && (() => {
         const currentVideo = playlist.find(v => v.videoId === curVideoId);
@@ -961,9 +1001,8 @@ function HomePage() {
               if (modal) modal.checked = true;
             }}
             onExpand={() => {
-              // Open playlist modal (same as onOpenQueue for now)
-              const modal = document.getElementById('modal-playlist') as HTMLInputElement;
-              if (modal) modal.checked = true;
+              // Open video player modal
+              setShowVideoPlayerModal(true);
             }}
           />
         ) : null;
