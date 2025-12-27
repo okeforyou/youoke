@@ -31,6 +31,9 @@ const LoginForm = () => {
       await logIn(data.email, data.password);
       router.push("/");
     } catch (error: any) {
+      console.error('❌ Login error:', error);
+      console.error('❌ Error code:', error?.code);
+      console.error('❌ Error message:', error?.message);
       errRef.current.open();
     }
   };
