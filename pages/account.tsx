@@ -403,10 +403,14 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
     const cookies = nookies.get(context);
     const token = cookies.token;
 
-    // Debug: Log all cookies
+    // Debug: Log all cookies and request info
     console.log("🔍 [SSR] All cookies:", Object.keys(cookies));
+    console.log("🔍 [SSR] Cookie values:", cookies);
     console.log("🔍 [SSR] Has token:", !!token);
     console.log("🔍 [SSR] Token preview:", token ? token.substring(0, 20) + "..." : "none");
+    console.log("🔍 [SSR] Request headers cookie:", context.req.headers.cookie);
+    console.log("🔍 [SSR] Request method:", context.req.method);
+    console.log("🔍 [SSR] Request URL:", context.req.url);
 
     if (!token) {
       console.log("❌ [SSR] No token found, redirecting to login");
