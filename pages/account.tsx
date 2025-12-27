@@ -400,7 +400,8 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
     }
 
     // 1. Check authentication
-    const cookies = nookies.get(context);
+    // IMPORTANT: Pass { req } to nookies.get() for SSR (same as API routes)
+    const cookies = nookies.get({ req: context.req });
     const token = cookies.token;
 
     // Debug: Log all cookies and request info
