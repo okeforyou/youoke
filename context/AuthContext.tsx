@@ -62,8 +62,10 @@ export const AuthContextProvider = ({
         });
 
         // Clear cookies using nookies
-        nookies.destroy(undefined, 'token', { path: '/' });
-        nookies.destroy(undefined, 'uid', { path: '/' });
+        nookies.destroy(null, 'token', { path: '/' });
+        nookies.destroy(null, 'uid', { path: '/' });
+
+        console.log('🗑️ Cookies cleared');
       } else {
         const token = await user.getIdToken();
         const idTokenResult = await user.getIdTokenResult();
@@ -80,24 +82,31 @@ export const AuthContextProvider = ({
         // Set cookies using nookies for better SSR compatibility
         // Use longer expiry (7 days) and ensure cookies work across requests
         const isSecure = typeof window !== 'undefined' && window.location.protocol === 'https:';
-        nookies.set(undefined, 'token', token, {
+
+        // Use null for client-side context (nookies requirement)
+        nookies.set(null, 'token', token, {
           path: '/',
           maxAge: 7 * 24 * 60 * 60, // 7 days
           sameSite: 'lax',
           secure: isSecure,
         });
-        nookies.set(undefined, 'uid', user.uid, {
+        nookies.set(null, 'uid', user.uid, {
           path: '/',
           maxAge: 7 * 24 * 60 * 60,
           sameSite: 'lax',
           secure: isSecure,
         });
 
+        // Verify cookies were set
+        const allCookies = nookies.get(null);
         console.log('✅ Cookies set:', {
           tokenLength: token.length,
           uid: user.uid,
           secure: isSecure,
           domain: typeof window !== 'undefined' ? window.location.hostname : 'server',
+          cookiesAfterSet: Object.keys(allCookies),
+          hasToken: !!allCookies.token,
+          hasUid: !!allCookies.uid,
         });
       }
       setLoading(false);
