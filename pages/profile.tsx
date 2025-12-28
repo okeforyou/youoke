@@ -12,7 +12,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { getUserProfile } from "../services/userService";
 import { UserProfile } from "../types/subscription";
-import BottomNavigation from "../components/BottomNavigation";
+import MainLayout from "../components/layout/MainLayout";
 
 export default function ProfileSimplePage() {
   const router = useRouter();
@@ -102,25 +102,29 @@ export default function ProfileSimplePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-base-200">
-        <div className="loading loading-spinner loading-lg text-primary"></div>
-      </div>
+      <MainLayout maxWidth="2xl" activeTab={undefined}>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <span className="loading loading-spinner loading-lg"></span>
+            <p className="mt-4">กำลังโหลดข้อมูล...</p>
+          </div>
+        </div>
+      </MainLayout>
     );
   }
 
   if (!profile) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-base-200">
-        <div className="text-center">
-          <p className="text-xl mb-4">ไม่พบข้อมูลผู้ใช้</p>
-          <button
-            onClick={() => router.push("/")}
-            className="btn btn-primary"
-          >
-            กลับหน้าหลัก
-          </button>
+      <MainLayout maxWidth="2xl" activeTab={undefined}>
+        <div className="min-h-screen flex items-center justify-center bg-base-200">
+          <div className="text-center">
+            <p className="text-xl text-error mb-4">ไม่พบข้อมูลผู้ใช้</p>
+            <button onClick={() => router.push("/")} className="btn btn-primary">
+              กลับหน้าหลัก
+            </button>
+          </div>
         </div>
-      </div>
+      </MainLayout>
     );
   }
 
@@ -132,8 +136,7 @@ export default function ProfileSimplePage() {
         <title>โปรไฟล์ - Oke for You คาราโอเกะออนไลน์</title>
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-base-200 via-base-100 to-base-200 pb-24">
-        <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <MainLayout maxWidth="2xl" activeTab={undefined}>
           {/* Back Button */}
           <button
             onClick={() => router.push("/account")}
@@ -284,10 +287,7 @@ export default function ProfileSimplePage() {
               </pre>
             </div>
           )}
-        </div>
-      </div>
-
-      <BottomNavigation />
+      </MainLayout>
     </>
   );
 }

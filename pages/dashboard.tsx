@@ -1,12 +1,10 @@
-import { GetServerSideProps } from "next";
 import { useRouter } from "next/router";
 import Head from "next/head";
-import nookies from "nookies";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SparklesIcon, HomeIcon, CalendarIcon, CreditCardIcon, ClockIcon } from "@heroicons/react/24/solid";
 
-import { adminAuth, adminDb, adminFirestore } from "../firebase-admin";
-import BottomNavigation from "../components/BottomNavigation";
+import { useAuth } from "../context/AuthContext";
+import MainLayout from "../components/layout/MainLayout";
 
 // Types
 interface UserSubscription {
@@ -24,7 +22,7 @@ interface RecentPayment {
   createdAt: string | null;
 }
 
-interface Props {
+interface UserData {
   user: {
     uid: string;
     email: string;
@@ -32,24 +30,76 @@ interface Props {
     subscription: UserSubscription;
   };
   recentPayments: RecentPayment[];
-  error?: string;
 }
 
-export default function DashboardPage({ user, recentPayments, error }: Props) {
+export default function DashboardPage() {
   const router = useRouter();
+  const { user: authUser } = useAuth();
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (error) {
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        if (!authUser?.uid) {
+          router.push("/login");
+          return;
+        }
+
+        const response = await fetch("/api/user/me");
+
+        if (response.status === 401) {
+          router.push("/login");
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch user data");
+        }
+
+        const data = await response.json();
+        setUserData(data);
+      } catch (err: any) {
+        console.error("Error fetching user data:", err);
+        setError("เกิดข้อผิดพลาดในการโหลดข้อมูล");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [authUser, router]);
+
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-base-200">
-        <div className="text-center">
-          <p className="text-xl text-error mb-4">{error}</p>
-          <button onClick={() => window.location.reload()} className="btn btn-primary">
-            รีโหลดหน้า
-          </button>
+      <MainLayout maxWidth="2xl" activeTab={undefined}>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <span className="loading loading-spinner loading-lg"></span>
+            <p className="mt-4">กำลังโหลดข้อมูล...</p>
+          </div>
         </div>
-      </div>
+      </MainLayout>
     );
   }
+
+  if (error || !userData) {
+    return (
+      <MainLayout maxWidth="2xl" activeTab={undefined}>
+        <div className="min-h-screen flex items-center justify-center bg-base-200">
+          <div className="text-center">
+            <p className="text-xl text-error mb-4">{error || "ไม่พบข้อมูลผู้ใช้"}</p>
+            <button onClick={() => window.location.reload()} className="btn btn-primary">
+              รีโหลดหน้า
+            </button>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  const { user, recentPayments } = userData;
 
   // Calculate days remaining
   const getDaysRemaining = (): number | null => {
@@ -95,8 +145,7 @@ export default function DashboardPage({ user, recentPayments, error }: Props) {
         <title>Dashboard - Oke for You</title>
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-base-200 via-base-100 to-base-200 pb-24">
-        <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <MainLayout maxWidth="2xl" activeTab={undefined}>
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-base-content">
@@ -289,131 +338,7 @@ export default function DashboardPage({ user, recentPayments, error }: Props) {
               )}
             </div>
           </div>
-        </div>
-      </div>
-
-      <BottomNavigation />
+      </MainLayout>
     </>
   );
 }
-
-// Server-Side Rendering
-export const getServerSideProps: GetServerSideProps<Props> = async (context) => {
-  console.log("🚀 [SSR] dashboard getServerSideProps started");
-
-  try {
-    // 1. Check authentication
-    const cookies = nookies.get(context);
-    const token = cookies.token;
-
-    if (!token) {
-      console.log("❌ [SSR] No token found, redirecting to login");
-      return {
-        redirect: {
-          destination: "/login",
-          permanent: false,
-        },
-      };
-    }
-
-    // 2. Verify token
-    const decodedToken = await adminAuth.verifyIdToken(token);
-    const uid = decodedToken.uid;
-
-    // 3. Fetch user data from Realtime Database
-    const userRef = adminDb.ref(`users/${uid}`);
-    const userSnapshot = await userRef.once("value");
-
-    if (!userSnapshot.exists()) {
-      console.log("❌ [SSR] User not found");
-      return {
-        redirect: {
-          destination: "/login",
-          permanent: false,
-        },
-      };
-    }
-
-    const userData = userSnapshot.val();
-
-    // 4. Fetch recent payments (last 5)
-    const paymentsSnapshot = await adminFirestore
-      .collection("payments")
-      .where("userId", "==", uid)
-      .orderBy("createdAt", "desc")
-      .limit(5)
-      .get();
-
-    const recentPayments: RecentPayment[] = await Promise.all(
-      paymentsSnapshot.docs.map(async (doc) => {
-        const data = doc.data();
-
-        // Get plan name
-        let planName = data.planId;
-        if (data.planName) {
-          planName = data.planName;
-        } else if (data.planId) {
-          try {
-            const planDoc = await adminFirestore.collection("plans").doc(data.planId).get();
-            if (planDoc.exists) {
-              const planData = planDoc.data();
-              planName = planData?.displayName || data.planId;
-            }
-          } catch (error) {
-            console.error("Error fetching plan:", error);
-          }
-        }
-
-        return {
-          id: doc.id,
-          amount: data.amount || 0,
-          status: data.status || "pending",
-          planName,
-          createdAt: data.createdAt?.toDate?.()?.toISOString() || null,
-        };
-      })
-    );
-
-    console.log(`✅ [SSR] Fetched user data and ${recentPayments.length} payments`);
-
-    return {
-      props: {
-        user: {
-          uid,
-          email: userData.email || "",
-          displayName: userData.displayName || userData.email?.split("@")[0] || "User",
-          subscription: {
-            plan: userData.subscription?.plan || "free",
-            status: userData.subscription?.status || "inactive",
-            startDate: userData.subscription?.startDate
-              ? new Date(userData.subscription.startDate).toISOString()
-              : null,
-            endDate: userData.subscription?.endDate
-              ? new Date(userData.subscription.endDate).toISOString()
-              : null,
-          },
-        },
-        recentPayments,
-      },
-    };
-  } catch (error: any) {
-    console.error("❌ [SSR] Error in getServerSideProps:", error);
-    return {
-      props: {
-        user: {
-          uid: "",
-          email: "",
-          displayName: "Error",
-          subscription: {
-            plan: "free",
-            status: "inactive",
-            startDate: null,
-            endDate: null,
-          },
-        },
-        recentPayments: [],
-        error: "เกิดข้อผิดพลาดในการโหลดข้อมูล",
-      },
-    };
-  }
-};
