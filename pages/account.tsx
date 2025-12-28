@@ -108,7 +108,7 @@ export default function AccountPage() {
   // Loading state
   if (loading) {
     return (
-      <MainLayout maxWidth="xl" activeTab={undefined}>
+      <MainLayout maxWidth="2xl" activeTab={undefined}>
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center">
             <span className="loading loading-spinner loading-lg"></span>
@@ -122,7 +122,7 @@ export default function AccountPage() {
   // Error state
   if (error || !userData) {
     return (
-      <MainLayout maxWidth="xl" activeTab={undefined}>
+      <MainLayout maxWidth="2xl" activeTab={undefined}>
         <div className="min-h-screen flex items-center justify-center bg-base-200">
           <div className="text-center">
             <p className="text-xl text-error mb-4">{error || "ไม่พบข้อมูลผู้ใช้"}</p>
@@ -153,7 +153,7 @@ export default function AccountPage() {
         <title>บัญชีของฉัน - Oke for You</title>
       </Head>
 
-      <MainLayout maxWidth="xl" activeTab={undefined}>
+      <MainLayout maxWidth="2xl" activeTab={undefined}>
         {/* Header with Avatar */}
         <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6 mb-8 lg:mb-12">
           {/* Avatar */}

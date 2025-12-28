@@ -13,8 +13,7 @@ import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 import Alert from "../components/ui/Alert";
 import LoadingScreen from "../components/layout/LoadingScreen";
-import AppShell from "../components/layout/AppShell";
-import PageHeader from "../components/layout/PageHeader";
+import MainLayout from "../components/layout/MainLayout";
 import { BANK_INFO, APP_CONFIG } from "../utils/constants";
 import { formatCurrency } from "../utils/formatting";
 
@@ -83,13 +82,18 @@ export default function PaymentPage() {
         <title>ยืนยันการชำระเงิน - YouOke</title>
       </Head>
 
-      <AppShell background="gradient" maxWidth="2xl" showBottomNav>
-        <PageHeader
-          title="ยืนยันการชำระเงิน"
-          subtitle="กรุณาโอนเงินและแจ้งชำระผ่าน LINE@"
-          showBack
-          onBack={() => router.push("/pricing")}
-        />
+      <MainLayout maxWidth="2xl" activeTab={undefined}>
+        {/* Header */}
+        <div className="mb-8">
+          <button
+            onClick={() => router.push("/pricing")}
+            className="btn btn-ghost btn-sm mb-4"
+          >
+            ← กลับ
+          </button>
+          <h1 className="text-3xl font-bold mb-2">ยืนยันการชำระเงิน</h1>
+          <p className="text-base-content/60">กรุณาโอนเงินและแจ้งชำระผ่าน LINE@</p>
+        </div>
 
         {/* Selected Package Card */}
         <Card className="mb-6">
@@ -170,7 +174,7 @@ export default function PaymentPage() {
             </div>
           </Card.Body>
         </Card>
-      </AppShell>
+      </MainLayout>
     </>
   );
 }
