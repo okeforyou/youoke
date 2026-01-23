@@ -16,60 +16,48 @@
 
 ## 🎯 Current Implementation
 
-### Primary Method: **YouTube Direct Scraping** (Inspired by bemusic)
+### Primary Method: **YouTube Direct Scraping V2** (Backported from play.youoke)
 
 **Files:**
-- `utils/youtubeScraper.ts` - Main scraper utility
-- `pages/api/search.ts` - Search API with fallback chain
+- `utils/youtubeScraper.ts` - Robust Scraper (Deep Search + Consent Bypass)
+- `pages/api/search.ts` - Search API with API Fallback
 
 **How It Works:**
 1. Scrape `youtube.com/results?search_query=...` directly
-2. Extract `ytInitialData` JSON from HTML page
-3. Parse video results (videoId, title, author, thumbnails)
-4. Filter "full album" videos to end of results
+2. Use **Consent Cookies** to bypass EU/privacy walls
+3. **Deep Recursive Search** to find video data even if HTML structure changes
+4. **Retry Logic** with exponential backoff
 5. Return 15-20 results
 
 **Benefits:**
-- ✅ **FREE 100%** - No API keys needed
-- ✅ **UNLIMITED** - No quota limits
-- ✅ **STABLE** - Direct from YouTube (no third-party)
-- ✅ **FAST** - 10s timeout with retry (2 attempts)
-- ✅ **No dependencies** - Not affected by Invidious outages
+- ✅ **FREE 100%** - No API keys needed for primary method
+- ✅ **ROBUST** - Handles HTML changes better than V1
+- ✅ **FAST** - Direct connection to YouTube
 
 ---
 
 ## 🏗️ Architecture
 
-### Fallback Chain (3 Levels)
+### Fallback Chain (2 Levels)
 
 ```
 User Search Request
         ↓
 ┌───────────────────────────────────────┐
 │ 🎯 PRIMARY: YouTube Direct Scraping   │
-│    - Scrape youtube.com               │
-│    - Parse ytInitialData JSON         │
-│    - 10s timeout, 2 retries           │
-│    - User-Agent rotation              │
-│    ✅ Success Rate: ~95-98%           │
+│    - Robust Deep Search Algorithm     │
+│    - Consent Cookie Bypass            │
+│    - 8s timeout, 2 retries            │
+│    ✅ Success Rate: High              │
 └───────────────┬───────────────────────┘
                 │ IF FAILS
                 ↓
 ┌───────────────────────────────────────┐
-│ 🔄 FALLBACK 1: Invidious Scraping     │
-│    - 2 instances (yewtu.be, nadeko)   │
-│    - Parallel requests (Promise.any)  │
-│    - 8s timeout per instance          │
-│    ⚠️  Success Rate: ~30-50%          │
-└───────────────┬───────────────────────┘
-                │ IF FAILS
-                ↓
-┌───────────────────────────────────────┐
-│ 🔄 FALLBACK 2: YouTube Data API v3    │
-│    - Requires API key (optional)      │
+│ 🔄 FALLBACK: YouTube Data API v3      │
+│    - Requires API key (SAFETY NET)    │
 │    - 10,000 queries/day free          │
 │    - Key rotation support             │
-│    ✅ Success Rate: ~99.9%            │
+│    ✅ Success Rate: ~100%             │
 └───────────────────────────────────────┘
 ```
 
@@ -79,19 +67,17 @@ User Search Request
 ```typescript
 scrapeYouTubeSearchWithRetry()
   ├─ scrapeYouTubeSearch()
-  │   ├─ fetch youtube.com/results
-  │   ├─ extractYtInitialData() - Parse JSON from HTML
-  │   ├─ parseVideoResults() - Extract video data
-  │   └─ filterAndSortResults() - Remove full albums
-  └─ Retry logic (exponential backoff)
+  │   ├─ fetch youtube.com (with cookies)
+  │   ├─ extractYtInitialData()
+  │   └─ parseVideoResults() - Deep Recursive Search
+  └─ Retry logic
 ```
 
 **API Handler (`pages/api/search.ts`):**
 ```typescript
 handler()
   ├─ searchWithYouTubeDirect() - PRIMARY
-  ├─ searchWithInvidiousScraping() - FALLBACK 1
-  └─ searchWithYouTubeAPI() - FALLBACK 2
+  └─ searchWithYouTubeAPI() - FALLBACK (Safety Net)
 ```
 
 ---
