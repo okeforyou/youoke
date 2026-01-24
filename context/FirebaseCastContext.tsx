@@ -13,7 +13,8 @@
  */
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { realtimeDb } from '../firebase';
+import { signInAnonymously } from 'firebase/auth';
+import { realtimeDb, auth } from '../firebase';
 import { RecommendedVideo, SearchResult } from '../types/invidious';
 import { useAuth } from './AuthContext';
 import { sendCommand } from '../utils/castCommands';
@@ -181,6 +182,17 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
   const joinRoom = async (code: string, options?: { guestName?: string }): Promise<boolean> => {
     if (!realtimeDb) {
       throw new Error('Firebase not initialized');
+    }
+
+    // Ensure user is authenticated (anonymous if guest) to allow writing commands
+    if (!auth.currentUser) {
+      console.log('👻 Authenticating as anonymous guest for casting...');
+      try {
+        await signInAnonymously(auth);
+        console.log('✅ Signed in anonymously');
+      } catch (error) {
+        console.error('❌ Anonymous auth failed:', error);
+      }
     }
 
     console.log('🔍 Attempting to join room:', code, options);

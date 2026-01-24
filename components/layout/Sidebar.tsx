@@ -143,9 +143,6 @@ export default function Sidebar({ activeTab = 0, onTabChange, className = '' }: 
 
         {/* Account Section */}
         <div>
-          <p className="text-xs font-semibold text-base-content/50 uppercase px-4 mb-2">
-            บัญชี
-          </p>
           {user?.uid && (
             <>
               {/* Show Admin link if user is admin */}
@@ -167,7 +164,7 @@ export default function Sidebar({ activeTab = 0, onTabChange, className = '' }: 
         {user?.uid ? (
           <button
             onClick={() => logOut()}
-            className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-error text-white hover:bg-error/90 transition-all font-bold shadow-lg hover:scale-[1.02] active:scale-95"
+            className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-base-200 hover:bg-base-300 text-base-content transition-all font-medium"
           >
             <ArrowLeftOnRectangleIcon className="w-5 h-5" />
             <span>ออกจากระบบ</span>
@@ -175,7 +172,7 @@ export default function Sidebar({ activeTab = 0, onTabChange, className = '' }: 
         ) : (
           <button
             onClick={() => handleNavigation('/login')}
-            className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-primary text-white hover:bg-primary/90 transition-all font-bold shadow-lg hover:scale-[1.02] active:scale-95"
+            className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-base-200 hover:bg-base-300 text-base-content transition-all font-medium"
           >
             <ArrowLeftOnRectangleIcon className="w-5 h-5" />
             <span>เข้าสู่ระบบ</span>
