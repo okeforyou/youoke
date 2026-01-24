@@ -1454,22 +1454,20 @@ function YoutubePlayer({
             </div>
           </div>
         ) : isDualMode && !isMoniter ? (
-          <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20 backdrop-blur-sm">
-            <div className="text-center p-4 md:p-6 bg-base-100/90 rounded-xl shadow-2xl mx-4">
-              <div className="text-3xl md:text-5xl mb-2 md:mb-4">🖥️</div>
-              <h2 className="text-lg md:text-2xl font-bold mb-2 text-primary">กำลังเล่นที่หน้าจอที่ 2</h2>
-              <p className="text-xs md:text-sm text-gray-600 mb-4">วิดีโอกำลังเล่นบนหน้าจอ Dual Screen</p>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  localStorage.removeItem('youoke-dual-active');
-                  setIsDualMode(false);
-                }}
-                className="btn btn-sm btn-primary"
-              >
-                ปิดโหมด 2 หน้าจอ
-              </button>
-            </div>
+          <div className="h-full w-full flex flex-col items-center justify-center bg-base-200/50 backdrop-blur-sm p-4 text-center">
+            <div className="text-4xl md:text-5xl mb-4 animate-pulse">🖥️</div>
+            <h2 className="text-lg md:text-xl font-bold mb-2 text-base-content">กำลังเล่นที่หน้าจอที่ 2</h2>
+            <p className="text-xs md:text-sm text-base-content/70 mb-6">วิดีโอกำลังเล่นบนหน้าจอ Dual Screen</p>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                localStorage.removeItem('youoke-dual-active');
+                setIsDualMode(false);
+              }}
+              className="btn btn-sm btn-outline btn-primary rounded-full px-6"
+            >
+              ปิดโหมด 2 หน้าจอ
+            </button>
           </div>
         ) : !videoId ? (
           <div
@@ -1574,52 +1572,56 @@ function YoutubePlayer({
       {!isLogin && !isMoniter && isShowAds && <VideoAds />}
 
       {/* Exit Fullscreen Button - Always visible in fullscreen mode */}
-      {!isMoniter && videoId && (isFullscreen || isFullScreenIphone) && (
-        <button
-          onClick={handleFullscreenButtonClick}
-          className="fixed top-4 right-4 z-[100] btn btn-circle btn-sm bg-black/50 text-white border-white/30 hover:bg-black/70"
-          style={UseFullScreenCss ? { position: "fixed" } : {}}
-        >
-          <ArrowsPointingInIcon className="w-5 h-5" />
-        </button>
-      )}
+      {
+        !isMoniter && videoId && (isFullscreen || isFullScreenIphone) && (
+          <button
+            onClick={handleFullscreenButtonClick}
+            className="fixed top-4 right-4 z-[100] btn btn-circle btn-sm bg-black/50 text-white border-white/30 hover:bg-black/70"
+            style={UseFullScreenCss ? { position: "fixed" } : {}}
+          >
+            <ArrowsPointingInIcon className="w-5 h-5" />
+          </button>
+        )
+      }
 
       {/* Controls for Remote - OUTSIDE player container (original position) */}
-      {!isMoniter && showControls && videoId && (
-        <div
-          className={`flex-shrink-0 flex flex-row md:w-full p-1 items-center z-20 ${isMouseMoving ? "hover:opacity-100" : ""
-            } ${(UseFullScreenCss || !isMouseMoving) &&
-              (isFullscreen || isFullScreenIphone)
-              ? "opacity-0"
-              : ""
-            }`}
-          style={
-            UseFullScreenCss
-              ? {
-                position: "fixed",
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: "initial",
-              }
-              : {}
-          }
-        >
-          {buttons.map((btn) => {
-            return (
-              <button
-                key={btn.label}
-                className="btn btn-ghost font-normal text-primary flex h-auto flex-col flex-1 overflow-hidden text-[10px] 2xl:text-xs p-1 gap-0.5 hover:bg-base-200"
-                onClick={btn.onClick}
-              >
-                <btn.icon className="w-5 h-5 2xl:w-6 2xl:h-6" />
-                {btn.label}
-              </button>
-            );
-          })}
-          {extra}
-        </div>
-      )}
+      {
+        !isMoniter && showControls && videoId && (
+          <div
+            className={`flex-shrink-0 flex flex-row md:w-full p-1 items-center z-20 ${isMouseMoving ? "hover:opacity-100" : ""
+              } ${(UseFullScreenCss || !isMouseMoving) &&
+                (isFullscreen || isFullScreenIphone)
+                ? "opacity-0"
+                : ""
+              }`}
+            style={
+              UseFullScreenCss
+                ? {
+                  position: "fixed",
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: "initial",
+                }
+                : {}
+            }
+          >
+            {buttons.map((btn) => {
+              return (
+                <button
+                  key={btn.label}
+                  className="btn btn-ghost font-normal text-primary flex h-auto flex-col flex-1 overflow-hidden text-[10px] 2xl:text-xs p-1 gap-0.5 hover:bg-base-200"
+                  onClick={btn.onClick}
+                >
+                  <btn.icon className="w-5 h-5 2xl:w-6 2xl:h-6" />
+                  {btn.label}
+                </button>
+              );
+            })}
+            {extra}
+          </div>
+        )
+      }
 
       {/* Debug Overlay */}
       <DebugOverlay
@@ -1644,7 +1646,7 @@ function YoutubePlayer({
       />
 
       {/* Debug Toggle Button - Removed to avoid blocking Dual Screen button */}
-    </div>
+    </div >
   );
 }
 
