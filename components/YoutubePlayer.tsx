@@ -385,8 +385,8 @@ function YoutubePlayer({
 
   // Event handler for triggering fullscreen on a user gesture
   const handleFullscreenButtonClick = () => {
-    // Mobile: Use CSS Overlay
-    if (isMobile) {
+    // Mobile or iOS: Use CSS Fullscreen Overlay (Robust)
+    if (isMobile || isIOS) {
       setIsFullScreenIphone(!isFullScreenIphone);
       return;
     }
@@ -1277,8 +1277,8 @@ function YoutubePlayer({
       ref={fullscreenRef}
       id="youtubePlayer"
       className={`${isFullscreen || isFullScreenIphone
-        ? "fixed inset-0 z-50 bg-black flex items-center justify-center w-screen h-screen"
-        : "relative bg-white"
+          ? "fixed inset-0 z-[9999] bg-black block w-screen h-screen"
+          : "relative bg-white"
         } ${className}`}
     >
       <Alert
@@ -1502,7 +1502,7 @@ function YoutubePlayer({
                 position: UseFullScreenCss ? "fixed" : "absolute",
                 top: 0,
                 left: 0,
-                zIndex: UseFullScreenCss ? 20 : 0,
+                zIndex: UseFullScreenCss ? 9999 : 0,
               }}
               loading="lazy"
               opts={{
