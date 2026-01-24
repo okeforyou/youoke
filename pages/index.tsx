@@ -817,7 +817,7 @@ function HomePage() {
 
                 {/* Karaoke Switch (Sliding Segmented Control) */}
                 <div
-                  className="relative flex items-center h-11 bg-base-100 md:bg-base-200 rounded-full p-1 cursor-pointer select-none w-[110px] md:w-[150px] flex-shrink-0"
+                  className="relative flex items-center h-11 bg-base-200 border border-base-300 rounded-full p-1 cursor-pointer select-none w-[110px] md:w-[150px] flex-shrink-0"
                   onClick={() => setIsKaraoke(!isKaraoke)}
                 >
                   {/* Sliding Pill */}

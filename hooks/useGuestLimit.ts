@@ -7,7 +7,7 @@
 
 import { useEffect, useState } from "react";
 
-const GUEST_LIMIT = 3;
+const GUEST_LIMIT = 10;
 const STORAGE_KEY = "guest_play_count";
 const TIMESTAMP_KEY = "guest_play_timestamp";
 

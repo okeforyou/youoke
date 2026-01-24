@@ -59,7 +59,7 @@ export default function GuestLimitModal({
             สมัครสมาชิกเพื่อฟังเพลงไม่จำกัด
             <br />
             <span className="text-primary font-semibold">
-              อัปเกรดเป็น Premium
+              เริ่มต้นเพียง 50 บาท/เดือน
             </span>
           </p>
 
