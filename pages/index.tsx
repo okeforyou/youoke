@@ -773,27 +773,33 @@ function HomePage() {
                   className="aspect-video w-full"
                   externalPlayerRef={mobilePlayerRef}
                 />
-                {/* Queue toggle button below player */}
-                <div className="flex items-center justify-between px-3 py-2 bg-base-200 border-b border-base-300">
-                  <div className="text-sm font-semibold truncate flex-1 pr-2">
-                    {currentVideo?.title || "กำลังเล่น"}
+
+                {/* Title & Controls - Sticky below video */}
+                <div className="flex flex-col bg-base-100 border-b border-base-300 pb-2">
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <div className="flex flex-col overflow-hidden pr-2">
+                      <h3 className="font-semibold text-base line-clamp-1">{currentVideo?.title || "กำลังเล่น"}</h3>
+                      <p className="text-xs text-gray-500 line-clamp-1">{currentVideo?.author}</p>
+                    </div>
+                    {/* Queue Count Badge */}
+                    <span className="badge badge-sm badge-ghost">{displayPlaylist?.length || 0} คิว</span>
                   </div>
-                  <label htmlFor="modal-playlist" className="btn btn-xs btn-ghost gap-1">
-                    <ListBulletIcon className="w-4 h-4" />
-                    คิวเพลง ({displayPlaylist?.length || 0})
-                  </label>
                 </div>
               </div>
             )}
 
-            {/* Recommend Videos List */}
+            {/* Content Area: Show Queue if playing, otherwise Show Recommendations */}
             <div
-              className={`relative grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-3 2xl:grid-cols-4 auto-rows-min gap-3 w-full h-screen px-4 py-2 pb-20 lg:pb-4 ${scrollbarCls}`}
+              className={`relative w-full h-screen px-4 py-2 pb-20 lg:pb-4 ${curVideoId && !isXlScreen ? 'bg-base-100' : 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-3 2xl:grid-cols-4 auto-rows-min gap-3'} ${scrollbarCls}`}
               style={{ overflowY: "scroll" }}
             >
-              {/* START Video Row Item */}
-
-              {
+              {curVideoId && !isXlScreen ? (
+                /* Mobile Queue View (YouTube Style) */
+                <div className="pb-32">
+                  {PlaylistScreen}
+                </div>
+              ) : (
+                /* Desktop/Empty State Grid View */
                 [
                   <SearchResultGrid
                     key={0}
@@ -803,7 +809,7 @@ function HomePage() {
                   <ListTopicsGrid key={2} showTab={false} />,
                   <ListPlaylistsGrid key={3} />,
                 ][activeIndex]
-              }
+              )}
 
               {/* END Video Row Item */}
             </div>

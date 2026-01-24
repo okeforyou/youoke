@@ -964,48 +964,48 @@ function YoutubePlayer({
   const playPauseBtn = [
     playerState === YouTube.PlayerState.PLAYING || (isCasting && firebaseCastState.controls.isPlaying)
       ? {
-          icon: PauseIcon,
-          label: "หยุด",
-          onClick: () => {
-            console.log('🎯 Pause button clicked:', { isCasting, isGoogleCastConnected });
-            if (isCasting) {
-              firebaseCastPause();
-            } else if (isGoogleCastConnected) {
-              castPause();
-            } else {
-              handlePause();
-            }
-          },
-        }
-      : {
-          icon: PlayIcon,
-          label: "เล่น",
-          onClick: () => {
-            console.log('🎯 Play button clicked:', { isCasting, isGoogleCastConnected });
-            if (isCasting) {
-              firebaseCastPlay();
-            } else if (isGoogleCastConnected) {
-              castPlay();
-            } else {
-              handlePlay();
-            }
-          },
+        icon: PauseIcon,
+        label: "หยุด",
+        onClick: () => {
+          console.log('🎯 Pause button clicked:', { isCasting, isGoogleCastConnected });
+          if (isCasting) {
+            firebaseCastPause();
+          } else if (isGoogleCastConnected) {
+            castPause();
+          } else {
+            handlePause();
+          }
         },
+      }
+      : {
+        icon: PlayIcon,
+        label: "เล่น",
+        onClick: () => {
+          console.log('🎯 Play button clicked:', { isCasting, isGoogleCastConnected });
+          if (isCasting) {
+            firebaseCastPlay();
+          } else if (isGoogleCastConnected) {
+            castPlay();
+          } else {
+            handlePlay();
+          }
+        },
+      },
   ];
 
   const muteBtn = useMemo(
     () => [
       !isMuted
         ? {
-            icon: SpeakerWaveIcon,
-            label: "ปิดเสียง",
-            onClick: handleMute,
-          }
+          icon: SpeakerWaveIcon,
+          label: "ปิดเสียง",
+          onClick: handleMute,
+        }
         : {
-            icon: SpeakerXMarkIcon,
-            label: "เปิดเสียง",
-            onClick: handleUnMute,
-          },
+          icon: SpeakerXMarkIcon,
+          label: "เปิดเสียง",
+          onClick: handleUnMute,
+        },
     ],
     [isMuted]
   );
@@ -1038,19 +1038,19 @@ function YoutubePlayer({
     () => [
       (isIphone ? !isFullScreenIphone : !isFullscreen)
         ? {
-            icon: ArrowsPointingOutIcon,
-            label: "เต็มจอ",
-            onClick: async () => {
-              handleFullscreenButtonClick();
-            },
-          }
-        : {
-            icon: ArrowsPointingInIcon,
-            label: "จอเล็ก",
-            onClick: async () => {
-              handleFullscreenButtonClick();
-            },
+          icon: ArrowsPointingOutIcon,
+          label: "เต็มจอ",
+          onClick: async () => {
+            handleFullscreenButtonClick();
           },
+        }
+        : {
+          icon: ArrowsPointingInIcon,
+          label: "จอเล็ก",
+          onClick: async () => {
+            handleFullscreenButtonClick();
+          },
+        },
     ],
     [isFullscreen, isFullScreenIphone, isIphone]
   );
@@ -1139,135 +1139,135 @@ function YoutubePlayer({
     if (isMoniter) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-base-100 rounded-xl shadow-2xl max-w-md w-full p-4 sm:p-5 relative my-auto max-h-[90vh] overflow-y-auto">
-            {/* Close Button */}
-            <button
-              onClick={() => {
-                setIsCastOverlayOpen(false);
-                setCastError('');
-                setCastInputRoomCode('');
-                setGuestName('');
-              }}
-              className="absolute top-2 right-2 btn btn-sm btn-circle btn-ghost z-10"
-            >
-              <XMarkIcon className="w-5 h-5" />
-            </button>
+      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
+        <div className="bg-base-100 rounded-xl shadow-2xl max-w-md w-full p-4 sm:p-5 relative my-auto max-h-[90vh] overflow-y-auto">
+          {/* Close Button */}
+          <button
+            onClick={() => {
+              setIsCastOverlayOpen(false);
+              setCastError('');
+              setCastInputRoomCode('');
+              setGuestName('');
+            }}
+            className="absolute top-2 right-2 btn btn-sm btn-circle btn-ghost z-10"
+          >
+            <XMarkIcon className="w-5 h-5" />
+          </button>
 
-            {/* Content */}
-            <div className="space-y-4">
-              {/* Title */}
-              <div className="text-center pr-8">
-                <div className="flex items-center justify-center gap-2 mb-3">
-                  <TvIcon className="w-6 h-6 text-primary" />
-                  <h2 className="text-lg sm:text-xl font-bold">Web Monitor Cast</h2>
-                </div>
-                <p className="text-xs text-gray-600">
-                  เปิด <span className="font-semibold">{baseUrl ? new URL(baseUrl).hostname : 'youoke.vercel.app'}/monitor</span> บนทีวี
-                </p>
+          {/* Content */}
+          <div className="space-y-4">
+            {/* Title */}
+            <div className="text-center pr-8">
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <TvIcon className="w-6 h-6 text-primary" />
+                <h2 className="text-lg sm:text-xl font-bold">Web Monitor Cast</h2>
               </div>
+              <p className="text-xs text-gray-600">
+                เปิด <span className="font-semibold">{baseUrl ? new URL(baseUrl).hostname : 'youoke.vercel.app'}/monitor</span> บนทีวี
+              </p>
+            </div>
 
-              {!isCasting ? (
-                <div className="space-y-3">
-                  {/* Guest Name Input (only if not logged in) */}
-                  {!isLogin && (
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-                        ชื่อของคุณ
-                      </label>
-                      <input
-                        type="text"
-                        className="py-2.5 px-4 block w-full bg-base-200 border border-base-300 rounded-lg text-sm focus:border-primary focus:outline-none transition-colors"
-                        placeholder="ใส่ชื่อของคุณ"
-                        maxLength={20}
-                        value={guestName}
-                        onChange={(e) => setGuestName(e.target.value)}
-                        autoFocus
-                      />
-                    </div>
-                  )}
-
-                  {/* Room Code Input */}
+            {!isCasting ? (
+              <div className="space-y-3">
+                {/* Guest Name Input (only if not logged in) */}
+                {!isLogin && (
                   <div>
                     <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-                      เลขห้อง
+                      ชื่อของคุณ
                     </label>
                     <input
                       type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      className="py-3 px-4 block w-full bg-base-200 border border-base-300 rounded-lg text-center text-2xl tracking-widest font-bold focus:border-primary focus:outline-none transition-colors"
-                      placeholder="0000"
-                      maxLength={4}
-                      value={castInputRoomCode}
-                      onChange={(e) => setCastInputRoomCode(e.target.value.replace(/\D/g, ''))}
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          handleCastJoinRoom();
-                        }
-                      }}
-                      autoFocus={isLogin}
+                      className="py-2.5 px-4 block w-full bg-base-200 border border-base-300 rounded-lg text-sm focus:border-primary focus:outline-none transition-colors"
+                      placeholder="ใส่ชื่อของคุณ"
+                      maxLength={20}
+                      value={guestName}
+                      onChange={(e) => setGuestName(e.target.value)}
+                      autoFocus
                     />
                   </div>
+                )}
 
-                  {/* Error Message */}
-                  {castError && (
-                    <div className="p-2.5 bg-error/10 border border-error/30 rounded-lg text-xs text-error">
-                      {castError}
-                    </div>
+                {/* Room Code Input */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                    เลขห้อง
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    className="py-3 px-4 block w-full bg-base-200 border border-base-300 rounded-lg text-center text-2xl tracking-widest font-bold focus:border-primary focus:outline-none transition-colors"
+                    placeholder="0000"
+                    maxLength={4}
+                    value={castInputRoomCode}
+                    onChange={(e) => setCastInputRoomCode(e.target.value.replace(/\D/g, ''))}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        handleCastJoinRoom();
+                      }
+                    }}
+                    autoFocus={isLogin}
+                  />
+                </div>
+
+                {/* Error Message */}
+                {castError && (
+                  <div className="p-2.5 bg-error/10 border border-error/30 rounded-lg text-xs text-error">
+                    {castError}
+                  </div>
+                )}
+
+                {/* Join Button */}
+                <button
+                  className="w-full py-2.5 px-4 text-white rounded-lg bg-primary hover:bg-primary/90 font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors text-sm"
+                  onClick={handleCastJoinRoom}
+                  disabled={isJoiningRoom || castInputRoomCode.length !== 4 || (!isLogin && !guestName.trim())}
+                >
+                  {isJoiningRoom ? (
+                    <>
+                      <ClockIcon className="w-4 h-4 animate-spin" />
+                      <span>กำลังเข้าร่วม...</span>
+                    </>
+                  ) : (
+                    <span>เข้าร่วมห้อง</span>
                   )}
-
-                  {/* Join Button */}
-                  <button
-                    className="w-full py-2.5 px-4 text-white rounded-lg bg-primary hover:bg-primary/90 font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors text-sm"
-                    onClick={handleCastJoinRoom}
-                    disabled={isJoiningRoom || castInputRoomCode.length !== 4 || (!isLogin && !guestName.trim())}
-                  >
-                    {isJoiningRoom ? (
-                      <>
-                        <ClockIcon className="w-4 h-4 animate-spin" />
-                        <span>กำลังเข้าร่วม...</span>
-                      </>
-                    ) : (
-                      <span>เข้าร่วมห้อง</span>
-                    )}
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {/* Connected Status */}
-                  <div className="bg-base-200 rounded-lg p-3 border border-base-300">
-                    <div className="flex items-center justify-center gap-2 text-base font-semibold mb-1">
-                      <CheckCircleIcon className="w-5 h-5 text-primary" />
-                      <span>เชื่อมต่อแล้ว</span>
-                    </div>
-                    <div className="text-xl font-bold text-center">ห้อง: {roomCode}</div>
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {/* Connected Status */}
+                <div className="bg-base-200 rounded-lg p-3 border border-base-300">
+                  <div className="flex items-center justify-center gap-2 text-base font-semibold mb-1">
+                    <CheckCircleIcon className="w-5 h-5 text-primary" />
+                    <span>เชื่อมต่อแล้ว</span>
                   </div>
-
-                  {/* Player Controls */}
-                  <div>
-                    <PlayerControls
-                      isPlaying={firebaseCastState.controls.isPlaying}
-                      onPlay={firebaseCastPlay}
-                      onPause={firebaseCastPause}
-                      onNext={firebaseCastNext}
-                      className="justify-center"
-                    />
-                  </div>
-
-                  {/* Disconnect/Leave Button */}
-                  <button
-                    className="w-full py-2.5 px-4 text-white rounded-lg bg-error hover:bg-error/90 font-semibold flex items-center justify-center gap-2 transition-colors text-sm"
-                    onClick={handleCastDisconnect}
-                  >
-                    <XMarkIcon className="w-4 h-4" />
-                    <span>{userInfo?.isGuest ? 'ออกจากห้อง' : 'ตัดการเชื่อมต่อ'}</span>
-                  </button>
+                  <div className="text-xl font-bold text-center">ห้อง: {roomCode}</div>
                 </div>
-              )}
-            </div>
+
+                {/* Player Controls */}
+                <div>
+                  <PlayerControls
+                    isPlaying={firebaseCastState.controls.isPlaying}
+                    onPlay={firebaseCastPlay}
+                    onPause={firebaseCastPause}
+                    onNext={firebaseCastNext}
+                    className="justify-center"
+                  />
+                </div>
+
+                {/* Disconnect/Leave Button */}
+                <button
+                  className="w-full py-2.5 px-4 text-white rounded-lg bg-error hover:bg-error/90 font-semibold flex items-center justify-center gap-2 transition-colors text-sm"
+                  onClick={handleCastDisconnect}
+                >
+                  <XMarkIcon className="w-4 h-4" />
+                  <span>{userInfo?.isGuest ? 'ออกจากห้อง' : 'ตัดการเชื่อมต่อ'}</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
+      </div>
     );
   };
 
@@ -1276,15 +1276,15 @@ function YoutubePlayer({
   const buttons: any = !isMoniter
     ? [...playPauseBtn, ...playerBtns, ...muteBtn, ...fullBtn, ...castBtn]
     : [
-        ...fullBtn,
-        {
-          icon: ArrowPathIcon,
-          label: "โหลดใหม่",
-          onClick: async () => {
-            window.location.reload();
-          },
+      ...fullBtn,
+      {
+        icon: ArrowPathIcon,
+        label: "โหลดใหม่",
+        onClick: async () => {
+          window.location.reload();
         },
-      ];
+      },
+    ];
 
   return (
     <div
@@ -1391,271 +1391,270 @@ function YoutubePlayer({
           </div>
         </div>
       )}
-      <div
-        className="w-full aspect-video relative flex-1 md:flex-grow-1"
-        onClick={() => handleVideoClick()}
-      >
-        {isCasting && !isMoniter ? (
-          <div className="h-full w-full flex flex-col items-center justify-center p-4 gap-3 bg-gradient-to-br from-error to-red-600">
-            {/* Compact status banner - White theme like the button below */}
-            <div className="bg-white rounded-xl shadow-2xl px-4 py-3 max-w-sm w-full mx-auto border-2 border-white/50">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-gray-500 font-medium mb-0.5">กำลัง Cast ไป Monitor</p>
-                  <p className="text-sm font-bold text-gray-900 truncate">
-                    {firebaseCastState.currentVideo?.title || 'รอเพิ่มเพลง...'}
-                  </p>
+      {/* Root Container - Changed to flex-col to allow controls below */}
+      <div className={`w-full flex flex-col ${className}`}>
+        {/* Video Wrapper - Maintains 16:9 aspect ratio */}
+        <div
+          className="w-full aspect-video relative flex-1"
+          onClick={() => handleVideoClick()}
+        >
+          {isCasting && !isMoniter ? (
+            <div className="h-full w-full flex flex-col items-center justify-center p-4 gap-3 bg-gradient-to-br from-error to-red-600">
+              {/* Compact status banner - White theme like the button below */}
+              <div className="bg-white rounded-xl shadow-2xl px-4 py-3 max-w-sm w-full mx-auto border-2 border-white/50">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-gray-500 font-medium mb-0.5">กำลัง Cast ไป Monitor</p>
+                    <p className="text-sm font-bold text-gray-900 truncate">
+                      {firebaseCastState.currentVideo?.title || 'รอเพิ่มเพลง...'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCastDisconnect();
+                    }}
+                    className="flex-shrink-0 px-3 py-2 bg-error hover:bg-error/90 text-white rounded-lg font-bold text-xs transition-all hover:scale-105 shadow-lg"
+                  >
+                    {userInfo?.isGuest ? 'ออกจากห้อง' : 'ตัดการเชื่อมต่อ'}
+                  </button>
                 </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleCastDisconnect();
-                  }}
-                  className="flex-shrink-0 px-3 py-2 bg-error hover:bg-error/90 text-white rounded-lg font-bold text-xs transition-all hover:scale-105 shadow-lg"
-                >
-                  {userInfo?.isGuest ? 'ออกจากห้อง' : 'ตัดการเชื่อมต่อ'}
-                </button>
               </div>
-            </div>
 
-            {/* Share Room Button */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsShareRoomModalOpen(true);
-              }}
-              className="w-full max-w-sm px-4 py-3 bg-white hover:bg-gray-100 text-primary rounded-xl font-bold transition-all hover:scale-105 flex items-center justify-center gap-2 shadow-2xl border-2 border-white/50"
-            >
-              <UserGroupIcon className="w-5 h-5" />
-              <span>เชิญเพื่อน - แชร์ห้อง</span>
-            </button>
-          </div>
-        ) : isGoogleCastConnected && !isMoniter ? (
-          <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-accent/20 to-primary/20 backdrop-blur-sm p-4">
-            <div className="text-center p-4 bg-white/80 backdrop-blur-sm rounded-lg w-full max-w-sm">
-              <div className="text-4xl mb-2">📡</div>
-              <h2 className="text-lg font-bold mb-1 text-gray-800">กำลัง Cast ไป</h2>
-              <p className="text-sm font-semibold text-primary mb-2 truncate">
-                {receiverName || 'Chromecast'}
-              </p>
-              <p className="text-xs text-gray-600 mb-3">
-                วิดีโอกำลังเล่นบนทีวี - ใช้ปุ่มด้านล่างเพื่อควบคุม
-              </p>
-              <button
-                onClick={(e) => {
-                  const debugInfo = {
-                    isGoogleCastConnected,
-                    disconnectExists: !!disconnectGoogleCast,
-                  };
-                  console.log('🎯 Disconnect button clicked!', debugInfo);
-                  addDebugLog('🎯 Disconnect button clicked', debugInfo);
-                  e.stopPropagation(); // Prevent fullscreen trigger
-                  disconnectGoogleCast();
-                  console.log('📡 Disconnecting from Google Cast...');
-                  addDebugLog('📡 Disconnecting from Google Cast');
-                  addToast('ตัดการเชื่อมต่อ Google Cast แล้ว');
-                }}
-                className="btn btn-sm btn-error gap-2"
-              >
-                <XMarkIcon className="w-4 h-4" />
-                ปิด Cast
-              </button>
-            </div>
-          </div>
-        ) : isDualMode && !isMoniter ? (
-          <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20 backdrop-blur-sm">
-            <div className="text-center p-8 bg-base-100/90 rounded-xl shadow-2xl">
-              <div className="text-6xl mb-4">🖥️</div>
-              <h2 className="text-3xl font-bold mb-2 text-primary">กำลังเล่นที่หน้าจอที่ 2</h2>
-              <p className="text-gray-600 mb-4">วิดีโอกำลังเล่นบนหน้าจอ Dual Screen</p>
+              {/* Share Room Button */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  localStorage.removeItem('youoke-dual-active');
-                  setIsDualMode(false);
+                  setIsShareRoomModalOpen(true);
                 }}
-                className="btn btn-sm btn-primary"
+                className="w-full max-w-sm px-4 py-3 bg-white hover:bg-gray-100 text-primary rounded-xl font-bold transition-all hover:scale-105 flex items-center justify-center gap-2 shadow-2xl border-2 border-white/50"
               >
-                ปิดโหมด 2 หน้าจอ
+                <UserGroupIcon className="w-5 h-5" />
+                <span>เชิญเพื่อน - แชร์ห้อง</span>
               </button>
             </div>
-          </div>
-        ) : !videoId ? (
-          <div
-            className="h-full w-full flex items-center justify-center bg-black"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            }}
-          >
-            <Image
-              src="/assets/icons/icon.svg"
-              width={48}
-              height={48}
-              className=""
-              alt="KaraTube's Logo"
-            />
-          </div>
-        ) : (
-          <>
-            {/* YouTube Player */}
-            <YouTube
-              ref={playerRef}
-              videoId={videoId}
-              className={`w-full bg-black ${
-                !isFullscreen
+          ) : isGoogleCastConnected && !isMoniter ? (
+            <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-accent/20 to-primary/20 backdrop-blur-sm p-4">
+              <div className="text-center p-4 bg-white/80 backdrop-blur-sm rounded-lg w-full max-w-sm">
+                <div className="text-4xl mb-2">📡</div>
+                <h2 className="text-lg font-bold mb-1 text-gray-800">กำลัง Cast ไป</h2>
+                <p className="text-sm font-semibold text-primary mb-2 truncate">
+                  {receiverName || 'Chromecast'}
+                </p>
+                <p className="text-xs text-gray-600 mb-3">
+                  วิดีโอกำลังเล่นบนทีวี - ใช้ปุ่มด้านล่างเพื่อควบคุม
+                </p>
+                <button
+                  onClick={(e) => {
+                    const debugInfo = {
+                      isGoogleCastConnected,
+                      disconnectExists: !!disconnectGoogleCast,
+                    };
+                    console.log('🎯 Disconnect button clicked!', debugInfo);
+                    addDebugLog('🎯 Disconnect button clicked', debugInfo);
+                    e.stopPropagation(); // Prevent fullscreen trigger
+                    disconnectGoogleCast();
+                    console.log('📡 Disconnecting from Google Cast...');
+                    addDebugLog('📡 Disconnecting from Google Cast');
+                    addToast('ตัดการเชื่อมต่อ Google Cast แล้ว');
+                  }}
+                  className="btn btn-sm btn-error gap-2"
+                >
+                  <XMarkIcon className="w-4 h-4" />
+                  ปิด Cast
+                </button>
+              </div>
+            </div>
+          ) : isDualMode && !isMoniter ? (
+            <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20 backdrop-blur-sm">
+              <div className="text-center p-8 bg-base-100/90 rounded-xl shadow-2xl">
+                <div className="text-6xl mb-4">🖥️</div>
+                <h2 className="text-3xl font-bold mb-2 text-primary">กำลังเล่นที่หน้าจอที่ 2</h2>
+                <p className="text-gray-600 mb-4">วิดีโอกำลังเล่นบนหน้าจอ Dual Screen</p>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    localStorage.removeItem('youoke-dual-active');
+                    setIsDualMode(false);
+                  }}
+                  className="btn btn-sm btn-primary"
+                >
+                  ปิดโหมด 2 หน้าจอ
+                </button>
+              </div>
+            </div>
+          ) : !videoId ? (
+            <div
+              className="h-full w-full flex items-center justify-center bg-black"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+            >
+              <Image
+                src="/assets/icons/icon.svg"
+                width={48}
+                height={48}
+                className=""
+                alt="KaraTube's Logo"
+              />
+            </div>
+          ) : (
+            <>
+              {/* YouTube Player */}
+              <YouTube
+                ref={playerRef}
+                videoId={videoId}
+                className={`w-full bg-black ${!isFullscreen
                   ? "aspect-video cursor-zoom-in"
                   : "h-[calc(100dvh)] cursor-zoom-out"
-              } `}
-              iframeClassName={`w-full h-[calc(100dvh)] pointer-events-none`}
-              style={{
-                width: "100%",
-                height: "100%",
-                position: UseFullScreenCss ? "fixed" : "absolute",
-                zIndex: UseFullScreenCss ? 20 : 0,
-              }}
-              loading="lazy"
-              opts={{
-                playerVars: {
-                  autoplay:
-                    isMoniter && playerState === PlayerStates.PAUSED ? 0 : 1,
-                  controls: 0,
-                  disablekb: 1,
-                  enablejsapi: 1,
-                  modestbranding: 1,
-                  playsinline: isIphone && isFullScreenIphone ? 0 : 1,
-                  fs: 0, // Disable YouTube native fullscreen
-                },
-              }}
-              onStateChange={(ev) => {
-                updatePlayerState(ev.target);
-              }}
-              onEnd={() => {
-                nextSong();
-              }}
-            />
+                  } `}
+                iframeClassName={`w-full h-[calc(100dvh)] pointer-events-none`}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  position: UseFullScreenCss ? "fixed" : "absolute",
+                  zIndex: UseFullScreenCss ? 20 : 0,
+                }}
+                loading="lazy"
+                opts={{
+                  playerVars: {
+                    autoplay:
+                      isMoniter && playerState === PlayerStates.PAUSED ? 0 : 1,
+                    controls: 0,
+                    disablekb: 1,
+                    enablejsapi: 1,
+                    modestbranding: 1,
+                    playsinline: isIphone && isFullScreenIphone ? 0 : 1,
+                    fs: 0, // Disable YouTube native fullscreen
+                  },
+                }}
+                onStateChange={(ev) => {
+                  updatePlayerState(ev.target);
+                }}
+                onEnd={() => {
+                  nextSong();
+                }}
+              />
 
-            {/* Controls Overlay - ONLY for Monitor (inside player container) */}
-            {isMoniter && (
-              <div
-                className={`absolute inset-x-0 bottom-0 flex flex-row p-1 items-center z-30 transition-opacity duration-300 ${
-                  isMouseMoving ? "opacity-100" : ""
-                } ${
-                  (UseFullScreenCss || !isMouseMoving) &&
-                  (isFullscreen || isFullScreenIphone)
-                    ? "opacity-0"
-                    : ""
-                }`}
-                style={
-                  UseFullScreenCss || isMoniter
-                    ? {
+              {/* Controls Overlay - ONLY for Monitor (inside player container) */}
+              {isMoniter && (
+                <div
+                  className={`absolute inset-x-0 bottom-0 flex flex-row p-1 items-center z-30 transition-opacity duration-300 ${isMouseMoving ? "opacity-100" : ""
+                    } ${(UseFullScreenCss || !isMouseMoving) &&
+                      (isFullscreen || isFullScreenIphone)
+                      ? "opacity-0"
+                      : ""
+                    }`}
+                  style={
+                    UseFullScreenCss || isMoniter
+                      ? {
                         position: "fixed",
                         left: 0,
                         right: 0,
                         bottom: 0,
                         background: "white",
                       }
-                    : {
+                      : {
                         background: "rgba(0, 0, 0, 0.5)",
                       }
-                }
-                onClick={(e) => e.stopPropagation()}
-              >
-                {buttons.map((btn) => {
-                  return (
-                    <button
-                      key={btn.label}
-                      className="btn btn-ghost font-normal text-primary flex h-auto flex-col flex-1 overflow-hidden text-[10px] 2xl:text-xs p-1 gap-0.5 hover:bg-base-200"
-                      onClick={btn.onClick}
-                    >
-                      <btn.icon className="w-5 h-5 2xl:w-6 2xl:h-6" />
-                      {btn.label}
-                    </button>
-                  );
-                })}
-                {extra}
-              </div>
-            )}
-          </>
+                  }
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {buttons.map((btn) => {
+                    return (
+                      <button
+                        key={btn.label}
+                        className="btn btn-ghost font-normal text-primary flex h-auto flex-col flex-1 overflow-hidden text-[10px] 2xl:text-xs p-1 gap-0.5 hover:bg-base-200"
+                        onClick={btn.onClick}
+                      >
+                        <btn.icon className="w-5 h-5 2xl:w-6 2xl:h-6" />
+                        {btn.label}
+                      </button>
+                    );
+                  })}
+                  {extra}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        {!isLogin && !isMoniter && <BottomAds />}
+        {!isLogin && !isMoniter && isShowAds && <VideoAds />}
+
+        {/* Exit Fullscreen Button - Always visible in fullscreen mode */}
+        {!isMoniter && videoId && (isFullscreen || isFullScreenIphone) && (
+          <button
+            onClick={handleFullscreenButtonClick}
+            className="fixed top-4 right-4 z-[100] btn btn-circle btn-sm bg-black/50 text-white border-white/30 hover:bg-black/70"
+            style={UseFullScreenCss ? { position: "fixed" } : {}}
+          >
+            <ArrowsPointingInIcon className="w-5 h-5" />
+          </button>
         )}
-      </div>
 
-      {!isLogin && !isMoniter && <BottomAds />}
-      {!isLogin && !isMoniter && isShowAds && <VideoAds />}
-
-      {/* Exit Fullscreen Button - Always visible in fullscreen mode */}
-      {!isMoniter && videoId && (isFullscreen || isFullScreenIphone) && (
-        <button
-          onClick={handleFullscreenButtonClick}
-          className="fixed top-4 right-4 z-[100] btn btn-circle btn-sm bg-black/50 text-white border-white/30 hover:bg-black/70"
-          style={UseFullScreenCss ? { position: "fixed" } : {}}
-        >
-          <ArrowsPointingInIcon className="w-5 h-5" />
-        </button>
-      )}
-
-      {/* Controls for Remote - OUTSIDE player container (original position) */}
-      {!isMoniter && videoId && (
-        <div
-          className={`flex-shrink-0 flex flex-row md:w-full p-1 items-center z-20 ${
-            isMouseMoving ? "hover:opacity-100" : ""
-          } ${
-            (UseFullScreenCss || !isMouseMoving) &&
-            (isFullscreen || isFullScreenIphone)
-              ? "opacity-0"
-              : ""
-          }`}
-          style={
-            UseFullScreenCss
-              ? {
+        {/* Controls for Remote - OUTSIDE player container (original position) */}
+        {!isMoniter && videoId && (
+          <div
+            className={`flex-shrink-0 flex flex-row md:w-full p-1 items-center z-20 ${isMouseMoving ? "hover:opacity-100" : ""
+              } ${(UseFullScreenCss || !isMouseMoving) &&
+                (isFullscreen || isFullScreenIphone)
+                ? "opacity-0"
+                : ""
+              }`}
+            style={
+              UseFullScreenCss
+                ? {
                   position: "fixed",
                   left: 0,
                   right: 0,
                   bottom: 0,
                   background: "initial",
                 }
-              : {}
-          }
-        >
-          {buttons.map((btn) => {
-            return (
-              <button
-                key={btn.label}
-                className="btn btn-ghost font-normal text-primary flex h-auto flex-col flex-1 overflow-hidden text-[10px] 2xl:text-xs p-1 gap-0.5 hover:bg-base-200"
-                onClick={btn.onClick}
-              >
-                <btn.icon className="w-5 h-5 2xl:w-6 2xl:h-6" />
-                {btn.label}
-              </button>
-            );
-          })}
-          {extra}
-        </div>
-      )}
+                : {}
+            }
+          >
+            {buttons.map((btn) => {
+              return (
+                <button
+                  key={btn.label}
+                  className="btn btn-ghost font-normal text-primary flex h-auto flex-col flex-1 overflow-hidden text-[10px] 2xl:text-xs p-1 gap-0.5 hover:bg-base-200"
+                  onClick={btn.onClick}
+                >
+                  <btn.icon className="w-5 h-5 2xl:w-6 2xl:h-6" />
+                  {btn.label}
+                </button>
+              );
+            })}
+            {extra}
+          </div>
+        )}
 
-      {/* Debug Overlay */}
-      <DebugOverlay
-        isVisible={isDebugOverlayOpen}
-        onClose={() => setIsDebugOverlayOpen(false)}
-      />
+        {/* Debug Overlay */}
+        <DebugOverlay
+          isVisible={isDebugOverlayOpen}
+          onClose={() => setIsDebugOverlayOpen(false)}
+        />
 
-      {/* Share Room Modal */}
-      <ShareRoomModal
-        isOpen={isShareRoomModalOpen}
-        onClose={() => setIsShareRoomModalOpen(false)}
-        roomCode={roomCode}
-        shareUrl={baseUrl ? `${baseUrl}/?castRoom=${roomCode}` : ''}
-      />
+        {/* Share Room Modal */}
+        <ShareRoomModal
+          isOpen={isShareRoomModalOpen}
+          onClose={() => setIsShareRoomModalOpen(false)}
+          roomCode={roomCode}
+          shareUrl={baseUrl ? `${baseUrl}/?castRoom=${roomCode}` : ''}
+        />
 
-      {/* Guest Limit Modal */}
-      <GuestLimitModal
-        isOpen={showGuestLimitModal}
-        onClose={() => setShowGuestLimitModal(false)}
-        playedCount={playedCount}
-        guestLimit={guestLimit}
-      />
+        {/* Guest Limit Modal */}
+        <GuestLimitModal
+          isOpen={showGuestLimitModal}
+          onClose={() => setShowGuestLimitModal(false)}
+          playedCount={playedCount}
+          guestLimit={guestLimit}
+        />
 
-      {/* Debug Toggle Button - Removed to avoid blocking Dual Screen button */}
+        {/* Debug Toggle Button - Removed to avoid blocking Dual Screen button */}
+      </div>
     </div>
   );
 }
