@@ -254,10 +254,12 @@ function YoutubePlayer({
     return () => window.removeEventListener('storage', handleStorage);
   }, [isMoniter]);
 
-  const UseFullScreenCss = isFullscreen || isFullScreenIphone;
   const isIOS =
     /iPad|iPhone/i.test(navigator.userAgent) ||
     (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const isAndroid = /Android/i.test(navigator.userAgent);
+
+  const UseFullScreenCss = isFullscreen || isFullScreenIphone;
 
   async function updatePlayerState(player: YouTubePlayer) {
     if (!player) return;
@@ -385,8 +387,8 @@ function YoutubePlayer({
 
   // Event handler for triggering fullscreen on a user gesture
   const handleFullscreenButtonClick = () => {
-    // Mobile or iOS: Use CSS Fullscreen Overlay (Robust)
-    if (isMobile || isIOS) {
+    // Mobile or iOS or Android: Use CSS Fullscreen Overlay (Robust)
+    if (isMobile || isIOS || isAndroid) {
       setIsFullScreenIphone(!isFullScreenIphone);
       return;
     }
@@ -1277,8 +1279,8 @@ function YoutubePlayer({
       ref={fullscreenRef}
       id="youtubePlayer"
       className={`${isFullscreen || isFullScreenIphone
-          ? "fixed inset-0 z-[9999] bg-black block w-screen h-screen"
-          : "relative bg-white"
+        ? "fixed inset-0 z-[9999] bg-black block w-screen h-screen"
+        : "relative bg-white"
         } ${className}`}
     >
       <Alert
