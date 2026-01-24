@@ -812,14 +812,14 @@ function HomePage() {
                   <div className="relative z-10 flex w-full h-full">
                     {/* Option 1: Song (Left) */}
                     <div className={`flex-1 flex items-center justify-center transition-colors duration-200 ${isKaraoke ? 'text-primary font-bold' : 'text-base-content/60'}`}>
-                      <MusicalNoteIcon className="w-5 h-5 md:hidden" />
-                      <span className="hidden md:inline text-sm">เพลง</span>
+                      <MusicalNoteIcon className="w-4 h-4 md:hidden" />
+                      <span className="hidden md:inline text-xs">เพลง</span>
                     </div>
 
                     {/* Option 2: Karaoke (Right) */}
                     <div className={`flex-1 flex items-center justify-center transition-colors duration-200 ${!isKaraoke ? 'text-error font-bold' : 'text-base-content/60'}`}>
-                      <MicrophoneIcon className="w-5 h-5 md:hidden" />
-                      <span className="hidden md:inline text-sm">คาราโอเกะ</span>
+                      <MicrophoneIcon className="w-4 h-4 md:hidden" />
+                      <span className="hidden md:inline text-xs">คาราโอเกะ</span>
                     </div>
                   </div>
                 </div>
