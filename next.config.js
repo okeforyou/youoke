@@ -1,6 +1,16 @@
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
-})
+// Safe require to prevent crashes in production where devDependencies are missing
+let withBundleAnalyzer = (config) => config;
+
+if (process.env.ANALYZE === 'true') {
+  try {
+    withBundleAnalyzer = require('@next/bundle-analyzer')({
+      enabled: true,
+    });
+  } catch (e) {
+    // Fail silently if module is missing (production environment)
+    console.warn('Bundle analyzer not enabled: @next/bundle-analyzer not found');
+  }
+}
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
