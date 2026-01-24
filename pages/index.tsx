@@ -762,465 +762,464 @@ function HomePage() {
                 </div>
               </label>
             </div>
-          </div>
-          {/* END Search Bar */}
+            {/* END Search Bar */}
 
-          {/* MOBILE PLAYER - Embedded Top Style */}
-          {!isXlScreen && curVideoId && (
-            <div className="w-full shrink-0 bg-black z-40 sticky top-0">
-              <YoutubePlayer
-                videoId={curVideoId}
-                nextSong={playNext}
-                className="aspect-video w-full"
-                externalPlayerRef={mobilePlayerRef}
-              />
-              {/* Queue toggle button below player */}
-              <div className="flex items-center justify-between px-3 py-2 bg-base-200 border-b border-base-300">
-                <div className="text-sm font-semibold truncate flex-1 pr-2">
-                  {currentVideo?.title || "กำลังเล่น"}
+            {/* MOBILE PLAYER - Embedded Top Style */}
+            {!isXlScreen && curVideoId && (
+              <div className="w-full shrink-0 bg-black z-40 sticky top-0">
+                <YoutubePlayer
+                  videoId={curVideoId}
+                  nextSong={playNext}
+                  className="aspect-video w-full"
+                  externalPlayerRef={mobilePlayerRef}
+                />
+                {/* Queue toggle button below player */}
+                <div className="flex items-center justify-between px-3 py-2 bg-base-200 border-b border-base-300">
+                  <div className="text-sm font-semibold truncate flex-1 pr-2">
+                    {currentVideo?.title || "กำลังเล่น"}
+                  </div>
+                  <label htmlFor="modal-playlist" className="btn btn-xs btn-ghost gap-1">
+                    <ListBulletIcon className="w-4 h-4" />
+                    คิวเพลง ({displayPlaylist?.length || 0})
+                  </label>
                 </div>
-                <label htmlFor="modal-playlist" className="btn btn-xs btn-ghost gap-1">
-                  <ListBulletIcon className="w-4 h-4" />
-                  คิวเพลง ({displayPlaylist?.length || 0})
-                </label>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Recommend Videos List */}
-          <div
-            className={`relative grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-3 2xl:grid-cols-4 auto-rows-min gap-3 w-full h-screen px-4 py-2 pb-20 lg:pb-4 ${scrollbarCls}`}
-            style={{ overflowY: "scroll" }}
-          >
-            {/* START Video Row Item */}
-
-            {
-              [
-                <SearchResultGrid
-                  key={0}
-                  onClick={(video) => setSelectedVideo(video)}
-                />,
-                <ListSingerGrid key={1} showTab={false} />,
-                <ListTopicsGrid key={2} showTab={false} />,
-                <ListPlaylistsGrid key={3} />,
-              ][activeIndex]
-            }
-
-            {/* END Video Row Item */}
-          </div>
-          {/* Put this part before </body> tag */}
-
-          <input
-            type="checkbox"
-            id="modal-playlist"
-            className="modal-toggle"
-          />
-          <div className="modal modal-bottom sm:modal-middle">
-            <div className="flex flex-col modal-box max-h-[50%] w-full max-w-full overflow-hidden bg-base-200 relative px-2 pt-10 pb-2">
-              {/* Close button X */}
-              <label
-                htmlFor="modal-playlist"
-                className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-50"
-              >
-                ✕
-              </label>
-
-              <div className="relative h-full overflow-y-auto flex flex-col">
-                {PlaylistScreen}
-              </div>
-            </div>
-          </div>
-          <input
-            type="checkbox"
-            id="modal-video"
-            className="modal-toggle"
-          />
-          <label
-            htmlFor="modal-video"
-            className="modal modal-bottom sm:modal-middle cursor-pointer"
-          >
-            <label
-              className="modal-box relative px-4 py-4 pb-12 sm:p-4 bg-base-100"
-              htmlFor=""
+            {/* Recommend Videos List */}
+            <div
+              className={`relative grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-3 2xl:grid-cols-4 auto-rows-min gap-3 w-full h-screen px-4 py-2 pb-20 lg:pb-4 ${scrollbarCls}`}
+              style={{ overflowY: "scroll" }}
             >
-              <div className="card gap-3 min-h-min">
-                <figure className="relative w-full aspect-video rounded-lg overflow-hidden">
-                  <Image
-                    unoptimized
-                    src={
-                      selectedVideo?.videoThumbnails?.find((t) => t.quality === "medium")?.url ||
-                      selectedVideo?.videoThumbnails?.[0]?.url ||
-                      `https://i.ytimg.com/vi/${selectedVideo?.videoId}/mqdefault.jpg`
-                    }
-                    priority
-                    alt={selectedVideo?.title}
-                    layout="fill"
-                    className="bg-gray-400 object-cover"
-                  />
-                </figure>
-                <div className="flex flex-col gap-1">
-                  <h2 className="font-semibold text-sm 2xl:text-xl line-clamp-2 text-gray-900">
-                    {selectedVideo?.title}
-                  </h2>
-                  <p className="text-xs 2xl:text-base text-gray-600">
-                    {selectedVideo?.author}
-                  </p>
+              {/* START Video Row Item */}
+
+              {
+                [
+                  <SearchResultGrid
+                    key={0}
+                    onClick={(video) => setSelectedVideo(video)}
+                  />,
+                  <ListSingerGrid key={1} showTab={false} />,
+                  <ListTopicsGrid key={2} showTab={false} />,
+                  <ListPlaylistsGrid key={3} />,
+                ][activeIndex]
+              }
+
+              {/* END Video Row Item */}
+            </div>
+            {/* Put this part before </body> tag */}
+
+            <input
+              type="checkbox"
+              id="modal-playlist"
+              className="modal-toggle"
+            />
+            <div className="modal modal-bottom sm:modal-middle">
+              <div className="flex flex-col modal-box max-h-[50%] w-full max-w-full overflow-hidden bg-base-200 relative px-2 pt-10 pb-2">
+                {/* Close button X */}
+                <label
+                  htmlFor="modal-playlist"
+                  className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-50"
+                >
+                  ✕
+                </label>
+
+                <div className="relative h-full overflow-y-auto flex flex-col">
+                  {PlaylistScreen}
                 </div>
-                <div className="card-body p-0">
-                  <div className="card-actions">
-                    <label
-                      htmlFor="modal-video"
-                      className="btn btn-primary flex-auto gap-2 btn-sm"
-                      onClick={() => addVideoToPlaylist(selectedVideo)}
-                    >
-                      <PlusIcon className="h-4 w-4" />
-                      {playlist?.length || !!curVideoId
-                        ? "เพิ่มในคิว"
-                        : "เล่นเลย"}
-                    </label>
-                    <label
-                      htmlFor="modal-video"
-                      className="btn btn-primary flex-auto gap-2 btn-sm"
-                      onClick={() => priorityVideo(selectedVideo)}
-                    >
-                      <BarsArrowUpIcon className="h-4 w-4" />
-                      เล่นเป็นคิวแรก
-                    </label>
-                    {!!user.uid && (
+              </div>
+            </div>
+            <input
+              type="checkbox"
+              id="modal-video"
+              className="modal-toggle"
+            />
+            <label
+              htmlFor="modal-video"
+              className="modal modal-bottom sm:modal-middle cursor-pointer"
+            >
+              <label
+                className="modal-box relative px-4 py-4 pb-12 sm:p-4 bg-base-100"
+                htmlFor=""
+              >
+                <div className="card gap-3 min-h-min">
+                  <figure className="relative w-full aspect-video rounded-lg overflow-hidden">
+                    <Image
+                      unoptimized
+                      src={
+                        selectedVideo?.videoThumbnails?.find((t) => t.quality === "medium")?.url ||
+                        selectedVideo?.videoThumbnails?.[0]?.url ||
+                        `https://i.ytimg.com/vi/${selectedVideo?.videoId}/mqdefault.jpg`
+                      }
+                      priority
+                      alt={selectedVideo?.title}
+                      layout="fill"
+                      className="bg-gray-400 object-cover"
+                    />
+                  </figure>
+                  <div className="flex flex-col gap-1">
+                    <h2 className="font-semibold text-sm 2xl:text-xl line-clamp-2 text-gray-900">
+                      {selectedVideo?.title}
+                    </h2>
+                    <p className="text-xs 2xl:text-base text-gray-600">
+                      {selectedVideo?.author}
+                    </p>
+                  </div>
+                  <div className="card-body p-0">
+                    <div className="card-actions">
                       <label
                         htmlFor="modal-video"
                         className="btn btn-primary flex-auto gap-2 btn-sm"
-                        onClick={() => {
-                          addPlaylistModalRef?.current.open();
-                        }}
+                        onClick={() => addVideoToPlaylist(selectedVideo)}
                       >
-                        <BookmarkIcon className="h-4 w-4" />
-                        เพลย์ลิสต์
+                        <PlusIcon className="h-4 w-4" />
+                        {playlist?.length || !!curVideoId
+                          ? "เพิ่มในคิว"
+                          : "เล่นเลย"}
                       </label>
-                    )}
+                      <label
+                        htmlFor="modal-video"
+                        className="btn btn-primary flex-auto gap-2 btn-sm"
+                        onClick={() => priorityVideo(selectedVideo)}
+                      >
+                        <BarsArrowUpIcon className="h-4 w-4" />
+                        เล่นเป็นคิวแรก
+                      </label>
+                      {!!user.uid && (
+                        <label
+                          htmlFor="modal-video"
+                          className="btn btn-primary flex-auto gap-2 btn-sm"
+                          onClick={() => {
+                            addPlaylistModalRef?.current.open();
+                          }}
+                        >
+                          <BookmarkIcon className="h-4 w-4" />
+                          เพลย์ลิสต์
+                        </label>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </label>
+            </label>
+            <Alert
+              ref={alertRef}
+              timer={2500}
+              headline="สำเร็จ"
+              headlineColor="text-green-600"
+              bgColor="bg-green-100"
+              content={<span className="text-sm">เพิ่มเพลย์ลิสต์สำเร็จ</span>}
+              icon={<CheckCircleIcon />}
+            />
+            <Modal
+              ref={addPlaylistModalRef}
+              title={<>เลือกเพลย์ลิสต์ที่ต้องการ</>}
+              body={
+                <div className="relative px-8 flex-auto w-96">
+                  <div className="pb-4 text-gray-900">{selectedVideo?.title}</div>
+
+                  {/* Create New Playlist Button */}
+                  <button
+                    className="w-full btn btn-outline btn-primary btn-sm mb-3 gap-2"
+                    onClick={() => {
+                      createPlaylistModalRef.current.open();
+                    }}
+                  >
+                    <PlusIcon className="w-4 h-4" />
+                    สร้างเพลย์ลิสต์ใหม่
+                  </button>
+
+                  <div className="border-t border-gray-300 mb-3"></div>
+
+                  <div className="py-2 overflow-y-auto max-h-64">
+                    {myPlaylist.map((p, index) => (
+                      <label
+                        className="label cursor-pointer hover:bg-gray-300 rounded-lg p-2 transition-all duration-150"
+                        key={"pl-" + index}
+                        onClick={() =>
+                          addVideoToMyPlaylist(p.id, selectedVideo)
+                        }
+                      >
+                        <span className="label-text flex items-center gap-2">
+                          <ChevronRightIcon className="w-4 h-4" /> {p.name}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              }
+              footer={
+                <button
+                  className="font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+                  onClick={getMyPlaylists}
+                >
+                  รีเฟรช
+                </button>
+              }
+            />
+
+            {/* Modal สร้างเพลย์ลิสต์ใหม่ */}
+            <Modal
+              ref={createPlaylistModalRef}
+              title={<>สร้างเพลย์ลิสต์</>}
+              body={
+                <div className="relative p-6 flex-auto w-96 grid gap-2">
+                  <input
+                    id="new-playlist-name"
+                    className="py-3 px-4 block w-full bg-gray-100 rounded-lg text-sm disabled:opacity-50 border-0 disabled:pointer-events-none"
+                    placeholder="ชื่อเพลย์ลิสต์"
+                    required
+                    value={newPlaylistData.name}
+                    onChange={(e) => {
+                      setNewPlaylistData({
+                        ...newPlaylistData,
+                        name: e.target.value,
+                      });
+                    }}
+                  />
+                  <select
+                    className="py-3 px-4 pe-9 block w-full bg-gray-100 border-transparent rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
+                    value={newPlaylistData.type}
+                    onChange={(e) => {
+                      setNewPlaylistData({
+                        ...newPlaylistData,
+                        type: e.target.value,
+                      });
+                    }}
+                  >
+                    <option>ส่วนตัว</option>
+                    <option>สาธารณะ</option>
+                  </select>
+                </div>
+              }
+              footer={
+                <button
+                  className="text-white btn-primary font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                  type="submit"
+                  onClick={handleCreateNewPlaylist}
+                  disabled={isCreatingPlaylist}
+                >
+                  {isCreatingPlaylist ? "กำลังสร้าง..." : "สร้าง"}
+                </button>
+              }
+            />
+          </div>
+        </div>
+
+        {/* END Recommend Videos List */}
+
+        {/* Video Player + Queue Section - Desktop XL+ Only */}
+        {
+          isXlScreen && !showVideoPlayerModal && (
+            <aside className="hidden xl:flex xl:w-96 2xl:w-[450px] flex-col overflow-hidden border-l border-base-300 bg-base-100">
+              {/* Video Player */}
+              <YoutubePlayer
+                videoId={curVideoId}
+                nextSong={playNext}
+                className="flex-shrink-0"
+              />
+
+              {/* Queue/Playlist */}
+              <div className={`flex-1 w-full px-3 py-2 overflow-y-scroll flex flex-col ${scrollbarCls}`}>
+                {PlaylistScreen}
+              </div>
+            </aside>
+          )
+        }
+      </main >
+
+      {/* Cast Mode Selector Modal */}
+      < CastModeSelector
+        isOpen={showCastModeSelector}
+        onClose={() => setShowCastModeSelector(false)
+        }
+        isCastAvailable={isCastAvailable}
+        isMobile={isMobile}
+        onSelectWebMonitor={() => {
+          setShowCastModeSelector(false);
+          // Open YoutubePlayer Cast overlay (handled by YoutubePlayer component)
+          const castButton = document.querySelector('[data-cast-button]') as HTMLElement;
+          if (castButton) castButton.click();
+        }}
+        onSelectDual={() => {
+          setShowCastModeSelector(false);
+          // Open dual screen in new tab
+          window.open('/dual', '_blank');
+        }}
+        onSelectGoogleCast={() => {
+          setShowCastModeSelector(false);
+          // Set playlist and connect to Chromecast
+          setGoogleCastPlaylist(playlist);
+          connectGoogleCast();
+          console.log('📡 Google Cast: Connecting to Chromecast...');
+        }}
+        onSelectYouTube={() => {
+          setShowCastModeSelector(false);
+          // Generate YouTube URL and open it
+          const videoIds = playlist.map(v => v.videoId).join(',');
+          const youtubeURL = `https://www.youtube.com/watch_videos?video_ids=${videoIds}`;
+          console.log('📱 Opening YouTube app:', youtubeURL);
+          window.open(youtubeURL, '_blank');
+        }}
+      />
+
+      {/* Share Room Modal */}
+      {
+        showShareModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b">
+                <h3 className="text-lg font-semibold text-gray-900">แชร์ห้องให้เพื่อน</h3>
+                <button
+                  onClick={() => setShowShareModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <XMarkIcon className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* Body */}
+              <div className="p-4 space-y-4">
+                <p className="text-sm text-gray-600">
+                  แชร์ลิงก์นี้ให้เพื่อนๆ เพื่อให้เข้าร่วมห้องและควบคุม Monitor ด้วยกันได้
+                </p>
+
+                {/* QR Code */}
+                {baseUrl && room && (
+                  <div className="flex justify-center">
+                    <div className="bg-white p-4 rounded-lg shadow-md">
+                      <QRCodeSVG
+                        value={`${baseUrl}/?castRoom=${room}`}
+                        size={180}
+                        level="M"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Share Link */}
+                <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      value={`${baseUrl}/?castRoom=${room}`}
+                      className="input input-sm input-bordered flex-1 text-xs bg-white"
+                    />
+                    <button
+                      onClick={handleCopyShareLink}
+                      className="btn btn-sm btn-primary gap-1"
+                    >
+                      {copiedLink ? (
+                        <>
+                          <CheckCircleIcon className="w-4 h-4" />
+                          คัดลอกแล้ว
+                        </>
+                      ) : (
+                        <>
+                          <ClipboardDocumentIcon className="w-4 h-4" />
+                          คัดลอก
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  <div className="text-xs text-gray-500 text-center">
+                    รหัสห้อง: <span className="font-mono font-bold text-primary text-lg">{room}</span>
                   </div>
                 </div>
               </div>
-            </label>
-          </label>
-          <Alert
-            ref={alertRef}
-            timer={2500}
-            headline="สำเร็จ"
-            headlineColor="text-green-600"
-            bgColor="bg-green-100"
-            content={<span className="text-sm">เพิ่มเพลย์ลิสต์สำเร็จ</span>}
-            icon={<CheckCircleIcon />}
-          />
-          <Modal
-            ref={addPlaylistModalRef}
-            title={<>เลือกเพลย์ลิสต์ที่ต้องการ</>}
-            body={
-              <div className="relative px-8 flex-auto w-96">
-                <div className="pb-4 text-gray-900">{selectedVideo?.title}</div>
 
-                {/* Create New Playlist Button */}
-                <button
-                  className="w-full btn btn-outline btn-primary btn-sm mb-3 gap-2"
-                  onClick={() => {
-                    createPlaylistModalRef.current.open();
-                  }}
-                >
-                  <PlusIcon className="w-4 h-4" />
-                  สร้างเพลย์ลิสต์ใหม่
-                </button>
-
-                <div className="border-t border-gray-300 mb-3"></div>
-
-                <div className="py-2 overflow-y-auto max-h-64">
-                  {myPlaylist.map((p, index) => (
-                    <label
-                      className="label cursor-pointer hover:bg-gray-300 rounded-lg p-2 transition-all duration-150"
-                      key={"pl-" + index}
-                      onClick={() =>
-                        addVideoToMyPlaylist(p.id, selectedVideo)
-                      }
-                    >
-                      <span className="label-text flex items-center gap-2">
-                        <ChevronRightIcon className="w-4 h-4" /> {p.name}
-                      </span>
-                    </label>
-                  ))}
-                </div>
+              {/* Footer */}
+              <div className="p-4 border-t bg-gray-50 rounded-b-lg">
+                <p className="text-xs text-gray-600">
+                  ⚠️ ลิงก์นี้จะให้ผู้อื่นควบคุม Monitor ของคุณได้ กรุณาแชร์ให้เฉพาะคนที่ไว้ใจ
+                </p>
               </div>
-            }
-            footer={
-              <button
-                className="font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
-                onClick={getMyPlaylists}
-              >
-                รีเฟรช
-              </button>
-            }
-          />
+            </div>
+          </div>
+        )
+      }
 
-          {/* Modal สร้างเพลย์ลิสต์ใหม่ */}
-          <Modal
-            ref={createPlaylistModalRef}
-            title={<>สร้างเพลย์ลิสต์</>}
-            body={
-              <div className="relative p-6 flex-auto w-96 grid gap-2">
-                <input
-                  id="new-playlist-name"
-                  className="py-3 px-4 block w-full bg-gray-100 rounded-lg text-sm disabled:opacity-50 border-0 disabled:pointer-events-none"
-                  placeholder="ชื่อเพลย์ลิสต์"
-                  required
-                  value={newPlaylistData.name}
-                  onChange={(e) => {
-                    setNewPlaylistData({
-                      ...newPlaylistData,
-                      name: e.target.value,
-                    });
-                  }}
-                />
-                <select
-                  className="py-3 px-4 pe-9 block w-full bg-gray-100 border-transparent rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
-                  value={newPlaylistData.type}
-                  onChange={(e) => {
-                    setNewPlaylistData({
-                      ...newPlaylistData,
-                      type: e.target.value,
-                    });
-                  }}
-                >
-                  <option>ส่วนตัว</option>
-                  <option>สาธารณะ</option>
-                </select>
-              </div>
-            }
-            footer={
-              <button
-                className="text-white btn-primary font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
-                type="submit"
-                onClick={handleCreateNewPlaylist}
-                disabled={isCreatingPlaylist}
-              >
-                {isCreatingPlaylist ? "กำลังสร้าง..." : "สร้าง"}
-              </button>
-            }
-          />
-        </div>
-    </div>
-
-          {/* END Recommend Videos List */ }
-
-  {/* Video Player + Queue Section - Desktop XL+ Only */ }
-  {
-    isXlScreen && !showVideoPlayerModal && (
-      <aside className="hidden xl:flex xl:w-96 2xl:w-[450px] flex-col overflow-hidden border-l border-base-300 bg-base-100">
-        {/* Video Player */}
-        <YoutubePlayer
-          videoId={curVideoId}
-          nextSong={playNext}
-          className="flex-shrink-0"
-        />
-
-        {/* Queue/Playlist */}
-        <div className={`flex-1 w-full px-3 py-2 overflow-y-scroll flex flex-col ${scrollbarCls}`}>
-          {PlaylistScreen}
-        </div>
-      </aside>
-    )
-  }
-      </main >
-
-    {/* Cast Mode Selector Modal */ }
-    < CastModeSelector
-  isOpen = { showCastModeSelector }
-  onClose = {() => setShowCastModeSelector(false)
-}
-isCastAvailable = { isCastAvailable }
-isMobile = { isMobile }
-onSelectWebMonitor = {() => {
-  setShowCastModeSelector(false);
-  // Open YoutubePlayer Cast overlay (handled by YoutubePlayer component)
-  const castButton = document.querySelector('[data-cast-button]') as HTMLElement;
-  if (castButton) castButton.click();
-}}
-onSelectDual = {() => {
-  setShowCastModeSelector(false);
-  // Open dual screen in new tab
-  window.open('/dual', '_blank');
-}}
-onSelectGoogleCast = {() => {
-  setShowCastModeSelector(false);
-  // Set playlist and connect to Chromecast
-  setGoogleCastPlaylist(playlist);
-  connectGoogleCast();
-  console.log('📡 Google Cast: Connecting to Chromecast...');
-}}
-onSelectYouTube = {() => {
-  setShowCastModeSelector(false);
-  // Generate YouTube URL and open it
-  const videoIds = playlist.map(v => v.videoId).join(',');
-  const youtubeURL = `https://www.youtube.com/watch_videos?video_ids=${videoIds}`;
-  console.log('📱 Opening YouTube app:', youtubeURL);
-  window.open(youtubeURL, '_blank');
-}}
-      />
-
-{/* Share Room Modal */ }
-{
-  showShareModal && (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b">
-          <h3 className="text-lg font-semibold text-gray-900">แชร์ห้องให้เพื่อน</h3>
-          <button
-            onClick={() => setShowShareModal(false)}
-            className="text-gray-400 hover:text-gray-600"
+      {/* Mobile Video Player - Always rendered (hidden when modal closed) */}
+      {
+        !isXlScreen && curVideoId && (
+          <div
+            className={`fixed xl:hidden transition-all duration-300 ${showVideoPlayerModal
+              ? 'inset-0 z-[60] bg-black opacity-100 pointer-events-auto'
+              : 'bottom-0 left-0 right-0 opacity-0 pointer-events-none -z-10'
+              }`}
           >
-            <XMarkIcon className="w-6 h-6" />
-          </button>
-        </div>
+            <div className="h-full flex flex-col">
+              {/* Close Button - Only visible when modal open */}
+              {showVideoPlayerModal && (
+                <div className="flex justify-between items-center p-4 bg-black/90">
+                  <h3 className="text-white font-semibold">กำลังเล่น</h3>
+                  <button
+                    onClick={() => setShowVideoPlayerModal(false)}
+                    className="btn btn-ghost btn-sm btn-circle text-white"
+                  >
+                    <XMarkIcon className="w-6 h-6" />
+                  </button>
+                </div>
+              )}
 
-        {/* Body */}
-        <div className="p-4 space-y-4">
-          <p className="text-sm text-gray-600">
-            แชร์ลิงก์นี้ให้เพื่อนๆ เพื่อให้เข้าร่วมห้องและควบคุม Monitor ด้วยกันได้
-          </p>
-
-          {/* QR Code */}
-          {baseUrl && room && (
-            <div className="flex justify-center">
-              <div className="bg-white p-4 rounded-lg shadow-md">
-                <QRCodeSVG
-                  value={`${baseUrl}/?castRoom=${room}`}
-                  size={180}
-                  level="M"
+              {/* Video Player - Always rendered */}
+              <div className="flex-1 flex flex-col overflow-hidden">
+                <YoutubePlayer
+                  videoId={curVideoId}
+                  nextSong={playNext}
+                  className="flex-shrink-0"
+                  externalPlayerRef={mobilePlayerRef}
                 />
-              </div>
-            </div>
-          )}
 
-          {/* Share Link */}
-          <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                readOnly
-                value={`${baseUrl}/?castRoom=${room}`}
-                className="input input-sm input-bordered flex-1 text-xs bg-white"
-              />
-              <button
-                onClick={handleCopyShareLink}
-                className="btn btn-sm btn-primary gap-1"
-              >
-                {copiedLink ? (
-                  <>
-                    <CheckCircleIcon className="w-4 h-4" />
-                    คัดลอกแล้ว
-                  </>
-                ) : (
-                  <>
-                    <ClipboardDocumentIcon className="w-4 h-4" />
-                    คัดลอก
-                  </>
+                {/* Playlist - Only visible when modal open */}
+                {showVideoPlayerModal && (
+                  <div className={`flex-1 overflow-y-auto bg-base-200 ${scrollbarCls}`}>
+                    <div className="p-3">
+                      {PlaylistScreen}
+                    </div>
+                  </div>
                 )}
-              </button>
-            </div>
-
-            <div className="text-xs text-gray-500 text-center">
-              รหัสห้อง: <span className="font-mono font-bold text-primary text-lg">{room}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="p-4 border-t bg-gray-50 rounded-b-lg">
-          <p className="text-xs text-gray-600">
-            ⚠️ ลิงก์นี้จะให้ผู้อื่นควบคุม Monitor ของคุณได้ กรุณาแชร์ให้เฉพาะคนที่ไว้ใจ
-          </p>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-{/* Mobile Video Player - Always rendered (hidden when modal closed) */ }
-{
-  !isXlScreen && curVideoId && (
-    <div
-      className={`fixed xl:hidden transition-all duration-300 ${showVideoPlayerModal
-        ? 'inset-0 z-[60] bg-black opacity-100 pointer-events-auto'
-        : 'bottom-0 left-0 right-0 opacity-0 pointer-events-none -z-10'
-        }`}
-    >
-      <div className="h-full flex flex-col">
-        {/* Close Button - Only visible when modal open */}
-        {showVideoPlayerModal && (
-          <div className="flex justify-between items-center p-4 bg-black/90">
-            <h3 className="text-white font-semibold">กำลังเล่น</h3>
-            <button
-              onClick={() => setShowVideoPlayerModal(false)}
-              className="btn btn-ghost btn-sm btn-circle text-white"
-            >
-              <XMarkIcon className="w-6 h-6" />
-            </button>
-          </div>
-        )}
-
-        {/* Video Player - Always rendered */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <YoutubePlayer
-            videoId={curVideoId}
-            nextSong={playNext}
-            className="flex-shrink-0"
-            externalPlayerRef={mobilePlayerRef}
-          />
-
-          {/* Playlist - Only visible when modal open */}
-          {showVideoPlayerModal && (
-            <div className={`flex-1 overflow-y-auto bg-base-200 ${scrollbarCls}`}>
-              <div className="p-3">
-                {PlaylistScreen}
               </div>
             </div>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
+          </div>
+        )
+      }
 
-{/* Mini Player - Mobile Only (< XL) */ }
-{
-  !isXlScreen && curVideoId && currentVideo && (
-    <MiniPlayer
-      currentVideo={currentVideo}
-      hasNext={currentIndex < playlist.length - 1}
-      hasPrevious={currentIndex > 0}
-      isPlaying={isPlaying}
-      progress={progress}
-      currentTime={currentTime}
-      duration={duration}
-      onPlayPause={handleMobilePlayPause}
-      onNext={playNext}
-      onPrevious={playPrevious}
-      onOpenQueue={() => {
-        // Open playlist modal
-        const modal = document.getElementById('modal-playlist') as HTMLInputElement;
-        if (modal) modal.checked = true;
-      }}
-      onExpand={() => {
-        // Open video player modal
-        // setShowVideoPlayerModal(true); // Disabled: Using embedded player
+      {/* Mini Player - Mobile Only (< XL) */}
+      {
+        !isXlScreen && curVideoId && currentVideo && (
+          <MiniPlayer
+            currentVideo={currentVideo}
+            hasNext={currentIndex < playlist.length - 1}
+            hasPrevious={currentIndex > 0}
+            isPlaying={isPlaying}
+            progress={progress}
+            currentTime={currentTime}
+            duration={duration}
+            onPlayPause={handleMobilePlayPause}
+            onNext={playNext}
+            onPrevious={playPrevious}
+            onOpenQueue={() => {
+              // Open playlist modal
+              const modal = document.getElementById('modal-playlist') as HTMLInputElement;
+              if (modal) modal.checked = true;
+            }}
+            onExpand={() => {
+              // Open video player modal
+              // setShowVideoPlayerModal(true); // Disabled: Using embedded player
 
-        // Scroll to top to see player
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }}
-    />
-  )
-}
+              // Scroll to top to see player
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+          />
+        )
+      }
 
-{/* Bottom Navigation - Mobile Only */ }
-<BottomNavigation />
+      {/* Bottom Navigation - Mobile Only */}
+      <BottomNavigation />
     </div >
   );
 }
