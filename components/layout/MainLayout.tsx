@@ -101,6 +101,7 @@ export default function MainLayout({
             ${getMaxWidthClass()}
             ${getPaddingClass()}
             ${className}
+            pb-24 lg:pb-0
           `}
         >
           {children}
