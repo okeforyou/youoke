@@ -502,8 +502,8 @@ function HomePage() {
     const result = isGoogleCastConnected
       ? (googleCastPlaylist || [])
       : isCasting
-      ? (castPlaylist?.slice(castCurrentIndex) || [])
-      : playlist;
+        ? (castPlaylist?.slice(castCurrentIndex) || [])
+        : playlist;
 
     // Log inside useMemo to confirm recalculation
     console.log('🔄 [useMemo] displayPlaylist recalculated:', {
@@ -640,53 +640,53 @@ function HomePage() {
             >
               <div className="grid grid-cols-1 gap-2">
                 {displayPlaylist?.map((video, videoIndex) => {
-                // When casting, calculate real index in full queue (not sliced display)
-                // Google Cast: use videoIndex directly (full array)
-                // Firebase Cast: adjust for sliced array
-                const realIndex = isGoogleCastConnected
-                  ? videoIndex
-                  : isCasting
-                  ? videoIndex + castCurrentIndex
-                  : videoIndex;
+                  // When casting, calculate real index in full queue (not sliced display)
+                  // Google Cast: use videoIndex directly (full array)
+                  // Firebase Cast: adjust for sliced array
+                  const realIndex = isGoogleCastConnected
+                    ? videoIndex
+                    : isCasting
+                      ? videoIndex + castCurrentIndex
+                      : videoIndex;
 
-                return (
-                  <DraggablePlaylistItem
-                    key={video.videoId}
-                    video={video}
-                    videoIndex={videoIndex}
-                    onPlayNow={() => skipVideoTo(video, realIndex)}
-                    onDelete={() => {
-                      if (isGoogleCastConnected) {
-                        // Google Cast (Chromecast) - use absolute index
-                        googleCastRemoveAt(videoIndex);
-                      } else if (isCasting) {
-                        // Firebase Cast (Web Monitor) - use real index
-                        castRemoveAt(realIndex);
-                      } else {
-                        // Local playback - update playlist and currentIndex
-                        setPlaylist(playlist.filter((_, index) => index !== realIndex));
+                  return (
+                    <DraggablePlaylistItem
+                      key={video.videoId}
+                      video={video}
+                      videoIndex={videoIndex}
+                      onPlayNow={() => skipVideoTo(video, realIndex)}
+                      onDelete={() => {
+                        if (isGoogleCastConnected) {
+                          // Google Cast (Chromecast) - use absolute index
+                          googleCastRemoveAt(videoIndex);
+                        } else if (isCasting) {
+                          // Firebase Cast (Web Monitor) - use real index
+                          castRemoveAt(realIndex);
+                        } else {
+                          // Local playback - update playlist and currentIndex
+                          setPlaylist(playlist.filter((_, index) => index !== realIndex));
 
-                        // Update currentIndex based on removed position
-                        if (realIndex < currentIndex) {
-                          // Removed before current - shift index down
-                          setCurrentIndex(currentIndex - 1);
-                        } else if (realIndex === currentIndex) {
-                          // Removed current song - play next (same index)
-                          if (playlist.length > 1) {
-                            // Has other songs, play next
-                            const nextVideo = playlist[currentIndex + 1] || playlist[0];
-                            setCurVideoId(nextVideo.videoId);
-                          } else {
-                            // Last song removed
-                            setCurVideoId("");
-                            setCurrentIndex(0);
+                          // Update currentIndex based on removed position
+                          if (realIndex < currentIndex) {
+                            // Removed before current - shift index down
+                            setCurrentIndex(currentIndex - 1);
+                          } else if (realIndex === currentIndex) {
+                            // Removed current song - play next (same index)
+                            if (playlist.length > 1) {
+                              // Has other songs, play next
+                              const nextVideo = playlist[currentIndex + 1] || playlist[0];
+                              setCurVideoId(nextVideo.videoId);
+                            } else {
+                              // Last song removed
+                              setCurVideoId("");
+                              setCurrentIndex(0);
+                            }
                           }
+                          // else: removed after current, currentIndex stays same
                         }
-                        // else: removed after current, currentIndex stays same
-                      }
-                    }}
-                  />
-                );
+                      }}
+                    />
+                  );
                 })}
               </div>
             </SortableContext>
@@ -709,10 +709,64 @@ function HomePage() {
       <main className="flex-1 flex flex-col lg:flex-row bg-base-100 overflow-hidden">
         {/* Content Section (Search + Grid Results) */}
         <div className="flex-1 flex flex-col overflow-hidden bg-base-100">
-            <div className="flex flex-col h-full overflow-hidden relative">
-              {/* START Search Bar - YouTube Style */}
+          <div className="flex flex-col h-full overflow-hidden relative">
+
+            {/* Sticky Top Header Section: Video + Controls + Search */}
+            <div className="sticky top-0 z-40 bg-base-100 shadow-sm shrink-0">
+
+              {/* 1. Video Player (Always Top) */}
+              {!isXlScreen && curVideoId && (
+                <div className="w-full bg-black aspect-video">
+                  <YoutubePlayer
+                    videoId={curVideoId}
+                    nextSong={playNext}
+                    className="w-full h-full"
+                    externalPlayerRef={mobilePlayerRef}
+                  />
+                </div>
+              )}
+
+              {/* 2. Player Controls Row (Visible when playing) */}
+              {!isXlScreen && curVideoId && (
+                <div className="flex items-center justify-around px-2 py-2 bg-base-100 border-b border-base-200">
+                  {/* Play/Pause */}
+                  <button className="btn btn-ghost btn-sm flex flex-col gap-0 h-auto items-center" onClick={handleMobilePlayPause}>
+                    {isPlaying ? <PauseIcon className="w-5 h-5 text-red-500 fill-current" /> : <PlayIcon className="w-5 h-5 text-red-500 fill-current" />}
+                    <span className="text-[10px] text-red-500 mt-0.5">เล่น</span>
+                  </button>
+
+                  {/* Next */}
+                  <button className="btn btn-ghost btn-sm flex flex-col gap-0 h-auto items-center" onClick={playNext}>
+                    <ChevronRightIcon className="w-5 h-5 text-red-500 stroke-2" />
+                    <span className="text-[10px] text-red-500 mt-0.5">เพลงถัดไป</span>
+                  </button>
+
+                  {/* Replay */}
+                  <button className="btn btn-ghost btn-sm flex flex-col gap-0 h-auto items-center" onClick={() => {
+                    const player = mobilePlayerRef.current?.getInternalPlayer();
+                    player?.seekTo(0);
+                  }}>
+                    <ArrowUturnLeftIcon className="w-5 h-5 text-red-500 fill-current" />
+                    <span className="text-[10px] text-red-500 mt-0.5">ร้องอีกครั้ง</span>
+                  </button>
+
+                  {/* Mute toggle */}
+                  <button className="btn btn-ghost btn-sm flex flex-col gap-0 h-auto items-center">
+                    <SpeakerWaveIcon className="w-5 h-5 text-red-500 fill-current" />
+                    <span className="text-[10px] text-red-500 mt-0.5">ปิดเสียง</span>
+                  </button>
+
+                  {/* Fullscreen */}
+                  <button className="btn btn-ghost btn-sm flex flex-col gap-0 h-auto items-center">
+                    <ArrowsPointingOutIcon className="w-5 h-5 text-red-500 stroke-2" />
+                    <span className="text-[10px] text-red-500 mt-0.5">เต็มจอ</span>
+                  </button>
+                </div>
+              )}
+
+              {/* 3. Search Bar (Below Controls) */}
               <div className="flex flex-row gap-3 px-4 py-3 items-center bg-base-100">
-                {/* START Search Input - Rounded */}
+                {/* Search Input */}
                 <div className="flex-1 flex items-center gap-2 px-4 py-2 bg-base-100 border border-base-300 rounded-full hover:border-base-content/30 hover:shadow-sm transition-all">
                   <MagnifyingGlassIcon className="w-5 h-5 text-base-content/60 flex-shrink-0" />
                   <DebounceInput
@@ -725,268 +779,251 @@ function HomePage() {
                     inputMode="search"
                   />
                 </div>
-                {/* END Search Input */}
 
-                {/* START Karaoke Switch - Rounded Pill */}
+                {/* Karaoke Switch */}
                 <div className="flex items-center gap-2 px-3 py-2 bg-base-200 rounded-full transition-all">
-                  <MusicalNoteIcon
-                    className={`w-4 h-4 lg:hidden transition-all ${
-                      !isKaraoke ? "text-base-content opacity-100 scale-110" : "text-base-content/30 opacity-50"
-                    }`}
-                  />
                   <input
                     type="checkbox"
                     className="toggle toggle-primary toggle-sm"
                     checked={isKaraoke}
                     onChange={(e) => setIsKaraoke(e.target.checked)}
                   />
-                  <MicrophoneIcon
-                    className={`w-4 h-4 lg:hidden transition-all ${
-                      isKaraoke ? "text-base-content opacity-100 scale-110" : "text-base-content/30 opacity-50"
-                    }`}
-                  />
-                  <span className="label-text text-base-content text-sm font-medium hidden lg:inline whitespace-nowrap">
-                    {isKaraoke ? "คาราโอเกะ" : "เพลง"}
+                  <span className="label-text text-base-content text-sm font-medium whitespace-nowrap">
+                    {isKaraoke ? "แบคกิ้งแทรค" : "คาราโอเกะ"}
                   </span>
                 </div>
-                {/* END Karaoke Switch */}
 
-                {/* Queue button - Mobile only */}
+                {/* Mobile Queue Button */}
+                <label htmlFor="modal-playlist" className="btn btn-circle btn-ghost text-base-content sm:hidden relative">
+                  <ListBulletIcon className="h-5 w-5" />
+                  <span className="badge badge-sm badge-primary absolute -top-1 -right-1 text-[10px] px-1 min-h-0 h-4">
+                    {displayPlaylist?.length || 0}
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            {/* Content Area */}
+            <div
+              className={`relative grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-3 2xl:grid-cols-4 auto-rows-min gap-3 w-full h-screen px-4 py-2 pb-32 lg:pb-4 ${scrollbarCls}`}
+              style={{ overflowY: "scroll" }}
+            >
+              {/* START Video Row Item */}
+
+              {
+                [
+                  <SearchResultGrid
+                    key={0}
+                    onClick={(video) => setSelectedVideo(video)}
+                  />,
+                  <ListSingerGrid key={1} showTab={false} />,
+                  <ListTopicsGrid key={2} showTab={false} />,
+                  <ListPlaylistsGrid key={3} />,
+                ][activeIndex]
+              }
+
+              {/* END Video Row Item */}
+            </div>
+            {/* Put this part before </body> tag */}
+
+            <input
+              type="checkbox"
+              id="modal-playlist"
+              className="modal-toggle"
+            />
+            <div className="modal modal-bottom sm:modal-middle">
+              <div className="flex flex-col modal-box max-h-[50%] w-full max-w-full overflow-hidden bg-base-200 relative px-2 pt-10 pb-2">
+                {/* Close button X */}
                 <label
                   htmlFor="modal-playlist"
-                  className="btn btn-circle btn-ghost text-base-content sm:hidden"
+                  className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-50"
                 >
-                  <div className="relative">
-                    <ListBulletIcon className="h-5 w-5" />
-                    <span className="badge badge-sm badge-primary absolute -top-1 -right-1 text-[10px] px-1 min-h-0 h-4">
-                      {displayPlaylist?.length || 0}
-                    </span>
-                  </div>
+                  ✕
                 </label>
-              </div>
-              {/* END Search Bar */}
 
-              {/* Recommend Videos List */}
-              <div
-                className={`relative grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-3 2xl:grid-cols-4 auto-rows-min gap-3 w-full h-screen px-4 py-2 pb-20 lg:pb-4 ${scrollbarCls}`}
-                style={{ overflowY: "scroll" }}
-              >
-                {/* START Video Row Item */}
-
-                {
-                  [
-                    <SearchResultGrid
-                      key={0}
-                      onClick={(video) => setSelectedVideo(video)}
-                    />,
-                    <ListSingerGrid key={1} showTab={false} />,
-                    <ListTopicsGrid key={2} showTab={false} />,
-                    <ListPlaylistsGrid key={3} />,
-                  ][activeIndex]
-                }
-
-                {/* END Video Row Item */}
-              </div>
-              {/* Put this part before </body> tag */}
-
-              <input
-                type="checkbox"
-                id="modal-playlist"
-                className="modal-toggle"
-              />
-              <div className="modal modal-bottom sm:modal-middle">
-                <div className="flex flex-col modal-box max-h-[50%] w-full max-w-full overflow-hidden bg-base-200 relative px-2 pt-10 pb-2">
-                  {/* Close button X */}
-                  <label
-                    htmlFor="modal-playlist"
-                    className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 z-50"
-                  >
-                    ✕
-                  </label>
-
-                  <div className="relative h-full overflow-y-auto flex flex-col">
-                    {PlaylistScreen}
-                  </div>
+                <div className="relative h-full overflow-y-auto flex flex-col">
+                  {PlaylistScreen}
                 </div>
               </div>
-              <input
-                type="checkbox"
-                id="modal-video"
-                className="modal-toggle"
-              />
-              <label
-                htmlFor="modal-video"
-                className="modal modal-bottom sm:modal-middle cursor-pointer"
-              >
-                <label
-                  className="modal-box relative px-4 py-4 pb-12 sm:p-4 bg-base-100"
-                  htmlFor=""
-                >
-                  <div className="card gap-3 min-h-min">
-                    <figure className="relative w-full aspect-video rounded-lg overflow-hidden">
-                      <Image
-                        unoptimized
-                        src={
-                          selectedVideo?.videoThumbnails?.find((t) => t.quality === "medium")?.url ||
-                          selectedVideo?.videoThumbnails?.[0]?.url ||
-                          `https://i.ytimg.com/vi/${selectedVideo?.videoId}/mqdefault.jpg`
-                        }
-                        priority
-                        alt={selectedVideo?.title}
-                        layout="fill"
-                        className="bg-gray-400 object-cover"
-                      />
-                    </figure>
-                    <div className="flex flex-col gap-1">
-                      <h2 className="font-semibold text-sm 2xl:text-xl line-clamp-2 text-gray-900">
-                        {selectedVideo?.title}
-                      </h2>
-                      <p className="text-xs 2xl:text-base text-gray-600">
-                        {selectedVideo?.author}
-                      </p>
-                    </div>
-                    <div className="card-body p-0">
-                      <div className="card-actions">
-                        <label
-                          htmlFor="modal-video"
-                          className="btn btn-primary flex-auto gap-2 btn-sm"
-                          onClick={() => addVideoToPlaylist(selectedVideo)}
-                        >
-                          <PlusIcon className="h-4 w-4" />
-                          {playlist?.length || !!curVideoId
-                            ? "เพิ่มในคิว"
-                            : "เล่นเลย"}
-                        </label>
-                        <label
-                          htmlFor="modal-video"
-                          className="btn btn-primary flex-auto gap-2 btn-sm"
-                          onClick={() => priorityVideo(selectedVideo)}
-                        >
-                          <BarsArrowUpIcon className="h-4 w-4" />
-                          เล่นเป็นคิวแรก
-                        </label>
-                        {!!user.uid && (
-                          <label
-                            htmlFor="modal-video"
-                            className="btn btn-primary flex-auto gap-2 btn-sm"
-                            onClick={() => {
-                              addPlaylistModalRef?.current.open();
-                            }}
-                          >
-                            <BookmarkIcon className="h-4 w-4" />
-                            เพลย์ลิสต์
-                          </label>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </label>
-              </label>
-              <Alert
-                ref={alertRef}
-                timer={2500}
-                headline="สำเร็จ"
-                headlineColor="text-green-600"
-                bgColor="bg-green-100"
-                content={<span className="text-sm">เพิ่มเพลย์ลิสต์สำเร็จ</span>}
-                icon={<CheckCircleIcon />}
-              />
-              <Modal
-                ref={addPlaylistModalRef}
-                title={<>เลือกเพลย์ลิสต์ที่ต้องการ</>}
-                body={
-                  <div className="relative px-8 flex-auto w-96">
-                    <div className="pb-4 text-gray-900">{selectedVideo?.title}</div>
-
-                    {/* Create New Playlist Button */}
-                    <button
-                      className="w-full btn btn-outline btn-primary btn-sm mb-3 gap-2"
-                      onClick={() => {
-                        createPlaylistModalRef.current.open();
-                      }}
-                    >
-                      <PlusIcon className="w-4 h-4" />
-                      สร้างเพลย์ลิสต์ใหม่
-                    </button>
-
-                    <div className="border-t border-gray-300 mb-3"></div>
-
-                    <div className="py-2 overflow-y-auto max-h-64">
-                      {myPlaylist.map((p, index) => (
-                        <label
-                          className="label cursor-pointer hover:bg-gray-300 rounded-lg p-2 transition-all duration-150"
-                          key={"pl-" + index}
-                          onClick={() =>
-                            addVideoToMyPlaylist(p.id, selectedVideo)
-                          }
-                        >
-                          <span className="label-text flex items-center gap-2">
-                            <ChevronRightIcon className="w-4 h-4" /> {p.name}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                }
-                footer={
-                  <button
-                    className="font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
-                    onClick={getMyPlaylists}
-                  >
-                    รีเฟรช
-                  </button>
-                }
-              />
-
-              {/* Modal สร้างเพลย์ลิสต์ใหม่ */}
-              <Modal
-                ref={createPlaylistModalRef}
-                title={<>สร้างเพลย์ลิสต์</>}
-                body={
-                  <div className="relative p-6 flex-auto w-96 grid gap-2">
-                    <input
-                      id="new-playlist-name"
-                      className="py-3 px-4 block w-full bg-gray-100 rounded-lg text-sm disabled:opacity-50 border-0 disabled:pointer-events-none"
-                      placeholder="ชื่อเพลย์ลิสต์"
-                      required
-                      value={newPlaylistData.name}
-                      onChange={(e) => {
-                        setNewPlaylistData({
-                          ...newPlaylistData,
-                          name: e.target.value,
-                        });
-                      }}
-                    />
-                    <select
-                      className="py-3 px-4 pe-9 block w-full bg-gray-100 border-transparent rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
-                      value={newPlaylistData.type}
-                      onChange={(e) => {
-                        setNewPlaylistData({
-                          ...newPlaylistData,
-                          type: e.target.value,
-                        });
-                      }}
-                    >
-                      <option>ส่วนตัว</option>
-                      <option>สาธารณะ</option>
-                    </select>
-                  </div>
-                }
-                footer={
-                  <button
-                    className="text-white btn-primary font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
-                    type="submit"
-                    onClick={handleCreateNewPlaylist}
-                    disabled={isCreatingPlaylist}
-                  >
-                    {isCreatingPlaylist ? "กำลังสร้าง..." : "สร้าง"}
-                  </button>
-                }
-              />
             </div>
-          </div>
+            <input
+              type="checkbox"
+              id="modal-video"
+              className="modal-toggle"
+            />
+            <label
+              htmlFor="modal-video"
+              className="modal modal-bottom sm:modal-middle cursor-pointer"
+            >
+              <label
+                className="modal-box relative px-4 py-4 pb-12 sm:p-4 bg-base-100"
+                htmlFor=""
+              >
+                <div className="card gap-3 min-h-min">
+                  <figure className="relative w-full aspect-video rounded-lg overflow-hidden">
+                    <Image
+                      unoptimized
+                      src={
+                        selectedVideo?.videoThumbnails?.find((t) => t.quality === "medium")?.url ||
+                        selectedVideo?.videoThumbnails?.[0]?.url ||
+                        `https://i.ytimg.com/vi/${selectedVideo?.videoId}/mqdefault.jpg`
+                      }
+                      priority
+                      alt={selectedVideo?.title}
+                      layout="fill"
+                      className="bg-gray-400 object-cover"
+                    />
+                  </figure>
+                  <div className="flex flex-col gap-1">
+                    <h2 className="font-semibold text-sm 2xl:text-xl line-clamp-2 text-gray-900">
+                      {selectedVideo?.title}
+                    </h2>
+                    <p className="text-xs 2xl:text-base text-gray-600">
+                      {selectedVideo?.author}
+                    </p>
+                  </div>
+                  <div className="card-body p-0">
+                    <div className="card-actions">
+                      <label
+                        htmlFor="modal-video"
+                        className="btn btn-primary flex-auto gap-2 btn-sm"
+                        onClick={() => addVideoToPlaylist(selectedVideo)}
+                      >
+                        <PlusIcon className="h-4 w-4" />
+                        {playlist?.length || !!curVideoId
+                          ? "เพิ่มในคิว"
+                          : "เล่นเลย"}
+                      </label>
+                      <label
+                        htmlFor="modal-video"
+                        className="btn btn-primary flex-auto gap-2 btn-sm"
+                        onClick={() => priorityVideo(selectedVideo)}
+                      >
+                        <BarsArrowUpIcon className="h-4 w-4" />
+                        เล่นเป็นคิวแรก
+                      </label>
+                      {!!user.uid && (
+                        <label
+                          htmlFor="modal-video"
+                          className="btn btn-primary flex-auto gap-2 btn-sm"
+                          onClick={() => {
+                            addPlaylistModalRef?.current.open();
+                          }}
+                        >
+                          <BookmarkIcon className="h-4 w-4" />
+                          เพลย์ลิสต์
+                        </label>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </label>
+            </label>
+            <Alert
+              ref={alertRef}
+              timer={2500}
+              headline="สำเร็จ"
+              headlineColor="text-green-600"
+              bgColor="bg-green-100"
+              content={<span className="text-sm">เพิ่มเพลย์ลิสต์สำเร็จ</span>}
+              icon={<CheckCircleIcon />}
+            />
+            <Modal
+              ref={addPlaylistModalRef}
+              title={<>เลือกเพลย์ลิสต์ที่ต้องการ</>}
+              body={
+                <div className="relative px-8 flex-auto w-96">
+                  <div className="pb-4 text-gray-900">{selectedVideo?.title}</div>
 
-          {/* END Recommend Videos List */}
+                  {/* Create New Playlist Button */}
+                  <button
+                    className="w-full btn btn-outline btn-primary btn-sm mb-3 gap-2"
+                    onClick={() => {
+                      createPlaylistModalRef.current.open();
+                    }}
+                  >
+                    <PlusIcon className="w-4 h-4" />
+                    สร้างเพลย์ลิสต์ใหม่
+                  </button>
+
+                  <div className="border-t border-gray-300 mb-3"></div>
+
+                  <div className="py-2 overflow-y-auto max-h-64">
+                    {myPlaylist.map((p, index) => (
+                      <label
+                        className="label cursor-pointer hover:bg-gray-300 rounded-lg p-2 transition-all duration-150"
+                        key={"pl-" + index}
+                        onClick={() =>
+                          addVideoToMyPlaylist(p.id, selectedVideo)
+                        }
+                      >
+                        <span className="label-text flex items-center gap-2">
+                          <ChevronRightIcon className="w-4 h-4" /> {p.name}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              }
+              footer={
+                <button
+                  className="font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
+                  onClick={getMyPlaylists}
+                >
+                  รีเฟรช
+                </button>
+              }
+            />
+
+            {/* Modal สร้างเพลย์ลิสต์ใหม่ */}
+            <Modal
+              ref={createPlaylistModalRef}
+              title={<>สร้างเพลย์ลิสต์</>}
+              body={
+                <div className="relative p-6 flex-auto w-96 grid gap-2">
+                  <input
+                    id="new-playlist-name"
+                    className="py-3 px-4 block w-full bg-gray-100 rounded-lg text-sm disabled:opacity-50 border-0 disabled:pointer-events-none"
+                    placeholder="ชื่อเพลย์ลิสต์"
+                    required
+                    value={newPlaylistData.name}
+                    onChange={(e) => {
+                      setNewPlaylistData({
+                        ...newPlaylistData,
+                        name: e.target.value,
+                      });
+                    }}
+                  />
+                  <select
+                    className="py-3 px-4 pe-9 block w-full bg-gray-100 border-transparent rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none"
+                    value={newPlaylistData.type}
+                    onChange={(e) => {
+                      setNewPlaylistData({
+                        ...newPlaylistData,
+                        type: e.target.value,
+                      });
+                    }}
+                  >
+                    <option>ส่วนตัว</option>
+                    <option>สาธารณะ</option>
+                  </select>
+                </div>
+              }
+              footer={
+                <button
+                  className="text-white btn-primary font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                  type="submit"
+                  onClick={handleCreateNewPlaylist}
+                  disabled={isCreatingPlaylist}
+                >
+                  {isCreatingPlaylist ? "กำลังสร้าง..." : "สร้าง"}
+                </button>
+              }
+            />
+          </div>
+        </div>
+
+        {/* END Recommend Videos List */}
 
         {/* Video Player + Queue Section - Desktop XL+ Only */}
         {isXlScreen && !showVideoPlayerModal && (
@@ -1120,11 +1157,10 @@ function HomePage() {
       {/* Mobile Video Player - Always rendered (hidden when modal closed) */}
       {!isXlScreen && curVideoId && (
         <div
-          className={`fixed xl:hidden transition-all duration-300 ${
-            showVideoPlayerModal
+          className={`fixed xl:hidden transition-all duration-300 ${showVideoPlayerModal
               ? 'inset-0 z-[60] bg-black opacity-100 pointer-events-auto'
               : 'bottom-0 left-0 right-0 opacity-0 pointer-events-none -z-10'
-          }`}
+            }`}
         >
           <div className="h-full flex flex-col">
             {/* Close Button - Only visible when modal open */}
