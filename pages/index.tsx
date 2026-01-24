@@ -20,8 +20,13 @@ import {
   BarsArrowUpIcon,
   ListBulletIcon,
   MagnifyingGlassIcon,
+  PlayIcon,
+  PauseIcon,
+  ArrowUturnLeftIcon,
+  SpeakerWaveIcon,
 } from "@heroicons/react/20/solid";
 import {
+  ArrowsPointingOutIcon,
   BookmarkIcon,
   CheckCircleIcon,
   ChevronRightIcon,
@@ -1158,8 +1163,8 @@ function HomePage() {
       {!isXlScreen && curVideoId && (
         <div
           className={`fixed xl:hidden transition-all duration-300 ${showVideoPlayerModal
-              ? 'inset-0 z-[60] bg-black opacity-100 pointer-events-auto'
-              : 'bottom-0 left-0 right-0 opacity-0 pointer-events-none -z-10'
+            ? 'inset-0 z-[60] bg-black opacity-100 pointer-events-auto'
+            : 'bottom-0 left-0 right-0 opacity-0 pointer-events-none -z-10'
             }`}
         >
           <div className="h-full flex flex-col">
