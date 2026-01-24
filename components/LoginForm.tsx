@@ -71,15 +71,7 @@ const LoginForm = () => {
           />
 
           <form action="" onSubmit={handleLogin} className="group">
-            <div className="flex justify-center items-center">
-              <Image
-                src="/icon-512.png"
-                alt="YouOke Logo"
-                width={120}
-                height={120}
-                priority
-              />
-            </div>
+
             <Input
               type="email"
               label="อีเมล"

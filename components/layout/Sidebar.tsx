@@ -2,6 +2,7 @@ import React from 'react';
 import { useRouter } from 'next/router';
 import {
   HomeIcon,
+  MicrophoneIcon,
   MusicalNoteIcon,
   TrophyIcon,
   RectangleStackIcon,
@@ -91,13 +92,12 @@ export default function Sidebar({ activeTab = 0, onTabChange, className = '' }: 
           className="flex items-center gap-3 group"
         >
           <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-            <MusicalNoteIcon className="w-6 h-6 text-primary-content" />
+            <MicrophoneIcon className="w-6 h-6 text-primary-content" />
           </div>
           <div>
             <h1 className="text-xl font-bold text-base-content group-hover:text-primary transition-colors">
               YouOke
             </h1>
-            <p className="text-xs text-base-content/60">Karaoke Online</p>
           </div>
         </button>
       </div>

@@ -326,8 +326,11 @@ function YoutubePlayer({
 
   useEffect(() => {
     // Play Now - explicitly play when video ID changes
+    // Add a small delay to ensure player is ready
     if (!!curVideoId) {
-      handlePlay();
+      setTimeout(() => {
+        handlePlay();
+      }, 500);
     }
   }, [curVideoId]);
 

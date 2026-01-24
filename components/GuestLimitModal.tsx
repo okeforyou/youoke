@@ -79,10 +79,6 @@ export default function GuestLimitModal({
               </li>
               <li className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
-                <span>ระบบตัดเสียงร้องและคิวเพลงที่แม่นยำ</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
                 <span>ใช้งาน 2 หน้าจอ (Dual Screen) ได้</span>
               </li>
               <li className="flex items-center gap-2">
