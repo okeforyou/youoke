@@ -64,6 +64,11 @@ export default function Sidebar({ activeTab = 0, onTabChange, className = '' }: 
   };
 
   const handleNavigation = (path: string) => {
+    if (router.pathname === path) {
+      // If already on the page, just scroll to top to redundant navigation error
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
     router.push(path);
   };
 
