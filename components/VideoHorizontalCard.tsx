@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Image from "next/image";
 import { PlayIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { PlaylistItem } from "../types";
@@ -10,9 +11,17 @@ interface VideoHorizontalCardProps {
 
 export default function VideoHorizontalCard({
   video,
-  onPlayNow = () => {},
-  onDelete = () => {},
+  onPlayNow = () => { },
+  onDelete = () => { },
 }: VideoHorizontalCardProps) {
+  // Determine initial thumbnail
+  const initialThumbnail =
+    video?.videoThumbnails?.find((t) => t.quality === "medium")?.url ||
+    video?.videoThumbnails?.[0]?.url ||
+    `https://i.ytimg.com/vi/${video?.videoId}/mqdefault.jpg`;
+
+  const [imgSrc, setImgSrc] = useState(initialThumbnail);
+
   return (
     <div className="relative bg-white hover:bg-base-100 rounded-lg border border-base-300 hover:border-primary overflow-hidden group shadow-sm card-hover">
       {/* Main content */}
@@ -35,11 +44,7 @@ export default function VideoHorizontalCard({
           }}
         >
           <Image
-            src={
-              video?.videoThumbnails?.find((t) => t.quality === "medium")?.url ||
-              video?.videoThumbnails?.[0]?.url ||
-              `https://i.ytimg.com/vi/${video?.videoId}/mqdefault.jpg`
-            }
+            src={imgSrc}
             alt={video?.title}
             fill
             sizes="(max-width: 640px) 50vw, 33vw"
@@ -47,6 +52,12 @@ export default function VideoHorizontalCard({
             loading="lazy"
             placeholder="blur"
             blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PC9zdmc+"
+            onError={() => {
+              // Fallback to YouTube official thumbnail if current one fails
+              if (!imgSrc.includes('i.ytimg.com')) {
+                setImgSrc(`https://i.ytimg.com/vi/${video?.videoId}/mqdefault.jpg`);
+              }
+            }}
           />
           {/* Play icon overlay */}
           <div className="absolute inset-0 bg-black/0 group-hover/thumbnail:bg-black/30 transition-all flex items-center justify-center">
