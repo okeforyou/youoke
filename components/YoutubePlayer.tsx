@@ -254,7 +254,7 @@ function YoutubePlayer({
     return () => window.removeEventListener('storage', handleStorage);
   }, [isMoniter]);
 
-  const UseFullScreenCss = isFullScreenIphone;
+  const UseFullScreenCss = isFullscreen || isFullScreenIphone;
   const isIOS =
     /iPad|iPhone/i.test(navigator.userAgent) ||
     (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
@@ -1277,8 +1277,8 @@ function YoutubePlayer({
       ref={fullscreenRef}
       id="youtubePlayer"
       className={`${isFullscreen || isFullScreenIphone
-          ? "fixed inset-0 z-50 bg-black flex items-center justify-center w-screen h-screen"
-          : "relative bg-white"
+        ? "fixed inset-0 z-50 bg-black flex items-center justify-center w-screen h-screen"
+        : "relative bg-white"
         } ${className}`}
     >
       <Alert
@@ -1495,11 +1495,13 @@ function YoutubePlayer({
                 ? "aspect-video cursor-zoom-in"
                 : "h-[calc(100dvh)] cursor-zoom-out"
                 } `}
-              iframeClassName={`w-full h-[calc(100dvh)] pointer-events-none`}
+              iframeClassName={`w-full h-full pointer-events-none`}
               style={{
                 width: "100%",
                 height: "100%",
                 position: UseFullScreenCss ? "fixed" : "absolute",
+                top: 0,
+                left: 0,
                 zIndex: UseFullScreenCss ? 20 : 0,
               }}
               loading="lazy"
