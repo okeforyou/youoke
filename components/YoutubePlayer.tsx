@@ -1455,10 +1455,10 @@ function YoutubePlayer({
           </div>
         ) : isDualMode && !isMoniter ? (
           <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20 backdrop-blur-sm">
-            <div className="text-center p-4 md:p-8 bg-base-100/90 rounded-xl shadow-2xl mx-4">
-              <div className="text-4xl md:text-6xl mb-2 md:mb-4">🖥️</div>
-              <h2 className="text-xl md:text-3xl font-bold mb-2 text-primary">กำลังเล่นที่หน้าจอที่ 2</h2>
-              <p className="text-sm md:text-base text-gray-600 mb-4">วิดีโอกำลังเล่นบนหน้าจอ Dual Screen</p>
+            <div className="text-center p-4 md:p-6 bg-base-100/90 rounded-xl shadow-2xl mx-4">
+              <div className="text-3xl md:text-5xl mb-2 md:mb-4">🖥️</div>
+              <h2 className="text-lg md:text-2xl font-bold mb-2 text-primary">กำลังเล่นที่หน้าจอที่ 2</h2>
+              <p className="text-xs md:text-sm text-gray-600 mb-4">วิดีโอกำลังเล่นบนหน้าจอ Dual Screen</p>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
