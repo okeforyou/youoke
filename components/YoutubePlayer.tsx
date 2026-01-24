@@ -276,10 +276,10 @@ function YoutubePlayer({
       // Guest Limit Check: When starting to play a new song
       if (newState === YouTube.PlayerState.PLAYING && !isLogin) {
         if (!canPlayNext()) {
-          // Guest has reached limit - pause and show modal
+          // Guest has reached limit - pause and redirect to login
           console.log(`🚫 Guest limit reached (${playedCount}/${guestLimit})`);
           player.pauseVideo();
-          setShowGuestLimitModal(true);
+          router.push('/login');
           return;
         } else {
           // Guest can still play - increment count
