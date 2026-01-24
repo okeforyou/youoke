@@ -217,15 +217,33 @@ function HomePage() {
   // Playlist navigation functions
   const playNext = () => {
     if (!playlist || playlist.length === 0) return;
-    const nextIndex = currentIndex + 1;
-    if (nextIndex < playlist.length) {
-      const nextVideo = playlist[nextIndex];
+
+    // Create a copy of playlist
+    const newPlaylist = [...playlist];
+
+    // Remove the current song (it finished playing)
+    if (currentIndex >= 0 && currentIndex < newPlaylist.length) {
+      newPlaylist.splice(currentIndex, 1);
+    }
+
+    // Update playlist state
+    setPlaylist(newPlaylist);
+
+    // Play the song that shifted into the current index (or stop if empty)
+    if (currentIndex < newPlaylist.length) {
+      const nextVideo = newPlaylist[currentIndex];
       setCurVideoId(nextVideo.videoId);
-      setCurrentIndex(nextIndex);
+      // currentIndex stays the same, as the arrays shifted
     } else {
-      // End of playlist
+      // Playlist is now empty or we were at the end
       setCurVideoId("");
-      setCurrentIndex(0);
+      if (newPlaylist.length > 0) {
+        // Wrap around or fallback
+        setCurrentIndex(0);
+        setCurVideoId(newPlaylist[0].videoId);
+      } else {
+        setCurrentIndex(0);
+      }
     }
   };
 
