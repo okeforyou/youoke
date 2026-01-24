@@ -2,12 +2,12 @@ import { useRouter } from 'next/router'
 import { useTransition } from 'react'
 
 import {
-    ArrowLeftOnRectangleIcon,
-    ChatBubbleLeftIcon,
-    MusicalNoteIcon,
-    RectangleStackIcon,
-    TrophyIcon,
-    UserCircleIcon,
+  ArrowLeftOnRectangleIcon,
+  ChatBubbleLeftIcon,
+  MusicalNoteIcon,
+  RectangleStackIcon,
+  TrophyIcon,
+  UserCircleIcon,
 } from '@heroicons/react/24/outline'
 
 import { useAuth } from '../context/AuthContext'
@@ -15,7 +15,7 @@ import { useKaraokeState } from '../hooks/karaoke'
 
 export default function BottomNavigation() {
   const { activeIndex, setActiveIndex } = useKaraokeState();
-  const { user } = useAuth();
+  const { user, logOut } = useAuth();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -96,16 +96,16 @@ export default function BottomNavigation() {
       ) : (
         <button
           type="button"
-          className={`flex flex-col items-center justify-center gap-1 min-h-[64px] text-primary p-2 ${isAccountPage ? "active" : ""}`}
-          onClick={navigateToAccount}
+          className="flex flex-col items-center justify-center gap-1 min-h-[64px] text-primary p-2"
+          onClick={() => logOut()}
           disabled={isPending}
         >
           {isPending ? (
             <span className="loading loading-spinner loading-sm"></span>
           ) : (
-            <UserCircleIcon className="w-6 h-6 pointer-events-none" />
+            <ArrowLeftOnRectangleIcon className="w-6 h-6 pointer-events-none" />
           )}
-          <span className="btm-nav-label pointer-events-none">บัญชี</span>
+          <span className="btm-nav-label pointer-events-none">ออก</span>
         </button>
       )}
     </div>

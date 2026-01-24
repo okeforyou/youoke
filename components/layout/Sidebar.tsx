@@ -177,9 +177,8 @@ export default function Sidebar({ activeTab = 0, onTabChange, className = '' }: 
       {/* User Profile Card (Bottom) */}
       {user?.uid && (
         <div className="p-4 border-t border-base-300">
-          <button
-            onClick={() => handleNavigation('/account')}
-            className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-base-300 transition-colors"
+          <div
+            className="w-full flex items-center gap-3 p-3 rounded-lg"
           >
             <div className="avatar placeholder">
               <div className="bg-primary text-primary-content rounded-full w-10">
@@ -196,7 +195,7 @@ export default function Sidebar({ activeTab = 0, onTabChange, className = '' }: 
                 {user.email}
               </p>
             </div>
-          </button>
+          </div>
         </div>
       )}
     </aside>
