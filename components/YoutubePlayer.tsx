@@ -325,7 +325,10 @@ function YoutubePlayer({
   // Parent component manages: playlist, curVideoId, currentIndex
 
   useEffect(() => {
-    //Play Now - Firebase Cast handles sync now
+    // Play Now - explicitly play when video ID changes
+    if (!!curVideoId) {
+      handlePlay();
+    }
   }, [curVideoId]);
 
   // sendMessage removed - Firebase Cast handles sync now
@@ -1157,6 +1160,7 @@ function YoutubePlayer({
 
             {!isCasting ? (
               <div className="space-y-3">
+
                 {/* Guest Name Input (only if not logged in) */}
                 {!isLogin && (
                   <div>

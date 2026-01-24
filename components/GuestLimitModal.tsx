@@ -59,7 +59,7 @@ export default function GuestLimitModal({
             สมัครสมาชิกเพื่อฟังเพลงไม่จำกัด
             <br />
             <span className="text-primary font-semibold">
-              เริ่มต้นเพียง 99 บาท/เดือน
+              อัปเกรดเป็น Premium
             </span>
           </p>
 
@@ -71,19 +71,23 @@ export default function GuestLimitModal({
             <ul className="space-y-2 text-sm">
               <li className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
-                <span>ฟังเพลงไม่จำกัด</span>
+                <span>ฟังเพลงได้ไม่จำกัด</span>
               </li>
               <li className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
-                <span>ไม่มีโฆษณา</span>
+                <span>ไม่มีโฆษณาคั่น</span>
               </li>
               <li className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
-                <span>คุณภาพวิดีโอสูงสุด 1080p</span>
+                <span>ระบบตัดเสียงร้องและคิวเพลงที่แม่นยำ</span>
               </li>
               <li className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
-                <span>บันทึก Playlist ไม่จำกัด</span>
+                <span>ใช้งาน 2 หน้าจอ (Dual Screen) ได้</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-primary rounded-full"></div>
+                <span>ใช้งานได้ทั้งมือถือและคอมพิวเตอร์</span>
               </li>
             </ul>
           </div>
