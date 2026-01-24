@@ -36,6 +36,8 @@ import { getSkeletonItems } from "../utils/api";
 import Alert, { AlertHandler } from "./Alert";
 import Modal, { ModalHandler } from "./Modal";
 
+import PlaylistCardItem from "./PlaylistCardItem";
+
 // Helper function to get playlists reference
 const getPlaylistsRef = () => {
   if (!database) {
@@ -315,112 +317,28 @@ export default function ListPlaylistsGrid() {
             ยอดนิยม
           </div>
           {suggestPlaylists?.filter(item => item.playlists?.length > 0).map((item, key) => {
-            return PlaylistCard(key, item);
+            return (
+              <PlaylistCardItem
+                key={key}
+                item={item}
+                index={key}
+                isOwner={activeIndex === 1}
+                userId={user.uid}
+                onPlay={(videos) => setVideoPlaylist(videos)}
+                onClick={(item) => {
+                  setSelectedItem(item);
+                  playlistModalRef?.current.open();
+                }}
+                onLike={handleAddLike}
+                onEdit={openEditModal}
+                onDelete={deletePlaylist}
+              />
+            );
           })}
         </>
       );
 
     return null;
-  };
-
-  const PlaylistCard = (key, item) => {
-    return (
-      <Fragment key={key}>
-        <div
-          key={"card" + key}
-          className="card rounded-lg  bg-white shadow hover:shadow-md flex-auto"
-        >
-          <figure
-            className="relative w-full cursor-pointer aspect-video group"
-            onClick={() => {
-              setVideoPlaylist(item.playlists);
-            }}
-          >
-            <Image
-              src={
-                item?.playlists?.length
-                  ? `https://i.ytimg.com/vi/${item.playlists[0]?.videoId}/mqdefault.jpg`
-                  : "/icon-cover.png"
-              }
-              alt={item.name}
-              fill
-              sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
-              className="object-cover"
-              loading="lazy"
-              onErrorCapture={(ev) => {
-                ev.currentTarget.src = "/icon-cover.png";
-              }}
-            />
-            <div className="absolute top-0 left-0 w-full h-0 flex flex-col justify-center items-center bg-stone-900 opacity-0 group-hover:h-full group-hover:opacity-50 duration-500">
-              <PlayIcon className="w-8 h-8 text-white opacity-100" />
-            </div>
-          </figure>
-          <div
-            className="card-body p-3 gap-y-0 relative cursor-pointer"
-            onClick={() => {
-              setSelectedItem(item);
-              playlistModalRef?.current.open();
-            }}
-          >
-            <h2 className="font-semibold text-sm 2xl:text-lg line-clamp-2 items-center">
-              <span className="flex items-center gap-x-1 ">
-                {item.name}{" "}
-                {item.type === "private" && (
-                  <LockClosedIcon className="w-3 h-3 text-gray-500" />
-                )}
-              </span>
-              <div className="font-light text-xs  text-gray-500 flex flex-row justify-between items-center">
-                {item.playlists?.length || 0} รายการ
-                <HandThumbUpIcon
-                  title="ถูกใจ"
-                  className={`w-5 h-5 text-gray-300 hover:text-primary cursor-pointer ${(activeIndex === 1 || !user.uid) && "hidden"
-                    }`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleAddLike(item.id);
-                  }}
-                />
-              </div>
-            </h2>
-            {activeIndex === 1 && (
-              <div
-                className="dropdown dropdown-end absolute right-2 top-4"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-              >
-                <div tabIndex={key} role="button" className="float-right ">
-                  <EllipsisVerticalIcon className="w-4 h-4 text-gray-500" />
-                </div>
-                <ul
-                  tabIndex={key}
-                  className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-32 text-xs"
-                >
-                  <li
-                    onClick={() => {
-                      openEditModal(item);
-                    }}
-                  >
-                    <a>
-                      <PencilIcon className="w-4 h-4 text-gray-500" />
-                      แก้ไข
-                    </a>
-                  </li>
-                  <li className="text-red-600">
-                    <a onClick={() => deletePlaylist(item.id)}>
-                      <TrashIcon className="w-4 h-4" />
-                      ลบ
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            )}
-          </div>
-        </div>
-      </Fragment>
-    );
   };
 
   return (
@@ -592,7 +510,23 @@ export default function ListPlaylistsGrid() {
           </div>
         )}
         {playlists?.filter(item => activeIndex === 1 || (item.playlists && item.playlists.length > 0)).map((item, key) => {
-          return PlaylistCard(key, item);
+          return (
+            <PlaylistCardItem
+              key={key}
+              item={item}
+              index={key}
+              isOwner={activeIndex === 1}
+              userId={user.uid}
+              onPlay={(videos) => setVideoPlaylist(videos)}
+              onClick={(item) => {
+                setSelectedItem(item);
+                playlistModalRef?.current.open();
+              }}
+              onLike={handleAddLike}
+              onEdit={openEditModal}
+              onDelete={deletePlaylist}
+            />
+          );
         })}
       </div>
     </>
