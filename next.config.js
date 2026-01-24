@@ -17,7 +17,16 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: ['i.ytimg.com', 'firebasestorage.googleapis.com', 'i.scdn.co'],
+    domains: [
+      'i.ytimg.com',
+      'firebasestorage.googleapis.com',
+      'i.scdn.co',
+      'inv.nadeko.net',
+      'invidious.privacyredirect.com',
+      'yewtu.be',
+      'vid.puffyan.us',
+      'invidious.projectsegfau.lt'
+    ],
   },
   async rewrites() {
     return [
