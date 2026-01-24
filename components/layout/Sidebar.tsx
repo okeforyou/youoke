@@ -50,7 +50,7 @@ const NavLink: React.FC<NavLinkProps> = ({ icon: Icon, label, active, onClick, b
 );
 
 export default function Sidebar({ activeTab = 0, onTabChange, className = '' }: SidebarProps) {
-  const { user } = useAuth();
+  const { user, logOut } = useAuth();
   const router = useRouter();
   const isHomePage = router.pathname === '/';
 
@@ -149,10 +149,9 @@ export default function Sidebar({ activeTab = 0, onTabChange, className = '' }: 
           {user?.uid ? (
             <>
               <NavLink
-                icon={UserCircleIcon}
-                label="โปรไฟล์"
-                active={router.pathname === '/account'}
-                onClick={() => handleNavigation('/account')}
+                icon={ArrowLeftOnRectangleIcon}
+                label="ออกจากระบบ"
+                onClick={() => logOut()}
               />
               {/* Show Admin link if user is admin */}
               {user?.role === 'admin' && (

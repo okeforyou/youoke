@@ -39,17 +39,25 @@ export default function SearchResultGrid({
     );
   };
 
+  const isValidResult = (video: any) => {
+    // Filter out Unknown authors
+    if (!video.author || video.author.toLowerCase().includes('unknown')) {
+      return false;
+    }
+    // Filter for Karaoke mode
+    if (isKaraoke) {
+      return titleIncludesKaraoke(video);
+    }
+    return true;
+  };
+
   const { data: recommendedVideos, isLoading: infoLoading } = useQuery(
     ["videoInfo", curVideoId],
     () => getVideoInfo(curVideoId),
     {
       enabled: !searchTerm.length && !!curVideoId,
       select: ({ recommendedVideos }) => {
-        if (isKaraoke) {
-          return recommendedVideos.filter(titleIncludesKaraoke);
-        }
-
-        return recommendedVideos;
+        return recommendedVideos?.filter(isValidResult) || [];
       },
     }
   );
@@ -59,11 +67,7 @@ export default function SearchResultGrid({
     () => getSearchResult({ q: prefix + searchTerm }),
     {
       select: (results) => {
-        if (isKaraoke) {
-          return results.filter(titleIncludesKaraoke);
-        }
-
-        return results;
+        return results?.filter(isValidResult) || [];
       },
     }
   );
@@ -94,8 +98,8 @@ export default function SearchResultGrid({
               aria-label="Switch to grid view"
               aria-pressed={viewMode === "grid"}
               className={`p-2 rounded btn-hover ${viewMode === "grid"
-                  ? "text-gray-900 opacity-100"
-                  : "text-gray-500 opacity-75 hover:opacity-90"
+                ? "text-gray-900 opacity-100"
+                : "text-gray-500 opacity-75 hover:opacity-90"
                 }`}
             >
               <Squares2X2Icon className="w-5 h-5" aria-hidden="true" />
@@ -106,8 +110,8 @@ export default function SearchResultGrid({
               aria-label="Switch to list view"
               aria-pressed={viewMode === "list"}
               className={`p-2 rounded btn-hover ${viewMode === "list"
-                  ? "text-gray-900 opacity-100"
-                  : "text-gray-500 opacity-75 hover:opacity-90"
+                ? "text-gray-900 opacity-100"
+                : "text-gray-500 opacity-75 hover:opacity-90"
                 }`}
             >
               <ListBulletIcon className="w-5 h-5" aria-hidden="true" />

@@ -817,25 +817,25 @@ function HomePage() {
 
                 {/* Karaoke Switch (Sliding Segmented Control) */}
                 <div
-                  className="relative flex items-center h-11 bg-base-100 rounded-full p-1 cursor-pointer select-none w-[110px] md:w-[150px] flex-shrink-0 border border-base-200"
+                  className="relative flex items-center h-11 bg-white md:bg-base-200 rounded-full p-1 cursor-pointer select-none w-[110px] md:w-[150px] flex-shrink-0 border border-base-200"
                   onClick={() => setIsKaraoke(!isKaraoke)}
                 >
                   {/* Sliding Pill */}
                   <div
-                    className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-error rounded-full shadow-sm transition-all duration-300 ease-out ${isKaraoke ? 'left-1' : 'left-1 translate-x-full'
+                    className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-error md:bg-white rounded-full shadow-sm transition-all duration-300 ease-out ${isKaraoke ? 'left-1 translate-x-full' : 'left-1'
                       }`}
                   />
 
                   {/* Options Layer */}
                   <div className="relative z-10 flex w-full h-full">
                     {/* Option 1: Song (Left) */}
-                    <div className={`flex-1 flex items-center justify-center transition-colors duration-200 ${isKaraoke ? 'text-white font-bold' : 'text-base-content/60'}`}>
+                    <div className={`flex-1 flex items-center justify-center transition-colors duration-200 ${!isKaraoke ? 'text-white md:text-base-content font-bold' : 'text-base-content/60'}`}>
                       <MusicalNoteIcon className="w-4 h-4 md:hidden" />
                       <span className="hidden md:inline text-xs">เพลง</span>
                     </div>
 
                     {/* Option 2: Karaoke (Right) */}
-                    <div className={`flex-1 flex items-center justify-center transition-colors duration-200 ${!isKaraoke ? 'text-white font-bold' : 'text-base-content/60'}`}>
+                    <div className={`flex-1 flex items-center justify-center transition-colors duration-200 ${isKaraoke ? 'text-white md:text-base-content font-bold' : 'text-base-content/60'}`}>
                       <MicrophoneIcon className="w-4 h-4 md:hidden" />
                       <span className="hidden md:inline text-xs">คาราโอเกะ</span>
                     </div>
