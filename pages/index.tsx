@@ -782,7 +782,7 @@ function HomePage() {
               )}
 
               {/* 3. Search Bar (Below Controls) */}
-              <div className="flex flex-row gap-3 px-4 py-3 items-center bg-base-200 shadow-sm sticky top-0 z-30">
+              <div className="flex flex-row gap-3 px-4 py-3 items-center bg-base-200 md:bg-base-100 shadow-sm sticky top-0 z-30">
                 {/* Search Input */}
                 <div className="flex-1 flex items-center gap-2 px-4 py-2 h-11 bg-base-100 border border-base-300 rounded-full hover:border-base-content/30 hover:shadow-sm transition-all">
                   <MagnifyingGlassIcon className="w-5 h-5 text-base-content/60 flex-shrink-0" />
@@ -799,7 +799,7 @@ function HomePage() {
 
                 {/* Karaoke Switch (Sliding Segmented Control) */}
                 <div
-                  className="relative flex items-center h-11 bg-base-200 rounded-full p-1 cursor-pointer select-none w-[110px] md:w-[150px] flex-shrink-0"
+                  className="relative flex items-center h-11 bg-base-100 md:bg-base-200 rounded-full p-1 cursor-pointer select-none w-[110px] md:w-[150px] flex-shrink-0"
                   onClick={() => setIsKaraoke(!isKaraoke)}
                 >
                   {/* Sliding Pill */}
