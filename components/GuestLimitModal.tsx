@@ -19,7 +19,7 @@ export default function GuestLimitModal({
   if (!isOpen) return null;
 
   function handleRegister() {
-    router.push("/pricing");
+    window.open('https://line.me/R/ti/p/@243lercy', '_blank');
   }
 
   function handleLogin() {
