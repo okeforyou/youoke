@@ -1460,116 +1460,123 @@ function YoutubePlayer({
               </button>
             </div>
           </div>
-        ) : isDualMode && !isMoniter ? (
-          <div className="h-full w-full flex flex-col items-center justify-center bg-base-200/50 backdrop-blur-sm p-4 text-center">
-            <div className="text-4xl md:text-5xl mb-4 animate-pulse">🖥️</div>
-            <h2 className="text-lg md:text-xl font-bold mb-2 text-base-content">กำลังเล่นที่หน้าจอที่ 2</h2>
-            <p className="text-xs md:text-sm text-base-content/70 mb-6">วิดีโอกำลังเล่นบนหน้าจอ Dual Screen</p>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                localStorage.removeItem('youoke-dual-active');
-                setIsDualMode(false);
-              }}
-              className="btn btn-sm btn-outline btn-primary rounded-full px-6"
-            >
-              ปิดโหมด 2 หน้าจอ
-            </button>
-          </div>
-        ) : !videoId ? (
-          <div
-            className="h-full w-full flex items-center justify-center bg-black"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            }}
-          >
-            <Image
-              src="/assets/icons/icon.svg"
-              width={48}
-              height={48}
-              className=""
-              alt="KaraTube's Logo"
-            />
-          </div>
         ) : (
           <>
-            {/* YouTube Player */}
-            <YouTube
-              ref={playerRef}
-              videoId={videoId}
-              className={`w-full bg-black ${!isFullscreen
-                ? "aspect-video cursor-zoom-in"
-                : "h-[calc(100dvh)] cursor-zoom-out"
-                } `}
-              iframeClassName={`w-full h-full pointer-events-none`}
-              style={{
-                width: "100%",
-                height: "100%",
-                position: UseFullScreenCss ? "fixed" : "absolute",
-                top: 0,
-                left: 0,
-                zIndex: UseFullScreenCss ? 9999 : 0,
-              }}
-              loading="lazy"
-              opts={{
-                playerVars: {
-                  autoplay:
-                    isMoniter && playerState === PlayerStates.PAUSED ? 0 : 1,
-                  controls: 0,
-                  disablekb: 1,
-                  enablejsapi: 1,
-                  modestbranding: 1,
-                  playsinline: isIphone && isFullScreenIphone ? 0 : 1,
-                  fs: 0, // Disable YouTube native fullscreen
-                },
-              }}
-              onStateChange={(ev) => {
-                updatePlayerState(ev.target);
-              }}
-              onEnd={() => {
-                nextSong();
-              }}
-            />
-
-            {/* Controls Overlay - ONLY for Monitor (inside player container) */}
-            {isMoniter && (
-              <div
-                className={`absolute inset-x-0 bottom-0 flex flex-row p-1 items-center z-30 transition-opacity duration-300 ${isMouseMoving ? "opacity-100" : ""
-                  } ${(UseFullScreenCss || !isMouseMoving) &&
-                    (isFullscreen || isFullScreenIphone)
-                    ? "opacity-0"
-                    : ""
-                  }`}
-                style={
-                  UseFullScreenCss || isMoniter
-                    ? {
-                      position: "fixed",
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      background: "white",
-                    }
-                    : {
-                      background: "rgba(0, 0, 0, 0.5)",
-                    }
-                }
-                onClick={(e) => e.stopPropagation()}
-              >
-                {buttons.map((btn) => {
-                  return (
-                    <button
-                      key={btn.label}
-                      className="btn btn-ghost font-normal text-primary flex h-auto flex-col flex-1 overflow-hidden text-[10px] 2xl:text-xs p-1 gap-0.5 hover:bg-base-200"
-                      onClick={btn.onClick}
-                    >
-                      <btn.icon className="w-5 h-5 2xl:w-6 2xl:h-6" />
-                      {btn.label}
-                    </button>
-                  );
-                })}
-                {extra}
+            {isDualMode && !isMoniter && (
+              <div className="absolute inset-0 z-[60] h-full w-full flex flex-col items-center justify-center bg-base-200/95 backdrop-blur-sm p-4 text-center">
+                <div className="text-4xl md:text-5xl mb-4 animate-pulse">🖥️</div>
+                <h2 className="text-lg md:text-xl font-bold mb-2 text-base-content">กำลังเล่นที่หน้าจอที่ 2</h2>
+                <p className="text-xs md:text-sm text-base-content/70 mb-6">วิดีโอกำลังเล่นบนหน้าจอ Dual Screen</p>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    localStorage.removeItem('youoke-dual-active');
+                    setIsDualMode(false);
+                    // Unmute when returning to single screen
+                    handleUnMute();
+                  }}
+                  className="btn btn-sm btn-outline btn-primary rounded-full px-6"
+                >
+                  ปิดโหมด 2 หน้าจอ
+                </button>
               </div>
+            )}
+            {!videoId ? (
+              <div
+                className="h-full w-full flex items-center justify-center bg-black"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+              >
+                <Image
+                  src="/assets/icons/icon.svg"
+                  width={48}
+                  height={48}
+                  className=""
+                  alt="KaraTube's Logo"
+                />
+              </div>
+            ) : (
+              <>
+                {/* YouTube Player */}
+                <YouTube
+                  ref={playerRef}
+                  videoId={videoId}
+                  className={`w-full bg-black ${!isFullscreen
+                    ? "aspect-video cursor-zoom-in"
+                    : "h-[calc(100dvh)] cursor-zoom-out"
+                    } ${isDualMode && !isMoniter ? "opacity-0 pointer-events-none" : ""}`}
+                  iframeClassName={`w-full h-full pointer-events-none`}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    position: UseFullScreenCss ? "fixed" : "absolute",
+                    top: 0,
+                    left: 0,
+                    zIndex: UseFullScreenCss ? 9999 : 0,
+                  }}
+                  loading="lazy"
+                  opts={{
+                    playerVars: {
+                      autoplay:
+                        isMoniter && playerState === PlayerStates.PAUSED ? 0 : 1,
+                      controls: 0,
+                      disablekb: 1,
+                      enablejsapi: 1,
+                      modestbranding: 1,
+                      playsinline: isIphone && isFullScreenIphone ? 0 : 1,
+                      fs: 0, // Disable YouTube native fullscreen
+                    },
+                  }}
+                  onStateChange={(ev) => {
+                    updatePlayerState(ev.target);
+                  }}
+                  onEnd={() => {
+                    nextSong();
+                  }}
+                />
+
+                {/* Controls Overlay - ONLY for Monitor (inside player container) */}
+                {isMoniter && (
+                  <div
+                    className={`absolute inset-x-0 bottom-0 flex flex-row p-1 items-center z-30 transition-opacity duration-300 ${isMouseMoving ? "opacity-100" : ""
+                      } ${(UseFullScreenCss || !isMouseMoving) &&
+                        (isFullscreen || isFullScreenIphone)
+                        ? "opacity-0"
+                        : ""
+                      }`}
+                    style={
+                      UseFullScreenCss || isMoniter
+                        ? {
+                          position: "fixed",
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          background: "white",
+                        }
+                        : {
+                          background: "rgba(0, 0, 0, 0.5)",
+                        }
+                    }
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {buttons.map((btn) => {
+                      return (
+                        <button
+                          key={btn.label}
+                          className="btn btn-ghost font-normal text-primary flex h-auto flex-col flex-1 overflow-hidden text-[10px] 2xl:text-xs p-1 gap-0.5 hover:bg-base-200"
+                          onClick={btn.onClick}
+                        >
+                          <btn.icon className="w-5 h-5 2xl:w-6 2xl:h-6" />
+                          {btn.label}
+                        </button>
+                      );
+                    })}
+                    {extra}
+                  </div>
+                )}
+              </>
             )}
           </>
         )}
