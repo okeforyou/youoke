@@ -314,7 +314,7 @@ export default function ListPlaylistsGrid() {
           <div className="col-span-full  bg-transparent p-3 pb-2 pl-2 text-2xl">
             ยอดนิยม
           </div>
-          {suggestPlaylists?.map((item, key) => {
+          {suggestPlaylists?.filter(item => item.playlists?.length > 0).map((item, key) => {
             return PlaylistCard(key, item);
           })}
         </>
@@ -591,7 +591,7 @@ export default function ListPlaylistsGrid() {
             ล่าสุด
           </div>
         )}
-        {playlists?.map((item, key) => {
+        {playlists?.filter(item => activeIndex === 1 || (item.playlists && item.playlists.length > 0)).map((item, key) => {
           return PlaylistCard(key, item);
         })}
       </div>
