@@ -385,37 +385,14 @@ function YoutubePlayer({
 
   // Event handler for triggering fullscreen on a user gesture
   const handleFullscreenButtonClick = () => {
-    if (!isIphone && !isFullscreen) {
-      alertFullNotWorkRef?.current.open();
+    // If mobile, use CSS Fullscreen Overlay (Robust)
+    if (isMobile) {
+        setIsFullScreenIphone(!isFullScreenIphone);
+        return;
     }
-
-    if (
-      //@ts-ignore
-      fullscreenRef.webkitEnterFullScreen ||
-      //@ts-ignore
-      fullscreenRef.webkitExitFullscreen
-    ) {
-      console.log(" Toggle fullscreen in Safari for iPad");
-      // Toggle fullscreen in Safari for iPad
-      if (!isFullscreen) {
-        //@ts-ignore
-        fullscreenRef.webkitEnterFullScreen();
-        toggleFullscreen(true);
-      } else {
-        //@ts-ignore
-        fullscreenRef.webkitExitFullscreen();
-        toggleFullscreen(false);
-      }
-    } else if (isIphone) {
-      setIsFullScreenIphone(!isFullScreenIphone);
-
-      !isFullScreenIphone && alertRef?.current.open();
-    } else {
-      // Toggle fullscreen for other OS / Devices / Browsers
-      console.log("Toggle fullscreen for other OS / Devices / Browsers");
-      toggleFullscreen();
-      setIsFullScreenIphone(!isFullScreenIphone);
-    }
+    
+    // Desktop: Standard Fullscreen API
+    toggleFullscreen();
   };
 
   const handleMute = async () => {
@@ -428,6 +405,19 @@ function YoutubePlayer({
       console.log(error);
     }
   };
+
+// ... (skipping to render)
+
+  return (
+    <div
+      ref={fullscreenRef}
+      id="youtubePlayer"
+      className={`${
+        isFullscreen || isFullScreenIphone 
+          ? "fixed inset-0 z-50 bg-black flex items-center justify-center w-screen h-screen" 
+          : "relative bg-white"
+      } ${className}`}
+    >
   const handleUnMute = async () => {
     try {
       const player = playerRef.current?.getInternalPlayer();
