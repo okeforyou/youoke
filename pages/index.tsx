@@ -797,28 +797,31 @@ function HomePage() {
                   />
                 </div>
 
-                {/* Karaoke Switch */}
-                <div className="flex items-center gap-2 px-3 py-2 h-11 bg-base-200 rounded-full transition-all">
-                  <input
-                    type="checkbox"
-                    className="toggle toggle-primary toggle-sm"
-                    checked={isKaraoke}
-                    onChange={(e) => setIsKaraoke(e.target.checked)}
+                {/* Karaoke Switch (Sliding Segmented Control) */}
+                <div
+                  className="relative flex items-center h-11 bg-base-200 rounded-full p-1 cursor-pointer select-none w-[110px] md:w-[150px] flex-shrink-0"
+                  onClick={() => setIsKaraoke(!isKaraoke)}
+                >
+                  {/* Sliding Pill */}
+                  <div
+                    className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-full shadow-sm transition-all duration-300 ease-out ${isKaraoke ? 'left-1' : 'left-1 translate-x-full'
+                      }`}
                   />
-                  <span className="label-text text-base-content text-sm font-medium whitespace-nowrap">
-                    {/* Mobile: Icon */}
-                    <span className="md:hidden flex items-center">
-                      {isKaraoke ? (
-                        <MusicalNoteIcon className="w-5 h-5" />
-                      ) : (
-                        <MicrophoneIcon className="w-5 h-5" />
-                      )}
-                    </span>
-                    {/* Desktop: Text */}
-                    <span className="hidden md:inline">
-                      {isKaraoke ? "เพลง" : "คาราโอเกะ"}
-                    </span>
-                  </span>
+
+                  {/* Options Layer */}
+                  <div className="relative z-10 flex w-full h-full">
+                    {/* Option 1: Song (Left) */}
+                    <div className={`flex-1 flex items-center justify-center transition-colors duration-200 ${isKaraoke ? 'text-primary font-bold' : 'text-base-content/60'}`}>
+                      <MusicalNoteIcon className="w-5 h-5 md:hidden" />
+                      <span className="hidden md:inline text-sm">เพลง</span>
+                    </div>
+
+                    {/* Option 2: Karaoke (Right) */}
+                    <div className={`flex-1 flex items-center justify-center transition-colors duration-200 ${!isKaraoke ? 'text-error font-bold' : 'text-base-content/60'}`}>
+                      <MicrophoneIcon className="w-5 h-5 md:hidden" />
+                      <span className="hidden md:inline text-sm">คาราโอเกะ</span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Mobile Queue Button */}
