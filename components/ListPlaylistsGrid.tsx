@@ -339,7 +339,7 @@ export default function ListPlaylistsGrid() {
             <Image
               src={
                 item?.playlists?.length
-                  ? `${process.env.NEXT_PUBLIC_INVIDIOUS_URL}vi/${item.playlists[0]?.videoId}/mqdefault.jpg` // item.playlists[0]["videoThumbnails"][0].url
+                  ? `https://i.ytimg.com/vi/${item.playlists[0]?.videoId}/mqdefault.jpg`
                   : "/icon-cover.png"
               }
               alt={item.name}
@@ -373,9 +373,8 @@ export default function ListPlaylistsGrid() {
                 {item.playlists?.length || 0} รายการ
                 <HandThumbUpIcon
                   title="ถูกใจ"
-                  className={`w-5 h-5 text-gray-300 hover:text-primary cursor-pointer ${
-                    (activeIndex === 1 || !user.uid) && "hidden"
-                  }`}
+                  className={`w-5 h-5 text-gray-300 hover:text-primary cursor-pointer ${(activeIndex === 1 || !user.uid) && "hidden"
+                    }`}
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
