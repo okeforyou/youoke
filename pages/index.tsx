@@ -36,6 +36,7 @@ import {
   PlusIcon,
   ShareIcon,
   XMarkIcon,
+  TvIcon,
 } from "@heroicons/react/24/outline";
 
 import Alert, { AlertHandler } from "../components/Alert";
@@ -173,6 +174,7 @@ function HomePage() {
 
   // Mobile player control - ref and state for MiniPlayer
   const mobilePlayerRef = useRef<YouTube>(null);
+  const playerControlRef = useRef<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState("0:00");
@@ -728,6 +730,7 @@ function HomePage() {
                     className="w-full h-full"
                     externalPlayerRef={mobilePlayerRef}
                     showControls={false}
+                    controlRef={playerControlRef}
                   />
                 </div>
               )}
@@ -750,7 +753,7 @@ function HomePage() {
                   {/* Replay */}
                   <button className="btn btn-ghost btn-sm flex flex-col gap-0 h-auto items-center" onClick={() => {
                     const player = mobilePlayerRef.current?.getInternalPlayer();
-                    player?.seekTo(0);
+                    player?.seekTo(0, true);
                   }}>
                     <ArrowUturnLeftIcon className="w-5 h-5 text-red-500 fill-current" />
                     <span className="text-[10px] text-red-500 mt-0.5">ร้องอีกครั้ง</span>
@@ -763,9 +766,17 @@ function HomePage() {
                   </button>
 
                   {/* Fullscreen */}
-                  <button className="btn btn-ghost btn-sm flex flex-col gap-0 h-auto items-center">
+                  <button className="btn btn-ghost btn-sm flex flex-col gap-0 h-auto items-center" onClick={() => {
+                    // Toggle fullscreen logic could be added here if needed, or rely on player controls
+                  }}>
                     <ArrowsPointingOutIcon className="w-5 h-5 text-red-500 stroke-2" />
                     <span className="text-[10px] text-red-500 mt-0.5">เต็มจอ</span>
+                  </button>
+
+                  {/* Cast Button */}
+                  <button className="btn btn-ghost btn-sm flex flex-col gap-0 h-auto items-center" onClick={() => playerControlRef.current?.openCastSelector()}>
+                    <TvIcon className="w-5 h-5 text-red-500 stroke-2" />
+                    <span className="text-[10px] text-red-500 mt-0.5">ขึ้นจอ</span>
                   </button>
                 </div>
               )}
@@ -1160,49 +1171,8 @@ function HomePage() {
         </div>
       )}
 
-      {/* Mobile Video Player - Always rendered (hidden when modal closed) */}
-      {!isXlScreen && curVideoId && (
-        <div
-          className={`fixed xl:hidden transition-all duration-300 ${showVideoPlayerModal
-            ? 'inset-0 z-[60] bg-black opacity-100 pointer-events-auto'
-            : 'bottom-0 left-0 right-0 opacity-0 pointer-events-none -z-10'
-            }`}
-        >
-          <div className="h-full flex flex-col">
-            {/* Close Button - Only visible when modal open */}
-            {showVideoPlayerModal && (
-              <div className="flex justify-between items-center p-4 bg-black/90">
-                <h3 className="text-white font-semibold">กำลังเล่น</h3>
-                <button
-                  onClick={() => setShowVideoPlayerModal(false)}
-                  className="btn btn-ghost btn-sm btn-circle text-white"
-                >
-                  <XMarkIcon className="w-6 h-6" />
-                </button>
-              </div>
-            )}
-
-            {/* Video Player - Always rendered */}
-            <div className="flex-1 flex flex-col overflow-hidden">
-              <YoutubePlayer
-                videoId={curVideoId}
-                nextSong={playNext}
-                className="flex-shrink-0"
-                externalPlayerRef={mobilePlayerRef}
-              />
-
-              {/* Playlist - Only visible when modal open */}
-              {showVideoPlayerModal && (
-                <div className={`flex-1 overflow-y-auto bg-base-200 ${scrollbarCls}`}>
-                  <div className="p-3">
-                    {PlaylistScreen}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Mobile Video Player - Removed (Now handled by Top Sticky Header) */}
+      {/* Block removed to prevent double audio/rendering */}
 
       {/* Mini Player - Disabled for Mobile Top Player Layout */}
       {/* {!isXlScreen && curVideoId && currentVideo && (

@@ -33,7 +33,8 @@ rm -rf httpdocs/*
 
 ```bash
 cd /var/www/vhosts/play.okeforyou.com/
-git clone https://github.com/okeforyou/youoke.git httpdocs
+# Use SSH over Port 443 to bypass firewall blocks
+git clone ssh://git@ssh.github.com:443/okeforyou/youoke.git httpdocs
 cd httpdocs
 ```
 

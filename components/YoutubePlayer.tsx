@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { useRouter } from "next/router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useImperativeHandle } from "react";
 import { useFullscreen, usePromise, useToggle } from "react-use";
 import YouTube, { YouTubePlayer, YouTubeProps } from "react-youtube";
 import PlayerStates from "youtube-player/dist/constants/PlayerStates";
@@ -51,9 +51,18 @@ function YoutubePlayer({
   isMoniter = false,
   externalPlayerRef = null, // Optional external ref for parent control
   showControls = true,
+  controlRef = null,
 }) {
   const router = useRouter();
   const internalPlayerRef = useRef<YouTube>();
+
+  // Expose methods to parent
+  useImperativeHandle(controlRef, () => ({
+    openCastSelector: () => {
+      setShowCastModeSelector(true);
+    },
+    // Add other methods if needed
+  }));
   const playerRef = externalPlayerRef || internalPlayerRef;
   const fullscreenRef = useRef<HTMLDivElement>();
   const [show, toggleFullscreen] = useToggle(false);
@@ -1465,10 +1474,10 @@ function YoutubePlayer({
           </div>
         ) : isDualMode && !isMoniter ? (
           <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-primary/20 to-secondary/20 backdrop-blur-sm">
-            <div className="text-center p-8 bg-base-100/90 rounded-xl shadow-2xl">
-              <div className="text-6xl mb-4">🖥️</div>
-              <h2 className="text-3xl font-bold mb-2 text-primary">กำลังเล่นที่หน้าจอที่ 2</h2>
-              <p className="text-gray-600 mb-4">วิดีโอกำลังเล่นบนหน้าจอ Dual Screen</p>
+            <div className="text-center p-4 md:p-8 bg-base-100/90 rounded-xl shadow-2xl mx-4">
+              <div className="text-4xl md:text-6xl mb-2 md:mb-4">🖥️</div>
+              <h2 className="text-xl md:text-3xl font-bold mb-2 text-primary">กำลังเล่นที่หน้าจอที่ 2</h2>
+              <p className="text-sm md:text-base text-gray-600 mb-4">วิดีโอกำลังเล่นบนหน้าจอ Dual Screen</p>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
