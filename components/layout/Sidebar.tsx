@@ -146,13 +146,8 @@ export default function Sidebar({ activeTab = 0, onTabChange, className = '' }: 
           <p className="text-xs font-semibold text-base-content/50 uppercase px-4 mb-2">
             บัญชี
           </p>
-          {user?.uid ? (
+          {user?.uid && (
             <>
-              <NavLink
-                icon={ArrowLeftOnRectangleIcon}
-                label="ออกจากระบบ"
-                onClick={() => logOut()}
-              />
               {/* Show Admin link if user is admin */}
               {user?.role === 'admin' && (
                 <NavLink
@@ -163,41 +158,30 @@ export default function Sidebar({ activeTab = 0, onTabChange, className = '' }: 
                 />
               )}
             </>
-          ) : (
-            <NavLink
-              icon={ArrowLeftOnRectangleIcon}
-              label="เข้าสู่ระบบ"
-              active={router.pathname === '/login'}
-              onClick={() => handleNavigation('/login')}
-            />
           )}
         </div>
       </nav>
 
       {/* User Profile Card (Bottom) */}
-      {user?.uid && (
-        <div className="p-4 border-t border-base-300">
-          <div
-            className="w-full flex items-center gap-3 p-3 rounded-lg"
+      <div className="p-4 border-t border-base-300">
+        {user?.uid ? (
+          <button
+            onClick={() => logOut()}
+            className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-error text-white hover:bg-error/90 transition-all font-bold shadow-lg hover:scale-[1.02] active:scale-95"
           >
-            <div className="avatar placeholder">
-              <div className="bg-primary text-primary-content rounded-full w-10">
-                <span className="text-lg">
-                  {user.displayName?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
-                </span>
-              </div>
-            </div>
-            <div className="flex-1 text-left overflow-hidden">
-              <p className="font-semibold text-sm truncate">
-                {user.displayName || 'ผู้ใช้'}
-              </p>
-              <p className="text-xs text-base-content/60 truncate">
-                {user.email}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+            <ArrowLeftOnRectangleIcon className="w-5 h-5" />
+            <span>ออกจากระบบ</span>
+          </button>
+        ) : (
+          <button
+            onClick={() => handleNavigation('/login')}
+            className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-primary text-white hover:bg-primary/90 transition-all font-bold shadow-lg hover:scale-[1.02] active:scale-95"
+          >
+            <ArrowLeftOnRectangleIcon className="w-5 h-5" />
+            <span>เข้าสู่ระบบ</span>
+          </button>
+        )}
+      </div>
     </aside>
   );
 }

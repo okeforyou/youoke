@@ -164,7 +164,7 @@ export default function DualScreen() {
       const timer = setTimeout(() => {
         console.log('📋 Returning to normal queue visibility');
         setForceShowQueue(false);
-      }, 20000);
+      }, 5000);
 
       lastQueueLengthRef.current = currentLength;
       return () => clearTimeout(timer);

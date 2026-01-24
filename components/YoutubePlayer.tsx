@@ -344,27 +344,54 @@ function YoutubePlayer({
     }
   }, [videoCount]);
 
-  // BroadcastChannel for Dual Screen sync
+  // BroadcastChannel for Dual Screen sync (Bidirectional)
   useEffect(() => {
     if (isMoniter) return; // Only main screen sends updates
 
     const channel = new BroadcastChannel('youoke-dual-sync');
 
-    // Listen for state requests from dual screen
-    channel.onmessage = (event) => {
-      if (event.data.type === 'REQUEST_STATE') {
-        // Send current state to dual screen
-        channel.postMessage({
-          type: 'QUEUE_UPDATE',
-          queue: playlist,
-          currentIndex: playlist.findIndex((v) => v.videoId === curVideoId),
-          videoId: curVideoId,
-        });
+    // Listen for commands from dual screen
+    channel.onmessage = async (event) => {
+      const { type } = event.data;
+      console.log('📨 YoutubePlayer received command:', type);
+
+      const player = playerRef.current?.getInternalPlayer();
+
+      switch (type) {
+        case 'REQUEST_STATE':
+          // Send current state to dual screen
+          channel.postMessage({
+            type: 'QUEUE_UPDATE',
+            queue: playlist,
+            currentIndex: playlist.findIndex((v) => v.videoId === curVideoId),
+            videoId: curVideoId,
+            isPlaying: playerState === YouTube.PlayerState.PLAYING,
+            isMuted: isMuted
+          });
+          break;
+        case 'PLAY':
+          if (player) await player.playVideo();
+          break;
+        case 'PAUSE':
+          if (player) await player.pauseVideo();
+          break;
+        case 'NEXT':
+          if (nextSong) nextSong();
+          break;
+        case 'PREV':
+          // logic for prev if needed
+          break;
+        case 'MUTE':
+          if (player) await player.mute();
+          break;
+        case 'UNMUTE':
+          if (player) await player.unMute();
+          break;
       }
     };
 
     return () => channel.close();
-  }, [isMoniter, playlist, curVideoId]);
+  }, [isMoniter, playlist, curVideoId, playerState, isMuted, nextSong]);
 
   // Sync current video to dual screen
   useEffect(() => {
