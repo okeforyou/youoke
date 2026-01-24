@@ -727,6 +727,7 @@ function HomePage() {
                     nextSong={playNext}
                     className="w-full h-full"
                     externalPlayerRef={mobilePlayerRef}
+                    showControls={false}
                   />
                 </div>
               )}
@@ -794,7 +795,7 @@ function HomePage() {
                     onChange={(e) => setIsKaraoke(e.target.checked)}
                   />
                   <span className="label-text text-base-content text-sm font-medium whitespace-nowrap">
-                    {isKaraoke ? "แบคกิ้งแทรค" : "คาราโอเกะ"}
+                    {isKaraoke ? "เพลง" : "คาราโอเกะ"}
                   </span>
                 </div>
 
@@ -1203,8 +1204,8 @@ function HomePage() {
         </div>
       )}
 
-      {/* Mini Player - Mobile Only (< XL) */}
-      {!isXlScreen && curVideoId && currentVideo && (
+      {/* Mini Player - Disabled for Mobile Top Player Layout */}
+      {/* {!isXlScreen && curVideoId && currentVideo && (
         <MiniPlayer
           currentVideo={currentVideo}
           hasNext={currentIndex < playlist.length - 1}
@@ -1217,16 +1218,14 @@ function HomePage() {
           onNext={playNext}
           onPrevious={playPrevious}
           onOpenQueue={() => {
-            // Open playlist modal
             const modal = document.getElementById('modal-playlist') as HTMLInputElement;
             if (modal) modal.checked = true;
           }}
           onExpand={() => {
-            // Open video player modal
             setShowVideoPlayerModal(true);
           }}
         />
-      )}
+      )} */}
 
       {/* Bottom Navigation - Mobile Only */}
       <BottomNavigation />

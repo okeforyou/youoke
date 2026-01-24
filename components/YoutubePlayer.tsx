@@ -50,6 +50,7 @@ function YoutubePlayer({
   extra = null,
   isMoniter = false,
   externalPlayerRef = null, // Optional external ref for parent control
+  showControls = true,
 }) {
   const router = useRouter();
   const internalPlayerRef = useRef<YouTube>();
@@ -964,48 +965,48 @@ function YoutubePlayer({
   const playPauseBtn = [
     playerState === YouTube.PlayerState.PLAYING || (isCasting && firebaseCastState.controls.isPlaying)
       ? {
-          icon: PauseIcon,
-          label: "หยุด",
-          onClick: () => {
-            console.log('🎯 Pause button clicked:', { isCasting, isGoogleCastConnected });
-            if (isCasting) {
-              firebaseCastPause();
-            } else if (isGoogleCastConnected) {
-              castPause();
-            } else {
-              handlePause();
-            }
-          },
-        }
-      : {
-          icon: PlayIcon,
-          label: "เล่น",
-          onClick: () => {
-            console.log('🎯 Play button clicked:', { isCasting, isGoogleCastConnected });
-            if (isCasting) {
-              firebaseCastPlay();
-            } else if (isGoogleCastConnected) {
-              castPlay();
-            } else {
-              handlePlay();
-            }
-          },
+        icon: PauseIcon,
+        label: "หยุด",
+        onClick: () => {
+          console.log('🎯 Pause button clicked:', { isCasting, isGoogleCastConnected });
+          if (isCasting) {
+            firebaseCastPause();
+          } else if (isGoogleCastConnected) {
+            castPause();
+          } else {
+            handlePause();
+          }
         },
+      }
+      : {
+        icon: PlayIcon,
+        label: "เล่น",
+        onClick: () => {
+          console.log('🎯 Play button clicked:', { isCasting, isGoogleCastConnected });
+          if (isCasting) {
+            firebaseCastPlay();
+          } else if (isGoogleCastConnected) {
+            castPlay();
+          } else {
+            handlePlay();
+          }
+        },
+      },
   ];
 
   const muteBtn = useMemo(
     () => [
       !isMuted
         ? {
-            icon: SpeakerWaveIcon,
-            label: "ปิดเสียง",
-            onClick: handleMute,
-          }
+          icon: SpeakerWaveIcon,
+          label: "ปิดเสียง",
+          onClick: handleMute,
+        }
         : {
-            icon: SpeakerXMarkIcon,
-            label: "เปิดเสียง",
-            onClick: handleUnMute,
-          },
+          icon: SpeakerXMarkIcon,
+          label: "เปิดเสียง",
+          onClick: handleUnMute,
+        },
     ],
     [isMuted]
   );
@@ -1038,19 +1039,19 @@ function YoutubePlayer({
     () => [
       (isIphone ? !isFullScreenIphone : !isFullscreen)
         ? {
-            icon: ArrowsPointingOutIcon,
-            label: "เต็มจอ",
-            onClick: async () => {
-              handleFullscreenButtonClick();
-            },
-          }
-        : {
-            icon: ArrowsPointingInIcon,
-            label: "จอเล็ก",
-            onClick: async () => {
-              handleFullscreenButtonClick();
-            },
+          icon: ArrowsPointingOutIcon,
+          label: "เต็มจอ",
+          onClick: async () => {
+            handleFullscreenButtonClick();
           },
+        }
+        : {
+          icon: ArrowsPointingInIcon,
+          label: "จอเล็ก",
+          onClick: async () => {
+            handleFullscreenButtonClick();
+          },
+        },
     ],
     [isFullscreen, isFullScreenIphone, isIphone]
   );
@@ -1139,135 +1140,135 @@ function YoutubePlayer({
     if (isMoniter) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-base-100 rounded-xl shadow-2xl max-w-md w-full p-4 sm:p-5 relative my-auto max-h-[90vh] overflow-y-auto">
-            {/* Close Button */}
-            <button
-              onClick={() => {
-                setIsCastOverlayOpen(false);
-                setCastError('');
-                setCastInputRoomCode('');
-                setGuestName('');
-              }}
-              className="absolute top-2 right-2 btn btn-sm btn-circle btn-ghost z-10"
-            >
-              <XMarkIcon className="w-5 h-5" />
-            </button>
+      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
+        <div className="bg-base-100 rounded-xl shadow-2xl max-w-md w-full p-4 sm:p-5 relative my-auto max-h-[90vh] overflow-y-auto">
+          {/* Close Button */}
+          <button
+            onClick={() => {
+              setIsCastOverlayOpen(false);
+              setCastError('');
+              setCastInputRoomCode('');
+              setGuestName('');
+            }}
+            className="absolute top-2 right-2 btn btn-sm btn-circle btn-ghost z-10"
+          >
+            <XMarkIcon className="w-5 h-5" />
+          </button>
 
-            {/* Content */}
-            <div className="space-y-4">
-              {/* Title */}
-              <div className="text-center pr-8">
-                <div className="flex items-center justify-center gap-2 mb-3">
-                  <TvIcon className="w-6 h-6 text-primary" />
-                  <h2 className="text-lg sm:text-xl font-bold">Web Monitor Cast</h2>
-                </div>
-                <p className="text-xs text-gray-600">
-                  เปิด <span className="font-semibold">{baseUrl ? new URL(baseUrl).hostname : 'youoke.vercel.app'}/monitor</span> บนทีวี
-                </p>
+          {/* Content */}
+          <div className="space-y-4">
+            {/* Title */}
+            <div className="text-center pr-8">
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <TvIcon className="w-6 h-6 text-primary" />
+                <h2 className="text-lg sm:text-xl font-bold">Web Monitor Cast</h2>
               </div>
+              <p className="text-xs text-gray-600">
+                เปิด <span className="font-semibold">{baseUrl ? new URL(baseUrl).hostname : 'youoke.vercel.app'}/monitor</span> บนทีวี
+              </p>
+            </div>
 
-              {!isCasting ? (
-                <div className="space-y-3">
-                  {/* Guest Name Input (only if not logged in) */}
-                  {!isLogin && (
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-                        ชื่อของคุณ
-                      </label>
-                      <input
-                        type="text"
-                        className="py-2.5 px-4 block w-full bg-base-200 border border-base-300 rounded-lg text-sm focus:border-primary focus:outline-none transition-colors"
-                        placeholder="ใส่ชื่อของคุณ"
-                        maxLength={20}
-                        value={guestName}
-                        onChange={(e) => setGuestName(e.target.value)}
-                        autoFocus
-                      />
-                    </div>
-                  )}
-
-                  {/* Room Code Input */}
+            {!isCasting ? (
+              <div className="space-y-3">
+                {/* Guest Name Input (only if not logged in) */}
+                {!isLogin && (
                   <div>
                     <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-                      เลขห้อง
+                      ชื่อของคุณ
                     </label>
                     <input
                       type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      className="py-3 px-4 block w-full bg-base-200 border border-base-300 rounded-lg text-center text-2xl tracking-widest font-bold focus:border-primary focus:outline-none transition-colors"
-                      placeholder="0000"
-                      maxLength={4}
-                      value={castInputRoomCode}
-                      onChange={(e) => setCastInputRoomCode(e.target.value.replace(/\D/g, ''))}
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          handleCastJoinRoom();
-                        }
-                      }}
-                      autoFocus={isLogin}
+                      className="py-2.5 px-4 block w-full bg-base-200 border border-base-300 rounded-lg text-sm focus:border-primary focus:outline-none transition-colors"
+                      placeholder="ใส่ชื่อของคุณ"
+                      maxLength={20}
+                      value={guestName}
+                      onChange={(e) => setGuestName(e.target.value)}
+                      autoFocus
                     />
                   </div>
+                )}
 
-                  {/* Error Message */}
-                  {castError && (
-                    <div className="p-2.5 bg-error/10 border border-error/30 rounded-lg text-xs text-error">
-                      {castError}
-                    </div>
+                {/* Room Code Input */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                    เลขห้อง
+                  </label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    className="py-3 px-4 block w-full bg-base-200 border border-base-300 rounded-lg text-center text-2xl tracking-widest font-bold focus:border-primary focus:outline-none transition-colors"
+                    placeholder="0000"
+                    maxLength={4}
+                    value={castInputRoomCode}
+                    onChange={(e) => setCastInputRoomCode(e.target.value.replace(/\D/g, ''))}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        handleCastJoinRoom();
+                      }
+                    }}
+                    autoFocus={isLogin}
+                  />
+                </div>
+
+                {/* Error Message */}
+                {castError && (
+                  <div className="p-2.5 bg-error/10 border border-error/30 rounded-lg text-xs text-error">
+                    {castError}
+                  </div>
+                )}
+
+                {/* Join Button */}
+                <button
+                  className="w-full py-2.5 px-4 text-white rounded-lg bg-primary hover:bg-primary/90 font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors text-sm"
+                  onClick={handleCastJoinRoom}
+                  disabled={isJoiningRoom || castInputRoomCode.length !== 4 || (!isLogin && !guestName.trim())}
+                >
+                  {isJoiningRoom ? (
+                    <>
+                      <ClockIcon className="w-4 h-4 animate-spin" />
+                      <span>กำลังเข้าร่วม...</span>
+                    </>
+                  ) : (
+                    <span>เข้าร่วมห้อง</span>
                   )}
-
-                  {/* Join Button */}
-                  <button
-                    className="w-full py-2.5 px-4 text-white rounded-lg bg-primary hover:bg-primary/90 font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors text-sm"
-                    onClick={handleCastJoinRoom}
-                    disabled={isJoiningRoom || castInputRoomCode.length !== 4 || (!isLogin && !guestName.trim())}
-                  >
-                    {isJoiningRoom ? (
-                      <>
-                        <ClockIcon className="w-4 h-4 animate-spin" />
-                        <span>กำลังเข้าร่วม...</span>
-                      </>
-                    ) : (
-                      <span>เข้าร่วมห้อง</span>
-                    )}
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {/* Connected Status */}
-                  <div className="bg-base-200 rounded-lg p-3 border border-base-300">
-                    <div className="flex items-center justify-center gap-2 text-base font-semibold mb-1">
-                      <CheckCircleIcon className="w-5 h-5 text-primary" />
-                      <span>เชื่อมต่อแล้ว</span>
-                    </div>
-                    <div className="text-xl font-bold text-center">ห้อง: {roomCode}</div>
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {/* Connected Status */}
+                <div className="bg-base-200 rounded-lg p-3 border border-base-300">
+                  <div className="flex items-center justify-center gap-2 text-base font-semibold mb-1">
+                    <CheckCircleIcon className="w-5 h-5 text-primary" />
+                    <span>เชื่อมต่อแล้ว</span>
                   </div>
-
-                  {/* Player Controls */}
-                  <div>
-                    <PlayerControls
-                      isPlaying={firebaseCastState.controls.isPlaying}
-                      onPlay={firebaseCastPlay}
-                      onPause={firebaseCastPause}
-                      onNext={firebaseCastNext}
-                      className="justify-center"
-                    />
-                  </div>
-
-                  {/* Disconnect/Leave Button */}
-                  <button
-                    className="w-full py-2.5 px-4 text-white rounded-lg bg-error hover:bg-error/90 font-semibold flex items-center justify-center gap-2 transition-colors text-sm"
-                    onClick={handleCastDisconnect}
-                  >
-                    <XMarkIcon className="w-4 h-4" />
-                    <span>{userInfo?.isGuest ? 'ออกจากห้อง' : 'ตัดการเชื่อมต่อ'}</span>
-                  </button>
+                  <div className="text-xl font-bold text-center">ห้อง: {roomCode}</div>
                 </div>
-              )}
-            </div>
+
+                {/* Player Controls */}
+                <div>
+                  <PlayerControls
+                    isPlaying={firebaseCastState.controls.isPlaying}
+                    onPlay={firebaseCastPlay}
+                    onPause={firebaseCastPause}
+                    onNext={firebaseCastNext}
+                    className="justify-center"
+                  />
+                </div>
+
+                {/* Disconnect/Leave Button */}
+                <button
+                  className="w-full py-2.5 px-4 text-white rounded-lg bg-error hover:bg-error/90 font-semibold flex items-center justify-center gap-2 transition-colors text-sm"
+                  onClick={handleCastDisconnect}
+                >
+                  <XMarkIcon className="w-4 h-4" />
+                  <span>{userInfo?.isGuest ? 'ออกจากห้อง' : 'ตัดการเชื่อมต่อ'}</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
+      </div>
     );
   };
 
@@ -1276,15 +1277,15 @@ function YoutubePlayer({
   const buttons: any = !isMoniter
     ? [...playPauseBtn, ...playerBtns, ...muteBtn, ...fullBtn, ...castBtn]
     : [
-        ...fullBtn,
-        {
-          icon: ArrowPathIcon,
-          label: "โหลดใหม่",
-          onClick: async () => {
-            window.location.reload();
-          },
+      ...fullBtn,
+      {
+        icon: ArrowPathIcon,
+        label: "โหลดใหม่",
+        onClick: async () => {
+          window.location.reload();
         },
-      ];
+      },
+    ];
 
   return (
     <div
@@ -1502,11 +1503,10 @@ function YoutubePlayer({
             <YouTube
               ref={playerRef}
               videoId={videoId}
-              className={`w-full bg-black ${
-                !isFullscreen
-                  ? "aspect-video cursor-zoom-in"
-                  : "h-[calc(100dvh)] cursor-zoom-out"
-              } `}
+              className={`w-full bg-black ${!isFullscreen
+                ? "aspect-video cursor-zoom-in"
+                : "h-[calc(100dvh)] cursor-zoom-out"
+                } `}
               iframeClassName={`w-full h-[calc(100dvh)] pointer-events-none`}
               style={{
                 width: "100%",
@@ -1538,26 +1538,24 @@ function YoutubePlayer({
             {/* Controls Overlay - ONLY for Monitor (inside player container) */}
             {isMoniter && (
               <div
-                className={`absolute inset-x-0 bottom-0 flex flex-row p-1 items-center z-30 transition-opacity duration-300 ${
-                  isMouseMoving ? "opacity-100" : ""
-                } ${
-                  (UseFullScreenCss || !isMouseMoving) &&
-                  (isFullscreen || isFullScreenIphone)
+                className={`absolute inset-x-0 bottom-0 flex flex-row p-1 items-center z-30 transition-opacity duration-300 ${isMouseMoving ? "opacity-100" : ""
+                  } ${(UseFullScreenCss || !isMouseMoving) &&
+                    (isFullscreen || isFullScreenIphone)
                     ? "opacity-0"
                     : ""
-                }`}
+                  }`}
                 style={
                   UseFullScreenCss || isMoniter
                     ? {
-                        position: "fixed",
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: "white",
-                      }
+                      position: "fixed",
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: "white",
+                    }
                     : {
-                        background: "rgba(0, 0, 0, 0.5)",
-                      }
+                      background: "rgba(0, 0, 0, 0.5)",
+                    }
                 }
                 onClick={(e) => e.stopPropagation()}
               >
@@ -1595,25 +1593,23 @@ function YoutubePlayer({
       )}
 
       {/* Controls for Remote - OUTSIDE player container (original position) */}
-      {!isMoniter && videoId && (
+      {!isMoniter && showControls && videoId && (
         <div
-          className={`flex-shrink-0 flex flex-row md:w-full p-1 items-center z-20 ${
-            isMouseMoving ? "hover:opacity-100" : ""
-          } ${
-            (UseFullScreenCss || !isMouseMoving) &&
-            (isFullscreen || isFullScreenIphone)
+          className={`flex-shrink-0 flex flex-row md:w-full p-1 items-center z-20 ${isMouseMoving ? "hover:opacity-100" : ""
+            } ${(UseFullScreenCss || !isMouseMoving) &&
+              (isFullscreen || isFullScreenIphone)
               ? "opacity-0"
               : ""
-          }`}
+            }`}
           style={
             UseFullScreenCss
               ? {
-                  position: "fixed",
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  background: "initial",
-                }
+                position: "fixed",
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: "initial",
+              }
               : {}
           }
         >
