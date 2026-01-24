@@ -59,8 +59,8 @@ export default function PlaylistCardItem({
                     sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
                     className="object-cover"
                     loading="lazy"
+                    unoptimized={true}
                     onError={() => {
-                        // Robust fallback: if YouTube thumb fails, use local cover
                         if (imgSrc !== "/icon-cover.png") {
                             setImgSrc("/icon-cover.png");
                         }
