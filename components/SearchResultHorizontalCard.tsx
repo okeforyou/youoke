@@ -1,4 +1,5 @@
 import Image from "next/image";
+import VideoThumbnail from "./ui/VideoThumbnail";
 import { PlayIcon } from "@heroicons/react/24/solid";
 import { SearchResult, RecommendedVideo } from "../types/invidious";
 
@@ -23,17 +24,14 @@ export default function SearchResultHorizontalCard({
       <div className="grid grid-cols-3 overflow-hidden">
         {/* Thumbnail - Left Side */}
         <figure className="relative w-full aspect-video">
-          <Image
+          <VideoThumbnail
             src={
               video.videoThumbnails?.find((t) => t.quality === "medium")?.url ||
               video.videoThumbnails?.[0]?.url ||
               `https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`
             }
             alt={video.title}
-            fill
-            sizes="(max-width: 640px) 33vw, 25vw"
             className="object-cover"
-            loading="lazy"
           />
           {/* Play Icon Overlay */}
           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">

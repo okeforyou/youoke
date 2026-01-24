@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Image from "next/image";
+import VideoThumbnail from "./ui/VideoThumbnail";
 import { PlayIcon, TrashIcon } from "@heroicons/react/24/solid";
 import { PlaylistItem } from "../types";
 
@@ -43,21 +44,10 @@ export default function VideoHorizontalCard({
             }
           }}
         >
-          <Image
-            src={imgSrc}
+          <VideoThumbnail
+            src={initialThumbnail}
             alt={video?.title}
-            fill
-            sizes="(max-width: 640px) 50vw, 33vw"
             className="object-contain"
-            loading="lazy"
-            placeholder="blur"
-            blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PC9zdmc+"
-            onError={() => {
-              // Fallback to YouTube official thumbnail if current one fails
-              if (!imgSrc.includes('i.ytimg.com')) {
-                setImgSrc(`https://i.ytimg.com/vi/${video?.videoId}/mqdefault.jpg`);
-              }
-            }}
           />
           {/* Play icon overlay */}
           <div className="absolute inset-0 bg-black/0 group-hover/thumbnail:bg-black/30 transition-all flex items-center justify-center">

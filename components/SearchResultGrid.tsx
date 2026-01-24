@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { Fragment, useEffect, useRef } from "react";
+import VideoThumbnail from "./ui/VideoThumbnail";
 import { useQuery } from "react-query";
 import { useLocalStorageValue } from "@react-hookz/web";
 import { Squares2X2Icon, ListBulletIcon } from "@heroicons/react/24/outline";
@@ -10,7 +11,7 @@ import { getSearchResult, getSkeletonItems, getVideoInfo } from "../utils/api";
 import SearchResultHorizontalCard from "./SearchResultHorizontalCard";
 
 export default function SearchResultGrid({
-  onClick = () => {},
+  onClick = () => { },
 }: {
   onClick?: (video: SearchResult | RecommendedVideo) => void;
 }) {
@@ -92,11 +93,10 @@ export default function SearchResultGrid({
               title="Grid View"
               aria-label="Switch to grid view"
               aria-pressed={viewMode === "grid"}
-              className={`p-2 rounded btn-hover ${
-                viewMode === "grid"
+              className={`p-2 rounded btn-hover ${viewMode === "grid"
                   ? "text-gray-900 opacity-100"
                   : "text-gray-500 opacity-75 hover:opacity-90"
-              }`}
+                }`}
             >
               <Squares2X2Icon className="w-5 h-5" aria-hidden="true" />
             </button>
@@ -105,11 +105,10 @@ export default function SearchResultGrid({
               title="List View"
               aria-label="Switch to list view"
               aria-pressed={viewMode === "list"}
-              className={`p-2 rounded btn-hover ${
-                viewMode === "list"
+              className={`p-2 rounded btn-hover ${viewMode === "list"
                   ? "text-gray-900 opacity-100"
                   : "text-gray-500 opacity-75 hover:opacity-90"
-              }`}
+                }`}
             >
               <ListBulletIcon className="w-5 h-5" aria-hidden="true" />
             </button>
@@ -165,20 +164,15 @@ export default function SearchResultGrid({
                 <label htmlFor="modal-video" onClick={() => onClick(rcm)}>
                   <div className="card rounded-lg overflow-hidden bg-white shadow cursor-pointer flex flex-col h-full card-hover">
                     <figure className="relative w-full aspect-video flex-shrink-0">
-                      <Image
+                      <VideoThumbnail
                         src={
                           rcm.videoThumbnails?.find((t) => t.quality === "medium")?.url ||
                           rcm.videoThumbnails?.[0]?.url ||
                           `https://i.ytimg.com/vi/${rcm.videoId}/mqdefault.jpg`
                         }
                         alt={rcm.title}
-                        fill
-                        sizes="(max-width: 640px) 33vw, (max-width: 768px) 25vw, 20vw"
+                        priority={i < 6}
                         className="object-cover"
-                        loading={i < 6 ? "eager" : "lazy"}
-                        placeholder="blur"
-                        blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIwIiBoZWlnaHQ9IjE4MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZGRkIi8+PC9zdmc+"
-                        onLoad={(ev) => ev.currentTarget.classList.remove("animate-pulse")}
                       />
                     </figure>
                     <div className="card-body p-2 gap-y-0 flex-1 flex flex-col">
