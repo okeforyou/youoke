@@ -480,7 +480,7 @@ export default function DualScreen() {
           )}
         </div>
       </div>
-      )}
+
     </>
   );
 }
