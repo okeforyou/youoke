@@ -1045,10 +1045,12 @@ function HomePage() {
         {isXlScreen && !showVideoPlayerModal && (
           <aside className="hidden xl:flex xl:w-96 2xl:w-[450px] flex-col overflow-hidden border-l border-base-300 bg-base-100">
             {/* Video Player */}
+            {/* Video Player */}
             <YoutubePlayer
               videoId={curVideoId}
               nextSong={playNext}
               className="flex-shrink-0"
+              controlRef={playerControlRef}
             />
 
             {/* Queue/Playlist */}

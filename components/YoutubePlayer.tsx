@@ -138,6 +138,11 @@ function YoutubePlayer({
   const [videoCount, setVideoCount] = useState<number>(0);
   const [inputRoomId, setInputRoomId] = useState("");
 
+  // Custom Controls State
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const isPlaying = playerState === PlayerStates.PLAYING;
+
   const mounted = usePromise();
 
   const [isMouseMoving, setIsMouseMoving] = useState(true);
@@ -229,6 +234,21 @@ function YoutubePlayer({
       clearTimeout(timeoutId);
     };
   }, []);
+
+  // Poll for current time and duration when playing
+  useEffect(() => {
+    if (!isPlaying) return;
+    const interval = setInterval(async () => {
+      const player = playerRef.current?.getInternalPlayer();
+      if (player && typeof player.getCurrentTime === 'function') {
+        const time = await player.getCurrentTime();
+        const dur = await player.getDuration();
+        setCurrentTime(time);
+        setDuration(dur);
+      }
+    }, 500);
+    return () => clearInterval(interval);
+  }, [isPlaying]);
 
   // Removed duplicate castRoom handler - see line ~500 for the active one
 
@@ -1548,8 +1568,8 @@ function YoutubePlayer({
                     playerVars: {
                       autoplay:
                         isMoniter && playerState === PlayerStates.PAUSED ? 0 : 1,
-                      controls: 1,
-                      disablekb: 0,
+                      controls: 0,
+                      disablekb: 1,
                       enablejsapi: 1,
                       modestbranding: 1,
                       playsinline: isIphone && isFullScreenIphone ? 0 : 1,
@@ -1563,6 +1583,74 @@ function YoutubePlayer({
                     nextSong();
                   }}
                 />
+
+                {/* Modern Custom Controls Overlay */}
+                {!isMoniter && videoId && (
+                  <div
+                    className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent px-4 pb-3 pt-12 flex flex-col gap-2 transition-opacity duration-300 z-10 ${(showControls || isMouseMoving || !isPlaying) ? "opacity-100" : "opacity-0"
+                      }`}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {/* Progress Bar */}
+                    <input
+                      type="range"
+                      min={0}
+                      max={duration}
+                      value={currentTime}
+                      step="0.1"
+                      className="w-full h-1 bg-white/30 rounded-lg appearance-none cursor-pointer accent-red-600 hover:h-1.5 transition-all"
+                      onChange={(e) => {
+                        const time = parseFloat(e.target.value);
+                        const player = playerRef.current?.getInternalPlayer();
+                        if (player) player.seekTo(time, true);
+                        // Optimistic update
+                        // setCurrentTime(time); // defined in local state?
+                      }}
+                    />
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        {/* Play/Pause */}
+                        <button onClick={() => isPlaying ? handlePause() : handlePlay()} className="text-white hover:text-red-500 transition-colors">
+                          {isPlaying ? <PauseIcon className="w-8 h-8" /> : <PlayIcon className="w-8 h-8" />}
+                        </button>
+
+                        {/* Next (Skip) */}
+                        <button onClick={() => {
+                          if (isCasting && firebaseCastNext) firebaseCastNext();
+                          else if (isGoogleCastConnected && castNext) castNext();
+                          else nextSong();
+                        }} className="text-white hover:text-white/80 transition-colors" title="เพลงถัดไป">
+                          <ForwardIcon className="w-6 h-6" />
+                        </button>
+
+                        {/* Volume */}
+                        <div className="group flex items-center gap-2">
+                          <button onClick={isMuted ? handleUnMute : handleMute} className="text-white hover:text-white/80">
+                            {isMuted ? <SpeakerXMarkIcon className="w-6 h-6" /> : <SpeakerWaveIcon className="w-6 h-6" />}
+                          </button>
+                        </div>
+
+                        {/* Time */}
+                        <div className="text-xs text-white/90 font-medium font-mono">
+                          {new Date(currentTime * 1000).toISOString().substr(14, 5)} / {new Date(duration * 1000).toISOString().substr(14, 5)}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-4">
+                        {/* Cast */}
+                        <button onClick={() => setShowCastModeSelector(true)} className="text-white hover:text-white/80" title="Cast">
+                          <TvIcon className="w-5 h-5" />
+                        </button>
+
+                        {/* Fullscreen */}
+                        <button onClick={handleFullscreenButtonClick} className="text-white hover:text-white/80">
+                          {(isFullscreen || isFullScreenIphone) ? <ArrowsPointingInIcon className="w-5 h-5" /> : <ArrowsPointingOutIcon className="w-5 h-5" />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Controls Overlay - ONLY for Monitor (inside player container) */}
                 {isMoniter && (
