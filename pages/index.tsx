@@ -799,10 +799,7 @@ function HomePage() {
                   </div>
                 </div>
 
-                {/* Skip Button */}
-                <button className="btn btn-circle btn-ghost text-base-content md:bg-base-100" onClick={playNext} title="เพลงถัดไป">
-                  <ForwardIcon className="w-5 h-5 md:w-6 md:h-6" />
-                </button>
+
 
                 {/* Cast Button */}
                 <button className="btn btn-circle btn-ghost text-base-content md:bg-base-100" onClick={() => playerControlRef.current?.openCastSelector()} title="Cast / Dual Screen">

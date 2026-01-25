@@ -1334,7 +1334,7 @@ function YoutubePlayer({
       id="youtubePlayer"
       className={`${isFullscreen || isFullScreenIphone
         ? "fixed inset-0 z-[9999] bg-black block w-screen h-screen"
-        : "relative bg-white"
+        : "relative bg-black w-full aspect-video"
         } ${className}`}
     >
       <Alert
