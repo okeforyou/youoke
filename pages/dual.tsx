@@ -40,6 +40,12 @@ export default function DualScreen() {
             }
           }
         }
+      } else if (event.data?.type === 'QUEUE_UPDATE') {
+        // Fallback handler for legacy QUEUE_UPDATE messages
+        console.log('📨 [Dual] Received QUEUE_UPDATE (fallback):', event.data);
+        if (event.data.videoId) setVideoId(event.data.videoId);
+        if (event.data.queue) setQueue(event.data.queue);
+        setIsConnected(true);
       } else if (event.data?.type === 'PLAY') {
         // @ts-ignore
         playerRef.current?.getInternalPlayer()?.playVideo();
