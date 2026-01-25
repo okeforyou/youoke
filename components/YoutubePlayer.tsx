@@ -1334,7 +1334,7 @@ function YoutubePlayer({
       id="youtubePlayer"
       className={`${isFullscreen || isFullScreenIphone
         ? "fixed inset-0 z-[9999] bg-black block w-screen h-screen"
-        : "relative bg-black w-full aspect-video group overflow-hidden"
+        : "relative bg-black w-full aspect-video group"
         } ${className}`}
     >
       <Alert
@@ -1584,71 +1584,24 @@ function YoutubePlayer({
                   }}
                 />
 
-                {/* Modern Custom Controls Overlay */}
+                {/* Original Red Controls (Restored) */}
                 {!isMoniter && videoId && (
                   <div
-                    className={`absolute bottom-0 left-0 right-0 w-full bg-gradient-to-t from-black/90 via-black/60 to-transparent px-4 pb-3 pt-12 flex flex-col gap-2 transition-opacity duration-300 z-50 pointer-events-auto ${(showControls || isMouseMoving || !isPlaying) ? "opacity-100" : "opacity-0"
+                    className={`absolute bottom-0 left-0 right-0 w-full bg-white/95 backdrop-blur-sm border-t border-base-200 px-1 py-1 flex flex-row items-center z-50 transition-opacity duration-300 pointer-events-auto ${(showControls || isMouseMoving || !isPlaying) ? "opacity-100" : "opacity-0"
                       }`}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    {/* Progress Bar */}
-                    <input
-                      type="range"
-                      min={0}
-                      max={duration}
-                      value={currentTime}
-                      step="0.1"
-                      className="w-full h-1 bg-white/30 rounded-lg appearance-none cursor-pointer accent-red-600 hover:h-1.5 transition-all"
-                      onChange={(e) => {
-                        const time = parseFloat(e.target.value);
-                        const player = playerRef.current?.getInternalPlayer();
-                        if (player) player.seekTo(time, true);
-                        // Optimistic update
-                        // setCurrentTime(time);
-                      }}
-                    />
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        {/* Play/Pause */}
-                        <button onClick={() => isPlaying ? handlePause() : handlePlay()} className="text-white hover:text-red-500 transition-colors">
-                          {isPlaying ? <PauseIcon className="w-8 h-8" /> : <PlayIcon className="w-8 h-8" />}
-                        </button>
-
-                        {/* Next (Skip) */}
-                        <button onClick={() => {
-                          if (isCasting && firebaseCastNext) firebaseCastNext();
-                          else if (isGoogleCastConnected && castNext) castNext();
-                          else nextSong();
-                        }} className="text-white hover:text-white/80 transition-colors" title="เพลงถัดไป">
-                          <ForwardIcon className="w-6 h-6" />
-                        </button>
-
-                        {/* Volume */}
-                        <div className="group flex items-center gap-2">
-                          <button onClick={isMuted ? handleUnMute : handleMute} className="text-white hover:text-white/80">
-                            {isMuted ? <SpeakerXMarkIcon className="w-6 h-6" /> : <SpeakerWaveIcon className="w-6 h-6" />}
-                          </button>
-                        </div>
-
-                        {/* Time */}
-                        <div className="text-xs text-white/90 font-medium font-mono">
-                          {(!isNaN(currentTime) && isFinite(currentTime)) ? new Date(currentTime * 1000).toISOString().substr(14, 5) : "00:00"} / {(!isNaN(duration) && isFinite(duration)) ? new Date(duration * 1000).toISOString().substr(14, 5) : "00:00"}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-4">
-                        {/* Cast */}
-                        <button onClick={() => setShowCastModeSelector(true)} className="text-white hover:text-white/80" title="Cast">
-                          <TvIcon className="w-5 h-5" />
-                        </button>
-
-                        {/* Fullscreen */}
-                        <button onClick={handleFullscreenButtonClick} className="text-white hover:text-white/80">
-                          {(isFullscreen || isFullScreenIphone) ? <ArrowsPointingInIcon className="w-5 h-5" /> : <ArrowsPointingOutIcon className="w-5 h-5" />}
-                        </button>
-                      </div>
-                    </div>
+                    {buttons.map((btn) => (
+                      <button
+                        key={btn.label}
+                        className="btn btn-ghost font-normal text-primary flex h-auto flex-col flex-1 overflow-hidden text-[10px] 2xl:text-xs p-1 gap-0.5 hover:bg-base-200"
+                        onClick={btn.onClick}
+                      >
+                        <btn.icon className="w-5 h-5 2xl:w-6 2xl:h-6" />
+                        {btn.label}
+                      </button>
+                    ))}
+                    {extra}
                   </div>
                 )}
 
