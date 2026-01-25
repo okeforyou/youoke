@@ -322,7 +322,7 @@ export default function ListPlaylistsGrid() {
                 key={key}
                 item={item}
                 index={key}
-                isOwner={activeIndex === 1}
+                isOwner={false} // Always false in this context (showSuggestPlaylist only runs when activeIndex === 0)
                 userId={user.uid}
                 onPlay={(videos) => setVideoPlaylist(videos)}
                 onClick={(item) => {
