@@ -139,18 +139,57 @@ export default function DualScreen() {
           />
         </div>
 
-        {/* Queue Display */}
+  // Queue Auto-Hide Logic
+        const [showQueue, setShowQueue] = useState(false);
+        const queueTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Update Queue with Auto-Hide
+  const handleQueueUpdate = (newQueue: any[]) => {
+      // Simple shallow comparison to avoid flicker
+      if (JSON.stringify(newQueue) !== JSON.stringify(queue)) {
+          setQueue(newQueue);
+        setShowQueue(true);
+
+        if (queueTimeoutRef.current) clearTimeout(queueTimeoutRef.current);
+          queueTimeoutRef.current = setTimeout(() => {
+          setShowQueue(false);
+          }, 5000);
+      }
+  };
+
+        // ... (inside handleMessage) ...
+        if (payload) {
+          setVideoId(payload.videoId); // React handles deduplication
+        handleQueueUpdate(payload.queue);
+        setIsConnected(true);
+
+        if (playerRef.current) {
+            const internalPlayer = playerRef.current.getInternalPlayer();
+        // Only force state if Video Changed OR explicitly requested
+        // If just queue update, don't interrupt playback
+        if (internalPlayer && payload.videoId !== videoId) {
+               // Initial load or change
+               if (payload.isPlaying) internalPlayer.playVideo();
+            }
+          }
+        }
+        // ...
+
+        // Queue Render
         {queue && queue.length > 0 && (
-          <div className="absolute top-0 right-0 h-full w-80 bg-black/40 p-6 z-40 pointer-events-none">
-            <h2 className="text-xl font-bold mb-4 opacity-80">คิวเพลง ({queue.length})</h2>
-            <div className="space-y-3">
-              {queue.slice(0, 10).map((v, i) => (
-                <div key={i} className={`flex gap-3 text-sm ${v.videoId === videoId ? 'text-green-400 font-bold' : 'text-gray-300'}`}>
-                  <span>{i + 1}.</span>
+          <div className={`absolute top-4 right-4 w-80 bg-black/60 backdrop-blur-md rounded-xl p-4 z-40 transition-opacity duration-500 pointer-events-none ${showQueue ? 'opacity-100' : 'opacity-0'}`}>
+            <h2 className="text-lg font-bold mb-3 text-white flex items-center gap-2">
+              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+              คิวเพลง ({queue.length})
+            </h2>
+            <div className="space-y-2">
+              {queue.slice(0, 7).map((v, i) => (
+                <div key={i} className={`flex gap-3 text-sm p-2 rounded-lg ${v.videoId === videoId ? 'bg-primary/20 text-white font-bold border border-primary/50' : 'text-gray-300'}`}>
+                  <span className="opacity-70">{i + 1}.</span>
                   <span className="line-clamp-1">{v.title}</span>
                 </div>
               ))}
-              {queue.length > 10 && <p className="text-xs text-gray-500 mt-2">+ อีก {queue.length - 10} เพลง</p>}
+              {queue.length > 7 && <p className="text-xs text-center text-gray-400 mt-2">+ อีก {queue.length - 7} เพลง</p>}
             </div>
           </div>
         )}

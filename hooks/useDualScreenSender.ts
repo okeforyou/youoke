@@ -25,6 +25,7 @@ export const useDualScreenSender = () => {
                 videoId: currentVideoId,
                 queue: currentPlaylist,
                 currentIndex: currentPlaylist.findIndex((v) => v.videoId === currentVideoId),
+                isPlaying: true, // Always assume playing for SYNC updates (or can be passed via args if needed)
                 timestamp: Date.now(),
             },
         };
