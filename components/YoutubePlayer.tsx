@@ -1564,8 +1564,8 @@ function YoutubePlayer({
                   }}
                 />
 
-                {/* Controls Overlay - ONLY for Monitor (inside player container) */}
-                {isMoniter && (
+                {/* Controls Overlay - For Monitor and Mobile */}
+                {(isMoniter || videoId) && (
                   <div
                     className={`absolute inset-x-0 bottom-0 flex flex-row p-1 items-center z-30 transition-opacity duration-300 ${isMouseMoving ? "opacity-100" : ""
                       } ${(UseFullScreenCss || !isMouseMoving) &&
