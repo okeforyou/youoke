@@ -1633,7 +1633,7 @@ function YoutubePlayer({
 
                         {/* Time */}
                         <div className="text-xs text-white/90 font-medium font-mono">
-                          {new Date(currentTime * 1000).toISOString().substr(14, 5)} / {new Date(duration * 1000).toISOString().substr(14, 5)}
+                          {(!isNaN(currentTime) && isFinite(currentTime)) ? new Date(currentTime * 1000).toISOString().substr(14, 5) : "00:00"} / {(!isNaN(duration) && isFinite(duration)) ? new Date(duration * 1000).toISOString().substr(14, 5) : "00:00"}
                         </div>
                       </div>
 
