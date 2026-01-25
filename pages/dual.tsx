@@ -407,6 +407,36 @@ export default function DualScreen() {
 
           {/* Mini Control Player REMOVED - Using Native YouTube Controls as requested */}
 
+          {/* Hybrid Controls: Custom Next/Prev buttons overlaying Native Player */}
+          {currentVideoId && showControls && (
+            <div className="absolute top-1/2 left-0 right-0 transform -translate-y-1/2 px-4 flex justify-between pointer-events-none z-50">
+              {/* Previous Control */}
+              {currentIndex > 0 && (
+                <button
+                  onClick={handlePrevious}
+                  className="p-4 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-sm transition-all pointer-events-auto group"
+                  title="เพลงก่อนหน้า"
+                >
+                  <BackwardIcon className="w-8 h-8 opacity-75 group-hover:opacity-100" />
+                </button>
+              )}
+
+              {/* Spacer if no previous button to keep Next on right */}
+              {currentIndex === 0 && <div></div>}
+
+              {/* Next Control */}
+              {currentIndex < queue.length - 1 && (
+                <button
+                  onClick={handleNext}
+                  className="p-4 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-sm transition-all pointer-events-auto group"
+                  title="เพลงถัดไป"
+                >
+                  <ForwardIcon className="w-8 h-8 opacity-75 group-hover:opacity-100" />
+                </button>
+              )}
+            </div>
+          )}
+
           {/* Queue Display - Right Side Vertical */}
           {queue.length > 0 && showQueue && (
             <div className="absolute top-0 right-0 h-full w-80 lg:w-96 z-50 bg-black/40 p-6 overflow-y-auto transition-all duration-500">
