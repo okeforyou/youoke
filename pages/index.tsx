@@ -742,11 +742,11 @@ function HomePage() {
 
               {/* 1. Video Player (Always Top) */}
               {!isXlScreen && curVideoId && (
-                <div className="w-full bg-black aspect-video">
+                <div className="w-full bg-black">
                   <YoutubePlayer
                     videoId={curVideoId}
                     nextSong={playNext}
-                    className="w-full h-full"
+                    className="w-full"
                     externalPlayerRef={mobilePlayerRef}
                     showControls={true}
                     controlRef={playerControlRef}
