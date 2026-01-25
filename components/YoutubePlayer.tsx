@@ -138,11 +138,6 @@ function YoutubePlayer({
   const [videoCount, setVideoCount] = useState<number>(0);
   const [inputRoomId, setInputRoomId] = useState("");
 
-  // Custom Controls State
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const isPlaying = playerState === PlayerStates.PLAYING;
-
   const mounted = usePromise();
 
   const [isMouseMoving, setIsMouseMoving] = useState(true);
@@ -234,21 +229,6 @@ function YoutubePlayer({
       clearTimeout(timeoutId);
     };
   }, []);
-
-  // Poll for current time and duration when playing
-  useEffect(() => {
-    if (!isPlaying) return;
-    const interval = setInterval(async () => {
-      const player = playerRef.current?.getInternalPlayer();
-      if (player && typeof player.getCurrentTime === 'function') {
-        const time = await player.getCurrentTime();
-        const dur = await player.getDuration();
-        setCurrentTime(time);
-        setDuration(dur);
-      }
-    }, 500);
-    return () => clearInterval(interval);
-  }, [isPlaying]);
 
   // Removed duplicate castRoom handler - see line ~500 for the active one
 
@@ -1334,7 +1314,7 @@ function YoutubePlayer({
       id="youtubePlayer"
       className={`${isFullscreen || isFullScreenIphone
         ? "fixed inset-0 z-[9999] bg-black block w-screen h-screen"
-        : "relative bg-black w-full aspect-video group"
+        : "relative bg-white"
         } ${className}`}
     >
       <Alert
@@ -1550,9 +1530,9 @@ function YoutubePlayer({
                 <YouTube
                   ref={playerRef}
                   videoId={videoId}
-                  className={`w-full h-full absolute inset-0 bg-black ${!isFullscreen
-                    ? "cursor-zoom-in"
-                    : "cursor-zoom-out"
+                  className={`w-full bg-black ${!isFullscreen
+                    ? "aspect-video cursor-zoom-in"
+                    : "h-[calc(100dvh)] cursor-zoom-out"
                     }`}
                   iframeClassName={`w-full h-full pointer-events-none`}
                   style={{
@@ -1573,7 +1553,7 @@ function YoutubePlayer({
                       enablejsapi: 1,
                       modestbranding: 1,
                       playsinline: isIphone && isFullScreenIphone ? 0 : 1,
-                      fs: 1, // Enable YouTube native fullscreen
+                      fs: 0, // Disable YouTube native fullscreen
                     },
                   }}
                   onStateChange={(ev) => {
@@ -1583,27 +1563,6 @@ function YoutubePlayer({
                     nextSong();
                   }}
                 />
-
-                {/* Original Red Controls (Restored) */}
-                {!isMoniter && videoId && (
-                  <div
-                    className={`absolute bottom-0 left-0 right-0 w-full bg-white/95 backdrop-blur-sm border-t border-base-200 px-1 py-1 flex flex-row items-center z-50 transition-opacity duration-300 pointer-events-auto ${(showControls || isMouseMoving || !isPlaying) ? "opacity-100" : "opacity-0"
-                      }`}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {buttons.map((btn) => (
-                      <button
-                        key={btn.label}
-                        className="btn btn-ghost font-normal text-primary flex h-auto flex-col flex-1 overflow-hidden text-[10px] 2xl:text-xs p-1 gap-0.5 hover:bg-base-200"
-                        onClick={btn.onClick}
-                      >
-                        <btn.icon className="w-5 h-5 2xl:w-6 2xl:h-6" />
-                        {btn.label}
-                      </button>
-                    ))}
-                    {extra}
-                  </div>
-                )}
 
                 {/* Controls Overlay - ONLY for Monitor (inside player container) */}
                 {isMoniter && (
@@ -1667,7 +1626,43 @@ function YoutubePlayer({
       }
 
       {/* Controls for Remote - OUTSIDE player container (original position) */}
-
+      {
+        !isMoniter && showControls && videoId && (
+          <div
+            className={`flex-shrink-0 flex flex-row md:w-full p-1 items-center z-20 ${isMouseMoving ? "hover:opacity-100" : ""
+              } ${(UseFullScreenCss || !isMouseMoving) &&
+                (isFullscreen || isFullScreenIphone)
+                ? "opacity-0"
+                : ""
+              }`}
+            style={
+              UseFullScreenCss
+                ? {
+                  position: "fixed",
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: "initial",
+                }
+                : {}
+            }
+          >
+            {buttons.map((btn) => {
+              return (
+                <button
+                  key={btn.label}
+                  className="btn btn-ghost font-normal text-primary flex h-auto flex-col flex-1 overflow-hidden text-[10px] 2xl:text-xs p-1 gap-0.5 hover:bg-base-200"
+                  onClick={btn.onClick}
+                >
+                  <btn.icon className="w-5 h-5 2xl:w-6 2xl:h-6" />
+                  {btn.label}
+                </button>
+              );
+            })}
+            {extra}
+          </div>
+        )
+      }
 
       {/* Debug Overlay */}
       <DebugOverlay
