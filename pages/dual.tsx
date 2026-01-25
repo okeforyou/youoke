@@ -91,17 +91,19 @@ export default function DualScreen() {
   }), []);
 
   // Explicitly load video when ID changes (Robust "No-Key" switching)
+  // Only runs if player is ready to prevent errors
   useEffect(() => {
-    if (videoId && playerRef.current) {
+    if (videoId && playerRef.current && isPlayerReady) {
       const player = playerRef.current.getInternalPlayer();
       if (player && typeof player.loadVideoById === 'function') {
         console.log('🔄 [Dual] Loading Video:', videoId);
         player.loadVideoById({ videoId: videoId, startSeconds: 0 });
       }
     }
-  }, [videoId]);
+  }, [videoId, isPlayerReady]);
 
   const onPlayerReady = (event: any) => {
+    setIsPlayerReady(true);
     event.target.playVideo();
   };
 
