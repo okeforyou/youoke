@@ -15,6 +15,10 @@ export default function DualScreen() {
   const [isConnected, setIsConnected] = useState(false);
   const [isPlayerReady, setIsPlayerReady] = useState(false);
 
+  // Proven Sync Logic Refs (from Reference)
+  const currentVideoIdRef = useRef<string>('');
+  const isPlayingRef = useRef<boolean>(false);
+
   // YouTube Player Ref
   const playerRef = useRef<YouTube>(null);
 
@@ -90,11 +94,30 @@ export default function DualScreen() {
     },
   }), []);
 
-  // Explicitly load video when ID changes (Robust "No-Key" switching)
-  /* Manual loading removed for stability */
+  // 1. VIDEO SYNC: Watch videoId (Provenance: play.youoke Reference)
+  useEffect(() => {
+    // Wait for player and valid ID
+    if (!videoId || !playerRef.current) return;
+
+    // Only load if ID changed
+    if (videoId !== currentVideoIdRef.current) {
+      const player = playerRef.current.getInternalPlayer();
+      // Check function existence for safety
+      if (player && typeof player.loadVideoById === 'function') {
+        console.log(`🔀 [Dual] Switching to ${videoId}`);
+        player.loadVideoById(videoId);
+        currentVideoIdRef.current = videoId;
+      }
+    }
+  }, [videoId]);
 
   const onPlayerReady = (event: any) => {
-    event.target.playVideo();
+    setIsPlayerReady(true);
+    // Initial Load if needed
+    if (videoId && videoId !== currentVideoIdRef.current) {
+      event.target.loadVideoById(videoId);
+      currentVideoIdRef.current = videoId;
+    }
   };
 
   const onPlayerEnd = () => {
@@ -129,7 +152,7 @@ export default function DualScreen() {
         {/* Player Container */}
         <div className={`w-full h-full transition-opacity duration-500 ${videoId ? 'opacity-100' : 'opacity-0'}`}>
           <YouTube
-            key={videoId} // Restored for 100% Stability
+            // key={videoId} REMOVED: Using provenance architecture (loadVideoById)
             videoId={videoId}
             opts={opts}
             onReady={onPlayerReady}
