@@ -1527,10 +1527,10 @@ function YoutubePlayer({
           ) : (
             <>
               {isDualMode && !isMoniter && (
-                <div className="absolute inset-0 z-[10000] h-full w-full flex flex-col items-center justify-center bg-base-200/95 backdrop-blur-sm p-4 text-center">
+                <div className="absolute inset-0 z-[10000] h-full w-full flex flex-col items-center justify-center bg-slate-900 text-center border-b border-white/10">
                   <div className="text-4xl md:text-5xl mb-4 animate-pulse">🖥️</div>
-                  <h2 className="text-lg md:text-xl font-bold mb-2 text-base-content">กำลังเล่นที่หน้าจอที่ 2</h2>
-                  <p className="text-xs md:text-sm text-base-content/70 mb-6">วิดีโอกำลังเล่นบนหน้าจอ Dual Screen</p>
+                  <h2 className="text-lg md:text-xl font-bold mb-2 text-white">กำลังเล่นที่หน้าจอที่ 2</h2>
+                  <p className="text-xs md:text-sm text-gray-400 mb-6">วิดีโอกำลังเล่นบนหน้าจอ Dual Screen</p>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -1538,7 +1538,7 @@ function YoutubePlayer({
                       setIsDualMode(false);
                       handleUnMute();
                     }}
-                    className="btn btn-sm btn-outline btn-primary rounded-full px-6"
+                    className="btn btn-sm btn-outline btn-error rounded-full px-6 hover:bg-error hover:text-white transition-all"
                   >
                     ปิดโหมด 2 หน้าจอ
                   </button>
