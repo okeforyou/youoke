@@ -369,7 +369,7 @@ function YoutubePlayer({
           channel.postMessage({
             type: 'QUEUE_UPDATE',
             queue: playlist,
-            currentIndex: playlist.findIndex((v) => v.videoId === curVideoId),
+            currentIndex: playlist?.findIndex((v) => v.videoId === curVideoId) ?? -1,
             videoId: curVideoId,
             isPlaying: playerState === YouTube.PlayerState.PLAYING,
             isMuted: isMuted
