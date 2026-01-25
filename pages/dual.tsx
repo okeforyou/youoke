@@ -91,19 +91,9 @@ export default function DualScreen() {
   }), []);
 
   // Explicitly load video when ID changes (Robust "No-Key" switching)
-  // Only runs if player is ready to prevent errors
-  useEffect(() => {
-    if (videoId && playerRef.current && isPlayerReady) {
-      const player = playerRef.current.getInternalPlayer();
-      if (player && typeof player.loadVideoById === 'function') {
-        console.log('🔄 [Dual] Loading Video:', videoId);
-        player.loadVideoById({ videoId: videoId, startSeconds: 0 });
-      }
-    }
-  }, [videoId, isPlayerReady]);
+  /* Manual loading removed for stability */
 
   const onPlayerReady = (event: any) => {
-    setIsPlayerReady(true);
     event.target.playVideo();
   };
 
@@ -139,7 +129,7 @@ export default function DualScreen() {
         {/* Player Container */}
         <div className={`w-full h-full transition-opacity duration-500 ${videoId ? 'opacity-100' : 'opacity-0'}`}>
           <YouTube
-            // key={videoId} REMOVED to prevent Fullscreen exit
+            key={videoId} // Restored for 100% Stability
             videoId={videoId}
             opts={opts}
             onReady={onPlayerReady}
