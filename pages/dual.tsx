@@ -358,7 +358,7 @@ export default function DualScreen() {
     width: '100%',
     playerVars: {
       autoplay: 1 as 1,
-      controls: 0 as 0,
+      controls: 1 as 1,
       modestbranding: 1 as 1,
       rel: 0 as 0,
       disablekb: 1 as 1,
@@ -403,74 +403,7 @@ export default function DualScreen() {
               className="w-full h-full"
             />
 
-            {/* Mini Control Player - Bottom Center (Auto-hide) */}
-            {currentVideoId && showControls && (
-              <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-50 transition-opacity duration-300">
-                <div className="bg-black/80 backdrop-blur-md rounded-full px-6 py-3 flex items-center gap-3 shadow-2xl border border-white/10">
-                  {/* Previous Button */}
-                  <button
-                    onClick={handlePrevious}
-                    disabled={currentIndex === 0}
-                    className="p-3 rounded-full hover:bg-white/20 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                    title="เพลงก่อนหน้า"
-                  >
-                    <BackwardIcon className="w-6 h-6 text-white" />
-                  </button>
-
-                  {/* Play/Pause Button */}
-                  <button
-                    onClick={handlePlayPause}
-                    className="p-4 rounded-full bg-primary hover:bg-primary/80 transition-all"
-                    title={isPlaying ? 'หยุดชั่วคราว' : 'เล่น'}
-                  >
-                    {isPlaying ? (
-                      <PauseIcon className="w-7 h-7 text-white" />
-                    ) : (
-                      <PlayIcon className="w-7 h-7 text-white" />
-                    )}
-                  </button>
-
-                  {/* Next Button */}
-                  <button
-                    onClick={handleNext}
-                    disabled={currentIndex >= queue.length - 1}
-                    className="p-3 rounded-full hover:bg-white/20 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                    title="เพลงถัดไป"
-                  >
-                    <ForwardIcon className="w-6 h-6 text-white" />
-                  </button>
-
-                  {/* Divider */}
-                  <div className="ml-2 pl-2 border-l border-white/20"></div>
-
-                  {/* Mute Toggle */}
-                  <button
-                    onClick={handleToggleMute}
-                    className="p-3 rounded-full hover:bg-white/20 transition-all"
-                    title={isMuted ? 'เปิดเสียง' : 'ปิดเสียง'}
-                  >
-                    {isMuted ? (
-                      <SpeakerXMarkIcon className="w-6 h-6 text-white" />
-                    ) : (
-                      <SpeakerWaveIcon className="w-6 h-6 text-white" />
-                    )}
-                  </button>
-
-                  {/* Fullscreen Toggle */}
-                  <button
-                    onClick={handleToggleFullscreen}
-                    className="p-3 rounded-full hover:bg-white/20 transition-all"
-                    title={isFullscreen ? 'ออกจากเต็มจอ' : 'เต็มจอ'}
-                  >
-                    {isFullscreen ? (
-                      <ArrowsPointingInIcon className="w-6 h-6 text-white" />
-                    ) : (
-                      <ArrowsPointingOutIcon className="w-6 h-6 text-white" />
-                    )}
-                  </button>
-                </div>
-              </div>
-            )}
+            {/* Mini Control Player REMOVED - Using Native YouTube Controls as requested */}
 
             {/* Queue Display - Right Side Vertical */}
             {queue.length > 0 && showQueue && (
