@@ -100,6 +100,13 @@ export default function DualScreen() {
           }
           if (typeof newIsPlaying === 'boolean') {
             setIsPlaying(newIsPlaying);
+            if (player) {
+              if (newIsPlaying) {
+                player.playVideo();
+              } else {
+                player.pauseVideo();
+              }
+            }
           }
           break;
 
