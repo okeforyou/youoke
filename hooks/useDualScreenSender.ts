@@ -1,62 +1,75 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useKaraokeState } from './karaoke';
 
 export const useDualScreenSender = () => {
     const { playlist, curVideoId } = useKaraokeState();
     const channelRef = useRef<BroadcastChannel | null>(null);
 
-    // Initialize Channel
+    // Use refs to always access latest state in callbacks
+    const playlistRef = useRef(playlist);
+    const curVideoIdRef = useRef(curVideoId);
+
+    // Keep refs in sync
     useEffect(() => {
-        channelRef.current = new BroadcastChannel('youoke-dual-sync');
-        return () => {
-            channelRef.current?.close();
+        playlistRef.current = playlist;
+        curVideoIdRef.current = curVideoId;
+    }, [playlist, curVideoId]);
+
+    // Helper to build payload
+    const buildPayload = useCallback(() => {
+        const currentPlaylist = playlistRef.current || [];
+        const currentVideoId = curVideoIdRef.current || '';
+        return {
+            type: 'SYNC_STATE',
+            payload: {
+                videoId: currentVideoId,
+                queue: currentPlaylist,
+                currentIndex: currentPlaylist.findIndex((v) => v.videoId === currentVideoId),
+                timestamp: Date.now(),
+            },
         };
     }, []);
 
-    // Broadcast State Changes
+    // Initialize Channel & Listener (Single Effect)
+    useEffect(() => {
+        const channel = new BroadcastChannel('youoke-dual-sync');
+        channelRef.current = channel;
+        console.log('📡 [Sender] Channel opened');
+
+        // Listen for REQUEST_STATE
+        const handler = (event: MessageEvent) => {
+            if (event.data?.type === 'REQUEST_STATE') {
+                console.log('📡 [Sender] Received REQUEST_STATE, responding...');
+                const payload = buildPayload();
+                channel.postMessage(payload);
+                console.log('📡 [Sender] Sent SYNC_STATE:', payload.payload);
+            }
+        };
+
+        channel.addEventListener('message', handler);
+
+        return () => {
+            channel.removeEventListener('message', handler);
+            channel.close();
+            channelRef.current = null;
+            console.log('📡 [Sender] Channel closed');
+        };
+    }, [buildPayload]);
+
+    // Broadcast on State Change
     useEffect(() => {
         if (!channelRef.current) return;
 
         const isDualActive = localStorage.getItem('youoke-dual-active') === 'true';
-        if (!isDualActive) return;
-
-        const payload = {
-            type: 'SYNC_STATE',
-            payload: {
-                videoId: curVideoId || '',
-                queue: playlist || [],
-                currentIndex: playlist?.findIndex((v) => v.videoId === curVideoId) ?? -1,
-                timestamp: Date.now(),
-            },
-        };
-
-        console.log('📡 [Sender] Broadcasting SYNC_STATE:', payload.payload);
-        channelRef.current.postMessage(payload);
-    }, [playlist, curVideoId]);
-
-    // Listen for Request State (Initial Config)
-    useEffect(() => {
-        if (!channelRef.current) return;
-
-        const handler = (event: MessageEvent) => {
-            if (event.data?.type === 'REQUEST_STATE') {
-                console.log('📡 [Sender] Received REQUEST_STATE, responding...');
-                const payload = {
-                    type: 'SYNC_STATE',
-                    payload: {
-                        videoId: curVideoId || '',
-                        queue: playlist || [],
-                        currentIndex: playlist?.findIndex((v) => v.videoId === curVideoId) ?? -1,
-                        timestamp: Date.now(),
-                    },
-                };
-                channelRef.current?.postMessage(payload);
-            }
+        if (!isDualActive) {
+            console.log('📡 [Sender] Dual Mode NOT active, skipping broadcast');
+            return;
         }
 
-        channelRef.current.addEventListener('message', handler);
-        return () => channelRef.current?.removeEventListener('message', handler);
-    }, [playlist, curVideoId]);
+        const payload = buildPayload();
+        console.log('📡 [Sender] Broadcasting SYNC_STATE:', payload.payload);
+        channelRef.current.postMessage(payload);
+    }, [playlist, curVideoId, buildPayload]);
 
-    return null; // Logic only hook
+    return null;
 };
