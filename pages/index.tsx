@@ -801,10 +801,7 @@ function HomePage() {
 
 
 
-                {/* Cast Button */}
-                <button className="btn btn-circle btn-ghost text-base-content md:bg-base-100" onClick={() => playerControlRef.current?.openCastSelector()} title="Cast / Dual Screen">
-                  <TvIcon className="w-5 h-5 md:w-6 md:h-6" />
-                </button>
+
 
                 {/* Mobile Queue Button */}
                 <label htmlFor="modal-playlist" className="btn btn-circle btn-ghost text-base-content sm:hidden relative">
