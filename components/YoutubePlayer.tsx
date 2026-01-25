@@ -1628,7 +1628,7 @@ function YoutubePlayer({
 
         {/* Controls for Remote - OUTSIDE player container (original position) */}
         {
-          !isMoniter && showControls && videoId && (
+          !isMoniter && showControls && videoId && !showCastModeSelector && (
             <div
               className={`flex-shrink-0 flex flex-row w-full p-1 items-center z-[10001] ${isMouseMoving ? "hover:opacity-100" : ""
                 } ${(UseFullScreenCss || !isMouseMoving) &&
