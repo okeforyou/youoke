@@ -634,6 +634,25 @@ function YoutubePlayer({
     // Firebase Cast handles playlist sync now
   }, [playlist]);
 
+  // Sync state to Dual Screen (BroadcastChannel)
+  useEffect(() => {
+    if (!isDualMode || isMoniter) return;
+
+    const channel = new BroadcastChannel('youoke-dual-sync');
+    console.log('📡 Dual Mode: Syncing state update', { videoId, currentIndex, isPlaying: playerState === YouTube.PlayerState.PLAYING });
+
+    channel.postMessage({
+      type: 'QUEUE_UPDATE',
+      videoId,
+      queue: playlist,
+      currentIndex,
+      isPlaying: playerState === YouTube.PlayerState.PLAYING,
+      isMuted
+    });
+
+    channel.close();
+  }, [videoId, playlist, currentIndex, isDualMode, isMoniter, playerState, isMuted]);
+
   // Auto-connect from QR Code scan
   useEffect(() => {
     // Wait for router to be ready (important for iOS)
