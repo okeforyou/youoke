@@ -282,6 +282,12 @@ function YoutubePlayer({
       setPlayerState(newState);
 
       // Guest Limit Check: When starting to play a new song
+      if (newState === YouTube.PlayerState.PLAYING) {
+        if (isDualMode && !isMoniter) {
+          player.mute();
+        }
+      }
+
       if (newState === YouTube.PlayerState.PLAYING && !isLogin) {
         if (!canPlayNext()) {
           // Guest has reached limit - pause and show modal
@@ -1556,7 +1562,7 @@ function YoutubePlayer({
                   className={`w-full bg-black ${!isFullscreen
                     ? "aspect-video cursor-zoom-in"
                     : "h-[calc(100dvh)] cursor-zoom-out"
-                    }`}
+                    } ${isDualMode && !isMoniter ? "opacity-0 pointer-events-none" : ""}`}
                   iframeClassName={`w-full h-full pointer-events-none`}
                   style={{
                     width: "100%",
