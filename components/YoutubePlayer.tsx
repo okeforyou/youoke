@@ -638,6 +638,9 @@ function YoutubePlayer({
   useEffect(() => {
     if (!isDualMode || isMoniter) return;
 
+    // Calculate currentIndex on the fly since it's not in props
+    const currentIndex = playlist?.findIndex(v => v.videoId === videoId) ?? -1;
+
     const channel = new BroadcastChannel('youoke-dual-sync');
     console.log('📡 Dual Mode: Syncing state update', { videoId, currentIndex, isPlaying: playerState === YouTube.PlayerState.PLAYING });
 
@@ -651,7 +654,7 @@ function YoutubePlayer({
     });
 
     channel.close();
-  }, [videoId, playlist, currentIndex, isDualMode, isMoniter, playerState, isMuted]);
+  }, [videoId, playlist, isDualMode, isMoniter, playerState, isMuted]);
 
   // Auto-connect from QR Code scan
   useEffect(() => {
