@@ -374,9 +374,9 @@ export default function DualScreen() {
         <title>YouOKE - 2 หน้าจอ (Dual Screen)</title>
       </Head>
 
-      {/* Waiting for connection screen */}
-      {!currentVideoId ? (
-        <div className="h-screen w-screen bg-black text-white flex items-center justify-center">
+      {/* Waiting screen overlay */}
+      {!currentVideoId && (
+        <div className="absolute inset-0 z-[100] bg-black text-white flex items-center justify-center">
           <div className="text-center">
             <div className="text-6xl mb-4">🖥️</div>
             <h1 className="text-3xl font-bold mb-2">2 หน้าจอ (Dual Screen)</h1>
@@ -389,95 +389,96 @@ export default function DualScreen() {
             </div>
           </div>
         </div>
-      ) : (
-        /* Main player screen */
-        <div className="h-screen w-screen bg-black text-white flex flex-col">
-          <div ref={playerContainerRef} className="flex-1 relative">
-            {/* YouTube Player */}
-            <YouTube
-              videoId={currentVideoId}
-              opts={opts}
-              onReady={onPlayerReady}
-              onStateChange={onPlayerStateChange}
-              onError={onPlayerError}
-              className="w-full h-full"
-            />
+      )}
 
-            {/* Mini Control Player REMOVED - Using Native YouTube Controls as requested */}
+      {/* Main player screen - Always mounted to persist fullscreen */}
+      <div className="h-screen w-screen bg-black text-white flex flex-col">
+        <div ref={playerContainerRef} className="flex-1 relative">
+          {/* YouTube Player */}
+          <YouTube
+            videoId={currentVideoId}
+            opts={opts}
+            onReady={onPlayerReady}
+            onStateChange={onPlayerStateChange}
+            onError={onPlayerError}
+            className="w-full h-full"
+          />
 
-            {/* Queue Display - Right Side Vertical */}
-            {queue.length > 0 && showQueue && (
-              <div className="absolute top-0 right-0 h-full w-80 lg:w-96 z-50 bg-black/40 p-6 overflow-y-auto transition-all duration-500">
-                <div className="space-y-6">
-                  {/* Now Playing */}
-                  {currentVideo && (
-                    <div>
-                      <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide">กำลังเล่น</p>
-                      <div className="bg-primary/20 border border-primary/30 rounded-xl p-4">
-                        <h2 className="text-lg font-bold mb-1 line-clamp-2">
-                          {currentVideo.title}
-                        </h2>
-                        {currentVideo.author && (
-                          <p className="text-sm text-gray-300 truncate">{currentVideo.author}</p>
-                        )}
-                      </div>
-                    </div>
-                  )}
+          {/* Mini Control Player REMOVED - Using Native YouTube Controls as requested */}
 
-                  {/* Next in Queue */}
-                  {queue.length > currentIndex + 1 && (
-                    <div>
-                      <p className="text-xs text-gray-400 mb-3 uppercase tracking-wide flex items-center gap-2">
-                        <MusicalNoteIcon className="w-5 h-5" />
-                        <span>คิวถัดไป</span>
-                        <span className="ml-auto text-xs bg-white/10 px-2 py-0.5 rounded-full">
-                          {queue.length - currentIndex - 1} เพลง
-                        </span>
-                      </p>
-                      <div className="space-y-2">
-                        {queue
-                          .slice(currentIndex + 1, currentIndex + 8)
-                          .map((video, index) => (
-                            <div
-                              key={video.key}
-                              className="bg-white/5 hover:bg-white/10 rounded-lg p-3 transition-all"
-                            >
-                              <div className="flex items-start gap-3">
-                                <div className="flex-shrink-0 w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center">
-                                  <span className="text-primary font-bold text-xs">
-                                    {index + 1}
-                                  </span>
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="font-semibold text-sm line-clamp-2 mb-0.5">
-                                    {video.title}
-                                  </p>
-                                  {video.author && (
-                                    <p className="text-xs text-gray-400 truncate">
-                                      {video.author}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                      </div>
-
-                      {/* More songs indicator */}
-                      {queue.length > currentIndex + 9 && (
-                        <div className="mt-3 text-center">
-                          <p className="text-xs text-gray-400">
-                            + อีก {queue.length - currentIndex - 9} เพลง
-                          </p>
-                        </div>
+          {/* Queue Display - Right Side Vertical */}
+          {queue.length > 0 && showQueue && (
+            <div className="absolute top-0 right-0 h-full w-80 lg:w-96 z-50 bg-black/40 p-6 overflow-y-auto transition-all duration-500">
+              <div className="space-y-6">
+                {/* Now Playing */}
+                {currentVideo && (
+                  <div>
+                    <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide">กำลังเล่น</p>
+                    <div className="bg-primary/20 border border-primary/30 rounded-xl p-4">
+                      <h2 className="text-lg font-bold mb-1 line-clamp-2">
+                        {currentVideo.title}
+                      </h2>
+                      {currentVideo.author && (
+                        <p className="text-sm text-gray-300 truncate">{currentVideo.author}</p>
                       )}
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
+
+                {/* Next in Queue */}
+                {queue.length > currentIndex + 1 && (
+                  <div>
+                    <p className="text-xs text-gray-400 mb-3 uppercase tracking-wide flex items-center gap-2">
+                      <MusicalNoteIcon className="w-5 h-5" />
+                      <span>คิวถัดไป</span>
+                      <span className="ml-auto text-xs bg-white/10 px-2 py-0.5 rounded-full">
+                        {queue.length - currentIndex - 1} เพลง
+                      </span>
+                    </p>
+                    <div className="space-y-2">
+                      {queue
+                        .slice(currentIndex + 1, currentIndex + 8)
+                        .map((video, index) => (
+                          <div
+                            key={video.key}
+                            className="bg-white/5 hover:bg-white/10 rounded-lg p-3 transition-all"
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className="flex-shrink-0 w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center">
+                                <span className="text-primary font-bold text-xs">
+                                  {index + 1}
+                                </span>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-semibold text-sm line-clamp-2 mb-0.5">
+                                  {video.title}
+                                </p>
+                                {video.author && (
+                                  <p className="text-xs text-gray-400 truncate">
+                                    {video.author}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+
+                    {/* More songs indicator */}
+                    {queue.length > currentIndex + 9 && (
+                      <div className="mt-3 text-center">
+                        <p className="text-xs text-gray-400">
+                          + อีก {queue.length - currentIndex - 9} เพลง
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
+      </div>
       )}
     </>
   );
