@@ -748,7 +748,7 @@ function HomePage() {
                     nextSong={playNext}
                     className="w-full h-full"
                     externalPlayerRef={mobilePlayerRef}
-                    showControls={false}
+                    showControls={true}
                     controlRef={playerControlRef}
                   />
                 </div>
