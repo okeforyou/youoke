@@ -92,7 +92,7 @@ export default function DualScreen() {
           if (newQueue) {
             setQueue(newQueue);
           }
-          if (videoId) {
+          if (videoId !== undefined) {
             setCurrentVideoId(videoId);
           }
           if (typeof newIndex === 'number') {
