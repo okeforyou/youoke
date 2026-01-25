@@ -1,6 +1,8 @@
 import Head from 'next/head';
 import React, { useEffect, useState, useRef } from 'react';
 import YouTube from 'react-youtube';
+import { useFullscreen, useToggle } from 'react-use';
+import { ArrowsPointingOutIcon, ArrowsPointingInIcon } from '@heroicons/react/24/outline';
 
 type SyncPayload = {
   videoId: string;
@@ -21,6 +23,11 @@ export default function DualScreen() {
 
   // YouTube Player Ref
   const playerRef = useRef<YouTube>(null);
+
+  // Fullscreen Logic (Wrapper Strategy)
+  const fullscreenRef = useRef<HTMLDivElement>(null);
+  const [showFullscreen, toggleFullscreen] = useToggle(false);
+  const isFullscreen = useFullscreen(fullscreenRef, showFullscreen, { onClose: () => toggleFullscreen(false) });
 
   // Helper: Update Queue with Auto-Hide
   const handleQueueUpdate = (newQueue: any[]) => {
@@ -108,7 +115,7 @@ export default function DualScreen() {
       controls: 1 as 1,
       modestbranding: 1 as 1,
       rel: 0 as 0,
-      fs: 1 as 1, // Explicit Fullscreen
+      fs: 0 as 0, // Disable native FS -> Use Custom Wrapper FS
       disablekb: 1 as 1,
       enablejsapi: 1 as 1, // Ensure JS API is enabled
     },
@@ -147,8 +154,11 @@ export default function DualScreen() {
         <title>YouOKE - Dual Screen (Receiver)</title>
       </Head>
 
-      {/* Wrapper */}
-      <div className="h-screen w-screen bg-black text-white relative overflow-hidden">
+      {/* Wrapper with Fullscreen Ref */}
+      <div
+        ref={fullscreenRef}
+        className="h-screen w-screen bg-black text-white relative overflow-hidden"
+      >
 
         {/* Waiting Screen (Overlay when no video or disconnected) */}
         {(!videoId) && (
@@ -196,6 +206,17 @@ export default function DualScreen() {
             </div>
           </div>
         )}
+        {/* Custom Fullscreen Control (Always Visible on Hover) */}
+        <div className="absolute bottom-6 right-6 z-50 opacity-0 hover:opacity-100 transition-opacity duration-300">
+          <button
+            onClick={() => toggleFullscreen()}
+            className="bg-white/10 hover:bg-white/20 backdrop-blur-md p-3 rounded-full border border-white/20 text-white shadow-xl"
+            title="Seamless Fullscreen"
+          >
+            {isFullscreen ? <ArrowsPointingInIcon className="w-6 h-6" /> : <ArrowsPointingOutIcon className="w-6 h-6" />}
+          </button>
+        </div>
+
       </div>
     </>
   );
