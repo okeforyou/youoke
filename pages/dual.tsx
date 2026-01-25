@@ -407,7 +407,7 @@ export default function DualScreen() {
 
             {/* Queue Display - Right Side Vertical */}
             {queue.length > 0 && showQueue && (
-              <div className="absolute top-0 right-0 h-full w-80 lg:w-96 z-50 bg-gradient-to-l from-black/90 via-black/80 to-transparent backdrop-blur-md p-6 overflow-y-auto transition-all duration-500">
+              <div className="absolute top-0 right-0 h-full w-80 lg:w-96 z-50 bg-black/40 p-6 overflow-y-auto transition-all duration-500">
                 <div className="space-y-6">
                   {/* Now Playing */}
                   {currentVideo && (
