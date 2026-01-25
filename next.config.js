@@ -26,7 +26,8 @@ const nextConfig = {
       'yewtu.be',
       'vid.puffyan.us',
       'invidious.projectsegfau.lt',
-      'onion.tube'
+      'onion.tube',
+      'invidious.fdn.fr'
     ],
   },
   async rewrites() {
