@@ -1334,7 +1334,7 @@ function YoutubePlayer({
       id="youtubePlayer"
       className={`${isFullscreen || isFullScreenIphone
         ? "fixed inset-0 z-[9999] bg-black block w-screen h-screen"
-        : "relative bg-black w-full aspect-video"
+        : "relative bg-black w-full aspect-video group overflow-hidden"
         } ${className}`}
     >
       <Alert
@@ -1587,7 +1587,7 @@ function YoutubePlayer({
                 {/* Modern Custom Controls Overlay */}
                 {!isMoniter && videoId && (
                   <div
-                    className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent px-4 pb-3 pt-12 flex flex-col gap-2 transition-opacity duration-300 z-10 ${(showControls || isMouseMoving || !isPlaying) ? "opacity-100" : "opacity-0"
+                    className={`absolute bottom-0 left-0 right-0 w-full bg-gradient-to-t from-black/90 via-black/60 to-transparent px-4 pb-3 pt-12 flex flex-col gap-2 transition-opacity duration-300 z-50 pointer-events-auto ${(showControls || isMouseMoving || !isPlaying) ? "opacity-100" : "opacity-0"
                       }`}
                     onClick={(e) => e.stopPropagation()}
                   >
