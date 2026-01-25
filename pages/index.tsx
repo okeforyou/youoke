@@ -12,6 +12,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useEffect, useRef, useState, useMemo } from "react";
 import { DebounceInput } from "react-debounce-input";
+import { useDualScreenSender } from "../hooks/useDualScreenSender";
 import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import YouTube from 'react-youtube';
