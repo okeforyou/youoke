@@ -1140,7 +1140,7 @@ function YoutubePlayer({
         onClick: handleReplay,
       },
     ],
-    [nextSong, playlist, isCasting, isGoogleCastConnected, firebaseCastNext, castNext]
+    [nextSong, playlist, isCasting, isGoogleCastConnected, firebaseCastNext, castNext, isDualMode]
   );
 
   const handleCastJoinRoom = async () => {
