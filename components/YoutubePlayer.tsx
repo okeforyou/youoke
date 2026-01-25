@@ -1334,9 +1334,8 @@ function YoutubePlayer({
       id="youtubePlayer"
       className={`${isFullscreen || isFullScreenIphone
         ? "fixed inset-0 z-[9999] bg-black block w-screen h-screen"
-        : "relative bg-black w-full group"
+        : "relative bg-black w-full aspect-video group"
         } ${className}`}
-      style={!(isFullscreen || isFullScreenIphone) ? { paddingBottom: "56.25%" } : {}}
     >
       <Alert
         ref={alertRef}
@@ -1551,9 +1550,9 @@ function YoutubePlayer({
                 <YouTube
                   ref={playerRef}
                   videoId={videoId}
-                  className={`w-full bg-black ${!isFullscreen
+                  className={`w-full h-full absolute inset-0 bg-black ${!isFullscreen
                     ? "cursor-zoom-in"
-                    : "h-[calc(100dvh)] cursor-zoom-out"
+                    : "cursor-zoom-out"
                     }`}
                   iframeClassName={`w-full h-full pointer-events-none`}
                   style={{
