@@ -455,6 +455,13 @@ function YoutubePlayer({
     }
   };
   const handleUnMute = async () => {
+    // Block unmute in Dual Control Mode
+    if (isDualMode && !isMoniter) {
+      console.log('🔇 Audio locked in Dual Mode');
+      addToast('เสียงกำลังออกที่หน้าจอ 2');
+      return;
+    }
+
     try {
       const player = playerRef.current?.getInternalPlayer();
       setIsMuted(false);
@@ -1053,7 +1060,7 @@ function YoutubePlayer({
           onClick: handleUnMute,
         },
     ],
-    [isMuted]
+    [isMuted, isDualMode]
   );
 
   // Cast icon component - same color always
