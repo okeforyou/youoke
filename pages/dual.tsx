@@ -116,12 +116,29 @@ export default function DualScreen() {
 
 
   const onPlayerReady = (event: any) => {
+    // 1. Immediate Play
     event.target.playVideo();
+
+    // 2. Aggressive Retry (Double Tap)
+    // Ensures playback starts even if browser throttled the first attempt
+    setTimeout(() => {
+      try {
+        const state = event.target.getPlayerState();
+        // If not Playing (1) and not Buffering (3)
+        if (state !== 1 && state !== 3) {
+          console.log('🔄 [Dual] Force playing (retry)...');
+          event.target.playVideo();
+        }
+      } catch (e) { /* ignore */ }
+    }, 1000);
   };
 
   const onPlayerEnd = () => {
-    // Do nothing. Wait for Main Screen to change song -> Trigger Sync -> Update Video ID
-    console.log('🎬 [Dual] Video Ended. Waiting for sync...');
+    // Trigger Next Song on Main Screen
+    console.log('🎬 [Dual] Video Ended. Requesting Next...');
+    const channel = new BroadcastChannel('youoke-dual-sync');
+    channel.postMessage({ type: 'REQUEST_NEXT' });
+    channel.close();
   };
 
   return (
