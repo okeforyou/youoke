@@ -68,15 +68,8 @@ export default function DualScreen() {
     };
   }, []);
 
-  // Explicitly load video when ID changes (prevents Fullscreen exit by reusing iframe)
-  useEffect(() => {
-    if (videoId && playerRef.current) {
-      // @ts-ignore
-      playerRef.current.getInternalPlayer()?.loadVideoById(videoId);
-    }
-  }, [videoId]);
-
-  const opts = {
+  // Memoize options to prevent unnecessary re-renders
+  const opts = React.useMemo(() => ({
     height: '100%',
     width: '100%',
     playerVars: {
@@ -86,8 +79,20 @@ export default function DualScreen() {
       rel: 0 as 0,
       fs: 1 as 1, // Explicit Fullscreen
       disablekb: 1 as 1,
+      enablejsapi: 1 as 1, // Ensure JS API is enabled
     },
-  };
+  }), []);
+
+  // Explicitly load video when ID changes (Robust "No-Key" switching)
+  useEffect(() => {
+    if (videoId && playerRef.current) {
+      const player = playerRef.current.getInternalPlayer();
+      if (player && typeof player.loadVideoById === 'function') {
+        console.log('🔄 [Dual] Loading Video:', videoId);
+        player.loadVideoById({ videoId: videoId, startSeconds: 0 });
+      }
+    }
+  }, [videoId]);
 
   const onPlayerReady = (event: any) => {
     event.target.playVideo();
@@ -135,8 +140,8 @@ export default function DualScreen() {
           />
         </div>
 
-        {/* Queue Display (Simplified) */}
-        {queue.length > 0 && (
+        {/* Queue Display */}
+        {queue && queue.length > 0 && (
           <div className="absolute top-0 right-0 h-full w-80 bg-black/40 p-6 z-40 pointer-events-none">
             <h2 className="text-xl font-bold mb-4 opacity-80">คิวเพลง ({queue.length})</h2>
             <div className="space-y-3">
