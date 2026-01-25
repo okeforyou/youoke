@@ -110,7 +110,7 @@ export default function DualScreen() {
         {/* Player Container */}
         <div className={`w-full h-full transition-opacity duration-500 ${videoId ? 'opacity-100' : 'opacity-0'}`}>
           <YouTube
-            // key={videoId} REMOVED to prevent Fullscreen exit
+            key={videoId} // Force remount if ID changes (Ensures clean state)
             videoId={videoId}
             opts={opts}
             onReady={onPlayerReady}
