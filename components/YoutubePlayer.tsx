@@ -1568,8 +1568,8 @@ function YoutubePlayer({
                     playerVars: {
                       autoplay:
                         isMoniter && playerState === PlayerStates.PAUSED ? 0 : 1,
-                      controls: 1,
-                      disablekb: 0,
+                      controls: 0,
+                      disablekb: 1,
                       enablejsapi: 1,
                       modestbranding: 1,
                       playsinline: isIphone && isFullScreenIphone ? 0 : 1,
@@ -1584,25 +1584,24 @@ function YoutubePlayer({
                   }}
                 />
 
-                {/* Floating Next Button (Overlay for Native Controls) */}
+                {/* Original Red Controls (Restored) */}
                 {!isMoniter && videoId && (
                   <div
-                    className={`absolute bottom-14 right-4 z-[50] transition-opacity duration-300 ${(showControls || isMouseMoving || !isPlaying) ? "opacity-100" : "opacity-0"
+                    className={`absolute bottom-0 left-0 right-0 w-full bg-white/95 backdrop-blur-sm border-t border-base-200 px-1 py-1 flex flex-row items-center z-50 transition-opacity duration-300 pointer-events-auto ${(showControls || isMouseMoving || !isPlaying) ? "opacity-100" : "opacity-0"
                       }`}
-                    style={{ pointerEvents: 'auto' }}
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (isCasting && firebaseCastNext) firebaseCastNext();
-                        else if (isGoogleCastConnected && castNext) castNext();
-                        else nextSong();
-                      }}
-                      className="btn btn-sm border-0 bg-black/60 hover:bg-red-600 text-white backdrop-blur-md gap-2 rounded-full shadow-xl pl-4 pr-3 transition-all transform hover:scale-105"
-                    >
-                      <span className="text-xs font-bold">ข้ามเพลง</span>
-                      <ForwardIcon className="w-4 h-4" />
-                    </button>
+                    {buttons.map((btn) => (
+                      <button
+                        key={btn.label}
+                        className="btn btn-ghost font-normal text-primary flex h-auto flex-col flex-1 overflow-hidden text-[10px] 2xl:text-xs p-1 gap-0.5 hover:bg-base-200"
+                        onClick={btn.onClick}
+                      >
+                        <btn.icon className="w-5 h-5 2xl:w-6 2xl:h-6" />
+                        {btn.label}
+                      </button>
+                    ))}
+                    {extra}
                   </div>
                 )}
 
