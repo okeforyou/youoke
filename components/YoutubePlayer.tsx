@@ -1339,7 +1339,6 @@ function YoutubePlayer({
   };
 
 
-
   const buttons: any = !isMoniter
     ? [...playPauseBtn, ...playerBtns, ...muteBtn, ...fullBtn, ...castBtn]
     : [
@@ -1571,179 +1570,140 @@ function YoutubePlayer({
               </div>
             ) : (
               <>
-                <>
-                  {/* YouTube Player Wrapper - Handles Visibility without unmounting player */}
-                  <div
-                    className={`w-full bg-black ${!isFullscreen
-                      ? "aspect-video cursor-zoom-in"
-                      : "h-[calc(100dvh)] cursor-zoom-out"
-                      } ${isDualMode && !isMoniter ? "opacity-0 pointer-events-none invisible" : ""}`}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      position: UseFullScreenCss ? "fixed" : "absolute",
-                      top: 0,
-                      left: 0,
-                      zIndex: UseFullScreenCss ? 9999 : 0,
-                      visibility: (isDualMode && !isMoniter) ? 'hidden' : 'visible'
+                {/* YouTube Player Wrapper - Handles Visibility without unmounting player */}
+                <div
+                  className={`w-full bg-black ${!isFullscreen
+                    ? "aspect-video cursor-zoom-in"
+                    : "h-[calc(100dvh)] cursor-zoom-out"
+                    } ${isDualMode && !isMoniter ? "opacity-0 pointer-events-none invisible" : ""}`}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    position: UseFullScreenCss ? "fixed" : "absolute",
+                    top: 0,
+                    left: 0,
+                    zIndex: UseFullScreenCss ? 9999 : 0,
+                    visibility: (isDualMode && !isMoniter) ? 'hidden' : 'visible'
+                  }}
+                >
+                  <YouTube
+                    ref={playerRef}
+                    videoId={videoId}
+                    className="w-full h-full"
+                    iframeClassName="w-full h-full pointer-events-none"
+                    loading="lazy"
+                    opts={{
+                      playerVars: {
+                        autoplay:
+                          isMoniter && playerState === PlayerStates.PAUSED ? 0 : 1,
+                        controls: isMoniter ? 1 : 0,
+                        disablekb: 1,
+                        enablejsapi: 1,
+                        modestbranding: 1,
+                        playsinline: isIphone && isFullScreenIphone ? 0 : 1,
+                        fs: 0, // Disable YouTube native fullscreen
+                      },
                     }}
-                  >
-                    <YouTube
-                      ref={playerRef}
-                      videoId={videoId}
-                      className="w-full h-full"
-                      iframeClassName="w-full h-full pointer-events-none"
-                      loading="lazy"
-                      opts={{
-                        playerVars: {
-                          autoplay:
-                            isMoniter && playerState === PlayerStates.PAUSED ? 0 : 1,
-                          controls: isMoniter ? 1 : 0,
-                          disablekb: 1,
-                          enablejsapi: 1,
-                          modestbranding: 1,
-                          playsinline: isIphone && isFullScreenIphone ? 0 : 1,
-                          fs: 0, // Disable YouTube native fullscreen
-                        },
-                      }}
-                      onStateChange={(ev) => {
-                        updatePlayerState(ev.target);
-                      }}
-                      onEnd={() => {
-                        nextSong();
-                      }}
-                      onError={(e) => {
-                        console.error("YouTube Player Error:", e);
-                        // Handle error (e.g., skip to next song if video is unavailable)
-                        nextSong();
-                      }}
-                    />
-                  </div>
-                  {/* Controls Overlay - Disabled for Monitor (Using Native) */}
-                  {false && isMoniter && (
-                    <div
-                      className={`absolute inset-x-0 bottom-0 flex flex-row p-1 items-center z-30 transition-opacity duration-300 ${isMouseMoving ? "opacity-100" : ""
-                        } ${(UseFullScreenCss || !isMouseMoving) &&
-                          (isFullscreen || isFullScreenIphone)
-                          ? "opacity-0"
-                          : ""
-                        }`}
-                      style={
-                        UseFullScreenCss || isMoniter
-                          ? {
-                            position: "fixed",
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            background: "white",
-                          }
-                          : {
-                            background: "rgba(0, 0, 0, 0.5)",
-                          }
-                      }
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      {buttons.map((btn) => {
-                        return (
-                          <button
-                            key={btn.label}
-                            className="btn btn-ghost font-normal text-primary flex h-auto flex-col flex-1 overflow-hidden text-[10px] 2xl:text-xs p-1 gap-0.5 hover:bg-base-200"
-                            onClick={btn.onClick}
-                          >
-                            <btn.icon className="w-5 h-5 2xl:w-6 2xl:h-6" />
-                            {btn.label}
-                          </button>
-                        );
-                      })}
-                      {extra}
-                    </div>
-                  )}
-                </>
-            )}
+                    onStateChange={(ev) => {
+                      updatePlayerState(ev.target);
+                    }}
+                    onEnd={() => {
+                      nextSong();
+                    }}
+                    onError={(e) => {
+                      console.error("YouTube Player Error:", e);
+                      // Handle error (e.g., skip to next song if video is unavailable)
+                      nextSong();
+                    }}
+                  />
+                </div>
               </>
             )}
-          </div>
 
-        {!isLogin && !isMoniter && <BottomAds />}
-        {!isLogin && !isMoniter && isShowAds && <VideoAds />}
 
-        {/* Exit Fullscreen Button - Always visible in fullscreen mode */}
-        {
-          !isMoniter && videoId && (isFullscreen || isFullScreenIphone) && (
-            <button
-              onClick={handleFullscreenButtonClick}
-              className="fixed top-4 right-4 z-[100] btn btn-circle btn-sm bg-black/50 text-white border-white/30 hover:bg-black/70"
-              style={UseFullScreenCss ? { position: "fixed" } : {}}
-            >
-              <ArrowsPointingInIcon className="w-5 h-5" />
-            </button>
-          )
-        }
+            {!isLogin && !isMoniter && <BottomAds />}
+            {!isLogin && !isMoniter && isShowAds && <VideoAds />}
 
-        {/* Controls for Remote - OUTSIDE player container (original position) */}
-        {
-          !isMoniter && showControls && videoId && (
-            <div
-              className={`flex-shrink-0 flex flex-row w-full p-1 items-center z-[10001] ${isMouseMoving ? "hover:opacity-100" : ""
-                } ${(UseFullScreenCss || !isMouseMoving) &&
-                  (isFullscreen || isFullScreenIphone)
-                  ? "opacity-0"
-                  : ""
-                }`}
-              style={
-                UseFullScreenCss
-                  ? {
-                    position: "fixed",
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: "initial",
+            {/* Exit Fullscreen Button - Always visible in fullscreen mode */}
+            {
+              !isMoniter && videoId && (isFullscreen || isFullScreenIphone) && (
+                <button
+                  onClick={handleFullscreenButtonClick}
+                  className="fixed top-4 right-4 z-[100] btn btn-circle btn-sm bg-black/50 text-white border-white/30 hover:bg-black/70"
+                  style={UseFullScreenCss ? { position: "fixed" } : {}}
+                >
+                  <ArrowsPointingInIcon className="w-5 h-5" />
+                </button>
+              )
+            }
+
+            {/* Controls for Remote - OUTSIDE player container (original position) */}
+            {
+              !isMoniter && showControls && videoId && (
+                <div
+                  className={`flex-shrink-0 flex flex-row w-full p-1 items-center z-[10001] ${isMouseMoving ? "hover:opacity-100" : ""
+                    } ${(UseFullScreenCss || !isMouseMoving) &&
+                      (isFullscreen || isFullScreenIphone)
+                      ? "opacity-0"
+                      : ""
+                    }`}
+                  style={
+                    UseFullScreenCss
+                      ? {
+                        position: "fixed",
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: "initial",
+                      }
+                      : {}
                   }
-                  : {}
-              }
-            >
-              {buttons.map((btn) => {
-                return (
-                  <button
-                    key={btn.label}
-                    className="btn btn-ghost font-normal text-primary flex h-auto flex-col flex-1 overflow-hidden text-[10px] 2xl:text-xs p-1 gap-0.5 hover:bg-base-200"
-                    onClick={btn.onClick}
-                  >
-                    <btn.icon className="w-5 h-5 2xl:w-6 2xl:h-6" />
-                    {btn.label}
-                  </button>
-                );
-              })}
-              {extra}
-            </div>
-          )
-        }
+                >
+                  {buttons.map((btn) => {
+                    return (
+                      <button
+                        key={btn.label}
+                        className="btn btn-ghost font-normal text-primary flex h-auto flex-col flex-1 overflow-hidden text-[10px] 2xl:text-xs p-1 gap-0.5 hover:bg-base-200"
+                        onClick={btn.onClick}
+                      >
+                        <btn.icon className="w-5 h-5 2xl:w-6 2xl:h-6" />
+                        {btn.label}
+                      </button>
+                    );
+                  })}
+                  {extra}
+                </div>
+              )
+            }
+          </>
+        )}
+      </div>
 
-        {/* Debug Overlay */}
-        <DebugOverlay
-          isVisible={isDebugOverlayOpen}
-          onClose={() => setIsDebugOverlayOpen(false)}
-        />
+      {/* Debug Overlay */}
+      <DebugOverlay
+        isVisible={isDebugOverlayOpen}
+        onClose={() => setIsDebugOverlayOpen(false)}
+      />
 
-        {/* Share Room Modal */}
-        <ShareRoomModal
-          isOpen={isShareRoomModalOpen}
-          onClose={() => setIsShareRoomModalOpen(false)}
-          roomCode={roomCode}
-          shareUrl={baseUrl ? `${baseUrl}/?castRoom=${roomCode}` : ''}
-        />
+      {/* Share Room Modal */}
+      <ShareRoomModal
+        isOpen={isShareRoomModalOpen}
+        onClose={() => setIsShareRoomModalOpen(false)}
+        roomCode={roomCode}
+        shareUrl={baseUrl ? `${baseUrl}/?castRoom=${roomCode}` : ''}
+      />
 
-        {/* Guest Limit Modal */}
-        <GuestLimitModal
-          isOpen={showGuestLimitModal}
-          onClose={() => setShowGuestLimitModal(false)}
-          playedCount={playedCount}
-          guestLimit={guestLimit}
-        />
+      {/* Guest Limit Modal */}
+      <GuestLimitModal
+        isOpen={showGuestLimitModal}
+        onClose={() => setShowGuestLimitModal(false)}
+        playedCount={playedCount}
+        guestLimit={guestLimit}
+      />
 
-        {/* Debug Toggle Button - Removed to avoid blocking Dual Screen button */}
-      </div >
-      );
+      {/* Debug Toggle Button - Removed to avoid blocking Dual Screen button */}
+    </div >
+  );
 }
 
-      export default YoutubePlayer;
+export default YoutubePlayer;
