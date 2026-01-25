@@ -785,688 +785,690 @@ function YoutubePlayer({
                   }
                 }, i * 1000);
               }
-            } else {
-              console.log('📱 No resume needed:', {
-                wasPlayingBeforeHidden,
-                currentState: state,
-                stateNames: {
-                  '-1': 'UNSTARTED',
-                  '0': 'ENDED',
-                  '1': 'PLAYING',
-                  '2': 'PAUSED',
-                  '3': 'BUFFERING',
-                  '5': 'CUED'
-                }
-              });
             }
-          } catch (error) {
-            console.log(`📱 Error in resume attempt ${attemptNumber}:`, error);
-            if (attemptNumber < 5) {
-              setTimeout(() => attemptResume(attemptNumber + 1), 500);
-            }
+          } else {
+            console.log('📱 No resume needed:', {
+              wasPlayingBeforeHidden,
+              currentState: state,
+              stateNames: {
+                '-1': 'UNSTARTED',
+                '0': 'ENDED',
+                '1': 'PLAYING',
+                '2': 'PAUSED',
+                '3': 'BUFFERING',
+                '5': 'CUED'
+              }
+            });
           }
-        };
+        } catch (error) {
+          console.log(`📱 Error in resume attempt ${attemptNumber}:`, error);
+          if (attemptNumber < 5) {
+            setTimeout(() => attemptResume(attemptNumber + 1), 500);
+          }
+        }
+      };
 
-        // Start resume attempts after a short delay
-        setTimeout(() => attemptResume(1), 300);
+      // Start resume attempts after a short delay
+      setTimeout(() => attemptResume(1), 300);
+    }
+  };
+
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+
+  return () => {
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
+  };
+}, [isMoniter, isGoogleCastConnected, isCasting, isDualMode, videoId, playlist, nextSong, playerState]);
+
+// Media Session API - Native app controls (notification, lock screen)
+useEffect(() => {
+  // Skip only if Monitor mode or Dual mode (display screens, not controllers)
+  // Allow for both local playback AND Cast mode (to control TV from lock screen)
+  if (isMoniter || isDualMode) {
+    return;
+  }
+
+  // Check if Media Session API is supported
+  if (!('mediaSession' in navigator)) {
+    console.log('📱 Media Session API not supported');
+    return;
+  }
+
+  const isCastMode = isGoogleCastConnected || isCasting;
+  console.log('🎵 Setting up Media Session API handlers', isCastMode ? '(Cast mode - remote control)' : '(Local mode)');
+
+  // Setup action handlers for notification/lock screen controls
+  try {
+    navigator.mediaSession.setActionHandler('play', () => {
+      console.log('🎵 Media Session: Play action');
+      handlePlay(); // handlePlay already supports Cast
+    });
+
+    navigator.mediaSession.setActionHandler('pause', () => {
+      console.log('🎵 Media Session: Pause action');
+      handlePause(); // handlePause already supports Cast
+    });
+
+    navigator.mediaSession.setActionHandler('nexttrack', () => {
+      console.log('🎵 Media Session: Next track action');
+      if (nextSong) {
+        nextSong();
       }
-    };
+    });
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    navigator.mediaSession.setActionHandler('previoustrack', () => {
+      console.log('🎵 Media Session: Previous track action');
+      // Find current video in playlist and go to previous
+      if (playlist && playlist.length > 0 && curVideoId) {
+        const currentIndex = playlist.findIndex(v => v.videoId === curVideoId);
+        if (currentIndex > 0) {
+          const previousVideo = playlist[currentIndex - 1];
+          setCurVideoId(previousVideo.videoId);
+        }
+      }
+    });
 
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [isMoniter, isGoogleCastConnected, isCasting, isDualMode, videoId, playlist, nextSong, playerState]);
-
-  // Media Session API - Native app controls (notification, lock screen)
-  useEffect(() => {
-    // Skip only if Monitor mode or Dual mode (display screens, not controllers)
-    // Allow for both local playback AND Cast mode (to control TV from lock screen)
-    if (isMoniter || isDualMode) {
-      return;
-    }
-
-    // Check if Media Session API is supported
-    if (!('mediaSession' in navigator)) {
-      console.log('📱 Media Session API not supported');
-      return;
-    }
-
-    const isCastMode = isGoogleCastConnected || isCasting;
-    console.log('🎵 Setting up Media Session API handlers', isCastMode ? '(Cast mode - remote control)' : '(Local mode)');
-
-    // Setup action handlers for notification/lock screen controls
-    try {
-      navigator.mediaSession.setActionHandler('play', () => {
-        console.log('🎵 Media Session: Play action');
-        handlePlay(); // handlePlay already supports Cast
-      });
-
-      navigator.mediaSession.setActionHandler('pause', () => {
-        console.log('🎵 Media Session: Pause action');
-        handlePause(); // handlePause already supports Cast
-      });
-
-      navigator.mediaSession.setActionHandler('nexttrack', () => {
-        console.log('🎵 Media Session: Next track action');
-        if (nextSong) {
-          nextSong();
+    // Seek handlers only for local playback (not supported in Cast mode)
+    if (!isCastMode) {
+      navigator.mediaSession.setActionHandler('seekbackward', (details) => {
+        console.log('🎵 Media Session: Seek backward action');
+        const player = playerRef.current?.getInternalPlayer();
+        if (player) {
+          player.getCurrentTime().then((currentTime: number) => {
+            const seekTime = Math.max(0, currentTime - (details.seekOffset || 10));
+            player.seekTo(seekTime, true);
+          }).catch((err: any) => console.log('Error seeking:', err));
         }
       });
 
-      navigator.mediaSession.setActionHandler('previoustrack', () => {
-        console.log('🎵 Media Session: Previous track action');
-        // Find current video in playlist and go to previous
-        if (playlist && playlist.length > 0 && curVideoId) {
-          const currentIndex = playlist.findIndex(v => v.videoId === curVideoId);
-          if (currentIndex > 0) {
-            const previousVideo = playlist[currentIndex - 1];
-            setCurVideoId(previousVideo.videoId);
-          }
-        }
-      });
-
-      // Seek handlers only for local playback (not supported in Cast mode)
-      if (!isCastMode) {
-        navigator.mediaSession.setActionHandler('seekbackward', (details) => {
-          console.log('🎵 Media Session: Seek backward action');
-          const player = playerRef.current?.getInternalPlayer();
-          if (player) {
-            player.getCurrentTime().then((currentTime: number) => {
-              const seekTime = Math.max(0, currentTime - (details.seekOffset || 10));
+      navigator.mediaSession.setActionHandler('seekforward', (details) => {
+        console.log('🎵 Media Session: Seek forward action');
+        const player = playerRef.current?.getInternalPlayer();
+        if (player) {
+          player.getCurrentTime().then((currentTime: number) => {
+            player.getDuration().then((duration: number) => {
+              const seekTime = Math.min(duration, currentTime + (details.seekOffset || 10));
               player.seekTo(seekTime, true);
-            }).catch((err: any) => console.log('Error seeking:', err));
-          }
-        });
-
-        navigator.mediaSession.setActionHandler('seekforward', (details) => {
-          console.log('🎵 Media Session: Seek forward action');
-          const player = playerRef.current?.getInternalPlayer();
-          if (player) {
-            player.getCurrentTime().then((currentTime: number) => {
-              player.getDuration().then((duration: number) => {
-                const seekTime = Math.min(duration, currentTime + (details.seekOffset || 10));
-                player.seekTo(seekTime, true);
-              }).catch((err: any) => console.log('Error getting duration:', err));
-            }).catch((err: any) => console.log('Error seeking:', err));
-          }
-        });
-      } else {
-        // Remove seek handlers in Cast mode
-        try {
-          navigator.mediaSession.setActionHandler('seekbackward', null);
-          navigator.mediaSession.setActionHandler('seekforward', null);
-        } catch (e) {
-          // Ignore
+            }).catch((err: any) => console.log('Error getting duration:', err));
+          }).catch((err: any) => console.log('Error seeking:', err));
         }
-      }
-
-      console.log('✅ Media Session API handlers registered', isCastMode ? '(remote control mode)' : '(with seek support)');
-    } catch (error) {
-      console.log('⚠️ Error setting up Media Session API:', error);
-    }
-
-    return () => {
-      // Cleanup handlers
+      });
+    } else {
+      // Remove seek handlers in Cast mode
       try {
-        navigator.mediaSession.setActionHandler('play', null);
-        navigator.mediaSession.setActionHandler('pause', null);
-        navigator.mediaSession.setActionHandler('nexttrack', null);
-        navigator.mediaSession.setActionHandler('previoustrack', null);
         navigator.mediaSession.setActionHandler('seekbackward', null);
         navigator.mediaSession.setActionHandler('seekforward', null);
-      } catch (error) {
-        // Ignore cleanup errors
+      } catch (e) {
+        // Ignore
       }
-    };
-  }, [isMoniter, isGoogleCastConnected, isCasting, isDualMode, nextSong, playlist, curVideoId]);
-
-  // Update Media Session metadata when video changes
-  useEffect(() => {
-    // Skip only if Monitor mode or Dual mode
-    // Show metadata for both local and Cast modes
-    if (isMoniter || isDualMode) {
-      return;
     }
 
-    // Check if Media Session API is supported
-    if (!('mediaSession' in navigator) || !videoId) {
-      return;
-    }
+    console.log('✅ Media Session API handlers registered', isCastMode ? '(remote control mode)' : '(with seek support)');
+  } catch (error) {
+    console.log('⚠️ Error setting up Media Session API:', error);
+  }
 
+  return () => {
+    // Cleanup handlers
     try {
-      // Find current video info from playlist
-      const currentVideo = playlist?.find(v => v.videoId === videoId);
-      const title = currentVideo?.title || 'Unknown Track';
-      const artist = currentVideo?.author || 'Unknown Artist';
-
-      const isCastMode = isGoogleCastConnected || isCasting;
-      console.log('🎵 Updating Media Session metadata:', { title, artist, mode: isCastMode ? 'Cast' : 'Local' });
-
-      // Update notification metadata with video thumbnails (different sizes for different screens)
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: title,
-        artist: artist,
-        album: isCastMode ? '📺 YouOke Karaoke (Casting)' : '🎤 YouOke Karaoke',
-        artwork: [
-          // Small - for notifications
-          { src: `https://i.ytimg.com/vi/${videoId}/default.jpg`, sizes: '120x90', type: 'image/jpeg' },
-          // Medium - for lock screen
-          { src: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`, sizes: '320x180', type: 'image/jpeg' },
-          // High - for tablets
-          { src: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`, sizes: '480x360', type: 'image/jpeg' },
-          // SD - for larger screens
-          { src: `https://i.ytimg.com/vi/${videoId}/sddefault.jpg`, sizes: '640x480', type: 'image/jpeg' },
-          // Max resolution - for Cast/TV
-          { src: `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`, sizes: '1280x720', type: 'image/jpeg' },
-        ],
-      });
-
-      console.log('✅ Media Session metadata updated');
+      navigator.mediaSession.setActionHandler('play', null);
+      navigator.mediaSession.setActionHandler('pause', null);
+      navigator.mediaSession.setActionHandler('nexttrack', null);
+      navigator.mediaSession.setActionHandler('previoustrack', null);
+      navigator.mediaSession.setActionHandler('seekbackward', null);
+      navigator.mediaSession.setActionHandler('seekforward', null);
     } catch (error) {
-      console.log('⚠️ Error updating Media Session metadata:', error);
+      // Ignore cleanup errors
     }
-  }, [videoId, playlist, isMoniter, isGoogleCastConnected, isCasting, isDualMode]);
+  };
+}, [isMoniter, isGoogleCastConnected, isCasting, isDualMode, nextSong, playlist, curVideoId]);
 
-  // Update Media Session position state (required for Android lock screen)
-  useEffect(() => {
-    // Skip if Monitor mode or Cast mode
-    if (isMoniter || isGoogleCastConnected || isCasting || isDualMode) {
-      return;
+// Update Media Session metadata when video changes
+useEffect(() => {
+  // Skip only if Monitor mode or Dual mode
+  // Show metadata for both local and Cast modes
+  if (isMoniter || isDualMode) {
+    return;
+  }
+
+  // Check if Media Session API is supported
+  if (!('mediaSession' in navigator) || !videoId) {
+    return;
+  }
+
+  try {
+    // Find current video info from playlist
+    const currentVideo = playlist?.find(v => v.videoId === videoId);
+    const title = currentVideo?.title || 'Unknown Track';
+    const artist = currentVideo?.author || 'Unknown Artist';
+
+    const isCastMode = isGoogleCastConnected || isCasting;
+    console.log('🎵 Updating Media Session metadata:', { title, artist, mode: isCastMode ? 'Cast' : 'Local' });
+
+    // Update notification metadata with video thumbnails (different sizes for different screens)
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: title,
+      artist: artist,
+      album: isCastMode ? '📺 YouOke Karaoke (Casting)' : '🎤 YouOke Karaoke',
+      artwork: [
+        // Small - for notifications
+        { src: `https://i.ytimg.com/vi/${videoId}/default.jpg`, sizes: '120x90', type: 'image/jpeg' },
+        // Medium - for lock screen
+        { src: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`, sizes: '320x180', type: 'image/jpeg' },
+        // High - for tablets
+        { src: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`, sizes: '480x360', type: 'image/jpeg' },
+        // SD - for larger screens
+        { src: `https://i.ytimg.com/vi/${videoId}/sddefault.jpg`, sizes: '640x480', type: 'image/jpeg' },
+        // Max resolution - for Cast/TV
+        { src: `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`, sizes: '1280x720', type: 'image/jpeg' },
+      ],
+    });
+
+    console.log('✅ Media Session metadata updated');
+  } catch (error) {
+    console.log('⚠️ Error updating Media Session metadata:', error);
+  }
+}, [videoId, playlist, isMoniter, isGoogleCastConnected, isCasting, isDualMode]);
+
+// Update Media Session position state (required for Android lock screen)
+useEffect(() => {
+  // Skip if Monitor mode or Cast mode
+  if (isMoniter || isGoogleCastConnected || isCasting || isDualMode) {
+    return;
+  }
+
+  // Check if Media Session API is supported
+  if (!('mediaSession' in navigator) || !videoId) {
+    return;
+  }
+
+  // Update position state every second when playing
+  let intervalId: NodeJS.Timeout | null = null;
+
+  const updatePositionState = async () => {
+    try {
+      const player = playerRef.current?.getInternalPlayer();
+      if (!player) return;
+
+      const [currentTime, duration] = await Promise.all([
+        player.getCurrentTime(),
+        player.getDuration(),
+      ]);
+
+      if ('setPositionState' in navigator.mediaSession) {
+        navigator.mediaSession.setPositionState({
+          duration: duration || 0,
+          playbackRate: 1.0,
+          position: currentTime || 0,
+        });
+        console.log('🎵 Position updated:', { position: currentTime, duration });
+      }
+    } catch (error) {
+      // Ignore position update errors
     }
+  };
 
-    // Check if Media Session API is supported
-    if (!('mediaSession' in navigator) || !videoId) {
-      return;
+  // Update immediately
+  updatePositionState();
+
+  // Update every second if playing
+  if (playerState === YouTube.PlayerState.PLAYING) {
+    intervalId = setInterval(updatePositionState, 1000);
+  }
+
+  return () => {
+    if (intervalId) {
+      clearInterval(intervalId);
     }
+  };
+}, [videoId, playerState, isMoniter, isGoogleCastConnected, isCasting, isDualMode]);
 
-    // Update position state every second when playing
-    let intervalId: NodeJS.Timeout | null = null;
-
-    const updatePositionState = async () => {
-      try {
-        const player = playerRef.current?.getInternalPlayer();
-        if (!player) return;
-
-        const [currentTime, duration] = await Promise.all([
-          player.getCurrentTime(),
-          player.getDuration(),
-        ]);
-
-        if ('setPositionState' in navigator.mediaSession) {
-          navigator.mediaSession.setPositionState({
-            duration: duration || 0,
-            playbackRate: 1.0,
-            position: currentTime || 0,
-          });
-          console.log('🎵 Position updated:', { position: currentTime, duration });
+const playPauseBtn = [
+  playerState === YouTube.PlayerState.PLAYING || (isCasting && firebaseCastState.controls.isPlaying)
+    ? {
+      icon: PauseIcon,
+      label: "หยุด",
+      onClick: () => {
+        console.log('🎯 Pause button clicked:', { isCasting, isGoogleCastConnected });
+        if (isCasting) {
+          firebaseCastPause();
+        } else if (isGoogleCastConnected) {
+          castPause();
+        } else {
+          handlePause();
         }
-      } catch (error) {
-        // Ignore position update errors
-      }
-    };
-
-    // Update immediately
-    updatePositionState();
-
-    // Update every second if playing
-    if (playerState === YouTube.PlayerState.PLAYING) {
-      intervalId = setInterval(updatePositionState, 1000);
+      },
     }
+    : {
+      icon: PlayIcon,
+      label: "เล่น",
+      onClick: () => {
+        console.log('🎯 Play button clicked:', { isCasting, isGoogleCastConnected });
+        if (isCasting) {
+          firebaseCastPlay();
+        } else if (isGoogleCastConnected) {
+          castPlay();
+        } else {
+          handlePlay();
+        }
+      },
+    },
+];
 
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-    };
-  }, [videoId, playerState, isMoniter, isGoogleCastConnected, isCasting, isDualMode]);
-
-  const playPauseBtn = [
-    playerState === YouTube.PlayerState.PLAYING || (isCasting && firebaseCastState.controls.isPlaying)
+const muteBtn = useMemo(
+  () => [
+    !isMuted
       ? {
-        icon: PauseIcon,
-        label: "หยุด",
-        onClick: () => {
-          console.log('🎯 Pause button clicked:', { isCasting, isGoogleCastConnected });
-          if (isCasting) {
-            firebaseCastPause();
-          } else if (isGoogleCastConnected) {
-            castPause();
-          } else {
-            handlePause();
-          }
+        icon: SpeakerWaveIcon,
+        label: "ปิดเสียง",
+        onClick: handleMute,
+      }
+      : {
+        icon: SpeakerXMarkIcon,
+        label: "เปิดเสียง",
+        onClick: handleUnMute,
+      },
+  ],
+  [isMuted, isDualMode]
+);
+
+// Cast icon component - same color always
+const CastIcon = ({ className }: { className?: string }) => (
+  <svg className={className} fill="currentColor" viewBox="0 0 24 24">
+    <path d="M1 18v3h3c0-1.66-1.34-3-3-3zm0-4v2c2.76 0 5 2.24 5 5h2c0-3.87-3.13-7-7-7zm0-4v2c4.97 0 9 4.03 9 9h2c0-6.08-4.93-11-11-11zm20-7H3c-1.1 0-2 .9-2 2v3h2V5h18v14h-7v2h7c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" />
+  </svg>
+);
+
+const castBtn = useMemo(() => {
+  // Always show single Cast button - same color always
+  return [
+    {
+      icon: CastIcon,
+      label: isGoogleCastConnected ? "Casting" : "Cast",
+      onClick: async () => {
+        // If connected, do nothing (user must use disconnect button in video area)
+        // If not connected, open Cast selector
+        if (!isGoogleCastConnected) {
+          setShowCastModeSelector(true);
+        }
+      },
+    },
+  ];
+}, [isGoogleCastConnected]);
+
+const fullBtn = useMemo(
+  () => [
+    (isIphone ? !isFullScreenIphone : !isFullscreen)
+      ? {
+        icon: ArrowsPointingOutIcon,
+        label: "เต็มจอ",
+        onClick: async () => {
+          handleFullscreenButtonClick();
         },
       }
       : {
-        icon: PlayIcon,
-        label: "เล่น",
-        onClick: () => {
-          console.log('🎯 Play button clicked:', { isCasting, isGoogleCastConnected });
-          if (isCasting) {
-            firebaseCastPlay();
-          } else if (isGoogleCastConnected) {
-            castPlay();
-          } else {
-            handlePlay();
-          }
-        },
-      },
-  ];
-
-  const muteBtn = useMemo(
-    () => [
-      !isMuted
-        ? {
-          icon: SpeakerWaveIcon,
-          label: "ปิดเสียง",
-          onClick: handleMute,
-        }
-        : {
-          icon: SpeakerXMarkIcon,
-          label: "เปิดเสียง",
-          onClick: handleUnMute,
-        },
-    ],
-    [isMuted, isDualMode]
-  );
-
-  // Cast icon component - same color always
-  const CastIcon = ({ className }: { className?: string }) => (
-    <svg className={className} fill="currentColor" viewBox="0 0 24 24">
-      <path d="M1 18v3h3c0-1.66-1.34-3-3-3zm0-4v2c2.76 0 5 2.24 5 5h2c0-3.87-3.13-7-7-7zm0-4v2c4.97 0 9 4.03 9 9h2c0-6.08-4.93-11-11-11zm20-7H3c-1.1 0-2 .9-2 2v3h2V5h18v14h-7v2h7c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" />
-    </svg>
-  );
-
-  const castBtn = useMemo(() => {
-    // Always show single Cast button - same color always
-    return [
-      {
-        icon: CastIcon,
-        label: isGoogleCastConnected ? "Casting" : "Cast",
+        icon: ArrowsPointingInIcon,
+        label: "จอเล็ก",
         onClick: async () => {
-          // If connected, do nothing (user must use disconnect button in video area)
-          // If not connected, open Cast selector
-          if (!isGoogleCastConnected) {
-            setShowCastModeSelector(true);
-          }
+          handleFullscreenButtonClick();
         },
       },
-    ];
-  }, [isGoogleCastConnected]);
+  ],
+  [isFullscreen, isFullScreenIphone, isIphone]
+);
 
-  const fullBtn = useMemo(
-    () => [
-      (isIphone ? !isFullScreenIphone : !isFullscreen)
-        ? {
-          icon: ArrowsPointingOutIcon,
-          label: "เต็มจอ",
-          onClick: async () => {
-            handleFullscreenButtonClick();
-          },
+const playerBtns: any = useMemo(
+  () => [
+    {
+      icon: ForwardIcon,
+      label: "เพลงถัดไป",
+      onClick: () => {
+        const debugInfo = {
+          isCasting,
+          isGoogleCastConnected,
+          firebaseCastNextExists: !!firebaseCastNext,
+          castNextExists: !!castNext,
+        };
+        console.log('🎯 Next button clicked:', debugInfo);
+        addDebugLog('🎯 Next button clicked', debugInfo);
+
+        if (isCasting) {
+          console.log('📤 Calling firebaseCastNext()...');
+          addDebugLog('📤 Calling firebaseCastNext()');
+          firebaseCastNext();
+        } else if (isGoogleCastConnected) {
+          console.log('📤 Calling castNext()...');
+          addDebugLog('📤 Calling castNext()');
+          castNext();
+        } else {
+          if (isDualMode && !isMoniter) {
+            const ch = new BroadcastChannel('youoke-dual-sync');
+            ch.postMessage({ type: 'NEXT' });
+            ch.close();
+          }
+          nextSong();
         }
-        : {
-          icon: ArrowsPointingInIcon,
-          label: "จอเล็ก",
-          onClick: async () => {
-            handleFullscreenButtonClick();
-          },
-        },
-    ],
-    [isFullscreen, isFullScreenIphone, isIphone]
-  );
-
-  const playerBtns: any = useMemo(
-    () => [
-      {
-        icon: ForwardIcon,
-        label: "เพลงถัดไป",
-        onClick: () => {
-          const debugInfo = {
-            isCasting,
-            isGoogleCastConnected,
-            firebaseCastNextExists: !!firebaseCastNext,
-            castNextExists: !!castNext,
-          };
-          console.log('🎯 Next button clicked:', debugInfo);
-          addDebugLog('🎯 Next button clicked', debugInfo);
-
-          if (isCasting) {
-            console.log('📤 Calling firebaseCastNext()...');
-            addDebugLog('📤 Calling firebaseCastNext()');
-            firebaseCastNext();
-          } else if (isGoogleCastConnected) {
-            console.log('📤 Calling castNext()...');
-            addDebugLog('📤 Calling castNext()');
-            castNext();
-          } else {
-            if (isDualMode && !isMoniter) {
-              const ch = new BroadcastChannel('youoke-dual-sync');
-              ch.postMessage({ type: 'NEXT' });
-              ch.close();
-            }
-            nextSong();
-          }
-        },
       },
-      {
-        icon: ArrowUturnLeftIcon,
-        label: "ร้องซ้ำ",
-        onClick: handleReplay,
-      },
-    ],
-    [nextSong, playlist, isCasting, isGoogleCastConnected, firebaseCastNext, castNext, isDualMode]
-  );
+    },
+    {
+      icon: ArrowUturnLeftIcon,
+      label: "ร้องซ้ำ",
+      onClick: handleReplay,
+    },
+  ],
+  [nextSong, playlist, isCasting, isGoogleCastConnected, firebaseCastNext, castNext, isDualMode]
+);
 
-  const handleCastJoinRoom = async () => {
-    if (!castInputRoomCode || castInputRoomCode.length !== 4) {
-      setCastError('กรุณากรอกเลขห้อง 4 หลัก');
-      return;
+const handleCastJoinRoom = async () => {
+  if (!castInputRoomCode || castInputRoomCode.length !== 4) {
+    setCastError('กรุณากรอกเลขห้อง 4 หลัก');
+    return;
+  }
+
+  // Check guest name if not logged in
+  if (!isLogin && (!guestName || guestName.trim().length === 0)) {
+    setCastError('กรุณากรอกชื่อของคุณ');
+    return;
+  }
+
+  setIsJoiningRoom(true);
+  setCastError('');
+
+  try {
+    // Pass guestName if not logged in
+    const options = !isLogin ? { guestName: guestName.trim() } : undefined;
+    const success = await joinRoom(castInputRoomCode, options);
+    if (success) {
+      setIsCastOverlayOpen(false);
+      setCastInputRoomCode('');
+      setGuestName('');
+      addToast('เชื่อมต่อสำเร็จ! 🎉');
+    } else {
+      setCastError('ไม่พบห้อง กรุณาตรวจสอบเลขห้องอีกครั้ง');
     }
+  } catch (err) {
+    setCastError('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+  }
 
-    // Check guest name if not logged in
-    if (!isLogin && (!guestName || guestName.trim().length === 0)) {
-      setCastError('กรุณากรอกชื่อของคุณ');
-      return;
-    }
+  setIsJoiningRoom(false);
+};
 
-    setIsJoiningRoom(true);
-    setCastError('');
+const handleCastDisconnect = () => {
+  leaveRoom();
+  addToast('ตัดการเชื่อมต่อแล้ว');
+};
 
-    try {
-      // Pass guestName if not logged in
-      const options = !isLogin ? { guestName: guestName.trim() } : undefined;
-      const success = await joinRoom(castInputRoomCode, options);
-      if (success) {
-        setIsCastOverlayOpen(false);
-        setCastInputRoomCode('');
-        setGuestName('');
-        addToast('เชื่อมต่อสำเร็จ! 🎉');
-      } else {
-        setCastError('ไม่พบห้อง กรุณาตรวจสอบเลขห้องอีกครั้ง');
-      }
-    } catch (err) {
-      setCastError('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
-    }
+const CastOverlayComponent = () => {
+  // Don't show overlay at all when already casting (user sees "กำลัง Cast ไป Monitor" screen instead)
+  if (isCasting || !isCastOverlayOpen) return null;
 
-    setIsJoiningRoom(false);
-  };
+  // Don't show on Monitor page
+  if (isMoniter) return null;
 
-  const handleCastDisconnect = () => {
-    leaveRoom();
-    addToast('ตัดการเชื่อมต่อแล้ว');
-  };
+  return (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
+      <div className="bg-base-100 rounded-xl shadow-2xl max-w-md w-full p-4 sm:p-5 relative my-auto max-h-[90vh] overflow-y-auto">
+        {/* Close Button */}
+        <button
+          onClick={() => {
+            setIsCastOverlayOpen(false);
+            setCastError('');
+            setCastInputRoomCode('');
+            setGuestName('');
+          }}
+          className="absolute top-2 right-2 btn btn-sm btn-circle btn-ghost z-10"
+        >
+          <XMarkIcon className="w-5 h-5" />
+        </button>
 
-  const CastOverlayComponent = () => {
-    // Don't show overlay at all when already casting (user sees "กำลัง Cast ไป Monitor" screen instead)
-    if (isCasting || !isCastOverlayOpen) return null;
-
-    // Don't show on Monitor page
-    if (isMoniter) return null;
-
-    return (
-      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
-        <div className="bg-base-100 rounded-xl shadow-2xl max-w-md w-full p-4 sm:p-5 relative my-auto max-h-[90vh] overflow-y-auto">
-          {/* Close Button */}
-          <button
-            onClick={() => {
-              setIsCastOverlayOpen(false);
-              setCastError('');
-              setCastInputRoomCode('');
-              setGuestName('');
-            }}
-            className="absolute top-2 right-2 btn btn-sm btn-circle btn-ghost z-10"
-          >
-            <XMarkIcon className="w-5 h-5" />
-          </button>
-
-          {/* Content */}
-          <div className="space-y-4">
-            {/* Title */}
-            <div className="text-center pr-8">
-              <div className="flex items-center justify-center gap-2 mb-3">
-                <TvIcon className="w-6 h-6 text-primary" />
-                <h2 className="text-lg sm:text-xl font-bold">Web Monitor Cast</h2>
-              </div>
-              <p className="text-xs text-gray-600">
-                เปิด <span className="font-semibold">{baseUrl ? new URL(baseUrl).hostname : 'youoke.vercel.app'}/monitor</span> บนทีวี
-              </p>
+        {/* Content */}
+        <div className="space-y-4">
+          {/* Title */}
+          <div className="text-center pr-8">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <TvIcon className="w-6 h-6 text-primary" />
+              <h2 className="text-lg sm:text-xl font-bold">Web Monitor Cast</h2>
             </div>
+            <p className="text-xs text-gray-600">
+              เปิด <span className="font-semibold">{baseUrl ? new URL(baseUrl).hostname : 'youoke.vercel.app'}/monitor</span> บนทีวี
+            </p>
+          </div>
 
-            {!isCasting ? (
-              <div className="space-y-3">
+          {!isCasting ? (
+            <div className="space-y-3">
 
-                {/* Guest Name Input (only if not logged in) */}
-                {!isLogin && (
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-                      ชื่อของคุณ
-                    </label>
-                    <input
-                      type="text"
-                      className="py-2.5 px-4 block w-full bg-base-200 border border-base-300 rounded-lg text-sm focus:border-primary focus:outline-none transition-colors"
-                      placeholder="ใส่ชื่อของคุณ"
-                      maxLength={20}
-                      value={guestName}
-                      onChange={(e) => setGuestName(e.target.value)}
-                      autoFocus
-                    />
-                  </div>
-                )}
-
-                {/* Room Code Input */}
+              {/* Guest Name Input (only if not logged in) */}
+              {!isLogin && (
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-                    เลขห้อง
+                    ชื่อของคุณ
                   </label>
                   <input
                     type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    className="py-3 px-4 block w-full bg-base-200 border border-base-300 rounded-lg text-center text-2xl tracking-widest font-bold focus:border-primary focus:outline-none transition-colors"
-                    placeholder="0000"
-                    maxLength={4}
-                    value={castInputRoomCode}
-                    onChange={(e) => setCastInputRoomCode(e.target.value.replace(/\D/g, ''))}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
-                        handleCastJoinRoom();
-                      }
-                    }}
-                    autoFocus={isLogin}
+                    className="py-2.5 px-4 block w-full bg-base-200 border border-base-300 rounded-lg text-sm focus:border-primary focus:outline-none transition-colors"
+                    placeholder="ใส่ชื่อของคุณ"
+                    maxLength={20}
+                    value={guestName}
+                    onChange={(e) => setGuestName(e.target.value)}
+                    autoFocus
                   />
                 </div>
+              )}
 
-                {/* Error Message */}
-                {castError && (
-                  <div className="p-2.5 bg-error/10 border border-error/30 rounded-lg text-xs text-error">
-                    {castError}
-                  </div>
+              {/* Room Code Input */}
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                  เลขห้อง
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  className="py-3 px-4 block w-full bg-base-200 border border-base-300 rounded-lg text-center text-2xl tracking-widest font-bold focus:border-primary focus:outline-none transition-colors"
+                  placeholder="0000"
+                  maxLength={4}
+                  value={castInputRoomCode}
+                  onChange={(e) => setCastInputRoomCode(e.target.value.replace(/\D/g, ''))}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handleCastJoinRoom();
+                    }
+                  }}
+                  autoFocus={isLogin}
+                />
+              </div>
+
+              {/* Error Message */}
+              {castError && (
+                <div className="p-2.5 bg-error/10 border border-error/30 rounded-lg text-xs text-error">
+                  {castError}
+                </div>
+              )}
+
+              {/* Join Button */}
+              <button
+                className="w-full py-2.5 px-4 text-white rounded-lg bg-primary hover:bg-primary/90 font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors text-sm"
+                onClick={handleCastJoinRoom}
+                disabled={isJoiningRoom || castInputRoomCode.length !== 4 || (!isLogin && !guestName.trim())}
+              >
+                {isJoiningRoom ? (
+                  <>
+                    <ClockIcon className="w-4 h-4 animate-spin" />
+                    <span>กำลังเข้าร่วม...</span>
+                  </>
+                ) : (
+                  <span>เข้าร่วมห้อง</span>
                 )}
-
-                {/* Join Button */}
-                <button
-                  className="w-full py-2.5 px-4 text-white rounded-lg bg-primary hover:bg-primary/90 font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors text-sm"
-                  onClick={handleCastJoinRoom}
-                  disabled={isJoiningRoom || castInputRoomCode.length !== 4 || (!isLogin && !guestName.trim())}
-                >
-                  {isJoiningRoom ? (
-                    <>
-                      <ClockIcon className="w-4 h-4 animate-spin" />
-                      <span>กำลังเข้าร่วม...</span>
-                    </>
-                  ) : (
-                    <span>เข้าร่วมห้อง</span>
-                  )}
-                </button>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {/* Connected Status */}
-                <div className="bg-base-200 rounded-lg p-3 border border-base-300">
-                  <div className="flex items-center justify-center gap-2 text-base font-semibold mb-1">
-                    <CheckCircleIcon className="w-5 h-5 text-primary" />
-                    <span>เชื่อมต่อแล้ว</span>
-                  </div>
-                  <div className="text-xl font-bold text-center">ห้อง: {roomCode}</div>
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {/* Connected Status */}
+              <div className="bg-base-200 rounded-lg p-3 border border-base-300">
+                <div className="flex items-center justify-center gap-2 text-base font-semibold mb-1">
+                  <CheckCircleIcon className="w-5 h-5 text-primary" />
+                  <span>เชื่อมต่อแล้ว</span>
                 </div>
-
-                {/* Player Controls */}
-                <div>
-                  <PlayerControls
-                    isPlaying={firebaseCastState.controls.isPlaying}
-                    onPlay={firebaseCastPlay}
-                    onPause={firebaseCastPause}
-                    onNext={firebaseCastNext}
-                    className="justify-center"
-                  />
-                </div>
-
-                {/* Disconnect/Leave Button */}
-                <button
-                  className="w-full py-2.5 px-4 text-white rounded-lg bg-error hover:bg-error/90 font-semibold flex items-center justify-center gap-2 transition-colors text-sm"
-                  onClick={handleCastDisconnect}
-                >
-                  <XMarkIcon className="w-4 h-4" />
-                  <span>{userInfo?.isGuest ? 'ออกจากห้อง' : 'ตัดการเชื่อมต่อ'}</span>
-                </button>
+                <div className="text-xl font-bold text-center">ห้อง: {roomCode}</div>
               </div>
-            )}
+
+              {/* Player Controls */}
+              <div>
+                <PlayerControls
+                  isPlaying={firebaseCastState.controls.isPlaying}
+                  onPlay={firebaseCastPlay}
+                  onPause={firebaseCastPause}
+                  onNext={firebaseCastNext}
+                  className="justify-center"
+                />
+              </div>
+
+              {/* Disconnect/Leave Button */}
+              <button
+                className="w-full py-2.5 px-4 text-white rounded-lg bg-error hover:bg-error/90 font-semibold flex items-center justify-center gap-2 transition-colors text-sm"
+                onClick={handleCastDisconnect}
+              >
+                <XMarkIcon className="w-4 h-4" />
+                <span>{userInfo?.isGuest ? 'ออกจากห้อง' : 'ตัดการเชื่อมต่อ'}</span>
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+const buttons: any = !isMoniter
+  ? [...playPauseBtn, ...playerBtns, ...muteBtn, ...fullBtn, ...castBtn]
+  : [
+    ...fullBtn,
+    {
+      icon: ArrowPathIcon,
+      label: "โหลดใหม่",
+      onClick: async () => {
+        window.location.reload();
+      },
+    },
+  ];
+
+return (
+  <div
+    ref={fullscreenRef}
+    id="youtubePlayer"
+    className={`${isFullscreen || isFullScreenIphone
+      ? "fixed inset-0 z-[9999] bg-black block w-screen h-screen"
+      : "relative bg-white"
+      } ${className}`}
+  >
+    <Alert
+      ref={alertRef}
+      timer={2000}
+      headline="เต็มจอ"
+      headlineColor="text-green-600"
+      bgColor="bg-green-100"
+      content={<span className="text-sm">กดเล่นเพื่อเต็มจอ</span>}
+      icon={<PlayIcon />}
+    />
+    <span className={`${isIOS && !isIphone ? "" : "hidden"}`}>
+      <Alert
+        ref={alertFullNotWorkRef}
+        timer={3000}
+        headline="หากไม่เต็มจอ"
+        headlineColor="text-green-600"
+        bgColor="bg-green-100"
+        content={
+          <button
+            className="text-sm btn btn-ghost"
+            onClick={async () => {
+              setIsFullScreenIphone(false);
+              toggleFullscreen(false);
+              setIsIphone(true);
+              await handlePause();
+            }}
+          >
+            กดที่นี่แล้วลองอีกครั้ง
+          </button>
+        }
+        icon={<ExclamationTriangleIcon />}
+      />
+    </span>
+    {/* Web Monitor Cast - Enabled for testing */}
+    {CastOverlayComponent()}
+
+    {/* Cast Mode Selector Modal */}
+    <CastModeSelector
+      isOpen={showCastModeSelector}
+      onClose={() => setShowCastModeSelector(false)}
+      isCastAvailable={isCastAvailable}
+      isMobile={isMobile}
+      onSelectWebMonitor={() => {
+        setShowCastModeSelector(false);
+        setIsCastOverlayOpen(true);
+      }}
+      onSelectDual={() => {
+        setShowCastModeSelector(false);
+        // Set dual mode active
+        localStorage.setItem('youoke-dual-active', 'true');
+        setIsDualMode(true);
+        // Open dual screen
+        window.open('/dual', '_blank');
+        // Pause video on main screen
+        handlePause();
+      }}
+      onSelectGoogleCast={() => {
+        setShowCastModeSelector(false);
+        if (playlist.length === 0) {
+          addToast('กรุณาเพิ่มเพลงลงคิวก่อน');
+          return;
+        }
+        // Connect to Chromecast with playlist
+        console.log('📡 Google Cast: Connecting to Chromecast with', playlist.length, 'videos');
+        connectGoogleCast(playlist);
+      }}
+      onSelectYouTube={() => {
+        setShowCastModeSelector(false);
+        if (playlist.length === 0) {
+          addToast('กรุณาเพิ่มเพลงลงคิวก่อน');
+          return;
+        }
+        const videoIds = playlist.map((v) => v.videoId).join(',');
+        const youtubeURL = `https://www.youtube.com/watch_videos?video_ids=${videoIds}`;
+        window.open(youtubeURL, '_blank');
+      }}
+    />
+
+    {isMoniter && !isOpenMonitor && (
+      <div
+        className={` w-full aspect-video   bg-primary text-white  z-2 left-auto
+          flex items-center justify-center  transition-all duration-50  `}
+        style={{
+          zIndex: 2,
+          position: "absolute",
+        }}
+      >
+        <div className="relative">
+          <div
+            className="cursor-pointer  absolute inset-0 flex items-center justify-center  text-xl"
+            onClick={() => {
+              setIsOpenMonitor(true);
+              handlePlay();
+            }}
+          >
+            กดเพื่อเปิดหน้าจอ
           </div>
         </div>
       </div>
-    );
-  };
-
-
-  const buttons: any = !isMoniter
-    ? [...playPauseBtn, ...playerBtns, ...muteBtn, ...fullBtn, ...castBtn]
-    : [
-      ...fullBtn,
-      {
-        icon: ArrowPathIcon,
-        label: "โหลดใหม่",
-        onClick: async () => {
-          window.location.reload();
-        },
-      },
-    ];
-
-  return (
+    )}
     <div
-      ref={fullscreenRef}
-      id="youtubePlayer"
-      className={`${isFullscreen || isFullScreenIphone
-        ? "fixed inset-0 z-[9999] bg-black block w-screen h-screen"
-        : "relative bg-white"
-        } ${className}`}
+      className="w-full flex flex-col relative flex-1 md:flex-grow-1"
+      onClick={() => handleVideoClick()}
     >
-      <Alert
-        ref={alertRef}
-        timer={2000}
-        headline="เต็มจอ"
-        headlineColor="text-green-600"
-        bgColor="bg-green-100"
-        content={<span className="text-sm">กดเล่นเพื่อเต็มจอ</span>}
-        icon={<PlayIcon />}
-      />
-      <span className={`${isIOS && !isIphone ? "" : "hidden"}`}>
-        <Alert
-          ref={alertFullNotWorkRef}
-          timer={3000}
-          headline="หากไม่เต็มจอ"
-          headlineColor="text-green-600"
-          bgColor="bg-green-100"
-          content={
-            <button
-              className="text-sm btn btn-ghost"
-              onClick={async () => {
-                setIsFullScreenIphone(false);
-                toggleFullscreen(false);
-                setIsIphone(true);
-                await handlePause();
-              }}
-            >
-              กดที่นี่แล้วลองอีกครั้ง
-            </button>
-          }
-          icon={<ExclamationTriangleIcon />}
-        />
-      </span>
-      {/* Web Monitor Cast - Enabled for testing */}
-      {CastOverlayComponent()}
-
-      {/* Cast Mode Selector Modal */}
-      <CastModeSelector
-        isOpen={showCastModeSelector}
-        onClose={() => setShowCastModeSelector(false)}
-        isCastAvailable={isCastAvailable}
-        isMobile={isMobile}
-        onSelectWebMonitor={() => {
-          setShowCastModeSelector(false);
-          setIsCastOverlayOpen(true);
-        }}
-        onSelectDual={() => {
-          setShowCastModeSelector(false);
-          // Set dual mode active
-          localStorage.setItem('youoke-dual-active', 'true');
-          setIsDualMode(true);
-          // Open dual screen
-          window.open('/dual', '_blank');
-          // Pause video on main screen
-          handlePause();
-        }}
-        onSelectGoogleCast={() => {
-          setShowCastModeSelector(false);
-          if (playlist.length === 0) {
-            addToast('กรุณาเพิ่มเพลงลงคิวก่อน');
-            return;
-          }
-          // Connect to Chromecast with playlist
-          console.log('📡 Google Cast: Connecting to Chromecast with', playlist.length, 'videos');
-          connectGoogleCast(playlist);
-        }}
-        onSelectYouTube={() => {
-          setShowCastModeSelector(false);
-          if (playlist.length === 0) {
-            addToast('กรุณาเพิ่มเพลงลงคิวก่อน');
-            return;
-          }
-          const videoIds = playlist.map((v) => v.videoId).join(',');
-          const youtubeURL = `https://www.youtube.com/watch_videos?video_ids=${videoIds}`;
-          window.open(youtubeURL, '_blank');
-        }}
-      />
-
-      {isMoniter && !isOpenMonitor && (
-        <div
-          className={` w-full aspect-video   bg-primary text-white  z-2 left-auto
-          flex items-center justify-center  transition-all duration-50  `}
-          style={{
-            zIndex: 2,
-            position: "absolute",
-          }}
-        >
-          <div className="relative">
-            <div
-              className="cursor-pointer  absolute inset-0 flex items-center justify-center  text-xl"
-              onClick={() => {
-                setIsOpenMonitor(true);
-                handlePlay();
-              }}
-            >
-              กดเพื่อเปิดหน้าจอ
-            </div>
-          </div>
-        </div>
-      )}
-      <div
-        className="w-full aspect-video relative flex-1 md:flex-grow-1"
-        onClick={() => handleVideoClick()}
-      >
+      <div className="w-full aspect-video relative bg-black">
         {isCasting && !isMoniter ? (
           <div className="h-full w-full flex flex-col items-center justify-center p-4 gap-3 bg-gradient-to-br from-error to-red-600">
-            {/* Compact status banner - White theme like the button below */}
+            {/* Compact status banner */}
             <div className="bg-white rounded-xl shadow-2xl px-4 py-3 max-w-sm w-full mx-auto border-2 border-white/50">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex-1 min-w-0">
@@ -1512,16 +1514,8 @@ function YoutubePlayer({
               </p>
               <button
                 onClick={(e) => {
-                  const debugInfo = {
-                    isGoogleCastConnected,
-                    disconnectExists: !!disconnectGoogleCast,
-                  };
-                  console.log('🎯 Disconnect button clicked!', debugInfo);
-                  addDebugLog('🎯 Disconnect button clicked', debugInfo);
                   e.stopPropagation(); // Prevent fullscreen trigger
                   disconnectGoogleCast();
-                  console.log('📡 Disconnecting from Google Cast...');
-                  addDebugLog('📡 Disconnecting from Google Cast');
                   addToast('ตัดการเชื่อมต่อ Google Cast แล้ว');
                 }}
                 className="btn btn-sm btn-error gap-2"
@@ -1543,7 +1537,6 @@ function YoutubePlayer({
                     e.stopPropagation();
                     localStorage.removeItem('youoke-dual-active');
                     setIsDualMode(false);
-                    // Unmute when returning to single screen
                     handleUnMute();
                   }}
                   className="btn btn-sm btn-outline btn-primary rounded-full px-6"
@@ -1570,7 +1563,7 @@ function YoutubePlayer({
               </div>
             ) : (
               <>
-                {/* YouTube Player Wrapper - Handles Visibility without unmounting player */}
+                {/* YouTube Player Wrapper */}
                 <div
                   className={`w-full bg-black ${!isFullscreen
                     ? "aspect-video cursor-zoom-in"
@@ -1594,25 +1587,19 @@ function YoutubePlayer({
                     loading="lazy"
                     opts={{
                       playerVars: {
-                        autoplay:
-                          isMoniter && playerState === PlayerStates.PAUSED ? 0 : 1,
+                        autoplay: isMoniter && playerState === PlayerStates.PAUSED ? 0 : 1,
                         controls: isMoniter ? 1 : 0,
                         disablekb: 1,
                         enablejsapi: 1,
                         modestbranding: 1,
                         playsinline: isIphone && isFullScreenIphone ? 0 : 1,
-                        fs: 0, // Disable YouTube native fullscreen
+                        fs: 0,
                       },
                     }}
-                    onStateChange={(ev) => {
-                      updatePlayerState(ev.target);
-                    }}
-                    onEnd={() => {
-                      nextSong();
-                    }}
+                    onStateChange={(ev) => updatePlayerState(ev.target)}
+                    onEnd={() => nextSong()}
                     onError={(e) => {
                       console.error("YouTube Player Error:", e);
-                      // Handle error (e.g., skip to next song if video is unavailable)
                       nextSong();
                     }}
                   />
@@ -1624,7 +1611,7 @@ function YoutubePlayer({
             {!isLogin && !isMoniter && <BottomAds />}
             {!isLogin && !isMoniter && isShowAds && <VideoAds />}
 
-            {/* Exit Fullscreen Button - Always visible in fullscreen mode */}
+            {/* Exit Fullscreen Button */}
             {
               !isMoniter && videoId && (isFullscreen || isFullScreenIphone) && (
                 <button
@@ -1636,74 +1623,75 @@ function YoutubePlayer({
                 </button>
               )
             }
-
-            {/* Controls for Remote - OUTSIDE player container (original position) */}
-            {
-              !isMoniter && showControls && videoId && (
-                <div
-                  className={`flex-shrink-0 flex flex-row w-full p-1 items-center z-[10001] ${isMouseMoving ? "hover:opacity-100" : ""
-                    } ${(UseFullScreenCss || !isMouseMoving) &&
-                      (isFullscreen || isFullScreenIphone)
-                      ? "opacity-0"
-                      : ""
-                    }`}
-                  style={
-                    UseFullScreenCss
-                      ? {
-                        position: "fixed",
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: "initial",
-                      }
-                      : {}
-                  }
-                >
-                  {buttons.map((btn) => {
-                    return (
-                      <button
-                        key={btn.label}
-                        className="btn btn-ghost font-normal text-primary flex h-auto flex-col flex-1 overflow-hidden text-[10px] 2xl:text-xs p-1 gap-0.5 hover:bg-base-200"
-                        onClick={btn.onClick}
-                      >
-                        <btn.icon className="w-5 h-5 2xl:w-6 2xl:h-6" />
-                        {btn.label}
-                      </button>
-                    );
-                  })}
-                  {extra}
-                </div>
-              )
-            }
           </>
         )}
       </div>
 
-      {/* Debug Overlay */}
-      <DebugOverlay
-        isVisible={isDebugOverlayOpen}
-        onClose={() => setIsDebugOverlayOpen(false)}
-      />
+      {/* Controls for Remote - OUTSIDE player container (original position) */}
+      {
+        !isMoniter && showControls && videoId && (
+          <div
+            className={`flex-shrink-0 flex flex-row w-full p-1 items-center z-[10001] ${isMouseMoving ? "hover:opacity-100" : ""
+              } ${(UseFullScreenCss || !isMouseMoving) &&
+                (isFullscreen || isFullScreenIphone)
+                ? "opacity-0"
+                : ""
+              }`}
+            style={
+              UseFullScreenCss
+                ? {
+                  position: "fixed",
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: "initial",
+                }
+                : {}
+            }
+          >
+            {buttons.map((btn) => {
+              return (
+                <button
+                  key={btn.label}
+                  className="btn btn-ghost font-normal text-primary flex h-auto flex-col flex-1 overflow-hidden text-[10px] 2xl:text-xs p-1 gap-0.5 hover:bg-base-200"
+                  onClick={btn.onClick}
+                >
+                  <btn.icon className="w-5 h-5 2xl:w-6 2xl:h-6" />
+                  {btn.label}
+                </button>
+              );
+            })}
+            {extra}
+          </div>
+        )
+      }
+    </div>
 
-      {/* Share Room Modal */}
-      <ShareRoomModal
-        isOpen={isShareRoomModalOpen}
-        onClose={() => setIsShareRoomModalOpen(false)}
-        roomCode={roomCode}
-        shareUrl={baseUrl ? `${baseUrl}/?castRoom=${roomCode}` : ''}
-      />
+    {/* Debug Overlay */}
+    <DebugOverlay
+      isVisible={isDebugOverlayOpen}
+      onClose={() => setIsDebugOverlayOpen(false)}
+    />
 
-      {/* Guest Limit Modal */}
-      <GuestLimitModal
-        isOpen={showGuestLimitModal}
-        onClose={() => setShowGuestLimitModal(false)}
-        playedCount={playedCount}
-        guestLimit={guestLimit}
-      />
+    {/* Share Room Modal */}
+    <ShareRoomModal
+      isOpen={isShareRoomModalOpen}
+      onClose={() => setIsShareRoomModalOpen(false)}
+      roomCode={roomCode}
+      shareUrl={baseUrl ? `${baseUrl}/?castRoom=${roomCode}` : ''}
+    />
 
-      {/* Debug Toggle Button - Removed to avoid blocking Dual Screen button */}
-    </div >
-  );
+    {/* Guest Limit Modal */}
+    <GuestLimitModal
+      isOpen={showGuestLimitModal}
+      onClose={() => setShowGuestLimitModal(false)}
+      playedCount={playedCount}
+      guestLimit={guestLimit}
+    />
+
+    {/* Debug Toggle Button - Removed to avoid blocking Dual Screen button */}
+  </div >
+);
 }
 
 export default YoutubePlayer;
