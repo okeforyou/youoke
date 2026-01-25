@@ -148,6 +148,9 @@ function HomePage() {
     name: "",
     type: "ส่วนตัว",
   });
+
+  // Dual Screen Sender (Global)
+  useDualScreenSender();
   const [isCreatingPlaylist, setIsCreatingPlaylist] = useState(false);
   const [hasSyncedPlaylist, setHasSyncedPlaylist] = useState(false);
   const [showCastModeSelector, setShowCastModeSelector] = useState(false);
