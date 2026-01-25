@@ -22,18 +22,22 @@ export default function DualScreen() {
     const channel = new BroadcastChannel('youoke-dual-sync');
 
     // Handler for incoming state
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'SYNC_STATE') {
-        const { payload } = event.data;
-        console.log('📨 [Dual] Received Sync:', payload);
+    if (event.data?.type === 'SYNC_STATE') {
+      const { payload } = event.data;
+      console.log('📨 [Dual] Received Sync:', payload);
 
-        if (payload) {
-          setVideoId(payload.videoId); // React handles deduplication
-          setQueue(payload.queue);
-          setIsConnected(true);
-        }
+      if (payload) {
+        setVideoId(payload.videoId); // React handles deduplication
+        setQueue(payload.queue);
+        setIsConnected(true);
       }
-    };
+    } else if (event.data?.type === 'PLAY') {
+      // @ts-ignore
+      playerRef.current?.getInternalPlayer()?.playVideo();
+    } else if (event.data?.type === 'PAUSE') {
+      // @ts-ignore
+      playerRef.current?.getInternalPlayer()?.pauseVideo();
+    }
 
     channel.addEventListener('message', handleMessage);
 
