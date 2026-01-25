@@ -1553,7 +1553,7 @@ function YoutubePlayer({
                   className={`w-full bg-black ${!isFullscreen
                     ? "aspect-video cursor-zoom-in"
                     : "h-[calc(100dvh)] cursor-zoom-out"
-                    } ${isDualMode && !isMoniter ? "opacity-0 pointer-events-none" : ""}`}
+                    }`}
                   iframeClassName={`w-full h-full pointer-events-none`}
                   style={{
                     width: "100%",
