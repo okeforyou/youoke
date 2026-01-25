@@ -81,25 +81,27 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
   return (
     <ToastContext.Provider value={{ addToast, success, error, warning, info }}>
       {children}
-      <div className="toast toast-top toast-end z-[9999]">
-        {toasts.map((toast) => (
-          <div
-            key={toast.id}
-            className={`${getToastStyles(toast.type)} animate-in slide-in-from-right-5 fade-in duration-300`}
-          >
-            <div className="flex items-center gap-2">
-              {getIcon(toast.type)}
-              <span>{toast.message}</span>
-            </div>
-            <button
-              onClick={() => removeToast(toast.id)}
-              className="btn btn-sm btn-ghost btn-circle hover:scale-110 transition-transform"
+      {toasts.length > 0 && (
+        <div className="toast toast-top toast-end z-[9999]">
+          {toasts.map((toast) => (
+            <div
+              key={toast.id}
+              className={`${getToastStyles(toast.type)} animate-in slide-in-from-right-5 fade-in duration-300`}
             >
-              <XMarkIcon className="w-4 h-4" />
-            </button>
-          </div>
-        ))}
-      </div>
+              <div className="flex items-center gap-2">
+                {getIcon(toast.type)}
+                <span>{toast.message}</span>
+              </div>
+              <button
+                onClick={() => removeToast(toast.id)}
+                className="btn btn-sm btn-ghost btn-circle hover:scale-110 transition-transform"
+              >
+                <XMarkIcon className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </ToastContext.Provider>
   );
 };
