@@ -31,6 +31,14 @@ export default function DualScreen() {
           setVideoId(payload.videoId); // React handles deduplication
           setQueue(payload.queue);
           setIsConnected(true);
+
+          if (playerRef.current) {
+            const internalPlayer = playerRef.current.getInternalPlayer();
+            if (internalPlayer) {
+              if (payload.isPlaying) internalPlayer.playVideo();
+              else internalPlayer.pauseVideo();
+            }
+          }
         }
       } else if (event.data?.type === 'PLAY') {
         // @ts-ignore
@@ -102,12 +110,13 @@ export default function DualScreen() {
         {/* Player Container */}
         <div className={`w-full h-full transition-opacity duration-500 ${videoId ? 'opacity-100' : 'opacity-0'}`}>
           <YouTube
-            key={videoId} // Force remount if ID changes (Ensures clean state)
+            // key={videoId} REMOVED to prevent Fullscreen exit
             videoId={videoId}
             opts={opts}
             onReady={onPlayerReady}
             onEnd={onPlayerEnd}
             className="w-full h-full"
+            ref={playerRef}
           />
         </div>
 
