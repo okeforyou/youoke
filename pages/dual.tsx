@@ -148,6 +148,26 @@ export default function DualScreen() {
     channel.close();
   };
 
+  // Mouse Auto-Hide (Simulate Native Controls behavior)
+  const [showControls, setShowControls] = useState(false);
+  const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const handleMouseMove = () => {
+      setShowControls(true);
+      if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+      controlsTimeoutRef.current = setTimeout(() => {
+        setShowControls(false);
+      }, 3000);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+    };
+  }, []);
+
   return (
     <>
       <Head>
@@ -157,7 +177,7 @@ export default function DualScreen() {
       {/* Wrapper with Fullscreen Ref */}
       <div
         ref={fullscreenRef}
-        className="h-screen w-screen bg-black text-white relative overflow-hidden"
+        className="h-screen w-screen bg-black text-white relative overflow-hidden group cursor-none hover:cursor-default" // Hide cursor by default, show on hover/move
       >
 
         {/* Waiting Screen (Overlay when no video or disconnected) */}
@@ -207,14 +227,20 @@ export default function DualScreen() {
           </div>
         )}
         {/* Custom Fullscreen Control (Always Visible on Hover) */}
-        <div className="absolute bottom-6 right-6 z-50 opacity-0 hover:opacity-100 transition-opacity duration-300">
-          <button
-            onClick={() => toggleFullscreen()}
-            className="bg-white/10 hover:bg-white/20 backdrop-blur-md p-3 rounded-full border border-white/20 text-white shadow-xl"
-            title="Seamless Fullscreen"
-          >
-            {isFullscreen ? <ArrowsPointingInIcon className="w-6 h-6" /> : <ArrowsPointingOutIcon className="w-6 h-6" />}
-          </button>
+        {/* Custom Fullscreen Control (Mimic Native Position) */}
+        <div
+          className={`absolute bottom-0 left-0 w-full h-16 pointer-events-none z-50 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}
+          style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)' }} // Shadow gradient like YT
+        >
+          <div className="absolute bottom-3 right-4 pointer-events-auto">
+            <button
+              onClick={() => toggleFullscreen()}
+              className="p-2 text-white/90 hover:text-white hover:bg-white/10 rounded-full transition-colors"
+              title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+            >
+              {isFullscreen ? <ArrowsPointingInIcon className="w-7 h-7" /> : <ArrowsPointingOutIcon className="w-7 h-7" />}
+            </button>
+          </div>
         </div>
 
       </div>
