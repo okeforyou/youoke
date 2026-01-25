@@ -1571,7 +1571,7 @@ function YoutubePlayer({
                     playerVars: {
                       autoplay:
                         isMoniter && playerState === PlayerStates.PAUSED ? 0 : 1,
-                      controls: 0,
+                      controls: isMoniter ? 1 : 0,
                       disablekb: 1,
                       enablejsapi: 1,
                       modestbranding: 1,
@@ -1587,8 +1587,8 @@ function YoutubePlayer({
                   }}
                 />
 
-                {/* Controls Overlay - ONLY for Monitor (inside player container) */}
-                {isMoniter && (
+                {/* Controls Overlay - Disabled for Monitor (Using Native) */}
+                {false && isMoniter && (
                   <div
                     className={`absolute inset-x-0 bottom-0 flex flex-row p-1 items-center z-30 transition-opacity duration-300 ${isMouseMoving ? "opacity-100" : ""
                       } ${(UseFullScreenCss || !isMouseMoving) &&
