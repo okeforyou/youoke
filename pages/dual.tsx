@@ -55,11 +55,26 @@ export default function DualScreen() {
     console.log('📡 [Dual] Requesting State...');
     channel.postMessage({ type: 'REQUEST_STATE' });
 
+    // Handle Window Close - Notify Main Screen
+    const handleUnload = () => {
+      localStorage.setItem('youoke-dual-active', 'false');
+    };
+    window.addEventListener('beforeunload', handleUnload);
+
     return () => {
       channel.removeEventListener('message', handleMessage);
       channel.close();
+      window.removeEventListener('beforeunload', handleUnload);
     };
   }, []);
+
+  // Explicitly load video when ID changes (prevents Fullscreen exit by reusing iframe)
+  useEffect(() => {
+    if (videoId && playerRef.current) {
+      // @ts-ignore
+      playerRef.current.getInternalPlayer()?.loadVideoById(videoId);
+    }
+  }, [videoId]);
 
   const opts = {
     height: '100%',
@@ -110,7 +125,7 @@ export default function DualScreen() {
         {/* Player Container */}
         <div className={`w-full h-full transition-opacity duration-500 ${videoId ? 'opacity-100' : 'opacity-0'}`}>
           <YouTube
-            key={videoId} // Force remount if ID changes (Ensures clean state)
+            // key={videoId} REMOVED to prevent Fullscreen exit
             videoId={videoId}
             opts={opts}
             onReady={onPlayerReady}
