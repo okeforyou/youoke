@@ -362,6 +362,7 @@ export default function DualScreen() {
       modestbranding: 1 as 1,
       rel: 0 as 0,
       disablekb: 1 as 1,
+      fs: 1 as 1,
     },
   };
 
