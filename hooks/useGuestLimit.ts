@@ -1,13 +1,13 @@
 /**
  * Hook สำหรับจัดการจำนวนเพลงที่ Guest สามารถฟังได้
- * - Guest ฟังได้ 3 เพลง
+ * - Guest ฟังได้ 5 เพลง
  * - เก็บข้อมูลใน LocalStorage
  * - Reset ทุก 24 ชั่วโมง
  */
 
 import { useEffect, useState } from "react";
 
-const GUEST_LIMIT = 10;
+const GUEST_LIMIT = 5;
 const STORAGE_KEY = "guest_play_count";
 const TIMESTAMP_KEY = "guest_play_timestamp";
 
