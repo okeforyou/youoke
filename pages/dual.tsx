@@ -15,8 +15,26 @@ export default function DualScreen() {
   const [isConnected, setIsConnected] = useState(false);
   const [isPlayerReady, setIsPlayerReady] = useState(false);
 
+  // Queue Auto-Hide Logic
+  const [showQueue, setShowQueue] = useState(false);
+  const queueTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // YouTube Player Ref
   const playerRef = useRef<YouTube>(null);
+
+  // Helper: Update Queue with Auto-Hide
+  const handleQueueUpdate = (newQueue: any[]) => {
+    // Simple shallow comparison to avoid flicker
+    if (JSON.stringify(newQueue) !== JSON.stringify(queue)) {
+      setQueue(newQueue);
+      setShowQueue(true);
+
+      if (queueTimeoutRef.current) clearTimeout(queueTimeoutRef.current);
+      queueTimeoutRef.current = setTimeout(() => {
+        setShowQueue(false);
+      }, 5000);
+    }
+  };
 
   // Connection & Listener Logic
   useEffect(() => {
@@ -30,12 +48,18 @@ export default function DualScreen() {
 
         if (payload) {
           setVideoId(payload.videoId); // React handles deduplication
-          setQueue(payload.queue);
+
+          // Use helper for queue
+          handleQueueUpdate(payload.queue);
+
           setIsConnected(true);
 
           if (playerRef.current) {
             const internalPlayer = playerRef.current.getInternalPlayer();
-            if (internalPlayer) {
+            // Only force state if Video Changed OR explicitly requested
+            // If just queue update, don't interrupt playback unless needed
+            if (internalPlayer && payload.videoId !== videoId) {
+              // Initial load or change
               if (payload.isPlaying) internalPlayer.playVideo();
               else internalPlayer.pauseVideo();
             }
@@ -45,7 +69,7 @@ export default function DualScreen() {
         // Fallback handler for legacy QUEUE_UPDATE messages
         console.log('📨 [Dual] Received QUEUE_UPDATE (fallback):', event.data);
         if (event.data.videoId) setVideoId(event.data.videoId);
-        if (event.data.queue) setQueue(event.data.queue);
+        if (event.data.queue) handleQueueUpdate(event.data.queue);
         setIsConnected(true);
       } else if (event.data?.type === 'PLAY') {
         // @ts-ignore
@@ -73,7 +97,7 @@ export default function DualScreen() {
       channel.close();
       window.removeEventListener('beforeunload', handleUnload);
     };
-  }, []);
+  }, [queue, videoId]); // Add deps for handleQueueUpdate context
 
   // Memoize options to prevent unnecessary re-renders
   const opts = React.useMemo(() => ({
@@ -90,8 +114,6 @@ export default function DualScreen() {
     },
   }), []);
 
-  // Explicitly load video when ID changes (Robust "No-Key" switching)
-  /* Manual loading removed for stability */
 
   const onPlayerReady = (event: any) => {
     event.target.playVideo();
@@ -139,43 +161,7 @@ export default function DualScreen() {
           />
         </div>
 
-  // Queue Auto-Hide Logic
-        const [showQueue, setShowQueue] = useState(false);
-        const queueTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Update Queue with Auto-Hide
-  const handleQueueUpdate = (newQueue: any[]) => {
-      // Simple shallow comparison to avoid flicker
-      if (JSON.stringify(newQueue) !== JSON.stringify(queue)) {
-          setQueue(newQueue);
-        setShowQueue(true);
-
-        if (queueTimeoutRef.current) clearTimeout(queueTimeoutRef.current);
-          queueTimeoutRef.current = setTimeout(() => {
-          setShowQueue(false);
-          }, 5000);
-      }
-  };
-
-        // ... (inside handleMessage) ...
-        if (payload) {
-          setVideoId(payload.videoId); // React handles deduplication
-        handleQueueUpdate(payload.queue);
-        setIsConnected(true);
-
-        if (playerRef.current) {
-            const internalPlayer = playerRef.current.getInternalPlayer();
-        // Only force state if Video Changed OR explicitly requested
-        // If just queue update, don't interrupt playback
-        if (internalPlayer && payload.videoId !== videoId) {
-               // Initial load or change
-               if (payload.isPlaying) internalPlayer.playVideo();
-            }
-          }
-        }
-        // ...
-
-        // Queue Render
+        {/* Queue Display */}
         {queue && queue.length > 0 && (
           <div className={`absolute top-4 right-4 w-80 bg-black/60 backdrop-blur-md rounded-xl p-4 z-40 transition-opacity duration-500 pointer-events-none ${showQueue ? 'opacity-100' : 'opacity-0'}`}>
             <h2 className="text-lg font-bold mb-3 text-white flex items-center gap-2">
@@ -193,7 +179,6 @@ export default function DualScreen() {
             </div>
           </div>
         )}
-
       </div>
     </>
   );
