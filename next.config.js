@@ -25,7 +25,8 @@ const nextConfig = {
       'invidious.privacyredirect.com',
       'yewtu.be',
       'vid.puffyan.us',
-      'invidious.projectsegfau.lt'
+      'invidious.projectsegfau.lt',
+      'onion.tube'
     ],
   },
   async rewrites() {
