@@ -1121,7 +1121,8 @@ function YoutubePlayer({
       {
         icon: ForwardIcon,
         label: "เพลงถัดไป",
-        onClick: () => {
+        onClick: (e: any) => {
+          e?.stopPropagation();
           const debugInfo = {
             isCasting,
             isGoogleCastConnected,
