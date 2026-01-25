@@ -60,7 +60,7 @@ export default function VideoHorizontalCard({
           className="col-span-2 flex flex-row items-center px-3 py-2 overflow-hidden gap-2"
           onClick={(e) => e.stopPropagation()}
         >
-          <h2 className="font-semibold text-xs 2xl:text-lg line-clamp-2 text-gray-900 flex-1">
+          <h2 className="font-semibold text-[10px] 2xl:text-sm line-clamp-2 text-gray-900 flex-1">
             {video?.title}
           </h2>
           {/* Delete button - Icon style like Cast Modal */}
