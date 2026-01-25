@@ -254,6 +254,14 @@ function YoutubePlayer({
     return () => window.removeEventListener('storage', handleStorage);
   }, [isMoniter]);
 
+  // Auto-mute main player when Dual Mode is active to prevent double audio
+  useEffect(() => {
+    if (isDualMode && !isMoniter) {
+      console.log('🔇 Dual Mode Active: Muting main player');
+      handleMute();
+    }
+  }, [isDualMode, isMoniter]);
+
   const isIOS =
     /iPad|iPhone/i.test(navigator.userAgent) ||
     (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
@@ -994,6 +1002,11 @@ function YoutubePlayer({
           } else if (isGoogleCastConnected) {
             castPause();
           } else {
+            if (isDualMode && !isMoniter) {
+              const ch = new BroadcastChannel('youoke-dual-sync');
+              ch.postMessage({ type: 'PAUSE' });
+              ch.close();
+            }
             handlePause();
           }
         },
@@ -1008,6 +1021,11 @@ function YoutubePlayer({
           } else if (isGoogleCastConnected) {
             castPlay();
           } else {
+            if (isDualMode && !isMoniter) {
+              const ch = new BroadcastChannel('youoke-dual-sync');
+              ch.postMessage({ type: 'PLAY' });
+              ch.close();
+            }
             handlePlay();
           }
         },
@@ -1100,6 +1118,11 @@ function YoutubePlayer({
             addDebugLog('📤 Calling castNext()');
             castNext();
           } else {
+            if (isDualMode && !isMoniter) {
+              const ch = new BroadcastChannel('youoke-dual-sync');
+              ch.postMessage({ type: 'NEXT' });
+              ch.close();
+            }
             nextSong();
           }
         },
