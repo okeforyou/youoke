@@ -13,6 +13,7 @@ export default function DualScreen() {
   const [videoId, setVideoId] = useState<string>('');
   const [queue, setQueue] = useState<any[]>([]);
   const [isConnected, setIsConnected] = useState(false);
+  const [isPlayerReady, setIsPlayerReady] = useState(false);
 
   // YouTube Player Ref
   const playerRef = useRef<YouTube>(null);
