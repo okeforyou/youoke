@@ -1069,7 +1069,17 @@ function HomePage() {
         }}
         onSelectDual={() => {
           setShowCastModeSelector(false);
-          // Open dual screen in new tab
+          // 1. Force set state immediately to prevent race condition
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('youoke-dual-active', 'true');
+            // Create a proper StorageEvent so the listener in YoutubePlayer receives the data
+            const event = new StorageEvent('storage', {
+              key: 'youoke-dual-active',
+              newValue: 'true',
+              storageArea: localStorage,
+            });
+            window.dispatchEvent(event);
+          }
           window.open('/dual', '_blank');
         }}
         onSelectGoogleCast={() => {

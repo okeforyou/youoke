@@ -78,12 +78,14 @@ export default function DualScreen() {
         case 'PLAY':
           if (videoId) {
             setCurrentVideoId(videoId);
-            setIsPlaying(true);
           }
+          setIsPlaying(true);
+          if (player) player.playVideo();
           break;
 
         case 'PAUSE':
           setIsPlaying(false);
+          if (player) player.pauseVideo();
           break;
 
         case 'QUEUE_UPDATE':
@@ -184,12 +186,19 @@ export default function DualScreen() {
       try {
         const currentTime = await player.getCurrentTime();
         const duration = await player.getDuration();
-        const remaining = duration - currentTime;
 
-        const showAtStart = currentTime < 15;
-        const showAtEnd = remaining < 60;
+        // Only calculate logic if duration is valid and positive
+        if (duration > 0) {
+          const remaining = duration - currentTime;
 
-        setShowQueue(forceShowQueue || showAtStart || showAtEnd);
+          const showAtStart = currentTime < 15;
+          const showAtEnd = remaining < 60;
+
+          setShowQueue(forceShowQueue || showAtStart || showAtEnd);
+        } else {
+          // Fallback for loading state - show queue only if forced
+          setShowQueue(forceShowQueue);
+        }
       } catch (error) {
         console.error('❌ Queue visibility check error:', error);
       }
@@ -332,7 +341,11 @@ export default function DualScreen() {
     } else if (event.data === 0) {
       console.log('🎬 Dual: Video ended');
       setIsPlaying(false);
-      // Auto-play next handled by main screen
+      // Robustness: Request next song from main screen (in case main screen is throttled)
+      if (channelRef.current) {
+        console.log('⏭️ Dual: requesting NEXT song');
+        channelRef.current.postMessage({ type: 'NEXT' });
+      }
     }
   };
 

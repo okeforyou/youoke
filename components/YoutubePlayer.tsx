@@ -230,7 +230,7 @@ function YoutubePlayer({
     };
   }, []);
 
-  // Removed duplicate castRoom handler - see line ~500 for the active one
+
 
   // Check if Dual Mode is active
   useEffect(() => {
@@ -328,15 +328,7 @@ function YoutubePlayer({
     if (!!videoId) setVideoCount(videoCount + 1);
   }, [videoId]);
 
-  // Socket.io removed - now using Firebase Realtime Database
-  // See monitor.tsx for new Cast implementation
-  useEffect(() => {
-    // No socket connection needed for standalone player
-  }, []);
 
-  // Removed: Old logic that removed songs from playlist
-  // Now using currentIndex in parent component (index.tsx)
-  // Parent component manages: playlist, curVideoId, currentIndex
 
   useEffect(() => {
     // Play Now - explicitly play when video ID changes
@@ -348,7 +340,7 @@ function YoutubePlayer({
     }
   }, [curVideoId]);
 
-  // sendMessage removed - Firebase Cast handles sync now
+
 
   useEffect(() => {
     if (!isLogin && videoCount % 1 == 0 && videoCount !== 0) {
@@ -384,10 +376,14 @@ function YoutubePlayer({
           });
           break;
         case 'PLAY':
-          if (player) await player.playVideo();
+          try {
+            if (player) await player.playVideo();
+          } catch (e) { console.error('Error in PLAY command', e); }
           break;
         case 'PAUSE':
-          if (player) await player.pauseVideo();
+          try {
+            if (player) await player.pauseVideo();
+          } catch (e) { console.error('Error in PAUSE command', e); }
           break;
         case 'NEXT':
           if (nextSong) nextSong();
@@ -396,10 +392,14 @@ function YoutubePlayer({
           // logic for prev if needed
           break;
         case 'MUTE':
-          if (player) await player.mute();
+          try {
+            if (player) await player.mute();
+          } catch (e) { console.error('Error in MUTE command', e); }
           break;
         case 'UNMUTE':
-          if (player) await player.unMute();
+          try {
+            if (player) await player.unMute();
+          } catch (e) { console.error('Error in UNMUTE command', e); }
           break;
       }
     };
@@ -489,13 +489,22 @@ function YoutubePlayer({
       return;
     }
 
-    // If connected to Google Cast, send command to TV
     if (isGoogleCastConnected) {
       console.log('📤 Calling castPlay()...');
       addDebugLog('📤 Calling castPlay()');
       setPlayerState(YouTube.PlayerState.PLAYING);
       castPlay();
       return;
+    }
+
+    // If Dual Mode is active, send command to Monitor
+    if (isDualMode && !isMoniter) {
+      console.log('📤 Broadcasting PLAY command to Dual Screen');
+      const ch = new BroadcastChannel('youoke-dual-sync');
+      ch.postMessage({ type: 'PLAY', videoId: curVideoId });
+      ch.close();
+      // Also play local player (muted/hidden) to keep state in sync
+      setPlayerState(YouTube.PlayerState.PLAYING);
     }
 
     // Otherwise, control local player
@@ -534,13 +543,22 @@ function YoutubePlayer({
       return;
     }
 
-    // If connected to Google Cast, send command to TV
     if (isGoogleCastConnected) {
       console.log('📤 Calling castPause()...');
       addDebugLog('📤 Calling castPause()');
       setPlayerState(YouTube.PlayerState.PAUSED);
       castPause();
       return;
+    }
+
+    // If Dual Mode is active, send command to Monitor
+    if (isDualMode && !isMoniter) {
+      console.log('📤 Broadcasting PAUSE command to Dual Screen');
+      const ch = new BroadcastChannel('youoke-dual-sync');
+      ch.postMessage({ type: 'PAUSE', videoId: curVideoId });
+      ch.close();
+      // Also pause local player to keep state in sync
+      setPlayerState(YouTube.PlayerState.PAUSED);
     }
 
     // Otherwise, control local player
@@ -1016,11 +1034,6 @@ function YoutubePlayer({
           } else if (isGoogleCastConnected) {
             castPause();
           } else {
-            if (isDualMode && !isMoniter) {
-              const ch = new BroadcastChannel('youoke-dual-sync');
-              ch.postMessage({ type: 'PAUSE' });
-              ch.close();
-            }
             handlePause();
           }
         },
@@ -1035,11 +1048,6 @@ function YoutubePlayer({
           } else if (isGoogleCastConnected) {
             castPlay();
           } else {
-            if (isDualMode && !isMoniter) {
-              const ch = new BroadcastChannel('youoke-dual-sync');
-              ch.postMessage({ type: 'PLAY' });
-              ch.close();
-            }
             handlePlay();
           }
         },
@@ -1330,7 +1338,7 @@ function YoutubePlayer({
     );
   };
 
-  // Old RemoteComponent removed - replaced by unified Cast button in control bar
+
 
   const buttons: any = !isMoniter
     ? [...playPauseBtn, ...playerBtns, ...muteBtn, ...fullBtn, ...castBtn]
@@ -1527,7 +1535,7 @@ function YoutubePlayer({
         ) : (
           <>
             {isDualMode && !isMoniter && (
-              <div className="absolute inset-0 z-[60] h-full w-full flex flex-col items-center justify-center bg-base-200/95 backdrop-blur-sm p-4 text-center">
+              <div className="absolute inset-0 z-[10000] h-full w-full flex flex-col items-center justify-center bg-base-200/95 backdrop-blur-sm p-4 text-center">
                 <div className="text-4xl md:text-5xl mb-4 animate-pulse">🖥️</div>
                 <h2 className="text-lg md:text-xl font-bold mb-2 text-base-content">กำลังเล่นที่หน้าจอที่ 2</h2>
                 <p className="text-xs md:text-sm text-base-content/70 mb-6">วิดีโอกำลังเล่นบนหน้าจอ Dual Screen</p>
@@ -1563,169 +1571,179 @@ function YoutubePlayer({
               </div>
             ) : (
               <>
-                {/* YouTube Player */}
-                <YouTube
-                  ref={playerRef}
-                  videoId={videoId}
-                  className={`w-full bg-black ${!isFullscreen
-                    ? "aspect-video cursor-zoom-in"
-                    : "h-[calc(100dvh)] cursor-zoom-out"
-                    } ${isDualMode && !isMoniter ? "opacity-0 pointer-events-none" : ""}`}
-                  iframeClassName={`w-full h-full pointer-events-none`}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    position: UseFullScreenCss ? "fixed" : "absolute",
-                    top: 0,
-                    left: 0,
-                    zIndex: UseFullScreenCss ? 9999 : 0,
-                  }}
-                  loading="lazy"
-                  opts={{
-                    playerVars: {
-                      autoplay:
-                        isMoniter && playerState === PlayerStates.PAUSED ? 0 : 1,
-                      controls: isMoniter ? 1 : 0,
-                      disablekb: 1,
-                      enablejsapi: 1,
-                      modestbranding: 1,
-                      playsinline: isIphone && isFullScreenIphone ? 0 : 1,
-                      fs: 0, // Disable YouTube native fullscreen
-                    },
-                  }}
-                  onStateChange={(ev) => {
-                    updatePlayerState(ev.target);
-                  }}
-                  onEnd={() => {
-                    nextSong();
-                  }}
-                />
-
-                {/* Controls Overlay - Disabled for Monitor (Using Native) */}
-                {false && isMoniter && (
+                <>
+                  {/* YouTube Player Wrapper - Handles Visibility without unmounting player */}
                   <div
-                    className={`absolute inset-x-0 bottom-0 flex flex-row p-1 items-center z-30 transition-opacity duration-300 ${isMouseMoving ? "opacity-100" : ""
-                      } ${(UseFullScreenCss || !isMouseMoving) &&
-                        (isFullscreen || isFullScreenIphone)
-                        ? "opacity-0"
-                        : ""
-                      }`}
-                    style={
-                      UseFullScreenCss || isMoniter
-                        ? {
-                          position: "fixed",
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          background: "white",
-                        }
-                        : {
-                          background: "rgba(0, 0, 0, 0.5)",
-                        }
-                    }
-                    onClick={(e) => e.stopPropagation()}
+                    className={`w-full bg-black ${!isFullscreen
+                      ? "aspect-video cursor-zoom-in"
+                      : "h-[calc(100dvh)] cursor-zoom-out"
+                      } ${isDualMode && !isMoniter ? "opacity-0 pointer-events-none invisible" : ""}`}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      position: UseFullScreenCss ? "fixed" : "absolute",
+                      top: 0,
+                      left: 0,
+                      zIndex: UseFullScreenCss ? 9999 : 0,
+                      visibility: (isDualMode && !isMoniter) ? 'hidden' : 'visible'
+                    }}
                   >
-                    {buttons.map((btn) => {
-                      return (
-                        <button
-                          key={btn.label}
-                          className="btn btn-ghost font-normal text-primary flex h-auto flex-col flex-1 overflow-hidden text-[10px] 2xl:text-xs p-1 gap-0.5 hover:bg-base-200"
-                          onClick={btn.onClick}
-                        >
-                          <btn.icon className="w-5 h-5 2xl:w-6 2xl:h-6" />
-                          {btn.label}
-                        </button>
-                      );
-                    })}
-                    {extra}
+                    <YouTube
+                      ref={playerRef}
+                      videoId={videoId}
+                      className="w-full h-full"
+                      iframeClassName="w-full h-full pointer-events-none"
+                      loading="lazy"
+                      opts={{
+                        playerVars: {
+                          autoplay:
+                            isMoniter && playerState === PlayerStates.PAUSED ? 0 : 1,
+                          controls: isMoniter ? 1 : 0,
+                          disablekb: 1,
+                          enablejsapi: 1,
+                          modestbranding: 1,
+                          playsinline: isIphone && isFullScreenIphone ? 0 : 1,
+                          fs: 0, // Disable YouTube native fullscreen
+                        },
+                      }}
+                      onStateChange={(ev) => {
+                        updatePlayerState(ev.target);
+                      }}
+                      onEnd={() => {
+                        nextSong();
+                      }}
+                      onError={(e) => {
+                        console.error("YouTube Player Error:", e);
+                        // Handle error (e.g., skip to next song if video is unavailable)
+                        nextSong();
+                      }}
+                    />
                   </div>
-                )}
+                  {/* Controls Overlay - Disabled for Monitor (Using Native) */}
+                  {false && isMoniter && (
+                    <div
+                      className={`absolute inset-x-0 bottom-0 flex flex-row p-1 items-center z-30 transition-opacity duration-300 ${isMouseMoving ? "opacity-100" : ""
+                        } ${(UseFullScreenCss || !isMouseMoving) &&
+                          (isFullscreen || isFullScreenIphone)
+                          ? "opacity-0"
+                          : ""
+                        }`}
+                      style={
+                        UseFullScreenCss || isMoniter
+                          ? {
+                            position: "fixed",
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            background: "white",
+                          }
+                          : {
+                            background: "rgba(0, 0, 0, 0.5)",
+                          }
+                      }
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {buttons.map((btn) => {
+                        return (
+                          <button
+                            key={btn.label}
+                            className="btn btn-ghost font-normal text-primary flex h-auto flex-col flex-1 overflow-hidden text-[10px] 2xl:text-xs p-1 gap-0.5 hover:bg-base-200"
+                            onClick={btn.onClick}
+                          >
+                            <btn.icon className="w-5 h-5 2xl:w-6 2xl:h-6" />
+                            {btn.label}
+                          </button>
+                        );
+                      })}
+                      {extra}
+                    </div>
+                  )}
+                </>
+            )}
               </>
             )}
-          </>
-        )}
-      </div>
-
-      {!isLogin && !isMoniter && <BottomAds />}
-      {!isLogin && !isMoniter && isShowAds && <VideoAds />}
-
-      {/* Exit Fullscreen Button - Always visible in fullscreen mode */}
-      {
-        !isMoniter && videoId && (isFullscreen || isFullScreenIphone) && (
-          <button
-            onClick={handleFullscreenButtonClick}
-            className="fixed top-4 right-4 z-[100] btn btn-circle btn-sm bg-black/50 text-white border-white/30 hover:bg-black/70"
-            style={UseFullScreenCss ? { position: "fixed" } : {}}
-          >
-            <ArrowsPointingInIcon className="w-5 h-5" />
-          </button>
-        )
-      }
-
-      {/* Controls for Remote - OUTSIDE player container (original position) */}
-      {
-        !isMoniter && showControls && videoId && (
-          <div
-            className={`flex-shrink-0 flex flex-row w-full p-1 items-center z-20 ${isMouseMoving ? "hover:opacity-100" : ""
-              } ${(UseFullScreenCss || !isMouseMoving) &&
-                (isFullscreen || isFullScreenIphone)
-                ? "opacity-0"
-                : ""
-              }`}
-            style={
-              UseFullScreenCss
-                ? {
-                  position: "fixed",
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  background: "initial",
-                }
-                : {}
-            }
-          >
-            {buttons.map((btn) => {
-              return (
-                <button
-                  key={btn.label}
-                  className="btn btn-ghost font-normal text-primary flex h-auto flex-col flex-1 overflow-hidden text-[10px] 2xl:text-xs p-1 gap-0.5 hover:bg-base-200"
-                  onClick={btn.onClick}
-                >
-                  <btn.icon className="w-5 h-5 2xl:w-6 2xl:h-6" />
-                  {btn.label}
-                </button>
-              );
-            })}
-            {extra}
           </div>
-        )
-      }
 
-      {/* Debug Overlay */}
-      <DebugOverlay
-        isVisible={isDebugOverlayOpen}
-        onClose={() => setIsDebugOverlayOpen(false)}
-      />
+        {!isLogin && !isMoniter && <BottomAds />}
+        {!isLogin && !isMoniter && isShowAds && <VideoAds />}
 
-      {/* Share Room Modal */}
-      <ShareRoomModal
-        isOpen={isShareRoomModalOpen}
-        onClose={() => setIsShareRoomModalOpen(false)}
-        roomCode={roomCode}
-        shareUrl={baseUrl ? `${baseUrl}/?castRoom=${roomCode}` : ''}
-      />
+        {/* Exit Fullscreen Button - Always visible in fullscreen mode */}
+        {
+          !isMoniter && videoId && (isFullscreen || isFullScreenIphone) && (
+            <button
+              onClick={handleFullscreenButtonClick}
+              className="fixed top-4 right-4 z-[100] btn btn-circle btn-sm bg-black/50 text-white border-white/30 hover:bg-black/70"
+              style={UseFullScreenCss ? { position: "fixed" } : {}}
+            >
+              <ArrowsPointingInIcon className="w-5 h-5" />
+            </button>
+          )
+        }
 
-      {/* Guest Limit Modal */}
-      <GuestLimitModal
-        isOpen={showGuestLimitModal}
-        onClose={() => setShowGuestLimitModal(false)}
-        playedCount={playedCount}
-        guestLimit={guestLimit}
-      />
+        {/* Controls for Remote - OUTSIDE player container (original position) */}
+        {
+          !isMoniter && showControls && videoId && (
+            <div
+              className={`flex-shrink-0 flex flex-row w-full p-1 items-center z-[10001] ${isMouseMoving ? "hover:opacity-100" : ""
+                } ${(UseFullScreenCss || !isMouseMoving) &&
+                  (isFullscreen || isFullScreenIphone)
+                  ? "opacity-0"
+                  : ""
+                }`}
+              style={
+                UseFullScreenCss
+                  ? {
+                    position: "fixed",
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: "initial",
+                  }
+                  : {}
+              }
+            >
+              {buttons.map((btn) => {
+                return (
+                  <button
+                    key={btn.label}
+                    className="btn btn-ghost font-normal text-primary flex h-auto flex-col flex-1 overflow-hidden text-[10px] 2xl:text-xs p-1 gap-0.5 hover:bg-base-200"
+                    onClick={btn.onClick}
+                  >
+                    <btn.icon className="w-5 h-5 2xl:w-6 2xl:h-6" />
+                    {btn.label}
+                  </button>
+                );
+              })}
+              {extra}
+            </div>
+          )
+        }
 
-      {/* Debug Toggle Button - Removed to avoid blocking Dual Screen button */}
-    </div >
-  );
+        {/* Debug Overlay */}
+        <DebugOverlay
+          isVisible={isDebugOverlayOpen}
+          onClose={() => setIsDebugOverlayOpen(false)}
+        />
+
+        {/* Share Room Modal */}
+        <ShareRoomModal
+          isOpen={isShareRoomModalOpen}
+          onClose={() => setIsShareRoomModalOpen(false)}
+          roomCode={roomCode}
+          shareUrl={baseUrl ? `${baseUrl}/?castRoom=${roomCode}` : ''}
+        />
+
+        {/* Guest Limit Modal */}
+        <GuestLimitModal
+          isOpen={showGuestLimitModal}
+          onClose={() => setShowGuestLimitModal(false)}
+          playedCount={playedCount}
+          guestLimit={guestLimit}
+        />
+
+        {/* Debug Toggle Button - Removed to avoid blocking Dual Screen button */}
+      </div >
+      );
 }
 
-export default YoutubePlayer;
+      export default YoutubePlayer;
