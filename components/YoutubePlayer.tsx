@@ -555,6 +555,27 @@ function YoutubePlayer({
 
   // REMOVED: Legacy QUEUE_UPDATE sync effect (Replaced by global useDualScreenSender hook)
 
+  // Listen for commands from Dual Screen (Receiver)
+  useEffect(() => {
+    if (isMoniter) return; // Monitor shouldn't listen to itself? Actually Monitor IS sending it... wait.
+    // Dual Screen (Receiver) sends REQUEST_NEXT.
+    // Main Screen (Sender) listens.
+
+    const channel = new BroadcastChannel('youoke-dual-sync');
+    const handler = (event: MessageEvent) => {
+      if (event.data?.type === 'REQUEST_NEXT') {
+        console.log('📡 [Main] Received REQUEST_NEXT from Dual Screen');
+        addDebugLog('📡 [Main] Received REQUEST_NEXT');
+        nextSong();
+      }
+    };
+    channel.addEventListener('message', handler);
+    return () => {
+      channel.removeEventListener('message', handler);
+      channel.close();
+    };
+  }, [nextSong, isMoniter]);
+
   // Auto-connect from QR Code scan
   useEffect(() => {
     // Wait for router to be ready (important for iOS)
