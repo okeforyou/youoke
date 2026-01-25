@@ -164,7 +164,7 @@ export default function Sidebar({ activeTab = 0, onTabChange, className = '' }: 
         {user?.uid ? (
           <button
             onClick={() => logOut()}
-            className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-base-200 hover:bg-base-300 text-base-content transition-all font-medium"
+            className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-800 transition-all font-medium"
           >
             <ArrowLeftOnRectangleIcon className="w-5 h-5" />
             <span>ออกจากระบบ</span>
@@ -172,7 +172,7 @@ export default function Sidebar({ activeTab = 0, onTabChange, className = '' }: 
         ) : (
           <button
             onClick={() => handleNavigation('/login')}
-            className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-base-200 hover:bg-base-300 text-base-content transition-all font-medium"
+            className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-800 transition-all font-medium"
           >
             <ArrowLeftOnRectangleIcon className="w-5 h-5" />
             <span>เข้าสู่ระบบ</span>

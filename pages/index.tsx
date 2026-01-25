@@ -24,6 +24,7 @@ import {
   PauseIcon,
   ArrowUturnLeftIcon,
   SpeakerWaveIcon,
+  ForwardIcon,
 } from "@heroicons/react/20/solid";
 import {
   ArrowsPointingOutIcon,
@@ -753,51 +754,7 @@ function HomePage() {
                 </div>
               )}
 
-              {/* 2. Player Controls Row (Visible when playing) */}
-              {!isXlScreen && curVideoId && (
-                <div className="flex items-center justify-around px-2 py-2 bg-base-100 border-b border-base-200">
-                  {/* Play/Pause */}
-                  <button className="btn btn-ghost btn-sm flex flex-col gap-0 h-auto items-center" onClick={handleMobilePlayPause}>
-                    {isPlaying ? <PauseIcon className="w-5 h-5 text-red-500 fill-current" /> : <PlayIcon className="w-5 h-5 text-red-500 fill-current" />}
-                    <span className="text-[10px] text-red-500 mt-0.5">เล่น</span>
-                  </button>
 
-                  {/* Next */}
-                  <button className="btn btn-ghost btn-sm flex flex-col gap-0 h-auto items-center" onClick={playNext}>
-                    <ChevronRightIcon className="w-5 h-5 text-red-500 stroke-2" />
-                    <span className="text-[10px] text-red-500 mt-0.5">เพลงถัดไป</span>
-                  </button>
-
-                  {/* Replay */}
-                  <button className="btn btn-ghost btn-sm flex flex-col gap-0 h-auto items-center" onClick={() => {
-                    const player = mobilePlayerRef.current?.getInternalPlayer();
-                    player?.seekTo(0, true);
-                  }}>
-                    <ArrowUturnLeftIcon className="w-5 h-5 text-red-500 fill-current" />
-                    <span className="text-[10px] text-red-500 mt-0.5">ร้องอีกครั้ง</span>
-                  </button>
-
-                  {/* Mute toggle */}
-                  <button className="btn btn-ghost btn-sm flex flex-col gap-0 h-auto items-center">
-                    <SpeakerWaveIcon className="w-5 h-5 text-red-500 fill-current" />
-                    <span className="text-[10px] text-red-500 mt-0.5">ปิดเสียง</span>
-                  </button>
-
-                  {/* Fullscreen */}
-                  <button className="btn btn-ghost btn-sm flex flex-col gap-0 h-auto items-center" onClick={() => {
-                    // Toggle fullscreen logic could be added here if needed, or rely on player controls
-                  }}>
-                    <ArrowsPointingOutIcon className="w-5 h-5 text-red-500 stroke-2" />
-                    <span className="text-[10px] text-red-500 mt-0.5">เต็มจอ</span>
-                  </button>
-
-                  {/* Cast Button */}
-                  <button className="btn btn-ghost btn-sm flex flex-col gap-0 h-auto items-center" onClick={() => playerControlRef.current?.openCastSelector()}>
-                    <TvIcon className="w-5 h-5 text-red-500 stroke-2" />
-                    <span className="text-[10px] text-red-500 mt-0.5">ขึ้นจอ</span>
-                  </button>
-                </div>
-              )}
 
               {/* 3. Search Bar (Below Controls) */}
               <div className="flex flex-row gap-3 px-4 py-3 items-center bg-base-200 md:bg-base-100 shadow-sm sticky top-0 z-30">
@@ -841,6 +798,16 @@ function HomePage() {
                     </div>
                   </div>
                 </div>
+
+                {/* Skip Button */}
+                <button className="btn btn-circle btn-ghost text-base-content md:bg-base-100" onClick={playNext} title="เพลงถัดไป">
+                  <ForwardIcon className="w-5 h-5 md:w-6 md:h-6" />
+                </button>
+
+                {/* Cast Button */}
+                <button className="btn btn-circle btn-ghost text-base-content md:bg-base-100" onClick={() => playerControlRef.current?.openCastSelector()} title="Cast / Dual Screen">
+                  <TvIcon className="w-5 h-5 md:w-6 md:h-6" />
+                </button>
 
                 {/* Mobile Queue Button */}
                 <label htmlFor="modal-playlist" className="btn btn-circle btn-ghost text-base-content sm:hidden relative">

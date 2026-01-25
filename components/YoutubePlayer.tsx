@@ -1548,12 +1548,12 @@ function YoutubePlayer({
                     playerVars: {
                       autoplay:
                         isMoniter && playerState === PlayerStates.PAUSED ? 0 : 1,
-                      controls: 0,
-                      disablekb: 1,
+                      controls: 1,
+                      disablekb: 0,
                       enablejsapi: 1,
                       modestbranding: 1,
                       playsinline: isIphone && isFullScreenIphone ? 0 : 1,
-                      fs: 0, // Disable YouTube native fullscreen
+                      fs: 1, // Enable YouTube native fullscreen
                     },
                   }}
                   onStateChange={(ev) => {
@@ -1626,43 +1626,7 @@ function YoutubePlayer({
       }
 
       {/* Controls for Remote - OUTSIDE player container (original position) */}
-      {
-        !isMoniter && showControls && videoId && (
-          <div
-            className={`flex-shrink-0 flex flex-row md:w-full p-1 items-center z-20 ${isMouseMoving ? "hover:opacity-100" : ""
-              } ${(UseFullScreenCss || !isMouseMoving) &&
-                (isFullscreen || isFullScreenIphone)
-                ? "opacity-0"
-                : ""
-              }`}
-            style={
-              UseFullScreenCss
-                ? {
-                  position: "fixed",
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  background: "initial",
-                }
-                : {}
-            }
-          >
-            {buttons.map((btn) => {
-              return (
-                <button
-                  key={btn.label}
-                  className="btn btn-ghost font-normal text-primary flex h-auto flex-col flex-1 overflow-hidden text-[10px] 2xl:text-xs p-1 gap-0.5 hover:bg-base-200"
-                  onClick={btn.onClick}
-                >
-                  <btn.icon className="w-5 h-5 2xl:w-6 2xl:h-6" />
-                  {btn.label}
-                </button>
-              );
-            })}
-            {extra}
-          </div>
-        )
-      }
+
 
       {/* Debug Overlay */}
       <DebugOverlay
