@@ -317,8 +317,9 @@ export default function DualScreen() {
   const onPlayerReady = (event: { target: YouTubePlayer }) => {
     console.log('✅ Dual: YouTube player ready');
     setPlayer(event.target);
-    // Start muted (browser policy)
-    event.target.mute();
+    // Start UNMUTED as requested
+    event.target.unMute();
+    setIsMuted(false);
   };
 
   const onPlayerStateChange = async (event: { data: number }) => {

@@ -428,6 +428,7 @@ function YoutubePlayer({
       type: 'QUEUE_UPDATE',
       queue: playlist,
       currentIndex: playlist.findIndex((v) => v.videoId === curVideoId),
+      videoId: curVideoId,
     });
     channel.close();
   }, [playlist, isMoniter, curVideoId]);
