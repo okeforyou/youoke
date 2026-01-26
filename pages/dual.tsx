@@ -270,19 +270,20 @@ export default function DualScreen() {
         {/* Queue Display (Modern Widget Style) */}
         {/* Queue Display (Clean Red Style) */}
         {queue && queue.length > 0 && (
-          <div className={`absolute top-8 right-8 w-80 bg-black/80 backdrop-blur-xl rounded-3xl p-6 z-40 shadow-2xl transition-all duration-500 pointer-events-none transform ${showQueue ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
+          <div className={`absolute top-8 right-8 w-96 bg-black/80 backdrop-blur-xl rounded-3xl p-6 z-40 shadow-2xl transition-all duration-500 pointer-events-none transform ${showQueue ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
 
             {/* Styles for Marquee */}
+            {/* Styles for Infinite Marquee */}
             <style>{`
-              @keyframes marquee {
-                0% { transform: translateX(100%); }
-                100% { transform: translateX(-100%); }
+              @keyframes marquee-infinite {
+                0% { transform: translateX(0); }
+                100% { transform: translateX(-50%); }
               }
-              .animate-marquee {
-                animation: marquee 15s linear infinite;
-                display: inline-block;
-                white-space: nowrap;
-                padding-right: 100%; /* Spacing */
+              .animate-marquee-infinite {
+                animation: marquee-infinite 20s linear infinite;
+                display: flex;
+                width: max-content;
+                will-change: transform;
               }
             `}</style>
 
@@ -296,14 +297,19 @@ export default function DualScreen() {
               {queue.find(v => v.videoId === videoId) ? (
                 (() => {
                   const title = queue.find(v => v.videoId === videoId)?.title || "";
-                  // Lower threshold to 35 to catch overflow earlier
-                  const isLong = title.length > 35;
+                  const isLong = title.length > 30; // Lower threshold slightly for wider widget
                   return (
                     <div className="relative w-full overflow-hidden">
                       {isLong ? (
-                        <h1 className="text-white font-medium text-sm animate-marquee whitespace-nowrap">
-                          {title}
-                        </h1>
+                        <div className="animate-marquee-infinite">
+                          {/* Render text twice for seamless loop */}
+                          <h1 className="text-white font-medium text-sm whitespace-nowrap mr-16">
+                            {title}
+                          </h1>
+                          <h1 className="text-white font-medium text-sm whitespace-nowrap mr-16">
+                            {title}
+                          </h1>
+                        </div>
                       ) : (
                         <h1 className="text-white font-medium text-sm truncate">
                           {title}
