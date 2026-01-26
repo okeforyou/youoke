@@ -6,14 +6,17 @@
         ".write": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin')"
       }
     },
-    "rooms": {
+    rooms: {
       "$roomCode": {
         ".read": true,
         ".write": true,
         "commands": {
           ".read": true,
           ".write": true,
-          ".indexOn": ["timestamp", "status"]
+          ".indexOn": [
+            "timestamp",
+            "status"
+          ]
         },
         "state": {
           ".read": true,
@@ -22,6 +25,17 @@
         "participants": {
           ".read": true,
           ".write": true
+        }
+      }
+    },
+    "sessions": {
+      ".read": true,
+      ".write": true,
+      "$sessionId": {
+        "commands": {
+          ".indexOn": [
+            "timestamp"
+          ]
         }
       }
     }
