@@ -35,6 +35,7 @@ export default function RemotePage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
     const [isSearching, setIsSearching] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
     const [addedId, setAddedId] = useState<string | null>(null);
 
     // Initial Load - Get Session ID from URL
@@ -89,14 +90,19 @@ export default function RemotePage() {
         }
 
         setIsSearching(true);
+        setErrorMessage('');
         try {
             // Reusing existing API
             const res = await axios.get('/api/search', { params: { q: query } });
             if (res.data && res.data.data) {
                 setSearchResults(res.data.data);
+            } else if (Array.isArray(res.data)) {
+                // Support array response
+                setSearchResults(res.data);
             }
-        } catch (e) {
+        } catch (e: any) {
             console.error('Search failed', e);
+            setErrorMessage(e.response?.data?.error || e.message || 'Search failed');
         } finally {
             setIsSearching(false);
         }
@@ -184,6 +190,13 @@ export default function RemotePage() {
                         onChange={(e) => handleSearch(e.target.value)}
                     />
                 </div>
+
+                {/* Error Message */}
+                {errorMessage && (
+                    <div className="p-3 mb-2 bg-red-900/50 border border-red-500/50 rounded-lg text-red-200 text-xs text-center">
+                        {errorMessage}
+                    </div>
+                )}
 
                 {/* Results List */}
                 <div className="flex-1 overflow-y-auto space-y-2 pb-20 scrollbar-hide">
