@@ -58,6 +58,12 @@ export const useRemoteHost = (
 
     }, [sessionId, currentVideoId, queue]);
 
+    // Keep latest addToQueue in ref to avoid re-subscribing listener
+    const addToQueueRef = useRef(addToQueue);
+    useEffect(() => {
+        addToQueueRef.current = addToQueue;
+    }, [addToQueue]);
+
     // Listen for Commands
     useEffect(() => {
         if (!sessionId || !realtimeDb) return;
@@ -79,7 +85,7 @@ export const useRemoteHost = (
         });
 
         return () => unsubscribe();
-    }, [sessionId, playerRef, addToQueue]);
+    }, [sessionId, playerRef]); // Removed addToQueue from deps
 
     const handleCommand = (cmd: RemoteCommand) => {
         console.log('[RemoteHost] Received:', cmd);
@@ -104,7 +110,7 @@ export const useRemoteHost = (
                 break;
             case 'ADD_QUEUE':
                 if (cmd.payload) {
-                    addToQueue(cmd.payload);
+                    addToQueueRef.current(cmd.payload);
                 }
                 break;
         }
