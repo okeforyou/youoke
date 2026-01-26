@@ -268,22 +268,22 @@ export default function DualScreen() {
 
         {/* Queue Display (Top Right) */}
         {/* Queue Display (Modern Widget Style) */}
-        {/* Queue Display (High Contrast) */}
+        {/* Queue Display (Clean Red Style) */}
         {queue && queue.length > 0 && (
-          <div className={`absolute top-8 right-8 w-80 bg-zinc-900/95 backdrop-blur-xl rounded-3xl border border-white/20 p-6 z-40 shadow-2xl transition-all duration-500 pointer-events-none transform ${showQueue ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
+          <div className={`absolute top-8 right-8 w-80 bg-black/80 backdrop-blur-xl rounded-3xl p-6 z-40 shadow-2xl transition-all duration-500 pointer-events-none transform ${showQueue ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
 
             {/* Header: Now Playing */}
             <div className="mb-4">
-              <div className="flex items-center gap-2 text-green-400 mb-2">
+              <div className="flex items-center gap-2 text-primary mb-2">
                 <MusicalNoteIcon className="w-5 h-5 animate-pulse" />
                 <span className="text-xs font-bold uppercase tracking-widest">Now Playing</span>
               </div>
               {queue.find(v => v.videoId === videoId) ? (
-                <h1 className="text-white font-bold text-lg leading-tight line-clamp-2">
+                <h1 className="text-white font-semibold text-base leading-snug break-words">
                   {queue.find(v => v.videoId === videoId)?.title}
                 </h1>
               ) : (
-                <h1 className="text-white font-bold text-lg leading-tight">Loading...</h1>
+                <h1 className="text-white font-semibold text-base leading-snug">Loading...</h1>
               )}
             </div>
 
