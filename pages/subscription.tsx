@@ -66,7 +66,7 @@ export default function SubscriptionPage() {
           uid: data.user.uid,
           email: data.user.email,
           displayName: data.user.displayName,
-          role: "user",
+          role: "free",
           subscription: {
             plan: data.user.subscription.plan,
             startDate: data.user.subscription.startDate,
@@ -187,71 +187,71 @@ export default function SubscriptionPage() {
       </Head>
 
       <MainLayout maxWidth="2xl" activeTab={undefined}>
-          {/* Back Button */}
-          <button
-            onClick={() => router.push("/account")}
-            className="btn btn-ghost btn-sm gap-2 mb-6"
-          >
-            <ArrowLeftIcon className="w-4 h-4" />
-            กลับ
-          </button>
+        {/* Back Button */}
+        <button
+          onClick={() => router.push("/account")}
+          className="btn btn-ghost btn-sm gap-2 mb-6"
+        >
+          <ArrowLeftIcon className="w-4 h-4" />
+          กลับ
+        </button>
 
-          {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold">สถานะสมาชิก</h1>
-          </div>
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold">สถานะสมาชิก</h1>
+        </div>
 
-          {/* Simple Subscription Card */}
-          <div className="card bg-base-100 shadow-xl mb-6">
-            <div className="card-body p-6">
-              {/* Package Row */}
-              <div className="flex justify-between items-start mb-4 pb-4 border-b border-base-300">
-                <span className="text-base-content/70">แพ็กเกจ:</span>
-                <span className="font-semibold text-right">
-                  YouOke Premium ({getPackageName(profile.subscription.plan)})
-                </span>
-              </div>
+        {/* Simple Subscription Card */}
+        <div className="card bg-base-100 shadow-xl mb-6">
+          <div className="card-body p-6">
+            {/* Package Row */}
+            <div className="flex justify-between items-start mb-4 pb-4 border-b border-base-300">
+              <span className="text-base-content/70">แพ็กเกจ:</span>
+              <span className="font-semibold text-right">
+                YouOke Premium ({getPackageName(profile.subscription.plan)})
+              </span>
+            </div>
 
-              {/* Bong Pun Row - Empty for now */}
-              <div className="flex justify-between items-center mb-4 pb-4 border-b border-base-300">
-                <span className="text-base-content/70">บ่วงปุ๊น:</span>
-                <span className="text-base-content/40">-</span>
-              </div>
+            {/* Bong Pun Row - Empty for now */}
+            <div className="flex justify-between items-center mb-4 pb-4 border-b border-base-300">
+              <span className="text-base-content/70">บ่วงปุ๊น:</span>
+              <span className="text-base-content/40">-</span>
+            </div>
 
-              {/* Status Row */}
-              <div className="flex justify-between items-center mb-4 pb-4 border-b border-base-300">
-                <span className="text-base-content/70">สถานะ:</span>
-                <span className={`font-semibold ${getStatusColor(profile.subscription.status)}`}>
-                  {getStatusText(profile.subscription.status)}
-                </span>
-              </div>
+            {/* Status Row */}
+            <div className="flex justify-between items-center mb-4 pb-4 border-b border-base-300">
+              <span className="text-base-content/70">สถานะ:</span>
+              <span className={`font-semibold ${getStatusColor(profile.subscription.status)}`}>
+                {getStatusText(profile.subscription.status)}
+              </span>
+            </div>
 
-              {/* Expiry Date Row */}
-              <div className="flex justify-between items-center">
-                <span className="text-base-content/70">การชำระเงินครั้งถัดไป:</span>
-                <span className="font-semibold">
-                  {profile.subscription.endDate ? formatDate(profile.subscription.endDate) : "-"}
-                </span>
-              </div>
+            {/* Expiry Date Row */}
+            <div className="flex justify-between items-center">
+              <span className="text-base-content/70">การชำระเงินครั้งถัดไป:</span>
+              <span className="font-semibold">
+                {profile.subscription.endDate ? formatDate(profile.subscription.endDate) : "-"}
+              </span>
             </div>
           </div>
+        </div>
 
-          {/* Action Button */}
-          <button
-            onClick={() => router.push("/pricing")}
-            className="btn btn-neutral btn-block btn-lg"
-          >
-            จัดการแพลนสมาชิก
-          </button>
+        {/* Action Button */}
+        <button
+          onClick={() => router.push("/pricing")}
+          className="btn btn-neutral btn-block btn-lg"
+        >
+          จัดการแพลนสมาชิก
+        </button>
 
-          {/* User Info (for debugging) */}
-          {process.env.NODE_ENV === "development" && (
-            <div className="mt-8 p-4 bg-base-200 rounded-lg">
-              <pre className="text-xs overflow-auto">
-                {JSON.stringify(profile, null, 2)}
-              </pre>
-            </div>
-          )}
+        {/* User Info (for debugging) */}
+        {process.env.NODE_ENV === "development" && (
+          <div className="mt-8 p-4 bg-base-200 rounded-lg">
+            <pre className="text-xs overflow-auto">
+              {JSON.stringify(profile, null, 2)}
+            </pre>
+          </div>
+        )}
       </MainLayout>
     </>
   );
