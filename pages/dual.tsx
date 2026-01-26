@@ -296,15 +296,16 @@ export default function DualScreen() {
               {queue.find(v => v.videoId === videoId) ? (
                 (() => {
                   const title = queue.find(v => v.videoId === videoId)?.title || "";
-                  const isLong = title.length > 50;
+                  // Lower threshold to 35 to catch overflow earlier
+                  const isLong = title.length > 35;
                   return (
                     <div className="relative w-full overflow-hidden">
                       {isLong ? (
-                        <h1 className="text-white font-medium text-sm animate-marquee">
+                        <h1 className="text-white font-medium text-sm animate-marquee whitespace-nowrap">
                           {title}
                         </h1>
                       ) : (
-                        <h1 className="text-white font-medium text-sm leading-snug break-words">
+                        <h1 className="text-white font-medium text-sm truncate">
                           {title}
                         </h1>
                       )}
@@ -312,7 +313,7 @@ export default function DualScreen() {
                   );
                 })()
               ) : (
-                <h1 className="text-white font-medium text-sm leading-snug">Loading...</h1>
+                <h1 className="text-white font-medium text-sm truncate">Loading...</h1>
               )}
             </div>
 
