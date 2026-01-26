@@ -170,7 +170,7 @@ export default function DualScreen() {
           try {
             const state = await p.getPlayerState();
             setIsPlaying(state === 1);
-            setIsMuted(p.isMuted());
+            setIsMuted(await p.isMuted());
           } catch (e) { /* ignore */ }
         }
       }
