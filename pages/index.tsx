@@ -1066,6 +1066,7 @@ function HomePage() {
                 nextSong={playNext}
                 className="flex-shrink-0"
                 controlRef={playerControlRef}
+                externalPlayerRef={mobilePlayerRef}
               />
 
               {/* Queue/Playlist */}
