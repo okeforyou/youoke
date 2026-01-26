@@ -186,7 +186,6 @@ function HomePage() {
   }, []);
 
   // Mobile player control - ref and state for MiniPlayer
-  const mobilePlayerRef = useRef<YouTube>(null);
   const playerControlRef = useRef<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
