@@ -8,7 +8,8 @@ import {
   PlayIcon,
   PauseIcon,
   SpeakerWaveIcon,
-  SpeakerXMarkIcon
+  SpeakerXMarkIcon,
+  ForwardIcon
 } from '@heroicons/react/24/outline';
 
 type SyncPayload = {
@@ -147,7 +148,8 @@ export default function DualScreen() {
   const toggleMute = () => {
     if (!playerRef.current) return;
     const player = playerRef.current.getInternalPlayer();
-    if (player.isMuted()) {
+    // Optimistic update
+    if (isMuted) {
       player.unMute();
       setIsMuted(false);
     } else {
@@ -208,7 +210,15 @@ export default function DualScreen() {
   };
 
   const onPlayerEnd = () => {
+    // Trigger Next Song on Main Screen
     console.log('🎬 [Dual] Video Ended. Requesting Next...');
+    const channel = new BroadcastChannel('youoke-dual-sync');
+    channel.postMessage({ type: 'REQUEST_NEXT' });
+    channel.close();
+  };
+
+  const requestNext = () => {
+    console.log('⏭️ [Dual] User requested Next...');
     const channel = new BroadcastChannel('youoke-dual-sync');
     channel.postMessage({ type: 'REQUEST_NEXT' });
     channel.close();
@@ -287,17 +297,22 @@ export default function DualScreen() {
             </button>
 
             {/* Mute (Dynamic Icon) */}
-            <button onClick={toggleMute} className="p-1 hover:bg-white/20 rounded-full transition-colors">
+            <button onClick={toggleMute} className="p-1 hover:bg-white/20 rounded-full transition-colors order-3">
               {isMuted ? <SpeakerXMarkIcon className="w-6 h-6 text-white/80" /> : <SpeakerWaveIcon className="w-6 h-6 text-white/80" />}
             </button>
 
+            {/* Next Song */}
+            <button onClick={requestNext} className="p-1 hover:bg-white/20 rounded-full transition-colors order-2 block">
+              <ForwardIcon className="w-8 h-8 text-white hover:scale-110 transition-transform" />
+            </button>
+
             {/* Separator */}
-            <div className="w-px h-6 bg-white/20"></div>
+            <div className="w-px h-6 bg-white/20 order-4"></div>
 
             {/* Fullscreen (Seamless) */}
             <button
               onClick={() => toggleFullscreen()}
-              className="p-1 hover:bg-white/20 rounded-full transition-colors group"
+              className="p-1 hover:bg-white/20 rounded-full transition-colors group order-5"
               title="Seamless Fullscreen"
             >
               {isFullscreen ? (
