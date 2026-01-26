@@ -9,7 +9,9 @@ import {
   PauseIcon,
   SpeakerWaveIcon,
   SpeakerXMarkIcon,
-  ForwardIcon
+  ForwardIcon,
+  MusicalNoteIcon,
+  ListBulletIcon
 } from '@heroicons/react/24/outline';
 
 type SyncPayload = {
@@ -265,20 +267,56 @@ export default function DualScreen() {
         </div>
 
         {/* Queue Display (Top Right) */}
+        {/* Queue Display (Modern Widget Style) */}
         {queue && queue.length > 0 && (
-          <div className={`absolute top-4 right-4 w-80 bg-black/60 backdrop-blur-md rounded-xl p-4 z-40 transition-opacity duration-500 pointer-events-none ${showQueue ? 'opacity-100' : 'opacity-0'}`}>
-            <h2 className="text-lg font-bold mb-3 text-white flex items-center gap-2">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-              คิวเพลง ({queue.length})
-            </h2>
-            <div className="space-y-2">
-              {queue.slice(0, 7).map((v, i) => (
-                <div key={i} className={`flex gap-3 text-sm p-2 rounded-lg ${v.videoId === videoId ? 'bg-primary/20 text-white font-bold border border-primary/50' : 'text-gray-300'}`}>
-                  <span className="opacity-70">{i + 1}.</span>
-                  <span className="line-clamp-1">{v.title}</span>
-                </div>
-              ))}
-              {queue.length > 7 && <p className="text-xs text-center text-gray-400 mt-2">+ อีก {queue.length - 7} เพลง</p>}
+          <div className={`absolute top-6 right-6 w-80 bg-black/80 backdrop-blur-md rounded-3xl border border-white/10 p-5 z-40 transition-all duration-500 pointer-events-none transform ${showQueue ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
+
+            {/* Header: Now Playing */}
+            <div className="mb-4">
+              <div className="flex items-center gap-2 text-green-400 mb-1">
+                <MusicalNoteIcon className="w-4 h-4 animate-bounce" />
+                <span className="text-xs font-bold uppercase tracking-wider">Now Playing</span>
+              </div>
+              {queue.find(v => v.videoId === videoId) ? (
+                <h1 className="text-white font-bold text-lg leading-tight line-clamp-2">
+                  {queue.find(v => v.videoId === videoId)?.title}
+                </h1>
+              ) : (
+                <h1 className="text-white font-bold text-lg leading-tight">Loading...</h1>
+              )}
+            </div>
+
+            {/* Divider */}
+            <div className="h-px bg-white/10 w-full mb-3"></div>
+
+            {/* Up Next List */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-gray-400 mb-2">
+                <ListBulletIcon className="w-3 h-3" />
+                <span className="text-[10px] font-bold uppercase tracking-wider">Up Next</span>
+              </div>
+
+              {/* Filter logic: Show next 3 songs after current */}
+              {(() => {
+                const currentIndex = queue.findIndex(v => v.videoId === videoId);
+                const nextSongs = currentIndex !== -1 ? queue.slice(currentIndex + 1, currentIndex + 4) : queue.slice(0, 3);
+
+                if (nextSongs.length === 0) return <p className="text-xs text-gray-500 italic">No more songs.</p>;
+
+                return (
+                  <>
+                    {nextSongs.map((v, i) => (
+                      <div key={i} className="flex gap-3 text-sm text-gray-300 items-center">
+                        <span className="text-xs text-gray-500 font-mono">{(currentIndex + 1) + (i + 1)}</span>
+                        <span className="line-clamp-1 opacity-80">{v.title}</span>
+                      </div>
+                    ))}
+                    {(queue.length - (currentIndex + 1 + nextSongs.length) > 0) && (
+                      <p className="text-xs text-gray-500 mt-2 pl-6">+ อีก {queue.length - (currentIndex + 1 + nextSongs.length)} เพลง</p>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           </div>
         )}
