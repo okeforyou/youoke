@@ -813,7 +813,7 @@ function HomePage() {
                 {/* Mobile Remote Button */}
                 <button
                   onClick={() => setShowRemoteModal(true)}
-                  className="btn btn-circle btn-ghost bg-white md:bg-base-200 border border-base-200 ml-2"
+                  className="hidden md:flex btn btn-circle btn-ghost bg-white md:bg-base-200 border border-base-200 ml-2"
                   title="Mobile Remote"
                 >
                   <DevicePhoneMobileIcon className="w-6 h-6 text-primary" />
