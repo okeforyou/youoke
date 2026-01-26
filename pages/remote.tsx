@@ -175,7 +175,7 @@ export default function RemotePage() {
             {/* Search Section */}
             <div className="flex-1 bg-zinc-900/30 rounded-t-3xl border-t border-white/10 p-6 flex flex-col min-h-0">
                 <div className="relative mb-4 flex-none">
-                    <MagnifyingGlassIcon className="absolute left-3 top-3.5 w-5 h-5 text-gray-400" />
+                    <MagnifyingGlassIcon className="absolute left-3 top-3.5 w-5 h-5 text-gray-400 pointer-events-none" />
                     <DebounceInput
                         minLength={2}
                         debounceTimeout={500}
