@@ -84,7 +84,8 @@ const ListTopicsGrid = dynamic(() => import("../components/ListTopicsGrid"), {
 const ListPlaylistsGrid = dynamic(() => import("../components/ListPlaylistsGrid"), {
   loading: () => <div>Loading...</div>,
 });
-() => import('qrcode.react').then((mod) => mod.QRCodeSVG),
+const QRCodeSVG = dynamic(
+  () => import('qrcode.react').then((mod) => mod.QRCodeSVG),
   { ssr: false, loading: () => <div className="w-[180px] h-[180px] bg-gray-200 animate-pulse" /> }
 );
 import { useRemoteHost } from "../hooks/useRemoteHost";
