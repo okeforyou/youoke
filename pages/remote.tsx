@@ -51,63 +51,87 @@ export default function RemotePage() {
     }, [router.isReady, router.query]);
 
     // Connect to Firebase & Auth
+    // Connect to Firebase & Auth (Failover: REST API Polling)
     useEffect(() => {
-        if (!sessionId || !realtimeDb) return;
+        if (!sessionId) return;
 
-        // 1. Sign in anonymously (required for write access)
+        console.log('🔗 Remote: Initializing connection to', sessionId);
+
+        let isActive = true;
+
+        // 1. Sign in anonymously (required for write access if rules enforce it)
         const initAuth = async () => {
-            // Dynamic import auth to avoid SSR issues if needed, or assume it's available from firebase.ts
+            // Dynamic import auth to avoid SSR issues if needed
             const { auth } = await import('../firebase');
             const { signInAnonymously } = await import('firebase/auth');
-            if (!auth.currentUser) {
-                await signInAnonymously(auth);
+            if (auth && !auth.currentUser) {
+                try {
+                    await signInAnonymously(auth);
+                    console.log('✅ Remote: Signed in anonymously');
+                } catch (e) {
+                    console.error('❌ Remote: Auth failed', e);
+                }
             }
         };
         initAuth();
 
-        // 2. Listen for room state (using 'rooms' path instead of 'sessions')
-        const stateRef = ref(realtimeDb, `rooms/${sessionId}/state`);
+        // 2. Poll for room state (REST API)
+        const pollRoomInterval = setInterval(async () => {
+            if (!isActive) return;
 
-        // Listen for host status
-        const unsubscribe = onValue(stateRef, (snapshot) => {
-            if (snapshot.exists()) {
-                setStatus(snapshot.val());
-                setIsConnected(true);
-            } else {
+            try {
+                // Get DB URL dynamically
+                const { realtimeDb } = await import('../firebase');
+                const dbURL = realtimeDb?.app?.options?.databaseURL;
+
+                if (!dbURL) return;
+
+                const response = await fetch(`${dbURL}/rooms/${sessionId}/state.json`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data) {
+                        setStatus(data);
+                        setIsConnected(true);
+                    } else {
+                        // Room might not exist or state is empty
+                        setIsConnected(false);
+                    }
+                } else {
+                    // console.warn('⚠️ Remote: Poll failed', response.status);
+                    setIsConnected(false);
+                }
+            } catch (e) {
+                console.error('❌ Remote: Poll error', e);
                 setIsConnected(false);
             }
-        }, (error) => {
-            console.error(error);
-            setIsConnected(false);
-        });
+        }, 1000);
 
-        return () => unsubscribe();
+        return () => {
+            isActive = false;
+            clearInterval(pollRoomInterval);
+        };
     }, [sessionId]);
 
-    // Commands
-    const sendCommand = (type: string, payload: any = {}) => {
-        if (!sessionId || !realtimeDb) return;
+    // Wrapper to use the shared utility
+    const handleSendCommand = async (type: string, payload: any = {}) => {
+        if (!sessionId) return;
 
-        // Create a unique ID for the command
-        const commandId = push(ref(realtimeDb, `rooms/${sessionId}/commands`)).key;
-        if (!commandId) return;
+        try {
+            // Import dynamically to ensure we get the latest singleton
+            const { sendCommand } = await import('../utils/castCommands');
 
-        const cmdRef = ref(realtimeDb, `rooms/${sessionId}/commands/${commandId}`);
-
-        // Construct standard Envelope expected by Monitor
-        const envelope = {
-            id: commandId,
-            command: {
-                type,
-                payload
-            },
-            status: 'pending',
-            timestamp: Date.now(),
-            from: 'remote'
-        };
-
-        set(cmdRef, envelope);
+            // Map simple types to CastCommand strict types
+            // @ts-ignore - Temporary loose typing for quick migration
+            await sendCommand(sessionId, { type, payload });
+            console.log('✅ Remote: Command sent', type);
+        } catch (e) {
+            console.error('Failed to send command:', e);
+            setErrorMessage('Connection failed. Retrying...');
+        }
     };
+
+    // Alias for compatibility with existing JSX calls
+    const sendCommand = handleSendCommand;
 
     // Search Handler
     const handleSearch = async (query: string) => {
