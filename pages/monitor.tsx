@@ -510,7 +510,7 @@ const Monitor = () => {
         // This will be handled by returning the state with lastConnected added
         break;
 
-      case 'ADD_TO_QUEUE':
+      case 'ADD_QUEUE':
         newState.queue = [...newState.queue, command.payload.video];
         // If no current video, start playing the first one
         if (!newState.currentVideo && newState.queue.length > 0) {
