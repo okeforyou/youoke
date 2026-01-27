@@ -1,6 +1,7 @@
 import '../styles/global.css'
 
 import Head from 'next/head'
+import Script from 'next/script'
 import { QueryClient, QueryClientProvider } from 'react-query'
 
 import { Analytics } from '@vercel/analytics/react'
@@ -77,6 +78,13 @@ function App({ Component, pageProps }) {
               />
             </>
           )}
+
+          {/* Google Cast SDK - Loaded strategiically for performance */}
+          <Script
+            src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"
+            strategy="beforeInteractive"
+          />
+
           <QueryClientProvider client={queryClient}>
             {/* ConditionalCastProviders handles dynamic loading of Cast contexts */}
             <ConditionalCastProviders>
@@ -89,7 +97,7 @@ function App({ Component, pageProps }) {
           <Analytics />
         </>
       </ToastProvider>
-    </AuthContextProvider>
+    </AuthContextProvider >
   );
 }
 

@@ -17,8 +17,7 @@ export default function Document() {
         {/* Preconnect to Google Cast CDN for faster loading */}
         <link rel="preconnect" href="https://www.gstatic.com" />
         <link rel="dns-prefetch" href="https://www.gstatic.com" />
-        {/* Google Cast SDK - Load synchronously to ensure it loads before React hydration */}
-        <script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1" />
+        {/* Note: Google Cast SDK script moved to _app.tsx using next/script */}
       </Head>
       <body>
         <Main />

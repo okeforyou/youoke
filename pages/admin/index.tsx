@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import {
   UsersIcon,
   CurrencyDollarIcon,
@@ -212,11 +213,10 @@ const AdminDashboard: React.FC<Props> = ({ stats, recentActivities: serializedAc
                   className="flex items-start gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   <div
-                    className={`p-2 rounded-full ${
-                      activity.type === "payment"
-                        ? "bg-green-100"
-                        : "bg-blue-100"
-                    }`}
+                    className={`p-2 rounded-full ${activity.type === "payment"
+                      ? "bg-green-100"
+                      : "bg-blue-100"
+                      }`}
                   >
                     {activity.type === "payment" ? (
                       <CurrencyDollarIcon className="w-4 h-4 text-green-600" />
@@ -234,12 +234,12 @@ const AdminDashboard: React.FC<Props> = ({ stats, recentActivities: serializedAc
                     <p className="text-xs text-gray-400 mt-1">
                       {activity.timestamp
                         ? activity.timestamp.toLocaleString("th-TH", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
                         : "N/A"}
                     </p>
                   </div>
@@ -253,27 +253,27 @@ const AdminDashboard: React.FC<Props> = ({ stats, recentActivities: serializedAc
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <a
+            <Link
               href="/admin/users"
               className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
             >
               <UsersIcon className="w-5 h-5 text-blue-500" />
               <span className="font-medium text-gray-700">Manage Users</span>
-            </a>
-            <a
+            </Link>
+            <Link
               href="/admin/payments"
               className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-colors"
             >
               <CheckCircleIcon className="w-5 h-5 text-orange-500" />
               <span className="font-medium text-gray-700">Verify Payments</span>
-            </a>
-            <a
+            </Link>
+            <Link
               href="/admin/subscriptions"
               className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors"
             >
               <CurrencyDollarIcon className="w-5 h-5 text-green-500" />
               <span className="font-medium text-gray-700">Manage Plans</span>
-            </a>
+            </Link>
           </div>
         </div>
       </div>

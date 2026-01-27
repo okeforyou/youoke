@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ref, set, get } from 'firebase/database';
 import { realtimeDb } from '../firebase';
 import { useAuth } from '../context/AuthContext';
+import Link from 'next/link';
 
 export default function DebugFirebase() {
   const { user } = useAuth();
@@ -114,10 +115,10 @@ export default function DebugFirebase() {
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
           <h3 className="text-lg font-semibold mb-2">📝 Instructions:</h3>
           <ol className="list-decimal list-inside space-y-2">
-            <li>Check if "realtimeDbExists" is true</li>
-            <li>Check if "userLoggedIn" is true (login if not)</li>
-            <li>Check if "databaseURL" is set correctly</li>
-            <li>Click "Test Write" to test Firebase connection</li>
+            <li>Check if &quot;realtimeDbExists&quot; is true</li>
+            <li>Check if &quot;userLoggedIn&quot; is true (login if not)</li>
+            <li>Check if &quot;databaseURL&quot; is set correctly</li>
+            <li>Click &quot;Test Write&quot; to test Firebase connection</li>
             <li>If errors appear, check Firebase Console Rules</li>
           </ol>
         </div>
@@ -132,9 +133,9 @@ export default function DebugFirebase() {
             </li>
             <li>
               <strong>userLoggedIn: false</strong> → Login first at{' '}
-              <a href="/login" className="text-blue-600 underline">
+              <Link href="/login" className="text-blue-600 underline">
                 /login
-              </a>
+              </Link>
             </li>
             <li>
               <strong>Write failed: Permission denied</strong> → Check Firebase

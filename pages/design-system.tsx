@@ -212,7 +212,7 @@ export default function DesignSystemPage() {
                     <button className="btn btn-primary btn-hover">Hover Me</button>
                     <button className="btn btn-secondary btn-hover">Hover Me Too</button>
                   </div>
-                  <code className="text-xs text-gray-500 mt-2 block">className="btn btn-primary btn-hover"</code>
+                  <code className="text-xs text-gray-500 mt-2 block">className=&quot;btn btn-primary btn-hover&quot;</code>
                 </Card.Body>
               </Card>
             </section>
@@ -229,7 +229,7 @@ export default function DesignSystemPage() {
                     <p className="text-gray-600">
                       Standard card with shadow and border. Most common variant for content containers.
                     </p>
-                    <code className="text-xs text-gray-500 mt-2 block">variant="default"</code>
+                    <code className="text-xs text-gray-500 mt-2 block">variant=&quot;default&quot;</code>
                   </Card.Body>
                 </Card>
 
@@ -240,7 +240,7 @@ export default function DesignSystemPage() {
                     <p className="text-gray-600">
                       Card with deeper shadow, no border. Use for emphasis or floating elements.
                     </p>
-                    <code className="text-xs text-gray-500 mt-2 block">variant="elevated"</code>
+                    <code className="text-xs text-gray-500 mt-2 block">variant=&quot;elevated&quot;</code>
                   </Card.Body>
                 </Card>
 
@@ -251,7 +251,7 @@ export default function DesignSystemPage() {
                     <p className="text-gray-600">
                       Card with border only, minimal shadow. Clean and minimal look.
                     </p>
-                    <code className="text-xs text-gray-500 mt-2 block">variant="bordered"</code>
+                    <code className="text-xs text-gray-500 mt-2 block">variant=&quot;bordered&quot;</code>
                   </Card.Body>
                 </Card>
 
@@ -262,7 +262,7 @@ export default function DesignSystemPage() {
                     <p className="text-gray-700">
                       Card with gradient background. Perfect for highlights or CTAs.
                     </p>
-                    <code className="text-xs text-gray-500 mt-2 block">variant="gradient"</code>
+                    <code className="text-xs text-gray-500 mt-2 block">variant=&quot;gradient&quot;</code>
                   </Card.Body>
                 </Card>
 
@@ -273,7 +273,7 @@ export default function DesignSystemPage() {
                     <p className="text-gray-600">
                       Hover me! Card with smooth shadow transition on hover.
                     </p>
-                    <code className="text-xs text-gray-500 mt-2 block">className="card-hover"</code>
+                    <code className="text-xs text-gray-500 mt-2 block">className=&quot;card-hover&quot;</code>
                   </div>
                 </div>
               </div>
@@ -452,11 +452,11 @@ export default function DesignSystemPage() {
                     <div className="card bg-white shadow-sm card-hover p-4 cursor-pointer">
                       <h4 className="font-semibold">Card Hover</h4>
                       <p className="text-sm text-gray-600">Hover to see shadow and lift effect</p>
-                      <code className="text-xs text-gray-500">className="card-hover"</code>
+                      <code className="text-xs text-gray-500">className=&quot;card-hover&quot;</code>
                     </div>
                     <div className="flex gap-2">
                       <button className="btn btn-primary btn-hover">Button Hover</button>
-                      <code className="text-xs text-gray-500 self-center">className="btn-hover"</code>
+                      <code className="text-xs text-gray-500 self-center">className=&quot;btn-hover&quot;</code>
                     </div>
                   </div>
                 </Card.Body>
@@ -477,7 +477,7 @@ export default function DesignSystemPage() {
                     <div className="flex items-center gap-3">
                       <CheckCircleIcon className="w-6 h-6 text-success flex-shrink-0" />
                       <div className="flex-1">
-                        <code className="text-sm">toast.success("Success message")</code>
+                        <code className="text-sm">toast.success(&quot;Success message&quot;)</code>
                         <p className="text-xs text-gray-500">Green background, success icon</p>
                       </div>
                     </div>
@@ -485,7 +485,7 @@ export default function DesignSystemPage() {
                     <div className="flex items-center gap-3">
                       <XCircleIcon className="w-6 h-6 text-error flex-shrink-0" />
                       <div className="flex-1">
-                        <code className="text-sm">toast.error("Error message")</code>
+                        <code className="text-sm">toast.error(&quot;Error message&quot;)</code>
                         <p className="text-xs text-gray-500">Red background, error icon</p>
                       </div>
                     </div>
@@ -493,7 +493,7 @@ export default function DesignSystemPage() {
                     <div className="flex items-center gap-3">
                       <ExclamationTriangleIcon className="w-6 h-6 text-warning flex-shrink-0" />
                       <div className="flex-1">
-                        <code className="text-sm">toast.warning("Warning message")</code>
+                        <code className="text-sm">toast.warning(&quot;Warning message&quot;)</code>
                         <p className="text-xs text-gray-500">Yellow background, warning icon</p>
                       </div>
                     </div>
@@ -501,7 +501,7 @@ export default function DesignSystemPage() {
                     <div className="flex items-center gap-3">
                       <InformationCircleIcon className="w-6 h-6 text-info flex-shrink-0" />
                       <div className="flex-1">
-                        <code className="text-sm">toast.info("Info message")</code>
+                        <code className="text-sm">toast.info(&quot;Info message&quot;)</code>
                         <p className="text-xs text-gray-500">Blue background, info icon</p>
                       </div>
                     </div>
@@ -517,7 +517,7 @@ export default function DesignSystemPage() {
               <Card variant="default">
                 <Card.Body>
                   <p className="text-gray-600 mb-6">
-                    All spacing follows Tailwind's 4px base unit system
+                    All spacing follows Tailwind&apos;s 4px base unit system
                   </p>
 
                   <div className="space-y-4">
