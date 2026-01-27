@@ -177,7 +177,7 @@ function HomePage() {
 
   useEffect(() => {
     const checkScreenSize = () => {
-      setIsXlScreen(window.innerWidth >= 1024); // Now includes LG (iPad Landscape)
+      setIsXlScreen(window.innerWidth >= 768); // Now includes MD (iPad Portrait)
     };
 
     checkScreenSize();
@@ -815,10 +815,10 @@ function HomePage() {
                   </div>
                 </div>
 
-                {/* Mobile Remote Button */}
+                {/* Mobile Remote Button - Visible only on Desktop (XL+) */}
                 <button
                   onClick={() => setShowRemoteModal(true)}
-                  className="hidden md:flex btn btn-circle btn-ghost bg-white md:bg-base-200 border border-base-200 ml-2"
+                  className="hidden xl:flex btn btn-circle btn-ghost bg-white md:bg-base-200 border border-base-200 ml-2"
                   title="Mobile Remote"
                 >
                   <DevicePhoneMobileIcon className="w-6 h-6 text-primary" />
@@ -1060,10 +1060,10 @@ function HomePage() {
 
         {/* END Recommend Videos List */}
 
-        {/* Video Player + Queue Section - Desktop LG+ (iPad Landscape included) */}
+        {/* Video Player + Queue Section - Desktop/Tablet (MD+) */}
         {
           isXlScreen && !showVideoPlayerModal && (
-            <aside className="hidden lg:flex lg:w-80 xl:w-96 2xl:w-[450px] flex-col overflow-hidden border-l border-base-300 bg-base-100">
+            <aside className="hidden md:flex md:w-80 lg:w-80 xl:w-96 2xl:w-[450px] flex-col overflow-hidden border-l border-base-300 bg-base-100">
               {/* Video Player */}
               {/* Video Player */}
               <YoutubePlayer
