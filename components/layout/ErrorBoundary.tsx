@@ -1,6 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import Button from '../ui/Button';
+import Link from 'next/link';
 
 /**
  * ErrorBoundary Component - Catch React errors gracefully
@@ -155,12 +156,12 @@ export default class ErrorBoundary extends Component<Props, State> {
 
                 {/* Help Link */}
                 <div className="mt-4">
-                  <a
+                  <Link
                     href="/"
-                    className="link link-primary text-sm"
+                    className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary hover:bg-primary-focus md:py-4 md:text-lg md:px-10 cursor-pointer"
                   >
-                    กลับไปหน้าหลัก
-                  </a>
+                    กลับหน้าหลัก
+                  </Link>
                 </div>
               </div>
             </div>

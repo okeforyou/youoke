@@ -338,9 +338,7 @@ const Monitor = () => {
             <div className="text-left bg-base-200/10 rounded-lg p-4 space-y-2">
               <p className="text-lg">1. เปิด youoke.vercel.app บนมือถือ</p>
               <p className="text-lg">2. กดปุ่ม &quot;Cast to TV&quot;</p>
-              <p className="text-lg">
-                3. กรอกเลขห้อง <span className="text-primary font-bold">{roomCode}</span>
-              </p>
+              <p className="text-lg">3. กรอกเลขห้อง <span className="text-primary font-bold">{roomCode}</span></p>
               <p className="text-lg">4. เพิ่มเพลงแล้วร้องได้เลย! 🎤</p>
             </div>
           </div>

@@ -1,5 +1,6 @@
 import { GetServerSideProps } from 'next';
 import nookies from 'nookies';
+import Link from 'next/link';
 
 interface Props {
   cookies: Record<string, string>;
@@ -24,7 +25,11 @@ export default function TestSSRAuth({ cookies, hasToken, hasUid, rawCookie }: Pr
       <pre>{rawCookie || 'No cookie header'}</pre>
 
       <hr />
-      <p><a href="/account">← Back to Account</a></p>
+      <p>
+        <Link href="/account/" className="text-blue-500 underline">
+          Go to Account Page (SSR Protected)
+        </Link>
+      </p>
     </div>
   );
 }

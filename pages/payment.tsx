@@ -4,6 +4,7 @@ import Head from "next/head";
 import {
   ChatBubbleLeftIcon,
   BanknotesIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { useAuth } from "../context/AuthContext";
 import { getPricingPackage } from "../services/pricingService";
@@ -145,32 +146,28 @@ export default function PaymentPage() {
         <Card variant="elevated" className="mb-6">
           <Card.Body>
             <h3 className="text-lg font-semibold mb-3">ขั้นตอนการชำระเงิน</h3>
-            <ol className="list-decimal list-inside space-y-2 text-base-content/80">
-              <li>โอนเงินตามจำนวนที่ระบุ</li>
-              <li>กดปุ่ม "แจ้งชำระเงินทาง LINE@"</li>
-              <li>แนบสลิปการโอนเงินในแชท LINE</li>
-              <li>รอการยืนยันจากแอดมิน (ภายใน 24 ชม.)</li>
-            </ol>
-
-            {/* Action Buttons */}
-            <div className="mt-6 space-y-3">
-              <Button
-                onClick={handleNotifyLineOA}
-                variant="success"
-                size="lg"
-                block
-              >
-                <ChatBubbleLeftIcon className="w-6 h-6" />
-                แจ้งชำระเงินทาง LINE@
-              </Button>
-
-              <Button
-                onClick={() => router.push("/")}
-                variant="ghost"
-                block
-              >
-                กลับหน้าหลัก
-              </Button>
+            <div className="text-center py-10">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 mb-6">
+                <XMarkIcon className="w-8 h-8 text-red-600" />
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">การชำระเงินไม่สำเร็จ</h1>
+              <p className="text-gray-600 mb-8 max-w-md mx-auto">
+                ขออภัย ไม่สามารถทำรายการได้ในขณะนี้ กรุณาลองใหม่อีกครั้ง หรือติดต่อเจ้าหน้าที่หากพบปัญหา &quot;ซ้ำ&quot;
+              </p>
+              <div className="flex justify-center gap-4">
+                <button
+                  onClick={() => router.push('/pricing')}
+                  className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-focus transition-colors"
+                >
+                  ลองใหม่อีกครั้ง
+                </button>
+                <button
+                  onClick={() => router.push('/')}
+                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  กลับหน้าหลัก
+                </button>
+              </div>
             </div>
           </Card.Body>
         </Card>

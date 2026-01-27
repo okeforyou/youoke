@@ -1151,7 +1151,7 @@ const Monitor = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm sm:text-base text-white">
-                          กดปุ่ม <span className="font-semibold text-primary">"Cast to TV"</span>
+                          กดปุ่ม <span className="font-semibold text-primary">&quot;Cast to TV&quot;</span>
                         </p>
                       </div>
                     </div>
@@ -1341,90 +1341,90 @@ const Monitor = () => {
 
         {/* Queue Display - Right Side Vertical */}
         {roomData.queue.length > 0 && showQueue && (
-        <div className="absolute top-0 right-0 h-full w-80 lg:w-96 z-50 bg-gradient-to-l from-black/90 via-black/80 to-transparent backdrop-blur-md p-6 overflow-y-auto transition-all duration-500">
-          <div className="space-y-6">
-            {/* Now Playing */}
-            {roomData.currentVideo && (
-              <div>
-                <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide">กำลังเล่น</p>
-                <div className="bg-primary/20 border border-primary/30 rounded-xl p-4">
-                  <h2 className="text-lg font-bold mb-1 line-clamp-2">
-                    {roomData.currentVideo.title}
-                  </h2>
-                  {roomData.currentVideo.author && (
-                    <p className="text-sm text-gray-300 truncate">{roomData.currentVideo.author}</p>
+          <div className="absolute top-0 right-0 h-full w-80 lg:w-96 z-50 bg-gradient-to-l from-black/90 via-black/80 to-transparent backdrop-blur-md p-6 overflow-y-auto transition-all duration-500">
+            <div className="space-y-6">
+              {/* Now Playing */}
+              {roomData.currentVideo && (
+                <div>
+                  <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide">กำลังเล่น</p>
+                  <div className="bg-primary/20 border border-primary/30 rounded-xl p-4">
+                    <h2 className="text-lg font-bold mb-1 line-clamp-2">
+                      {roomData.currentVideo.title}
+                    </h2>
+                    {roomData.currentVideo.author && (
+                      <p className="text-sm text-gray-300 truncate">{roomData.currentVideo.author}</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Next in Queue */}
+              {roomData.queue.length > roomData.currentIndex + 1 && (
+                <div>
+                  <p className="text-xs text-gray-400 mb-3 uppercase tracking-wide flex items-center gap-2">
+                    <MusicalNoteIcon className="w-5 h-5" />
+                    <span>คิวถัดไป</span>
+                    <span className="ml-auto text-xs bg-white/10 px-2 py-0.5 rounded-full">
+                      {roomData.queue.length - roomData.currentIndex - 1} เพลง
+                    </span>
+                  </p>
+                  <div className="space-y-2">
+                    {roomData.queue
+                      .slice(roomData.currentIndex + 1, roomData.currentIndex + 8)
+                      .map((video, index) => (
+                        <div
+                          key={video.key}
+                          className="bg-white/5 hover:bg-white/10 rounded-lg p-3 transition-all group"
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className="flex-shrink-0 w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center">
+                              <span className="text-primary font-bold text-xs">
+                                {index + 1}
+                              </span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-sm line-clamp-2 mb-0.5">
+                                {video.title}
+                              </p>
+                              {video.author && (
+                                <p className="text-xs text-gray-400 truncate">
+                                  {video.author}
+                                </p>
+                              )}
+                              {video.addedBy && (
+                                <p className="text-xs text-primary/80 truncate mt-0.5">
+                                  โดย: {video.addedBy.displayName}
+                                  {video.addedBy.isGuest && ' (Guest)'}
+                                </p>
+                              )}
+                            </div>
+                            {/* Remove Button (only for host) */}
+                            {hostId === 'monitor' && (
+                              <button
+                                onClick={() => handleRemoveSong(roomData.currentIndex + 1 + index)}
+                                className="flex-shrink-0 w-7 h-7 rounded-full bg-error/20 hover:bg-error/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                title="ลบเพลง"
+                              >
+                                <XMarkIcon className="w-4 h-4 text-error" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+
+                  {/* More songs indicator */}
+                  {roomData.queue.length > roomData.currentIndex + 9 && (
+                    <div className="mt-3 text-center">
+                      <p className="text-xs text-gray-400">
+                        + อีก {roomData.queue.length - roomData.currentIndex - 9} เพลง
+                      </p>
+                    </div>
                   )}
                 </div>
-              </div>
-            )}
-
-            {/* Next in Queue */}
-            {roomData.queue.length > roomData.currentIndex + 1 && (
-              <div>
-                <p className="text-xs text-gray-400 mb-3 uppercase tracking-wide flex items-center gap-2">
-                  <MusicalNoteIcon className="w-5 h-5" />
-                  <span>คิวถัดไป</span>
-                  <span className="ml-auto text-xs bg-white/10 px-2 py-0.5 rounded-full">
-                    {roomData.queue.length - roomData.currentIndex - 1} เพลง
-                  </span>
-                </p>
-                <div className="space-y-2">
-                  {roomData.queue
-                    .slice(roomData.currentIndex + 1, roomData.currentIndex + 8)
-                    .map((video, index) => (
-                      <div
-                        key={video.key}
-                        className="bg-white/5 hover:bg-white/10 rounded-lg p-3 transition-all group"
-                      >
-                        <div className="flex items-start gap-3">
-                          <div className="flex-shrink-0 w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center">
-                            <span className="text-primary font-bold text-xs">
-                              {index + 1}
-                            </span>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-sm line-clamp-2 mb-0.5">
-                              {video.title}
-                            </p>
-                            {video.author && (
-                              <p className="text-xs text-gray-400 truncate">
-                                {video.author}
-                              </p>
-                            )}
-                            {video.addedBy && (
-                              <p className="text-xs text-primary/80 truncate mt-0.5">
-                                โดย: {video.addedBy.displayName}
-                                {video.addedBy.isGuest && ' (Guest)'}
-                              </p>
-                            )}
-                          </div>
-                          {/* Remove Button (only for host) */}
-                          {hostId === 'monitor' && (
-                            <button
-                              onClick={() => handleRemoveSong(roomData.currentIndex + 1 + index)}
-                              className="flex-shrink-0 w-7 h-7 rounded-full bg-error/20 hover:bg-error/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                              title="ลบเพลง"
-                            >
-                              <XMarkIcon className="w-4 h-4 text-error" />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                </div>
-
-                {/* More songs indicator */}
-                {roomData.queue.length > roomData.currentIndex + 9 && (
-                  <div className="mt-3 text-center">
-                    <p className="text-xs text-gray-400">
-                      + อีก {roomData.queue.length - roomData.currentIndex - 9} เพลง
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
         )}
       </div>
     </div>

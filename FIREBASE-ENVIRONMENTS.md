@@ -1,278 +1,76 @@
-# 🔥 Firebase Environments Setup
+# 🔥 Firebase Environments Strategy (Backup System)
 
-เพื่อไม่ให้กระทบผู้ใช้งานบน **play.okeforyou.com** เราแยก Firebase Projects ออกเป็น 2 ตัว:
-
-| Environment | URL | Firebase Project | Purpose |
-|-------------|-----|------------------|---------|
-| **Development/Staging** | youoke.vercel.app | `youoke-dev` | ทดสอบฟีเจอร์ใหม่ |
-| **Production** | play.okeforyou.com | `playokeforyou` | ผู้ใช้จริง |
+เอกสารนี้ระบุการเชื่อมต่อระหว่าง **Environment (Server)** และ **Database** เพื่อให้ระบบทำงานเป็น Backup กันได้
 
 ---
 
-## ✅ Step 1: สร้าง Firebase Dev Project (ทำครั้งเดียว)
+## 🏛️ System Architecture
 
-### 1.1 สร้าง Project ใหม่
-
-1. เปิด [Firebase Console](https://console.firebase.google.com/)
-2. คลิก **"Add project"**
-3. ตั้งชื่อ: **`youoke-dev`**
-4. ปิด Google Analytics (optional)
-5. คลิก **Create project**
-
----
-
-### 1.2 Enable Authentication
-
-1. เข้า **Authentication** → **Sign-in method**
-2. Enable:
-   - ✅ **Email/Password**
-   - ✅ **Google** (authorized domains: `youoke.vercel.app`)
+| Environment | URL | Database Target | Status |
+| :--- | :--- | :--- | :--- |
+| **Production (Main)** | `play.okeforyou.com` | ✅ **Production** (`playokeforyou`) | เว็บหลัก |
+| **Production (Backup)** | `youoke.vercel.app` | ✅ **Production** (`playokeforyou`) | **Web Backup (Failover)** |
+| **Preview (Test)** | `git-*.vercel.app` | 🛠 **Development** (`youoke-dev`) | ทดสอบฟีเจอร์ก่อนรวม |
+| **Local** | `localhost:3000` | 🛠 **Development** (`youoke-dev`) | เครื่องนักพัฒนา |
 
 ---
 
-### 1.3 Enable Realtime Database
+## ⚙️ Configuration Setup
 
-1. เข้า **Realtime Database** → **Create Database**
-2. Region: **`asia-southeast1`** (สำคัญ! ต้องเหมือน Production)
-3. Security rules: เริ่มด้วย **Test mode**
-4. จดบันทึก Database URL:
-   ```
-   https://youoke-dev-default-rtdb.asia-southeast1.firebasedatabase.app
-   ```
+### 1. ไฟล์ `.env` (ในเครื่อง)
+*   **`.env`**: ให้ใส่ค่าของ **Development DB** (เพื่อความปลอดภัยตอน dev)
+*   **`.env.production`**: ให้ใส่ค่าของ **Production DB** (เพื่อให้ build เป็น production ได้)
 
----
+### 2. การตั้งค่าบน Vercel (สำคัญ!)
+ต้องตั้งค่า **Environment Variables** บน Vercel ให้แยกกันตาม Environment:
 
-### 1.4 Enable Firestore (ถ้าใช้)
+#### ✅ สำหรับ Production Environment (เพื่อเป็น Backup)
+*ค่าเหล่านี้จะถูกใช้เมื่อ Deploy ลง "Production" (Branch `main`)*
 
-1. เข้า **Firestore Database** → **Create Database**
-2. Region: **`asia-southeast1`**
-3. Security rules: **Test mode**
+| Variable | Value (จาก Production FB) | Target Environment |
+| :--- | :--- | :--- |
+| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | **`playokeforyou`** | ☑️ Production |
+| `NEXT_PUBLIC_FIREBASE_DATABASE_URL` | `https://playokeforyou-default-rtdb.asia-southeast1.firebasedatabase.app` | ☑️ Production |
+| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | `playokeforyou.firebaseapp.com` | ☑️ Production |
+| ... (และตัวอื่นๆ) | ... | ☑️ Production |
 
----
+#### 🛠 สำหรับ Preview Environment (เพื่อการทดสอบ)
+*ค่าเหล่านี้จะถูกใช้เมื่อ Deploy ลง "Preview" (Branch อื่นๆ หรือ Pull Request)*
 
-### 1.5 Enable Storage (ถ้าใช้)
-
-1. เข้า **Storage** → **Get Started**
-2. Security rules: **Test mode**
-
----
-
-### 1.6 คัดลอก Firebase Config
-
-1. เข้า **Project Settings** (เกียร์ด้านบน)
-2. เลื่อนลงไปที่ **Your apps**
-3. คลิก **Web** (`</>`) icon
-4. ตั้งชื่อ app: **`youoke-dev-web`**
-5. คัดลอก **firebaseConfig**:
-
-```javascript
-const firebaseConfig = {
-  apiKey: "AIzaSy...",
-  authDomain: "youoke-dev.firebaseapp.com",
-  databaseURL: "https://youoke-dev-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "youoke-dev",
-  storageBucket: "youoke-dev.firebasestorage.app",
-  messagingSenderId: "...",
-  appId: "..."
-};
-```
+| Variable | Value (จาก Dev FB) | Target Environment |
+| :--- | :--- | :--- |
+| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | **`playokeforyou-dev`** | ☑️ Preview, Development |
+| `NEXT_PUBLIC_FIREBASE_DATABASE_URL` | `https://playokeforyou-dev-default-rtdb.asia-southeast1.firebasedatabase.app` | ☑️ Preview, Development |
+| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | `playokeforyou-dev.firebaseapp.com` | ☑️ Preview, Development |
+| ... (และตัวอื่นๆ) | ... | ☑️ Preview, Development |
 
 ---
 
-## ✅ Step 2: อัพเดท Local Environment
+## 🔄 Deployment Workflow
 
-### 2.1 แก้ไข `.env.development`
+1.  **Develop**: แก้ไขโค้ดในเครื่อง -> ใช้ Dev DB
+2.  **Test**: Push ขึ้น Feature Branch -> Vercel สร้าง Link Preview -> ใช้ Dev DB
+3.  **Deploy**: Merge เข้า `main` -> Vercel Deploy ขึ้น `youoke.vercel.app` -> **ใช้ Prod DB (Backup Ready)**
+4.  **Launch**: Pull `main` ไปที่ Plesk -> Deploy ขึ้น `play.okeforyou.com` -> **ใช้ Prod DB (Main Site)**
 
-เปิดไฟล์ `.env.development` และใส่ค่าจาก Firebase Config:
+---
 
-```env
-# Firebase Configuration - DEVELOPMENT ONLY
-NEXT_PUBLIC_FIREBASE_PUBLIC_API_KEY=<คัดลอกจาก apiKey>
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=youoke-dev.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=youoke-dev
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=youoke-dev.firebasestorage.app
-NEXT_PUBLIC_FIREBASE_DATABASE_URL=https://youoke-dev-default-rtdb.asia-southeast1.firebasedatabase.app
+## 📝 บันทึกค่า Config (สำหรับ Copy)
 
-# Spotify (ใช้ค่าเดิม)
-SPOTIFY_CLIENT_ID=be495e578f89486e9d3c8ca7be1b1e27
-SPOTIFY_CLIENT_SECRET=c880a42058e2464bbd6f38674cfc59cd
-SPOTIFY_REFRESH_TOKEN=...
-SPOTIFY_REDIRECT_URI=https://youoke.vercel.app/api/spotify/callback
-
-# Invidious (ใช้ค่าเดิม)
-NEXT_PUBLIC_INVIDIOUS_URL=https://invidious.privacyredirect.com/
-```
-
-### 2.2 ทดสอบ Local
-
+### Production Config (ใช้สำหรับ Target: Production)
 ```bash
-# รัน local dev server
-npm run dev
-
-# ตรวจสอบว่าใช้ Firebase Dev
-# เปิด Console → Network → ดู Firebase requests
-# ควรเห็น youoke-dev.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PUBLIC_API_KEY=AIzaSyAtUvNGX9ibvl4YCNURA9q3XYJusa-iYDc
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=playokeforyou.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=playokeforyou
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=playokeforyou.firebasestorage.app
+NEXT_PUBLIC_FIREBASE_DATABASE_URL=https://playokeforyou-default-rtdb.asia-southeast1.firebasedatabase.app
 ```
 
----
-
-## ✅ Step 3: อัพเดท Vercel Environment Variables
-
-เนื่องจาก youoke.vercel.app เป็น Staging ต้องใช้ Firebase Dev:
-
-### 3.1 ไปที่ Vercel Dashboard
-
-1. เข้า [Vercel Dashboard](https://vercel.com/dashboard)
-2. เลือกโปรเจกต์: **youoke**
-3. ไปที่ **Settings** → **Environment Variables**
-
-### 3.2 แก้ไข Environment Variables
-
-**ลบตัวแปรเก่าเหล่านี้ออก** (หรือแก้ค่า):
-
-```
-NEXT_PUBLIC_FIREBASE_PUBLIC_API_KEY
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
-NEXT_PUBLIC_FIREBASE_PROJECT_ID
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
-NEXT_PUBLIC_FIREBASE_DATABASE_URL
-```
-
-**เพิ่มตัวแปรใหม่** (ใช้ค่าจาก Firebase Dev):
-
-| Variable | Value | Environments |
-|----------|-------|--------------|
-| `NEXT_PUBLIC_FIREBASE_PUBLIC_API_KEY` | `AIzaSy...` (จาก Firebase Dev) | Production, Preview, Development |
-| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | `youoke-dev.firebaseapp.com` | Production, Preview, Development |
-| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | `youoke-dev` | Production, Preview, Development |
-| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | `youoke-dev.firebasestorage.app` | Production, Preview, Development |
-| `NEXT_PUBLIC_FIREBASE_DATABASE_URL` | `https://youoke-dev-default-rtdb.asia-southeast1.firebasedatabase.app` | Production, Preview, Development |
-
-### 3.3 Redeploy
-
+### Development Config (ใช้สำหรับ Target: Preview, Development)
 ```bash
-# Trigger redeploy
-git commit --allow-empty -m "Trigger Vercel redeploy with new env vars"
-git push origin main
+NEXT_PUBLIC_FIREBASE_PUBLIC_API_KEY=AIzaSyBBIhI9VCi3OEgP5mxWotuAJYqJ46MG2gw
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=playokeforyou-dev.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=playokeforyou-dev
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=playokeforyou-dev.firebasestorage.app
+NEXT_PUBLIC_FIREBASE_DATABASE_URL=https://playokeforyou-dev-default-rtdb.asia-southeast1.firebasedatabase.app
 ```
-
----
-
-## ✅ Step 4: สำหรับ play.okeforyou.com (Production)
-
-**ไม่ต้องทำอะไร!** 🎉
-
-- play.okeforyou.com ใช้ `.env.production` เดิม
-- ชี้ไปที่ Firebase Production (`playokeforyou`)
-- ไม่กระทบผู้ใช้งานเลย
-
----
-
-## 📊 สรุป Architecture
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                    Code Repository                      │
-│                  github.com/okeforyou/youoke            │
-└──────────────────────┬──────────────────────────────────┘
-                       │
-           ┌───────────┴───────────┐
-           │                       │
-           ▼                       ▼
-┌──────────────────────┐  ┌──────────────────────┐
-│  youoke.vercel.app   │  │ play.okeforyou.com  │
-│   (Auto Deploy)      │  │  (Manual Deploy)    │
-│                      │  │                      │
-│  Uses:               │  │  Uses:               │
-│  .env.development    │  │  .env.production     │
-└──────────┬───────────┘  └──────────┬───────────┘
-           │                          │
-           ▼                          ▼
-┌──────────────────────┐  ┌──────────────────────┐
-│  Firebase Dev        │  │  Firebase Production │
-│  youoke-dev          │  │  playokeforyou       │
-│                      │  │                      │
-│  - Test data         │  │  - Real users        │
-│  - Safe to delete    │  │  - DON'T TOUCH!      │
-└──────────────────────┘  └──────────────────────┘
-```
-
----
-
-## 🔒 Firebase Security Rules
-
-### Realtime Database Rules (Production)
-
-```json
-{
-  "rules": {
-    "rooms": {
-      "$roomCode": {
-        ".read": true,
-        ".write": "auth != null || newData.child('hostId').val() === 'monitor'"
-      }
-    }
-  }
-}
-```
-
-### Realtime Database Rules (Dev)
-
-```json
-{
-  "rules": {
-    ".read": true,
-    ".write": true
-  }
-}
-```
-
-**หมายเหตุ:** Dev ใช้ Test mode (อ่าน/เขียนได้ทั้งหมด) เพื่อความสะดวกในการทดสอบ
-
----
-
-## 🧪 การทดสอบ
-
-### ทดสอบว่าใช้ Firebase ถูกต้อง
-
-```javascript
-// เปิด DevTools Console แล้วรัน:
-console.log(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID);
-
-// ควรเห็น:
-// youoke.vercel.app → "youoke-dev"
-// play.okeforyou.com → "playokeforyou"
-```
-
----
-
-## 🆘 Troubleshooting
-
-### ปัญหา: ทดสอบแล้วยังใช้ Firebase Production
-
-**แก้:**
-1. ตรวจสอบ `.env.development` ว่าถูกต้อง
-2. Restart dev server: `npm run dev`
-3. Clear browser cache
-4. ตรวจสอบ Vercel Environment Variables
-
-### ปัญหา: Firebase Dev ไม่มีข้อมูล
-
-**แก้:**
-1. Firebase Dev เป็นฐานข้อมูลใหม่ (ว่างเปล่า)
-2. ต้องสร้างข้อมูลทดสอบเอง หรือ
-3. Import ข้อมูลจาก Production (ถ้าต้องการ)
-
----
-
-## 📞 ติดต่อ
-
-มีปัญหาหรือคำถาม:
-- 📧 Email: support@okeforyou.com
-- 💬 LINE: @okeforyou
-
----
-
-**สร้างโดย Claude Code** 🤖
-**Version:** 1.0.0
-**Last Updated:** 2025-01-25
