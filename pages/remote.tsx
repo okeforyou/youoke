@@ -273,13 +273,24 @@ export default function RemotePage() {
                                         {addedId === video.videoId ? <CheckIcon className="w-5 h-5" /> : <PlusIcon className="w-5 h-5" />}
                                     </button>
                                 </div>
-                            )
+                            );
                         })
                     ) : searchQuery && (
                         <div className="text-center py-8 text-gray-600">No results found</div>
                     )}
                 </div>
-            </div>
+                className={`p-2 rounded-full ${addedId === video.videoId ? 'bg-green-500 text-white' : 'bg-white/10 text-primary'}`}
+                                    >
+                {addedId === video.videoId ? <CheckIcon className="w-5 h-5" /> : <PlusIcon className="w-5 h-5" />}
+            </button>
         </div>
+    )
+})
+                    ) : searchQuery && (
+    <div className="text-center py-8 text-gray-600">No results found</div>
+)}
+                </div >
+            </div >
+        </div >
     );
 }
