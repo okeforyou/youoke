@@ -41,18 +41,32 @@ export default function RemotePage() {
     // Initial Load - Get Session ID from URL
     useEffect(() => {
         if (router.isReady) {
-            const { session } = router.query;
-            if (session && typeof session === 'string') {
-                setSessionId(session);
+            const { session, room } = router.query;
+            // Support both ?session= and ?room=
+            const code = session || room;
+            if (code && typeof code === 'string') {
+                setSessionId(code);
             }
         }
     }, [router.isReady, router.query]);
 
-    // Connect to Firebase
+    // Connect to Firebase & Auth
     useEffect(() => {
         if (!sessionId || !realtimeDb) return;
 
-        const stateRef = ref(realtimeDb, `sessions/${sessionId}/state`);
+        // 1. Sign in anonymously (required for write access)
+        const initAuth = async () => {
+            // Dynamic import auth to avoid SSR issues if needed, or assume it's available from firebase.ts
+            const { auth } = await import('../firebase');
+            const { signInAnonymously } = await import('firebase/auth');
+            if (!auth.currentUser) {
+                await signInAnonymously(auth);
+            }
+        };
+        initAuth();
+
+        // 2. Listen for room state (using 'rooms' path instead of 'sessions')
+        const stateRef = ref(realtimeDb, `rooms/${sessionId}/state`);
 
         // Listen for host status
         const unsubscribe = onValue(stateRef, (snapshot) => {
@@ -71,14 +85,28 @@ export default function RemotePage() {
     }, [sessionId]);
 
     // Commands
-    const sendCommand = (type: string, payload?: any) => {
+    const sendCommand = (type: string, payload: any = {}) => {
         if (!sessionId || !realtimeDb) return;
-        const cmdRef = ref(realtimeDb, `sessions/${sessionId}/commands`);
-        push(cmdRef, {
-            type,
-            payload,
-            timestamp: Date.now()
-        });
+
+        // Create a unique ID for the command
+        const commandId = push(ref(realtimeDb, `rooms/${sessionId}/commands`)).key;
+        if (!commandId) return;
+
+        const cmdRef = ref(realtimeDb, `rooms/${sessionId}/commands/${commandId}`);
+
+        // Construct standard Envelope expected by Monitor
+        const envelope = {
+            id: commandId,
+            command: {
+                type,
+                payload
+            },
+            status: 'pending',
+            timestamp: Date.now(),
+            from: 'remote'
+        };
+
+        set(cmdRef, envelope);
     };
 
     // Search Handler
@@ -109,7 +137,22 @@ export default function RemotePage() {
     };
 
     const handleAddQueue = (video: SearchResult) => {
-        sendCommand('ADD_QUEUE', video);
+        // Send ADD_TO_QUEUE with correct payload structure
+        // Payload must contain { video: QueueVideo }
+        // We map SearchResult to QueueVideo format
+        const queueVideo = {
+            videoId: video.videoId,
+            title: video.title,
+            author: 'YouTube', // Search result might not have channel title, default to YouTube
+            key: Date.now(), // Unique key for React lists
+            addedBy: {
+                uid: 'remote-user', // Placeholder, could be real auth ID
+                displayName: 'Mobile User',
+                isGuest: true
+            }
+        };
+
+        sendCommand('ADD_TO_QUEUE', { video: queueVideo });
         setAddedId(video.videoId);
         setTimeout(() => setAddedId(null), 2000);
     };
