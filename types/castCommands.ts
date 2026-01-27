@@ -23,6 +23,7 @@ export interface QueueVideo {
 export type CastCommand =
   | { type: 'CONNECT'; payload: null }
   | { type: 'PLAY_NOW'; payload: { video: QueueVideo } }
+  | { type: 'ADD_QUEUE'; payload: { video: QueueVideo } }
   | { type: 'ADD_TO_QUEUE'; payload: { video: QueueVideo } }
   | { type: 'PLAY_NEXT'; payload: { video: QueueVideo } }
   | { type: 'PLAY'; payload: null }
