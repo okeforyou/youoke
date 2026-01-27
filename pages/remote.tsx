@@ -291,11 +291,18 @@ export default function RemotePage() {
                             }
 
                             // Robust Fix: Force downgrade any maxresdefault/hqdefault to default.jpg
-                            // The API often returns maxresdefault even if it doesn't exist (404).
-                            // Since we only need a small thumbnail (w-12), default.jpg is always safer and faster.
                             if (thumbUrl.includes('maxresdefault') || thumbUrl.includes('hqdefault')) {
                                 thumbUrl = thumbUrl.replace('maxresdefault', 'default').replace('hqdefault', 'default');
                             }
+
+                            // Final safety check for undefined videoId
+                            if (thumbUrl.includes('undefined')) {
+                                console.error('❌ Remote: Invalid thumbnail generated (undefined videoId):', video);
+                                thumbUrl = 'https://i.ytimg.com/img/no_thumbnail.jpg'; // Generic fallback
+                            }
+
+                            // Debug log
+                            // console.log('🖼️ Remote: Rendering thumbnail:', thumbUrl);
 
                             return (
                                 <div key={video.videoId} className="flex items-center gap-3 p-3 bg-zinc-900/50 rounded-xl border border-white/5 active:bg-zinc-800 transition-colors">
@@ -303,12 +310,11 @@ export default function RemotePage() {
                                     <img
                                         src={thumbUrl}
                                         onError={(e) => {
-                                            // Fallback just in case, monitoring
                                             const target = e.target as HTMLImageElement;
-                                            console.warn('Image load failed:', target.src);
-                                            // If default failed, maybe try mqdefault as backup? (Rare)
-                                            if (target.src.includes('default.jpg') && !target.src.includes('mqdefault')) {
-                                                target.src = target.src.replace('default.jpg', 'mqdefault.jpg');
+                                            console.warn('❌ Remote: Image load failed:', target.src);
+                                            // Prevent infinite loop
+                                            if (!target.src.includes('default.jpg')) {
+                                                target.src = `https://i.ytimg.com/vi/${video.videoId}/default.jpg`;
                                             }
                                         }}
                                         alt=""

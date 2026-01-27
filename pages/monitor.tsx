@@ -170,30 +170,34 @@ const Monitor = () => {
 
             if (!response.ok) {
               const errorText = await response.text();
+              console.error(`❌ Monitor: REST API Room Create failed: ${response.status} ${response.statusText}`, errorText);
               throw new Error(`REST API failed: ${response.status} ${response.statusText} - ${errorText}`);
             }
 
             const result = await response.json();
-            console.log('✅ Room created via REST API:', result);
+            console.log('✅ Monitor: Room created via REST API:', result);
           } catch (restError) {
-            console.error('❌ REST API failed:', restError);
-            throw restError; // Don't fallback to SDK - it will stack overflow
+            console.error('❌ Monitor: REST API failed:', restError);
+            throw restError;
           }
 
-          console.log('✅ Room created successfully:', roomCode);
+          console.log('✅ Monitor: Room created successfully:', roomCode);
         } else {
-          console.log('✅ Room already exists');
+          console.log('✅ Monitor: Room already exists (Verified via REST)');
         }
 
-        // Use REST API polling instead of onValue() to bypass stack overflow bug
-        console.log('👂 Starting to poll for room updates (REST API)...');
+        // Use REST API polling instead of onValue()
+        console.log('👂 Monitor: Starting to poll for room updates (REST API)...');
 
         const pollInterval = setInterval(async () => {
           try {
+            // Debug: Check if we are checking the right URL
+            // console.log(`🔍 Monitor: Polling ${dbURL}/rooms/${roomCode}.json`); 
+
             const response = await fetch(`${dbURL}/rooms/${roomCode}.json`);
 
             if (!response.ok) {
-              console.error('❌ Poll failed:', response.status);
+              console.error('❌ Monitor: Poll failed:', response.status);
               return;
             }
 
@@ -418,11 +422,15 @@ const Monitor = () => {
     const commandPollInterval = setInterval(async () => {
       try {
         // Fetch all pending commands
+        // console.log(`🔍 Monitor: Polling commands at ${dbURL}/rooms/${roomCode}/commands.json`);
         const response = await fetch(`${dbURL}/rooms/${roomCode}/commands.json`);
         if (!response.ok) return;
 
         const commands = await response.json() as Record<string, CastCommandEnvelope> | null;
         if (!commands) return;
+
+        // Log if commands found (to verify polling works)
+        // console.log('📦 Monitor: Commands found:', Object.keys(commands).length);
 
         // Process pending commands
         for (const [commandId, envelope] of Object.entries(commands)) {
@@ -430,6 +438,7 @@ const Monitor = () => {
           if (processedCommandIds.has(commandId) || envelope.status !== 'pending') {
             continue;
           }
+          console.log('✨ Monitor: New Pending Command found:', envelope.command.type, commandId);
 
           console.log('⚙️ Executing command:', envelope.command.type);
           processedCommandIds.add(commandId);
