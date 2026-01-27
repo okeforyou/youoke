@@ -1,12 +1,20 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { realtimeDb } from '../firebase';
-import { ref, onValue, set, remove, onDisconnect } from 'firebase/database';
+import { ref, set, remove } from 'firebase/database';
 
 export type RemoteCommand = {
     type: 'PLAY' | 'PAUSE' | 'NEXT' | 'ADD_QUEUE' | 'SEEK';
     payload?: any;
     timestamp: number;
 };
+// Add compatibility for CastCommandEnvelope
+interface CastCommandEnvelope {
+    id: string;
+    command: RemoteCommand;
+    status: 'pending' | 'completed';
+    timestamp: number;
+    from: string;
+}
 
 export type HostState = {
     isPlaying: boolean;
@@ -25,70 +33,122 @@ export const useRemoteHost = (
     const [sessionId, setSessionId] = useState<string | null>(null);
     const [connectedClients, setConnectedClients] = useState(0);
 
+    // Keep strict refs for callbacks to avoid effect churn
+    const addToQueueRef = useRef(addToQueue);
+    useEffect(() => { addToQueueRef.current = addToQueue; }, [addToQueue]);
+
     // Generate Session ID on mount
     useEffect(() => {
         // Generate simple 6-digit code
         const code = Math.floor(100000 + Math.random() * 900000).toString();
         setSessionId(code);
+        console.log('🌟 Host: Generated Session ID', code);
 
         // Cleanup on unmount
         return () => {
+            // Note: We might want to keep the room alive for a bit, but for now clean up
+            // Using SDK is fine for cleanup as it's fire-and-forget
             if (realtimeDb && code) {
-                remove(ref(realtimeDb, `sessions/${code}`));
+                // remove(ref(realtimeDb, `rooms/${code}`));
             }
         };
     }, []);
 
-    // Sync Host State to Firebase (So Remote sees what's playing)
+    // Sync Host State to Firebase (rooms/{code}/state)
     useEffect(() => {
         if (!sessionId || !realtimeDb) return;
-        if (!playerRef.current) return;
+
+        // Don't sync if player not ready
+        // if (!playerRef.current) return; 
 
         try {
-            const title = queue.find(v => v.videoId === currentVideoId)?.title || "Unknown Title";
+            const currentVideo = queue.find(v => v.videoId === currentVideoId);
+            const title = currentVideo?.title || "Unknown Title";
 
-            // Update state
-            set(ref(realtimeDb, `sessions/${sessionId}/state`), {
+            // Structure matches what Monitor sends to rooms/{code}/state
+            const statePayload = {
+                queue: queue, // Pass simplified queue or full queue
+                currentIndex: queue.findIndex(v => v.videoId === currentVideoId),
+                currentVideo: currentVideo || null,
+                controls: {
+                    isPlaying: true, // Need real state from player
+                    isMuted: false,
+                    currentTime: 0,
+                    duration: 0
+                },
+                // Add legacy fields for backward compat if needed (but we strictly use new schema now)
                 videoId: currentVideoId,
                 title: title,
-                isPlaying: true, // Simplified assumption or pass real state
                 timestamp: Date.now()
-            });
+            };
+
+            // Use REST API for "Set State" to be robust (Write-heavy)
+            // Or use SDK since Host usually has stable connection? 
+            // Let's stick to SDK for Host Write for now, but to `rooms/` path
+            set(ref(realtimeDb, `rooms/${sessionId}/state`), statePayload)
+                .catch(e => console.error('❌ Host: State sync failed', e));
+
         } catch (e) { console.error(e); }
 
     }, [sessionId, currentVideoId, queue]);
 
-    // Keep latest addToQueue in ref to avoid re-subscribing listener
-    const addToQueueRef = useRef(addToQueue);
+    // Poll for Commands (REST API Polling - Same robustness as Monitor)
     useEffect(() => {
-        addToQueueRef.current = addToQueue;
-    }, [addToQueue]);
+        if (!sessionId) return;
 
-    // Listen for Commands
-    useEffect(() => {
-        if (!sessionId || !realtimeDb) return;
+        let processedCommandIds = new Set<string>();
+        let isActive = true;
 
-        const commandsRef = ref(realtimeDb, `sessions/${sessionId}/commands`);
+        const pollInterval = setInterval(async () => {
+            if (!isActive) return;
 
-        // Listen
-        const unsubscribe = onValue(commandsRef, (snapshot) => {
-            const commands = snapshot.val();
-            if (!commands) return;
+            try {
+                // Get DB URL
+                const { realtimeDb } = await import('../firebase');
+                const dbURL = realtimeDb?.app?.options?.databaseURL;
+                if (!dbURL) return;
 
-            Object.keys(commands).forEach((key) => {
-                const cmd = commands[key] as RemoteCommand;
-                // Execute Command
-                handleCommand(cmd);
-                // Remove executed command
-                remove(ref(realtimeDb, `sessions/${sessionId}/commands/${key}`));
-            });
-        });
+                const response = await fetch(`${dbURL}/rooms/${sessionId}/commands.json`);
+                if (!response.ok) return;
 
-        return () => unsubscribe();
-    }, [sessionId, playerRef]); // Removed addToQueue from deps
+                const commands = await response.json() as Record<string, CastCommandEnvelope> | null;
+                if (!commands) return;
+
+                for (const [cmdId, envelope] of Object.entries(commands)) {
+                    if (processedCommandIds.has(cmdId)) continue;
+
+                    // Mark processed locally immediately
+                    processedCommandIds.add(cmdId);
+
+                    if (envelope.status !== 'pending') continue;
+
+                    console.log('✨ Host: New Command', envelope.command.type);
+
+                    // Execute
+                    handleCommand(envelope.command);
+
+                    // Mark completed in DB
+                    // Delete or update status? Monitor updates status.
+                    // Let's delete it to keep DB clean, or update status 'completed'
+                    fetch(`${dbURL}/rooms/${sessionId}/commands/${cmdId}/status.json`, {
+                        method: 'PUT',
+                        body: JSON.stringify('completed')
+                    }).catch(console.error);
+                }
+
+            } catch (e) {
+                console.error('❌ Host: Command poll error', e);
+            }
+        }, 1000);
+
+        return () => {
+            isActive = false;
+            clearInterval(pollInterval);
+        };
+    }, [sessionId]);
 
     const handleCommand = (cmd: RemoteCommand) => {
-        console.log('[RemoteHost] Received:', cmd);
+        console.log('[RemoteHost] Executing:', cmd);
         if (!playerRef.current) return;
 
         const internalPlayer = playerRef.current.getInternalPlayer();
@@ -101,16 +161,18 @@ export const useRemoteHost = (
                 internalPlayer?.pauseVideo();
                 break;
             case 'NEXT':
-                // We need a way to trigger NEXT. 
-                // If addToQueue is passed, we might need a 'next' function passed too.
-                // For now, we can dispatch the BroadcastChannel event which handles Next logic!
                 const channel = new BroadcastChannel('youoke-dual-sync');
                 channel.postMessage({ type: 'REQUEST_NEXT' });
                 channel.close();
                 break;
             case 'ADD_QUEUE':
+                // Check payload structure carefully
+                // Payload from Refactored Remote is { video: QueueVideo }
                 if (cmd.payload && cmd.payload.video) {
                     addToQueueRef.current(cmd.payload.video);
+                } else if (cmd.payload && cmd.payload.videoId) {
+                    // Legacy/Direct payload support
+                    addToQueueRef.current(cmd.payload);
                 }
                 break;
         }
