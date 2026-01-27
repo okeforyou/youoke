@@ -109,8 +109,8 @@ export const useRemoteHost = (
                 channel.close();
                 break;
             case 'ADD_QUEUE':
-                if (cmd.payload) {
-                    addToQueueRef.current(cmd.payload);
+                if (cmd.payload && cmd.payload.video) {
+                    addToQueueRef.current(cmd.payload.video);
                 }
                 break;
         }
