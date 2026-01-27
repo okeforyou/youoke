@@ -266,6 +266,13 @@ export default function RemotePage() {
                                 thumbUrl = video.thumbnail;
                             }
 
+                            // Robust Fix: Force downgrade any maxresdefault/hqdefault to default.jpg
+                            // The API often returns maxresdefault even if it doesn't exist (404).
+                            // Since we only need a small thumbnail (w-12), default.jpg is always safer and faster.
+                            if (thumbUrl.includes('maxresdefault') || thumbUrl.includes('hqdefault')) {
+                                thumbUrl = thumbUrl.replace('maxresdefault', 'default').replace('hqdefault', 'default');
+                            }
+
                             return (
                                 <div key={video.videoId} className="flex items-center gap-3 p-3 bg-zinc-900/50 rounded-xl border border-white/5 active:bg-zinc-800 transition-colors">
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
