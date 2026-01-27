@@ -98,7 +98,8 @@ const Monitor = () => {
     if (roomCodeParam && typeof roomCodeParam === 'string') {
       setRoomCode(roomCodeParam);
     } else {
-      const newCode = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+      // Generate 6-digit code (100000-999999)
+      const newCode = Math.floor(100000 + Math.random() * 900000).toString();
       setRoomCode(newCode);
       console.log('🎲 Auto-generated room code:', newCode);
     }

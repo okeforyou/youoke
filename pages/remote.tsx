@@ -168,10 +168,14 @@ export default function RemotePage() {
                 <p className="text-gray-400 mb-6 text-center">Enter the Session PIN displayed on your TV</p>
                 <input
                     type="number"
-                    placeholder="Enter 6-digit PIN"
+                    placeholder="Enter Room PIN"
                     className="bg-zinc-900 border border-zinc-700 p-4 rounded-xl text-center text-2xl tracking-widest w-full max-w-xs mb-4 focus:ring-2 focus:ring-primary focus:outline-none"
-                    onChange={(e) => e.target.value.length === 6 && setSessionId(e.target.value)}
+                    onChange={(e) => {
+                        const val = e.target.value;
+                        if (val.length >= 4) setSessionId(val);
+                    }}
                 />
+                <p className="text-xs text-gray-500 mt-2">PIN is usually 4 or 6 digits</p>
             </div>
         );
     }
