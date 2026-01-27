@@ -180,6 +180,8 @@ export default function RemotePage() {
         <div className="min-h-screen bg-black text-white flex flex-col">
             <Head>
                 <title>Remote Control</title>
+                <meta name="mobile-web-app-capable" content="yes" />
+                <meta name="apple-mobile-web-app-capable" content="yes" />
                 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
             </Head>
 
@@ -248,6 +250,7 @@ export default function RemotePage() {
                     ) : searchResults.length > 0 ? (
                         searchResults.map((video) => (
                             <div key={video.videoId} className="flex items-center gap-3 p-3 bg-zinc-900/50 rounded-xl border border-white/5 active:bg-zinc-800 transition-colors">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img src={video.thumbnail || `https://i.ytimg.com/vi/${video.videoId}/default.jpg`} alt="" className="w-12 h-12 rounded bg-black object-cover" />
                                 <div className="flex-1 min-w-0">
                                     <h3 className="font-medium text-sm text-white line-clamp-1">{video.title}</h3>
