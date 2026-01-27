@@ -177,7 +177,7 @@ function HomePage() {
 
   useEffect(() => {
     const checkScreenSize = () => {
-      setIsXlScreen(window.innerWidth >= 768); // Now includes MD (iPad Portrait)
+      setIsXlScreen(window.innerWidth >= 1024); // Revert to LG (Landscape only)
     };
 
     checkScreenSize();
@@ -1060,10 +1060,10 @@ function HomePage() {
 
         {/* END Recommend Videos List */}
 
-        {/* Video Player + Queue Section - Desktop/Tablet (MD+) */}
+        {/* Video Player + Queue Section - Desktop LG+ (iPad Landscape included) */}
         {
           isXlScreen && !showVideoPlayerModal && (
-            <aside className="hidden md:flex md:w-80 lg:w-80 xl:w-96 2xl:w-[450px] flex-col overflow-hidden border-l border-base-300 bg-base-100">
+            <aside className="hidden lg:flex lg:w-80 xl:w-96 2xl:w-[450px] flex-col overflow-hidden border-l border-base-300 bg-base-100">
               {/* Video Player */}
               {/* Video Player */}
               <YoutubePlayer
