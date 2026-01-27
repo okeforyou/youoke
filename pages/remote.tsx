@@ -253,14 +253,14 @@ export default function RemotePage() {
                         <div className="text-center py-8 text-gray-500 animate-pulse">Searching...</div>
                     ) : searchResults.length > 0 ? (
                         searchResults.map((video: any) => {
-                            // Fix: Use mqdefault (Medium Quality) as primary to avoid 404s on maxresdefault
-                            // mqdefault is 320x180, perfect for mobile list view
-                            let thumbUrl = `https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`;
+                            // Fix: Use default.jpg (120x90) which is guaranteed to exist
+                            // Since our UI is small (w-12 h-12), this resolution is sufficient and avoids 404s
+                            let thumbUrl = `https://i.ytimg.com/vi/${video.videoId}/default.jpg`;
 
                             if (video.videoThumbnails && video.videoThumbnails.length > 0) {
-                                // Find mqdefault or fallback to the first one (usually maxres)
-                                const mq = video.videoThumbnails.find((t: any) => t.quality === 'medium' || t.url.includes('mqdefault'));
-                                if (mq) thumbUrl = mq.url;
+                                // Try to get the smallest one first (default) to match our UI size
+                                const def = video.videoThumbnails.find((t: any) => t.quality === 'default' || t.url.includes('default.jpg'));
+                                if (def) thumbUrl = def.url;
                                 else thumbUrl = video.videoThumbnails[0].url;
                             } else if (video.thumbnail) {
                                 thumbUrl = video.thumbnail;
@@ -272,12 +272,12 @@ export default function RemotePage() {
                                     <img
                                         src={thumbUrl}
                                         onError={(e) => {
+                                            // Fallback just in case, monitoring
                                             const target = e.target as HTMLImageElement;
-                                            // Fallback chain: maxres -> mq -> default
-                                            if (target.src.includes('maxresdefault')) {
-                                                target.src = target.src.replace('maxresdefault', 'mqdefault');
-                                            } else if (target.src.includes('mqdefault')) {
-                                                target.src = target.src.replace('mqdefault', 'default');
+                                            console.warn('Image load failed:', target.src);
+                                            // If default failed, maybe try mqdefault as backup? (Rare)
+                                            if (target.src.includes('default.jpg') && !target.src.includes('mqdefault')) {
+                                                target.src = target.src.replace('default.jpg', 'mqdefault.jpg');
                                             }
                                         }}
                                         alt=""
