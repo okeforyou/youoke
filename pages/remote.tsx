@@ -252,22 +252,29 @@ export default function RemotePage() {
                     {isSearching ? (
                         <div className="text-center py-8 text-gray-500 animate-pulse">Searching...</div>
                     ) : searchResults.length > 0 ? (
-                        searchResults.map((video) => (
-                            <div key={video.videoId} className="flex items-center gap-3 p-3 bg-zinc-900/50 rounded-xl border border-white/5 active:bg-zinc-800 transition-colors">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={video.thumbnail || `https://i.ytimg.com/vi/${video.videoId}/default.jpg`} alt="" className="w-12 h-12 rounded bg-black object-cover" />
-                                <div className="flex-1 min-w-0">
-                                    <h3 className="font-medium text-sm text-white line-clamp-1">{video.title}</h3>
-                                    <p className="text-xs text-gray-500">{video.duration || 'YouTube'}</p>
+                        searchResults.map((video: any) => {
+                            // Fix: Handle both thumbnail formats (direct string or array from V2 scraper)
+                            const thumbUrl = video.thumbnail ||
+                                (video.videoThumbnails && video.videoThumbnails.length > 0 ? video.videoThumbnails[0].url : null) ||
+                                `https://i.ytimg.com/vi/${video.videoId}/default.jpg`;
+
+                            return (
+                                <div key={video.videoId} className="flex items-center gap-3 p-3 bg-zinc-900/50 rounded-xl border border-white/5 active:bg-zinc-800 transition-colors">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={thumbUrl} alt="" className="w-12 h-12 rounded bg-black object-cover" />
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="font-medium text-sm text-white line-clamp-1">{video.title}</h3>
+                                        <p className="text-xs text-gray-500">{video.duration || 'YouTube'}</p>
+                                    </div>
+                                    <button
+                                        onClick={() => handleAddQueue({ ...video, thumbnail: thumbUrl })}
+                                        className={`p-2 rounded-full ${addedId === video.videoId ? 'bg-green-500 text-white' : 'bg-white/10 text-primary'}`}
+                                    >
+                                        {addedId === video.videoId ? <CheckIcon className="w-5 h-5" /> : <PlusIcon className="w-5 h-5" />}
+                                    </button>
                                 </div>
-                                <button
-                                    onClick={() => handleAddQueue(video)}
-                                    className={`p-2 rounded-full ${addedId === video.videoId ? 'bg-green-500 text-white' : 'bg-white/10 text-primary'}`}
-                                >
-                                    {addedId === video.videoId ? <CheckIcon className="w-5 h-5" /> : <PlusIcon className="w-5 h-5" />}
-                                </button>
-                            </div>
-                        ))
+                            )
+                        })
                     ) : searchQuery && (
                         <div className="text-center py-8 text-gray-600">No results found</div>
                     )}
