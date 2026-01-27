@@ -182,10 +182,9 @@ export const useRemoteHost = (
                 break;
         }
     };
-};
 
-return {
-    sessionId,
-    connectedClients
-};
+    return {
+        sessionId,
+        connectedClients
+    };
 };
