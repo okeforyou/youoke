@@ -385,6 +385,8 @@ function HomePage() {
   };
 
   function addVideoToPlaylist(video: SearchResult | RecommendedVideo) {
+    console.log('➕ addVideoToPlaylist called:', video.title);
+
     if (isGoogleCastConnected) {
       // Google Cast (Chromecast) - add to queue
       console.log('📤 Adding to Google Cast queue:', video.title);
@@ -395,7 +397,10 @@ function HomePage() {
       addToCastQueue(video);
     } else {
       // Local playlist
-      setPlaylist(playlist?.concat([{ key: new Date().getTime(), ...video }]));
+      console.log('📥 Adding to Local playlist. Current length:', playlist?.length);
+      const newVideo = { key: new Date().getTime(), ...video };
+      setPlaylist(playlist?.concat([newVideo]));
+      console.log('✅ Local playlist update scheduled');
     }
   }
 
