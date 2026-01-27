@@ -253,10 +253,18 @@ export default function RemotePage() {
                         <div className="text-center py-8 text-gray-500 animate-pulse">Searching...</div>
                     ) : searchResults.length > 0 ? (
                         searchResults.map((video: any) => {
-                            // Fix: Handle both thumbnail formats (direct string or array from V2 scraper)
-                            const thumbUrl = video.thumbnail ||
-                                (video.videoThumbnails && video.videoThumbnails.length > 0 ? video.videoThumbnails[0].url : null) ||
-                                `https://i.ytimg.com/vi/${video.videoId}/default.jpg`;
+                            // Fix: Use mqdefault (Medium Quality) as primary to avoid 404s on maxresdefault
+                            // mqdefault is 320x180, perfect for mobile list view
+                            let thumbUrl = `https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`;
+
+                            if (video.videoThumbnails && video.videoThumbnails.length > 0) {
+                                // Find mqdefault or fallback to the first one (usually maxres)
+                                const mq = video.videoThumbnails.find((t: any) => t.quality === 'medium' || t.url.includes('mqdefault'));
+                                if (mq) thumbUrl = mq.url;
+                                else thumbUrl = video.videoThumbnails[0].url;
+                            } else if (video.thumbnail) {
+                                thumbUrl = video.thumbnail;
+                            }
 
                             return (
                                 <div key={video.videoId} className="flex items-center gap-3 p-3 bg-zinc-900/50 rounded-xl border border-white/5 active:bg-zinc-800 transition-colors">
@@ -265,6 +273,7 @@ export default function RemotePage() {
                                         src={thumbUrl}
                                         onError={(e) => {
                                             const target = e.target as HTMLImageElement;
+                                            // Fallback chain: maxres -> mq -> default
                                             if (target.src.includes('maxresdefault')) {
                                                 target.src = target.src.replace('maxresdefault', 'mqdefault');
                                             } else if (target.src.includes('mqdefault')) {
