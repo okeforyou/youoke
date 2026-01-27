@@ -148,8 +148,23 @@ export const useRemoteHost = (
     }, [sessionId]);
 
     const handleCommand = (cmd: RemoteCommand) => {
-        console.log('[RemoteHost] Executing:', cmd);
-        if (!playerRef.current) return;
+        console.log('[RemoteHost] Executing:', cmd.type);
+
+        // ADD_QUEUE does NOT need the player to be ready
+        if (cmd.type === 'ADD_QUEUE') {
+            if (cmd.payload && cmd.payload.video) {
+                addToQueueRef.current(cmd.payload.video);
+            } else if (cmd.payload && cmd.payload.videoId) {
+                addToQueueRef.current(cmd.payload);
+            }
+            return;
+        }
+
+        // Other commands need the player
+        if (!playerRef.current) {
+            console.warn('[RemoteHost] Player not ready, ignoring command:', cmd.type);
+            return;
+        }
 
         const internalPlayer = playerRef.current.getInternalPlayer();
 
@@ -165,21 +180,12 @@ export const useRemoteHost = (
                 channel.postMessage({ type: 'REQUEST_NEXT' });
                 channel.close();
                 break;
-            case 'ADD_QUEUE':
-                // Check payload structure carefully
-                // Payload from Refactored Remote is { video: QueueVideo }
-                if (cmd.payload && cmd.payload.video) {
-                    addToQueueRef.current(cmd.payload.video);
-                } else if (cmd.payload && cmd.payload.videoId) {
-                    // Legacy/Direct payload support
-                    addToQueueRef.current(cmd.payload);
-                }
-                break;
         }
     };
+};
 
-    return {
-        sessionId,
-        connectedClients
-    };
+return {
+    sessionId,
+    connectedClients
+};
 };
