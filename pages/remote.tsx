@@ -261,7 +261,19 @@ export default function RemotePage() {
                             return (
                                 <div key={video.videoId} className="flex items-center gap-3 p-3 bg-zinc-900/50 rounded-xl border border-white/5 active:bg-zinc-800 transition-colors">
                                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img src={thumbUrl} alt="" className="w-12 h-12 rounded bg-black object-cover" />
+                                    <img
+                                        src={thumbUrl}
+                                        onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            if (target.src.includes('maxresdefault')) {
+                                                target.src = target.src.replace('maxresdefault', 'mqdefault');
+                                            } else if (target.src.includes('mqdefault')) {
+                                                target.src = target.src.replace('mqdefault', 'default');
+                                            }
+                                        }}
+                                        alt=""
+                                        className="w-12 h-12 rounded bg-black object-cover"
+                                    />
                                     <div className="flex-1 min-w-0">
                                         <h3 className="font-medium text-sm text-white line-clamp-1">{video.title}</h3>
                                         <p className="text-xs text-gray-500">{video.duration || 'YouTube'}</p>
