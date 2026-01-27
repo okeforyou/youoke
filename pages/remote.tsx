@@ -152,7 +152,7 @@ export default function RemotePage() {
             }
         };
 
-        sendCommand('ADD_TO_QUEUE', { video: queueVideo });
+        sendCommand('ADD_QUEUE', { video: queueVideo });
         setAddedId(video.videoId);
         setTimeout(() => setAddedId(null), 2000);
     };
