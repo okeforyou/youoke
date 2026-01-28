@@ -123,36 +123,38 @@ export default function RemotePage() {
         }
 
         const registerPresence = async () => {
+            console.log('🔌 Remote: Starting presence registration for', clientId);
             const { realtimeDb } = await import('../firebase');
-            const { ref, set, onDisconnect, serverTimestamp } = await import('firebase/database'); // Ensure serverTimestamp is imported if needed, or use Date.now()
+            const { ref, set, onDisconnect } = await import('firebase/database');
+
+            console.log('RealtimeDB instance:', realtimeDb ? 'OK' : 'Missing');
 
             if (realtimeDb) {
                 const presenceRef = ref(realtimeDb, `rooms/${sessionId}/connected/${clientId}`);
 
                 // Write presence
-                await set(presenceRef, {
-                    connectedAt: Date.now(),
-                    userAgent: navigator.userAgent
-                });
+                try {
+                    await set(presenceRef, {
+                        connectedAt: Date.now(),
+                        userAgent: navigator.userAgent
+                    });
+                    console.log('✅ Remote: Presence registered successfully');
 
-                // Set auto-remove on disconnect
-                onDisconnect(presenceRef).remove();
+                    // Set auto-remove on disconnect
+                    onDisconnect(presenceRef).remove();
+                } catch (e) {
+                    console.error('❌ Remote: Presence registration failed', e);
+                }
 
-                console.log('✅ Remote: Registered presence', clientId);
+            } else {
+                console.error('❌ Remote: RealtimeDB not initialized');
             }
         };
 
         registerPresence();
 
-        // Cleanup: We don't necessarily remove on unmount to prevent flickering if refresh, 
-        // but typically presence should be removed. relying on onDisconnect is safer for tabs closing.
-        // For clean SPA navigation, we can remove it.
         return () => {
-            // Optional: Explicitly remove on unmount
-            // import('../firebase').then(({ realtimeDb }) => {
-            //     const { ref, remove } = require('firebase/database');
-            //     if(realtimeDb) remove(ref(realtimeDb, `rooms/${sessionId}/connected/${clientId}`));
-            // });
+            // No-op cleanup for now to keep presence alive while tab is open
         };
     }, [sessionId, isConnected]);
 

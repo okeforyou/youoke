@@ -177,6 +177,7 @@ function HomePage() {
 
   // Auto-close Remote Modal when client connects
   useEffect(() => {
+    console.log('🔄 Index: Checking Auto-close conditions:', { showRemoteModal, connectedClients });
     if (showRemoteModal && connectedClients > 0) {
       console.log('📱 Client connected! Auto-closing QR Modal.');
       setShowRemoteModal(false);

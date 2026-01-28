@@ -96,16 +96,24 @@ export const useRemoteHost = (
     useEffect(() => {
         if (!sessionId || !realtimeDb) return;
 
-        const { ref, onValue } = require('firebase/database');
-        const connectedRef = ref(realtimeDb, `rooms/${sessionId}/connected`);
+        let unsubscribe = () => { };
 
-        const unsubscribe = onValue(connectedRef, (snapshot: any) => { // Use 'any' for snapshot if type not imported
-            if (snapshot.exists()) {
-                setConnectedClients(snapshot.size);
-            } else {
-                setConnectedClients(0);
-            }
-        });
+        const setupListener = async () => {
+            const { ref, onValue, off } = await import('firebase/database');
+            const connectedRef = ref(realtimeDb, `rooms/${sessionId}/connected`);
+
+            const callback = onValue(connectedRef, (snapshot) => {
+                const count = snapshot.exists() ? snapshot.size : 0;
+                console.log(`👥 Host: Connected clients update for ${sessionId}:`, count);
+                setConnectedClients(count);
+            }, (error) => {
+                console.error("❌ Host: Connected clients listener error", error);
+            });
+
+            unsubscribe = () => off(connectedRef, 'value', callback);
+        };
+
+        setupListener();
 
         return () => unsubscribe();
     }, [sessionId]);
