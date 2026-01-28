@@ -126,7 +126,7 @@ export default function RemotePage() {
             console.log('✅ Remote: Command sent', type);
         } catch (e) {
             console.error('Failed to send command:', e);
-            setErrorMessage('Connection failed. Retrying...');
+            setErrorMessage('เชื่อมต่อล้มเหลว กำลังลองใหม่...');
         }
     };
 
@@ -154,7 +154,7 @@ export default function RemotePage() {
             }
         } catch (e: any) {
             console.error('Search failed', e);
-            setErrorMessage(e.response?.data?.error || e.message || 'Search failed');
+            setErrorMessage(e.response?.data?.error || e.message || 'ค้นหาล้มเหลว');
         } finally {
             setIsSearching(false);
         }
@@ -188,18 +188,18 @@ export default function RemotePage() {
                 <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mb-6 animate-pulse">
                     <DevicePhoneMobileIcon className="w-8 h-8 text-primary" />
                 </div>
-                <h1 className="text-2xl font-bold mb-2">Connect to Host</h1>
-                <p className="text-gray-400 mb-6 text-center">Enter the Session PIN displayed on your TV</p>
+                <h1 className="text-2xl font-bold mb-2">เชื่อมต่อกับห้อง</h1>
+                <p className="text-gray-400 mb-6 text-center">กรอกรหัส PIN ที่แสดงบนหน้าจอ</p>
                 <input
                     type="number"
-                    placeholder="Enter Room PIN"
+                    placeholder="กรอกรหัสห้อง"
                     className="bg-zinc-900 border border-zinc-700 p-4 rounded-xl text-center text-2xl tracking-widest w-full max-w-xs mb-4 focus:ring-2 focus:ring-primary focus:outline-none"
                     onChange={(e) => {
                         const val = e.target.value;
                         if (val.length >= 4) setSessionId(val);
                     }}
                 />
-                <p className="text-xs text-gray-500 mt-2">PIN is usually 4 or 6 digits</p>
+                <p className="text-xs text-gray-500 mt-2">รหัสห้องเป็นตัวเลข 4 หรือ 6 หลัก</p>
             </div>
         );
     }
@@ -207,7 +207,7 @@ export default function RemotePage() {
     return (
         <div className="min-h-screen bg-black text-white flex flex-col">
             <Head>
-                <title>Remote Control</title>
+                <title>รีโมทคอนโทรล</title>
                 <meta name="mobile-web-app-capable" content="yes" />
                 <meta name="apple-mobile-web-app-capable" content="yes" />
                 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
@@ -217,19 +217,19 @@ export default function RemotePage() {
             <div className="p-4 bg-zinc-900 border-b border-white/10 flex items-center justify-between sticky top-0 z-50">
                 <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
-                    <span className="text-xs font-mono text-gray-400">PIN: {sessionId}</span>
+                    <span className="text-xs font-mono text-gray-400">ห้อง: {sessionId}</span>
                 </div>
-                {!isConnected && <span className="text-xs text-red-500 font-bold">Disconnected</span>}
+                {!isConnected && <span className="text-xs text-red-500 font-bold">ไม่ได้เชื่อมต่อ</span>}
             </div>
 
             {/* Now Playing Card */}
             <div className="p-6 flex-none">
                 <div className="bg-zinc-900/50 rounded-3xl p-6 border border-white/10 shadow-lg text-center">
-                    <p className="text-xs text-primary font-bold uppercase tracking-widest mb-3">Now Playing</p>
+                    <p className="text-xs text-primary font-bold uppercase tracking-widest mb-3">กำลังเล่น</p>
                     {status ? (
                         <h1 className="text-lg font-bold leading-tight mb-2 line-clamp-2">{status.title}</h1>
                     ) : (
-                        <h1 className="text-lg font-bold text-gray-500 italic">Waiting for status...</h1>
+                        <h1 className="text-lg font-bold text-gray-500 italic">รอสถานะ...</h1>
                     )}
                 </div>
             </div>
@@ -258,7 +258,7 @@ export default function RemotePage() {
                     <DebounceInput
                         minLength={2}
                         debounceTimeout={500}
-                        placeholder="Search songs to add..."
+                        placeholder="ค้นหาเพลง..."
                         className="w-full bg-black border border-zinc-700 rounded-xl py-3 pl-10 pr-4 text-white focus:border-primary focus:outline-none placeholder-gray-600"
                         onChange={(e) => handleSearch(e.target.value)}
                     />
@@ -274,7 +274,7 @@ export default function RemotePage() {
                 {/* Results List */}
                 <div className="flex-1 overflow-y-auto space-y-2 pb-20 scrollbar-hide">
                     {isSearching ? (
-                        <div className="text-center py-8 text-gray-500 animate-pulse">Searching...</div>
+                        <div className="text-center py-8 text-gray-500 animate-pulse">กำลังค้นหา...</div>
                     ) : searchResults.length > 0 ? (
                         searchResults.map((video: any) => {
                             // Fix: Use default.jpg (120x90) which is guaranteed to exist
@@ -334,7 +334,7 @@ export default function RemotePage() {
                             );
                         })
                     ) : searchQuery && (
-                        <div className="text-center py-8 text-gray-600">No results found</div>
+                        <div className="text-center py-8 text-gray-600">ไม่พบเพลง</div>
                     )}
                 </div>
             </div >
