@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { realtimeDb } from '../firebase';
-import { ref, set, remove } from 'firebase/database';
+import { ref, set, remove, onValue, onDisconnect, serverTimestamp } from 'firebase/database';
 
 export type RemoteCommand = {
     type: 'PLAY' | 'PAUSE' | 'NEXT' | 'ADD_QUEUE' | 'SEEK';
@@ -96,26 +96,25 @@ export const useRemoteHost = (
     useEffect(() => {
         if (!sessionId || !realtimeDb) return;
 
-        let unsubscribe = () => { };
+        const connectedRef = ref(realtimeDb, `rooms/${sessionId}/connected`);
 
-        const setupListener = async () => {
-            const { ref, onValue, off } = await import('firebase/database');
-            const connectedRef = ref(realtimeDb, `rooms/${sessionId}/connected`);
-
-            const callback = onValue(connectedRef, (snapshot) => {
-                const count = snapshot.exists() ? snapshot.size : 0;
-                console.log(`👥 Host: Connected clients update for ${sessionId}:`, count);
-                setConnectedClients(count);
-            }, (error) => {
-                console.error("❌ Host: Connected clients listener error", error);
-            });
-
-            unsubscribe = () => off(connectedRef, 'value', callback);
+        const handleSnapshot = (snapshot: any) => {
+            const count = snapshot.exists() ? snapshot.size : 0;
+            console.log(`👥 Host: Connected clients update for ${sessionId}:`, count);
+            setConnectedClients(count);
         };
 
-        setupListener();
+        // Subscribe
+        const unsubscribe = onValue(connectedRef, handleSnapshot, (error) => {
+            console.error("❌ Host: Connected clients listener error", error);
+        });
 
-        return () => unsubscribe();
+        // Cleanup
+        return () => {
+            // In Firebase v9 modular, onValue returns the unsubscribe function directly
+            unsubscribe();
+            // or use off(connectedRef, 'value', handleSnapshot) if storing callback reference
+        };
     }, [sessionId]);
 
     // Poll for Commands (REST API Polling - Same robustness as Monitor)

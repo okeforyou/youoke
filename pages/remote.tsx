@@ -114,7 +114,7 @@ export default function RemotePage() {
 
     // Presence Logic: Register as "Connected" so Host knows to close QR Modal
     useEffect(() => {
-        if (!sessionId || !isConnected) return;
+        if (!sessionId || !isConnected || !realtimeDb) return;
 
         let clientId = localStorage.getItem('remote_client_id');
         if (!clientId) {
@@ -124,38 +124,25 @@ export default function RemotePage() {
 
         const registerPresence = async () => {
             console.log('🔌 Remote: Starting presence registration for', clientId);
-            const { realtimeDb } = await import('../firebase');
-            const { ref, set, onDisconnect } = await import('firebase/database');
 
-            console.log('RealtimeDB instance:', realtimeDb ? 'OK' : 'Missing');
+            const presenceRef = ref(realtimeDb, `rooms/${sessionId}/connected/${clientId}`);
 
-            if (realtimeDb) {
-                const presenceRef = ref(realtimeDb, `rooms/${sessionId}/connected/${clientId}`);
+            // Write presence
+            try {
+                await set(presenceRef, {
+                    connectedAt: Date.now(),
+                    userAgent: navigator.userAgent
+                });
+                console.log('✅ Remote: Presence registered successfully');
 
-                // Write presence
-                try {
-                    await set(presenceRef, {
-                        connectedAt: Date.now(),
-                        userAgent: navigator.userAgent
-                    });
-                    console.log('✅ Remote: Presence registered successfully');
-
-                    // Set auto-remove on disconnect
-                    onDisconnect(presenceRef).remove();
-                } catch (e) {
-                    console.error('❌ Remote: Presence registration failed', e);
-                }
-
-            } else {
-                console.error('❌ Remote: RealtimeDB not initialized');
+                // Set auto-remove on disconnect
+                onDisconnect(presenceRef).remove();
+            } catch (e) {
+                console.error('❌ Remote: Presence registration failed', e);
             }
         };
 
         registerPresence();
-
-        return () => {
-            // No-op cleanup for now to keep presence alive while tab is open
-        };
     }, [sessionId, isConnected]);
 
     // Wrapper to use the shared utility
