@@ -92,6 +92,24 @@ export const useRemoteHost = (
 
     }, [sessionId, currentVideoId, queue]);
 
+    // Listen for Connected Clients (Presence)
+    useEffect(() => {
+        if (!sessionId || !realtimeDb) return;
+
+        const { ref, onValue } = require('firebase/database');
+        const connectedRef = ref(realtimeDb, `rooms/${sessionId}/connected`);
+
+        const unsubscribe = onValue(connectedRef, (snapshot: any) => { // Use 'any' for snapshot if type not imported
+            if (snapshot.exists()) {
+                setConnectedClients(snapshot.size);
+            } else {
+                setConnectedClients(0);
+            }
+        });
+
+        return () => unsubscribe();
+    }, [sessionId]);
+
     // Poll for Commands (REST API Polling - Same robustness as Monitor)
     useEffect(() => {
         if (!sessionId) return;

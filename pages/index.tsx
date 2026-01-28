@@ -172,8 +172,17 @@ function HomePage() {
 
   // Mobile Remote Host Logic
   const mobilePlayerRef = useRef<YouTube>(null);
-  const { sessionId } = useRemoteHost(mobilePlayerRef, (video) => addVideoToPlaylist(video), playlist, curVideoId);
+  const { sessionId, connectedClients } = useRemoteHost(mobilePlayerRef, (video) => addVideoToPlaylist(video), playlist, curVideoId);
   const [showRemoteModal, setShowRemoteModal] = useState(false);
+
+  // Auto-close Remote Modal when client connects
+  useEffect(() => {
+    if (showRemoteModal && connectedClients > 0) {
+      console.log('📱 Client connected! Auto-closing QR Modal.');
+      setShowRemoteModal(false);
+      // Optional: Show a toast "Remote Connected"
+    }
+  }, [connectedClients, showRemoteModal]);
 
   useEffect(() => {
     const checkScreenSize = () => {

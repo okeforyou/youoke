@@ -51,8 +51,8 @@ export default function QRModal({ isOpen, onClose, sessionId }: Props) {
                     </div>
                 </div>
 
-                <h2 className="text-2xl font-bold text-white mb-2">Connect Remote</h2>
-                <p className="text-gray-400 mb-6 text-sm">Scan with your phone to control playback</p>
+                <h2 className="text-2xl font-bold text-white mb-2">เชื่อมต่อรีโมท</h2>
+                <p className="text-gray-400 mb-6 text-sm">สแกนด้วยมือถือเพื่อควบคุมเพลง</p>
 
                 {/* QR Code Container */}
                 <div className="bg-white p-4 rounded-xl inline-block mb-6 shadow-lg">
@@ -66,7 +66,7 @@ export default function QRModal({ isOpen, onClose, sessionId }: Props) {
 
                 {/* PIN Display */}
                 <div className="bg-black/50 rounded-xl p-4 mb-4 border border-white/5">
-                    <p className="text-xs text-gray-500 uppercase tracking-widest mb-1">Session PIN</p>
+                    <p className="text-xs text-gray-500 uppercase tracking-widest mb-1">PIN เชื่อมต่อ</p>
                     <p className="text-3xl font-mono font-bold text-white tracking-widest">{sessionId}</p>
                 </div>
 
@@ -76,7 +76,7 @@ export default function QRModal({ isOpen, onClose, sessionId }: Props) {
                     className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-white/5 hover:bg-white/10 text-sm text-gray-300 transition-colors border border-white/5"
                 >
                     {copied ? <CheckIcon className="w-4 h-4 text-green-500" /> : <ClipboardIcon className="w-4 h-4" />}
-                    {copied ? 'Copied Link!' : 'Copy Link manually'}
+                    {copied ? 'คัดลอกแล้ว!' : 'คัดลอกลิงก์'}
                 </button>
 
             </div>

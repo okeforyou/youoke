@@ -112,6 +112,50 @@ export default function RemotePage() {
         };
     }, [sessionId]);
 
+    // Presence Logic: Register as "Connected" so Host knows to close QR Modal
+    useEffect(() => {
+        if (!sessionId || !isConnected) return;
+
+        let clientId = localStorage.getItem('remote_client_id');
+        if (!clientId) {
+            clientId = Math.random().toString(36).substring(2, 10);
+            localStorage.setItem('remote_client_id', clientId);
+        }
+
+        const registerPresence = async () => {
+            const { realtimeDb } = await import('../firebase');
+            const { ref, set, onDisconnect, serverTimestamp } = await import('firebase/database'); // Ensure serverTimestamp is imported if needed, or use Date.now()
+
+            if (realtimeDb) {
+                const presenceRef = ref(realtimeDb, `rooms/${sessionId}/connected/${clientId}`);
+
+                // Write presence
+                await set(presenceRef, {
+                    connectedAt: Date.now(),
+                    userAgent: navigator.userAgent
+                });
+
+                // Set auto-remove on disconnect
+                onDisconnect(presenceRef).remove();
+
+                console.log('✅ Remote: Registered presence', clientId);
+            }
+        };
+
+        registerPresence();
+
+        // Cleanup: We don't necessarily remove on unmount to prevent flickering if refresh, 
+        // but typically presence should be removed. relying on onDisconnect is safer for tabs closing.
+        // For clean SPA navigation, we can remove it.
+        return () => {
+            // Optional: Explicitly remove on unmount
+            // import('../firebase').then(({ realtimeDb }) => {
+            //     const { ref, remove } = require('firebase/database');
+            //     if(realtimeDb) remove(ref(realtimeDb, `rooms/${sessionId}/connected/${clientId}`));
+            // });
+        };
+    }, [sessionId, isConnected]);
+
     // Wrapper to use the shared utility
     const handleSendCommand = async (type: string, payload: any = {}) => {
         if (!sessionId) return;
