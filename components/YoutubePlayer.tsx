@@ -354,12 +354,12 @@ function YoutubePlayer({
 
   // Event handler for triggering fullscreen on a user gesture
   const handleFullscreenButtonClick = () => {
-    // Mobile or iOS or Android: Use CSS Fullscreen Overlay (Robust)
-    if (isMobile || isIOS || isAndroid) {
+    // iOS: Use CSS Fullscreen Overlay (Robust fallback for Safari restriction)
+    if (isIOS) {
       setIsFullScreenIphone(!isFullScreenIphone);
       return;
     }
-    // Desktop: Standard API
+    // Android & Desktop: Use Standard Fullscreen API for true edge-to-edge
     toggleFullscreen();
   };
 
@@ -1507,7 +1507,7 @@ function YoutubePlayer({
                 <>
                   {/* YouTube Player Wrapper */}
                   <div
-                    className={`w-full bg-black ${!isFullscreen
+                    className={`w-full bg-black ${!UseFullScreenCss
                       ? "aspect-video cursor-zoom-in"
                       : "h-[calc(100dvh)] cursor-zoom-out"
                       } ${isDualMode && !isMoniter ? "opacity-0 pointer-events-none invisible" : ""}`}
