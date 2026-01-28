@@ -230,15 +230,20 @@ function YoutubePlayer({
     };
   }, []);
 
-  // Auto-Fullscreen on Rotation (Mobile Only)
+  // Auto-Fullscreen on Rotation (Mobile/Tablet)
   useEffect(() => {
-    if (!isMobile) return;
+    // Check if device is small enough to be considered a mobile/tablet device
+    // We increase threshold to 1280px to cover large phones in landscape (e.g. iPhone Pro Max is ~930px)
+    const isMobileOrTablet = typeof window !== 'undefined' && (window.innerWidth < 1280 || isMobile);
+
+    if (!isMobileOrTablet) return;
 
     const handleOrientationChange = (e: MediaQueryListEvent | MediaQueryList) => {
       if (e.matches) {
         // Landscape detected
         console.log('🔄 Landscape detected');
-        if (!isFullScreenIphone && !isFullscreen) {
+        // Re-check width to be sure (it changes on rotation)
+        if (window.innerWidth < 1280 && !isFullScreenIphone && !isFullscreen) {
           // Add a small delay to allow layout to settle
           setTimeout(() => {
             setIsFullScreenIphone(true);
@@ -255,9 +260,6 @@ function YoutubePlayer({
     };
 
     const mediaQuery = window.matchMedia("(orientation: landscape)");
-
-    // Initial check (in case loaded in landscape)
-    // handleOrientationChange(mediaQuery); // Disabled initial check to avoid forcing fullscreen on load if not intended
 
     // Listen for changes
     mediaQuery.addEventListener("change", handleOrientationChange);
@@ -1547,11 +1549,11 @@ function YoutubePlayer({
                       } ${isDualMode && !isMoniter ? "opacity-0 pointer-events-none invisible" : ""}`}
                     style={{
                       width: "100%",
-                      height: "100%",
+                      height: UseFullScreenCss ? "calc(100dvh + 1px)" : "100%",
                       position: UseFullScreenCss ? "fixed" : "absolute",
-                      top: 0,
+                      top: UseFullScreenCss ? -1 : 0,
                       left: 0,
-                      zIndex: UseFullScreenCss ? 9999 : 0,
+                      zIndex: UseFullScreenCss ? 9999 : 10,
                       visibility: (isDualMode && !isMoniter) ? 'hidden' : 'visible'
                     }}
                   >
