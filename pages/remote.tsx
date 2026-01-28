@@ -272,102 +272,152 @@ export default function RemotePage() {
                     {status ? (
                         <h1 className="text-lg font-bold leading-tight mb-2 line-clamp-2 relative z-10">{status.title}</h1>
                     ) : (
-
-                        <button
-                            onClick={() => sendCommand('NEXT')}
-                            className="w-14 h-14 bg-zinc-800 rounded-full flex items-center justify-center border border-white/10 active:bg-zinc-700 transition-colors"
-                        >
-                            <ForwardIcon className="w-6 h-6 text-white" />
-                        </button>
+                        <h1 className="text-lg font-bold text-gray-500 italic relative z-10">รอสถานะ...</h1>
+                    )}
+                </div>
             </div>
 
-                {/* Search Section */}
-                <div className="flex-1 bg-zinc-900/30 rounded-t-3xl border-t border-white/10 p-6 flex flex-col min-h-0">
-                    <div className="relative mb-4 flex-none">
-                        <MagnifyingGlassIcon className="absolute left-3 top-3.5 w-5 h-5 text-gray-400 pointer-events-none" />
-                        <DebounceInput
-                            minLength={2}
-                            debounceTimeout={500}
-                            placeholder="ค้นหาเพลง..."
-                            className="w-full bg-black border border-zinc-700 rounded-xl py-3 pl-10 pr-4 text-white focus:border-primary focus:outline-none placeholder-gray-600"
-                            onChange={(e) => handleSearch(e.target.value)}
-                        />
+            {/* Queue Section (New) */}
+            {upcomingQueue.length > 0 && (
+                <div className="px-6 py-2">
+                    <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-xs text-gray-400 font-bold uppercase tracking-widest">คิวเพลง ({upcomingQueue.length})</h3>
                     </div>
+                    <div className="space-y-2">
+                        {upcomingQueue.slice(0, 3).map((video: any, idx: number) => (
+                            <div key={idx} className="flex items-center gap-3 bg-zinc-900/30 p-2 rounded-lg border border-white/5">
+                                <span className="text-xs text-gray-600 font-mono w-4 text-center">{idx + 1}</span>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm text-gray-300 truncate">{video.title}</p>
+                                </div>
+                            </div>
+                        ))}
+                        {upcomingQueue.length > 3 && (
+                            <p className="text-xs text-center text-gray-600 italic pt-1">
+                                และอีก {upcomingQueue.length - 3} เพลง...
+                            </p>
+                        )}
+                    </div>
+                    <div className="h-px bg-white/5 my-4"></div>
+                </div>
+            )}
 
-                    {/* Error Message */}
-                    {errorMessage && (
-                        <div className="p-3 mb-2 bg-red-900/50 border border-red-500/50 rounded-lg text-red-200 text-xs text-center">
-                            {errorMessage}
+            {/* Controls */}
+            <div className="px-6 pb-6 flex items-center justify-center gap-6 flex-none">
+                <button
+                    onClick={() => sendCommand(status?.isPlaying ? 'PAUSE' : 'PLAY')}
+                    className="w-20 h-20 bg-primary rounded-full flex items-center justify-center shadow-red-900/20 shadow-xl active:scale-95 transition-transform"
+                >
+                    {status?.isPlaying ? <PauseIcon className="w-10 h-10 text-white" /> : <PlayIcon className="w-10 h-10 text-white pl-1" />}
+                </button>
+
+                <button
+                    onClick={() => sendCommand('NEXT')}
+                    className="w-14 h-14 bg-zinc-800 rounded-full flex items-center justify-center border border-white/10 active:bg-zinc-700 transition-colors"
+                >
+                    <ForwardIcon className="w-6 h-6 text-white" />
+                </button>
+            </div>
+
+            {/* Search Section */}
+            <div className="flex-1 bg-zinc-900/30 rounded-t-3xl border-t border-white/10 p-6 flex flex-col min-h-0">
+                <div className="relative mb-4 flex-none">
+                    <MagnifyingGlassIcon className="absolute left-3 top-3.5 w-5 h-5 text-gray-400 pointer-events-none" />
+                    <DebounceInput
+                        minLength={2}
+                        debounceTimeout={500}
+                        placeholder="ค้นหาเพลง..."
+                        className="w-full bg-black border border-zinc-700 rounded-xl py-3 pl-10 pr-4 text-white focus:border-primary focus:outline-none placeholder-gray-600"
+                        onChange={(e) => handleSearch(e.target.value)}
+                    />
+                </div>
+
+                {/* Error Message */}
+                {errorMessage && (
+                    <div className="p-3 mb-2 bg-red-900/50 border border-red-500/50 rounded-lg text-red-200 text-xs text-center">
+                        {errorMessage}
+                    </div>
+                )}
+
+                {/* Search Results */}
+                <div className="flex-1 overflow-y-auto min-h-0 space-y-2 pb-6">
+                    {/* Loading State */}
+                    {isSearching && (
+                        <div className="text-center py-8 text-gray-500">
+                            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                            <p className="text-xs">กำลังค้นหา...</p>
                         </div>
                     )}
 
                     {/* Results List */}
-                    <div className="flex-1 overflow-y-auto space-y-2 pb-20 scrollbar-hide">
-                        {isSearching ? (
-                            <div className="text-center py-8 text-gray-500 animate-pulse">กำลังค้นหา...</div>
-                        ) : searchResults.length > 0 ? (
-                            searchResults.map((video: any) => {
-                                // Fix: Use default.jpg (120x90) which is guaranteed to exist
-                                // Since our UI is small (w-12 h-12), this resolution is sufficient and avoids 404s
-                                let thumbUrl = `https://i.ytimg.com/vi/${video.videoId}/default.jpg`;
+                    {!isSearching && searchResults.length > 0 ? (
+                        searchResults.map((video: any) => {
+                            // Fix: Use default.jpg (120x90) which is guaranteed to exist
+                            // Since our UI is small (w-12 h-12), this resolution is sufficient and avoids 404s
+                            let thumbUrl = `https://i.ytimg.com/vi/${video.videoId}/default.jpg`;
 
-                                if (video.videoThumbnails && video.videoThumbnails.length > 0) {
-                                    // Try to get the smallest one first (default) to match our UI size
-                                    const def = video.videoThumbnails.find((t: any) => t.quality === 'default' || t.url.includes('default.jpg'));
-                                    if (def) thumbUrl = def.url;
-                                    else thumbUrl = video.videoThumbnails[0].url;
-                                } else if (video.thumbnail) {
-                                    thumbUrl = video.thumbnail;
-                                }
+                            if (video.videoThumbnails && video.videoThumbnails.length > 0) {
+                                // Try to get the smallest one first (default) to match our UI size
+                                const def = video.videoThumbnails.find((t: any) => t.quality === 'default' || t.url.includes('default.jpg'));
+                                if (def) thumbUrl = def.url;
+                                else thumbUrl = video.videoThumbnails[0].url;
+                            } else if (video.thumbnail) {
+                                thumbUrl = video.thumbnail;
+                            }
 
-                                // Robust Fix: Force downgrade any maxresdefault/hqdefault to default.jpg
-                                if (thumbUrl.includes('maxresdefault') || thumbUrl.includes('hqdefault')) {
-                                    thumbUrl = thumbUrl.replace('maxresdefault', 'default').replace('hqdefault', 'default');
-                                }
+                            // Robust Fix: Force downgrade any maxresdefault/hqdefault to default.jpg
+                            if (thumbUrl.includes('maxresdefault') || thumbUrl.includes('hqdefault')) {
+                                thumbUrl = thumbUrl.replace('maxresdefault', 'default').replace('hqdefault', 'default');
+                            }
 
-                                // Final safety check for undefined videoId
-                                if (thumbUrl.includes('undefined')) {
-                                    console.error('❌ Remote: Invalid thumbnail generated (undefined videoId):', video);
-                                    thumbUrl = 'https://i.ytimg.com/img/no_thumbnail.jpg'; // Generic fallback
-                                }
+                            // Final safety check for undefined videoId
+                            if (thumbUrl.includes('undefined')) {
+                                console.error('❌ Remote: Invalid thumbnail generated (undefined videoId):', video);
+                                thumbUrl = 'https://i.ytimg.com/img/no_thumbnail.jpg'; // Generic fallback
+                            }
 
-                                // Debug log
-                                // console.log('🖼️ Remote: Rendering thumbnail:', thumbUrl);
-
-                                return (
-                                    <div key={video.videoId} className="flex items-center gap-3 p-3 bg-zinc-900/50 rounded-xl border border-white/5 active:bg-zinc-800 transition-colors">
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img
-                                            src={thumbUrl}
-                                            onError={(e) => {
-                                                const target = e.target as HTMLImageElement;
-                                                console.warn('❌ Remote: Image load failed:', target.src);
-                                                // Prevent infinite loop
-                                                if (!target.src.includes('default.jpg')) {
-                                                    target.src = `https://i.ytimg.com/vi/${video.videoId}/default.jpg`;
-                                                }
-                                            }}
-                                            alt=""
-                                            className="w-12 h-12 rounded bg-black object-cover"
-                                        />
-                                        <div className="flex-1 min-w-0">
-                                            <h3 className="font-medium text-sm text-white line-clamp-1">{video.title}</h3>
-                                            <p className="text-xs text-gray-500">{video.duration || 'YouTube'}</p>
-                                        </div>
-                                        <button
-                                            onClick={() => handleAddQueue({ ...video, thumbnail: thumbUrl })}
-                                            className={`p-2 rounded-full ${addedId === video.videoId ? 'bg-green-500 text-white' : 'bg-white/10 text-primary'}`}
-                                        >
-                                            {addedId === video.videoId ? <CheckIcon className="w-5 h-5" /> : <PlusIcon className="w-5 h-5" />}
-                                        </button>
+                            return (
+                                <div
+                                    key={video.videoId}
+                                    onClick={() => handleAddQueue({ ...video, thumbnail: thumbUrl })}
+                                    className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left group cursor-pointer ${addedId === video.videoId
+                                        ? 'bg-green-500/20 border-green-500/50'
+                                        : 'bg-zinc-900/50 hover:bg-zinc-800 border-white/5'
+                                        } border`}
+                                >
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                        src={thumbUrl}
+                                        onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            console.warn('❌ Remote: Image load failed:', target.src);
+                                            // Prevent infinite loop
+                                            if (!target.src.includes('default.jpg')) {
+                                                target.src = `https://i.ytimg.com/vi/${video.videoId}/default.jpg`;
+                                            }
+                                        }}
+                                        alt=""
+                                        className="w-12 h-12 rounded bg-black object-cover"
+                                    />
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="font-medium text-sm text-white line-clamp-1">{video.title}</h3>
+                                        <p className="text-xs text-gray-500">{video.duration || 'YouTube'}</p>
                                     </div>
-                                );
-                            })
-                        ) : searchQuery && (
+                                    <div
+                                        className={`p-2 rounded-full ${addedId === video.videoId ? 'bg-green-500 text-white' : 'bg-white/10 text-primary'}`}
+                                    >
+                                        {addedId === video.videoId ? <CheckIcon className="w-5 h-5" /> : <PlusIcon className="w-5 h-5" />}
+                                    </div>
+                                </div>
+                            );
+                        })
+                    ) : (
+                        searchQuery && !isSearching && (
                             <div className="text-center py-8 text-gray-600">ไม่พบเพลง</div>
-                        )}
-                    </div>
-                </div >
+                        )
+                    )}
+                </div>
             </div >
-            );
+        </div >
+    );
 }
