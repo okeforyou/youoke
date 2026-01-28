@@ -1573,7 +1573,7 @@ function YoutubePlayer({
         {
           !isMoniter && showControls && videoId && !showCastModeSelector && (
             <div
-              className={`flex-shrink-0 flex flex-row w-full p-1 items-center z-[10001] ${isMouseMoving ? "hover:opacity-100" : ""
+              className={`flex-shrink-0 flex flex-row w-full p-1 items-center ${UseFullScreenCss ? "z-[10001]" : "z-10"} ${isMouseMoving ? "hover:opacity-100" : ""
                 } ${(UseFullScreenCss || !isMouseMoving) &&
                   (isFullscreen || isFullScreenIphone)
                   ? "opacity-0"
