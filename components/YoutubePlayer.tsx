@@ -230,6 +230,40 @@ function YoutubePlayer({
     };
   }, []);
 
+  // Auto-Fullscreen on Rotation (Mobile Only)
+  useEffect(() => {
+    if (!isMobile) return;
+
+    const handleOrientationChange = (e: MediaQueryListEvent | MediaQueryList) => {
+      if (e.matches) {
+        // Landscape detected
+        console.log('🔄 Landscape detected');
+        if (!isFullScreenIphone && !isFullscreen) {
+          // Add a small delay to allow layout to settle
+          setTimeout(() => {
+            setIsFullScreenIphone(true);
+          }, 100);
+        }
+      } else {
+        // Portrait detected
+        console.log('🔄 Portrait detected');
+        setIsFullScreenIphone(false);
+        if (isFullscreen) {
+          toggleFullscreen(false);
+        }
+      }
+    };
+
+    const mediaQuery = window.matchMedia("(orientation: landscape)");
+
+    // Initial check (in case loaded in landscape)
+    // handleOrientationChange(mediaQuery); // Disabled initial check to avoid forcing fullscreen on load if not intended
+
+    // Listen for changes
+    mediaQuery.addEventListener("change", handleOrientationChange);
+    return () => mediaQuery.removeEventListener("change", handleOrientationChange);
+  }, [isMobile, isFullScreenIphone, isFullscreen]);
+
 
 
   // Check if Dual Mode is active
