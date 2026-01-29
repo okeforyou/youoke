@@ -484,6 +484,7 @@ function YoutubePlayer({
       const player = playerRef.current?.getInternalPlayer();
 
       setPlayerState(YouTube.PlayerState.PLAYING);
+      if (onIsPlayingChange) onIsPlayingChange(true); // Force update state immediately
 
       // Update Media Session playback state
       if ('mediaSession' in navigator) {
@@ -519,6 +520,7 @@ function YoutubePlayer({
       console.log('📤 Calling castPause()...');
       addDebugLog('📤 Calling castPause()');
       setPlayerState(YouTube.PlayerState.PAUSED);
+      if (onIsPlayingChange) onIsPlayingChange(false); // Force update state
       castPause();
       return;
     }
@@ -531,6 +533,7 @@ function YoutubePlayer({
       ch.close();
       // Also pause local player to keep state in sync
       setPlayerState(YouTube.PlayerState.PAUSED);
+      if (onIsPlayingChange) onIsPlayingChange(false); // Force update state
     }
 
     // Otherwise, control local player
@@ -538,6 +541,7 @@ function YoutubePlayer({
       const player = playerRef.current?.getInternalPlayer();
 
       setPlayerState(YouTube.PlayerState.PAUSED);
+      if (onIsPlayingChange) onIsPlayingChange(false); // Force update state immediately
 
       // Update Media Session playback state
       if ('mediaSession' in navigator) {
