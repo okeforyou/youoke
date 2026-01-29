@@ -361,11 +361,26 @@ export default function RemotePage() {
             {/* Controls */}
             <div className="px-6 pb-6 flex items-center justify-center gap-6 flex-none">
                 {/* Play/Pause */}
+                {/* Play/Pause with Optimistic UI */}
                 <button
-                    onClick={() => sendCommand(status?.isPlaying ? 'PAUSE' : 'PLAY')}
-                    className="w-20 h-20 bg-primary rounded-full flex items-center justify-center shadow-red-900/20 shadow-xl active:scale-95 transition-transform"
+                    onClick={() => {
+                        const nextState = !status?.isPlaying;
+                        // Optimistic Update
+                        if (status) {
+                            setStatus({ ...status, isPlaying: nextState });
+                        }
+                        sendCommand(nextState ? 'PLAY' : 'PAUSE');
+                    }}
+                    className={`w-20 h-20 rounded-full flex items-center justify-center shadow-xl active:scale-95 transition-all ${status?.isPlaying
+                            ? 'bg-zinc-800 shadow-zinc-900/50'
+                            : 'bg-primary shadow-red-900/20'
+                        }`}
                 >
-                    {status?.isPlaying ? <PauseIcon className="w-10 h-10 text-white" /> : <PlayIcon className="w-10 h-10 text-white pl-1" />}
+                    {status?.isPlaying ? (
+                        <PauseIcon className="w-10 h-10 text-white" />
+                    ) : (
+                        <PlayIcon className="w-10 h-10 text-white pl-1" />
+                    )}
                 </button>
 
                 {/* Next */}
