@@ -122,11 +122,13 @@ export const useRemoteHost = (
         };
     }, [sessionId]);
 
-    // Poll for Commands (REST API Polling - Same robustness as Monitor)
+    // Poll for Commands (REST API Polling - Robust)
+    // Use Ref for processed IDs to survive effect re-runs
+    const processedCommandIdsRef = useRef<Set<string>>(new Set());
+
     useEffect(() => {
         if (!sessionId) return;
 
-        let processedCommandIds = new Set<string>();
         let isActive = true;
 
         const pollInterval = setInterval(async () => {
@@ -144,25 +146,33 @@ export const useRemoteHost = (
                 const commands = await response.json() as Record<string, CastCommandEnvelope> | null;
                 if (!commands) return;
 
-                for (const [cmdId, envelope] of Object.entries(commands)) {
-                    if (processedCommandIds.has(cmdId)) continue;
+                const now = Date.now();
 
-                    // Mark processed locally immediately
-                    processedCommandIds.add(cmdId);
+                for (const [cmdId, envelope] of Object.entries(commands)) {
+                    // 1. Skip if already processed in this session
+                    if (processedCommandIdsRef.current.has(cmdId)) continue;
+
+                    // 2. Skip if too old (> 30 seconds) - Prevent "replay from grave"
+                    if (now - envelope.timestamp > 30000) {
+                        // Clean up old junk
+                        fetch(`${dbURL}/rooms/${sessionId}/commands/${cmdId}.json`, { method: 'DELETE' }).catch(() => { });
+                        processedCommandIdsRef.current.add(cmdId);
+                        continue;
+                    }
+
+                    // 3. Mark processed immediately
+                    processedCommandIdsRef.current.add(cmdId);
 
                     if (envelope.status !== 'pending') continue;
 
                     console.log('✨ Host: New Command', envelope.command.type);
 
-                    // Execute
+                    // 4. Execute
                     handleCommand(envelope.command);
 
-                    // Mark completed in DB
-                    // Delete or update status? Monitor updates status.
-                    // Let's delete it to keep DB clean, or update status 'completed'
-                    fetch(`${dbURL}/rooms/${sessionId}/commands/${cmdId}/status.json`, {
-                        method: 'PUT',
-                        body: JSON.stringify('completed')
+                    // 5. Delete immediately to prevent any other client/logic from seeing it
+                    fetch(`${dbURL}/rooms/${sessionId}/commands/${cmdId}.json`, {
+                        method: 'DELETE'
                     }).catch(console.error);
                 }
 
