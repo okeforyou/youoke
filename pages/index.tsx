@@ -805,6 +805,21 @@ function HomePage() {
 
               {/* 3. Search Bar (Below Controls) */}
               <div className="flex flex-row gap-3 px-4 py-3 items-center bg-base-200 md:bg-base-100 shadow-sm sticky top-0 z-30">
+                {/* Host Connection Status (Remote) */}
+                {connectedClients > 0 ? (
+                  <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-green-500/10 border border-green-500/20 rounded-full">
+                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                    <span className="text-xs font-bold text-green-600">
+                      เชื่อมต่อแล้ว ({sessionId})
+                    </span>
+                  </div>
+                ) : sessionId ? (
+                  <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-gray-100 border border-gray-200 rounded-full" title={`รหัสห้อง: ${sessionId}`}>
+                    <DevicePhoneMobileIcon className="w-4 h-4 text-gray-400" />
+                    <span className="text-xs text-gray-400 font-mono">{sessionId}</span>
+                  </div>
+                ) : null}
+
                 {/* Search Input */}
                 <div className="flex-1 flex items-center gap-2 px-4 py-2 h-11 bg-base-100 border border-base-300 rounded-full hover:border-base-content/30 hover:shadow-sm transition-all">
                   <MagnifyingGlassIcon className="w-5 h-5 text-base-content/60 flex-shrink-0" />

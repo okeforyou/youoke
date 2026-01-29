@@ -192,6 +192,8 @@ export default function RemotePage() {
         setErrorMessage('');
         try {
             // Match logic from SearchResultGrid.tsx: Prepend "karaoke" (quoted)
+            // Match logic from SearchResultGrid.tsx: Prepend "karaoke" (quoted)
+            // Use exact same logic as Host
             const prefix = searchType === 'karaoke' ? '"karaoke" ' : '';
             const effectiveQuery = prefix + query;
 

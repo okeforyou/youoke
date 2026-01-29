@@ -52,6 +52,7 @@ function YoutubePlayer({
   externalPlayerRef = null, // Optional external ref for parent control
   showControls = true,
   controlRef = null,
+  onIsPlayingChange = null, // New prop for syncing state
 }) {
   const router = useRouter();
   const internalPlayerRef = useRef<YouTube>();
@@ -346,6 +347,12 @@ function YoutubePlayer({
           console.log(`✅ Guest playing song ${playedCount + 1}/${guestLimit}`);
           incrementPlayCount();
         }
+      }
+
+      // Sync state to parent (for Remote Host)
+      if (onIsPlayingChange) {
+        if (newState === YouTube.PlayerState.PLAYING) onIsPlayingChange(true);
+        else if (newState === YouTube.PlayerState.PAUSED || newState === YouTube.PlayerState.ENDED) onIsPlayingChange(false);
       }
 
       // Update Media Session playback state for Android lock screen
