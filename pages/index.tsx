@@ -855,13 +855,13 @@ function HomePage() {
                 >
                   <button
                     onClick={() => setShowRemoteModal(true)}
-                    className={`relative btn btn-circle btn-ghost border ml-2 ${connectedClients > 0 ? 'bg-green-50 border-green-200 text-green-600' : 'bg-white md:bg-base-200 border-base-200'}`}
+                    className="relative btn btn-circle btn-ghost border ml-2 bg-white md:bg-base-200 border-base-200"
                   >
-                    <DevicePhoneMobileIcon className="w-6 h-6" />
+                    <DevicePhoneMobileIcon className={`w-6 h-6 ${connectedClients > 0 ? 'text-base-content' : 'text-gray-400'}`} />
 
                     {/* Status Dot */}
                     {sessionId && (
-                      <span className={`absolute top-0 right-0 w-3 h-3 rounded-full border-2 border-white ${connectedClients > 0 ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></span>
+                      <span className={`absolute top-0 right-0 w-3 h-3 rounded-full border-2 border-white transition-all ${connectedClients > 0 ? 'bg-green-500 animate-pulse ring-2 ring-green-100' : 'bg-gray-300'}`}></span>
                     )}
                   </button>
                 </div>

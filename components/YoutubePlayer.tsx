@@ -70,6 +70,7 @@ function YoutubePlayer({
       handlePlay();
     },
     pause: () => {
+      console.log('🎮 [ImperativeHandle] Pause called from external ref');
       handlePause();
     },
     // Add other methods if needed
