@@ -50,7 +50,11 @@ export const useRemoteHost = (
             // Note: We might want to keep the room alive for a bit, but for now clean up
             // Using SDK is fine for cleanup as it's fire-and-forget
             if (realtimeDb && code) {
-                // remove(ref(realtimeDb, `rooms/${code}`));
+                // Ensure onDisconnect triggers if user closes tab
+                onDisconnect(ref(realtimeDb, `rooms/${code}`)).remove();
+
+                // Also remove immediately on unmount (SPA navigation)
+                remove(ref(realtimeDb, `rooms/${code}`));
             }
         };
     }, []);

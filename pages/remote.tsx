@@ -141,6 +141,16 @@ export default function RemotePage() {
 
                 // Set auto-remove on disconnect
                 onDisconnect(presenceRef).remove();
+
+                // Anti-Sleep: Request Wake Lock
+                if ('wakeLock' in navigator) {
+                    try {
+                        const wakeLock = await (navigator as any).wakeLock.request('screen');
+                        console.log('💡 Remote: Screen Wake Lock active');
+                    } catch (err) {
+                        console.warn('⚠️ Remote: Wake Lock failed', err);
+                    }
+                }
             } catch (e) {
                 console.error('❌ Remote: Presence registration failed', e);
             }
@@ -291,7 +301,14 @@ export default function RemotePage() {
                     <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
                     <span className="text-xs font-mono text-gray-400">ห้อง: {sessionId}</span>
                 </div>
-                {!isConnected && <span className="text-xs text-red-500 font-bold">ไม่ได้เชื่อมต่อ</span>}
+                {!isConnected && (
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="text-xs bg-red-500/10 text-red-500 px-2 py-1 rounded border border-red-500/20 active:bg-red-500 active:text-white transition-colors"
+                    >
+                        สแกนใหม่
+                    </button>
+                )}
                 {/* Fullscreen Toggle Button */}
                 <button
                     onClick={() => sendCommand('TOGGLE_FULLSCREEN')}

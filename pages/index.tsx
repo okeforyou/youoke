@@ -170,6 +170,23 @@ function HomePage() {
   // Track XL breakpoint (1280px) for conditional player rendering
   const [isXlScreen, setIsXlScreen] = useState(false);
 
+  // Ensure Host is Authenticated (Anonymous) for Firebase RDB writes
+  useEffect(() => {
+    const signIn = async () => {
+      try {
+        const { auth } = await import('../firebase');
+        const { signInAnonymously } = await import('firebase/auth');
+        if (auth && !auth.currentUser) {
+          await signInAnonymously(auth);
+          console.log('✅ Host: Signed in anonymously');
+        }
+      } catch (e) {
+        console.error('❌ Host: Auth failed', e);
+      }
+    };
+    signIn();
+  }, []);
+
   // Mobile Remote Host Logic
   const mobilePlayerRef = useRef<YouTube>(null);
   // Mobile player control - ref and state for MiniPlayer
