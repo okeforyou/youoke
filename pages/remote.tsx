@@ -181,17 +181,34 @@ export default function RemotePage() {
         setIsSearching(true);
         setErrorMessage('');
         try {
-            // Append keyword based on Search Type
-            const effectiveQuery = searchType === 'karaoke' ? `${query} karaoke` : query;
+            // Match logic from SearchResultGrid.tsx: Prepend "karaoke" (quoted)
+            const prefix = searchType === 'karaoke' ? '"karaoke" ' : '';
+            const effectiveQuery = prefix + query;
 
             // Reusing existing API
             const res = await axios.get('/api/search', { params: { q: effectiveQuery } });
+
+            let data: any[] = [];
             if (res.data && res.data.data) {
-                setSearchResults(res.data.data);
+                data = res.data.data;
             } else if (Array.isArray(res.data)) {
-                // Support array response
-                setSearchResults(res.data);
+                data = res.data;
             }
+
+            // Client-side filtering to match SearchResultGrid.tsx
+            if (searchType === 'karaoke') {
+                data = data.filter((video: any) => {
+                    if (!video.title) return false;
+                    const lcTitle = video.title.toLowerCase();
+                    return (
+                        lcTitle.includes("karaoke") ||
+                        lcTitle.includes("beat") ||
+                        lcTitle.includes("คาราโอเกะ")
+                    );
+                });
+            }
+
+            setSearchResults(data);
         } catch (e: any) {
             console.error('Search failed', e);
             setErrorMessage(e.response?.data?.error || e.message || 'ค้นหาล้มเหลว');

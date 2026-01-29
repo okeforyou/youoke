@@ -206,10 +206,18 @@ export const useRemoteHost = (
 
         switch (cmd.type) {
             case 'PLAY':
-                internalPlayer?.playVideo();
+                if (controlRef?.current?.play) {
+                    controlRef.current.play();
+                } else {
+                    internalPlayer?.playVideo();
+                }
                 break;
             case 'PAUSE':
-                internalPlayer?.pauseVideo();
+                if (controlRef?.current?.pause) {
+                    controlRef.current.pause();
+                } else {
+                    internalPlayer?.pauseVideo();
+                }
                 break;
             case 'NEXT':
                 const channel = new BroadcastChannel('youoke-dual-sync');

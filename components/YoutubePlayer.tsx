@@ -65,6 +65,12 @@ function YoutubePlayer({
     toggleFullscreen: () => {
       handleFullscreenButtonClick();
     },
+    play: () => {
+      handlePlay();
+    },
+    pause: () => {
+      handlePause();
+    },
     // Add other methods if needed
   }));
   const playerRef = externalPlayerRef || internalPlayerRef;
