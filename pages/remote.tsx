@@ -206,6 +206,13 @@ export default function RemotePage() {
             }
 
             // Client-side filtering to match SearchResultGrid.tsx
+            // 1. Filter out Unknown authors (Critical for quality)
+            data = data.filter((video: any) => {
+                if (!video.author || video.author.toLowerCase().includes('unknown')) return false;
+                return true;
+            });
+
+            // 2. Filter for Karaoke mode (Strict match to Host)
             if (searchType === 'karaoke') {
                 data = data.filter((video: any) => {
                     if (!video.title) return false;
@@ -306,7 +313,7 @@ export default function RemotePage() {
                         onClick={() => window.location.reload()}
                         className="text-xs bg-red-500/10 text-red-500 px-2 py-1 rounded border border-red-500/20 active:bg-red-500 active:text-white transition-colors"
                     >
-                        สแกนใหม่
+                        เชื่อมต่อใหม่
                     </button>
                 )}
                 {/* Fullscreen Toggle Button */}
@@ -372,8 +379,8 @@ export default function RemotePage() {
                         sendCommand(nextState ? 'PLAY' : 'PAUSE');
                     }}
                     className={`w-20 h-20 rounded-full flex items-center justify-center shadow-xl active:scale-95 transition-all ${status?.isPlaying
-                            ? 'bg-zinc-800 shadow-zinc-900/50'
-                            : 'bg-primary shadow-red-900/20'
+                        ? 'bg-zinc-800 shadow-zinc-900/50'
+                        : 'bg-primary shadow-red-900/20'
                         }`}
                 >
                     {status?.isPlaying ? (
