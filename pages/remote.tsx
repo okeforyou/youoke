@@ -236,6 +236,13 @@ export default function RemotePage() {
         }
     };
 
+    // Auto-refresh search when Toggle changes
+    useEffect(() => {
+        if (searchQuery.trim()) {
+            handleSearch(searchQuery);
+        }
+    }, [searchType]);
+
     const handleAddQueue = (video: SearchResult) => {
         // Send ADD_TO_QUEUE with correct payload structure
         // Payload must contain { video: QueueVideo }

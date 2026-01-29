@@ -862,13 +862,29 @@ function HomePage() {
                 </div>
 
                 {/* Mobile Remote Button - Visible only on Desktop (XL+) */}
-                <button
-                  onClick={() => setShowRemoteModal(true)}
-                  className="hidden xl:flex btn btn-circle btn-ghost bg-white md:bg-base-200 border border-base-200 ml-2"
-                  title="Mobile Remote"
-                >
-                  <DevicePhoneMobileIcon className="w-6 h-6 text-primary" />
-                </button>
+                <div className="relative hidden xl:flex items-center">
+                  {/* Connection Bubble */}
+                  {sessionId && (
+                    <div className={`absolute right-full mr-3 px-3 py-1.5 rounded-lg text-xs font-mono font-bold shadow-sm flex items-center gap-2 whitespace-nowrap transition-all ${connectedClients > 0
+                        ? 'bg-green-500 text-white'
+                        : 'bg-gray-100 text-gray-500 border border-gray-200'
+                      }`}>
+                      {connectedClients > 0 && <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>}
+                      {sessionId}
+                      {/* Arrow */}
+                      <div className={`absolute top-1/2 -right-1.5 -mt-1.5 w-3 h-3 rotate-45 ${connectedClients > 0 ? 'bg-green-500' : 'bg-gray-100 border-t border-r border-gray-200'
+                        }`}></div>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={() => setShowRemoteModal(true)}
+                    className={`btn btn-circle btn-ghost border ml-2 ${connectedClients > 0 ? 'bg-green-50 border-green-200 text-green-600' : 'bg-white md:bg-base-200 border-base-200'}`}
+                    title="Mobile Remote"
+                  >
+                    <DevicePhoneMobileIcon className="w-6 h-6" />
+                  </button>
+                </div>
 
 
 
