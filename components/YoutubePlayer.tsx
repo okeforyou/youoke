@@ -549,10 +549,13 @@ function YoutubePlayer({
         console.log('🎵 Media Session: Set playback state to PAUSED');
       }
 
-      if (!player) return;
+      if (!player) {
+        console.warn('⚠️ handlePause: Player not ready');
+        return;
+      }
       await player.pauseVideo();
     } catch (error) {
-      console.log(error);
+      console.error('❌ handlePause Error:', error);
     }
   };
 
