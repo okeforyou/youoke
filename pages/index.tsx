@@ -192,7 +192,13 @@ function HomePage() {
   // Mobile player control - ref and state for MiniPlayer
   const playerControlRef = useRef<any>(null);
 
-  const { sessionId, connectedClients } = useRemoteHost(mobilePlayerRef, playerControlRef, (video) => addVideoToPlaylist(video), playlist, curVideoId);
+  // Mobile player control - ref and state for MiniPlayer
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [currentTime, setCurrentTime] = useState("0:00");
+  const [duration, setDuration] = useState("0:00");
+
+  const { sessionId, connectedClients } = useRemoteHost(mobilePlayerRef, playerControlRef, (video) => addVideoToPlaylist(video), playlist, curVideoId, isPlaying);
   const [showRemoteModal, setShowRemoteModal] = useState(false);
 
   // Auto-close Remote Modal when client connects
@@ -215,12 +221,7 @@ function HomePage() {
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
-  // Mobile player control - ref and state for MiniPlayer
-  // playerControlRef already declared above
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [currentTime, setCurrentTime] = useState("0:00");
-  const [duration, setDuration] = useState("0:00");
+
 
   // Auto-play first song when playlist has items but nothing is playing
   useEffect(() => {

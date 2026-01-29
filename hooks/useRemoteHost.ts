@@ -29,7 +29,8 @@ export const useRemoteHost = (
     controlRef: any,
     addToQueue: (video: any) => void,
     queue: any[],
-    currentVideoId: string
+    currentVideoId: string,
+    isPlaying: boolean // New argument
 ) => {
     const [sessionId, setSessionId] = useState<string | null>(null);
     const [connectedClients, setConnectedClients] = useState(0);
@@ -76,7 +77,7 @@ export const useRemoteHost = (
                 currentIndex: queue.findIndex(v => v.videoId === currentVideoId),
                 currentVideo: currentVideo || null,
                 controls: {
-                    isPlaying: true, // Need real state from player
+                    isPlaying: isPlaying, // Use logic from argument
                     isMuted: false,
                     currentTime: 0,
                     duration: 0
@@ -95,7 +96,7 @@ export const useRemoteHost = (
 
         } catch (e) { console.error(e); }
 
-    }, [sessionId, currentVideoId, queue]);
+    }, [sessionId, currentVideoId, queue, isPlaying]);
 
     // Listen for Connected Clients (Presence)
     useEffect(() => {
