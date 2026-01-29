@@ -40,6 +40,9 @@ export default function RemotePage() {
     const [errorMessage, setErrorMessage] = useState('');
     const [addedId, setAddedId] = useState<string | null>(null);
 
+    // New Features State
+    const [searchType, setSearchType] = useState<'song' | 'karaoke'>('song');
+
     // Initial Load - Get Session ID from URL
     useEffect(() => {
         if (router.isReady) {
@@ -52,7 +55,6 @@ export default function RemotePage() {
         }
     }, [router.isReady, router.query]);
 
-    // Connect to Firebase & Auth
     // Connect to Firebase & Auth (Failover: REST API Polling)
     useEffect(() => {
         if (!sessionId) return;
@@ -179,8 +181,11 @@ export default function RemotePage() {
         setIsSearching(true);
         setErrorMessage('');
         try {
+            // Append keyword based on Search Type
+            const effectiveQuery = searchType === 'karaoke' ? `${query} karaoke` : query;
+
             // Reusing existing API
-            const res = await axios.get('/api/search', { params: { q: query } });
+            const res = await axios.get('/api/search', { params: { q: effectiveQuery } });
             if (res.data && res.data.data) {
                 setSearchResults(res.data.data);
             } else if (Array.isArray(res.data)) {
@@ -239,10 +244,20 @@ export default function RemotePage() {
         );
     }
 
-    // Derived State for Queue
-    const upcomingQueue = status?.queue && typeof status.currentIndex === 'number'
-        ? status.queue.slice(status.currentIndex + 1)
-        : [];
+    // Derived State for Queue - Robust Parsing
+    let queueList: any[] = [];
+    if (status?.queue) {
+        if (Array.isArray(status.queue)) {
+            queueList = status.queue;
+        } else if (typeof status.queue === 'object') {
+            // Firebase parses arrays with holes as objects or sparse arrays
+            queueList = Object.values(status.queue);
+        }
+    }
+
+    const currentIndex = typeof status?.currentIndex === 'number' ? status.currentIndex : -1;
+    // Get upcoming queue (items AFTER current index)
+    const upcomingQueue = queueList.slice(currentIndex + 1);
 
     return (
         <div className="min-h-screen bg-black text-white flex flex-col">
@@ -260,6 +275,13 @@ export default function RemotePage() {
                     <span className="text-xs font-mono text-gray-400">ห้อง: {sessionId}</span>
                 </div>
                 {!isConnected && <span className="text-xs text-red-500 font-bold">ไม่ได้เชื่อมต่อ</span>}
+                {/* Fullscreen Toggle Button */}
+                <button
+                    onClick={() => sendCommand('TOGGLE_FULLSCREEN')}
+                    className="p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5"
+                >
+                    <div className="w-4 h-4 border-2 border-dashed border-gray-400 rounded-sm"></div>
+                </button>
             </div>
 
             {/* Now Playing Card */}
@@ -277,14 +299,14 @@ export default function RemotePage() {
                 </div>
             </div>
 
-            {/* Queue Section (New) */}
+            {/* Queue Section (Updated: Show 5 items) */}
             {upcomingQueue.length > 0 && (
                 <div className="px-6 py-2">
                     <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-xs text-gray-400 font-bold uppercase tracking-widest">คิวเพลง ({upcomingQueue.length})</h3>
+                        <h3 className="text-xs text-gray-400 font-bold uppercase tracking-widest">คิวเพลงถัดไป ({upcomingQueue.length})</h3>
                     </div>
                     <div className="space-y-2">
-                        {upcomingQueue.slice(0, 3).map((video: any, idx: number) => (
+                        {upcomingQueue.slice(0, 5).map((video: any, idx: number) => (
                             <div key={idx} className="flex items-center gap-3 bg-zinc-900/30 p-2 rounded-lg border border-white/5">
                                 <span className="text-xs text-gray-600 font-mono w-4 text-center">{idx + 1}</span>
                                 <div className="flex-1 min-w-0">
@@ -292,9 +314,9 @@ export default function RemotePage() {
                                 </div>
                             </div>
                         ))}
-                        {upcomingQueue.length > 3 && (
+                        {upcomingQueue.length > 5 && (
                             <p className="text-xs text-center text-gray-600 italic pt-1">
-                                และอีก {upcomingQueue.length - 3} เพลง...
+                                และอีก {upcomingQueue.length - 5} เพลง...
                             </p>
                         )}
                     </div>
@@ -304,6 +326,7 @@ export default function RemotePage() {
 
             {/* Controls */}
             <div className="px-6 pb-6 flex items-center justify-center gap-6 flex-none">
+                {/* Play/Pause */}
                 <button
                     onClick={() => sendCommand(status?.isPlaying ? 'PAUSE' : 'PLAY')}
                     className="w-20 h-20 bg-primary rounded-full flex items-center justify-center shadow-red-900/20 shadow-xl active:scale-95 transition-transform"
@@ -311,6 +334,7 @@ export default function RemotePage() {
                     {status?.isPlaying ? <PauseIcon className="w-10 h-10 text-white" /> : <PlayIcon className="w-10 h-10 text-white pl-1" />}
                 </button>
 
+                {/* Next */}
                 <button
                     onClick={() => sendCommand('NEXT')}
                     className="w-14 h-14 bg-zinc-800 rounded-full flex items-center justify-center border border-white/10 active:bg-zinc-700 transition-colors"
@@ -319,14 +343,34 @@ export default function RemotePage() {
                 </button>
             </div>
 
-            {/* Search Section */}
+            {/* Search Section (Updated with Toggle) */}
             <div className="flex-1 bg-zinc-900/30 rounded-t-3xl border-t border-white/10 p-6 flex flex-col min-h-0">
                 <div className="relative mb-4 flex-none">
-                    <MagnifyingGlassIcon className="absolute left-3 top-3.5 w-5 h-5 text-gray-400 pointer-events-none" />
+                    {/* Search Type Toggle */}
+                    <div className="flex justify-center mb-4">
+                        <div className="bg-zinc-800 p-1 rounded-xl flex items-center w-full max-w-xs border border-white/5">
+                            <button
+                                onClick={() => setSearchType('song')}
+                                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${searchType === 'song' ? 'bg-zinc-700 text-white shadow' : 'text-gray-400 hover:text-white'
+                                    }`}
+                            >
+                                เพลงทั่วไป
+                            </button>
+                            <button
+                                onClick={() => setSearchType('karaoke')}
+                                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${searchType === 'karaoke' ? 'bg-primary text-white shadow' : 'text-gray-400 hover:text-white'
+                                    }`}
+                            >
+                                คาราโอเกะ
+                            </button>
+                        </div>
+                    </div>
+
+                    <MagnifyingGlassIcon className="absolute left-3 top-[3.25rem] w-5 h-5 text-gray-400 pointer-events-none" />
                     <DebounceInput
                         minLength={2}
                         debounceTimeout={500}
-                        placeholder="ค้นหาเพลง..."
+                        placeholder={searchType === 'karaoke' ? "ค้นหาเพลงคาราโอเกะ..." : "ค้นหาเพลง..."}
                         className="w-full bg-black border border-zinc-700 rounded-xl py-3 pl-10 pr-4 text-white focus:border-primary focus:outline-none placeholder-gray-600"
                         onChange={(e) => handleSearch(e.target.value)}
                     />

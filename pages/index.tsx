@@ -172,7 +172,10 @@ function HomePage() {
 
   // Mobile Remote Host Logic
   const mobilePlayerRef = useRef<YouTube>(null);
-  const { sessionId, connectedClients } = useRemoteHost(mobilePlayerRef, (video) => addVideoToPlaylist(video), playlist, curVideoId);
+  // Mobile player control - ref and state for MiniPlayer
+  const playerControlRef = useRef<any>(null);
+
+  const { sessionId, connectedClients } = useRemoteHost(mobilePlayerRef, playerControlRef, (video) => addVideoToPlaylist(video), playlist, curVideoId);
   const [showRemoteModal, setShowRemoteModal] = useState(false);
 
   // Auto-close Remote Modal when client connects
@@ -196,7 +199,7 @@ function HomePage() {
   }, []);
 
   // Mobile player control - ref and state for MiniPlayer
-  const playerControlRef = useRef<any>(null);
+  // playerControlRef already declared above
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState("0:00");

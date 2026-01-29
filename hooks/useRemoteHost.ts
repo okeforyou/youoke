@@ -3,7 +3,7 @@ import { realtimeDb } from '../firebase';
 import { ref, set, remove, onValue, onDisconnect, serverTimestamp } from 'firebase/database';
 
 export type RemoteCommand = {
-    type: 'PLAY' | 'PAUSE' | 'NEXT' | 'ADD_QUEUE' | 'SEEK';
+    type: 'PLAY' | 'PAUSE' | 'NEXT' | 'ADD_QUEUE' | 'SEEK' | 'TOGGLE_FULLSCREEN';
     payload?: any;
     timestamp: number;
 };
@@ -26,6 +26,7 @@ export type HostState = {
 
 export const useRemoteHost = (
     playerRef: any,
+    controlRef: any,
     addToQueue: (video: any) => void,
     queue: any[],
     currentVideoId: string
@@ -181,6 +182,16 @@ export const useRemoteHost = (
                 addToQueueRef.current(cmd.payload.video);
             } else if (cmd.payload && cmd.payload.videoId) {
                 addToQueueRef.current(cmd.payload);
+            }
+            return;
+        }
+
+        // TOGGLE_FULLSCREEN uses controlRef
+        if (cmd.type === 'TOGGLE_FULLSCREEN') {
+            if (controlRef?.current?.toggleFullscreen) {
+                controlRef.current.toggleFullscreen();
+            } else {
+                console.warn('[RemoteHost] controlRef not ready or missing toggleFullscreen');
             }
             return;
         }

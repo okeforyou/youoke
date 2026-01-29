@@ -57,9 +57,13 @@ function YoutubePlayer({
   const internalPlayerRef = useRef<YouTube>();
 
   // Expose methods to parent
+  // Expose methods to parent
   useImperativeHandle(controlRef, () => ({
     openCastSelector: () => {
       setShowCastModeSelector(true);
+    },
+    toggleFullscreen: () => {
+      handleFullscreenButtonClick();
     },
     // Add other methods if needed
   }));

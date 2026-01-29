@@ -38,7 +38,8 @@ export type CastCommand =
   | { type: 'MOVE_UP'; payload: { index: number } }
   | { type: 'MOVE_DOWN'; payload: { index: number } }
   | { type: 'CLEAR_QUEUE'; payload: null }
-  | { type: 'SET_PLAYLIST'; payload: { playlist: QueueVideo[] } };
+  | { type: 'SET_PLAYLIST'; payload: { playlist: QueueVideo[] } }
+  | { type: 'TOGGLE_FULLSCREEN'; payload: null };
 
 export type CommandStatus = 'pending' | 'executing' | 'completed' | 'failed';
 
