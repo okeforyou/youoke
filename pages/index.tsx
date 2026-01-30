@@ -121,6 +121,7 @@ function HomePage() {
     jumpToIndex: googleCastJumpToIndex,
     removeAt: googleCastRemoveAt,
     updateCurrentIndexSilent: updateGoogleCastCurrentIndex,
+    connectedRoomCode: googleCastConnectedRoomCode,
   } = useCast();
   const { myPlaylist, setMyPlaylist } = useMyPlaylistState();
   const { room, setRoom } = useRoomState();
@@ -134,6 +135,7 @@ function HomePage() {
     removeAt: castRemoveAt,
     setPlaylist: setCastPlaylist,
     state: castState, // Get full state including controls
+    joinRoom, // <--- Add joinRoom here
   } = useFirebaseCast();
 
   const {
@@ -187,6 +189,24 @@ function HomePage() {
     };
     signIn();
   }, []);
+
+  // Auto-Join Room when Cast SDK receives Room Code from TV
+  useEffect(() => {
+    // Check if we have a room code from Cast but NOT yet connected to Firebase Room
+    // Or if the codes mismatch (user switched TVs)
+    if (isGoogleCastConnected && googleCastConnectedRoomCode) {
+      if (!isCasting || room.roomCode !== googleCastConnectedRoomCode) {
+        console.log('🔗 Auto-Joining Firebase Room from Cast Session:', googleCastConnectedRoomCode);
+        joinRoom(googleCastConnectedRoomCode, { guestName: user?.displayName || 'Mobile User' }).then(success => {
+          if (success) {
+            console.log('✅ Auto-Join Successful');
+            // Optional: redirect to remote page if sticking to single page app logic?
+            // For now, index.tsx handles the remote view so this state update is enough.
+          }
+        });
+      }
+    }
+  }, [isGoogleCastConnected, googleCastConnectedRoomCode, isCasting, room.roomCode]);
 
   // Mobile Remote Host Logic
   const mobilePlayerRef = useRef<YouTube>(null);

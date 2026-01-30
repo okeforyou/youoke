@@ -11,6 +11,7 @@ interface CastContextValue {
   isConnected: boolean;
   castSession: chrome.cast.Session | null;
   receiverName: string;
+  connectedRoomCode: string | null;
 
   // Queue State
   playlist: QueueVideo[];
@@ -64,6 +65,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
   const [castSession, setCastSession] = useState<chrome.cast.Session | null>(null);
   const [receiverName, setReceiverName] = useState('');
   const [receiverStateReceived, setReceiverStateReceived] = useState(false);  // Track if we got state from receiver
+  const [connectedRoomCode, setConnectedRoomCode] = useState<string | null>(null); // For Auto-Join logic
 
   // Load playlist from localStorage on mount (for resume after app close)
   const [playlist, setPlaylistState] = useState<QueueVideo[]>(() => {
@@ -387,9 +389,18 @@ export function CastProvider({ children }: { children: ReactNode }) {
           case 'RECEIVER_STATE':
             // Receiver sent its current state - use it instead of localStorage!
             console.log('📥 Received state from receiver:', data);
+
+            // --- AUTO-JOIN LOGIC ---
+            if (data.roomCode) {
+              console.log('🔑 Received Room Code from TV:', data.roomCode);
+              setConnectedRoomCode(data.roomCode);
+            }
+            // -----------------------
+
             addDebugLog('📥 RECEIVER_STATE received', {
               queueLength: data.queue?.length || 0,
               currentIndex: data.currentIndex,
+              roomCode: data.roomCode
             });
 
             if (data.queue && data.queue.length > 0) {
@@ -976,7 +987,9 @@ export function CastProvider({ children }: { children: ReactNode }) {
     isAvailable,
     isConnected,
     castSession,
+    castSession,
     receiverName,
+    connectedRoomCode,
     playlist,
     currentIndex,
     currentVideo,
