@@ -6,14 +6,18 @@ import { ref, set, push, onValue, remove, onDisconnect } from 'firebase/database
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { Video } from '../types';
+import GuestNameModal from '../components/Remote/GuestNameModal';
 import {
     PlayIcon, PauseIcon, ForwardIcon, BackwardIcon,
     MagnifyingGlassIcon, PlusIcon, CheckIcon,
     SignalIcon, SignalSlashIcon, DevicePhoneMobileIcon,
     ArrowsPointingOutIcon, ArrowPathIcon,
     ListBulletIcon, XMarkIcon, MusicalNoteIcon, MicrophoneIcon,
-    ArrowsPointingInIcon, TrashIcon, Bars3Icon
+    ArrowsPointingInIcon, TrashIcon, Bars3Icon,
+    UserPlusIcon, QrCodeIcon
 } from '@heroicons/react/24/outline';
+import { QRCodeSVG } from 'qrcode.react'; // Import QR Code generator directly if simple Usage needed, or reuse component
 import { DebounceInput } from 'react-debounce-input';
 import axios from 'axios';
 
@@ -87,11 +91,38 @@ type SearchResult = {
     duration?: string;
 };
 
-export default function RemotePage() {
+export default const RemotePage = () => {
     const router = useRouter();
-    const [sessionId, setSessionId] = useState<string>('');
+    const sessionId = router.query.session as string;
     const [status, setStatus] = useState<RemoteState | null>(null);
     const [isConnected, setIsConnected] = useState(false);
+
+    // Guest Identity
+    const [guestProfile, setGuestProfile] = useState<{ name: string, uid: string } | null>(null);
+    const [showNameModal, setShowNameModal] = useState(false);
+
+    // Sharing
+    const [showQR, setShowQR] = useState(false);
+
+    useEffect(() => {
+        // Load profile from local storage
+        const savedProfile = localStorage.getItem('youoke_guest_profile');
+        if (savedProfile) {
+            setGuestProfile(JSON.parse(savedProfile));
+        } else {
+            setShowNameModal(true);
+        }
+    }, []);
+
+    const handleSaveGuestName = (name: string) => {
+        const newProfile = {
+            name,
+            uid: Math.random().toString(36).substr(2, 9) // Simple random UID
+        };
+        localStorage.setItem('youoke_guest_profile', JSON.stringify(newProfile));
+        setGuestProfile(newProfile);
+        setShowNameModal(false);
+    };
 
     // Sync Suppression
     const lastInteractionRef = useRef<number>(0);
@@ -176,16 +207,17 @@ export default function RemotePage() {
     }, [status?.isFullscreen]);
 
     // Initial Load - Get Session ID from URL
-    useEffect(() => {
-        if (router.isReady) {
-            const { session, room } = router.query;
-            // Support both ?session= and ?room=
-            const code = session || room;
-            if (code && typeof code === 'string') {
-                setSessionId(code);
-            }
-        }
-    }, [router.isReady, router.query]);
+    // This useEffect is no longer needed as sessionId is directly from router.query
+    // useEffect(() => {
+    //     if (router.isReady) {
+    //         const { session, room } = router.query;
+    //         // Support both ?session= and ?room=
+    //         const code = session || room;
+    //         if (code && typeof code === 'string') {
+    //             setSessionId(code);
+    //         }
+    //     }
+    // }, [router.isReady, router.query]);
 
     // Connect to Firebase & Auth (Failover: REST API Polling)
     useEffect(() => {
@@ -387,7 +419,11 @@ export default function RemotePage() {
             title: video.title,
             author: 'YouTube',
             key: Date.now(),
-            addedBy: { uid: 'remote-user', displayName: 'Mobile User', isGuest: true }
+            addedBy: {
+                displayName: guestProfile?.name || "Mobile User",
+                photoURL: null,
+                uid: guestProfile?.uid || "mobile-user"
+            }
         };
         sendCommand('ADD_QUEUE', { video: queueVideo });
         setAddedId(video.videoId);
@@ -401,16 +437,39 @@ export default function RemotePage() {
 
     if (!sessionId) {
         return (
-            <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6">
+            <div className="min-h-screen bg-[#111116] text-white flex flex-col font-prompt pb-safe">
+                <GuestNameModal
+                    isOpen={showNameModal}
+                    onSave={handleSaveGuestName}
+                />
+                {/* Header */}
                 <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mb-6 animate-pulse">
                     <DevicePhoneMobileIcon className="w-8 h-8 text-primary" />
                 </div>
                 <h1 className="text-2xl font-bold mb-2">เชื่อมต่อกับห้อง</h1>
                 <p className="text-gray-400 mb-6 text-center">กรอกรหัส PIN ที่แสดงบนหน้าจอ</p>
-                <input type="number" placeholder="กรอกรหัสห้อง" className="bg-zinc-900 border border-zinc-700 p-4 rounded-xl text-center text-2xl tracking-widest w-full max-w-xs mb-4 focus:ring-2 focus:ring-primary focus:outline-none" onChange={(e) => { if (e.target.value.length >= 4) setSessionId(e.target.value); }} />
+                <input type="number" placeholder="กรอกรหัสห้อง" className="bg-zinc-900 border border-zinc-700 p-4 rounded-xl text-center text-2xl tracking-widest w-full max-w-xs mb-4 focus:ring-2 focus:ring-primary focus:outline-none" onChange={(e) => { if (e.target.value.length >= 4) router.push(`?session=${e.target.value}`); }} />
             </div>
         );
     }
+
+    const handleInvite = async () => {
+        const url = window.location.href;
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'ร้องเพลงกันเถอะ! 🎤',
+                    text: `มาช่วยกันเลือกเพลงหน่อย! ห้อง: ${sessionId}`,
+                    url: url
+                });
+            } catch (err) {
+                console.error('Share failed:', err);
+            }
+        } else {
+            navigator.clipboard.writeText(url);
+            alert('คัดลอกลิ้งค์แล้ว! ส่งให้เพื่อนได้เลย 📋');
+        }
+    };
 
     // Derived State
     let queueList: any[] = [];
@@ -443,187 +502,205 @@ export default function RemotePage() {
                 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover" />
             </Head>
 
+            {/* Simple QR Modal for Remote */}
+            {showQR && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm animate-in fade-in" onClick={() => setShowQR(false)}>
+                    <div className="bg-white p-6 rounded-3xl" onClick={e => e.stopPropagation()}>
+                        <QRCodeSVG value={typeof window !== 'undefined' ? window.location.href : ''} size={250} level="H" includeMargin />
+                        <p className="text-black text-center mt-4 font-bold">สแกนเพื่อเข้าร่วมห้อง 📸</p>
+                    </div>
+                </div>
+            )}
+
             {/* Background Atmosphere */}
             <div className="absolute inset-0 bg-cover bg-center opacity-40 blur-3xl scale-125 pointer-events-none transition-all duration-1000 z-0" style={{ backgroundImage: `url(${highResThumbnail})` }} />
             <div className="absolute inset-0 bg-black/60 z-0 pointer-events-none" />
 
             {/* 1. Header (Room Info) */}
-            <div className="px-5 py-3 flex items-center justify-between z-20 shrink-0 bg-black/20 backdrop-blur-md border-b border-white/5 pt-safe-top">
-                <div className="flex items-center gap-2">
-                    <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400 animate-pulse' : 'bg-red-500'}`}></div>
-                    <span className="text-xs font-bold tracking-wider text-gray-300">ROOM {sessionId}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    {/* Fullscreen Toggle with Status & Icon Swap */}
-                    <button
-                        onClick={toggleFullscreen}
-                        className={`p-2 rounded-full active:scale-95 transition-all ${isFullScreen ? 'bg-white text-black' : 'hover:bg-white/10 text-gray-400'}`}
-                    >
-                        {isFullScreen ? (
-                            <ArrowsPointingInIcon className="w-5 h-5" />
-                        ) : (
-                            <ArrowsPointingOutIcon className="w-5 h-5" />
-                        )}
-                    </button>
-                    <button onClick={() => window.location.reload()} className="p-2 rounded-full hover:bg-white/10 active:scale-95 transition-all text-gray-400">
-                        <ArrowPathIcon className="w-5 h-5" />
-                    </button>
-                </div>
-            </div>
-
-            {/* 2. Top Search Bar */}
-            <div className="p-4 z-20 bg-gradient-to-b from-black/80 to-transparent shrink-0 space-y-3">
-                <div className="relative">
-                    <MagnifyingGlassIcon className="absolute left-4 top-3.5 w-5 h-5 text-gray-400 pointer-events-none" />
-                    <DebounceInput
-                        minLength={2}
-                        debounceTimeout={500}
-                        placeholder={searchType === 'karaoke' ? "ค้นหาเพลงคาราโอเกะ..." : "ค้นหาเพลง..."}
-                        className="w-full bg-zinc-900/80 border border-white/10 rounded-2xl py-3 pl-12 pr-10 text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none placeholder-gray-500 transition-all font-medium shadow-lg backdrop-blur-sm"
-                        onChange={(e) => handleSearch(e.target.value)}
-                        value={searchQuery}
-                    />
-                    {searchQuery && (
-                        <button onClick={handleClearSearch} className="absolute right-3 top-3 p-1 rounded-full bg-white/10 text-gray-400 hover:text-white">
-                            <XMarkIcon className="w-4 h-4" />
+            <div className={`px-4 pt-3 pb-3 bg-[#1e1e2d] sticky top-0 z-30 transition-shadow duration-200 ${scrolled ? 'shadow-xl shadow-black/20' : ''}`}>
+                <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                        <div className={`w-2.5 h-2.5 rounded-full ${connected ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]' : 'bg-red-500'}`} />
+                        <h1 className="text-lg font-bold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
+                            YouOke Remote
+                        </h1>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <button onClick={() => setShowQR(true)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
+                            <QrCodeIcon className="w-5 h-5" />
                         </button>
+                        <button onClick={handleInvite} className="p-2 bg-pink-500/10 rounded-full hover:bg-pink-500/20 text-pink-500 transition-colors">
+                            <UserPlusIcon className="w-5 h-5" />
+                        </button>
+                    </div>
+                </div>    <button
+                    onClick={toggleFullscreen}
+                    className={`p-2 rounded-full active:scale-95 transition-all ${isFullScreen ? 'bg-white text-black' : 'hover:bg-white/10 text-gray-400'}`}
+                >
+                    {isFullScreen ? (
+                        <ArrowsPointingInIcon className="w-5 h-5" />
+                    ) : (
+                        <ArrowsPointingOutIcon className="w-5 h-5" />
                     )}
-                </div>
-
-                {/* Styled Toggles (Segmented Control with Icons) */}
-                <div className="bg-zinc-800/80 p-1 rounded-xl flex shadow-inner border border-white/5 backdrop-blur-sm">
-                    <button
-                        onClick={() => setSearchType('song')}
-                        className={`flex-1 py-1.5 flex items-center justify-center gap-2 text-xs font-bold rounded-lg transition-all ${searchType === 'song' ? 'bg-zinc-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}
-                    >
-                        <MusicalNoteIcon className="w-3.5 h-3.5" />
-                        ทั่วไป
-                    </button>
-                    <button
-                        onClick={() => setSearchType('karaoke')}
-                        className={`flex-1 py-1.5 flex items-center justify-center gap-2 text-xs font-bold rounded-lg transition-all ${searchType === 'karaoke' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}
-                    >
-                        <MicrophoneIcon className="w-3.5 h-3.5" />
-                        คาราโอเกะ
-                    </button>
-                </div>
+                </button>
+                <button onClick={() => window.location.reload()} className="p-2 rounded-full hover:bg-white/10 active:scale-95 transition-all text-gray-400">
+                    <ArrowPathIcon className="w-5 h-5" />
+                </button>
             </div>
-
-            {/* 3. Main List Area (Switch between Queue & Results) */}
-            <div className="flex-1 overflow-y-auto min-h-0 z-10 pb-44 px-4 remote-scroll"> {/* pb-44 for Bottom Player */}
-
-                {/* Mode: Search Results */}
-                {isShowingResults && (
-                    <div className="space-y-2 animate-fadeIn">
-                        <h3 className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-3 mt-2">ผลการค้นหา</h3>
-                        {isSearching && <div className="text-center py-8"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" /></div>}
-
-                        {!isSearching && searchResults.length === 0 && <div className="text-center py-10 text-gray-500">ไม่พบเพลง</div>}
-
-                        {!isSearching && searchResults.map((video: any) => (
-                            <div key={video.videoId} onClick={() => handleAddQueue({ ...video, thumbnail: getThumbnail(video) })} className={`flex items-center gap-3 p-2 pr-3 rounded-xl active:scale-[0.98] transition-all cursor-pointer ${addedId === video.videoId ? 'bg-green-500/20 border border-green-500/50' : 'bg-zinc-900/60 border border-white/5 hover:bg-white/10'}`}>
-                                <img src={getThumbnail(video)} className="w-14 h-14 rounded-lg object-cover bg-black shadow-md" alt="" />
-                                <div className="flex-1 min-w-0">
-                                    <h3 className={`font-bold text-sm line-clamp-2 leading-tight ${addedId === video.videoId ? 'text-green-400' : 'text-white'}`}>{video.title}</h3>
-                                    <p className="text-xs text-gray-400 mt-1">{video.author?.name || video.author || "YouTube"}</p>
-                                </div>
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${addedId === video.videoId ? 'bg-green-500 text-white' : 'bg-white/10 text-gray-400'}`}>
-                                    {addedId === video.videoId ? <CheckIcon className="w-5 h-5" /> : <PlusIcon className="w-5 h-5" />}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-
-                {/* Mode: Queue (Default) */}
-                {/* Mode: Queue (Default) */}
-                {!isShowingResults && (
-                    <div className="animate-fadeIn">
-                        {upcomingQueue.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-20 opacity-50 space-y-4">
-                                <MusicalNoteIcon className="w-16 h-16 text-gray-500" />
-                                <p className="text-gray-400">คิวเพลงว่างเปล่า...</p>
-                                <p className="text-xs text-gray-600">พิมพ์ชื่อเพลงด้านบนเพื่อเริ่มร้องเพลง!</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between mb-3 mt-2">
-                                    <h3 className="text-xs text-gray-400 font-bold uppercase tracking-widest">คิวเพลง ({upcomingQueue.length})</h3>
-                                </div>
-
-                                <DndContext
-                                    sensors={sensors}
-                                    collisionDetection={closestCenter}
-                                    onDragEnd={handleDragEnd}
-                                >
-                                    <SortableContext
-                                        items={upcomingQueue.map((v: any) => v.key ? v.key.toString() : `video-${upcomingQueue.indexOf(v)}`)}
-                                        strategy={verticalListSortingStrategy}
-                                    >
-                                        {upcomingQueue.map((video: any, idx: number) => {
-                                            const uniqueId = video.key ? video.key.toString() : `video-${idx}`;
-                                            return (
-                                                <SortableQueueItem
-                                                    key={uniqueId}
-                                                    id={uniqueId}
-                                                    video={video}
-                                                    index={idx}
-                                                    getThumbnail={getThumbnail}
-                                                    onRemove={handleRemove}
-                                                />
-                                            );
-                                        })}
-                                    </SortableContext>
-                                </DndContext>
-                            </div>
-                        )}
-                    </div>
-                )}
-            </div>
-
-            {/* 4. Bottom Mini Player (Fixed) */}
-            <div className="fixed bottom-0 inset-x-0 z-50 p-3 pb-safe bg-gradient-to-t from-black via-zinc-900 to-transparent pt-6 pointer-events-none">
-                <div className="bg-zinc-800/90 backdrop-blur-xl border border-white/10 rounded-2xl p-3 shadow-[0_0_30px_rgba(0,0,0,0.5)] flex items-center gap-3 pointer-events-auto">
-                    {/* Tiny Thumb */}
-                    <div className="w-12 h-12 rounded-lg bg-black overflow-hidden shrink-0 border border-white/10 relative">
-                        <img src={highResThumbnail} className="w-full h-full object-cover" alt="" />
-                        {status?.isPlaying && <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                            <div className="w-3 h-3 bg-primary rounded-full animate-pulse shadow-[0_0_10px_theme(colors.primary.DEFAULT)]"></div>
-                        </div>}
-                    </div>
-
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
-                            <div className="text-[10px] font-bold bg-primary text-white px-1.5 py-0.5 rounded-[4px] leading-none tracking-wider">PLAYING</div>
-                        </div>
-                        <h3 className="text-sm font-bold text-white truncate leading-tight">{status?.title || "ไม่ได้เล่นเพลง"}</h3>
-                        <p className="text-xs text-gray-400 truncate">{status?.currentVideo?.author || "..."}</p>
-                    </div>
-
-                    {/* Controls */}
-                    <div className="flex items-center gap-4 shrink-0 pr-2">
-                        {/* Removed Back Button */}
-
-                        <button
-                            onClick={() => {
-                                const nextState = !(status?.isPlaying || false);
-                                lastInteractionRef.current = Date.now();
-                                setStatus(prev => prev ? ({ ...prev, isPlaying: nextState }) : null);
-                                sendCommand(nextState ? 'PLAY' : 'PAUSE');
-                            }}
-                            className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-lg active:scale-95 transition-all"
-                        >
-                            {status?.isPlaying ? <PauseIcon className="w-6 h-6" /> : <PlayIcon className="w-6 h-6 ml-0.5" />}
-                        </button>
-
-                        <button onClick={() => sendCommand('NEXT')} className="p-2 text-gray-400 hover:text-white active:scale-90 transition-all">
-                            <ForwardIcon className="w-8 h-8" />
-                        </button>
-                    </div>
-                </div>
-            </div>
-
         </div>
+
+            {/* 2. Top Search Bar */ }
+    <div className="p-4 z-20 bg-gradient-to-b from-black/80 to-transparent shrink-0 space-y-3">
+        <div className="relative">
+            <MagnifyingGlassIcon className="absolute left-4 top-3.5 w-5 h-5 text-gray-400 pointer-events-none" />
+            <DebounceInput
+                minLength={2}
+                debounceTimeout={500}
+                placeholder={searchType === 'karaoke' ? "ค้นหาเพลงคาราโอเกะ..." : "ค้นหาเพลง..."}
+                className="w-full bg-zinc-900/80 border border-white/10 rounded-2xl py-3 pl-12 pr-10 text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none placeholder-gray-500 transition-all font-medium shadow-lg backdrop-blur-sm"
+                onChange={(e) => handleSearch(e.target.value)}
+                value={searchQuery}
+            />
+            {searchQuery && (
+                <button onClick={handleClearSearch} className="absolute right-3 top-3 p-1 rounded-full bg-white/10 text-gray-400 hover:text-white">
+                    <XMarkIcon className="w-4 h-4" />
+                </button>
+            )}
+        </div>
+
+        {/* Styled Toggles (Segmented Control with Icons) */}
+        <div className="bg-zinc-800/80 p-1 rounded-xl flex shadow-inner border border-white/5 backdrop-blur-sm">
+            <button
+                onClick={() => setSearchType('song')}
+                className={`flex-1 py-1.5 flex items-center justify-center gap-2 text-xs font-bold rounded-lg transition-all ${searchType === 'song' ? 'bg-zinc-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}
+            >
+                <MusicalNoteIcon className="w-3.5 h-3.5" />
+                ทั่วไป
+            </button>
+            <button
+                onClick={() => setSearchType('karaoke')}
+                className={`flex-1 py-1.5 flex items-center justify-center gap-2 text-xs font-bold rounded-lg transition-all ${searchType === 'karaoke' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}
+            >
+                <MicrophoneIcon className="w-3.5 h-3.5" />
+                คาราโอเกะ
+            </button>
+        </div>
+    </div>
+
+    {/* 3. Main List Area (Switch between Queue & Results) */ }
+    <div className="flex-1 overflow-y-auto min-h-0 z-10 pb-44 px-4 remote-scroll"> {/* pb-44 for Bottom Player */}
+
+        {/* Mode: Search Results */}
+        {isShowingResults && (
+            <div className="space-y-2 animate-fadeIn">
+                <h3 className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-3 mt-2">ผลการค้นหา</h3>
+                {isSearching && <div className="text-center py-8"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" /></div>}
+
+                {!isSearching && searchResults.length === 0 && <div className="text-center py-10 text-gray-500">ไม่พบเพลง</div>}
+
+                {!isSearching && searchResults.map((video: any) => (
+                    <div key={video.videoId} onClick={() => handleAddQueue({ ...video, thumbnail: getThumbnail(video) })} className={`flex items-center gap-3 p-2 pr-3 rounded-xl active:scale-[0.98] transition-all cursor-pointer ${addedId === video.videoId ? 'bg-green-500/20 border border-green-500/50' : 'bg-zinc-900/60 border border-white/5 hover:bg-white/10'}`}>
+                        <img src={getThumbnail(video)} className="w-14 h-14 rounded-lg object-cover bg-black shadow-md" alt="" />
+                        <div className="flex-1 min-w-0">
+                            <h3 className={`font-bold text-sm line-clamp-2 leading-tight ${addedId === video.videoId ? 'text-green-400' : 'text-white'}`}>{video.title}</h3>
+                            <p className="text-xs text-gray-400 mt-1">{video.author?.name || video.author || "YouTube"}</p>
+                        </div>
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${addedId === video.videoId ? 'bg-green-500 text-white' : 'bg-white/10 text-gray-400'}`}>
+                            {addedId === video.videoId ? <CheckIcon className="w-5 h-5" /> : <PlusIcon className="w-5 h-5" />}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        )}
+
+        {/* Mode: Queue (Default) */}
+        {!isShowingResults && (
+            <div className="animate-fadeIn">
+                {upcomingQueue.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-20 opacity-50 space-y-4">
+                        <MusicalNoteIcon className="w-16 h-16 text-gray-500" />
+                        <p className="text-gray-400">คิวเพลงว่างเปล่า...</p>
+                        <p className="text-xs text-gray-600">พิมพ์ชื่อเพลงด้านบนเพื่อเริ่มร้องเพลง!</p>
+                    </div>
+                ) : (
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-between mb-3 mt-2">
+                            <h3 className="text-xs text-gray-400 font-bold uppercase tracking-widest">คิวเพลง ({upcomingQueue.length})</h3>
+                        </div>
+
+                        <DndContext
+                            sensors={sensors}
+                            collisionDetection={closestCenter}
+                            onDragEnd={handleDragEnd}
+                        >
+                            <SortableContext
+                                items={upcomingQueue.map((v: any) => v.key ? v.key.toString() : `video-${upcomingQueue.indexOf(v)}`)}
+                                strategy={verticalListSortingStrategy}
+                            >
+                                {upcomingQueue.map((video: any, idx: number) => {
+                                    const uniqueId = video.key ? video.key.toString() : `video-${idx}`;
+                                    return (
+                                        <SortableQueueItem
+                                            key={uniqueId}
+                                            id={uniqueId}
+                                            video={video}
+                                            index={idx}
+                                            getThumbnail={getThumbnail}
+                                            onRemove={handleRemove}
+                                        />
+                                    );
+                                })}
+                            </SortableContext>
+                        </DndContext>
+                    </div>
+                )}
+            </div>
+        )}
+    </div>
+
+    {/* 4. Bottom Mini Player (Fixed) */ }
+    <div className="fixed bottom-0 inset-x-0 z-50 p-3 pb-safe bg-gradient-to-t from-black via-zinc-900 to-transparent pt-6 pointer-events-none">
+        <div className="bg-zinc-800/90 backdrop-blur-xl border border-white/10 rounded-2xl p-3 shadow-[0_0_30px_rgba(0,0,0,0.5)] flex items-center gap-3 pointer-events-auto">
+            {/* Tiny Thumb */}
+            <div className="w-12 h-12 rounded-lg bg-black overflow-hidden shrink-0 border border-white/10 relative">
+                <img src={highResThumbnail} className="w-full h-full object-cover" alt="" />
+                {status?.isPlaying && <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                    <div className="w-3 h-3 bg-primary rounded-full animate-pulse shadow-[0_0_10px_theme(colors.primary.DEFAULT)]"></div>
+                </div>}
+            </div>
+
+            {/* Info */}
+            <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                    <div className="text-[10px] font-bold bg-primary text-white px-1.5 py-0.5 rounded-[4px] leading-none tracking-wider">PLAYING</div>
+                </div>
+                <h3 className="text-sm font-bold text-white truncate leading-tight">{status?.title || "ไม่ได้เล่นเพลง"}</h3>
+                <p className="text-xs text-gray-400 truncate">{status?.currentVideo?.author || "..."}</p>
+            </div>
+
+            {/* Controls */}
+            <div className="flex items-center gap-4 shrink-0 pr-2">
+                {/* Removed Back Button */}
+
+                <button
+                    onClick={() => {
+                        const nextState = !(status?.isPlaying || false);
+                        lastInteractionRef.current = Date.now();
+                        setStatus(prev => prev ? ({ ...prev, isPlaying: nextState }) : null);
+                        sendCommand(nextState ? 'PLAY' : 'PAUSE');
+                    }}
+                    className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-lg active:scale-95 transition-all"
+                >
+                    {status?.isPlaying ? <PauseIcon className="w-6 h-6" /> : <PlayIcon className="w-6 h-6 ml-0.5" />}
+                </button>
+
+                <button onClick={() => sendCommand('NEXT')} className="p-2 text-gray-400 hover:text-white active:scale-90 transition-all">
+                    <ForwardIcon className="w-8 h-8" />
+                </button>
+            </div>
+        </div>
+    </div>
+
+        </div >
     );
 }
