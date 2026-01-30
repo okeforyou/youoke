@@ -133,6 +133,7 @@ function HomePage() {
     currentIndex: castCurrentIndex,
     removeAt: castRemoveAt,
     setPlaylist: setCastPlaylist,
+    state: castState, // Get full state including controls
   } = useFirebaseCast();
 
   const {
@@ -211,15 +212,38 @@ function HomePage() {
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
+  // Determine Active State for Remote Sync (Local vs Cast)
+  const activeQueue = isGoogleCastConnected ? (googleCastPlaylist || [])
+    : isCasting ? (castPlaylist || [])
+      : playlist;
+
+  const activeCurrentVideoId = isGoogleCastConnected ? activeQueue?.[googleCastCurrentIndex]?.videoId
+    : isCasting ? activeQueue?.[castCurrentIndex]?.videoId
+      : curVideoId;
+
+  // For Firebase Cast, use its playing state. For Google Cast/Local, use local hook state (as fallback for GC)
+  const activeIsPlaying = isCasting ? (castState?.controls?.isPlaying || false) : isPlaying;
+
+  const activeSetPlaylist = (newQueue: any[]) => {
+    console.log('🔄 Remote requested reorder for mode:', { isGoogleCastConnected, isCasting });
+    if (isGoogleCastConnected) {
+      updateGoogleCastPlaylistOrder(newQueue);
+    } else if (isCasting) {
+      setCastPlaylist(newQueue);
+    } else {
+      setPlaylist(newQueue);
+    }
+  };
+
   const { sessionId, connectedClients, connectionStatus } = useRemoteHost(
     mobilePlayerRef,
     playerControlRef,
     (video) => addVideoToPlaylist(video),
-    playlist,
-    curVideoId,
-    isPlaying,
+    activeQueue,          // Sync the ACTIVE queue (Cast or Local)
+    activeCurrentVideoId, // Sync the ACTIVE video ID
+    activeIsPlaying,      // Sync the ACTIVE playing state
     isHostFullscreen,
-    setPlaylist // Pass setPlaylist for reordering
+    activeSetPlaylist     // Use the wrapper to route reorder to correct backend
   );
   const [showRemoteModal, setShowRemoteModal] = useState(false);
 
