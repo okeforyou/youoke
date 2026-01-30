@@ -211,7 +211,16 @@ function HomePage() {
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
-  const { sessionId, connectedClients, connectionStatus } = useRemoteHost(mobilePlayerRef, playerControlRef, (video) => addVideoToPlaylist(video), playlist, curVideoId, isPlaying, isHostFullscreen);
+  const { sessionId, connectedClients, connectionStatus } = useRemoteHost(
+    mobilePlayerRef,
+    playerControlRef,
+    (video) => addVideoToPlaylist(video),
+    playlist,
+    curVideoId,
+    isPlaying,
+    isHostFullscreen,
+    setPlaylist // Pass setPlaylist for reordering
+  );
   const [showRemoteModal, setShowRemoteModal] = useState(false);
 
   // Auto-close Remote Modal when client connects

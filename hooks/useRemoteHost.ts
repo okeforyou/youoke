@@ -31,14 +31,17 @@ export const useRemoteHost = (
     queue: any[],
     currentVideoId: string,
     isPlaying: boolean, // New argument
-    isFullscreen: boolean // New argument
+    isFullscreen: boolean, // New argument
+    setPlaylist: (newQueue: any[]) => void // New argument
 ) => {
     const [sessionId, setSessionId] = useState<string | null>(null);
 
 
     // Keep strict refs for callbacks to avoid effect churn
     const addToQueueRef = useRef(addToQueue);
+    const setPlaylistRef = useRef(setPlaylist); // Ref for setPlaylist
     useEffect(() => { addToQueueRef.current = addToQueue; }, [addToQueue]);
+    useEffect(() => { setPlaylistRef.current = setPlaylist; }, [setPlaylist]);
 
     // Generate Session ID on mount
     useEffect(() => {
