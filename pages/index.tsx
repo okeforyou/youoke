@@ -198,7 +198,7 @@ function HomePage() {
   const [currentTime, setCurrentTime] = useState("0:00");
   const [duration, setDuration] = useState("0:00");
 
-  const { sessionId, connectedClients } = useRemoteHost(mobilePlayerRef, playerControlRef, (video) => addVideoToPlaylist(video), playlist, curVideoId, isPlaying);
+  const { sessionId, connectedClients, connectionStatus } = useRemoteHost(mobilePlayerRef, playerControlRef, (video) => addVideoToPlaylist(video), playlist, curVideoId, isPlaying);
   const [showRemoteModal, setShowRemoteModal] = useState(false);
 
   // Auto-close Remote Modal when client connects
