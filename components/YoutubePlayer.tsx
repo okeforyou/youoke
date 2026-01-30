@@ -1412,6 +1412,23 @@ function YoutubePlayer({
           icon={<ExclamationTriangleIcon />}
         />
       </span>
+
+      {/* Fallback Fullscreen Upgrade Button (Desktop/Android) */}
+      {isFullScreenIphone && !isIOS && (
+        <div
+          className="absolute top-4 right-4 z-[60] animate-bounce cursor-pointer"
+          onClick={() => {
+            toggleFullscreen(true);
+            setIsFullScreenIphone(false); // Switch off CSS mode as API takes over
+          }}
+        >
+          <div className="bg-black/70 hover:bg-black/90 text-white px-4 py-2 rounded-full border border-white/20 shadow-lg backdrop-blur-sm flex items-center gap-2 transition-all">
+            <ArrowsPointingOutIcon className="w-5 h-5" />
+            <span className="text-sm font-medium">แตะเพื่อเต็มจอ</span>
+          </div>
+        </div>
+      )}
+
       {/* Web Monitor Cast - Enabled for testing */}
       {CastOverlayComponent()}
 
