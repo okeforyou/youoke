@@ -358,9 +358,21 @@ export default function RemotePage() {
                         เชื่อมต่อใหม่
                     </button>
                 )}
-                {/* Fullscreen Toggle Button */}
+                {/* Fullscreen Toggle Button - Local & Remote */}
                 <button
-                    onClick={() => sendCommand('TOGGLE_FULLSCREEN')}
+                    onClick={() => {
+                        // 1. Toggle Local Fullscreen (Hide Address Bar)
+                        if (!document.fullscreenElement) {
+                            document.documentElement.requestFullscreen().catch(e => console.log('Fullscreen failed:', e));
+                        } else {
+                            document.exitFullscreen().catch(e => console.log('Exit Fullscreen failed:', e));
+                        }
+
+                        // 2. Toggle Host Fullscreen (Optional: Keep it if user wants to control TV too)
+                        // If they specifically complained about address bar, local is priority.
+                        // Let's do BOTH for maximum effect.
+                        sendCommand('TOGGLE_FULLSCREEN');
+                    }}
                     className="p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5"
                 >
                     <div className="w-4 h-4 border-2 border-dashed border-gray-400 rounded-sm"></div>
