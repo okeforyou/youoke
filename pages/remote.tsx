@@ -387,7 +387,7 @@ export default function RemotePage() {
             </div>
 
             {/* 3. Main List Area (Switch between Queue & Results) */}
-            <div className="flex-1 overflow-y-auto min-h-0 z-10 pb-28 px-4 remote-scroll"> {/* pb-28 for Bottom Player */}
+            <div className="flex-1 overflow-y-auto min-h-0 z-10 pb-44 px-4 remote-scroll"> {/* pb-44 for Bottom Player */}
 
                 {/* Mode: Search Results */}
                 {isShowingResults && (
