@@ -403,11 +403,13 @@ export default function RemotePage() {
                 </div>
             </div>
 
-            {/* Middle Section: Player Card & Controls */}
-            <div className="flex-1 flex flex-col items-center justify-center px-6 min-h-0 relative shrink-0">
+            {/* Middle Section: Player Card & Controls - COMPACT & SHRINKABLE */}
+            {/* Chage: Removed flex-1, set explicit shrink behavior, adjusted padding */}
+            <div className="shrink-0 flex flex-col items-center justify-center px-6 pt-2 pb-4 relative z-10">
 
                 {/* Now Playing Card */}
-                <div className="w-56 aspect-square bg-zinc-900/80 rounded-3xl border border-white/10 relative overflow-hidden shadow-2xl mb-4 group">
+                {/* Change: w-48 (12rem) for compact size */}
+                <div className="w-48 aspect-square bg-zinc-900/80 rounded-3xl border border-white/10 relative overflow-hidden shadow-2xl mb-4 group">
                     {/* Background Blur */}
                     <div
                         className="absolute inset-0 bg-cover bg-center opacity-60 blur-xl scale-125 transition-all duration-700"
@@ -416,32 +418,30 @@ export default function RemotePage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
 
                     {/* Content */}
-                    <div className="absolute inset-x-0 bottom-0 p-6 flex flex-col">
+                    <div className="absolute inset-x-0 bottom-0 p-4 flex flex-col">
                         <div className="flex-1" />
 
                         {/* Status Label */}
                         <div className="flex items-center gap-2 mb-2">
-                            <span className="w-1 h-4 bg-primary rounded-full"></span>
-                            <span className="text-xs font-bold uppercase tracking-widest text-primary-content/80 text-shadow">กำลังเล่น</span>
+                            <span className="w-1 h-3 bg-primary rounded-full"></span>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-primary-content/80 text-shadow">กำลังเล่น</span>
                         </div>
 
-                        <h1 className="text-2xl font-bold leading-tight line-clamp-2 mb-1 text-shadow-lg relative z-10 w-full break-words">
+                        <h1 className="text-lg font-bold leading-tight line-clamp-2 mb-1 text-shadow-lg relative z-10 w-full break-words">
                             {status?.title || "รอเพลง..."}
                         </h1>
-                        <p className="text-sm text-gray-300 line-clamp-1">{status?.currentVideo?.author || "Karaoke System"}</p>
+                        <p className="text-xs text-gray-300 line-clamp-1">{status?.currentVideo?.author || "Karaoke System"}</p>
                     </div>
-
-                    {/* Center Play Button Overlay (Optional, maybe keep clean) */}
                 </div>
 
                 {/* Main Controls Row */}
-                <div className="w-full max-w-sm flex items-center justify-between mb-2">
+                <div className="w-full max-w-xs flex items-center justify-between">
                     {/* Restart / Prev */}
                     <button
                         onClick={() => sendCommand('REPLAY')}
-                        className="w-14 h-14 rounded-full flex items-center justify-center text-gray-400 hover:text-white active:bg-white/10 transition-all"
+                        className="w-12 h-12 rounded-full flex items-center justify-center text-gray-400 hover:text-white active:bg-white/10 transition-all"
                     >
-                        <BackwardIcon className="w-8 h-8" />
+                        <BackwardIcon className="w-6 h-6" />
                     </button>
 
                     {/* Play / Pause (Hero) */}
@@ -453,27 +453,28 @@ export default function RemotePage() {
                             setStatus(prev => prev ? ({ ...prev, isPlaying: nextState }) : null);
                             sendCommand(nextState ? 'PLAY' : 'PAUSE');
                         }}
-                        className={`w-20 h-20 rounded-full flex items-center justify-center shadow-2xl active:scale-95 transition-all ${status?.isPlaying ? 'bg-white text-black' : 'bg-primary text-white'}`}
+                        className={`w-16 h-16 rounded-full flex items-center justify-center shadow-2xl active:scale-95 transition-all ${status?.isPlaying ? 'bg-white text-black' : 'bg-primary text-white'}`}
                     >
                         {status?.isPlaying ? (
-                            <PauseIcon className="w-10 h-10" />
+                            <PauseIcon className="w-8 h-8" />
                         ) : (
-                            <PlayIcon className="w-10 h-10 ml-1" />
+                            <PlayIcon className="w-8 h-8 ml-1" />
                         )}
                     </button>
 
                     {/* Next */}
                     <button
                         onClick={() => sendCommand('NEXT')}
-                        className="w-14 h-14 rounded-full flex items-center justify-center text-white hover:text-primary active:bg-white/10 transition-all"
+                        className="w-12 h-12 rounded-full flex items-center justify-center text-white hover:text-primary active:bg-white/10 transition-all"
                     >
-                        <ForwardIcon className="w-8 h-8" />
+                        <ForwardIcon className="w-6 h-6" />
                     </button>
                 </div>
             </div>
 
-            {/* Bottom Sheet: Queue & Search */}
-            <div className="flex-none bg-zinc-900 rounded-t-[2.5rem] border-t border-white/5 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] flex flex-col max-h-[45vh] transition-all overflow-hidden relative">
+            {/* Bottom Sheet: Queue & Search - EXPANDED */}
+            {/* Change: flex-1 to take ALL remaining space, removed max-h constraint */}
+            <div className="flex-1 bg-zinc-900 rounded-t-[2.5rem] border-t border-white/5 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] flex flex-col min-h-0 transition-all overflow-hidden relative">
 
                 {/* Drag Handle / Indicator */}
                 <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mt-4 mb-2 shrink-0"></div>
@@ -503,6 +504,7 @@ export default function RemotePage() {
                     )}
 
                     {/* Search Bar Area */}
+                    {/* flex-1 ensures this section scrolls and takes all remaining space */}
                     <div className="p-6 pt-2 bg-zinc-900 flex-1 flex flex-col min-h-0">
                         {/* Toggle */}
                         <div className="flex gap-2 mb-3">
