@@ -221,16 +221,22 @@ export const useRemoteHost = (
 
         switch (cmd.type) {
             case 'PLAY':
+                console.log('🎮 [Remote] Executing PLAY command');
                 if (controlRef?.current?.play) {
+                    console.log('🎮 [Remote] Using controlRef.play()');
                     controlRef.current.play();
                 } else {
+                    console.warn('⚠️ [Remote] controlRef.play missing, falling back to internalPlayer');
                     internalPlayer?.playVideo();
                 }
                 break;
             case 'PAUSE':
+                console.log('🎮 [Remote] Executing PAUSE command');
                 if (controlRef?.current?.pause) {
+                    console.log('🎮 [Remote] Using controlRef.pause()');
                     controlRef.current.pause();
                 } else {
+                    console.warn('⚠️ [Remote] controlRef.pause missing, falling back to internalPlayer');
                     internalPlayer?.pauseVideo();
                 }
                 break;
