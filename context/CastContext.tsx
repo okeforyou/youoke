@@ -987,7 +987,6 @@ export function CastProvider({ children }: { children: ReactNode }) {
     isAvailable,
     isConnected,
     castSession,
-    castSession,
     receiverName,
     connectedRoomCode,
     playlist,
