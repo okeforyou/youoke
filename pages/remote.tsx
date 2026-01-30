@@ -506,19 +506,13 @@ export default function RemotePage() {
                                         {upcomingQueue.map((video: any, idx: number) => {
                                             const uniqueId = video.key || video.videoId;
                                             return (
-                                                <SortableItem key={uniqueId} id={uniqueId}>
-                                                    <div className="flex items-center gap-3 p-2 rounded-xl bg-black/20 border border-white/5 active:bg-white/5 data-[dragging=true]:bg-white/10 touch-manipulation">
-                                                        <div className="text-gray-600 cursor-grab active:cursor-grabbing p-1">
-                                                            <ListBulletIcon className="w-5 h-5" />
-                                                        </div>
-                                                        <span className="text-sm font-mono text-gray-500 w-4 text-center">{idx + 1}</span>
-                                                        <img src={getThumbnail(video)} className="w-10 h-10 rounded-md object-cover opacity-70 pointer-events-none" alt="" />
-                                                        <div className="flex-1 min-w-0 pointer-events-none">
-                                                            <p className="text-sm font-medium text-gray-200 truncate">{video.title}</p>
-                                                            <p className="text-xs text-gray-500 truncate">{video.addedBy?.displayName || "Guest"}</p>
-                                                        </div>
-                                                    </div>
-                                                </SortableItem>
+                                                <SortableQueueItem
+                                                    key={uniqueId}
+                                                    id={uniqueId}
+                                                    video={video}
+                                                    index={idx}
+                                                    getThumbnail={getThumbnail}
+                                                />
                                             );
                                         })}
                                     </SortableContext>
