@@ -394,22 +394,25 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
             if (data.queue && data.queue.length > 0) {
               // Convert receiver's queue format to our playlist format
-              // PRESERVE KEYS: Map by videoId + approximate position if possible, or just videoId
-              // To handle duplicates properly, we need more sophisticated matching, but for now
-              // let's try to match matched videos with existing keys.
-              const existingKeysMap = new Map<string, number>(); // videoId -> key
+              // PRESERVE KEYS: Map by videoId -> LIST of keys (to handle duplicates)
+              const existingKeysMap = new Map<string, number[]>(); // videoId -> [key1, key2...]
               playlistRef.current.forEach(v => {
-                if (v.key) existingKeysMap.set(v.videoId, v.key);
+                if (v.key) {
+                  const keys = existingKeysMap.get(v.videoId) || [];
+                  keys.push(v.key);
+                  existingKeysMap.set(v.videoId, keys);
+                }
               });
 
               const receiverPlaylist: QueueVideo[] = data.queue.map((v: any, index: number) => {
                 // Try to reuse key if this videoId exists in our local state
-                // This is imperfect for duplicates but better than regenerating all
-                // Ideal: Receiver sends back the key.
-                const existingKey = existingKeysMap.get(v.videoId);
+                const keys = existingKeysMap.get(v.videoId);
+                const existingKey = keys && keys.length > 0 ? keys.shift() : undefined; // Consume a key
+
                 return {
                   videoId: v.videoId,
                   title: v.title || 'Unknown',
+                  // Use existing key, or fallback to stable-ish ID if possible, or Date.now() + index
                   key: v.key || existingKey || (Date.now() + index)
                 };
               });
