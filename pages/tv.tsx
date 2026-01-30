@@ -7,9 +7,17 @@ import { signInAnonymously } from 'firebase/auth';
 import { ref, onValue, off, set, update, get } from 'firebase/database';
 import { auth, realtimeDb } from '../firebase';
 
+import Script from 'next/script';
 // Types
 import { CastState, QueueVideo } from '../types/castCommands';
 import { useCommandExecutor } from '../hooks/useCommandExecutor';
+
+declare global {
+    interface Window {
+        cast: any;
+        castReceiverContext: any;
+    }
+}
 
 // --- ADAPTER HOOK (To be extracted later) ---
 const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
@@ -24,16 +32,86 @@ const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
     const [mode, setMode] = useState<'CAST' | 'WEB'>('WEB');
     const [debugMsg, setDebugMsg] = useState('');
 
-    // --- DETECT MODE ---
+    // Check if we are in a Cast Environment
+    const isCastEnvironment = useRef(false);
+
+    // --- GOOGLE CAST LOGIC ---
     useEffect(() => {
+        // Wait for Cast SDK to be ready
+        const initCast = () => {
+            if (!window.cast || !window.cast.framework) return;
+
+            console.log('📺 Initializing Cast Receiver Context...');
+            setMode('CAST');
+            isCastEnvironment.current = true;
+            setIsConnected(true); // Cast is always "connected" to the session
+
+            const context = window.cast.framework.CastReceiverContext.getInstance();
+            const playerManager = context.getPlayerManager();
+
+            // Options
+            const options = new window.cast.framework.CastReceiverOptions();
+            options.disableIdleTimeout = true; // Prevent closing when paused
+
+            // --- CUSTOM MESSAGE BUS ---
+            // We reuse the existing command structure
+            const NAMESPACE = 'urn:x-cast:com.youoke.cast';
+
+            context.addCustomMessageListener(NAMESPACE, (event: any) => {
+                console.log('📩 Received Cast Message:', event.data);
+                const command = event.data;
+
+                // Handle basic commands directly for immediate response
+                // Ideally we should use useCommandExecutor, but that is tied to Firebase.
+                // For Cast, we handle it locally since we are the source of truth.
+
+                if (command.type === 'UPDATE_PLAYLIST') {
+                    // Sender pushed a new playlist/state
+                    const newState = command.payload;
+                    setState(prev => ({ ...prev, ...newState }));
+                }
+
+                if (command.type === 'SYNC_STATE_REQUEST') {
+                    // Sender wants state, we assume sender tracks state but sometimes asks
+                }
+            });
+
+            // Start
+            context.start(options);
+            setDebugMsg('Cast Receiver Started');
+        };
+
+        // If generic script loads, it sets window.cast
+        // We can poll or wait for window.onload
+        const interval = setInterval(() => {
+            if (window.cast && window.cast.framework) {
+                initCast();
+                clearInterval(interval);
+            }
+        }, 100);
+
+        return () => clearInterval(interval);
+
+    }, []);
+
+    // --- DETECT MODE (Fallback for Web) ---
+    useEffect(() => {
+        // Only run Web logic if NOT cast
+        if (isCastEnvironment.current) return;
+
         // Generate Room Code for Web Mode
         // In real universal receiver, we would check for Cast SDK first
         const newCode = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
         setRoomCode(newCode);
     }, []);
 
-    // --- FIREBASE LOGIC (Web Mode) ---
+    // --- FIREBASE LOGIC (Only if Web Mode) ---
     useEffect(() => {
+        // If we are in Cast Mode, we DO NOT sync with Firebase Room ID 
+        // (Unless we want to support "Phone joins TV via Code" while TV is Casting... 
+        // but that's advanced. For now, keep them separate to avoid conflicts).
+
+        if (mode === 'CAST') return;
         if (!roomCode || !realtimeDb) return;
 
         const initAuth = async () => {
@@ -68,11 +146,13 @@ const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
             off(stateRef);
             unsub();
         };
-    }, [roomCode]);
+    }, [roomCode, mode]);
 
-    // --- COMMAND EXECUTOR ---
+    // --- COMMAND EXECUTOR (Only for Web Mode) ---
+    // In Cast Mode, commands come via MessageBus, not Firebase
+    // But we can conditionally use it if needed. For now, let's keep it robust.
     useCommandExecutor({
-        roomCode,
+        roomCode: mode === 'WEB' ? roomCode : '', // Disable if Cast
         playerRef,
         currentState: state,
         onStateChange: (newState) => setState(prev => ({ ...prev, ...newState }))
@@ -345,6 +425,9 @@ const TVPage = () => {
                 )}
             </div>
 
+            {/* Cast Receiver SDK */}
+            <Script src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js" strategy="beforeInteractive" />
+
             {/* CSS for custom animations if not using Tailwind config */}
             <style jsx global>{`
                 @keyframes pulse-slow {
@@ -362,6 +445,13 @@ const TVPage = () => {
                     animation: music-bar 1s infinite ease-in-out;
                 }
             `}</style>
+
+            {/* Mode Debugger (Hidden in prod ideally, helpful now) */}
+            {mode === 'CAST' && (
+                <div className="fixed top-4 right-4 z-50 bg-blue-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg opacity-50">
+                    Native Cast Mode
+                </div>
+            )}
         </div>
     );
 };
