@@ -407,7 +407,7 @@ export default function RemotePage() {
             <div className="flex-1 flex flex-col items-center justify-center px-6 min-h-0 relative shrink-0">
 
                 {/* Now Playing Card */}
-                <div className="w-full max-w-sm aspect-square bg-zinc-900/80 rounded-3xl border border-white/10 relative overflow-hidden shadow-2xl mb-6 group">
+                <div className="w-56 aspect-square bg-zinc-900/80 rounded-3xl border border-white/10 relative overflow-hidden shadow-2xl mb-4 group">
                     {/* Background Blur */}
                     <div
                         className="absolute inset-0 bg-cover bg-center opacity-60 blur-xl scale-125 transition-all duration-700"
