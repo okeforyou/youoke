@@ -378,14 +378,22 @@ export default function RemotePage() {
             {/* Controls */}
             <div className="px-6 pb-6 flex items-center justify-center gap-6 flex-none">
                 {/* Play/Pause */}
-                {/* Play/Pause with Optimistic UI */}
+                {/* Play/Pause with Robust Optimistic UI */}
                 <button
                     onClick={() => {
-                        const nextState = !status?.isPlaying;
-                        // Optimistic Update
-                        if (status) {
-                            setStatus({ ...status, isPlaying: nextState });
-                        }
+                        // 1. Determine next state based on CURRENT optimistic state
+                        const currentState = status?.isPlaying || false;
+                        const nextState = !currentState;
+
+                        // 2. Optimistic Update immediately
+                        setStatus(prev => prev ? ({ ...prev, isPlaying: nextState }) : {
+                            isPlaying: nextState,
+                            videoId: '',
+                            title: 'Unknown'
+                        });
+
+                        // 3. Send the command for the DESIRED state
+                        console.log(`🖱️ [Remote] Toggling: ${currentState} -> ${nextState}. Sending: ${nextState ? 'PLAY' : 'PAUSE'}`);
                         sendCommand(nextState ? 'PLAY' : 'PAUSE');
                     }}
                     className={`w-20 h-20 rounded-full flex items-center justify-center shadow-xl active:scale-95 transition-all ${status?.isPlaying
