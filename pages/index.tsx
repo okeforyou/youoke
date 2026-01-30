@@ -840,11 +840,7 @@ function HomePage() {
                       <span className="hidden md:inline text-xs">เพลง</span>
                     </div>
 
-    const getStatusColor = () => {
-      if (connectionStatus === 'active') return 'bg-green-500 animate-pulse ring-2 ring-green-100';
-                    if (connectionStatus === 'background') return 'bg-orange-500 animate-pulse ring-2 ring-orange-100';
-                    return 'bg-gray-300';
-    };
+
 
                     {/* Option 2: Karaoke (Right) */}
                     <div className={`flex-1 flex items-center justify-center transition-colors duration-200 ${isKaraoke ? 'text-white md:text-base-content font-bold' : 'text-base-content/60'}`}>
