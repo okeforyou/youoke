@@ -82,7 +82,7 @@ function App({ Component, pageProps }) {
           {/* Google Cast SDK - Loaded strategiically for performance */}
           <Script
             src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"
-            strategy="beforeInteractive"
+            strategy="afterInteractive"
           />
 
           <QueryClientProvider client={queryClient}>

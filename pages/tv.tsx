@@ -174,7 +174,7 @@ const TVPage = () => {
                                             <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
                                                 <span className="text-primary font-bold">3</span>
                                             </div>
-                                            <p className="text-white">กดปุ่ม <span className="font-semibold text-primary">"Cast to TV"</span></p>
+                                            <p className="text-white">กดปุ่ม <span className="font-semibold text-primary">&quot;Cast to TV&quot;</span></p>
                                         </div>
                                         <div className="flex items-start gap-3">
                                             <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
