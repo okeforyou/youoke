@@ -690,8 +690,6 @@ const RemotePage = () => {
 
                     {/* Controls */}
                     <div className="flex items-center gap-4 shrink-0 pr-2">
-                        {/* Removed Back Button */}
-
                         <button
                             onClick={() => {
                                 const nextState = !(status?.isPlaying || false);
@@ -708,7 +706,11 @@ const RemotePage = () => {
                             <ForwardIcon className="w-8 h-8" />
                         </button>
                     </div>
-                    );
+                </div>
+            </div>
+
+        </div>
+    );
 }
 
-                    export default RemotePage;
+export default RemotePage;
