@@ -406,15 +406,30 @@ function YoutubePlayer({
 
   // Legacy sync effects removed - Replaced by global useDualScreenSender hook
 
-  // Event handler for triggering fullscreen on a user gesture
+  // Enhanced Fullscreen Handler (Supports Remote & Local)
+  const triggerFullscreen = async () => {
+    try {
+      // 1. Try Standard API first
+      if (!document.fullscreenElement) {
+        await toggleFullscreen(true); // From useFullscreen or useToggle
+      } else {
+        await toggleFullscreen(false);
+      }
+    } catch (e) {
+      console.warn('⚠️ Fullscreen API blocked (likely remote command without user gesture). Falling back to CSS Fullscreen.');
+      // 2. Fallback to CSS Fullscreen (Same as iOS mode)
+      // This ensures the video fills the viewport even if address bar stays.
+      setIsFullScreenIphone(prev => !prev);
+    }
+  };
+
   const handleFullscreenButtonClick = () => {
-    // iOS: Use CSS Fullscreen Overlay (Robust fallback for Safari restriction)
+    // iOS: Use CSS Fullscreen Overlay
     if (isIOS) {
       setIsFullScreenIphone(!isFullScreenIphone);
       return;
     }
-    // Android & Desktop: Use Standard Fullscreen API for true edge-to-edge
-    toggleFullscreen();
+    triggerFullscreen();
   };
 
   const handleMute = async () => {
