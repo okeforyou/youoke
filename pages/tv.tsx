@@ -286,7 +286,7 @@ const TVPage = () => {
 
                     {/* QR Code (Always visible in corner for easy joining) */}
                     <div className="bg-white p-2 rounded-xl shadow-2xl opacity-80">
-                        <QRCodeSVG value={`https://youoke.vercel.app/remote?room=${roomCode}`} size={80} />
+                        {roomCode && <QRCodeSVG value={`https://youoke.vercel.app/remote?room=${roomCode}`} size={80} />}
                     </div>
                 </div>
 
@@ -299,9 +299,11 @@ const TVPage = () => {
                         <p className="text-4xl text-gray-300 font-light">
                             Scan to start signing
                         </p>
-                        <div className="p-4 bg-white rounded-3xl shadow-[0_0_50px_rgba(255,255,255,0.2)]">
-                            <QRCodeSVG value={`https://youoke.vercel.app/remote?room=${roomCode}`} size={250} />
-                        </div>
+                        {roomCode && (
+                            <div className="p-4 bg-white rounded-3xl shadow-[0_0_50px_rgba(255,255,255,0.2)]">
+                                <QRCodeSVG value={`https://youoke.vercel.app/remote?room=${roomCode}`} size={250} />
+                            </div>
+                        )}
                         <div className="flex items-center gap-4 text-gray-400 bg-black/40 px-6 py-3 rounded-full backdrop-blur-md">
                             <MusicalNoteIcon className="w-6 h-6" />
                             <span>Waiting for devices...</span>
