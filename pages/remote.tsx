@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { realtimeDb } from '../firebase';
 import { ref, set, push, onValue, remove, onDisconnect } from 'firebase/database';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, TouchSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import {
@@ -17,27 +17,44 @@ import {
 import { DebounceInput } from 'react-debounce-input';
 import axios from 'axios';
 
-// Sortable Item Component
-function SortableItem(props: any) {
+// Sortable Queue Item Component (with Drag Handle)
+function SortableQueueItem({ id, video, index, getThumbnail }: any) {
     const {
         attributes,
         listeners,
         setNodeRef,
+        setActivatorNodeRef, // Handle Ref
         transform,
         transition,
         isDragging
-    } = useSortable({ id: props.id });
+    } = useSortable({ id });
 
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
         zIndex: isDragging ? 10 : 1,
         opacity: isDragging ? 0.5 : 1,
+        touchAction: 'none'
     };
 
     return (
-        <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-            {props.children}
+        <div ref={setNodeRef} style={style} className="flex items-center gap-3 p-2 rounded-xl bg-black/20 border border-white/5 data-[dragging=true]:bg-white/10 relative">
+            {/* Drag Handle */}
+            <div
+                ref={setActivatorNodeRef}
+                {...listeners}
+                {...attributes}
+                className="text-gray-600 cursor-grab active:cursor-grabbing p-2 -ml-2 hover:text-white touch-none"
+            >
+                <ListBulletIcon className="w-5 h-5" />
+            </div>
+
+            <span className="text-sm font-mono text-gray-500 w-4 text-center">{index + 1}</span>
+            <img src={getThumbnail(video)} className="w-10 h-10 rounded-md object-cover opacity-70 pointer-events-none" alt="" />
+            <div className="flex-1 min-w-0 pointer-events-none">
+                <p className="text-sm font-medium text-gray-200 truncate">{video.title}</p>
+                <p className="text-xs text-gray-500 truncate">{video.addedBy?.displayName || "Guest"}</p>
+            </div>
         </div>
     );
 }
