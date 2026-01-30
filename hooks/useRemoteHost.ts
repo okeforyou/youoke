@@ -3,7 +3,7 @@ import { realtimeDb } from '../firebase';
 import { ref, set, remove, onValue, onDisconnect, serverTimestamp } from 'firebase/database';
 
 export type RemoteCommand = {
-    type: 'PLAY' | 'PAUSE' | 'NEXT' | 'ADD_QUEUE' | 'SEEK' | 'TOGGLE_FULLSCREEN';
+    type: 'PLAY' | 'PAUSE' | 'NEXT' | 'ADD_QUEUE' | 'SEEK' | 'TOGGLE_FULLSCREEN' | 'SET_FULLSCREEN';
     payload?: any;
     timestamp: number;
 };
@@ -236,6 +236,18 @@ export const useRemoteHost = (
                 controlRef.current.toggleFullscreen();
             } else {
                 console.warn('[RemoteHost] controlRef not ready or missing toggleFullscreen');
+            }
+            return;
+        }
+
+        // SET_FULLSCREEN (Explicit State)
+        if (cmd.type === 'SET_FULLSCREEN') {
+            if (controlRef?.current?.setFullscreen) {
+                const targetState = cmd.payload?.state;
+                console.log('[RemoteHost] Setting fullscreen explicitly:', targetState);
+                controlRef.current.setFullscreen(!!targetState);
+            } else {
+                console.warn('[RemoteHost] controlRef not ready or missing setFullscreen');
             }
             return;
         }

@@ -206,7 +206,7 @@ export default function RemotePage() {
     const toggleFullscreen = () => {
         const nextState = !isFullScreen;
         setIsFullScreen(nextState); // Optimistic Update
-        sendCommand('TOGGLE_FULLSCREEN');
+        sendCommand('SET_FULLSCREEN', { state: nextState });
     };
 
     // Search Handler

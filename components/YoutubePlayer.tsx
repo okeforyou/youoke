@@ -66,6 +66,9 @@ function YoutubePlayer({
     toggleFullscreen: () => {
       triggerFullscreen(); // Use enhanced handler with fallback
     },
+    setFullscreen: (state: boolean) => {
+      triggerFullscreen(state);
+    },
     play: () => {
       handlePlay();
     },
@@ -81,6 +84,42 @@ function YoutubePlayer({
   const isFullscreen = useFullscreen(fullscreenRef, show, {
     onClose: () => toggleFullscreen(false),
   });
+
+  // ... (rest of the code)
+
+  // Enhanced Fullscreen Handler (Supports Remote & Local)
+  const triggerFullscreen = async (forceState?: boolean) => {
+    try {
+      if (typeof forceState === 'boolean') {
+        console.log(`🖥️ Triggering Fullscreen Explicitly: ${forceState}`);
+        await toggleFullscreen(forceState);
+        if (!forceState) setIsFullScreenIphone(false); // Force exit iOS CSS fullscreen too
+        return;
+      }
+
+      // Toggle Logic
+      // 1. Try Standard API first
+      if (!document.fullscreenElement) {
+        await toggleFullscreen(true); // From useFullscreen or useToggle
+      } else {
+        await toggleFullscreen(false);
+      }
+    } catch (e) {
+      console.warn('⚠️ Fullscreen API blocked (likely remote command without user gesture). Falling back to CSS Fullscreen.', e);
+      // 2. Fallback to CSS Fullscreen (Same as iOS mode)
+      const targetState = typeof forceState === 'boolean' ? forceState : !isFullScreenIphone;
+      setIsFullScreenIphone(targetState);
+    }
+  };
+
+  const handleFullscreenButtonClick = () => {
+    // iOS: Use CSS Fullscreen Overlay
+    if (isIOS) {
+      setIsFullScreenIphone(!isFullScreenIphone);
+      return;
+    }
+    triggerFullscreen();
+  };
   const [playerState, setPlayerState] = useState<number>();
   const { user } = useAuth();
   const isLogin = !!user.uid;
@@ -406,31 +445,16 @@ function YoutubePlayer({
 
   // Legacy sync effects removed - Replaced by global useDualScreenSender hook
 
-  // Enhanced Fullscreen Handler (Supports Remote & Local)
-  const triggerFullscreen = async () => {
-    try {
-      // 1. Try Standard API first
-      if (!document.fullscreenElement) {
-        await toggleFullscreen(true); // From useFullscreen or useToggle
-      } else {
-        await toggleFullscreen(false);
-      }
-    } catch (e) {
-      console.warn('⚠️ Fullscreen API blocked (likely remote command without user gesture). Falling back to CSS Fullscreen.');
-      // 2. Fallback to CSS Fullscreen (Same as iOS mode)
-      // This ensures the video fills the viewport even if address bar stays.
-      setIsFullScreenIphone(prev => !prev);
-    }
-  };
-
-  const handleFullscreenButtonClick = () => {
-    // iOS: Use CSS Fullscreen Overlay
-    if (isIOS) {
-      setIsFullScreenIphone(!isFullScreenIphone);
-      return;
-    }
-    triggerFullscreen();
-  };
+  // Enhanced Fullscreen Handler definition moved up/consolidated or kept here if simpler.
+  // Wait, I replaced the top block but not the bottom definition. 
+  // The React component function body order matters for closure capture but functions are hoisted if defined with function keyword, but here they are const.
+  // My previous edit replaced lines 61-84, but `triggerFullscreen` was defined at line 410.
+  // The snippet I pasted in previous step INCLUDED `triggerFullscreen` definition?
+  // No, I pasted `// ... (rest of code) ... // Enhanced Handler`.
+  // Wait, let me check the previous `ReplacementContent`.
+  // Yes, I included `const triggerFullscreen = ...` in the replacement content.
+  // So now I have TWO `triggerFullscreen` definitions if the original one at 410 is still there.
+  // I must REMOVE the one at 410.
 
   const handleMute = async () => {
     try {
