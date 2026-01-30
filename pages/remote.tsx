@@ -91,7 +91,7 @@ type SearchResult = {
     duration?: string;
 };
 
-export default const RemotePage = () => {
+const RemotePage = () => {
     const router = useRouter();
     const sessionId = router.query.session as string;
     const [status, setStatus] = useState<RemoteState | null>(null);
@@ -103,6 +103,14 @@ export default const RemotePage = () => {
 
     // Sharing
     const [showQR, setShowQR] = useState(false);
+
+    // Scroll State for Header Shadow
+    const [scrolled, setScrolled] = useState(false);
+    useEffect(() => {
+        const handleScroll = () => setScrolled(window.scrollY > 10);
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     useEffect(() => {
         // Load profile from local storage
@@ -520,7 +528,7 @@ export default const RemotePage = () => {
             <div className={`px-4 pt-3 pb-3 bg-[#1e1e2d] sticky top-0 z-30 transition-shadow duration-200 ${scrolled ? 'shadow-xl shadow-black/20' : ''}`}>
                 <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
-                        <div className={`w-2.5 h-2.5 rounded-full ${connected ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]' : 'bg-red-500'}`} />
+                        <div className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]' : 'bg-red-500'}`} />
                         <h1 className="text-lg font-bold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
                             YouOke Remote
                         </h1>
@@ -698,9 +706,7 @@ export default const RemotePage = () => {
                     <ForwardIcon className="w-8 h-8" />
                 </button>
             </div>
-        </div>
-    </div>
-
-        </div >
-    );
+            );
 }
+
+            export default RemotePage;
