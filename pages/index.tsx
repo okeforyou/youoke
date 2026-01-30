@@ -769,6 +769,13 @@ function HomePage() {
     </>
   );
 
+  // Helper for Status Color
+  const getStatusColor = () => {
+    if (connectionStatus === 'active') return 'bg-green-500 animate-pulse ring-2 ring-green-100';
+    if (connectionStatus === 'background') return 'bg-orange-500 animate-pulse ring-2 ring-orange-100';
+    return 'bg-gray-300';
+  };
+
   return (
     <div className="flex h-screen overflow-hidden text-sm 2xl:text-xl">
       {/* Sidebar - Desktop Only */}
