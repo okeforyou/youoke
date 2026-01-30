@@ -39,51 +39,49 @@ const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
     useEffect(() => {
         // Wait for Cast SDK to be ready
         const initCast = () => {
+            // @ts-ignore - Cast is injected by external script
             if (!window.cast || !window.cast.framework) return;
 
-            console.log('📺 Initializing Cast Receiver Context...');
-            setMode('CAST');
-            isCastEnvironment.current = true;
-            setIsConnected(true); // Cast is always "connected" to the session
+            try {
+                console.log('📺 Initializing Cast Receiver Context...');
+                setMode('CAST');
+                isCastEnvironment.current = true;
+                setIsConnected(true);
 
-            const context = window.cast.framework.CastReceiverContext.getInstance();
-            const playerManager = context.getPlayerManager();
+                // @ts-ignore
+                const context = window.cast.framework.CastReceiverContext.getInstance();
 
-            // Options
-            const options = new window.cast.framework.CastReceiverOptions();
-            options.disableIdleTimeout = true; // Prevent closing when paused
+                // Options
+                // @ts-ignore
+                const options = new window.cast.framework.CastReceiverOptions();
+                options.disableIdleTimeout = true;
 
-            // --- CUSTOM MESSAGE BUS ---
-            // We reuse the existing command structure
-            const NAMESPACE = 'urn:x-cast:com.youoke.cast';
+                // --- CUSTOM MESSAGE BUS ---
+                const NAMESPACE = 'urn:x-cast:com.youoke.cast';
 
-            context.addCustomMessageListener(NAMESPACE, (event: any) => {
-                console.log('📩 Received Cast Message:', event.data);
-                const command = event.data;
+                context.addCustomMessageListener(NAMESPACE, (event: any) => {
+                    console.log('📩 Received Cast Message:', event.data);
+                    const command = event.data;
 
-                // Handle basic commands directly for immediate response
-                // Ideally we should use useCommandExecutor, but that is tied to Firebase.
-                // For Cast, we handle it locally since we are the source of truth.
+                    if (command.type === 'UPDATE_PLAYLIST') {
+                        // Sender pushed a new playlist/state
+                        const newState = command.payload;
+                        setState(prev => ({ ...prev, ...newState }));
+                    }
+                });
 
-                if (command.type === 'UPDATE_PLAYLIST') {
-                    // Sender pushed a new playlist/state
-                    const newState = command.payload;
-                    setState(prev => ({ ...prev, ...newState }));
-                }
-
-                if (command.type === 'SYNC_STATE_REQUEST') {
-                    // Sender wants state, we assume sender tracks state but sometimes asks
-                }
-            });
-
-            // Start
-            context.start(options);
-            setDebugMsg('Cast Receiver Started');
+                // Start
+                context.start(options);
+                setDebugMsg('Cast Receiver Started');
+            } catch (e) {
+                console.error('Cast Init Error:', e);
+                setDebugMsg('Cast Init Failed');
+            }
         };
 
-        // If generic script loads, it sets window.cast
-        // We can poll or wait for window.onload
+        // Poll for cast framework
         const interval = setInterval(() => {
+            // @ts-ignore
             if (window.cast && window.cast.framework) {
                 initCast();
                 clearInterval(interval);
@@ -426,7 +424,7 @@ const TVPage = () => {
             </div>
 
             {/* Cast Receiver SDK */}
-            <Script src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js" strategy="beforeInteractive" />
+            <Script src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js" strategy="afterInteractive" />
 
             {/* CSS for custom animations if not using Tailwind config */}
             <style jsx global>{`
