@@ -33,7 +33,7 @@ export const useRemoteHost = (
     isPlaying: boolean // New argument
 ) => {
     const [sessionId, setSessionId] = useState<string | null>(null);
-    const [sessionId, setSessionId] = useState<string | null>(null);
+
 
     // Keep strict refs for callbacks to avoid effect churn
     const addToQueueRef = useRef(addToQueue);
