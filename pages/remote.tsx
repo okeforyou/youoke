@@ -226,6 +226,13 @@ export default function RemotePage() {
         const unsubscribe = onValue(stateRef, (snapshot) => {
             const val = snapshot.val();
             if (val) {
+                // Debug: Log incoming state
+                // console.log('📱 Remote: Received State Update:', {
+                //    queueLen: val.queue?.length || 0,
+                //    firstKey: val.queue?.[0]?.key,
+                //    isInteracting: Date.now() - lastInteractionRef.current < 2000
+                // });
+
                 // SYNC SUPPRESSION match polling logic
                 const isInteracting = Date.now() - lastInteractionRef.current < 2000;
                 setStatus(prev => {

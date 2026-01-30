@@ -235,6 +235,20 @@ function HomePage() {
     }
   };
 
+  // Debug: Active Queue Tracing
+  useEffect(() => {
+    const queueSource = isGoogleCastConnected ? 'GoogleCast' : (isCasting ? 'FirebaseCast' : 'Local');
+    const firstItemKey = activeQueue?.[0]?.key;
+    const queueLength = activeQueue?.length || 0;
+
+    console.log(`📡 [Index] Active Queue Updated (${queueSource}):`, {
+      length: queueLength,
+      firstItem: activeQueue?.[0]?.title,
+      firstKey: firstItemKey,
+      currentVideoId: activeCurrentVideoId
+    });
+  }, [activeQueue, isGoogleCastConnected, isCasting, activeCurrentVideoId]);
+
   const { sessionId, connectedClients, connectionStatus } = useRemoteHost(
     mobilePlayerRef,
     playerControlRef,

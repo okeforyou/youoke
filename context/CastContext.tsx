@@ -51,8 +51,8 @@ const CAST_NAMESPACE = 'urn:x-cast:com.youoke.cast';
 // Cast message types (must match receiver message handler)
 type CastMessage =
   | { type: 'LOAD_VIDEO', videoId: string }
-  | { type: 'LOAD_QUEUE', videos: Array<{videoId: string, title: string}>, startIndex?: number }
-  | { type: 'UPDATE_QUEUE', videos: Array<{videoId: string, title: string}> }
+  | { type: 'LOAD_QUEUE', videos: Array<{ videoId: string, title: string }>, startIndex?: number }
+  | { type: 'UPDATE_QUEUE', videos: Array<{ videoId: string, title: string }> }
   | { type: 'PLAY' }
   | { type: 'PAUSE' }
   | { type: 'NEXT' }
@@ -394,11 +394,25 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
             if (data.queue && data.queue.length > 0) {
               // Convert receiver's queue format to our playlist format
-              const receiverPlaylist: QueueVideo[] = data.queue.map((v: any, index: number) => ({
-                videoId: v.videoId,
-                title: v.title || 'Unknown',
-                key: Date.now() + index
-              }));
+              // PRESERVE KEYS: Map by videoId + approximate position if possible, or just videoId
+              // To handle duplicates properly, we need more sophisticated matching, but for now
+              // let's try to match matched videos with existing keys.
+              const existingKeysMap = new Map<string, number>(); // videoId -> key
+              playlistRef.current.forEach(v => {
+                if (v.key) existingKeysMap.set(v.videoId, v.key);
+              });
+
+              const receiverPlaylist: QueueVideo[] = data.queue.map((v: any, index: number) => {
+                // Try to reuse key if this videoId exists in our local state
+                // This is imperfect for duplicates but better than regenerating all
+                // Ideal: Receiver sends back the key.
+                const existingKey = existingKeysMap.get(v.videoId);
+                return {
+                  videoId: v.videoId,
+                  title: v.title || 'Unknown',
+                  key: v.key || existingKey || (Date.now() + index)
+                };
+              });
 
               const syncInfo = {
                 queueLength: receiverPlaylist.length,
