@@ -18,6 +18,7 @@ type RemoteState = {
     title: string;
     queue?: any[];
     currentIndex?: number;
+    currentVideo?: any;
 };
 
 type SearchResult = {
