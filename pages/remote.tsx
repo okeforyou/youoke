@@ -479,6 +479,30 @@ const RemotePage = () => {
         }
     };
 
+    // Turn Notification
+    const [showTurnNotification, setShowTurnNotification] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!status?.currentVideo || !guestProfile) return;
+
+        const currentUid = status.currentVideo.addedBy?.uid;
+        // Check if current song is added by this user (and we haven't notified for this video yet)
+        if (currentUid === guestProfile.uid) {
+            // We need a way to track if we already notified for THIS specific video ID to avoid loops
+            // Using sessionStorage to track 'lastNotifiedVideoId'
+            const lastNotified = sessionStorage.getItem('lastNotifiedVideoId');
+            if (lastNotified !== status.currentVideo.videoId) {
+                // Trigger Notification
+                if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 500]);
+                setShowTurnNotification(status.currentVideo.title);
+                sessionStorage.setItem('lastNotifiedVideoId', status.currentVideo.videoId);
+
+                // Auto hide after 5s
+                setTimeout(() => setShowTurnNotification(null), 5000);
+            }
+        }
+    }, [status?.currentVideo?.videoId, guestProfile]);
+
     // Derived State
     let queueList: any[] = [];
     if (status?.queue) {
@@ -516,6 +540,21 @@ const RemotePage = () => {
                     <div className="bg-white p-6 rounded-3xl" onClick={e => e.stopPropagation()}>
                         <QRCodeSVG value={typeof window !== 'undefined' ? window.location.href : ''} size={250} level="H" includeMargin />
                         <p className="text-black text-center mt-4 font-bold">สแกนเพื่อเข้าร่วมห้อง 📸</p>
+                    </div>
+                </div>
+            )}
+
+            {/* Turn Notification Toast */}
+            {showTurnNotification && (
+                <div className="fixed top-20 left-4 right-4 z-50 animate-bounce-in">
+                    <div className="bg-gradient-to-r from-pink-500 to-purple-600 p-4 rounded-2xl shadow-xl border border-white/20 flex items-center gap-4">
+                        <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center animate-bounce">
+                            <MicrophoneIcon className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                            <p className="font-bold text-white text-lg">ถึงคิวคุณแล้ว! 🎤</p>
+                            <p className="text-white/80 text-sm truncate">{showTurnNotification}</p>
+                        </div>
                     </div>
                 </div>
             )}
