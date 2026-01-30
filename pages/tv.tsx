@@ -12,13 +12,6 @@ import Script from 'next/script';
 import { CastState, QueueVideo } from '../types/castCommands';
 import { useCommandExecutor } from '../hooks/useCommandExecutor';
 
-declare global {
-    interface Window {
-        cast: any;
-        castReceiverContext: any;
-    }
-}
-
 // --- ADAPTER HOOK (To be extracted later) ---
 const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
     const [roomCode, setRoomCode] = useState<string>('');
