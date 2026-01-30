@@ -417,14 +417,17 @@ export default function RemotePage() {
                         const currentState = status?.isPlaying || false;
                         const nextState = !currentState;
 
-                        // 2. Optimistic Update immediately
+                        // 2. Mark interaction time to suppress sync (Prevent flicker)
+                        lastInteractionRef.current = Date.now();
+
+                        // 3. Optimistic Update immediately
                         setStatus(prev => prev ? ({ ...prev, isPlaying: nextState }) : {
                             isPlaying: nextState,
                             videoId: '',
                             title: 'Unknown'
                         });
 
-                        // 3. Send the command for the DESIRED state
+                        // 4. Send the command for the DESIRED state
                         console.log(`🖱️ [Remote] Toggling: ${currentState} -> ${nextState}. Sending: ${nextState ? 'PLAY' : 'PAUSE'}`);
                         sendCommand(nextState ? 'PLAY' : 'PAUSE');
                     }}
