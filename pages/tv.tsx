@@ -2,10 +2,18 @@ import React, { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 import YouTube, { YouTubePlayer } from 'react-youtube';
 import { QRCodeSVG } from 'qrcode.react';
-import { MusicalNoteIcon, PlayIcon, PauseIcon } from '@heroicons/react/24/solid';
+import {
+    DevicePhoneMobileIcon,
+    SpeakerXMarkIcon,
+    SpeakerWaveIcon,
+    MusicalNoteIcon,
+    LightBulbIcon,
+    PlayIcon,
+    PauseIcon,
+    ForwardIcon,
+    BackwardIcon,
+} from '@heroicons/react/24/outline';
 import Script from 'next/script';
-import { auth, realtimeDb } from '../firebase'; // Keep imports for consistent build context if needed, though strictly used in hook
-import { ref, update } from 'firebase/database';
 import { useReceiverLogic } from '../hooks/useReceiverLogic';
 
 const TVPage = () => {
@@ -14,19 +22,31 @@ const TVPage = () => {
     useEffect(() => { setMounted(true); }, []);
 
     const [player, setPlayer] = useState<YouTubePlayer | null>(null);
-    // Use the extracted logic hook - SAFE and PRESERVED functionality
     const { roomCode, state, isConnected, setState, mode, debugMsg } = useReceiverLogic(player);
 
-    // --- PLAYER SYNC (Visuals Only - Logic is in hook) ---
+    // UI State (mirrored from monitor.tsx)
+    const [hasUserInteraction, setHasUserInteraction] = useState(false);
+    const [showControls, setShowControls] = useState(true);
+    const [showQueue, setShowQueue] = useState(true);
+    const [baseUrl, setBaseUrl] = useState<string>('');
+
+    const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const lastQueueLengthRef = useRef(0);
+
+    // Detect base URL
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            setBaseUrl(window.location.origin);
+        }
+    }, []);
+
+    // --- PLAYER SYNC ---
     useEffect(() => {
         if (!player || !state) return;
-
         try {
-            // Sync Play/Pause
             if (state.controls.isPlaying) player.playVideo();
             else player.pauseVideo();
 
-            // Sync Mute
             if (state.controls.isMuted) player.mute();
             else player.unMute();
         } catch (e) { console.error("Player Sync Error", e); }
@@ -44,16 +64,36 @@ const TVPage = () => {
         }
     }, [player, state.currentVideo]);
 
+    // Auto-hide controls
+    useEffect(() => {
+        const handleMouseMove = () => {
+            setShowControls(true);
+            if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+            controlsTimeoutRef.current = setTimeout(() => setShowControls(false), 3000);
+        };
+        window.addEventListener('mousemove', handleMouseMove);
+        return () => window.removeEventListener('mousemove', handleMouseMove);
+    }, []);
+
+    // Queue visibility logic (Auto show on change)
+    useEffect(() => {
+        if (!state.queue) return;
+        const currentLength = state.queue.length;
+        if (currentLength !== lastQueueLengthRef.current && lastQueueLengthRef.current !== 0) {
+            setShowQueue(true);
+        }
+        lastQueueLengthRef.current = currentLength;
+    }, [state.queue?.length]);
+
 
     // --- UI HELPERS ---
     const currentVideo = state.currentVideo;
-    const upcomingQueue = state.queue ? state.queue.slice(state.currentIndex + 1) : [];
-    const getThumbnail = (v: any) => `https://img.youtube.com/vi/${v?.videoId}/maxresdefault.jpg`;
+    const qrCodeUrl = baseUrl ? `${baseUrl}/?castRoom=${roomCode}` : '';
 
-    // Local state change handler (e.g., video ended)
     const onStateChange = (e: any) => {
         if (e.data === 0) {
-            // Logic to play next (Local prediction)
+            // Video ended - logic handled by ReceiverLogic via DB updates or local prediction
+            // We implement local optimistic update here for instant feedback
             const nextIndex = state.currentIndex + 1;
             if (state.queue && nextIndex < state.queue.length) {
                 const nextVideo = state.queue[nextIndex];
@@ -63,230 +103,228 @@ const TVPage = () => {
                     currentVideo: nextVideo,
                     controls: { ...prev.controls, isPlaying: true }
                 }));
-                // We update DB here because the Receiver (TV) is the source of truth for "what's playing"
-                if (realtimeDb && roomCode) {
-                    update(ref(realtimeDb, `rooms/${roomCode}/state`), {
-                        currentIndex: nextIndex,
-                        currentVideo: nextVideo,
-                    });
-                }
-            } else {
-                setState(prev => ({ ...prev, controls: { ...prev.controls, isPlaying: false } }));
             }
         }
     };
 
     if (!mounted) return <div className="bg-black w-screen h-screen" />;
 
-    return (
-        <div className="relative w-screen h-screen bg-black overflow-hidden font-sans text-white select-none cursor-none">
-            <Head>
-                <title>YouOke TV Receiver</title>
-                <meta name="viewport" content="width=device-width, initial-scale=1" />
-            </Head>
+    // 1. IDLE SCREEN (Matched to Monitor.tsx)
+    if (!currentVideo) {
+        return (
+            <div
+                className="relative h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white cursor-pointer overflow-hidden font-sans"
+                onClick={() => setHasUserInteraction(true)}
+            >
+                {/* Background Pattern */}
+                <div className="absolute inset-0 opacity-5">
+                    <div className="absolute top-0 left-0 w-96 h-96 bg-primary rounded-full blur-3xl"></div>
+                    <div className="absolute bottom-0 right-0 w-96 h-96 bg-accent rounded-full blur-3xl"></div>
+                </div>
 
-            {/* 1. BACKGROUND LAYER (Video) */}
-            <div className="absolute inset-0 z-0">
-                {currentVideo ? (
-                    <div className="w-full h-full relative">
-                        <YouTube
-                            videoId={currentVideo.videoId}
-                            opts={{
-                                width: '100%',
-                                height: '100%',
-                                playerVars: {
-                                    autoplay: 1,
-                                    controls: 0,
-                                    modestbranding: 1,
-                                    rel: 0,
-                                    iv_load_policy: 3,
-                                    disablekb: 1, // Disable keyboard controls
-                                    fs: 0, // Disable fullscreen button
-                                }
-                            }}
-                            className="w-full h-full pointer-events-none transform scale-[1.01]" // Slight scale to avoid 1px gaps
-                            onReady={(e) => {
-                                setPlayer(e.target);
-                                e.target.mute(); // Mute for autoplay policy initially
-                            }}
-                            onStateChange={onStateChange}
-                        />
-                        {/* Subtle overlay to make text readable but keep video clear */}
-                        <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-                        <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/60 to-transparent" />
+                <div className="relative h-full flex flex-col items-center justify-center px-6 sm:px-8 md:px-12">
+                    <div className="text-center mb-10">
+                        <h1 className="text-6xl font-bold mb-2 text-primary">YouOke TV</h1>
+                        <p className="text-base text-gray-400">คาราโอเกะออนไลน์</p>
                     </div>
-                ) : (
-                    // IDLE BACKGROUND: Dynamic Gradient
-                    <div className="w-full h-full bg-[#050505] flex items-center justify-center relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/40 via-purple-900/40 to-pink-900/40 animate-pulse-slow" />
-                        <div className="absolute inset-0 bg-[url('/bg-noise.png')] opacity-10 mix-blend-overlay" />
-                        {/* Fallback abstract subtle shapes if no image */}
-                        <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-purple-600/20 rounded-full blur-[100px] animate-blob" />
-                        <div className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] bg-pink-600/20 rounded-full blur-[100px] animate-blob animation-delay-2000" />
+
+                    <div className="w-full max-w-5xl mx-auto">
+                        <div className="bg-black/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10 overflow-hidden">
+                            <div className="grid md:grid-cols-2 gap-0">
+                                {/* Left: QR Code */}
+                                <div className="flex flex-col items-center justify-center p-12 bg-black">
+                                    {qrCodeUrl && (
+                                        <div className="bg-white p-6 rounded-2xl shadow-2xl mb-6">
+                                            <QRCodeSVG value={qrCodeUrl} size={220} level="M" />
+                                        </div>
+                                    )}
+                                    <div className="text-center">
+                                        <p className="text-sm text-white/70 mb-2">เลขห้อง</p>
+                                        <p className="text-6xl font-bold tracking-widest text-primary">{roomCode}</p>
+                                    </div>
+                                </div>
+
+                                {/* Right: Instructions */}
+                                <div className="flex flex-col justify-center p-12 space-y-6">
+                                    <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                                        <DevicePhoneMobileIcon className="w-8 h-8 text-primary" />
+                                        วิธีใช้งาน
+                                    </h2>
+                                    <div className="space-y-4">
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                                                <span className="text-primary font-bold">1</span>
+                                            </div>
+                                            <p className="text-white">
+                                                <span className="font-semibold text-primary">Scan QR Code</span> ด้วยกล้องมือถือ
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center gap-3 pl-11">
+                                            <div className="flex-1 border-t border-white/30"></div>
+                                            <span className="text-xs text-white/70">หรือ</span>
+                                            <div className="flex-1 border-t border-white/30"></div>
+                                        </div>
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                                                <span className="text-primary font-bold">2</span>
+                                            </div>
+                                            <p className="text-white">เปิด <span className="font-mono font-semibold text-primary">{baseUrl ? new URL(baseUrl).hostname : 'youoke.vercel.app'}</span></p>
+                                        </div>
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                                                <span className="text-primary font-bold">3</span>
+                                            </div>
+                                            <p className="text-white">กดปุ่ม <span className="font-semibold text-primary">"Cast to TV"</span></p>
+                                        </div>
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                                                <span className="text-primary font-bold">4</span>
+                                            </div>
+                                            <p className="text-white">กรอกเลขห้อง <span className="font-bold text-primary">{roomCode}</span></p>
+                                        </div>
+                                    </div>
+
+                                    {!hasUserInteraction && (
+                                        <div className="bg-primary/10 border border-primary/30 rounded-xl px-4 py-3">
+                                            <p className="text-sm text-primary flex items-center gap-2">
+                                                <LightBulbIcon className="w-5 h-5" />
+                                                <span className="font-medium">คลิกหน้าจอเพื่อเริ่มเสียง</span>
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                )}
+
+                    <p className="text-lg text-white/70 mt-8 animate-pulse flex items-center gap-2">
+                        <span className="w-2 h-2 bg-primary rounded-full animate-ping"></span>
+                        รอเชื่อมต่อจากมือถือ...
+                    </p>
+
+                    {/* Mode Debugger */}
+                    <div className="absolute top-4 right-4 text-[10px] text-gray-600 font-mono">
+                        Mode: {mode} | {isConnected ? 'Online' : 'Offline'}
+                    </div>
+                </div>
+                <Script src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js" strategy="afterInteractive" />
+            </div>
+        );
+    }
+
+    // 2. PLAYER SCREEN (Matched to Monitor.tsx)
+    return (
+        <div className="relative w-screen h-screen bg-black overflow-hidden font-sans text-white">
+            {/* YouTube Player */}
+            <div className="absolute inset-0">
+                <YouTube
+                    videoId={currentVideo.videoId}
+                    opts={{
+                        width: '100%',
+                        height: '100%',
+                        playerVars: {
+                            autoplay: 1,
+                            controls: 0,
+                            modestbranding: 1,
+                            rel: 0,
+                            iv_load_policy: 3,
+                            disablekb: 1,
+                            fs: 0,
+                        }
+                    }}
+                    className="w-full h-full pointer-events-none"
+                    onReady={(e) => {
+                        setPlayer(e.target);
+                        if (!hasUserInteraction) e.target.mute();
+                        else e.target.unMute();
+                    }}
+                    onStateChange={onStateChange}
+                />
             </div>
 
-            {/* 2. UI LAYER: IDLE STATE */}
-            {!currentVideo && (
-                <div className="relative z-10 w-full h-full flex flex-col items-center justify-center p-12 text-center space-y-12">
-                    {/* PREMIUM LOGO / TITLE */}
-                    <div className="space-y-2">
-                        <h1 className="text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-gray-400 tracking-tighter drop-shadow-2xl">
-                            YouOke
-                        </h1>
-                        <p className="text-2xl text-gray-400 font-light tracking-[0.2em] uppercase">Private Karaoke Room</p>
-                    </div>
-
-                    {/* CENTER PIECE: QR & CODE */}
-                    <div className="flex flex-col items-center gap-8 animate-in zoom-in duration-700 fade-in">
-                        <div className="p-6 bg-white rounded-[3rem] shadow-[0_0_80px_rgba(255,255,255,0.15)] ring-4 ring-white/10">
-                            {roomCode && <QRCodeSVG value={`https://youoke.vercel.app/remote?room=${roomCode}`} size={280} />}
-                        </div>
-
-                        <div className="flex flex-col items-center gap-2">
-                            <span className="text-gray-400 text-sm font-bold uppercase tracking-widest">Connect with Code</span>
-                            <span className="text-7xl font-mono font-bold text-white tracking-widest drop-shadow-lg">
-                                {roomCode.split('').join(' ')}
-                            </span>
-                        </div>
-                    </div>
-
-                    {/* URL INSTRUCTION */}
-                    <div className="absolute bottom-16 flex items-center gap-3 bg-white/5 backdrop-blur-md px-8 py-4 rounded-full border border-white/5">
-                        <span className="text-gray-400">or visit</span>
-                        <span className="text-white font-bold text-xl tracking-wide">play.okeforyou.com</span>
+            {/* Audio Hint Overlay */}
+            {!hasUserInteraction && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-50 cursor-pointer" onClick={() => {
+                    setHasUserInteraction(true);
+                    try { player?.unMute(); } catch (e) { }
+                }}>
+                    <div className="text-center bg-primary/90 px-12 py-8 rounded-3xl shadow-xl animate-pulse">
+                        <SpeakerXMarkIcon className="w-16 h-16 mx-auto mb-4" />
+                        <h2 className="text-3xl font-bold">กดเพื่อเปิดเสียง</h2>
                     </div>
                 </div>
             )}
 
-            {/* 3. UI LAYER: PLAYER STATE */}
-            {currentVideo && (
-                <div className="relative z-10 w-full h-full p-8 md:p-12 flex flex-col justify-between">
+            {/* Top Left: Room Code */}
+            <div className="absolute top-8 left-8 z-40">
+                <div className="bg-black/60 backdrop-blur-md rounded-lg px-4 py-2 border border-white/10">
+                    <p className="text-xs text-gray-400 mb-1">Room Code</p>
+                    <p className="text-2xl font-bold text-primary tracking-widest">{roomCode}</p>
+                </div>
+            </div>
 
-                    {/* TOP RIGHT: Mini QR & Code (Always visible for joiners) */}
-                    <div className="absolute top-8 right-8 flex items-center gap-4 animate-in fade-in slide-in-from-top duration-700 delay-500">
-                        <div className="flex flex-col items-end text-right">
-                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Join Room</span>
-                            <span className="text-2xl font-mono font-bold text-white tracking-widest">{roomCode}</span>
-                        </div>
-                        <div className="bg-white/90 p-1.5 rounded-lg shadow-lg">
-                            {roomCode && <QRCodeSVG value={`https://youoke.vercel.app/remote?room=${roomCode}`} size={50} />}
+            {/* Bottom Center: Floating Controls */}
+            {showControls && (
+                <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 z-40 transition-opacity duration-300">
+                    <div className="bg-black/80 backdrop-blur-md rounded-full px-6 py-3 flex items-center gap-4 shadow-2xl border border-white/10">
+                        <button className="p-3 rounded-full hover:bg-white/20 transition-all">
+                            <BackwardIcon className="w-6 h-6 text-white" />
+                        </button>
+                        <button className="p-4 rounded-full bg-primary hover:bg-primary/80 transition-all">
+                            {state.controls.isPlaying ? <PauseIcon className="w-7 h-7 text-white" /> : <PlayIcon className="w-7 h-7 text-white" />}
+                        </button>
+                        <button className="p-3 rounded-full hover:bg-white/20 transition-all">
+                            <ForwardIcon className="w-6 h-6 text-white" />
+                        </button>
+                        <div className="w-px h-8 bg-white/20 mx-2" />
+                        <button className="p-3 rounded-full hover:bg-white/20 transition-all">
+                            {state.controls.isMuted ? <SpeakerXMarkIcon className="w-6 h-6 text-white" /> : <SpeakerWaveIcon className="w-6 h-6 text-white" />}
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Right Side: Queue Sidebar */}
+            {state.queue && state.queue.length > 0 && showQueue && (
+                <div className="absolute top-0 right-0 h-full w-80 lg:w-96 z-40 bg-gradient-to-l from-black/90 via-black/80 to-transparent backdrop-blur-md p-6 overflow-y-auto">
+                    {/* Now Playing info in Sidebar */}
+                    <div className="mb-6">
+                        <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide">กำลังเล่น</p>
+                        <div className="bg-primary/20 border border-primary/30 rounded-xl p-4">
+                            <h2 className="text-lg font-bold mb-1 line-clamp-2">{currentVideo.title}</h2>
+                            <p className="text-sm text-gray-300 truncate">{currentVideo.author}</p>
                         </div>
                     </div>
 
-                    {/* SPACER */}
-                    <div className="flex-1" />
+                    {/* Up Next List */}
+                    <p className="text-xs text-gray-400 mb-3 uppercase tracking-wide flex items-center gap-2">
+                        <MusicalNoteIcon className="w-5 h-5" />
+                        <span>คิวถัดไป</span>
+                        <span className="ml-auto text-xs bg-white/10 px-2 py-0.5 rounded-full">{Math.max(0, state.queue.length - state.currentIndex - 1)} เพลง</span>
+                    </p>
 
-                    {/* BOTTOM AREA: INFO & QUEUE */}
-                    <div className="flex items-end justify-between gap-12">
-
-                        {/* BOTTOM LEFT: Now Playing */}
-                        <div className="flex-1 max-w-2xl animate-in slide-in-from-bottom duration-700">
-                            <div className="flex items-end gap-6">
-                                {/* Status Chip */}
-                                <div className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border backdrop-blur-md mb-2 w-fit ${state.controls.isPlaying
-                                        ? 'bg-green-500/20 text-green-300 border-green-500/30 shadow-[0_0_20px_rgba(34,197,94,0.2)]'
-                                        : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
-                                    }`}>
-                                    {state.controls.isPlaying ? 'Now Playing' : 'Paused'}
-                                </div>
-                            </div>
-
-                            <h1 className="text-5xl md:text-6xl font-black text-white leading-tight line-clamp-2 drop-shadow-xl mt-4 mb-2">
-                                {currentVideo.title}
-                            </h1>
-                            <p className="text-2xl text-gray-300 font-medium line-clamp-1 opacity-80 mb-6">
-                                {currentVideo.author || "YouTube Music"}
-                            </p>
-
-                            {/* Added By Badge */}
-                            {currentVideo.addedBy && (
-                                <div className="flex items-center gap-3 bg-white/5 backdrop-blur-md border border-white/5 px-4 py-2 rounded-full w-fit">
-                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-inner">
-                                        {currentVideo.addedBy.displayName?.[0]?.toUpperCase()}
+                    <div className="space-y-2">
+                        {state.queue.slice(state.currentIndex + 1).map((video, idx) => (
+                            <div key={idx} className="bg-white/5 rounded-lg p-3 hover:bg-white/10 transition-colors">
+                                <div className="flex items-start gap-3">
+                                    <div className="w-5 h-5 bg-primary/20 rounded-full flex items-center justify-center shrink-0">
+                                        <span className="text-primary text-xs font-bold">{idx + 1}</span>
                                     </div>
-                                    <span className="text-gray-300 text-sm">
-                                        Requested by <span className="font-bold text-white">{currentVideo.addedBy.displayName}</span>
-                                    </span>
-                                </div>
-                            )}
-
-                            {/* Progress Bar (Visual Only) */}
-                            <div className="mt-8 h-1 w-full bg-white/10 rounded-full overflow-hidden">
-                                <div className={`h-full bg-white animate-progress-indeterminate opacity-50 ${!state.controls.isPlaying && 'paused'}`}></div>
-                            </div>
-                        </div>
-
-
-                        {/* BOTTOM RIGHT: Up Next (Minimal) */}
-                        <div className="w-80 flex flex-col gap-4 animate-in slide-in-from-right duration-700 delay-200">
-                            {upcomingQueue.length > 0 && (
-                                <div className="bg-black/40 backdrop-blur-xl border border-white/5 p-5 rounded-3xl shadow-2xl">
-                                    <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
-                                        <MusicalNoteIcon className="w-3 h-3 text-purple-400" />
-                                        Up Next
-                                    </p>
-                                    <div className="space-y-4">
-                                        {upcomingQueue.slice(0, 2).map((item, idx) => (
-                                            <div key={idx} className="flex gap-3 items-center opacity-80">
-                                                <img src={getThumbnail(item)} className="w-10 h-10 rounded-lg object-cover bg-gray-800" />
-                                                <div className="min-w-0">
-                                                    <p className="text-sm font-bold text-white truncate leading-tight">{item.title}</p>
-                                                    <p className="text-[10px] text-gray-400 truncate">{item.author}</p>
-                                                </div>
-                                            </div>
-                                        ))}
-                                        {upcomingQueue.length > 2 && (
-                                            <p className="text-xs text-gray-500 text-center pt-1">
-                                                + {upcomingQueue.length - 2} more
-                                            </p>
+                                    <div className="min-w-0">
+                                        <p className="text-sm font-semibold line-clamp-2">{video.title}</p>
+                                        <p className="text-xs text-gray-400 truncate">{video.author}</p>
+                                        {video.addedBy && (
+                                            <p className="text-[10px] text-primary/80 mt-1">โดย: {video.addedBy.displayName}</p>
                                         )}
                                     </div>
                                 </div>
-                            )}
-                        </div>
-
+                            </div>
+                        ))}
                     </div>
                 </div>
             )}
 
-            {/* Cast Receiver SDK */}
             <Script src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js" strategy="afterInteractive" />
-
-            {/* Global Styles for Animations */}
-            <style jsx global>{`
-                @keyframes blob {
-                    0% { transform: translate(0px, 0px) scale(1); }
-                    33% { transform: translate(30px, -50px) scale(1.1); }
-                    66% { transform: translate(-20px, 20px) scale(0.9); }
-                    100% { transform: translate(0px, 0px) scale(1); }
-                }
-                .animate-blob {
-                    animation: blob 15s infinite;
-                }
-                .animation-delay-2000 {
-                    animation-delay: 2s;
-                }
-                @keyframes pulse-slow {
-                    0%, 100% { opacity: 0.5; }
-                    50% { opacity: 0.8; }
-                }
-                .animate-pulse-slow {
-                    animation: pulse-slow 8s infinite ease-in-out;
-                }
-                @keyframes progress-indet {
-                    0% { width: 0%; margin-left: 0%; }
-                    50% { width: 50%; margin-left: 25%; }
-                    100% { width: 0%; margin-left: 100%; }
-                }
-                .animate-progress-indeterminate {
-                    animation: progress-indet 3s infinite ease-in-out;
-                }
-                .paused {
-                    animation-play-state: paused;
-                }
-            `}</style>
         </div>
     );
 };
