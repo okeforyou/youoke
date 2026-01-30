@@ -342,9 +342,21 @@ export default function RemotePage() {
                         </button>
                     )}
                 </div>
-                <div className="flex gap-2">
-                    <button onClick={() => setSearchType('song')} className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all ${searchType === 'song' ? 'bg-white text-black border-white shadow-md transform scale-105' : 'bg-black/40 text-gray-400 border-white/5 hover:bg-white/5'}`}>ทั่วไป</button>
-                    <button onClick={() => setSearchType('karaoke')} className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all ${searchType === 'karaoke' ? 'bg-primary text-white border-primary shadow-md transform scale-105' : 'bg-black/40 text-gray-400 border-white/5 hover:bg-white/5'}`}>คาราโอเกะ</button>
+
+                {/* Styled Toggles (Segmented Control) */}
+                <div className="bg-zinc-800/80 p-1 rounded-xl flex shadow-inner border border-white/5 backdrop-blur-sm">
+                    <button
+                        onClick={() => setSearchType('song')}
+                        className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${searchType === 'song' ? 'bg-zinc-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}
+                    >
+                        ทั่วไป
+                    </button>
+                    <button
+                        onClick={() => setSearchType('karaoke')}
+                        className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${searchType === 'karaoke' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}
+                    >
+                        คาราโอเกะ
+                    </button>
                 </div>
             </div>
 
@@ -406,8 +418,8 @@ export default function RemotePage() {
             </div>
 
             {/* 4. Bottom Mini Player (Fixed) */}
-            <div className="absolute bottom-0 inset-x-0 z-50 p-3 pb-safe bg-gradient-to-t from-black via-zinc-900 to-transparent pt-6">
-                <div className="bg-zinc-800/90 backdrop-blur-xl border border-white/10 rounded-2xl p-3 shadow-[0_0_30px_rgba(0,0,0,0.5)] flex items-center gap-3">
+            <div className="fixed bottom-0 inset-x-0 z-50 p-3 pb-safe bg-gradient-to-t from-black via-zinc-900 to-transparent pt-6 pointer-events-none">
+                <div className="bg-zinc-800/90 backdrop-blur-xl border border-white/10 rounded-2xl p-3 shadow-[0_0_30px_rgba(0,0,0,0.5)] flex items-center gap-3 pointer-events-auto">
                     {/* Tiny Thumb */}
                     <div className="w-12 h-12 rounded-lg bg-black overflow-hidden shrink-0 border border-white/10 relative">
                         <img src={highResThumbnail} className="w-full h-full object-cover" alt="" />
@@ -426,8 +438,9 @@ export default function RemotePage() {
                     </div>
 
                     {/* Controls */}
-                    <div className="flex items-center gap-2 shrink-0">
-                        <button onClick={() => sendCommand('REPLAY')} className="p-2 text-gray-400 hover:text-white"><BackwardIcon className="w-6 h-6" /></button>
+                    <div className="flex items-center gap-4 shrink-0 pr-2">
+                        {/* Removed Back Button */}
+
                         <button
                             onClick={() => {
                                 const nextState = !(status?.isPlaying || false);
@@ -435,11 +448,14 @@ export default function RemotePage() {
                                 setStatus(prev => prev ? ({ ...prev, isPlaying: nextState }) : null);
                                 sendCommand(nextState ? 'PLAY' : 'PAUSE');
                             }}
-                            className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center shadow-lg active:scale-95 transition-all"
+                            className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-lg active:scale-95 transition-all"
                         >
                             {status?.isPlaying ? <PauseIcon className="w-6 h-6" /> : <PlayIcon className="w-6 h-6 ml-0.5" />}
                         </button>
-                        <button onClick={() => sendCommand('NEXT')} className="p-2 text-gray-400 hover:text-white"><ForwardIcon className="w-6 h-6" /></button>
+
+                        <button onClick={() => sendCommand('NEXT')} className="p-2 text-gray-400 hover:text-white active:scale-90 transition-all">
+                            <ForwardIcon className="w-8 h-8" />
+                        </button>
                     </div>
                 </div>
             </div>
