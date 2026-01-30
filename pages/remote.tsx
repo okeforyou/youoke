@@ -150,7 +150,7 @@ export default function RemotePage() {
         };
     }, [sessionId, realtimeDb]);
 
-    // Presence Logic: Register as "Connected" with Status (Active/Background)
+    // Presence Logic
     useEffect(() => {
         if (!sessionId || !isConnected || !realtimeDb) return;
 
@@ -172,17 +172,14 @@ export default function RemotePage() {
         };
 
         // Initial Registration
-        console.log('🔌 Remote: Starting presence registration for', clientId);
         updatePresence('active');
-        console.log('✅ Remote: Presence registered successfully');
 
         // Auto-remove on disconnect
         onDisconnect(presenceRef).remove();
 
-        // Listen for Visibility Change (Screen Off / Background)
+        // Listen for Visibility Change
         const handleVisibilityChange = () => {
             const state = document.visibilityState === 'hidden' ? 'background' : 'active';
-            console.log(`💡 Remote: Visibility changed to ${state}`);
             updatePresence(state);
         };
         document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -200,39 +197,27 @@ export default function RemotePage() {
         };
         requestWakeLock();
 
-        // Re-request wake lock when becoming active
         if (document.visibilityState === 'visible') {
             requestWakeLock();
         }
 
         return () => {
             document.removeEventListener('visibilitychange', handleVisibilityChange);
-            // Optional: remove presence on unmount? 
-            // Better to let onDisconnect handle it in case of refresh vs close.
-            // But if we perform a clean unmount (e.g. navigation), we might want to remove.
-            // For now, let's keep it robust.
         };
     }, [sessionId, isConnected, realtimeDb]);
 
     // Wrapper to use the shared utility
     const handleSendCommand = async (type: string, payload: any = {}) => {
         if (!sessionId) return;
-
         try {
-            // Import dynamically to ensure we get the latest singleton
             const { sendCommand } = await import('../utils/castCommands');
-
-            // Map simple types to CastCommand strict types
-            // @ts-ignore - Temporary loose typing for quick migration
+            // @ts-ignore
             await sendCommand(sessionId, { type, payload });
-            console.log('✅ Remote: Command sent', type);
         } catch (e) {
             console.error('Failed to send command:', e);
             setErrorMessage('เชื่อมต่อล้มเหลว กำลังลองใหม่...');
         }
     };
-
-    // Alias for compatibility with existing JSX calls
     const sendCommand = handleSendCommand;
 
     // Search Handler
@@ -246,15 +231,10 @@ export default function RemotePage() {
         setIsSearching(true);
         setErrorMessage('');
         try {
-            // Match logic from SearchResultGrid.tsx: Prepend "karaoke" (quoted)
-            // Match logic from SearchResultGrid.tsx: Prepend "karaoke" (quoted)
-            // Use exact same logic as Host
             const prefix = searchType === 'karaoke' ? '"karaoke" ' : '';
             const effectiveQuery = prefix + query;
 
-            // Reusing existing API
             const res = await axios.get('/api/search', { params: { q: effectiveQuery } });
-
             let data: any[] = [];
             if (res.data && res.data.data) {
                 data = res.data.data;
@@ -262,15 +242,12 @@ export default function RemotePage() {
                 data = res.data;
             }
 
-            // Client-side filtering to match SearchResultGrid.tsx
-            // 1. Filter out Unknown authors (Critical for quality)
-            // 1. Filter out Unknown authors (Critical for quality)
+            // Filter
             data = data.filter((video: any) => {
                 if (!video.author || video.author.toLowerCase().includes('unknown')) return false;
                 return true;
             });
 
-            // 2. Filter for Karaoke mode (Strict match to Host)
             if (searchType === 'karaoke') {
                 data = data.filter((video: any) => {
                     if (!video.title) return false;
@@ -282,17 +259,14 @@ export default function RemotePage() {
                     );
                 });
             }
-
             setSearchResults(data);
         } catch (e: any) {
-            console.error('Search failed', e);
-            setErrorMessage(e.response?.data?.error || e.message || 'ค้นหาล้มเหลว');
+            setErrorMessage('ค้นหาล้มเหลว');
         } finally {
             setIsSearching(false);
         }
     };
 
-    // Auto-refresh search when Toggle changes
     useEffect(() => {
         if (searchQuery.trim()) {
             handleSearch(searchQuery);
@@ -300,27 +274,22 @@ export default function RemotePage() {
     }, [searchType]);
 
     const handleAddQueue = (video: SearchResult) => {
-        // Send ADD_TO_QUEUE with correct payload structure
-        // Payload must contain { video: QueueVideo }
-        // We map SearchResult to QueueVideo format
         const queueVideo = {
             videoId: video.videoId,
             title: video.title,
-            author: 'YouTube', // Search result might not have channel title, default to YouTube
-            key: Date.now(), // Unique key for React lists
+            author: 'YouTube',
+            key: Date.now(),
             addedBy: {
-                uid: 'remote-user', // Placeholder, could be real auth ID
+                uid: 'remote-user',
                 displayName: 'Mobile User',
                 isGuest: true
             }
         };
-
         sendCommand('ADD_QUEUE', { video: queueVideo });
         setAddedId(video.videoId);
         setTimeout(() => setAddedId(null), 2000);
     };
 
-    // Login Screen
     if (!sessionId) {
         return (
             <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-6">
@@ -328,7 +297,6 @@ export default function RemotePage() {
                     <DevicePhoneMobileIcon className="w-8 h-8 text-primary" />
                 </div>
                 <h1 className="text-2xl font-bold mb-2">เชื่อมต่อกับห้อง</h1>
-                <p className="text-gray-400 mb-6 text-center">กรอกรหัส PIN ที่แสดงบนหน้าจอ</p>
                 <input
                     type="number"
                     placeholder="กรอกรหัสห้อง"
@@ -338,27 +306,23 @@ export default function RemotePage() {
                         if (val.length >= 4) setSessionId(val);
                     }}
                 />
-                <p className="text-xs text-gray-500 mt-2">รหัสห้องเป็นตัวเลข 4 หรือ 6 หลัก</p>
             </div>
         );
     }
 
-    // Derived State for Queue - Robust Parsing
+    // Derived State
     let queueList: any[] = [];
     if (status?.queue) {
         if (Array.isArray(status.queue)) {
             queueList = status.queue;
         } else if (typeof status.queue === 'object') {
-            // Firebase parses arrays with holes as objects or sparse arrays
             queueList = Object.values(status.queue);
         }
     }
 
     const currentIndex = typeof status?.currentIndex === 'number' ? status.currentIndex : -1;
-    // Get upcoming queue (items AFTER current index)
     const upcomingQueue = queueList.slice(currentIndex + 1);
 
-    // Helper to get thumbnail (Robust)
     const getThumbnail = (video: any) => {
         if (!video) return 'https://i.ytimg.com/img/no_thumbnail.jpg';
         if (video.thumbnail) return video.thumbnail;
@@ -367,23 +331,28 @@ export default function RemotePage() {
 
     const currentVideo = status?.currentVideo || {};
     const currentThumbnail = getThumbnail(currentVideo);
-    // Use high-res if available in currentVideo object from host
     const highResThumbnail = currentVideo.videoThumbnails?.find((t: any) => t.quality === 'high' || t.width > 300)?.url || currentThumbnail;
 
     return (
-        <div className="h-screen bg-black text-white flex flex-col font-sans overflow-hidden enhanced-remote-ui">
+        <div className="h-screen bg-black text-white flex flex-col font-sans overflow-hidden relative">
             <Head>
                 <title>รีโมทคอนโทรล</title>
-                <meta name="mobile-web-app-capable" content="yes" />
-                <meta name="apple-mobile-web-app-capable" content="yes" />
                 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
             </Head>
 
-            {/* Top Stat Bar */}
-            <div className="px-5 py-3 flex items-center justify-between z-20 shrink-0 bg-zinc-900/50 backdrop-blur-md border-b border-white/5">
+            {/* Background Atmosphere */}
+            <div
+                className="absolute inset-0 bg-cover bg-center opacity-30 blur-3xl scale-150 pointer-events-none transition-all duration-1000 z-0"
+                style={{ backgroundImage: `url(${highResThumbnail})` }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/80 to-black z-0 pointer-events-none" />
+
+
+            {/* Top Bar */}
+            <div className="px-5 py-3 flex items-center justify-between z-20 shrink-0 border-b border-white/5 bg-black/20 backdrop-blur-sm">
                 <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400 animate-pulse' : 'bg-red-500'}`}></div>
-                    <span className="text-xs font-bold tracking-wider text-gray-400">ROOM {sessionId}</span>
+                    <span className="text-xs font-bold tracking-wider text-gray-300">ROOM {sessionId}</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <button onClick={() => sendCommand('TOGGLE_FULLSCREEN')} className="p-2 rounded-full hover:bg-white/10 active:scale-95 transition-all text-gray-400">
@@ -395,134 +364,124 @@ export default function RemotePage() {
                 </div>
             </div>
 
-            {/* Compact Player Header (Fixed at Top) */}
-            <div className="p-4 bg-zinc-900 border-b border-white/5 shrink-0 shadow-xl z-20 relative">
-                <div className="flex items-center gap-4">
-                    {/* Thumbnail (Left) */}
-                    <div className="w-20 h-20 shrink-0 rounded-xl overflow-hidden border border-white/10 shadow-lg relative group bg-black/50">
+            {/* Main Scrollable Content */}
+            <div className="flex-1 overflow-y-auto min-h-0 z-10 pb-32"> {/* pb-32 for Bottom Bar space */}
+
+                {/* 1. Mini-Hero Card Section */}
+                <div className="flex flex-col items-center justify-center pt-8 pb-6 px-6">
+                    <div className="w-40 h-40 rounded-2xl shadow-2xl overflow-hidden border border-white/10 relative group mb-4">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={highResThumbnail} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" alt="" />
+                        <img src={highResThumbnail} className="w-full h-full object-cover" alt="" />
                     </div>
-
-                    {/* Info & Controls (Right) */}
-                    <div className="flex-1 min-w-0 flex flex-col justify-center h-20">
-                        <div className="mb-1.5">
-                            <h1 className="text-base font-bold leading-tight truncate text-white">{status?.title || "รอเพลง..."}</h1>
-                            <p className="text-[10px] text-gray-400 truncate uppercase tracking-widest">{status?.currentVideo?.author || "KARAOKE SYSTEM"}</p>
-                        </div>
-
-                        {/* Controls Row */}
-                        <div className="flex items-center gap-6">
-                            <button onClick={() => sendCommand('REPLAY')} className="text-gray-400 hover:text-white active:scale-90 transition-all">
-                                <BackwardIcon className="w-6 h-6" />
-                            </button>
-
-                            <button
-                                onClick={() => {
-                                    const nextState = !(status?.isPlaying || false);
-                                    lastInteractionRef.current = Date.now();
-                                    setStatus(prev => prev ? ({ ...prev, isPlaying: nextState }) : null);
-                                    sendCommand(nextState ? 'PLAY' : 'PAUSE');
-                                }}
-                                className={`w-10 h-10 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all ${status?.isPlaying ? 'bg-white text-black' : 'bg-primary text-white'}`}
-                            >
-                                {status?.isPlaying ? <PauseIcon className="w-5 h-5" /> : <PlayIcon className="w-5 h-5 ml-0.5" />}
-                            </button>
-
-                            <button onClick={() => sendCommand('NEXT')} className="text-white hover:text-primary active:scale-90 transition-all">
-                                <ForwardIcon className="w-7 h-7" />
-                            </button>
-                        </div>
-                    </div>
+                    <h1 className="text-xl font-bold text-center leading-tight line-clamp-2 px-4 mb-1 text-shadow-md">
+                        {status?.title || "รอเพลง..."}
+                    </h1>
+                    <p className="text-sm text-gray-400 font-medium">{status?.currentVideo?.author || "Karaoke System"}</p>
                 </div>
-            </div>
 
-            {/* Scrollable Main Content (Queue + Search) */}
-            <div className="flex-1 overflow-y-auto min-h-0 bg-black">
+                {/* 2. Controls (Inline option - removed per request to move to bottom, but we can keep Search here) */}
 
-                {/* 1. Vertical Queue Section */}
-                {upcomingQueue.length > 0 && (
-                    <div className="p-5 border-b border-white/5 bg-zinc-900/20">
-                        <div className="flex items-center justify-between mb-3">
-                            <h3 className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">คิวถัดไป ({upcomingQueue.length})</h3>
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            {upcomingQueue.slice(0, 3).map((video: any, idx: number) => (
-                                <div key={idx} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors border border-transparent hover:border-white/5">
-                                    <span className="text-[10px] font-mono text-gray-600 w-4 text-center">{idx + 1}</span>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-gray-300 truncate">{video.title}</p>
-                                    </div>
-                                    <div className="w-1 h-1 rounded-full bg-gray-700"></div>
-                                </div>
-                            ))}
-                            {upcomingQueue.length > 3 && (
-                                <p className="text-[10px] text-center text-gray-600 pt-2 italic">
-                                    +{upcomingQueue.length - 3} เพลงในคิว...
-                                </p>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {/* 2. Search Section (Takes remaining space) */}
-                <div className="p-5 pb-16">
-                    <h3 className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-4">ค้นหาเพลงใหม่</h3>
-
-                    {/* Input */}
-                    <div className="relative mb-4">
-                        <MagnifyingGlassIcon className="absolute left-4 top-3.5 w-5 h-5 text-gray-500 pointer-events-none" />
+                {/* 3. Search Section */}
+                <div className="px-5 mb-6">
+                    {/* Search Input */}
+                    <div className="relative mb-3">
+                        <MagnifyingGlassIcon className="absolute left-4 top-3.5 w-5 h-5 text-gray-400 pointer-events-none" />
                         <DebounceInput
                             minLength={2}
                             debounceTimeout={500}
-                            placeholder="พิมพ์ชื่อเพลง..."
-                            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-3 pl-12 pr-4 text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none placeholder-gray-600 transition-all font-medium text-sm"
+                            placeholder="ค้นหาเพลง..."
+                            className="w-full bg-white/10 border border-white/5 rounded-2xl py-3 pl-12 pr-4 text-white placeholder-gray-500 focus:bg-white/20 focus:text-white transition-all backdrop-blur-md font-medium"
                             onChange={(e) => handleSearch(e.target.value)}
                         />
                     </div>
 
-                    {/* Type Toggles */}
-                    <div className="flex gap-2 mb-6">
+                    {/* Filter Pills */}
+                    <div className="flex gap-2 mb-4">
                         <button
                             onClick={() => setSearchType('song')}
-                            className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all ${searchType === 'song' ? 'bg-white text-black border-white' : 'text-gray-500 border-zinc-800 hover:border-zinc-700'}`}
+                            className={`px-4 py-1.5 text-xs font-bold rounded-full border transition-all ${searchType === 'song' ? 'bg-white text-black border-white' : 'text-gray-400 border-white/10 hover:bg-white/5'}`}
                         >เพลงทั่วไป</button>
                         <button
                             onClick={() => setSearchType('karaoke')}
-                            className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all ${searchType === 'karaoke' ? 'bg-primary/10 text-primary border-primary border-opacity-30' : 'text-gray-500 border-zinc-800 hover:border-zinc-700'}`}
+                            className={`px-4 py-1.5 text-xs font-bold rounded-full border transition-all ${searchType === 'karaoke' ? 'bg-primary text-white border-primary shadow-lg' : 'text-gray-400 border-white/10 hover:bg-white/5'}`}
                         >คาราโอเกะ</button>
                     </div>
 
-                    {/* Results List */}
+                    {/* Results */}
                     <div className="space-y-2">
                         {isSearching && (
-                            <div className="text-center py-8"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" /></div>
+                            <div className="text-center py-4"><div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" /></div>
                         )}
-
                         {!isSearching && searchResults.map((video: any) => (
                             <div
                                 key={video.videoId}
                                 onClick={() => handleAddQueue({ ...video, thumbnail: getThumbnail(video) })}
-                                className={`flex items-center gap-3 p-3 rounded-xl active:scale-[0.98] transition-all cursor-pointer ${addedId === video.videoId ? 'bg-green-500/10 border border-green-500/30' : 'bg-zinc-900/40 border border-transparent hover:border-white/5'}`}
+                                className={`flex items-center gap-3 p-3 rounded-xl active:scale-[0.98] transition-all cursor-pointer ${addedId === video.videoId ? 'bg-green-500/20 border border-green-500/50' : 'bg-white/5 border border-white/5 hover:bg-white/10'}`}
                             >
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={getThumbnail(video)} className="w-12 h-12 rounded-lg object-cover bg-black shadow-sm flex-none" alt="" />
-                                <div className="flex-1 min-w-0 text-left">
-                                    <h3 className={`font-bold text-sm line-clamp-1 ${addedId === video.videoId ? 'text-green-400' : 'text-gray-200'}`}>{video.title}</h3>
-                                    <p className="text-[10px] text-gray-500">{video.author?.name || video.author || "YouTube"}</p>
+                                <img src={getThumbnail(video)} className="w-12 h-12 rounded-lg object-cover bg-black" alt="" />
+                                <div className="flex-1 min-w-0">
+                                    <h3 className={`font-bold text-sm line-clamp-1 ${addedId === video.videoId ? 'text-green-400' : 'text-white'}`}>{video.title}</h3>
+                                    <p className="text-[10px] text-gray-400">{video.author?.name || video.author || "YouTube"}</p>
                                 </div>
-                                <button className={`w-8 h-8 rounded-full flex items-center justify-center flex-none ${addedId === video.videoId ? 'bg-green-500 text-white' : 'bg-white/5 text-gray-400'}`}>
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${addedId === video.videoId ? 'bg-green-500 text-white' : 'bg-white/10 text-gray-400'}`}>
                                     {addedId === video.videoId ? <CheckIcon className="w-4 h-4" /> : <PlusIcon className="w-5 h-5" />}
-                                </button>
+                                </div>
                             </div>
                         ))}
-
-                        {!isSearching && searchResults.length === 0 && searchQuery && (
-                            <div className="text-center py-10 text-gray-600 text-sm">ไม่พบเพลงที่ค้นหา</div>
-                        )}
                     </div>
                 </div>
+
+                {/* 4. Queue Section */}
+                {upcomingQueue.length > 0 && (
+                    <div className="px-5">
+                        <div className="flex items-center gap-2 mb-3 opacity-60">
+                            <div className="h-[1px] flex-1 bg-white/20"></div>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-white">คิวเพลงถัดไป</span>
+                            <div className="h-[1px] flex-1 bg-white/20"></div>
+                        </div>
+                        <div className="space-y-2">
+                            {upcomingQueue.map((video: any, idx: number) => (
+                                <div key={idx} className="flex items-center gap-3 p-2 rounded-lg opacity-80">
+                                    <span className="text-xs font-mono text-gray-500 w-4 text-center">{idx + 1}</span>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs font-medium text-gray-300 truncate">{video.title}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
+
+            {/* Bottom Fixed Controls Bar (Glassmorphism) */}
+            <div className="absolute bottom-0 inset-x-0 p-5 z-50 bg-gradient-to-t from-black via-black/95 to-transparent pt-12 pointer-events-none">
+                <div className="bg-zinc-900/90 backdrop-blur-xl border border-white/10 rounded-[2rem] p-4 shadow-2xl flex items-center justify-between pointer-events-auto max-w-md mx-auto">
+                    {/* Replay */}
+                    <button onClick={() => sendCommand('REPLAY')} className="w-12 h-12 flex items-center justify-center text-gray-400 hover:text-white active:scale-90 transition-all">
+                        <BackwardIcon className="w-6 h-6" />
+                    </button>
+
+                    {/* Play/Pause (Hero) */}
+                    <button
+                        onClick={() => {
+                            const nextState = !(status?.isPlaying || false);
+                            lastInteractionRef.current = Date.now();
+                            setStatus(prev => prev ? ({ ...prev, isPlaying: nextState }) : null);
+                            sendCommand(nextState ? 'PLAY' : 'PAUSE');
+                        }}
+                        className={`w-16 h-16 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all ${status?.isPlaying ? 'bg-white text-black' : 'bg-primary text-white border-4 border-black'}`}
+                        style={{ marginTop: -20, boxShadow: '0 8px 20px rgba(0,0,0,0.5)' }}
+                    >
+                        {status?.isPlaying ? <PauseIcon className="w-8 h-8" /> : <PlayIcon className="w-8 h-8 ml-1" />}
+                    </button>
+
+                    {/* Next */}
+                    <button onClick={() => sendCommand('NEXT')} className="w-12 h-12 flex items-center justify-center text-white hover:text-primary active:scale-90 transition-all">
+                        <ForwardIcon className="w-8 h-8" />
+                    </button>
+                </div>
+            </div>
+
         </div>
     );
 }
