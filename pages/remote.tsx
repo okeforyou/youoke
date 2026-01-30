@@ -312,12 +312,12 @@ export default function RemotePage() {
 
     return (
         <div
-            className="h-screen bg-black text-white flex flex-col font-sans overflow-hidden relative"
+            className="fixed inset-0 bg-black text-white flex flex-col font-sans overflow-hidden"
             style={{ overscrollBehaviorY: 'none' }} // Prevent Pull-to-Refresh
         >
             <Head>
                 <title>รีโมทคอนโทรล</title>
-                <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+                <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover" />
             </Head>
 
             {/* Background Atmosphere */}
@@ -325,7 +325,7 @@ export default function RemotePage() {
             <div className="absolute inset-0 bg-black/60 z-0 pointer-events-none" />
 
             {/* 1. Header (Room Info) */}
-            <div className="px-5 py-3 flex items-center justify-between z-20 shrink-0 bg-black/20 backdrop-blur-md border-b border-white/5">
+            <div className="px-5 py-3 flex items-center justify-between z-20 shrink-0 bg-black/20 backdrop-blur-md border-b border-white/5 pt-safe-top">
                 <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400 animate-pulse' : 'bg-red-500'}`}></div>
                     <span className="text-xs font-bold tracking-wider text-gray-300">ROOM {sessionId}</span>

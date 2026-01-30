@@ -30,7 +30,8 @@ export const useRemoteHost = (
     addToQueue: (video: any) => void,
     queue: any[],
     currentVideoId: string,
-    isPlaying: boolean // New argument
+    isPlaying: boolean, // New argument
+    isFullscreen: boolean // New argument
 ) => {
     const [sessionId, setSessionId] = useState<string | null>(null);
 
@@ -86,6 +87,7 @@ export const useRemoteHost = (
                 videoId: currentVideoId,
                 title: title,
                 isPlaying: isPlaying, // Critical for Remote compatibility
+                isFullscreen: isFullscreen, // New Sync Field
                 timestamp: Date.now()
             };
 

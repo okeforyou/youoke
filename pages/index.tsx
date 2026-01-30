@@ -197,8 +197,21 @@ function HomePage() {
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState("0:00");
   const [duration, setDuration] = useState("0:00");
+  const [isHostFullscreen, setIsHostFullscreen] = useState(false);
 
-  const { sessionId, connectedClients, connectionStatus } = useRemoteHost(mobilePlayerRef, playerControlRef, (video) => addVideoToPlaylist(video), playlist, curVideoId, isPlaying);
+  // Listen for Fullscreen Changes (Host Side)
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isFs = !!document.fullscreenElement;
+      console.log('🖥️ Host: Fullscreen changed to', isFs);
+      setIsHostFullscreen(isFs);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  const { sessionId, connectedClients, connectionStatus } = useRemoteHost(mobilePlayerRef, playerControlRef, (video) => addVideoToPlaylist(video), playlist, curVideoId, isPlaying, isHostFullscreen);
   const [showRemoteModal, setShowRemoteModal] = useState(false);
 
   // Auto-close Remote Modal when client connects
