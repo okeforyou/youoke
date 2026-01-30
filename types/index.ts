@@ -4,6 +4,8 @@ export type PlaylistItem = (SearchResult | RecommendedVideo) & {
   key: number;
 };
 
+export type Video = PlaylistItem;
+
 export interface Artist {
   name: string;
   imageUrl: string;
