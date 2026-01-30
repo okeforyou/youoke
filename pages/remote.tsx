@@ -33,6 +33,9 @@ export default function RemotePage() {
     const [status, setStatus] = useState<RemoteState | null>(null);
     const [isConnected, setIsConnected] = useState(false);
 
+    // Sync Suppression
+    const lastInteractionRef = useRef<number>(0);
+
     // Search State
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -94,7 +97,18 @@ export default function RemotePage() {
                 if (response.ok) {
                     const data = await response.json();
                     if (data) {
-                        setStatus(data);
+                        // SYNC SUPPRESSION: Ignore isPlaying update if user interacted recently
+                        const isInteracting = Date.now() - lastInteractionRef.current < 2000;
+
+                        setStatus(prev => {
+                            if (!prev) return data;
+                            // If interacting, keep optimistic isPlaying, update everything else
+                            if (isInteracting && prev) {
+                                return { ...data, isPlaying: prev.isPlaying };
+                            }
+                            return data;
+                        });
+
                         setIsConnected(true);
                     } else {
                         // Room might not exist or state is empty
@@ -110,11 +124,29 @@ export default function RemotePage() {
             }
         }, 1000);
 
+        // Realtime Listener (Optional if Polling covers it, but good for speed)
+        const stateRef = ref(realtimeDb, `rooms/${sessionId}/state`);
+        const unsubscribe = onValue(stateRef, (snapshot) => {
+            const val = snapshot.val();
+            console.log('🔥 [Remote] Firebase State Update:', val);
+            if (val) {
+                // SYNC SUPPRESSION match polling logic
+                const isInteracting = Date.now() - lastInteractionRef.current < 2000;
+                setStatus(prev => {
+                    if (isInteracting && prev) {
+                        return { ...val, isPlaying: prev.isPlaying };
+                    }
+                    return val;
+                });
+            }
+        });
+
         return () => {
             isActive = false;
             clearInterval(pollRoomInterval);
+            unsubscribe();
         };
-    }, [sessionId]);
+    }, [sessionId, realtimeDb]);
 
     // Presence Logic: Register as "Connected" so Host knows to close QR Modal
     useEffect(() => {
