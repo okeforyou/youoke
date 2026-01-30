@@ -27,6 +27,7 @@ const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
 
     // Check if we are in a Cast Environment
     const isCastEnvironment = useRef(false);
+    const castContextRef = useRef<any>(null); // To hold CastReceiverContext
 
     // --- GOOGLE CAST LOGIC ---
     useEffect(() => {
@@ -43,6 +44,7 @@ const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
 
                 // @ts-ignore
                 const context = window.cast.framework.CastReceiverContext.getInstance();
+                castContextRef.current = context; // Save ref
 
                 // Options
                 // @ts-ignore
