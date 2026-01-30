@@ -209,6 +209,7 @@ export default function RemotePage() {
 
             // Client-side filtering to match SearchResultGrid.tsx
             // 1. Filter out Unknown authors (Critical for quality)
+            // 1. Filter out Unknown authors (Critical for quality)
             data = data.filter((video: any) => {
                 if (!video.author || video.author.toLowerCase().includes('unknown')) return false;
                 return true;
