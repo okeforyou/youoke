@@ -93,7 +93,8 @@ type SearchResult = {
 
 const RemotePage = () => {
     const router = useRouter();
-    const sessionId = router.query.session as string;
+    // Support both 'session' and 'room' query params for auto-joining
+    const sessionId = (router.query.session || router.query.room) as string;
     const [status, setStatus] = useState<RemoteState | null>(null);
     const [isConnected, setIsConnected] = useState(false);
 
