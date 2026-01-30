@@ -91,6 +91,7 @@ export const useRemoteHost = (
             // Use REST API for "Set State" to be robust (Write-heavy)
             // Or use SDK since Host usually has stable connection? 
             // Let's stick to SDK for Host Write for now, but to `rooms/` path
+            console.log('🔥 [Host] Syncing State to Firebase:', statePayload);
             set(ref(realtimeDb, `rooms/${sessionId}/state`), statePayload)
                 .catch(e => console.error('❌ Host: State sync failed', e));
 
