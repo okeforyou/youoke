@@ -85,6 +85,7 @@ export const useRemoteHost = (
                 // Add legacy fields for backward compat if needed (but we strictly use new schema now)
                 videoId: currentVideoId,
                 title: title,
+                isPlaying: isPlaying, // Critical for Remote compatibility
                 timestamp: Date.now()
             };
 
