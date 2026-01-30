@@ -6,7 +6,8 @@ import { ref, set, push, onValue, remove, onDisconnect } from 'firebase/database
 import {
     PlayIcon, PauseIcon, ForwardIcon, BackwardIcon,
     MagnifyingGlassIcon, PlusIcon, CheckIcon,
-    SignalIcon, SignalSlashIcon, DevicePhoneMobileIcon
+    SignalIcon, SignalSlashIcon, DevicePhoneMobileIcon,
+    ArrowsPointingOutIcon, ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import { DebounceInput } from 'react-debounce-input';
 import axios from 'axios';
