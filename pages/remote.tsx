@@ -379,183 +379,150 @@ export default function RemotePage() {
                 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
             </Head>
 
-            {/* Top Bar: Connection & Room */}
-            <div className="px-6 py-4 flex items-center justify-between z-20 shrink-0">
-                <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-full border border-white/5 backdrop-blur-md">
+            {/* Top Stat Bar */}
+            <div className="px-5 py-3 flex items-center justify-between z-20 shrink-0 bg-zinc-900/50 backdrop-blur-md border-b border-white/5">
+                <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400 animate-pulse' : 'bg-red-500'}`}></div>
-                    <span className="text-xs font-bold tracking-wider text-gray-200">ROOM {sessionId}</span>
+                    <span className="text-xs font-bold tracking-wider text-gray-400">ROOM {sessionId}</span>
                 </div>
-
-                <div className="flex items-center gap-3">
-                    {/* Fullscreen Toggle (Host Only) */}
-                    <button
-                        onClick={() => sendCommand('TOGGLE_FULLSCREEN')}
-                        className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10 active:scale-95 transition-all"
-                    >
-                        <div className="w-4 h-4 border-2 border-dashed border-gray-400 rounded-sm"></div>
+                <div className="flex items-center gap-2">
+                    <button onClick={() => sendCommand('TOGGLE_FULLSCREEN')} className="p-2 rounded-full hover:bg-white/10 active:scale-95 transition-all text-gray-400">
+                        <ArrowsPointingOutIcon className="w-5 h-5" />
                     </button>
-                    <button
-                        onClick={() => window.location.reload()}
-                        className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center border border-white/10 active:scale-95 transition-all text-gray-400"
-                    >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                    <button onClick={() => window.location.reload()} className="p-2 rounded-full hover:bg-white/10 active:scale-95 transition-all text-gray-400">
+                        <ArrowPathIcon className="w-5 h-5" />
                     </button>
                 </div>
             </div>
 
-            {/* Middle Section: Player Card & Controls */}
-            <div className="flex-1 flex flex-col items-center justify-center px-6 min-h-0 relative shrink-0">
-
-                {/* Now Playing Card */}
-                <div className="w-full max-w-sm aspect-square bg-zinc-900/80 rounded-3xl border border-white/10 relative overflow-hidden shadow-2xl mb-6 group">
-                    {/* Background Blur */}
-                    <div
-                        className="absolute inset-0 bg-cover bg-center opacity-60 blur-xl scale-125 transition-all duration-700"
-                        style={{ backgroundImage: `url(${highResThumbnail})` }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
-
-                    {/* Content */}
-                    <div className="absolute inset-x-0 bottom-0 p-6 flex flex-col">
-                        <div className="flex-1" />
-
-                        {/* Status Label */}
-                        <div className="flex items-center gap-2 mb-2">
-                            <span className="w-1 h-4 bg-primary rounded-full"></span>
-                            <span className="text-xs font-bold uppercase tracking-widest text-primary-content/80 text-shadow">กำลังเล่น</span>
-                        </div>
-
-                        <h1 className="text-2xl font-bold leading-tight line-clamp-2 mb-1 text-shadow-lg relative z-10 w-full break-words">
-                            {status?.title || "รอเพลง..."}
-                        </h1>
-                        <p className="text-sm text-gray-300 line-clamp-1">{status?.currentVideo?.author || "Karaoke System"}</p>
+            {/* Compact Player Header (Fixed at Top) */}
+            <div className="p-4 bg-zinc-900 border-b border-white/5 shrink-0 shadow-xl z-20 relative">
+                <div className="flex items-center gap-4">
+                    {/* Thumbnail (Left) */}
+                    <div className="w-20 h-20 shrink-0 rounded-xl overflow-hidden border border-white/10 shadow-lg relative group bg-black/50">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={highResThumbnail} className="w-full h-full object-cover opacity-90 group-hover:opacity-100 transition-opacity" alt="" />
                     </div>
 
-                    {/* Center Play Button Overlay (Optional, maybe keep clean) */}
-                </div>
+                    {/* Info & Controls (Right) */}
+                    <div className="flex-1 min-w-0 flex flex-col justify-center h-20">
+                        <div className="mb-1.5">
+                            <h1 className="text-base font-bold leading-tight truncate text-white">{status?.title || "รอเพลง..."}</h1>
+                            <p className="text-[10px] text-gray-400 truncate uppercase tracking-widest">{status?.currentVideo?.author || "KARAOKE SYSTEM"}</p>
+                        </div>
 
-                {/* Main Controls Row */}
-                <div className="w-full max-w-sm flex items-center justify-between mb-2">
-                    {/* Restart / Prev */}
-                    <button
-                        onClick={() => sendCommand('REPLAY')}
-                        className="w-14 h-14 rounded-full flex items-center justify-center text-gray-400 hover:text-white active:bg-white/10 transition-all"
-                    >
-                        <BackwardIcon className="w-8 h-8" />
-                    </button>
+                        {/* Controls Row */}
+                        <div className="flex items-center gap-6">
+                            <button onClick={() => sendCommand('REPLAY')} className="text-gray-400 hover:text-white active:scale-90 transition-all">
+                                <BackwardIcon className="w-6 h-6" />
+                            </button>
 
-                    {/* Play / Pause (Hero) */}
-                    <button
-                        onClick={() => {
-                            const currentState = status?.isPlaying || false;
-                            const nextState = !currentState;
-                            lastInteractionRef.current = Date.now();
-                            setStatus(prev => prev ? ({ ...prev, isPlaying: nextState }) : null);
-                            sendCommand(nextState ? 'PLAY' : 'PAUSE');
-                        }}
-                        className={`w-20 h-20 rounded-full flex items-center justify-center shadow-2xl active:scale-95 transition-all ${status?.isPlaying ? 'bg-white text-black' : 'bg-primary text-white'}`}
-                    >
-                        {status?.isPlaying ? (
-                            <PauseIcon className="w-10 h-10" />
-                        ) : (
-                            <PlayIcon className="w-10 h-10 ml-1" />
-                        )}
-                    </button>
+                            <button
+                                onClick={() => {
+                                    const nextState = !(status?.isPlaying || false);
+                                    lastInteractionRef.current = Date.now();
+                                    setStatus(prev => prev ? ({ ...prev, isPlaying: nextState }) : null);
+                                    sendCommand(nextState ? 'PLAY' : 'PAUSE');
+                                }}
+                                className={`w-10 h-10 rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-all ${status?.isPlaying ? 'bg-white text-black' : 'bg-primary text-white'}`}
+                            >
+                                {status?.isPlaying ? <PauseIcon className="w-5 h-5" /> : <PlayIcon className="w-5 h-5 ml-0.5" />}
+                            </button>
 
-                    {/* Next */}
-                    <button
-                        onClick={() => sendCommand('NEXT')}
-                        className="w-14 h-14 rounded-full flex items-center justify-center text-white hover:text-primary active:bg-white/10 transition-all"
-                    >
-                        <ForwardIcon className="w-8 h-8" />
-                    </button>
+                            <button onClick={() => sendCommand('NEXT')} className="text-white hover:text-primary active:scale-90 transition-all">
+                                <ForwardIcon className="w-7 h-7" />
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            {/* Bottom Sheet: Queue & Search */}
-            <div className="flex-none bg-zinc-900 rounded-t-[2.5rem] border-t border-white/5 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] flex flex-col max-h-[45vh] transition-all overflow-hidden relative">
+            {/* Scrollable Main Content (Queue + Search) */}
+            <div className="flex-1 overflow-y-auto min-h-0 bg-black">
 
-                {/* Drag Handle / Indicator */}
-                <div className="w-12 h-1.5 bg-white/20 rounded-full mx-auto mt-4 mb-2 shrink-0"></div>
-
-                {/* Content Container */}
-                <div className="flex flex-col h-full overflow-hidden">
-
-                    {/* Queue Preview (Horizontal or Compact List) */}
-                    {upcomingQueue.length > 0 && (
-                        <div className="px-6 py-2 shrink-0">
-                            <h3 className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-2">คิวถัดไป ({upcomingQueue.length})</h3>
-                            <div className="flex gap-2 overflow-x-auto pb-2 snap-x hide-scrollbar">
-                                {upcomingQueue.slice(0, 5).map((video: any, idx: number) => (
-                                    <div key={idx} className="flex-none w-48 bg-white/5 rounded-xl p-2 flex items-center gap-2 snap-start border border-white/5">
-                                        <div className="w-10 h-10 bg-black rounded-lg overflow-hidden shrink-0">
-                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                            <img src={getThumbnail(video)} className="w-full h-full object-cover opacity-80" alt="" />
-                                        </div>
-                                        <div className="min-w-0">
-                                            <p className="text-xs font-bold truncate text-gray-200">{video.title}</p>
-                                            <p className="text-[10px] text-gray-500">#{idx + 1}</p>
-                                        </div>
+                {/* 1. Vertical Queue Section */}
+                {upcomingQueue.length > 0 && (
+                    <div className="p-5 border-b border-white/5 bg-zinc-900/20">
+                        <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">คิวถัดไป ({upcomingQueue.length})</h3>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            {upcomingQueue.slice(0, 3).map((video: any, idx: number) => (
+                                <div key={idx} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors border border-transparent hover:border-white/5">
+                                    <span className="text-[10px] font-mono text-gray-600 w-4 text-center">{idx + 1}</span>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-gray-300 truncate">{video.title}</p>
                                     </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Search Bar Area */}
-                    <div className="p-6 pt-2 bg-zinc-900 flex-1 flex flex-col min-h-0">
-                        {/* Toggle */}
-                        <div className="flex gap-2 mb-3">
-                            <button
-                                onClick={() => setSearchType('song')}
-                                className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${searchType === 'song' ? 'bg-zinc-800 text-white border border-white/10' : 'text-gray-500 hover:text-gray-300'}`}
-                            >เพลงทั่วไป</button>
-                            <button
-                                onClick={() => setSearchType('karaoke')}
-                                className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${searchType === 'karaoke' ? 'bg-gradient-to-r from-primary/80 to-primary/40 text-white shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
-                            >คาราโอเกะ</button>
-                        </div>
-
-                        {/* Input */}
-                        <div className="relative shrink-0">
-                            <MagnifyingGlassIcon className="absolute left-4 top-3.5 w-5 h-5 text-gray-500 pointer-events-none" />
-                            <DebounceInput
-                                minLength={2}
-                                debounceTimeout={500}
-                                placeholder={searchType === 'karaoke' ? "ค้นหาเพลงคาราโอเกะ..." : "ค้นหาเพลง..."}
-                                className="w-full bg-black/50 border border-zinc-700/50 rounded-2xl py-3 pl-12 pr-4 text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none placeholder-gray-600 transition-all font-medium"
-                                onChange={(e) => handleSearch(e.target.value)}
-                            />
-                        </div>
-
-                        {/* Search Results List (Scrollable) */}
-                        <div className="flex-1 overflow-y-auto mt-4 space-y-2 pb-8 min-h-0 remote-scroll">
-                            {isSearching && (
-                                <div className="text-center py-4"><div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" /></div>
-                            )}
-
-                            {!isSearching && searchResults.map((video: any) => (
-                                <div
-                                    key={video.videoId}
-                                    onClick={() => handleAddQueue({ ...video, thumbnail: getThumbnail(video) })}
-                                    className={`flex items-center gap-3 p-3 rounded-2xl active:scale-[0.98] transition-all cursor-pointer ${addedId === video.videoId ? 'bg-green-500/10 border border-green-500/30' : 'bg-white/5 border border-white/5'}`}
-                                >
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img src={getThumbnail(video)} className="w-12 h-12 rounded-xl object-cover bg-black" alt="" />
-                                    <div className="flex-1 min-w-0 text-left">
-                                        <h3 className={`font-bold text-sm line-clamp-1 ${addedId === video.videoId ? 'text-green-400' : 'text-white'}`}>{video.title}</h3>
-                                        <p className="text-xs text-gray-500">{video.author?.name || video.author || "YouTube"}</p>
-                                    </div>
-                                    <button className={`w-8 h-8 rounded-full flex items-center justify-center ${addedId === video.videoId ? 'bg-green-500 text-white' : 'bg-white/10 text-gray-400'}`}>
-                                        {addedId === video.videoId ? <CheckIcon className="w-4 h-4" /> : <PlusIcon className="w-5 h-5" />}
-                                    </button>
+                                    <div className="w-1 h-1 rounded-full bg-gray-700"></div>
                                 </div>
                             ))}
+                            {upcomingQueue.length > 3 && (
+                                <p className="text-[10px] text-center text-gray-600 pt-2 italic">
+                                    +{upcomingQueue.length - 3} เพลงในคิว...
+                                </p>
+                            )}
                         </div>
+                    </div>
+                )}
+
+                {/* 2. Search Section (Takes remaining space) */}
+                <div className="p-5 pb-16">
+                    <h3 className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-4">ค้นหาเพลงใหม่</h3>
+
+                    {/* Input */}
+                    <div className="relative mb-4">
+                        <MagnifyingGlassIcon className="absolute left-4 top-3.5 w-5 h-5 text-gray-500 pointer-events-none" />
+                        <DebounceInput
+                            minLength={2}
+                            debounceTimeout={500}
+                            placeholder="พิมพ์ชื่อเพลง..."
+                            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl py-3 pl-12 pr-4 text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none placeholder-gray-600 transition-all font-medium text-sm"
+                            onChange={(e) => handleSearch(e.target.value)}
+                        />
+                    </div>
+
+                    {/* Type Toggles */}
+                    <div className="flex gap-2 mb-6">
+                        <button
+                            onClick={() => setSearchType('song')}
+                            className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all ${searchType === 'song' ? 'bg-white text-black border-white' : 'text-gray-500 border-zinc-800 hover:border-zinc-700'}`}
+                        >เพลงทั่วไป</button>
+                        <button
+                            onClick={() => setSearchType('karaoke')}
+                            className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all ${searchType === 'karaoke' ? 'bg-primary/10 text-primary border-primary border-opacity-30' : 'text-gray-500 border-zinc-800 hover:border-zinc-700'}`}
+                        >คาราโอเกะ</button>
+                    </div>
+
+                    {/* Results List */}
+                    <div className="space-y-2">
+                        {isSearching && (
+                            <div className="text-center py-8"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" /></div>
+                        )}
+
+                        {!isSearching && searchResults.map((video: any) => (
+                            <div
+                                key={video.videoId}
+                                onClick={() => handleAddQueue({ ...video, thumbnail: getThumbnail(video) })}
+                                className={`flex items-center gap-3 p-3 rounded-xl active:scale-[0.98] transition-all cursor-pointer ${addedId === video.videoId ? 'bg-green-500/10 border border-green-500/30' : 'bg-zinc-900/40 border border-transparent hover:border-white/5'}`}
+                            >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={getThumbnail(video)} className="w-12 h-12 rounded-lg object-cover bg-black shadow-sm flex-none" alt="" />
+                                <div className="flex-1 min-w-0 text-left">
+                                    <h3 className={`font-bold text-sm line-clamp-1 ${addedId === video.videoId ? 'text-green-400' : 'text-gray-200'}`}>{video.title}</h3>
+                                    <p className="text-[10px] text-gray-500">{video.author?.name || video.author || "YouTube"}</p>
+                                </div>
+                                <button className={`w-8 h-8 rounded-full flex items-center justify-center flex-none ${addedId === video.videoId ? 'bg-green-500 text-white' : 'bg-white/5 text-gray-400'}`}>
+                                    {addedId === video.videoId ? <CheckIcon className="w-4 h-4" /> : <PlusIcon className="w-5 h-5" />}
+                                </button>
+                            </div>
+                        ))}
+
+                        {!isSearching && searchResults.length === 0 && searchQuery && (
+                            <div className="text-center py-10 text-gray-600 text-sm">ไม่พบเพลงที่ค้นหา</div>
+                        )}
                     </div>
                 </div>
             </div>
-
         </div>
     );
 }
