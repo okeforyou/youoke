@@ -34,7 +34,7 @@ function SortableQueueItem({ id, video, index, getThumbnail }: any) {
         transition,
         zIndex: isDragging ? 10 : 1,
         opacity: isDragging ? 0.5 : 1,
-        touchAction: 'none'
+        // touchAction: 'none' // Removed to allow scrolling on the body
     };
 
     return (

@@ -3,7 +3,7 @@ import { realtimeDb } from '../firebase';
 import { ref, set, remove, onValue, onDisconnect, serverTimestamp } from 'firebase/database';
 
 export type RemoteCommand = {
-    type: 'PLAY' | 'PAUSE' | 'NEXT' | 'ADD_QUEUE' | 'SEEK' | 'TOGGLE_FULLSCREEN' | 'SET_FULLSCREEN';
+    type: 'PLAY' | 'PAUSE' | 'NEXT' | 'ADD_QUEUE' | 'SEEK' | 'TOGGLE_FULLSCREEN' | 'SET_FULLSCREEN' | 'REORDER_QUEUE';
     payload?: any;
     timestamp: number;
 };
@@ -251,6 +251,17 @@ export const useRemoteHost = (
                 controlRef.current.setFullscreen(!!targetState);
             } else {
                 console.warn('[RemoteHost] controlRef not ready or missing setFullscreen');
+            }
+            return;
+        }
+
+        // REORDER_QUEUE
+        if (cmd.type === 'REORDER_QUEUE') {
+            if (cmd.payload && Array.isArray(cmd.payload.newQueue)) {
+                console.log('[RemoteHost] Reordering queue:', cmd.payload.newQueue.length, 'items');
+                if (setPlaylistRef.current) {
+                    setPlaylistRef.current(cmd.payload.newQueue);
+                }
             }
             return;
         }
