@@ -195,18 +195,16 @@ function HomePage() {
     // Check if we have a room code from Cast but NOT yet connected to Firebase Room
     // Or if the codes mismatch (user switched TVs)
     if (isGoogleCastConnected && googleCastConnectedRoomCode) {
-      if (!isCasting || room.roomCode !== googleCastConnectedRoomCode) {
+      if (!isCasting || room !== googleCastConnectedRoomCode) { // room is the code string
         console.log('🔗 Auto-Joining Firebase Room from Cast Session:', googleCastConnectedRoomCode);
         joinRoom(googleCastConnectedRoomCode, { guestName: user?.displayName || 'Mobile User' }).then(success => {
           if (success) {
             console.log('✅ Auto-Join Successful');
-            // Optional: redirect to remote page if sticking to single page app logic?
-            // For now, index.tsx handles the remote view so this state update is enough.
           }
         });
       }
     }
-  }, [isGoogleCastConnected, googleCastConnectedRoomCode, isCasting, room.roomCode]);
+  }, [isGoogleCastConnected, googleCastConnectedRoomCode, isCasting, room]);
 
   // Mobile Remote Host Logic
   const mobilePlayerRef = useRef<YouTube>(null);
