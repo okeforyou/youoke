@@ -87,22 +87,16 @@ const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
 
     // --- DETECT MODE (Fallback for Web) ---
     useEffect(() => {
-        // Only run Web logic if NOT cast
-        if (isCastEnvironment.current) return;
-
-        // Generate Room Code for Web Mode
-        // In real universal receiver, we would check for Cast SDK first
-        const newCode = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-        setRoomCode(newCode);
+        // We ALWAYS generate a room code now, to allow Hybrid Mode (Phone joins Cast session via Web/Firebase)
+        // In the future, we might want to sync this with the Cast Session ID, but random is fine for now.
+        if (!roomCode) {
+            const newCode = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+            setRoomCode(newCode);
+        }
     }, []);
 
-    // --- FIREBASE LOGIC (Only if Web Mode) ---
+    // --- FIREBASE LOGIC (Hybrid - Sync for Web Clients) ---
     useEffect(() => {
-        // If we are in Cast Mode, we DO NOT sync with Firebase Room ID 
-        // (Unless we want to support "Phone joins TV via Code" while TV is Casting... 
-        // but that's advanced. For now, keep them separate to avoid conflicts).
-
-        if (mode === 'CAST') return;
         if (!roomCode || !realtimeDb) return;
 
         const initAuth = async () => {
@@ -114,40 +108,32 @@ const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
 
         const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
 
-        // Create Room
-        // Only set initial state if not exists or force reset (simplification)
+        // Create Room (Host)
+        // We only set initial state if loop hasn't started
         set(roomRef, {
-            hostId: 'monitor-' + Date.now(),
+            hostId: 'tv-' + Date.now(),
             isHost: true,
             state: state,
             createdAt: Date.now(),
+            mode: mode
         });
 
-        // Listen
-        const stateRef = ref(realtimeDb, `rooms/${roomCode}/state`);
-        const unsub = onValue(stateRef, (snap) => {
-            const val = snap.val();
-            if (val) {
-                setState(val);
-                setIsConnected(true);
-            }
-        });
+        // Listen (Optional: if we want to sync state back from DB? No, TV is source of truth)
+        // But we DO need to update DB when TV state changes.
+        // This is handled by onStateChange in the component or Executor.
 
-        return () => {
-            off(stateRef);
-            unsub();
-        };
     }, [roomCode, mode]);
 
-    // --- COMMAND EXECUTOR (Only for Web Mode) ---
-    // In Cast Mode, commands come via MessageBus, not Firebase
-    // But we can conditionally use it if needed. For now, let's keep it robust.
-    const shouldEnableExecutor = mode === 'WEB' && !!roomCode;
+    // --- COMMAND EXECUTOR ---
+    // Enable for BOTH Web and Cast modes to support QR Code guests
     useCommandExecutor({
-        roomCode: shouldEnableExecutor ? roomCode : '', // Disable if Cast or No Room
+        roomCode: roomCode || '',
         playerRef,
         currentState: state,
-        onStateChange: (newState) => setState(prev => ({ ...prev, ...newState }))
+        onStateChange: (newState) => {
+            console.log('🔄 State Updated via Command:', newState);
+            setState(prev => ({ ...prev, ...newState }));
+        }
     });
 
     return {
@@ -432,12 +418,20 @@ const TVPage = () => {
                 }
             `}</style>
 
-            {/* Mode Debugger (Hidden in prod ideally, helpful now) */}
-            {mode === 'CAST' && (
-                <div className="fixed top-4 right-4 z-50 bg-blue-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg opacity-50">
-                    Native Cast Mode
+            {/* Mode Debugger / Info Overlay */}
+            <div className="fixed top-4 right-4 z-50 flex flex-col items-end gap-2 pointer-events-none">
+                <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg ${mode === 'CAST' ? 'bg-blue-600' : 'bg-gray-700'} opacity-70`}>
+                    Mode: {mode}
                 </div>
-            )}
+                <div className="bg-black/50 px-3 py-1 rounded-lg text-[10px] text-gray-400 font-mono backdrop-blur-md">
+                    Room: {roomCode || '---'} | Status: {isConnected ? 'Online' : 'Offline'}
+                </div>
+                {debugMsg && (
+                    <div className="bg-red-500/20 px-3 py-1 rounded-lg text-[10px] text-red-200 font-mono max-w-[200px]">
+                        {debugMsg}
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
