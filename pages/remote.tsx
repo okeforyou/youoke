@@ -8,7 +8,8 @@ import {
     MagnifyingGlassIcon, PlusIcon, CheckIcon,
     SignalIcon, SignalSlashIcon, DevicePhoneMobileIcon,
     ArrowsPointingOutIcon, ArrowPathIcon,
-    ListBulletIcon, XMarkIcon, MusicalNoteIcon
+    ListBulletIcon, XMarkIcon, MusicalNoteIcon, MicrophoneIcon,
+    ArrowsPointingInIcon
 } from '@heroicons/react/24/outline';
 import { DebounceInput } from 'react-debounce-input';
 import axios from 'axios';
@@ -21,6 +22,7 @@ type RemoteState = {
     queue?: any[];
     currentIndex?: number;
     currentVideo?: any;
+    isFullscreen?: boolean; // Optional: synced from host
 };
 
 type SearchResult = {
@@ -39,15 +41,23 @@ export default function RemotePage() {
     // Sync Suppression
     const lastInteractionRef = useRef<number>(0);
 
-    // Search State
+    // Filter/UI State
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
     const [isSearching, setIsSearching] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
     const [addedId, setAddedId] = useState<string | null>(null);
-
-    // New Features State
     const [searchType, setSearchType] = useState<'song' | 'karaoke'>('song');
+
+    // Optimistic Fullscreen State
+    const [isFullScreen, setIsFullScreen] = useState(false);
+
+    // Sync local fullscreen with host if available
+    useEffect(() => {
+        if (status?.isFullscreen !== undefined) {
+            setIsFullScreen(status.isFullscreen);
+        }
+    }, [status?.isFullscreen]);
 
     // Initial Load - Get Session ID from URL
     useEffect(() => {
@@ -131,7 +141,6 @@ export default function RemotePage() {
         const stateRef = ref(realtimeDb, `rooms/${sessionId}/state`);
         const unsubscribe = onValue(stateRef, (snapshot) => {
             const val = snapshot.val();
-            console.log('🔥 [Remote] Firebase State Update:', val);
             if (val) {
                 // SYNC SUPPRESSION match polling logic
                 const isInteracting = Date.now() - lastInteractionRef.current < 2000;
@@ -191,6 +200,13 @@ export default function RemotePage() {
             console.error('Failed to send command:', e);
             setErrorMessage('เชื่อมต่อล้มเหลว กำลังลองใหม่...');
         }
+    };
+
+    // Toggle Fullscreen Wrapper
+    const toggleFullscreen = () => {
+        const nextState = !isFullScreen;
+        setIsFullScreen(nextState); // Optimistic Update
+        sendCommand('TOGGLE_FULLSCREEN');
     };
 
     // Search Handler
@@ -253,9 +269,6 @@ export default function RemotePage() {
         sendCommand('ADD_QUEUE', { video: queueVideo });
         setAddedId(video.videoId);
         setTimeout(() => setAddedId(null), 2000);
-        // Clear search to show queue feedback
-        // setSearchQuery(''); 
-        // setSearchResults([]);
     };
 
     const handleClearSearch = () => {
@@ -298,7 +311,10 @@ export default function RemotePage() {
     const isShowingResults = searchResults.length > 0 || (searchQuery.length > 0 && isSearching);
 
     return (
-        <div className="h-screen bg-black text-white flex flex-col font-sans overflow-hidden relative">
+        <div
+            className="h-screen bg-black text-white flex flex-col font-sans overflow-hidden relative"
+            style={{ overscrollBehaviorY: 'none' }} // Prevent Pull-to-Refresh
+        >
             <Head>
                 <title>รีโมทคอนโทรล</title>
                 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
@@ -315,8 +331,16 @@ export default function RemotePage() {
                     <span className="text-xs font-bold tracking-wider text-gray-300">ROOM {sessionId}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <button onClick={() => sendCommand('TOGGLE_FULLSCREEN')} className="p-2 rounded-full hover:bg-white/10 active:scale-95 transition-all text-gray-400">
-                        <ArrowsPointingOutIcon className="w-5 h-5" />
+                    {/* Fullscreen Toggle with Status & Icon Swap */}
+                    <button
+                        onClick={toggleFullscreen}
+                        className={`p-2 rounded-full active:scale-95 transition-all ${isFullScreen ? 'bg-white text-black' : 'hover:bg-white/10 text-gray-400'}`}
+                    >
+                        {isFullScreen ? (
+                            <ArrowsPointingInIcon className="w-5 h-5" />
+                        ) : (
+                            <ArrowsPointingOutIcon className="w-5 h-5" />
+                        )}
                     </button>
                     <button onClick={() => window.location.reload()} className="p-2 rounded-full hover:bg-white/10 active:scale-95 transition-all text-gray-400">
                         <ArrowPathIcon className="w-5 h-5" />
@@ -343,18 +367,20 @@ export default function RemotePage() {
                     )}
                 </div>
 
-                {/* Styled Toggles (Segmented Control) */}
+                {/* Styled Toggles (Segmented Control with Icons) */}
                 <div className="bg-zinc-800/80 p-1 rounded-xl flex shadow-inner border border-white/5 backdrop-blur-sm">
                     <button
                         onClick={() => setSearchType('song')}
-                        className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${searchType === 'song' ? 'bg-zinc-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}
+                        className={`flex-1 py-1.5 flex items-center justify-center gap-2 text-xs font-bold rounded-lg transition-all ${searchType === 'song' ? 'bg-zinc-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}
                     >
+                        <MusicalNoteIcon className="w-3.5 h-3.5" />
                         ทั่วไป
                     </button>
                     <button
                         onClick={() => setSearchType('karaoke')}
-                        className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${searchType === 'karaoke' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}
+                        className={`flex-1 py-1.5 flex items-center justify-center gap-2 text-xs font-bold rounded-lg transition-all ${searchType === 'karaoke' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}
                     >
+                        <MicrophoneIcon className="w-3.5 h-3.5" />
                         คาราโอเกะ
                     </button>
                 </div>
