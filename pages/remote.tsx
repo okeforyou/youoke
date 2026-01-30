@@ -12,7 +12,7 @@ import {
     SignalIcon, SignalSlashIcon, DevicePhoneMobileIcon,
     ArrowsPointingOutIcon, ArrowPathIcon,
     ListBulletIcon, XMarkIcon, MusicalNoteIcon, MicrophoneIcon,
-    ArrowsPointingInIcon, TrashIcon
+    ArrowsPointingInIcon, TrashIcon, Bars3Icon
 } from '@heroicons/react/24/outline';
 import { DebounceInput } from 'react-debounce-input';
 import axios from 'axios';
@@ -39,31 +39,32 @@ function SortableQueueItem({ id, video, index, getThumbnail, onRemove }: any) {
 
     return (
         <div ref={setNodeRef} style={style} className="flex items-center gap-3 p-2 rounded-xl bg-black/20 border border-white/5 data-[dragging=true]:bg-white/10 relative">
-            {/* Drag Handle */}
+            {/* Drag Handle - Left */}
             <div
                 ref={setActivatorNodeRef}
                 {...listeners}
                 {...attributes}
                 className="text-gray-600 cursor-grab active:cursor-grabbing p-2 -ml-2 hover:text-white touch-none"
             >
-                <ListBulletIcon className="w-5 h-5" />
+                <Bars3Icon className="w-6 h-6" />
             </div>
 
-            {/* Remove Button (Replaces Index) */}
-            <button
-                onClick={(e) => {
-                    e.stopPropagation(); // Prevent drag start?
-                    onRemove(index);
-                }}
-                className="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-full transition-colors"
-            >
-                <TrashIcon className="w-5 h-5" />
-            </button>
             <img src={getThumbnail(video)} className="w-10 h-10 rounded-md object-cover opacity-70 pointer-events-none" alt="" />
             <div className="flex-1 min-w-0 pointer-events-none">
                 <p className="text-sm font-medium text-gray-200 truncate">{video.title}</p>
                 <p className="text-xs text-gray-500 truncate">{video.addedBy?.displayName || "Guest"}</p>
             </div>
+
+            {/* Remove Button - Right */}
+            <button
+                onClick={(e) => {
+                    e.stopPropagation(); // Prevent drag start?
+                    onRemove(index);
+                }}
+                className="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-full transition-colors shrink-0"
+            >
+                <TrashIcon className="w-5 h-5" />
+            </button>
         </div>
     );
 }
