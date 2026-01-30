@@ -3,7 +3,7 @@ import { realtimeDb } from '../firebase';
 import { ref, set, remove, onValue, onDisconnect, serverTimestamp } from 'firebase/database';
 
 export type RemoteCommand = {
-    type: 'PLAY' | 'PAUSE' | 'NEXT' | 'ADD_QUEUE' | 'SEEK' | 'TOGGLE_FULLSCREEN' | 'SET_FULLSCREEN' | 'REORDER_QUEUE';
+    type: 'PLAY' | 'PAUSE' | 'NEXT' | 'ADD_QUEUE' | 'SEEK' | 'TOGGLE_FULLSCREEN' | 'SET_FULLSCREEN' | 'REORDER_QUEUE' | 'REMOVE_AT';
     payload?: any;
     timestamp: number;
 };
@@ -261,6 +261,20 @@ export const useRemoteHost = (
                 console.log('[RemoteHost] Reordering queue:', cmd.payload.newQueue.length, 'items');
                 if (setPlaylistRef.current) {
                     setPlaylistRef.current(cmd.payload.newQueue);
+                }
+            }
+            return;
+        }
+
+        // REMOVE_AT
+        if (cmd.type === 'REMOVE_AT') {
+            const index = cmd.payload?.index;
+            if (typeof index === 'number' && index >= 0 && index < queue.length) {
+                console.log('[RemoteHost] Removing item at index:', index);
+                const newQueue = [...queue];
+                newQueue.splice(index, 1);
+                if (setPlaylistRef.current) {
+                    setPlaylistRef.current(newQueue);
                 }
             }
             return;

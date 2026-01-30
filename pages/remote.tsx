@@ -12,13 +12,13 @@ import {
     SignalIcon, SignalSlashIcon, DevicePhoneMobileIcon,
     ArrowsPointingOutIcon, ArrowPathIcon,
     ListBulletIcon, XMarkIcon, MusicalNoteIcon, MicrophoneIcon,
-    ArrowsPointingInIcon
+    ArrowsPointingInIcon, TrashIcon
 } from '@heroicons/react/24/outline';
 import { DebounceInput } from 'react-debounce-input';
 import axios from 'axios';
 
 // Sortable Queue Item Component (with Drag Handle)
-function SortableQueueItem({ id, video, index, getThumbnail }: any) {
+function SortableQueueItem({ id, video, index, getThumbnail, onRemove }: any) {
     const {
         attributes,
         listeners,
@@ -49,7 +49,16 @@ function SortableQueueItem({ id, video, index, getThumbnail }: any) {
                 <ListBulletIcon className="w-5 h-5" />
             </div>
 
-            <span className="text-sm font-mono text-gray-500 w-4 text-center">{index + 1}</span>
+            {/* Remove Button (Replaces Index) */}
+            <button
+                onClick={(e) => {
+                    e.stopPropagation(); // Prevent drag start?
+                    onRemove(index);
+                }}
+                className="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-full transition-colors"
+            >
+                <TrashIcon className="w-5 h-5" />
+            </button>
             <img src={getThumbnail(video)} className="w-10 h-10 rounded-md object-cover opacity-70 pointer-events-none" alt="" />
             <div className="flex-1 min-w-0 pointer-events-none">
                 <p className="text-sm font-medium text-gray-200 truncate">{video.title}</p>
@@ -131,6 +140,28 @@ export default function RemotePage() {
                 setStatus(prev => prev ? { ...prev, queue: newFullQueue } : null);
             }
         }
+    };
+
+    // Remove Handler
+    const handleRemove = (index: number) => {
+        // Calculate actual index in full queue
+        // upcomingQueue is slice(currentIndex + 1)
+        // so actual index = currentIndex + 1 + index
+        if (currentIndex === -1) return;
+
+        const actualIndex = currentIndex + 1 + index;
+        console.log('🗑️ Removing item at index:', actualIndex, '(Local index:', index, ')');
+
+        // Send Command
+        sendCommand('REMOVE_AT', { index: actualIndex });
+
+        // Optimistic Update
+        const newUpcoming = [...upcomingQueue];
+        newUpcoming.splice(index, 1);
+        setStatus(prev => prev ? {
+            ...prev,
+            queue: [...queueList.slice(0, currentIndex + 1), ...newUpcoming]
+        } : null);
     };
 
     // Optimistic Fullscreen State
@@ -537,6 +568,7 @@ export default function RemotePage() {
                                                     video={video}
                                                     index={idx}
                                                     getThumbnail={getThumbnail}
+                                                    onRemove={handleRemove}
                                                 />
                                             );
                                         })}
