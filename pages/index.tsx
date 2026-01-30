@@ -674,8 +674,12 @@ function HomePage() {
       return;
     }
 
-    const oldIndex = parseInt(active.id.toString());
-    const newIndex = parseInt(over.id.toString());
+    // Find indices based on Unique IDs (keys)
+    // Note: displayPlaylist is the source of truth for the displayed list
+    const oldIndex = displayPlaylist?.findIndex(v => (v.key ? v.key.toString() : `video-${displayPlaylist.indexOf(v)}`) === active.id) ?? -1;
+    const newIndex = displayPlaylist?.findIndex(v => (v.key ? v.key.toString() : `video-${displayPlaylist.indexOf(v)}`) === over.id) ?? -1;
+
+    if (oldIndex === -1 || newIndex === -1) return;
 
     if (isGoogleCastConnected) {
       // Google Cast - reorder and update current index
@@ -754,7 +758,7 @@ function HomePage() {
             onDragEnd={handleDragEnd}
           >
             <SortableContext
-              items={displayPlaylist?.map((_, index) => index.toString()) || []}
+              items={displayPlaylist?.map((v, i) => v.key ? v.key.toString() : `video-${i}`) || []}
               strategy={verticalListSortingStrategy}
             >
               <div className="grid grid-cols-1 gap-2">
@@ -768,9 +772,12 @@ function HomePage() {
                       ? videoIndex + castCurrentIndex
                       : videoIndex;
 
+                  // Construct Unique Key safely
+                  const uniqueKey = video.key ? video.key.toString() : `video-${videoIndex}`;
+
                   return (
                     <DraggablePlaylistItem
-                      key={video.videoId}
+                      key={uniqueKey}
                       video={video}
                       videoIndex={videoIndex}
                       onPlayNow={() => skipVideoTo(video, realIndex)}

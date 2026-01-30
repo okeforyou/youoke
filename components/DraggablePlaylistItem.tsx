@@ -24,7 +24,7 @@ export function DraggablePlaylistItem({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: videoIndex.toString() });
+  } = useSortable({ id: video.key ? video.key.toString() : `video-${videoIndex}` });
 
   const style = {
     transform: CSS.Transform.toString(transform),
