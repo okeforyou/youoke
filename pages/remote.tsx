@@ -525,6 +525,7 @@ const RemotePage = () => {
             <div className="absolute inset-0 bg-black/60 z-0 pointer-events-none" />
 
             {/* 1. Header (Room Info) */}
+            {/* 1. Header (Room Info) */}
             <div className={`px-4 pt-3 pb-3 bg-[#1e1e2d] sticky top-0 z-30 transition-shadow duration-200 ${scrolled ? 'shadow-xl shadow-black/20' : ''}`}>
                 <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
@@ -534,179 +535,180 @@ const RemotePage = () => {
                         </h1>
                     </div>
                     <div className="flex items-center gap-2">
+                        {/* Action Buttons */}
                         <button onClick={() => setShowQR(true)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
                             <QrCodeIcon className="w-5 h-5" />
                         </button>
                         <button onClick={handleInvite} className="p-2 bg-pink-500/10 rounded-full hover:bg-pink-500/20 text-pink-500 transition-colors">
                             <UserPlusIcon className="w-5 h-5" />
                         </button>
-                    </div>
-                </div>    <button
-                    onClick={toggleFullscreen}
-                    className={`p-2 rounded-full active:scale-95 transition-all ${isFullScreen ? 'bg-white text-black' : 'hover:bg-white/10 text-gray-400'}`}
-                >
-                    {isFullScreen ? (
-                        <ArrowsPointingInIcon className="w-5 h-5" />
-                    ) : (
-                        <ArrowsPointingOutIcon className="w-5 h-5" />
-                    )}
-                </button>
-                <button onClick={() => window.location.reload()} className="p-2 rounded-full hover:bg-white/10 active:scale-95 transition-all text-gray-400">
-                    <ArrowPathIcon className="w-5 h-5" />
-                </button>
-            </div>
-        </div>
-
-            {/* 2. Top Search Bar */ }
-    <div className="p-4 z-20 bg-gradient-to-b from-black/80 to-transparent shrink-0 space-y-3">
-        <div className="relative">
-            <MagnifyingGlassIcon className="absolute left-4 top-3.5 w-5 h-5 text-gray-400 pointer-events-none" />
-            <DebounceInput
-                minLength={2}
-                debounceTimeout={500}
-                placeholder={searchType === 'karaoke' ? "ค้นหาเพลงคาราโอเกะ..." : "ค้นหาเพลง..."}
-                className="w-full bg-zinc-900/80 border border-white/10 rounded-2xl py-3 pl-12 pr-10 text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none placeholder-gray-500 transition-all font-medium shadow-lg backdrop-blur-sm"
-                onChange={(e) => handleSearch(e.target.value)}
-                value={searchQuery}
-            />
-            {searchQuery && (
-                <button onClick={handleClearSearch} className="absolute right-3 top-3 p-1 rounded-full bg-white/10 text-gray-400 hover:text-white">
-                    <XMarkIcon className="w-4 h-4" />
-                </button>
-            )}
-        </div>
-
-        {/* Styled Toggles (Segmented Control with Icons) */}
-        <div className="bg-zinc-800/80 p-1 rounded-xl flex shadow-inner border border-white/5 backdrop-blur-sm">
-            <button
-                onClick={() => setSearchType('song')}
-                className={`flex-1 py-1.5 flex items-center justify-center gap-2 text-xs font-bold rounded-lg transition-all ${searchType === 'song' ? 'bg-zinc-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}
-            >
-                <MusicalNoteIcon className="w-3.5 h-3.5" />
-                ทั่วไป
-            </button>
-            <button
-                onClick={() => setSearchType('karaoke')}
-                className={`flex-1 py-1.5 flex items-center justify-center gap-2 text-xs font-bold rounded-lg transition-all ${searchType === 'karaoke' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}
-            >
-                <MicrophoneIcon className="w-3.5 h-3.5" />
-                คาราโอเกะ
-            </button>
-        </div>
-    </div>
-
-    {/* 3. Main List Area (Switch between Queue & Results) */ }
-    <div className="flex-1 overflow-y-auto min-h-0 z-10 pb-44 px-4 remote-scroll"> {/* pb-44 for Bottom Player */}
-
-        {/* Mode: Search Results */}
-        {isShowingResults && (
-            <div className="space-y-2 animate-fadeIn">
-                <h3 className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-3 mt-2">ผลการค้นหา</h3>
-                {isSearching && <div className="text-center py-8"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" /></div>}
-
-                {!isSearching && searchResults.length === 0 && <div className="text-center py-10 text-gray-500">ไม่พบเพลง</div>}
-
-                {!isSearching && searchResults.map((video: any) => (
-                    <div key={video.videoId} onClick={() => handleAddQueue({ ...video, thumbnail: getThumbnail(video) })} className={`flex items-center gap-3 p-2 pr-3 rounded-xl active:scale-[0.98] transition-all cursor-pointer ${addedId === video.videoId ? 'bg-green-500/20 border border-green-500/50' : 'bg-zinc-900/60 border border-white/5 hover:bg-white/10'}`}>
-                        <img src={getThumbnail(video)} className="w-14 h-14 rounded-lg object-cover bg-black shadow-md" alt="" />
-                        <div className="flex-1 min-w-0">
-                            <h3 className={`font-bold text-sm line-clamp-2 leading-tight ${addedId === video.videoId ? 'text-green-400' : 'text-white'}`}>{video.title}</h3>
-                            <p className="text-xs text-gray-400 mt-1">{video.author?.name || video.author || "YouTube"}</p>
-                        </div>
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${addedId === video.videoId ? 'bg-green-500 text-white' : 'bg-white/10 text-gray-400'}`}>
-                            {addedId === video.videoId ? <CheckIcon className="w-5 h-5" /> : <PlusIcon className="w-5 h-5" />}
-                        </div>
-                    </div>
-                ))}
-            </div>
-        )}
-
-        {/* Mode: Queue (Default) */}
-        {!isShowingResults && (
-            <div className="animate-fadeIn">
-                {upcomingQueue.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 opacity-50 space-y-4">
-                        <MusicalNoteIcon className="w-16 h-16 text-gray-500" />
-                        <p className="text-gray-400">คิวเพลงว่างเปล่า...</p>
-                        <p className="text-xs text-gray-600">พิมพ์ชื่อเพลงด้านบนเพื่อเริ่มร้องเพลง!</p>
-                    </div>
-                ) : (
-                    <div className="space-y-2">
-                        <div className="flex items-center justify-between mb-3 mt-2">
-                            <h3 className="text-xs text-gray-400 font-bold uppercase tracking-widest">คิวเพลง ({upcomingQueue.length})</h3>
-                        </div>
-
-                        <DndContext
-                            sensors={sensors}
-                            collisionDetection={closestCenter}
-                            onDragEnd={handleDragEnd}
+                        <button
+                            onClick={toggleFullscreen}
+                            className={`p-2 rounded-full active:scale-95 transition-all ${isFullScreen ? 'bg-white text-black' : 'hover:bg-white/10 text-gray-400'}`}
                         >
-                            <SortableContext
-                                items={upcomingQueue.map((v: any) => v.key ? v.key.toString() : `video-${upcomingQueue.indexOf(v)}`)}
-                                strategy={verticalListSortingStrategy}
-                            >
-                                {upcomingQueue.map((video: any, idx: number) => {
-                                    const uniqueId = video.key ? video.key.toString() : `video-${idx}`;
-                                    return (
-                                        <SortableQueueItem
-                                            key={uniqueId}
-                                            id={uniqueId}
-                                            video={video}
-                                            index={idx}
-                                            getThumbnail={getThumbnail}
-                                            onRemove={handleRemove}
-                                        />
-                                    );
-                                })}
-                            </SortableContext>
-                        </DndContext>
+                            {isFullScreen ? (
+                                <ArrowsPointingInIcon className="w-5 h-5" />
+                            ) : (
+                                <ArrowsPointingOutIcon className="w-5 h-5" />
+                            )}
+                        </button>
+                        <button onClick={() => window.location.reload()} className="p-2 rounded-full hover:bg-white/10 active:scale-95 transition-all text-gray-400">
+                            <ArrowPathIcon className="w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* 2. Top Search Bar */}
+            <div className="p-4 z-20 bg-gradient-to-b from-black/80 to-transparent shrink-0 space-y-3">
+                <div className="relative">
+                    <MagnifyingGlassIcon className="absolute left-4 top-3.5 w-5 h-5 text-gray-400 pointer-events-none" />
+                    <DebounceInput
+                        minLength={2}
+                        debounceTimeout={500}
+                        placeholder={searchType === 'karaoke' ? "ค้นหาเพลงคาราโอเกะ..." : "ค้นหาเพลง..."}
+                        className="w-full bg-zinc-900/80 border border-white/10 rounded-2xl py-3 pl-12 pr-10 text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none placeholder-gray-500 transition-all font-medium shadow-lg backdrop-blur-sm"
+                        onChange={(e) => handleSearch(e.target.value)}
+                        value={searchQuery}
+                    />
+                    {searchQuery && (
+                        <button onClick={handleClearSearch} className="absolute right-3 top-3 p-1 rounded-full bg-white/10 text-gray-400 hover:text-white">
+                            <XMarkIcon className="w-4 h-4" />
+                        </button>
+                    )}
+                </div>
+
+                {/* Styled Toggles (Segmented Control with Icons) */}
+                <div className="bg-zinc-800/80 p-1 rounded-xl flex shadow-inner border border-white/5 backdrop-blur-sm">
+                    <button
+                        onClick={() => setSearchType('song')}
+                        className={`flex-1 py-1.5 flex items-center justify-center gap-2 text-xs font-bold rounded-lg transition-all ${searchType === 'song' ? 'bg-zinc-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}
+                    >
+                        <MusicalNoteIcon className="w-3.5 h-3.5" />
+                        ทั่วไป
+                    </button>
+                    <button
+                        onClick={() => setSearchType('karaoke')}
+                        className={`flex-1 py-1.5 flex items-center justify-center gap-2 text-xs font-bold rounded-lg transition-all ${searchType === 'karaoke' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}
+                    >
+                        <MicrophoneIcon className="w-3.5 h-3.5" />
+                        คาราโอเกะ
+                    </button>
+                </div>
+            </div>
+
+            {/* 3. Main List Area (Switch between Queue & Results) */}
+            <div className="flex-1 overflow-y-auto min-h-0 z-10 pb-44 px-4 remote-scroll"> {/* pb-44 for Bottom Player */}
+
+                {/* Mode: Search Results */}
+                {isShowingResults && (
+                    <div className="space-y-2 animate-fadeIn">
+                        <h3 className="text-xs text-gray-400 font-bold uppercase tracking-widest mb-3 mt-2">ผลการค้นหา</h3>
+                        {isSearching && <div className="text-center py-8"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" /></div>}
+
+                        {!isSearching && searchResults.length === 0 && <div className="text-center py-10 text-gray-500">ไม่พบเพลง</div>}
+
+                        {!isSearching && searchResults.map((video: any) => (
+                            <div key={video.videoId} onClick={() => handleAddQueue({ ...video, thumbnail: getThumbnail(video) })} className={`flex items-center gap-3 p-2 pr-3 rounded-xl active:scale-[0.98] transition-all cursor-pointer ${addedId === video.videoId ? 'bg-green-500/20 border border-green-500/50' : 'bg-zinc-900/60 border border-white/5 hover:bg-white/10'}`}>
+                                <img src={getThumbnail(video)} className="w-14 h-14 rounded-lg object-cover bg-black shadow-md" alt="" />
+                                <div className="flex-1 min-w-0">
+                                    <h3 className={`font-bold text-sm line-clamp-2 leading-tight ${addedId === video.videoId ? 'text-green-400' : 'text-white'}`}>{video.title}</h3>
+                                    <p className="text-xs text-gray-400 mt-1">{video.author?.name || video.author || "YouTube"}</p>
+                                </div>
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${addedId === video.videoId ? 'bg-green-500 text-white' : 'bg-white/10 text-gray-400'}`}>
+                                    {addedId === video.videoId ? <CheckIcon className="w-5 h-5" /> : <PlusIcon className="w-5 h-5" />}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {/* Mode: Queue (Default) */}
+                {!isShowingResults && (
+                    <div className="animate-fadeIn">
+                        {upcomingQueue.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-20 opacity-50 space-y-4">
+                                <MusicalNoteIcon className="w-16 h-16 text-gray-500" />
+                                <p className="text-gray-400">คิวเพลงว่างเปล่า...</p>
+                                <p className="text-xs text-gray-600">พิมพ์ชื่อเพลงด้านบนเพื่อเริ่มร้องเพลง!</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between mb-3 mt-2">
+                                    <h3 className="text-xs text-gray-400 font-bold uppercase tracking-widest">คิวเพลง ({upcomingQueue.length})</h3>
+                                </div>
+
+                                <DndContext
+                                    sensors={sensors}
+                                    collisionDetection={closestCenter}
+                                    onDragEnd={handleDragEnd}
+                                >
+                                    <SortableContext
+                                        items={upcomingQueue.map((v: any) => v.key ? v.key.toString() : `video-${upcomingQueue.indexOf(v)}`)}
+                                        strategy={verticalListSortingStrategy}
+                                    >
+                                        {upcomingQueue.map((video: any, idx: number) => {
+                                            const uniqueId = video.key ? video.key.toString() : `video-${idx}`;
+                                            return (
+                                                <SortableQueueItem
+                                                    key={uniqueId}
+                                                    id={uniqueId}
+                                                    video={video}
+                                                    index={idx}
+                                                    getThumbnail={getThumbnail}
+                                                    onRemove={handleRemove}
+                                                />
+                                            );
+                                        })}
+                                    </SortableContext>
+                                </DndContext>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
-        )}
-    </div>
 
-    {/* 4. Bottom Mini Player (Fixed) */ }
-    <div className="fixed bottom-0 inset-x-0 z-50 p-3 pb-safe bg-gradient-to-t from-black via-zinc-900 to-transparent pt-6 pointer-events-none">
-        <div className="bg-zinc-800/90 backdrop-blur-xl border border-white/10 rounded-2xl p-3 shadow-[0_0_30px_rgba(0,0,0,0.5)] flex items-center gap-3 pointer-events-auto">
-            {/* Tiny Thumb */}
-            <div className="w-12 h-12 rounded-lg bg-black overflow-hidden shrink-0 border border-white/10 relative">
-                <img src={highResThumbnail} className="w-full h-full object-cover" alt="" />
-                {status?.isPlaying && <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                    <div className="w-3 h-3 bg-primary rounded-full animate-pulse shadow-[0_0_10px_theme(colors.primary.DEFAULT)]"></div>
-                </div>}
-            </div>
+            {/* 4. Bottom Mini Player (Fixed) */}
+            <div className="fixed bottom-0 inset-x-0 z-50 p-3 pb-safe bg-gradient-to-t from-black via-zinc-900 to-transparent pt-6 pointer-events-none">
+                <div className="bg-zinc-800/90 backdrop-blur-xl border border-white/10 rounded-2xl p-3 shadow-[0_0_30px_rgba(0,0,0,0.5)] flex items-center gap-3 pointer-events-auto">
+                    {/* Tiny Thumb */}
+                    <div className="w-12 h-12 rounded-lg bg-black overflow-hidden shrink-0 border border-white/10 relative">
+                        <img src={highResThumbnail} className="w-full h-full object-cover" alt="" />
+                        {status?.isPlaying && <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                            <div className="w-3 h-3 bg-primary rounded-full animate-pulse shadow-[0_0_10px_theme(colors.primary.DEFAULT)]"></div>
+                        </div>}
+                    </div>
 
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-0.5">
-                    <div className="text-[10px] font-bold bg-primary text-white px-1.5 py-0.5 rounded-[4px] leading-none tracking-wider">PLAYING</div>
-                </div>
-                <h3 className="text-sm font-bold text-white truncate leading-tight">{status?.title || "ไม่ได้เล่นเพลง"}</h3>
-                <p className="text-xs text-gray-400 truncate">{status?.currentVideo?.author || "..."}</p>
-            </div>
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                            <div className="text-[10px] font-bold bg-primary text-white px-1.5 py-0.5 rounded-[4px] leading-none tracking-wider">PLAYING</div>
+                        </div>
+                        <h3 className="text-sm font-bold text-white truncate leading-tight">{status?.title || "ไม่ได้เล่นเพลง"}</h3>
+                        <p className="text-xs text-gray-400 truncate">{status?.currentVideo?.author || "..."}</p>
+                    </div>
 
-            {/* Controls */}
-            <div className="flex items-center gap-4 shrink-0 pr-2">
-                {/* Removed Back Button */}
+                    {/* Controls */}
+                    <div className="flex items-center gap-4 shrink-0 pr-2">
+                        {/* Removed Back Button */}
 
-                <button
-                    onClick={() => {
-                        const nextState = !(status?.isPlaying || false);
-                        lastInteractionRef.current = Date.now();
-                        setStatus(prev => prev ? ({ ...prev, isPlaying: nextState }) : null);
-                        sendCommand(nextState ? 'PLAY' : 'PAUSE');
-                    }}
-                    className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-lg active:scale-95 transition-all"
-                >
-                    {status?.isPlaying ? <PauseIcon className="w-6 h-6" /> : <PlayIcon className="w-6 h-6 ml-0.5" />}
-                </button>
+                        <button
+                            onClick={() => {
+                                const nextState = !(status?.isPlaying || false);
+                                lastInteractionRef.current = Date.now();
+                                setStatus(prev => prev ? ({ ...prev, isPlaying: nextState }) : null);
+                                sendCommand(nextState ? 'PLAY' : 'PAUSE');
+                            }}
+                            className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-lg active:scale-95 transition-all"
+                        >
+                            {status?.isPlaying ? <PauseIcon className="w-6 h-6" /> : <PlayIcon className="w-6 h-6 ml-0.5" />}
+                        </button>
 
-                <button onClick={() => sendCommand('NEXT')} className="p-2 text-gray-400 hover:text-white active:scale-90 transition-all">
-                    <ForwardIcon className="w-8 h-8" />
-                </button>
-            </div>
-            );
+                        <button onClick={() => sendCommand('NEXT')} className="p-2 text-gray-400 hover:text-white active:scale-90 transition-all">
+                            <ForwardIcon className="w-8 h-8" />
+                        </button>
+                    </div>
+                    );
 }
 
-            export default RemotePage;
+                    export default RemotePage;
