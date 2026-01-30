@@ -68,42 +68,42 @@ export const useRemoteHost = (
     useEffect(() => {
         if (!sessionId || !realtimeDb) return;
 
-        // Don't sync if player not ready
-        // if (!playerRef.current) return; 
-
         try {
-            const currentVideo = queue.find(v => v.videoId === currentVideoId);
+            const safeQueue = Array.isArray(queue) ? queue : [];
+            const currentVideo = safeQueue.find(v => v.videoId === currentVideoId);
             const title = currentVideo?.title || "Unknown Title";
+            const currentIndex = safeQueue.findIndex(v => v.videoId === currentVideoId);
 
             // Structure matches what Monitor sends to rooms/{code}/state
             const statePayload = {
-                queue: queue, // Pass simplified queue or full queue
-                currentIndex: queue.findIndex(v => v.videoId === currentVideoId),
+                queue: safeQueue,
+                currentIndex: currentIndex,
                 currentVideo: currentVideo || null,
                 controls: {
-                    isPlaying: isPlaying, // Use logic from argument
+                    isPlaying: isPlaying,
                     isMuted: false,
                     currentTime: 0,
                     duration: 0
                 },
-                // Add legacy fields for backward compat if needed (but we strictly use new schema now)
                 videoId: currentVideoId,
                 title: title,
-                isPlaying: isPlaying, // Critical for Remote compatibility
-                isFullscreen: isFullscreen, // New Sync Field
+                isPlaying: isPlaying,
+                isFullscreen: isFullscreen,
                 timestamp: Date.now()
             };
 
-            // Use REST API for "Set State" to be robust (Write-heavy)
-            // Or use SDK since Host usually has stable connection? 
-            // Let's stick to SDK for Host Write for now, but to `rooms/` path
-            console.log('🔥 [Host] Syncing State to Firebase:', statePayload);
+            // console.log('🔥 [Host] Syncing State to Firebase:', { 
+            //     q: safeQueue.length, 
+            //     idx: currentIndex, 
+            //     vid: currentVideoId 
+            // });
+
             set(ref(realtimeDb, `rooms/${sessionId}/state`), statePayload)
                 .catch(e => console.error('❌ Host: State sync failed', e));
 
-        } catch (e) { console.error(e); }
+        } catch (e) { console.error('❌ Host: Sync Logic Error', e); }
 
-    }, [sessionId, currentVideoId, queue, isPlaying]);
+    }, [sessionId, currentVideoId, queue, isPlaying, isFullscreen]);
 
     // State for connection status
     const [connectedClients, setConnectedClients] = useState<number>(0);
