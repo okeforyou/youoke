@@ -148,7 +148,7 @@ export default function RemotePage() {
         };
     }, [sessionId, realtimeDb]);
 
-    // Presence Logic: Register as "Connected" so Host knows to close QR Modal
+    // Presence Logic: Register as "Connected" with Status (Active/Background)
     useEffect(() => {
         if (!sessionId || !isConnected || !realtimeDb) return;
 
@@ -158,38 +158,59 @@ export default function RemotePage() {
             localStorage.setItem('remote_client_id', clientId);
         }
 
-        const registerPresence = async () => {
-            console.log('🔌 Remote: Starting presence registration for', clientId);
+        const presenceRef = ref(realtimeDb, `rooms/${sessionId}/connected/${clientId}`);
 
-            const presenceRef = ref(realtimeDb, `rooms/${sessionId}/connected/${clientId}`);
-
-            // Write presence
-            try {
-                await set(presenceRef, {
-                    connectedAt: Date.now(),
-                    userAgent: navigator.userAgent
-                });
-                console.log('✅ Remote: Presence registered successfully');
-
-                // Set auto-remove on disconnect
-                onDisconnect(presenceRef).remove();
-
-                // Anti-Sleep: Request Wake Lock
-                if ('wakeLock' in navigator) {
-                    try {
-                        const wakeLock = await (navigator as any).wakeLock.request('screen');
-                        console.log('💡 Remote: Screen Wake Lock active');
-                    } catch (err) {
-                        console.warn('⚠️ Remote: Wake Lock failed', err);
-                    }
-                }
-            } catch (e) {
-                console.error('❌ Remote: Presence registration failed', e);
-            }
+        // Helper to update presence
+        const updatePresence = (state: 'active' | 'background') => {
+            set(presenceRef, {
+                connectedAt: Date.now(),
+                userAgent: navigator.userAgent,
+                state: state
+            }).catch(e => console.error('❌ Presence update failed', e));
         };
 
-        registerPresence();
-    }, [sessionId, isConnected]);
+        // Initial Registration
+        console.log('🔌 Remote: Starting presence registration for', clientId);
+        updatePresence('active');
+        console.log('✅ Remote: Presence registered successfully');
+
+        // Auto-remove on disconnect
+        onDisconnect(presenceRef).remove();
+
+        // Listen for Visibility Change (Screen Off / Background)
+        const handleVisibilityChange = () => {
+            const state = document.visibilityState === 'hidden' ? 'background' : 'active';
+            console.log(`💡 Remote: Visibility changed to ${state}`);
+            updatePresence(state);
+        };
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        // Anti-Sleep: Request Wake Lock
+        const requestWakeLock = async () => {
+            if ('wakeLock' in navigator) {
+                try {
+                    const wakeLock = await (navigator as any).wakeLock.request('screen');
+                    console.log('💡 Remote: Screen Wake Lock active');
+                } catch (err) {
+                    console.warn('⚠️ Remote: Wake Lock failed', err);
+                }
+            }
+        };
+        requestWakeLock();
+
+        // Re-request wake lock when becoming active
+        if (document.visibilityState === 'visible') {
+            requestWakeLock();
+        }
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            // Optional: remove presence on unmount? 
+            // Better to let onDisconnect handle it in case of refresh vs close.
+            // But if we perform a clean unmount (e.g. navigation), we might want to remove.
+            // For now, let's keep it robust.
+        };
+    }, [sessionId, isConnected, realtimeDb]);
 
     // Wrapper to use the shared utility
     const handleSendCommand = async (type: string, payload: any = {}) => {

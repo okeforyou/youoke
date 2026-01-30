@@ -64,7 +64,7 @@ function YoutubePlayer({
       setShowCastModeSelector(true);
     },
     toggleFullscreen: () => {
-      handleFullscreenButtonClick();
+      triggerFullscreen(); // Use enhanced handler with fallback
     },
     play: () => {
       handlePlay();

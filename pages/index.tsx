@@ -861,7 +861,7 @@ function HomePage() {
 
                     {/* Status Dot */}
                     {sessionId && (
-                      <span className={`absolute top-0 right-0 w-3 h-3 rounded-full border-2 border-white transition-all ${connectedClients > 0 ? 'bg-green-500 animate-pulse ring-2 ring-green-100' : 'bg-gray-300'}`}></span>
+                      <span className={`absolute top-0 right-0 w-3 h-3 rounded-full border-2 border-white transition-all ${getStatusColor()}`}></span>
                     )}
                   </button>
                 </div>
