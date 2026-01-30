@@ -6,6 +6,14 @@ import { ref, set, push, onValue, remove, onDisconnect } from 'firebase/database
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import {
+    PlayIcon, PauseIcon, ForwardIcon, BackwardIcon,
+    MagnifyingGlassIcon, PlusIcon, CheckIcon,
+    SignalIcon, SignalSlashIcon, DevicePhoneMobileIcon,
+    ArrowsPointingOutIcon, ArrowPathIcon,
+    ListBulletIcon, XMarkIcon, MusicalNoteIcon, MicrophoneIcon,
+    ArrowsPointingInIcon
+} from '@heroicons/react/24/outline';
 
 // Sortable Item Component
 function SortableItem(props: any) {
@@ -31,101 +39,6 @@ function SortableItem(props: any) {
         </div>
     );
 }
-
-// ... inside RemotePage component ...
-
-// DND Sensors
-const sensors = useSensors(
-    useSensor(PointerSensor, {
-        activationConstraint: {
-            distance: 8, // Requires 8px movement to start drag (prevents accidental drags on tap)
-        },
-    }),
-    useSensor(KeyboardSensor, {
-        coordinateGetter: sortableKeyboardCoordinates,
-    })
-);
-
-const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (active.id !== over?.id && status?.queue) {
-        const oldIndex = upcomingQueue.findIndex((item: any) => item.key === active.id || item.videoId === active.id);
-        const newIndex = upcomingQueue.findIndex((item: any) => item.key === over?.id || item.videoId === over?.id);
-
-        if (oldIndex !== -1 && newIndex !== -1) {
-            // Reorder upcoming queue locally first (Optimistic UI would need more complex state, skipping for now to rely on Host sync)
-            // Actually, let's just calculate new full queue and send it
-
-            const reorderedUpcoming = arrayMove(upcomingQueue, oldIndex, newIndex);
-
-            // Reconstruct FULL queue
-            // [Played/Current] + [Reordered Upcoming]
-            const playedAndCurrent = queueList.slice(0, currentIndex + 1);
-            const newFullQueue = [...playedAndCurrent, ...reorderedUpcoming];
-
-            // Send to Host
-            sendCommand('REORDER_QUEUE', { newQueue: newFullQueue });
-
-            // Optimistic update locally to prevent jumpiness
-            setStatus(prev => prev ? { ...prev, queue: newFullQueue } : null);
-        }
-    }
-};
-
-// ... (rendering logic) ...
-
-{/* Mode: Queue (Default) */ }
-{
-    !isShowingResults && (
-        <div className="animate-fadeIn">
-            {upcomingQueue.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 opacity-50 space-y-4">
-                    <MusicalNoteIcon className="w-16 h-16 text-gray-500" />
-                    <p className="text-gray-400">คิวเพลงว่างเปล่า...</p>
-                    <p className="text-xs text-gray-600">พิมพ์ชื่อเพลงด้านบนเพื่อเริ่มร้องเพลง!</p>
-                </div>
-            ) : (
-                <div className="space-y-2">
-                    <div className="flex items-center justify-between mb-3 mt-2">
-                        <h3 className="text-xs text-gray-400 font-bold uppercase tracking-widest">คิวเพลง ({upcomingQueue.length})</h3>
-                    </div>
-
-                    <DndContext
-                        sensors={sensors}
-                        collisionDetection={closestCenter}
-                        onDragEnd={handleDragEnd}
-                    >
-                        <SortableContext
-                            items={upcomingQueue.map((v: any) => v.key || v.videoId)}
-                            strategy={verticalListSortingStrategy}
-                        >
-                            {upcomingQueue.map((video: any, idx: number) => {
-                                const uniqueId = video.key || video.videoId;
-                                return (
-                                    <SortableItem key={uniqueId} id={uniqueId}>
-                                        <div className="flex items-center gap-3 p-2 rounded-xl bg-black/20 border border-white/5 active:bg-white/5 data-[dragging=true]:bg-white/10 touch-manipulation">
-                                            <div className="text-gray-600 cursor-grab active:cursor-grabbing p-1">
-                                                <ListBulletIcon className="w-5 h-5" />
-                                            </div>
-                                            <span className="text-sm font-mono text-gray-500 w-4 text-center">{idx + 1}</span>
-                                            <img src={getThumbnail(video)} className="w-10 h-10 rounded-md object-cover opacity-70 pointer-events-none" alt="" />
-                                            <div className="flex-1 min-w-0 pointer-events-none">
-                                                <p className="text-sm font-medium text-gray-200 truncate">{video.title}</p>
-                                                <p className="text-xs text-gray-500 truncate">{video.addedBy?.displayName || "Guest"}</p>
-                                            </div>
-                                        </div>
-                                    </SortableItem>
-                                );
-                            })}
-                        </SortableContext>
-                    </DndContext>
-                </div>
-            )}
-        </div>
-    )
-}
-import { DebounceInput } from 'react-debounce-input';
-import axios from 'axios';
 
 // Types
 type RemoteState = {
@@ -161,6 +74,44 @@ export default function RemotePage() {
     const [errorMessage, setErrorMessage] = useState('');
     const [addedId, setAddedId] = useState<string | null>(null);
     const [searchType, setSearchType] = useState<'song' | 'karaoke'>('song');
+
+    // DND Sensors
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8, // Requires 8px movement to start drag (prevents accidental drags on tap)
+            },
+        }),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (active.id !== over?.id && status?.queue) {
+            const oldIndex = upcomingQueue.findIndex((item: any) => item.key === active.id || item.videoId === active.id);
+            const newIndex = upcomingQueue.findIndex((item: any) => item.key === over?.id || item.videoId === over?.id);
+
+            if (oldIndex !== -1 && newIndex !== -1) {
+                // Reorder upcoming queue locally first (Optimistic UI would need more complex state, skipping for now to rely on Host sync)
+                // Actually, let's just calculate new full queue and send it
+
+                const reorderedUpcoming = arrayMove(upcomingQueue, oldIndex, newIndex);
+
+                // Reconstruct FULL queue
+                // [Played/Current] + [Reordered Upcoming]
+                const playedAndCurrent = queueList.slice(0, currentIndex + 1);
+                const newFullQueue = [...playedAndCurrent, ...reorderedUpcoming];
+
+                // Send to Host
+                sendCommand('REORDER_QUEUE', { newQueue: newFullQueue });
+
+                // Optimistic update locally to prevent jumpiness
+                setStatus(prev => prev ? { ...prev, queue: newFullQueue } : null);
+            }
+        }
+    };
 
     // Optimistic Fullscreen State
     const [isFullScreen, setIsFullScreen] = useState(false);
@@ -526,6 +477,7 @@ export default function RemotePage() {
                 )}
 
                 {/* Mode: Queue (Default) */}
+                {/* Mode: Queue (Default) */}
                 {!isShowingResults && (
                     <div className="animate-fadeIn">
                         {upcomingQueue.length === 0 ? (
@@ -540,16 +492,35 @@ export default function RemotePage() {
                                     <h3 className="text-xs text-gray-400 font-bold uppercase tracking-widest">คิวเพลง ({upcomingQueue.length})</h3>
                                 </div>
 
-                                {upcomingQueue.map((video: any, idx: number) => (
-                                    <div key={idx} className="flex items-center gap-3 p-2 rounded-xl bg-black/20 border border-white/5">
-                                        <span className="text-sm font-mono text-gray-500 w-6 text-center">{idx + 1}</span>
-                                        <img src={getThumbnail(video)} className="w-10 h-10 rounded-md object-cover opacity-70" alt="" />
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium text-gray-200 truncate">{video.title}</p>
-                                            <p className="text-xs text-gray-500 truncate">{video.addedBy?.displayName || "Guest"}</p>
-                                        </div>
-                                    </div>
-                                ))}
+                                <DndContext
+                                    sensors={sensors}
+                                    collisionDetection={closestCenter}
+                                    onDragEnd={handleDragEnd}
+                                >
+                                    <SortableContext
+                                        items={upcomingQueue.map((v: any) => v.key || v.videoId)}
+                                        strategy={verticalListSortingStrategy}
+                                    >
+                                        {upcomingQueue.map((video: any, idx: number) => {
+                                            const uniqueId = video.key || video.videoId;
+                                            return (
+                                                <SortableItem key={uniqueId} id={uniqueId}>
+                                                    <div className="flex items-center gap-3 p-2 rounded-xl bg-black/20 border border-white/5 active:bg-white/5 data-[dragging=true]:bg-white/10 touch-manipulation">
+                                                        <div className="text-gray-600 cursor-grab active:cursor-grabbing p-1">
+                                                            <ListBulletIcon className="w-5 h-5" />
+                                                        </div>
+                                                        <span className="text-sm font-mono text-gray-500 w-4 text-center">{idx + 1}</span>
+                                                        <img src={getThumbnail(video)} className="w-10 h-10 rounded-md object-cover opacity-70 pointer-events-none" alt="" />
+                                                        <div className="flex-1 min-w-0 pointer-events-none">
+                                                            <p className="text-sm font-medium text-gray-200 truncate">{video.title}</p>
+                                                            <p className="text-xs text-gray-500 truncate">{video.addedBy?.displayName || "Guest"}</p>
+                                                        </div>
+                                                    </div>
+                                                </SortableItem>
+                                            );
+                                        })}
+                                    </SortableContext>
+                                </DndContext>
                             </div>
                         )}
                     </div>
