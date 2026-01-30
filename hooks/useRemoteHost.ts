@@ -100,16 +100,43 @@ export const useRemoteHost = (
 
     }, [sessionId, currentVideoId, queue, isPlaying]);
 
-    // Listen for Connected Clients (Presence)
+    // State for connection status
+    const [connectedClients, setConnectedClients] = useState<number>(0);
+    const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'active' | 'background'>('disconnected');
+
+    // Sync Connected Clients & Calculate Status
     useEffect(() => {
         if (!sessionId || !realtimeDb) return;
 
         const connectedRef = ref(realtimeDb, `rooms/${sessionId}/connected`);
 
         const handleSnapshot = (snapshot: any) => {
-            const count = snapshot.exists() ? snapshot.size : 0;
-            console.log(`👥 Host: Connected clients update for ${sessionId}:`, count);
+            if (!snapshot.exists()) {
+                setConnectedClients(0);
+                setConnectionStatus('disconnected');
+                return;
+            }
+
+            const clients = snapshot.val();
+            const count = Object.keys(clients).length;
             setConnectedClients(count);
+
+            // Determine Status:
+            // - If ANY client is 'active' -> active (Green)
+            // - If NO 'active' but At Least One 'background' -> background (Orange)
+            // - Else -> disconnected (Gray)
+
+            const clientValues = Object.values(clients) as any[];
+            const hasActive = clientValues.some(c => c.state === 'active' || !c.state); // Default to active if state missing
+            const hasBackground = clientValues.some(c => c.state === 'background');
+
+            if (hasActive) {
+                setConnectionStatus('active');
+            } else if (hasBackground) {
+                setConnectionStatus('background');
+            } else {
+                setConnectionStatus('active');
+            }
         };
 
         // Subscribe
@@ -119,9 +146,7 @@ export const useRemoteHost = (
 
         // Cleanup
         return () => {
-            // In Firebase v9 modular, onValue returns the unsubscribe function directly
             unsubscribe();
-            // or use off(connectedRef, 'value', handleSnapshot) if storing callback reference
         };
     }, [sessionId]);
 
@@ -252,6 +277,7 @@ export const useRemoteHost = (
 
     return {
         sessionId,
-        connectedClients
+        connectedClients,
+        connectionStatus
     };
 };
