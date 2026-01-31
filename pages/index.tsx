@@ -1063,11 +1063,7 @@ function HomePage() {
           const castButton = document.querySelector('[data-cast-button]') as HTMLElement;
           if (castButton) castButton.click();
         }}
-        onJoinWebMonitor={(code) => {
-          setShowCastModeSelector(false);
-          // Redirect to remote with room code (Guest Mode)
-          window.location.href = `/remote?session=${code}`;
-        }}
+
         onSelectDual={() => {
           setShowCastModeSelector(false);
           // 1. Force set state immediately to prevent race condition

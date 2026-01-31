@@ -26,7 +26,6 @@ interface CastModeSelectorProps {
   onSelectDual: () => void;
   onSelectGoogleCast: () => void;
   onSelectYouTube: () => void;
-  onJoinWebMonitor: (code: string) => void;
 }
 
 export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
@@ -38,10 +37,8 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
   onSelectDual,
   onSelectGoogleCast,
   onSelectYouTube,
-  onJoinWebMonitor,
 }) => {
   const [loading, setLoading] = React.useState(false);
-  const [roomCode, setRoomCode] = React.useState('');
 
   const handleWebMonitor = async () => {
     setLoading(true);
@@ -90,32 +87,7 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
             </div>
           </button>
 
-          {/* Connect to Remote via Code */}
-          <div className="pt-2">
-            <div className="relative flex items-center mb-2">
-              <div className="flex-grow border-t border-gray-300"></div>
-              <span className="flex-shrink-0 mx-4 text-gray-400 text-xs">หรือ เข้าร่วมด้วยรหัส</span>
-              <div className="flex-grow border-t border-gray-300"></div>
-            </div>
 
-            <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="เลขห้อง 6 หลัก"
-                maxLength={6}
-                className="input input-bordered w-full input-sm"
-                value={roomCode}
-                onChange={(e) => setRoomCode(e.target.value)}
-              />
-              <button
-                disabled={roomCode.length < 6}
-                onClick={() => onJoinWebMonitor(roomCode)}
-                className="btn btn-sm btn-primary"
-              >
-                Join
-              </button>
-            </div>
-          </div>
 
           {/* Option 2: Dual Screen (2 หน้าจอ) - PC Only */}
           {!isMobile && (

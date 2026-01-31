@@ -1507,11 +1507,7 @@ function YoutubePlayer({
             setShowCastModeSelector(false);
           }
         }}
-        onJoinWebMonitor={(code) => {
-          setShowCastModeSelector(false);
-          // Redirect to remote with room code (Guest Mode)
-          router.push(`/remote?session=${code}`);
-        }}
+
         onSelectDual={() => {
           setShowCastModeSelector(false);
           // Set dual mode active
