@@ -77,18 +77,18 @@ export const useRemoteHost = (
             // Structure matches what Monitor sends to rooms/{code}/state
             const statePayload = {
                 queue: safeQueue,
-                currentIndex: currentIndex,
+                currentIndex: currentIndex >= 0 ? currentIndex : 0,
                 currentVideo: currentVideo || null,
                 controls: {
-                    isPlaying: isPlaying,
+                    isPlaying: !!isPlaying,
                     isMuted: false,
                     currentTime: 0,
                     duration: 0
                 },
-                videoId: currentVideoId,
-                title: title,
-                isPlaying: isPlaying,
-                isFullscreen: isFullscreen,
+                videoId: currentVideoId || null,
+                title: title || "Unknown Title",
+                isPlaying: !!isPlaying,
+                isFullscreen: !!isFullscreen,
                 timestamp: Date.now()
             };
 
