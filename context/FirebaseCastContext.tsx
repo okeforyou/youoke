@@ -394,7 +394,7 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
   };
 
   const toggleFullscreen = () => {
-    sendCommand(roomCode, { type: 'SET_FULLSCREEN', payload: { state: 'toggle' } });
+    sendCommand(roomCode, { type: 'TOGGLE_FULLSCREEN', payload: null });
   };
 
   const value: CastContextValue = {
