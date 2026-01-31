@@ -88,7 +88,7 @@ const TVPage = () => {
 
     // --- UI HELPERS ---
     const currentVideo = state.currentVideo;
-    const qrCodeUrl = baseUrl ? `${baseUrl}/?castRoom=${roomCode}` : '';
+    const qrCodeUrl = baseUrl ? `${baseUrl}/remote?session=${roomCode}` : '';
 
     const onStateChange = (e: any) => {
         if (e.data === 0) {

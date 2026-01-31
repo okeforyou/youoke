@@ -341,7 +341,7 @@ function HomePage() {
 
   // Share Room function - using castRoom parameter
   const handleCopyShareLink = () => {
-    const shareUrl = `${baseUrl}/?castRoom=${room}`;
+    const shareUrl = `${baseUrl}/remote?session=${room}`;
     navigator.clipboard.writeText(shareUrl);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
@@ -1130,7 +1130,7 @@ function HomePage() {
                   <div className="flex justify-center">
                     <div className="bg-white p-4 rounded-lg shadow-md">
                       <QRCodeSVG
-                        value={`${baseUrl}/?castRoom=${room}`}
+                        value={`${baseUrl}/remote?session=${room}`}
                         size={180}
                         level="M"
                       />
@@ -1144,7 +1144,7 @@ function HomePage() {
                     <input
                       type="text"
                       readOnly
-                      value={`${baseUrl}/?castRoom=${room}`}
+                      value={`${baseUrl}/remote?session=${room}`}
                       className="input input-sm input-bordered flex-1 text-xs bg-white"
                     />
                     <button

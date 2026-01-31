@@ -85,7 +85,7 @@ export const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
         // We ALWAYS generate a room code now, to allow Hybrid Mode (Phone joins Cast session via Web/Firebase)
         // In the future, we might want to sync this with the Cast Session ID, but random is fine for now.
         if (!roomCode) {
-            const newCode = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+            const newCode = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
             setRoomCode(newCode);
         }
     }, []);
