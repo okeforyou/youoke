@@ -259,13 +259,12 @@ function HomePage() {
     const firstItemKey = activeQueue?.[0]?.key;
     const queueLength = activeQueue?.length || 0;
 
-    console.log(`📡 [Index] Active Queue Updated (${queueSource}):`, {
+    console.log(`📡 [Index] Active Queue Synced (${queueSource}):`, {
       length: queueLength,
       firstItem: activeQueue?.[0]?.title,
-      firstKey: firstItemKey,
-      currentVideoId: activeCurrentVideoId
+      roomCode: room, // Log current room code
     });
-  }, [activeQueue, isGoogleCastConnected, isCasting, activeCurrentVideoId]);
+  }, [activeQueue, isGoogleCastConnected, isCasting, activeCurrentVideoId, room]);
 
   const { sessionId, connectedClients, connectionStatus } = useRemoteHost(
     mobilePlayerRef,
@@ -275,7 +274,9 @@ function HomePage() {
     activeCurrentVideoId, // Sync the ACTIVE video ID
     activeIsPlaying,      // Sync the ACTIVE playing state
     isHostFullscreen,
-    activeSetPlaylist     // Use the wrapper to route reorder to correct backend
+    activeSetPlaylist,    // Use the wrapper to route reorder to correct backend
+    user,                 // Pass User for Auth Sync Fix
+    room                  // Pass UI Room Code to force correct DB path
   );
   const [showRemoteModal, setShowRemoteModal] = useState(false);
 
@@ -452,8 +453,8 @@ function HomePage() {
       setRoom("");
       return;
     }
-    if (room === "") {
-      setRoom(generateRandomString(6));
+    if (room === "" || (room && room.length > 4)) { // Regen if empty OR if old alphanumeric format persists
+      setRoom(Math.floor(1000 + Math.random() * 9000).toString());
     }
   }, [user?.uid]);
 

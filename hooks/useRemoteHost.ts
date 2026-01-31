@@ -30,9 +30,12 @@ export const useRemoteHost = (
     addToQueue: (video: any) => void,
     queue: any[],
     currentVideoId: string,
-    isPlaying: boolean, // New argument
-    isFullscreen: boolean, // New argument
-    setPlaylist: (newQueue: any[]) => void // New argument
+    isPlaying: boolean,
+    isFullscreen: boolean,
+    setPlaylist: (newQueue: any[]) => void,
+
+    user: any, // New argument for Auth reactivity
+    roomCode?: string // Optional: Force specific room code (from UI)
 ) => {
     const [sessionId, setSessionId] = useState<string | null>(null);
 
@@ -40,12 +43,21 @@ export const useRemoteHost = (
     // Keep strict refs for callbacks to avoid effect churn
     const addToQueueRef = useRef(addToQueue);
     const setPlaylistRef = useRef(setPlaylist); // Ref for setPlaylist
+    const queueRef = useRef(queue); // Ref for Queue to avoid stale closures in polling
     useEffect(() => { addToQueueRef.current = addToQueue; }, [addToQueue]);
     useEffect(() => { setPlaylistRef.current = setPlaylist; }, [setPlaylist]);
+    useEffect(() => { queueRef.current = queue; }, [queue]);
 
     // Generate Session ID on mount
+    // Generate Session ID on mount (or use provided roomCode)
     useEffect(() => {
-        // Generate simple 6-digit code
+        if (roomCode) {
+            setSessionId(roomCode);
+            // console.log('🌟 Host: Using provided Room Code', roomCode);
+            return;
+        }
+
+        // Generate simple 6-digit code if none provided
         const code = Math.floor(100000 + Math.random() * 900000).toString();
         setSessionId(code);
         console.log('🌟 Host: Generated Session ID', code);
@@ -62,7 +74,7 @@ export const useRemoteHost = (
                 remove(ref(realtimeDb, `rooms/${code}`));
             }
         };
-    }, []);
+    }, [roomCode]);
 
     // Sync Host State to Firebase (rooms/{code}/state)
     useEffect(() => {
@@ -77,7 +89,7 @@ export const useRemoteHost = (
             // Structure matches what Monitor sends to rooms/{code}/state
             const statePayload = {
                 queue: safeQueue,
-                currentIndex: currentIndex >= 0 ? currentIndex : 0,
+                currentIndex: currentIndex,
                 currentVideo: currentVideo || null,
                 controls: {
                     isPlaying: !!isPlaying,
@@ -99,11 +111,11 @@ export const useRemoteHost = (
             // });
 
             set(ref(realtimeDb, `rooms/${sessionId}/state`), statePayload)
-                .catch(e => console.error('❌ Host: State sync failed', e));
+                .catch(e => console.error('❌ Host: State sync failed (Auth ready?)', e));
 
         } catch (e) { console.error('❌ Host: Sync Logic Error', e); }
 
-    }, [sessionId, currentVideoId, queue, isPlaying, isFullscreen]);
+    }, [sessionId, currentVideoId, queue, isPlaying, isFullscreen, user]); // Added user dependency
 
     // State for connection status
     const [connectedClients, setConnectedClients] = useState<number>(0);
@@ -260,7 +272,18 @@ export const useRemoteHost = (
             if (cmd.payload && Array.isArray(cmd.payload.newQueue)) {
                 console.log('[RemoteHost] Reordering queue:', cmd.payload.newQueue.length, 'items');
                 if (setPlaylistRef.current) {
-                    setPlaylistRef.current(cmd.payload.newQueue);
+                    // SANITIZE: Strip 'key', 'dndId' and other transient props to prevent corruption cycles
+                    // Only keep core data: videoId, title, thumbnail, duration, addedBy, addedAt
+                    const cleanQueue = cmd.payload.newQueue.map((item: any) => ({
+                        videoId: item.videoId,
+                        title: item.title,
+                        thumbnail: item.thumbnail,
+                        duration: item.duration,
+                        addedBy: item.addedBy,
+                        addedAt: item.addedAt,
+                        // uuid: item.uuid // Keep if used
+                    }));
+                    setPlaylistRef.current(cleanQueue);
                 }
             }
             return;
@@ -269,13 +292,17 @@ export const useRemoteHost = (
         // REMOVE_AT
         if (cmd.type === 'REMOVE_AT') {
             const index = cmd.payload?.index;
-            if (typeof index === 'number' && index >= 0 && index < queue.length) {
-                console.log('[RemoteHost] Removing item at index:', index);
-                const newQueue = [...queue];
+            // Use queueRef.current to get LATEST queue state
+            const currentQueue = queueRef.current || [];
+            if (typeof index === 'number' && index >= 0 && index < currentQueue.length) {
+                console.log('[RemoteHost] Removing item at index:', index, 'from queue of length:', currentQueue.length);
+                const newQueue = [...currentQueue];
                 newQueue.splice(index, 1);
                 if (setPlaylistRef.current) {
                     setPlaylistRef.current(newQueue);
                 }
+            } else {
+                console.warn('[RemoteHost] Remove failed: Invalid index or queue mismatch', index, currentQueue.length);
             }
             return;
         }

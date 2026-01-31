@@ -15,7 +15,8 @@ import {
     ArrowsPointingOutIcon, ArrowPathIcon,
     ListBulletIcon, XMarkIcon, MusicalNoteIcon, MicrophoneIcon,
     ArrowsPointingInIcon, TrashIcon, Bars3Icon,
-    UserPlusIcon, QrCodeIcon
+    UserPlusIcon, QrCodeIcon, ClipboardDocumentCheckIcon, SparklesIcon,
+    SunIcon, MoonIcon, TvIcon
 } from '@heroicons/react/24/outline';
 import { QRCodeSVG } from 'qrcode.react'; // Import QR Code generator directly if simple Usage needed, or reuse component
 import { DebounceInput } from 'react-debounce-input';
@@ -42,7 +43,7 @@ function SortableQueueItem({ id, video, index, getThumbnail, onRemove }: any) {
     };
 
     return (
-        <div ref={setNodeRef} style={style} className="flex items-center gap-3 p-2 rounded-xl bg-black/20 border border-white/5 data-[dragging=true]:bg-white/10 relative">
+        <div ref={setNodeRef} style={style} className="flex items-center gap-3 p-2 rounded-xl bg-white dark:bg-black/20 border border-gray-200 dark:border-white/5 shadow-sm dark:shadow-none data-[dragging=true]:bg-gray-100 dark:data-[dragging=true]:bg-white/10 relative text-gray-900 dark:text-gray-200">
             {/* Drag Handle - Left */}
             <div
                 ref={setActivatorNodeRef}
@@ -53,9 +54,9 @@ function SortableQueueItem({ id, video, index, getThumbnail, onRemove }: any) {
                 <Bars3Icon className="w-6 h-6" />
             </div>
 
-            <img src={getThumbnail(video)} className="w-10 h-10 rounded-md object-cover opacity-70 pointer-events-none" alt="" />
+            <img src={getThumbnail(video)} className="w-10 h-10 rounded-md object-cover pointer-events-none bg-gray-200 dark:bg-black" alt="" />
             <div className="flex-1 min-w-0 pointer-events-none">
-                <p className="text-sm font-medium text-gray-200 truncate">{video.title}</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-200 truncate">{video.title}</p>
                 <p className="text-xs text-gray-500 truncate">{video.addedBy?.displayName || "Guest"}</p>
             </div>
 
@@ -98,13 +99,53 @@ const RemotePage = () => {
     const [status, setStatus] = useState<RemoteState | null>(null);
     const [isConnected, setIsConnected] = useState(false);
 
+    // Prevent Hydration Mismatch
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => { setMounted(true); }, []);
+
     // Guest Identity
-    const [guestProfile, setGuestProfile] = useState<{ name: string, uid: string } | null>(null);
+    // Guest Identity - Initialize lazily from LocalStorage to prevent flash
+    const [guestProfile, setGuestProfile] = useState<{ name: string, uid: string } | null>(() => {
+        if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem('youoke_guest_profile');
+            return saved ? JSON.parse(saved) : null;
+        }
+        return null;
+    });
     const [showNameModal, setShowNameModal] = useState(false);
 
     // Host Mode Logic
     const isHost = router.query.role === 'host';
     const [isHostMode, setIsHostMode] = useState(false);
+
+    // Theme State
+    const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+
+    useEffect(() => {
+        // Init theme from storage or default to dark
+        const savedTheme = localStorage.getItem('youoke_theme') as 'dark' | 'light' | null;
+        if (savedTheme) {
+            setTheme(savedTheme);
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        } else {
+            document.documentElement.classList.add('dark'); // Default dark
+        }
+    }, []);
+
+    const toggleTheme = () => {
+        const newTheme = theme === 'dark' ? 'light' : 'dark';
+        setTheme(newTheme);
+        localStorage.setItem('youoke_theme', newTheme);
+        if (newTheme === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    };
 
     // Sharing
     const [showQR, setShowQR] = useState(false);
@@ -150,7 +191,7 @@ const RemotePage = () => {
 
     // Queue Notification Logic
     const [lastNotifiedVideoId, setLastNotifiedVideoId] = useState<string>('');
-    // const [showTurnNotification, setShowTurnNotification] = useState<string | null>(null); // Duplicate removed
+    const [showTurnNotification, setShowTurnNotification] = useState<string | null>(null);
 
     useEffect(() => {
         if (!status?.currentVideo || !guestProfile?.uid) return;
@@ -163,8 +204,10 @@ const RemotePage = () => {
 
         // Check if added by current user
         // Using loose comparison for IDs just in case
-        if (currentVideo.addedBy?.uid && String(currentVideo.addedBy.uid) === String(guestProfile.uid)) {
-            console.log('🔔 User Turn Notification Triggered');
+        const addedByUid = currentVideo.addedBy?.uid;
+
+        if (addedByUid && String(addedByUid) === String(guestProfile.uid)) {
+            console.log('🔔 User Turn Notification Triggered for:', currentVideo.title);
 
             // Haptic Feedback
             if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
@@ -184,22 +227,15 @@ const RemotePage = () => {
         // Check for Host Mode first
         if (router.query.role === 'host') {
             setIsHostMode(true);
-            setGuestProfile({ name: 'Host', uid: 'host' }); // Placeholder for Host
+            setGuestProfile({ name: 'Host', uid: 'host' });
             return;
         }
 
-        // Load profile from local storage
-        const savedProfile = localStorage.getItem('youoke_guest_profile');
-        if (savedProfile) {
-            setGuestProfile(JSON.parse(savedProfile));
-        } else {
-            // Only show modal if we have a session ID and NOT host
-            // And ensure we are not already showing it
-            if (sessionId && !guestProfile) {
-                setShowNameModal(true);
-            }
+        // Check if we need to show modal (if no profile exists)
+        if (sessionId && !guestProfile && !isHostMode) {
+            setShowNameModal(true);
         }
-    }, [router.isReady, router.query.role, sessionId]);
+    }, [router.isReady, router.query.role, sessionId, guestProfile, isHostMode]);
 
     const handleSaveGuestName = (name: string) => {
         const newProfile = {
@@ -222,7 +258,23 @@ const RemotePage = () => {
     const [addedId, setAddedId] = useState<string | null>(null);
     const [searchType, setSearchType] = useState<'song' | 'karaoke'>('song');
 
-    // DND Sensors
+    // Generate Stable IDs for DnD
+    const currentIndex = typeof status?.currentIndex === 'number' ? status.currentIndex : -1;
+    const queueList = (status?.queue || []).map((item, idx) => {
+        // GENERATE STABLE ID: MUST be content-based.
+        // using 'idx' or 'key' (if key is just index) breaks DnD reordering.
+        // We use a specific prefix to ensure string ID.
+        const compositeKey = `v-${item.videoId}-${item.addedBy?.uid || 'anon'}-${item.addedAt || idx}`;
+        return {
+            ...item,
+            // FORCE compositeKey unless key is definitely a UUID (length > 10).
+            // Firebase keys for array are usually "0", "1", etc.
+            dndId: (item.key && String(item.key).length > 5) ? String(item.key) : compositeKey
+        };
+    });
+
+    const upcomingQueue = queueList.slice(currentIndex + 1);
+
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
@@ -234,12 +286,21 @@ const RemotePage = () => {
         })
     );
 
+    const handleDragStart = () => {
+        lastInteractionRef.current = Date.now();
+    };
+
+    const handleDragMove = () => {
+        lastInteractionRef.current = Date.now();
+    };
+
     const handleDragEnd = (event: DragEndEvent) => {
+        lastInteractionRef.current = Date.now(); // Suppress on end too
         const { active, over } = event;
         if (active.id !== over?.id && status?.queue) {
-            // Use precise ID lookup
-            const oldIndex = upcomingQueue.findIndex((item: any) => (item.key ? item.key.toString() : `video-${upcomingQueue.indexOf(item)}`) === active.id);
-            const newIndex = upcomingQueue.findIndex((item: any) => (item.key ? item.key.toString() : `video-${upcomingQueue.indexOf(item)}`) === over?.id);
+            // Use precise ID lookup (Must match SortableContext ID generation)
+            const oldIndex = upcomingQueue.findIndex((item: any) => item.dndId === active.id);
+            const newIndex = upcomingQueue.findIndex((item: any) => item.dndId === over?.id);
 
             if (oldIndex !== -1 && newIndex !== -1) {
                 // Reorder upcoming queue locally first (Optimistic UI would need more complex state, skipping for now to rely on Host sync)
@@ -257,31 +318,43 @@ const RemotePage = () => {
 
                 // Optimistic update locally to prevent jumpiness
                 setStatus(prev => prev ? { ...prev, queue: newFullQueue } : null);
+
+                // Suppress incoming sync for 2 seconds to allow Host to process
+                lastInteractionRef.current = Date.now();
             }
         }
     };
 
-    // Remove Handler
-    const handleRemove = (index: number) => {
-        // Calculate actual index in full queue
-        // upcomingQueue is slice(currentIndex + 1)
-        // so actual index = currentIndex + 1 + index
-        if (currentIndex === -1) return;
+    // Remove Handler (Robust - Index Based)
+    const handleRemove = (localIndex: number) => {
+        // Suppress sync immediately
+        lastInteractionRef.current = Date.now();
 
-        const actualIndex = currentIndex + 1 + index;
-        console.log('🗑️ Removing item at index:', actualIndex, '(Local index:', index, ')');
+        if (!status?.queue) return;
+
+        const currentIndex = typeof status?.currentIndex === 'number' ? status.currentIndex : -1;
+
+        // Calculate Absolute Index in the Full Queue
+        // Upcoming Queue starts at currentIndex + 1
+        const absoluteIndex = (currentIndex + 1) + localIndex;
+
+        if (absoluteIndex < 0 || absoluteIndex >= status.queue.length) {
+            console.warn('❌ Invalid remove index', absoluteIndex);
+            return;
+        }
+
+        console.log('🗑️ Removing item at Absolute Index:', absoluteIndex, 'Local:', localIndex);
 
         // Send Command
-        sendCommand('REMOVE_AT', { index: actualIndex });
+        sendCommand('REMOVE_AT', { index: absoluteIndex });
 
         // Optimistic Update
-        const newUpcoming = [...upcomingQueue];
-        newUpcoming.splice(index, 1);
-        setStatus(prev => prev ? {
-            ...prev,
-            queue: [...queueList.slice(0, currentIndex + 1), ...newUpcoming]
-        } : null);
+        const newFullQueue = [...status.queue];
+        newFullQueue.splice(absoluteIndex, 1);
+        setStatus(prev => prev ? { ...prev, queue: newFullQueue } : null);
     };
+
+
 
     // Optimistic Fullscreen State
     const [isFullScreen, setIsFullScreen] = useState(false);
@@ -350,9 +423,14 @@ const RemotePage = () => {
 
                         setStatus(prev => {
                             if (!prev) return data;
-                            // If interacting, keep optimistic isPlaying, update everything else
+                            // If interacting, keep optimistic isPlaying AND queue to prevent jumps
                             if (isInteracting && prev) {
-                                return { ...data, isPlaying: prev.isPlaying };
+                                return {
+                                    ...data,
+                                    isPlaying: prev.isPlaying,
+                                    // Only keep queue if we have one, otherwise take data's
+                                    queue: prev.queue || data.queue
+                                };
                             }
                             return data;
                         });
@@ -388,7 +466,11 @@ const RemotePage = () => {
                 const isInteracting = Date.now() - lastInteractionRef.current < 2000;
                 setStatus(prev => {
                     if (isInteracting && prev) {
-                        return { ...val, isPlaying: prev.isPlaying };
+                        return {
+                            ...val,
+                            isPlaying: prev.isPlaying,
+                            queue: prev.queue || val.queue
+                        };
                     }
                     return val;
                 });
@@ -501,15 +583,26 @@ const RemotePage = () => {
     }, [searchType]);
 
     const handleAddQueue = (video: SearchResult) => {
+        // Robust Profile Check: Try State -> Try LocalStorage -> Default
+        let currentProfile = guestProfile;
+        if (!currentProfile && typeof window !== 'undefined') {
+            try {
+                const saved = localStorage.getItem('youoke_guest_profile');
+                if (saved) currentProfile = JSON.parse(saved);
+            } catch (e) {
+                console.error('Failed to parse profile', e);
+            }
+        }
+
         const queueVideo = {
             videoId: video.videoId,
             title: video.title,
             author: 'YouTube',
             key: Date.now(),
             addedBy: {
-                displayName: guestProfile?.name || "Mobile User",
+                displayName: currentProfile?.name || "Guest User",
                 photoURL: null,
-                uid: guestProfile?.uid || "mobile-user"
+                uid: currentProfile?.uid || "mobile-user-" + Date.now()
             }
         };
         sendCommand('ADD_QUEUE', { video: queueVideo });
@@ -523,7 +616,7 @@ const RemotePage = () => {
     };
 
     // Turn Notification
-    const [showTurnNotification, setShowTurnNotification] = useState<string | null>(null);
+
 
     useEffect(() => {
         if (!status?.currentVideo || !guestProfile) return;
@@ -549,7 +642,7 @@ const RemotePage = () => {
     }, [status?.currentVideo?.videoId, guestProfile]);
 
 
-    if (!router.isReady) return null;
+    if (!mounted || !router.isReady) return null;
 
     if (!sessionId) {
         return (
@@ -564,7 +657,7 @@ const RemotePage = () => {
                 </div>
                 <h1 className="text-2xl font-bold mb-2">เชื่อมต่อกับห้อง</h1>
                 <p className="text-gray-400 mb-6 text-center">กรอกรหัส PIN ที่แสดงบนหน้าจอ</p>
-                <input type="number" placeholder="กรอกรหัสห้อง" className="bg-zinc-900 border border-zinc-700 p-4 rounded-xl text-center text-2xl tracking-widest w-full max-w-xs mb-4 focus:ring-2 focus:ring-primary focus:outline-none" onChange={(e) => { if (e.target.value.length >= 4) router.push(`?session=${e.target.value}`); }} />
+                <input type="number" placeholder="PIN 4 หลัก" className="bg-zinc-900 border border-zinc-700 p-4 rounded-xl text-center text-2xl tracking-widest w-full max-w-xs mb-4 focus:ring-2 focus:ring-primary focus:outline-none" onChange={(e) => { if (e.target.value.length >= 4) router.push(`?session=${e.target.value}`); }} />
             </div>
         );
     }
@@ -583,19 +676,16 @@ const RemotePage = () => {
             }
         } else {
             navigator.clipboard.writeText(url);
-            alert('คัดลอกลิ้งค์แล้ว! ส่งให้เพื่อนได้เลย 📋');
+            // alert('คัดลอกลิ้งค์แล้ว! ส่งให้เพื่อนได้เลย 📋'); // Replaced with custom toast or simpler alert
+            alert('คัดลอกลิ้งค์เรียบร้อยแล้ว');
         }
     };
 
     // Derived State
-    let queueList: any[] = [];
-    if (status?.queue) {
-        if (Array.isArray(status.queue)) queueList = status.queue;
-        else if (typeof status.queue === 'object') queueList = Object.values(status.queue);
-    }
-
-    const currentIndex = typeof status?.currentIndex === 'number' ? status.currentIndex : -1;
-    const upcomingQueue = queueList.slice(currentIndex + 1);
+    // Derived variables (Using top-level queueList)
+    const pastQueue = currentIndex > 0 ? queueList.slice(0, currentIndex) : [];
+    const currentQueueItem = currentIndex >= 0 && currentIndex < queueList.length ? queueList[currentIndex] : null;
+    const totalQueueCount = queueList.length;
 
     const getThumbnail = (video: any) => {
         if (!video) return 'https://i.ytimg.com/img/no_thumbnail.jpg';
@@ -610,7 +700,7 @@ const RemotePage = () => {
 
     return (
         <div
-            className="fixed inset-0 bg-black text-white flex flex-col font-sans overflow-hidden"
+            className="fixed inset-0 bg-gray-50 dark:bg-black text-gray-900 dark:text-white flex flex-col font-sans overflow-hidden transition-colors duration-300"
             style={{ overscrollBehaviorY: 'none' }} // Prevent Pull-to-Refresh
         >
             <Head>
@@ -623,29 +713,36 @@ const RemotePage = () => {
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm animate-in fade-in" onClick={() => setShowQR(false)}>
                     <div className="bg-white p-6 rounded-3xl" onClick={e => e.stopPropagation()}>
                         <QRCodeSVG value={typeof window !== 'undefined' ? window.location.href : ''} size={250} level="H" includeMargin />
-                        <p className="text-black text-center mt-4 font-bold">สแกนเพื่อเข้าร่วมห้อง 📸</p>
+                        <div className="flex items-center justify-center gap-2 mt-4 text-black font-bold">
+                            <QrCodeIcon className="w-6 h-6" />
+                            <p>สแกนเพื่อเข้าร่วมห้อง</p>
+                        </div>
                     </div>
                 </div>
             )}
 
-            {/* Turn Notification Toast */}
+            {/* Turn Notification Toast - High Contrast Always */}
             {showTurnNotification && (
-                <div className="fixed top-20 left-4 right-4 z-50 animate-bounce-in">
-                    <div className="bg-gradient-to-r from-pink-500 to-purple-600 p-4 rounded-2xl shadow-xl border border-white/20 flex items-center gap-4">
-                        <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center animate-bounce">
+                <div className="fixed top-24 left-4 right-4 z-[60] animate-bounce-in pointer-events-none">
+                    <div className="bg-zinc-900/95 backdrop-blur-xl p-4 rounded-2xl shadow-2xl border border-white/10 flex items-center gap-4">
+                        <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center shrink-0 animate-pulse shadow-[0_0_15px_theme(colors.primary.DEFAULT)]">
                             <MicrophoneIcon className="w-6 h-6 text-white" />
                         </div>
-                        <div>
-                            <p className="font-bold text-white text-lg">ถึงคิวคุณแล้ว! 🎤</p>
-                            <p className="text-white/80 text-sm truncate">{showTurnNotification}</p>
+                        <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 mb-0.5">
+                                <SparklesIcon className="w-4 h-4 text-yellow-400" />
+                                <p className="font-bold text-white text-lg leading-none">ถึงคิวร้องแล้ว!</p>
+                            </div>
+                            <p className="text-gray-300 text-sm truncate">{showTurnNotification}</p>
                         </div>
                     </div>
                 </div>
             )}
 
             {/* Background Atmosphere */}
-            <div className="absolute inset-0 bg-cover bg-center opacity-40 blur-3xl scale-125 pointer-events-none transition-all duration-1000 z-0" style={{ backgroundImage: `url(${highResThumbnail})` }} />
-            <div className="absolute inset-0 bg-black/60 z-0 pointer-events-none" />
+            {/* Background Atmosphere (Dark Mode Only) */}
+            <div className="absolute inset-0 bg-cover bg-center opacity-40 blur-3xl scale-125 pointer-events-none transition-all duration-1000 z-0 hidden dark:block" style={{ backgroundImage: `url(${highResThumbnail})` }} />
+            <div className="absolute inset-0 bg-black/60 z-0 pointer-events-none hidden dark:block" />
 
             {/* Guest Name Modal - Force Input if missing */}
             <GuestNameModal
@@ -653,50 +750,102 @@ const RemotePage = () => {
                 onSave={handleSaveGuestName}
             />
 
-            {/* 1. Header (Room Info) */}
-            {/* 1. Header (Room Info) */}
-            <div className={`px-4 pt-3 pb-3 bg-[#1e1e2d] sticky top-0 z-30 transition-shadow duration-200 ${scrolled ? 'shadow-xl shadow-black/20' : ''}`}>
-                <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                        <div className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]' : 'bg-red-500'}`} />
-                        <h1 className="text-lg font-bold bg-gradient-to-r from-pink-500 to-purple-500 bg-clip-text text-transparent">
-                            YouOke Remote
+            {/* 1. Header (Room Info - Polished Sticky Glassmorphism) */}
+            <div className={`px-4 py-3 sticky top-0 z-30 transition-all duration-300 backdrop-blur-none dark:backdrop-blur-md border-b flex items-center justify-between ${scrolled
+                ? 'bg-white dark:bg-black/80 border-gray-200 dark:border-white/10 shadow-sm dark:shadow-lg'
+                : 'bg-transparent border-transparent'
+                }`}>
+
+                {/* Left: Title + Room Code */}
+                <div className="flex items-center gap-3">
+                    <div className={`w-2.5 h-2.5 rounded-full transition-colors duration-500 ${isConnected ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]' : 'bg-red-500'}`} />
+                    <div>
+                        <h1 className="text-lg font-bold text-gray-900 dark:text-white leading-none tracking-tight">
+                            YouOke
                         </h1>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded tracking-wide uppercase">
+                                ROOM
+                            </span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400 font-mono tracking-wider">
+                                {sessionId}
+                            </span>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                        {/* Action Buttons */}
-                        <button onClick={() => setShowQR(true)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
-                            <QrCodeIcon className="w-5 h-5" />
-                        </button>
-                        <button onClick={handleInvite} className="p-2 bg-pink-500/10 rounded-full hover:bg-pink-500/20 text-pink-500 transition-colors">
-                            <UserPlusIcon className="w-5 h-5" />
-                        </button>
-                        <button
-                            onClick={toggleFullscreen}
-                            className={`p-2 rounded-full active:scale-95 transition-all ${isFullScreen ? 'bg-white text-black' : 'hover:bg-white/10 text-gray-400'}`}
-                        >
-                            {isFullScreen ? (
-                                <ArrowsPointingInIcon className="w-5 h-5" />
-                            ) : (
-                                <ArrowsPointingOutIcon className="w-5 h-5" />
-                            )}
-                        </button>
-                        <button onClick={() => window.location.reload()} className="p-2 rounded-full hover:bg-white/10 active:scale-95 transition-all text-gray-400">
-                            <ArrowPathIcon className="w-5 h-5" />
-                        </button>
-                    </div>
+                </div>
+
+                {/* Right: Actions Group */}
+                <div className="flex items-center gap-1">
+                    {/* QR Code */}
+                    <button
+                        onClick={() => setShowQR(true)}
+                        className="p-2 rounded-full text-black dark:text-gray-400 hover:text-gray-600 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-all active:scale-95"
+                        title="Show QR Code"
+                    >
+                        <QrCodeIcon className="w-5 h-5" />
+                    </button>
+
+
+
+                    {/* Share Link (UserPlus for "Invite") */}
+                    <button
+                        onClick={handleInvite}
+                        className="p-2 rounded-full text-black dark:text-gray-400 hover:text-gray-600 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-all active:scale-95"
+                        title="Invite Friends"
+                    >
+                        <UserPlusIcon className="w-5 h-5" />
+                    </button>
+
+                    {/* Fullscreen (TV Control) */}
+                    <button
+                        onClick={toggleFullscreen}
+                        className={`p-2 rounded-full transition-all active:scale-95 ${isFullScreen ? 'text-primary bg-primary/10' : 'text-black dark:text-gray-400 hover:text-gray-600 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10'
+                            }`}
+                        title={isFullScreen ? "ย่อจอทีวี" : "ขยายจอทีวีเต็มจอ"}
+                    >
+                        {isFullScreen ? (
+                            <ArrowsPointingInIcon className="w-5 h-5" />
+                        ) : (
+                            <div className="relative flex items-center justify-center">
+                                <TvIcon className="w-5 h-5" />
+                                <ArrowsPointingOutIcon className="w-2.5 h-2.5 absolute -top-1 -right-1 bg-white dark:bg-black rounded-full p-0.5 border border-current" />
+                            </div>
+                        )}
+                    </button>
+
+                    {/* Refresh / Re-sync */}
+                    <button
+                        onClick={() => router.reload()}
+                        className="p-2 rounded-full text-black dark:text-gray-400 hover:text-gray-600 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-all active:scale-95"
+                        title="Refresh Page"
+                    >
+                        <ArrowPathIcon className="w-5 h-5" />
+                    </button>
+
+                    {/* Theme Toggle (Moved to End) */}
+                    <button
+                        onClick={toggleTheme}
+                        className="p-2 rounded-full text-black dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 transition-all active:scale-95"
+                        title="Toggle Theme"
+                    >
+                        {theme === 'dark' ? (
+                            <SunIcon className="w-5 h-5" />
+                        ) : (
+                            <MoonIcon className="w-5 h-5" />
+                        )}
+                    </button>
                 </div>
             </div>
 
             {/* 2. Top Search Bar */}
-            <div className="p-4 z-20 bg-gradient-to-b from-black/80 to-transparent shrink-0 space-y-3">
+            <div className="p-4 z-20 bg-white dark:bg-transparent dark:bg-gradient-to-b dark:from-black/80 dark:to-transparent shrink-0 space-y-3 border-b border-gray-200 dark:border-none shadow-sm dark:shadow-none">
                 <div className="relative">
                     <MagnifyingGlassIcon className="absolute left-4 top-3.5 w-5 h-5 text-gray-400 pointer-events-none" />
                     <DebounceInput
                         minLength={2}
                         debounceTimeout={500}
                         placeholder={searchType === 'karaoke' ? "ค้นหาเพลงคาราโอเกะ..." : "ค้นหาเพลง..."}
-                        className="w-full bg-zinc-900/80 border border-white/10 rounded-2xl py-3 pl-12 pr-10 text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none placeholder-gray-500 transition-all font-medium shadow-lg backdrop-blur-sm"
+                        className="w-full bg-gray-50 dark:bg-zinc-900/80 border border-gray-300 dark:border-white/10 rounded-2xl py-3 pl-12 pr-10 text-black dark:text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none placeholder-gray-500 dark:placeholder-gray-500 transition-all font-medium shadow-none dark:shadow-lg backdrop-blur-none dark:backdrop-blur-sm"
                         onChange={(e) => handleSearch(e.target.value)}
                         value={searchQuery}
                     />
@@ -708,10 +857,10 @@ const RemotePage = () => {
                 </div>
 
                 {/* Styled Toggles (Segmented Control with Icons) */}
-                <div className="bg-zinc-800/80 p-1 rounded-xl flex shadow-inner border border-white/5 backdrop-blur-sm">
+                <div className="bg-gray-100 dark:bg-zinc-800/80 p-1 rounded-xl flex shadow-inner border border-gray-200 dark:border-white/5 backdrop-blur-sm">
                     <button
                         onClick={() => setSearchType('song')}
-                        className={`flex-1 py-1.5 flex items-center justify-center gap-2 text-xs font-bold rounded-lg transition-all ${searchType === 'song' ? 'bg-zinc-600 text-white shadow-md' : 'text-gray-400 hover:text-gray-200'}`}
+                        className={`flex-1 py-1.5 flex items-center justify-center gap-2 text-xs font-bold rounded-lg transition-all ${searchType === 'song' ? 'bg-white dark:bg-zinc-600 text-gray-900 dark:text-white shadow-md' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'}`}
                     >
                         <MusicalNoteIcon className="w-3.5 h-3.5" />
                         ทั่วไป
@@ -738,11 +887,11 @@ const RemotePage = () => {
                         {!isSearching && searchResults.length === 0 && <div className="text-center py-10 text-gray-500">ไม่พบเพลง</div>}
 
                         {!isSearching && searchResults.map((video: any) => (
-                            <div key={video.videoId} onClick={() => handleAddQueue({ ...video, thumbnail: getThumbnail(video) })} className={`flex items-center gap-3 p-2 pr-3 rounded-xl active:scale-[0.98] transition-all cursor-pointer ${addedId === video.videoId ? 'bg-green-500/20 border border-green-500/50' : 'bg-zinc-900/60 border border-white/5 hover:bg-white/10'}`}>
-                                <img src={getThumbnail(video)} className="w-14 h-14 rounded-lg object-cover bg-black shadow-md" alt="" />
+                            <div key={video.videoId} onClick={() => handleAddQueue({ ...video, thumbnail: getThumbnail(video) })} className={`flex items-center gap-3 p-2 pr-3 rounded-xl active:scale-[0.98] transition-all cursor-pointer ${addedId === video.videoId ? 'bg-green-500/20 border border-green-500/50' : 'bg-white dark:bg-zinc-900/60 border border-gray-100 dark:border-white/5 hover:bg-gray-50 dark:hover:bg-white/10 shadow-sm dark:shadow-none'}`}>
+                                <img src={getThumbnail(video)} className="w-14 h-14 rounded-lg object-cover bg-gray-200 dark:bg-black shadow-md" alt="" />
                                 <div className="flex-1 min-w-0">
-                                    <h3 className={`font-bold text-sm line-clamp-2 leading-tight ${addedId === video.videoId ? 'text-green-400' : 'text-white'}`}>{video.title}</h3>
-                                    <p className="text-xs text-gray-400 mt-1">{video.author?.name || video.author || "YouTube"}</p>
+                                    <h3 className={`font-bold text-sm line-clamp-2 leading-tight ${addedId === video.videoId ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'}`}>{video.title}</h3>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{video.author?.name || video.author || "YouTube"}</p>
                                 </div>
                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${addedId === video.videoId ? 'bg-green-500 text-white' : 'bg-white/10 text-gray-400'}`}>
                                     {addedId === video.videoId ? <CheckIcon className="w-5 h-5" /> : <PlusIcon className="w-5 h-5" />}
@@ -764,28 +913,60 @@ const RemotePage = () => {
                         ) : (
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between mb-3 mt-2">
-                                    <h3 className="text-xs text-gray-400 font-bold uppercase tracking-widest">คิวเพลง ({upcomingQueue.length})</h3>
+                                    <h3 className="text-xs text-gray-400 font-bold uppercase tracking-widest">คิวเพลง ({totalQueueCount})</h3>
                                 </div>
 
+                                {/* Past Queue (Hidden per user request, can re-enable later) */}
+                                {/* {pastQueue.map((video: any, idx: number) => (
+                                    <div key={video.key || idx} className="flex items-center gap-3 p-2 rounded-xl bg-black/10 border border-white/5 opacity-40 grayscale pointer-events-none">
+                                        <div className="w-8 flex justify-center text-gray-600">
+                                            <CheckIcon className="w-5 h-5" />
+                                        </div>
+                                        <img src={getThumbnail(video)} className="w-10 h-10 rounded-md object-cover" alt="" />
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium text-gray-400 truncate">{video.title}</p>
+                                        </div>
+                                    </div>
+                                ))} */}
+
+                                {/* Current Item (Highlighted) */}
+                                {currentQueueItem && (
+                                    <div className="flex items-center gap-3 p-2 rounded-xl bg-red-600 dark:bg-primary/20 border-2 border-red-600 dark:border-primary/50 relative overflow-hidden shadow-md dark:shadow-none">
+                                        {/* Pulse Effect (Dark Mode Only) */}
+                                        <div className="absolute inset-0 bg-primary/10 animate-pulse pointer-events-none hidden dark:block" />
+
+                                        <div className="w-8 flex justify-center text-white dark:text-primary z-10">
+                                            <MusicalNoteIcon className="w-5 h-5 animate-bounce" />
+                                        </div>
+                                        <img src={getThumbnail(currentQueueItem)} className="w-10 h-10 rounded-md object-cover z-10 shadow-sm border border-white/20" alt="" />
+                                        <div className="flex-1 min-w-0 z-10">
+                                            <p className="text-sm font-bold text-white truncate">{currentQueueItem.title}</p>
+                                            <p className="text-xs font-bold text-white/90 dark:font-normal dark:text-primary-content/70">กำลังเล่น...</p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Upcoming Queue (Sortable) */}
                                 <DndContext
                                     sensors={sensors}
                                     collisionDetection={closestCenter}
+                                    onDragStart={handleDragStart}
+                                    onDragMove={handleDragMove}
                                     onDragEnd={handleDragEnd}
                                 >
                                     <SortableContext
-                                        items={upcomingQueue.map((v: any) => v.key ? v.key.toString() : `video-${upcomingQueue.indexOf(v)}`)}
+                                        items={upcomingQueue.map((v: any) => v.dndId)} // Pass IDs, not objects
                                         strategy={verticalListSortingStrategy}
                                     >
                                         {upcomingQueue.map((video: any, idx: number) => {
-                                            const uniqueId = video.key ? video.key.toString() : `video-${idx}`;
                                             return (
                                                 <SortableQueueItem
-                                                    key={uniqueId}
-                                                    id={uniqueId}
+                                                    key={video.dndId} // Use stable dndId
+                                                    id={video.dndId}  // Use stable dndId
                                                     video={video}
                                                     index={idx}
                                                     getThumbnail={getThumbnail}
-                                                    onRemove={handleRemove}
+                                                    onRemove={() => handleRemove(idx)}
                                                 />
                                             );
                                         })}
@@ -798,10 +979,10 @@ const RemotePage = () => {
             </div>
 
             {/* 4. Bottom Mini Player (Fixed) */}
-            <div className="fixed bottom-0 inset-x-0 z-50 p-3 pb-safe bg-gradient-to-t from-black via-zinc-900 to-transparent pt-6 pointer-events-none">
-                <div className="bg-zinc-800/90 backdrop-blur-xl border border-white/10 rounded-2xl p-3 shadow-[0_0_30px_rgba(0,0,0,0.5)] flex items-center gap-3 pointer-events-auto">
+            <div className="fixed bottom-0 inset-x-0 z-50 p-3 pb-safe bg-gradient-to-t from-white via-white/80 dark:via-zinc-900 dark:from-black to-transparent pt-6 pointer-events-none">
+                <div className="bg-white dark:bg-zinc-800/90 backdrop-blur-none dark:backdrop-blur-xl border border-gray-300 dark:border-white/10 rounded-2xl p-3 shadow-xl dark:shadow-[0_0_30px_rgba(0,0,0,0.5)] flex items-center gap-3 pointer-events-auto">
                     {/* Tiny Thumb */}
-                    <div className="w-12 h-12 rounded-lg bg-black overflow-hidden shrink-0 border border-white/10 relative">
+                    <div className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-black overflow-hidden shrink-0 border border-gray-200 dark:border-white/10 relative">
                         <img src={highResThumbnail} className="w-full h-full object-cover" alt="" />
                         {status?.isPlaying && <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
                             <div className="w-3 h-3 bg-primary rounded-full animate-pulse shadow-[0_0_10px_theme(colors.primary.DEFAULT)]"></div>
@@ -813,8 +994,8 @@ const RemotePage = () => {
                         <div className="flex items-center gap-2 mb-0.5">
                             <div className="text-[10px] font-bold bg-primary text-white px-1.5 py-0.5 rounded-[4px] leading-none tracking-wider">PLAYING</div>
                         </div>
-                        <h3 className="text-sm font-bold text-white truncate leading-tight">{status?.title || "ไม่ได้เล่นเพลง"}</h3>
-                        <p className="text-xs text-gray-400 truncate">{status?.currentVideo?.author || "..."}</p>
+                        <h3 className="text-sm font-bold text-gray-900 dark:text-white truncate leading-tight">{status?.title || "ไม่ได้เล่นเพลง"}</h3>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{status?.currentVideo?.author || "..."}</p>
                     </div>
 
                     {/* Controls */}
@@ -826,12 +1007,12 @@ const RemotePage = () => {
                                 setStatus(prev => prev ? ({ ...prev, isPlaying: nextState }) : null);
                                 sendCommand(nextState ? 'PLAY' : 'PAUSE');
                             }}
-                            className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center shadow-lg active:scale-95 transition-all"
+                            className="w-12 h-12 rounded-full bg-black text-white dark:bg-white dark:text-black flex items-center justify-center shadow-lg active:scale-95 transition-all"
                         >
                             {status?.isPlaying ? <PauseIcon className="w-6 h-6" /> : <PlayIcon className="w-6 h-6 ml-0.5" />}
                         </button>
 
-                        <button onClick={() => sendCommand('NEXT')} className="p-2 text-gray-400 hover:text-white active:scale-90 transition-all">
+                        <button onClick={() => sendCommand('NEXT')} className="p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white active:scale-90 transition-all">
                             <ForwardIcon className="w-8 h-8" />
                         </button>
                     </div>

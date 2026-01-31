@@ -2,17 +2,17 @@ import { useLocalStorageValue } from '@react-hookz/web'
 
 export function useKaraokeState() {
   const { value: playlist, set: setPlaylist } = useLocalStorageValue(
-    "playlist",
+    "youoke_playlist_v1",
     { defaultValue: [] }
   );
   const { value: curVideoId, set: setCurVideoId } = useLocalStorageValue(
-    "videoId",
+    "youoke_videoId_v1",
     { defaultValue: "" }
   );
 
   // Add currentIndex to track position in playlist (instead of removing songs)
   const { value: currentIndex, set: setCurrentIndex } = useLocalStorageValue(
-    "currentIndex",
+    "youoke_currentIndex_v1",
     { defaultValue: 0 }
   );
 
