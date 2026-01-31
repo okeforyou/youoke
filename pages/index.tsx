@@ -820,9 +820,12 @@ function HomePage() {
                 {/* Remote Control Button (Mobile) */}
                 <div
                   onClick={() => setShowRemoteModal(true)}
-                  className="btn btn-circle btn-ghost text-base-content relative"
+                  className="btn btn-circle bg-neutral text-neutral-content relative border-none hover:bg-neutral/80"
+                  title="Remote Control"
                 >
                   <DevicePhoneMobileIcon className="h-5 w-5" />
+                  {/* Status Indicator */}
+                  <span className={`absolute top-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-base-100 ${remoteRoomCode ? 'bg-success' : 'bg-error'}`} />
                 </div>
 
                 {/* Mobile Queue Button */}
