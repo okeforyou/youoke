@@ -42,11 +42,11 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
 }) => {
   const [loading, setLoading] = React.useState(false);
   const [roomCode, setRoomCode] = React.useState('');
+  const [isJoining, setIsJoining] = React.useState(false);
 
   const handleWebMonitor = async () => {
-    setLoading(true);
-    await onSelectWebMonitor();
-    setLoading(false);
+    // Toggle input field
+    setIsJoining(!isJoining);
   };
   if (!isOpen) return null;
 
@@ -74,10 +74,10 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
         {/* Options */}
         <div className="space-y-2.5">
           {/* Option 1: Web Monitor Cast - All Devices */}
-          <button
+          {/* Option 1: Web Monitor (TV Receiver) */}
+          <div
             onClick={handleWebMonitor}
-            disabled={loading}
-            className="w-full text-left bg-base-200/50 hover:bg-base-200 rounded-lg p-3 border border-base-300 hover:border-primary transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full text-left bg-base-200/50 hover:bg-base-200 rounded-lg p-3 border border-base-300 hover:border-primary transition-all group cursor-pointer"
           >
             <div className="flex items-center gap-3">
               <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
@@ -88,33 +88,31 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
                 <p className="text-xs text-gray-600">เปิด youoke.vercel.app/tv บนทีวี</p>
               </div>
             </div>
-          </button>
 
-          {/* Connect to Remote via Code */}
-          <div className="pt-2">
-            <div className="relative flex items-center mb-2">
-              <div className="flex-grow border-t border-gray-300"></div>
-              <span className="flex-shrink-0 mx-4 text-gray-400 text-xs">หรือ เข้าร่วมด้วยรหัส</span>
-              <div className="flex-grow border-t border-gray-300"></div>
-            </div>
-
-            <div className="flex gap-2">
-              <input
-                type="text"
-                placeholder="เลขห้อง 6 หลัก"
-                maxLength={6}
-                value={roomCode}
-                onChange={(e) => setRoomCode(e.target.value)}
-                className="input input-bordered w-full input-sm text-center tracking-widest"
-              />
-              <button
-                disabled={roomCode.length < 6}
-                onClick={() => onJoinWebMonitor(roomCode)}
-                className="btn btn-sm btn-primary"
-              >
-                Join
-              </button>
-            </div>
+            {/* Collapsible Input Section */}
+            {isJoining && (
+              <div onClick={(e) => e.stopPropagation()} className="mt-3 pt-3 border-t border-base-300 animate-in fade-in slide-in-from-top-1">
+                <p className="text-xs font-semibold mb-2 text-gray-700">กรอกเลขห้องจากหน้าจอ TV:</p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="เลขห้อง 6 หลัก"
+                    maxLength={6}
+                    value={roomCode}
+                    onChange={(e) => setRoomCode(e.target.value)}
+                    className="input input-bordered w-full input-sm text-center tracking-widest bg-white"
+                    autoFocus
+                  />
+                  <button
+                    disabled={roomCode.length < 6}
+                    onClick={() => onJoinWebMonitor(roomCode)}
+                    className="btn btn-sm btn-primary"
+                  >
+                    Join
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
 

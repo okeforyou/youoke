@@ -820,7 +820,7 @@ function HomePage() {
                 {/* Remote Control Button (Mobile) */}
                 <div
                   onClick={() => setShowRemoteModal(true)}
-                  className="btn btn-circle btn-ghost text-base-content sm:hidden relative"
+                  className="btn btn-circle btn-ghost text-base-content relative"
                 >
                   <DevicePhoneMobileIcon className="h-5 w-5" />
                 </div>
