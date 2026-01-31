@@ -161,6 +161,7 @@ function YoutubePlayer({
     toggleMute: firebaseCastToggleMute,
     toggleFullscreen: firebaseCastToggleFullscreen,
     state: firebaseCastState,
+    createRoom,
   } = useFirebaseCast();
   const {
     connect: connectGoogleCast,
@@ -1493,9 +1494,18 @@ function YoutubePlayer({
         onClose={() => setShowCastModeSelector(false)}
         isCastAvailable={isCastAvailable}
         isMobile={isMobile}
-        onSelectWebMonitor={() => {
-          setShowCastModeSelector(false);
-          setIsCastOverlayOpen(true);
+        onSelectWebMonitor={async () => {
+          // 1. Create Room
+          const roomCode = await createRoom();
+          if (roomCode) {
+            // 2. Redirect to Remote Page as Host
+            console.log('🚀 Redirecting to Remote Controller:', roomCode);
+            // Use window.location for hard navigation to clean state, or router for SPA
+            // Router is better for UX, but need to ensure index.tsx unmounts cleanly
+            // router.push is fine
+            router.push(`/remote?session=${roomCode}&role=host`);
+            setShowCastModeSelector(false);
+          }
         }}
         onSelectDual={() => {
           setShowCastModeSelector(false);

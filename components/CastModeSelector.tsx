@@ -38,6 +38,13 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
   onSelectGoogleCast,
   onSelectYouTube,
 }) => {
+  const [loading, setLoading] = React.useState(false);
+
+  const handleWebMonitor = async () => {
+    setLoading(true);
+    await onSelectWebMonitor();
+    setLoading(false);
+  };
   if (!isOpen) return null;
 
   return (
@@ -65,12 +72,13 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
         <div className="space-y-2.5">
           {/* Option 1: Web Monitor Cast - All Devices */}
           <button
-            onClick={onSelectWebMonitor}
-            className="w-full text-left bg-base-200/50 hover:bg-base-200 rounded-lg p-3 border border-base-300 hover:border-primary transition-all group"
+            onClick={handleWebMonitor}
+            disabled={loading}
+            className="w-full text-left bg-base-200/50 hover:bg-base-200 rounded-lg p-3 border border-base-300 hover:border-primary transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <div className="flex items-center gap-3">
               <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                <TvIcon className="w-5 h-5 text-primary" />
+                {loading ? <ClockIcon className="w-5 h-5 animate-spin text-primary" /> : <TvIcon className="w-5 h-5 text-primary" />}
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-base font-semibold mb-0.5">TV Receiver (Smart TV)</h3>
@@ -102,8 +110,8 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
             onClick={onSelectGoogleCast}
             disabled={!isCastAvailable}
             className={`w-full text-left rounded-lg p-3 border transition-all group ${isCastAvailable
-                ? 'bg-base-200/50 hover:bg-base-200 border-base-300 hover:border-primary cursor-pointer'
-                : 'bg-base-200/30 border-base-300 cursor-not-allowed opacity-50'
+              ? 'bg-base-200/50 hover:bg-base-200 border-base-300 hover:border-primary cursor-pointer'
+              : 'bg-base-200/30 border-base-300 cursor-not-allowed opacity-50'
               }`}
           >
             <div className="flex items-center gap-3">

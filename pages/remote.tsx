@@ -102,6 +102,10 @@ const RemotePage = () => {
     const [guestProfile, setGuestProfile] = useState<{ name: string, uid: string } | null>(null);
     const [showNameModal, setShowNameModal] = useState(false);
 
+    // Host Mode Logic
+    const isHost = router.query.role === 'host';
+    const [isHostMode, setIsHostMode] = useState(false);
+
     // Sharing
     const [showQR, setShowQR] = useState(false);
 
@@ -114,14 +118,24 @@ const RemotePage = () => {
     }, []);
 
     useEffect(() => {
+        // Check for Host Mode first
+        if (router.query.role === 'host') {
+            setIsHostMode(true);
+            setGuestProfile({ name: 'Host', uid: 'host' }); // Placeholder for Host
+            return;
+        }
+
         // Load profile from local storage
         const savedProfile = localStorage.getItem('youoke_guest_profile');
         if (savedProfile) {
             setGuestProfile(JSON.parse(savedProfile));
         } else {
-            setShowNameModal(true);
+            // Only show modal if we have a session ID and NOT host
+            if (sessionId) {
+                setShowNameModal(true);
+            }
         }
-    }, []);
+    }, [router.query.role, sessionId]);
 
     const handleSaveGuestName = (name: string) => {
         const newProfile = {
