@@ -150,7 +150,7 @@ function HomePage() {
   const [internalPlayer, setInternalPlayer] = useState<YouTubePlayerType | null>(null);
 
   // Use Receiver Logic (PC acts as TV when controlled via Mobile)
-  const { roomCode: remoteRoomCode } = useReceiverLogic(internalPlayer);
+  const { roomCode: remoteRoomCode, remoteStatus } = useReceiverLogic(internalPlayer);
   const [showRemoteModal, setShowRemoteModal] = useState(false);
 
   // Poll for internal player instance
@@ -825,7 +825,10 @@ function HomePage() {
                 >
                   <DevicePhoneMobileIcon className="h-5 w-5" />
                   {/* Status Indicator */}
-                  <span className={`absolute top-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-base-100 ${remoteRoomCode ? 'bg-success' : 'bg-error'}`} />
+                  <span className={`absolute top-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-base-100 ${remoteStatus === 'active' ? 'bg-success' :
+                    remoteStatus === 'background' ? 'bg-warning' :
+                      'bg-neutral-content/30' // Gray for offline
+                    }`} />
                 </div>
 
                 {/* Mobile Queue Button */}

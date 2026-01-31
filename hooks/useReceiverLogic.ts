@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { YouTubePlayer } from 'react-youtube';
 import { signInAnonymously } from 'firebase/auth';
-import { ref, set, update } from 'firebase/database';
+import { ref, set, update, onValue } from 'firebase/database';
 import { auth, realtimeDb } from '../firebase';
 import { CastState } from '../types/castCommands';
 import { useCommandExecutor } from './useCommandExecutor';
@@ -149,22 +149,39 @@ export const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
 
     }, [roomCode, mode]);
 
-    // --- COMMAND EXECUTOR ---
-    // Enable for BOTH Web and Cast modes to support QR Code guests
-    useCommandExecutor({
-        roomCode: roomCode || '',
-        playerRef,
-        currentState: state,
-        onStateChange: (newState) => {
-            console.log('🔄 State Updated via Command:', newState);
-            setState(prev => ({ ...prev, ...newState }));
-        }
-    });
+    // --- PRESENCE LISTENER ---
+    const [remoteStatus, setRemoteStatus] = useState<'offline' | 'active' | 'background'>('offline');
+
+    useEffect(() => {
+        if (!roomCode || !realtimeDb) return;
+
+        const connectedRef = ref(realtimeDb, `rooms/${roomCode}/connected`);
+        const unsubscribe = onValue(connectedRef, (snapshot) => {
+            const val = snapshot.val();
+            if (!val) {
+                setRemoteStatus('offline');
+                return;
+            }
+
+            // Check if any client is active
+            const clients = Object.values(val) as any[];
+            const hasActive = clients.some(c => c.state === 'active');
+
+            if (hasActive) {
+                setRemoteStatus('active');
+            } else {
+                setRemoteStatus('background');
+            }
+        });
+
+        return () => unsubscribe();
+    }, [roomCode]);
 
     return {
         roomCode,
         state,
-        isConnected,
+        isConnected, // Receiver connection status
+        remoteStatus, // Remote device presence status
         mode,
         setState,
         debugMsg
