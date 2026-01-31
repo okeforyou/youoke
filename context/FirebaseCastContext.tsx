@@ -418,7 +418,6 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
     next,
     previous,
     skipTo,
-    skipTo,
     toggleMute,
     toggleFullscreen,
     // Shortcuts for backwards compatibility
