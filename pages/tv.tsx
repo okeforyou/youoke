@@ -168,7 +168,7 @@ const TVPage = () => {
                                             <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
                                                 <span className="text-primary font-bold">2</span>
                                             </div>
-                                            <p className="text-white">เปิด <span className="font-mono font-semibold text-primary">{baseUrl ? new URL(baseUrl).hostname : 'youoke.vercel.app'}</span></p>
+                                            <p className="text-white">เปิด <span className="font-mono font-semibold text-primary">{baseUrl ? `${new URL(baseUrl).hostname}/tv` : 'youoke.vercel.app/tv'}</span></p>
                                         </div>
                                         <div className="flex items-start gap-3">
                                             <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
@@ -213,6 +213,78 @@ const TVPage = () => {
     }
 
     // 2. PLAYER SCREEN (Matched to Monitor.tsx)
+    const handlePrevious = async () => {
+        if (!state.queue || state.currentIndex <= 0) return;
+        const newIndex = state.currentIndex - 1;
+        const newVideo = state.queue[newIndex];
+
+        // Optimistic
+        setState(prev => ({ ...prev, currentIndex: newIndex, currentVideo: newVideo, controls: { ...prev.controls, isPlaying: true } }));
+
+        // Firebase
+        const { update, ref } = await import('firebase/database');
+        const { realtimeDb } = await import('../firebase');
+        if (roomCode && realtimeDb) {
+            update(ref(realtimeDb, `rooms/${roomCode}/state`), {
+                currentIndex: newIndex,
+                currentVideo: newVideo,
+                controls: { ...state.controls, isPlaying: true }
+            });
+        }
+    };
+
+    const handleNext = async () => {
+        if (!state.queue || state.currentIndex >= state.queue.length - 1) return;
+        const newIndex = state.currentIndex + 1;
+        const newVideo = state.queue[newIndex];
+
+        // Optimistic
+        setState(prev => ({ ...prev, currentIndex: newIndex, currentVideo: newVideo, controls: { ...prev.controls, isPlaying: true } }));
+
+        // Firebase
+        const { update, ref } = await import('firebase/database');
+        const { realtimeDb } = await import('../firebase');
+        if (roomCode && realtimeDb) {
+            update(ref(realtimeDb, `rooms/${roomCode}/state`), {
+                currentIndex: newIndex,
+                currentVideo: newVideo,
+                controls: { ...state.controls, isPlaying: true }
+            });
+        }
+    };
+
+    const handlePlayPause = async () => {
+        const newIsPlaying = !state.controls.isPlaying;
+
+        // Optimistic
+        setState(prev => ({ ...prev, controls: { ...prev.controls, isPlaying: newIsPlaying } }));
+
+        // Firebase
+        const { update, ref } = await import('firebase/database');
+        const { realtimeDb } = await import('../firebase');
+        if (roomCode && realtimeDb) {
+            update(ref(realtimeDb, `rooms/${roomCode}/state/controls`), {
+                isPlaying: newIsPlaying
+            });
+        }
+    };
+
+    const handleMuteToggle = async () => {
+        const newIsMuted = !state.controls.isMuted;
+        // Optimistic
+        setState(prev => ({ ...prev, controls: { ...prev.controls, isMuted: newIsMuted } }));
+
+        // Firebase
+        const { update, ref } = await import('firebase/database');
+        const { realtimeDb } = await import('../firebase');
+        if (roomCode && realtimeDb) {
+            update(ref(realtimeDb, `rooms/${roomCode}/state/controls`), {
+                isMuted: newIsMuted
+            });
+        }
+    };
+
+
     return (
         <div className="relative w-screen h-screen bg-black overflow-hidden font-sans text-white">
             {/* YouTube Player */}
@@ -267,17 +339,35 @@ const TVPage = () => {
             {showControls && (
                 <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 z-40 transition-opacity duration-300">
                     <div className="bg-black/80 backdrop-blur-md rounded-full px-6 py-3 flex items-center gap-4 shadow-2xl border border-white/10">
-                        <button className="p-3 rounded-full hover:bg-white/20 transition-all">
+                        <button
+                            onClick={handlePrevious}
+                            disabled={state.currentIndex <= 0}
+                            className={`p-3 rounded-full hover:bg-white/20 transition-all ${state.currentIndex <= 0 ? 'opacity-30 cursor-not-allowed' : ''}`}
+                        >
                             <BackwardIcon className="w-6 h-6 text-white" />
                         </button>
-                        <button className="p-4 rounded-full bg-primary hover:bg-primary/80 transition-all">
+
+                        <button
+                            onClick={handlePlayPause}
+                            className="p-4 rounded-full bg-primary hover:bg-primary/80 transition-all"
+                        >
                             {state.controls.isPlaying ? <PauseIcon className="w-7 h-7 text-white" /> : <PlayIcon className="w-7 h-7 text-white" />}
                         </button>
-                        <button className="p-3 rounded-full hover:bg-white/20 transition-all">
+
+                        <button
+                            onClick={handleNext}
+                            disabled={!state.queue || state.currentIndex >= state.queue.length - 1}
+                            className={`p-3 rounded-full hover:bg-white/20 transition-all ${(!state.queue || state.currentIndex >= state.queue.length - 1) ? 'opacity-30 cursor-not-allowed' : ''}`}
+                        >
                             <ForwardIcon className="w-6 h-6 text-white" />
                         </button>
+
                         <div className="w-px h-8 bg-white/20 mx-2" />
-                        <button className="p-3 rounded-full hover:bg-white/20 transition-all">
+
+                        <button
+                            onClick={handleMuteToggle}
+                            className="p-3 rounded-full hover:bg-white/20 transition-all"
+                        >
                             {state.controls.isMuted ? <SpeakerXMarkIcon className="w-6 h-6 text-white" /> : <SpeakerWaveIcon className="w-6 h-6 text-white" />}
                         </button>
                     </div>
