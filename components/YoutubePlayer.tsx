@@ -113,11 +113,26 @@ function YoutubePlayer({
   };
 
   const handleFullscreenButtonClick = () => {
-    // iOS: Use CSS Fullscreen Overlay
+    // 1. Firebase Cast: Toggle TV Fullscreen
+    if (isCasting) {
+      console.log('🖥️ Casting active: Sending Toggle Fullscreen to TV');
+      firebaseCastToggleFullscreen();
+      return;
+    }
+
+    // 2. Google Cast: Toggle TV Fullscreen (if supported) or just warn
+    if (isGoogleCastConnected) {
+      addToast('ควบคุม Fullscreen บน Google Cast ไม่ได้');
+      return;
+    }
+
+    // 3. iOS: Use CSS Fullscreen Overlay
     if (isIOS) {
       setIsFullScreenIphone(!isFullScreenIphone);
       return;
     }
+
+    // 4. Desktop/Android: Standard Fullscreen API
     triggerFullscreen();
   };
   const [playerState, setPlayerState] = useState<number>();
@@ -144,6 +159,7 @@ function YoutubePlayer({
     pause: firebaseCastPause,
     next: firebaseCastNext,
     toggleMute: firebaseCastToggleMute,
+    toggleFullscreen: firebaseCastToggleFullscreen,
     state: firebaseCastState,
   } = useFirebaseCast();
   const {
@@ -498,9 +514,11 @@ function YoutubePlayer({
       addDebugLog('📤 Calling firebaseCastPlay()');
 
       // Optimistic Update: Update UI immediately
+      console.log('⚡ Optimistic Update: Playing = true');
       if (onIsPlayingChange) onIsPlayingChange(true);
 
-      firebaseCastPlay();
+      const result = firebaseCastPlay();
+      console.log('📤 firebaseCastPlay returned:', result);
       return;
     }
 

@@ -57,6 +57,7 @@ interface CastContextValue {
   previous: () => void;
   skipTo: (index: number) => void;
   toggleMute: () => void;
+  toggleFullscreen: () => void;
 
   // Shortcuts (for backwards compatibility)
   playlist: QueueVideo[];
@@ -392,6 +393,10 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
     sendCommand(roomCode, { type: 'TOGGLE_MUTE', payload: null });
   };
 
+  const toggleFullscreen = () => {
+    sendCommand(roomCode, { type: 'SET_FULLSCREEN', payload: { state: 'toggle' } });
+  };
+
   const value: CastContextValue = {
     isConnected,
     roomCode,
@@ -413,7 +418,9 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
     next,
     previous,
     skipTo,
+    skipTo,
     toggleMute,
+    toggleFullscreen,
     // Shortcuts for backwards compatibility
     playlist: state.queue,
     currentIndex: state.currentIndex,
