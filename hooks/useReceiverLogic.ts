@@ -120,25 +120,32 @@ export const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
         const initAuth = async () => {
             try {
                 await signInAnonymously(auth);
-            } catch (e) { console.error(e); }
+                // Mark as Connected once Auth confirms
+                setIsConnected(true);
+            } catch (e) {
+                console.error("Auth Fail", e);
+                setDebugMsg("Auth Failed");
+            }
         };
         initAuth();
 
         const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
 
         // Create Room (Host)
-        // We only set initial state if loop hasn't started
         set(roomRef, {
             hostId: 'tv-' + Date.now(),
             isHost: true,
             state: state,
             createdAt: Date.now(),
             mode: mode
+        }).then(() => {
+            console.log('✅ Room Created:', roomCode);
+            // Also set connected here to be sure
+            setIsConnected(true);
+        }).catch(e => {
+            console.error('❌ Room Create Fail:', e);
+            setDebugMsg("DB Write Failed");
         });
-
-        // Listen (Optional: if we want to sync state back from DB? No, TV is source of truth)
-        // But we DO need to update DB when TV state changes.
-        // This is handled by onStateChange in the component or Executor.
 
     }, [roomCode, mode]);
 

@@ -206,8 +206,13 @@ const TVPage = () => {
                     </p>
 
                     {/* Mode Debugger */}
-                    <div className="absolute top-4 right-4 text-[10px] text-gray-600 font-mono">
-                        Mode: {mode} | {isConnected ? 'Online' : 'Offline'}
+                    <div className="absolute top-4 right-4 text-xs text-gray-500 font-mono text-right bg-black/50 p-2 rounded">
+                        <div>Mode: {mode}</div>
+                        <div className={isConnected ? 'text-green-500' : 'text-red-500'}>
+                            {isConnected ? '● Connected' : '○ Disconnected'}
+                        </div>
+                        <div className="text-[10px] text-gray-600 mt-1">{debugMsg}</div>
+                        <div className="text-[10px] text-gray-600">v0.1.3</div>
                     </div>
                 </div>
                 <Script src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js" strategy="afterInteractive" />
