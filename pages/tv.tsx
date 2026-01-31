@@ -12,9 +12,6 @@ import {
     PauseIcon,
     ForwardIcon,
     BackwardIcon,
-    ArrowsPointingOutIcon,
-    ArrowsPointingInIcon,
-    ListBulletIcon,
 } from '@heroicons/react/24/outline';
 import Script from 'next/script';
 import { useReceiverLogic } from '../hooks/useReceiverLogic';
@@ -91,7 +88,7 @@ const TVPage = () => {
 
     // --- UI HELPERS ---
     const currentVideo = state.currentVideo;
-    const qrCodeUrl = baseUrl ? `${baseUrl}/remote?session=${roomCode}` : '';
+    const qrCodeUrl = baseUrl ? `${baseUrl}/?castRoom=${roomCode}` : '';
 
     const onStateChange = (e: any) => {
         if (e.data === 0) {
@@ -206,13 +203,8 @@ const TVPage = () => {
                     </p>
 
                     {/* Mode Debugger */}
-                    <div className="absolute top-4 right-4 text-xs text-gray-500 font-mono text-right bg-black/50 p-2 rounded">
-                        <div>Mode: {mode}</div>
-                        <div className={isConnected ? 'text-green-500' : 'text-red-500'}>
-                            {isConnected ? '● Connected' : '○ Disconnected'}
-                        </div>
-                        <div className="text-[10px] text-gray-600 mt-1">{debugMsg}</div>
-                        <div className="text-[10px] text-gray-600">v0.1.3</div>
+                    <div className="absolute top-4 right-4 text-[10px] text-gray-600 font-mono">
+                        Mode: {mode} | {isConnected ? 'Online' : 'Offline'}
                     </div>
                 </div>
                 <Script src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js" strategy="afterInteractive" />
@@ -335,119 +327,92 @@ const TVPage = () => {
                 </div>
             )}
 
-            {/* Top Right: Queue Widget (Dual Style) */}
-            {state.queue && state.queue.length > 0 && (
-                <div className={`absolute top-8 right-8 w-96 bg-black/80 backdrop-blur-xl rounded-3xl p-6 z-40 shadow-2xl transition-all duration-500 pointer-events-none transform ${showQueue ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4'}`}>
+            {/* Top Left: Room Code */}
+            <div className="absolute top-8 left-8 z-40">
+                <div className="bg-black/60 backdrop-blur-md rounded-lg px-4 py-2 border border-white/10">
+                    <p className="text-xs text-gray-400 mb-1">Room Code</p>
+                    <p className="text-2xl font-bold text-primary tracking-widest">{roomCode}</p>
+                </div>
+            </div>
 
-                    {/* Styles for Infinite Marquee */}
-                    <style>{`
-                      @keyframes marquee-infinite {
-                        0% { transform: translateX(0); }
-                        100% { transform: translateX(-50%); }
-                      }
-                      .animate-marquee-infinite {
-                        animation: marquee-infinite 20s linear infinite;
-                        display: flex;
-                        width: max-content;
-                        will-change: transform;
-                      }
-                    `}</style>
+            {/* Bottom Center: Floating Controls */}
+            {showControls && (
+                <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 z-40 transition-opacity duration-300">
+                    <div className="bg-black/80 backdrop-blur-md rounded-full px-6 py-3 flex items-center gap-4 shadow-2xl border border-white/10">
+                        <button
+                            onClick={handlePrevious}
+                            disabled={state.currentIndex <= 0}
+                            className={`p-3 rounded-full hover:bg-white/20 transition-all ${state.currentIndex <= 0 ? 'opacity-30 cursor-not-allowed' : ''}`}
+                        >
+                            <BackwardIcon className="w-6 h-6 text-white" />
+                        </button>
 
-                    {/* Header: Now Playing */}
-                    <div className="mb-4 overflow-hidden relative">
-                        <div className="flex items-center gap-2 text-primary mb-2">
-                            <MusicalNoteIcon className="w-5 h-5 animate-pulse" />
-                            <span className="text-xs font-bold uppercase tracking-widest">Now Playing</span>
-                        </div>
+                        <button
+                            onClick={handlePlayPause}
+                            className="p-4 rounded-full bg-primary hover:bg-primary/80 transition-all"
+                        >
+                            {state.controls.isPlaying ? <PauseIcon className="w-7 h-7 text-white" /> : <PlayIcon className="w-7 h-7 text-white" />}
+                        </button>
 
-                        {currentVideo ? (
-                            (() => {
-                                const title = currentVideo.title || "";
-                                const isLong = title.length > 30;
-                                return (
-                                    <div className="relative w-full overflow-hidden">
-                                        {isLong ? (
-                                            <div className="animate-marquee-infinite">
-                                                <h1 className="text-white font-medium text-sm whitespace-nowrap mr-16">{title}</h1>
-                                                <h1 className="text-white font-medium text-sm whitespace-nowrap mr-16">{title}</h1>
-                                            </div>
-                                        ) : (
-                                            <h1 className="text-white font-medium text-sm truncate">{title}</h1>
-                                        )}
-                                    </div>
-                                );
-                            })()
-                        ) : (
-                            <h1 className="text-white font-medium text-sm truncate">Loading...</h1>
-                        )}
-                    </div>
+                        <button
+                            onClick={handleNext}
+                            disabled={!state.queue || state.currentIndex >= state.queue.length - 1}
+                            className={`p-3 rounded-full hover:bg-white/20 transition-all ${(!state.queue || state.currentIndex >= state.queue.length - 1) ? 'opacity-30 cursor-not-allowed' : ''}`}
+                        >
+                            <ForwardIcon className="w-6 h-6 text-white" />
+                        </button>
 
-                    {/* Divider */}
-                    <div className="h-px bg-white/10 w-full mb-3"></div>
+                        <div className="w-px h-8 bg-white/20 mx-2" />
 
-                    {/* Up Next List */}
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-2 text-gray-400 mb-2">
-                            <ListBulletIcon className="w-3 h-3" />
-                            <span className="text-[10px] font-bold uppercase tracking-wider">Up Next</span>
-                        </div>
-
-                        {(() => {
-                            const currentIndex = state.currentIndex;
-                            const nextSongs = state.queue.slice(currentIndex + 1, currentIndex + 4);
-
-                            if (nextSongs.length === 0) return <p className="text-xs text-gray-500 italic">No more songs.</p>;
-
-                            return (
-                                <>
-                                    {nextSongs.map((v, i) => (
-                                        <div key={i} className="flex gap-3 text-sm text-gray-300 items-center">
-                                            <span className="text-xs text-gray-500 font-mono">{(currentIndex + 1) + (i + 1)}</span>
-                                            <span className="line-clamp-1 opacity-80">{v.title}</span>
-                                        </div>
-                                    ))}
-                                    {(state.queue.length - (currentIndex + 1 + nextSongs.length) > 0) && (
-                                        <p className="text-xs text-gray-500 mt-2 pl-6">+ อีก {state.queue.length - (currentIndex + 1 + nextSongs.length)} เพลง</p>
-                                    )}
-                                </>
-                            );
-                        })()}
+                        <button
+                            onClick={handleMuteToggle}
+                            className="p-3 rounded-full hover:bg-white/20 transition-all"
+                        >
+                            {state.controls.isMuted ? <SpeakerXMarkIcon className="w-6 h-6 text-white" /> : <SpeakerWaveIcon className="w-6 h-6 text-white" />}
+                        </button>
                     </div>
                 </div>
             )}
 
-            {/* Top Left: Room Code (Keep this form TV style, it's useful) */}
-            <div className="absolute top-8 left-8 z-40 opacity-50 hover:opacity-100 transition-opacity">
-                <div className="bg-black/40 backdrop-blur-md rounded-lg px-3 py-1.5 border border-white/10 flex items-center gap-2">
-                    <span className="text-[10px] text-gray-400">Room</span>
-                    <span className="text-lg font-bold text-primary tracking-widest">{roomCode}</span>
+            {/* Right Side: Queue Sidebar */}
+            {state.queue && state.queue.length > 0 && showQueue && (
+                <div className="absolute top-0 right-0 h-full w-80 lg:w-96 z-40 bg-gradient-to-l from-black/90 via-black/80 to-transparent backdrop-blur-md p-6 overflow-y-auto">
+                    {/* Now Playing info in Sidebar */}
+                    <div className="mb-6">
+                        <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide">กำลังเล่น</p>
+                        <div className="bg-primary/20 border border-primary/30 rounded-xl p-4">
+                            <h2 className="text-lg font-bold mb-1 line-clamp-2">{currentVideo.title}</h2>
+                            <p className="text-sm text-gray-300 truncate">{currentVideo.author}</p>
+                        </div>
+                    </div>
+
+                    {/* Up Next List */}
+                    <p className="text-xs text-gray-400 mb-3 uppercase tracking-wide flex items-center gap-2">
+                        <MusicalNoteIcon className="w-5 h-5" />
+                        <span>คิวถัดไป</span>
+                        <span className="ml-auto text-xs bg-white/10 px-2 py-0.5 rounded-full">{Math.max(0, state.queue.length - state.currentIndex - 1)} เพลง</span>
+                    </p>
+
+                    <div className="space-y-2">
+                        {state.queue.slice(state.currentIndex + 1).map((video, idx) => (
+                            <div key={idx} className="bg-white/5 rounded-lg p-3 hover:bg-white/10 transition-colors">
+                                <div className="flex items-start gap-3">
+                                    <div className="w-5 h-5 bg-primary/20 rounded-full flex items-center justify-center shrink-0">
+                                        <span className="text-primary text-xs font-bold">{idx + 1}</span>
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="text-sm font-semibold line-clamp-2">{video.title}</p>
+                                        <p className="text-xs text-gray-400 truncate">{video.author}</p>
+                                        {video.addedBy && (
+                                            <p className="text-[10px] text-primary/80 mt-1">โดย: {video.addedBy.displayName}</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
-            </div>
-
-            {/* Bottom Center: Floating Controls (Dual Style) */}
-            <div className={`absolute bottom-8 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                <div className="bg-black/60 backdrop-blur-md rounded-full px-6 py-3 flex items-center gap-6 border border-white/10 shadow-2xl">
-
-                    {/* Play/Pause */}
-                    <button onClick={handlePlayPause} className="p-1 hover:bg-white/20 rounded-full transition-colors group">
-                        {state.controls.isPlaying ? (
-                            <PauseIcon className="w-8 h-8 text-white group-hover:scale-110 transition-transform" />
-                        ) : (
-                            <PlayIcon className="w-8 h-8 text-white group-hover:scale-110 transition-transform" />
-                        )}
-                    </button>
-
-                    {/* Mute (Dynamic Icon) */}
-                    <button onClick={handleMuteToggle} className="p-1 hover:bg-white/20 rounded-full transition-colors order-3">
-                        {state.controls.isMuted ? <SpeakerXMarkIcon className="w-6 h-6 text-white/80" /> : <SpeakerWaveIcon className="w-6 h-6 text-white/80" />}
-                    </button>
-
-                    {/* Next Song */}
-                    <button onClick={handleNext} className="p-1 hover:bg-white/20 rounded-full transition-colors order-2 block">
-                        <ForwardIcon className="w-8 h-8 text-white hover:scale-110 transition-transform" />
-                    </button>
-                </div>
-            </div>
+            )}
 
             <Script src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js" strategy="afterInteractive" />
         </div>

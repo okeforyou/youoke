@@ -26,7 +26,6 @@ interface CastModeSelectorProps {
   onSelectDual: () => void;
   onSelectGoogleCast: () => void;
   onSelectYouTube: () => void;
-  onJoinWebMonitor: (code: string) => void;
 }
 
 export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
@@ -38,15 +37,13 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
   onSelectDual,
   onSelectGoogleCast,
   onSelectYouTube,
-  onJoinWebMonitor,
 }) => {
   const [loading, setLoading] = React.useState(false);
-  const [roomCode, setRoomCode] = React.useState('');
-  const [isJoining, setIsJoining] = React.useState(false);
 
   const handleWebMonitor = async () => {
-    // Toggle input field
-    setIsJoining(!isJoining);
+    setLoading(true);
+    await onSelectWebMonitor();
+    setLoading(false);
   };
   if (!isOpen) return null;
 
@@ -74,10 +71,10 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
         {/* Options */}
         <div className="space-y-2.5">
           {/* Option 1: Web Monitor Cast - All Devices */}
-          {/* Option 1: Web Monitor (TV Receiver) */}
-          <div
+          <button
             onClick={handleWebMonitor}
-            className="w-full text-left bg-base-200/50 hover:bg-base-200 rounded-lg p-3 border border-base-300 hover:border-primary transition-all group cursor-pointer"
+            disabled={loading}
+            className="w-full text-left bg-base-200/50 hover:bg-base-200 rounded-lg p-3 border border-base-300 hover:border-primary transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <div className="flex items-center gap-3">
               <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
@@ -88,34 +85,7 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
                 <p className="text-xs text-gray-600">เปิด youoke.vercel.app/tv บนทีวี</p>
               </div>
             </div>
-
-            {/* Collapsible Input Section */}
-            {isJoining && (
-              <div onClick={(e) => e.stopPropagation()} className="mt-3 pt-3 border-t border-base-300 animate-in fade-in slide-in-from-top-1">
-                <p className="text-xs font-semibold mb-2 text-gray-700">กรอกเลขห้องจากหน้าจอ TV:</p>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="เลขห้อง 6 หลัก"
-                    maxLength={6}
-                    value={roomCode}
-                    onChange={(e) => setRoomCode(e.target.value)}
-                    className="input input-bordered w-full input-sm text-center tracking-widest bg-white"
-                    autoFocus
-                  />
-                  <button
-                    disabled={roomCode.length < 6}
-                    onClick={() => onJoinWebMonitor(roomCode)}
-                    className="btn btn-sm btn-primary"
-                  >
-                    Join
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-
+          </button>
 
           {/* Option 2: Dual Screen (2 หน้าจอ) - PC Only */}
           {!isMobile && (

@@ -301,7 +301,6 @@ export function useCommandExecutor({
 
     // Listen to new commands being added
     const unsubscribe = onChildAdded(commandsRef, (snapshot) => {
-      console.log('⚡️ onChildAdded fired:', snapshot.key, snapshot.val());
       const envelope = snapshot.val() as CastCommandEnvelope;
       // Only execute pending commands
       if (envelope && envelope.status === 'pending') {
