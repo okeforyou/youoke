@@ -443,18 +443,7 @@ function YoutubePlayer({
     }
   }, [videoCount]);
 
-  // Legacy sync effects removed - Replaced by global useDualScreenSender hook
 
-  // Enhanced Fullscreen Handler definition moved up/consolidated or kept here if simpler.
-  // Wait, I replaced the top block but not the bottom definition. 
-  // The React component function body order matters for closure capture but functions are hoisted if defined with function keyword, but here they are const.
-  // My previous edit replaced lines 61-84, but `triggerFullscreen` was defined at line 410.
-  // The snippet I pasted in previous step INCLUDED `triggerFullscreen` definition?
-  // No, I pasted `// ... (rest of code) ... // Enhanced Handler`.
-  // Wait, let me check the previous `ReplacementContent`.
-  // Yes, I included `const triggerFullscreen = ...` in the replacement content.
-  // So now I have TWO `triggerFullscreen` definitions if the original one at 410 is still there.
-  // I must REMOVE the one at 410.
 
   // Sync Firebase Cast state to local Parent (for UI updates)
   useEffect(() => {
