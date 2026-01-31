@@ -117,7 +117,70 @@ const RemotePage = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    // Wake Lock
     useEffect(() => {
+        let wakeLock: any = null;
+        const requestWakeLock = async () => {
+            if ('wakeLock' in navigator) {
+                try {
+                    wakeLock = await (navigator as any).wakeLock.request('screen');
+                    console.log('💡 Screen Wake Lock Active');
+                } catch (err) {
+                    console.error('Wake Lock Error:', err);
+                }
+            }
+        };
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                requestWakeLock();
+            }
+        };
+
+        // Request initial lock (might fail until user interaction, but worth trying)
+        requestWakeLock();
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        document.addEventListener('click', requestWakeLock, { once: true }); // Retry on first click
+
+        return () => {
+            if (wakeLock) wakeLock.release();
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, []);
+
+    // Queue Notification Logic
+    const [lastNotifiedVideoId, setLastNotifiedVideoId] = useState<string>('');
+    // const [showTurnNotification, setShowTurnNotification] = useState<string | null>(null); // Duplicate removed
+
+    useEffect(() => {
+        if (!status?.currentVideo || !guestProfile?.uid) return;
+
+        const currentVideo = status.currentVideo;
+        const videoId = currentVideo.videoId;
+
+        // Skip if already notified for this song
+        if (videoId === lastNotifiedVideoId) return;
+
+        // Check if added by current user
+        // Using loose comparison for IDs just in case
+        if (currentVideo.addedBy?.uid && String(currentVideo.addedBy.uid) === String(guestProfile.uid)) {
+            console.log('🔔 User Turn Notification Triggered');
+
+            // Haptic Feedback
+            if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+
+            // Show Toast
+            setShowTurnNotification(currentVideo.title);
+            setLastNotifiedVideoId(videoId);
+
+            // Auto Hide
+            setTimeout(() => setShowTurnNotification(null), 5000);
+        }
+    }, [status?.currentVideo?.videoId, guestProfile?.uid]);
+
+    useEffect(() => {
+        if (!router.isReady) return;
+
         // Check for Host Mode first
         if (router.query.role === 'host') {
             setIsHostMode(true);
@@ -131,11 +194,12 @@ const RemotePage = () => {
             setGuestProfile(JSON.parse(savedProfile));
         } else {
             // Only show modal if we have a session ID and NOT host
-            if (sessionId) {
+            // And ensure we are not already showing it
+            if (sessionId && !guestProfile) {
                 setShowNameModal(true);
             }
         }
-    }, [router.query.role, sessionId]);
+    }, [router.isReady, router.query.role, sessionId]);
 
     const handleSaveGuestName = (name: string) => {
         const newProfile = {
@@ -582,6 +646,12 @@ const RemotePage = () => {
             {/* Background Atmosphere */}
             <div className="absolute inset-0 bg-cover bg-center opacity-40 blur-3xl scale-125 pointer-events-none transition-all duration-1000 z-0" style={{ backgroundImage: `url(${highResThumbnail})` }} />
             <div className="absolute inset-0 bg-black/60 z-0 pointer-events-none" />
+
+            {/* Guest Name Modal - Force Input if missing */}
+            <GuestNameModal
+                isOpen={showNameModal}
+                onSave={handleSaveGuestName}
+            />
 
             {/* 1. Header (Room Info) */}
             {/* 1. Header (Room Info) */}
