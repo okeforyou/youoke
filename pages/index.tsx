@@ -820,14 +820,12 @@ function HomePage() {
                 {/* Remote Control Button (Mobile) */}
                 <div
                   onClick={() => setShowRemoteModal(true)}
-                  className="btn btn-circle bg-neutral text-neutral-content relative border-none hover:bg-neutral/80"
+                  className="btn btn-circle bg-neutral relative border-none hover:bg-neutral/80 transition-colors duration-300"
                   title="Remote Control"
                 >
-                  <DevicePhoneMobileIcon className="h-5 w-5" />
-                  {/* Status Indicator */}
-                  <span className={`absolute top-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-base-100 ${remoteStatus === 'active' ? 'bg-success' :
-                    remoteStatus === 'background' ? 'bg-warning' :
-                      'bg-neutral-content/30' // Gray for offline
+                  <DevicePhoneMobileIcon className={`h-5 w-5 transition-colors duration-300 ${remoteStatus === 'active' ? 'text-success' :
+                      remoteStatus === 'background' ? 'text-warning' :
+                        'text-neutral-content' // Default/Offline
                     }`} />
                 </div>
 
