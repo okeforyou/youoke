@@ -817,16 +817,25 @@ function HomePage() {
 
 
 
-                {/* Remote Control Button (Mobile) */}
+                {/* Remote Control Button (Restored from Commit 30754e0) */}
                 <div
-                  onClick={() => setShowRemoteModal(true)}
-                  className="btn btn-circle bg-neutral relative border-none hover:bg-neutral/80 transition-colors duration-300"
-                  title="Remote Control"
+                  className="relative flex items-center"
+                  title={remoteRoomCode ? `Remote ID: ${remoteRoomCode} ${remoteStatus !== 'offline' ? '(เชื่อมต่อแล้ว)' : ''}` : 'Mobile Remote'}
                 >
-                  <DevicePhoneMobileIcon className={`h-5 w-5 transition-colors duration-300 ${remoteStatus === 'active' ? 'text-success' :
-                      remoteStatus === 'background' ? 'text-warning' :
-                        'text-neutral-content' // Default/Offline
-                    }`} />
+                  <button
+                    onClick={() => setShowRemoteModal(true)}
+                    className="relative btn btn-circle btn-ghost border ml-2 bg-white md:bg-base-200 border-base-200"
+                  >
+                    <DevicePhoneMobileIcon className={`w-6 h-6 ${remoteStatus !== 'offline' ? 'text-base-content' : 'text-gray-400'}`} />
+
+                    {/* Status Dot */}
+                    {remoteRoomCode && (
+                      <span className={`absolute top-0 right-0 w-3 h-3 rounded-full border-2 border-white transition-all ${remoteStatus === 'active' ? 'bg-success' :
+                          remoteStatus === 'background' ? 'bg-warning' :
+                            'bg-gray-300' // Offline/Waiting
+                        }`}></span>
+                    )}
+                  </button>
                 </div>
 
                 {/* Mobile Queue Button */}
