@@ -126,8 +126,21 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
 
   // Create room
   const createRoom = async (): Promise<string> => {
-    if (!realtimeDb || !user) {
-      throw new Error('Firebase or user not initialized');
+    if (!realtimeDb) {
+      throw new Error('Firebase not initialized');
+    }
+
+    // Ensure we have a valid Firebase User (not just the context wrapper)
+    let currentUser = auth.currentUser;
+    if (!currentUser) {
+      console.log('👻 Authenticating as anonymous host...');
+      try {
+        const result = await signInAnonymously(auth);
+        currentUser = result.user;
+      } catch (e) {
+        console.error('❌ Anonymous auth failed:', e);
+        throw new Error('Authentication failed');
+      }
     }
 
     const newRoomCode = generateRoomCode();
@@ -135,7 +148,7 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
 
     try {
       const roomData = {
-        hostId: user.uid,
+        hostId: currentUser.uid,
         isHost: true,
         state: {
           queue: [],
@@ -145,11 +158,11 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
         },
         // Don't initialize commands - let it be created when first command arrives
         createdAt: Date.now(),
-        participants: { [user.uid]: true },
+        participants: { [currentUser.uid]: true },
       };
 
       // Use REST API instead of set() to bypass stack overflow
-      const token = await user.getIdToken();
+      const token = await currentUser.getIdToken();
       const response = await fetch(`${dbURL}/rooms/${newRoomCode}.json?auth=${token}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -162,8 +175,8 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
 
       // Set user info for host
       setUserInfo({
-        uid: user.uid,
-        displayName: user.displayName || user.email || 'Host',
+        uid: currentUser.uid,
+        displayName: currentUser.displayName || currentUser.email || 'Host',
         isGuest: false,
       });
 
