@@ -456,6 +456,16 @@ function YoutubePlayer({
   // So now I have TWO `triggerFullscreen` definitions if the original one at 410 is still there.
   // I must REMOVE the one at 410.
 
+  // Sync Firebase Cast state to local Parent (for UI updates)
+  useEffect(() => {
+    if (isCasting && firebaseCastState && onIsPlayingChange) {
+      // When casting, the source of truth is Firebase State
+      // We must notify parent (index.tsx) about the playing state so the UI updates
+      const shouldBePlaying = firebaseCastState.controls.isPlaying;
+      onIsPlayingChange(shouldBePlaying);
+    }
+  }, [isCasting, firebaseCastState?.controls?.isPlaying]);
+
   const handleMute = async () => {
     try {
       const player = playerRef.current?.getInternalPlayer();
@@ -497,6 +507,10 @@ function YoutubePlayer({
     if (isCasting) {
       console.log('📤 Calling firebaseCastPlay()...');
       addDebugLog('📤 Calling firebaseCastPlay()');
+
+      // Optimistic Update: Update UI immediately
+      if (onIsPlayingChange) onIsPlayingChange(true);
+
       firebaseCastPlay();
       return;
     }
@@ -505,6 +519,10 @@ function YoutubePlayer({
       console.log('📤 Calling castPlay()...');
       addDebugLog('📤 Calling castPlay()');
       setPlayerState(YouTube.PlayerState.PLAYING);
+
+      // Optimistic Update
+      if (onIsPlayingChange) onIsPlayingChange(true);
+
       castPlay();
       return;
     }
@@ -552,6 +570,10 @@ function YoutubePlayer({
     if (isCasting) {
       console.log('📤 Calling firebaseCastPause()...');
       addDebugLog('📤 Calling firebaseCastPause()');
+
+      // Optimistic Update: Update UI immediately
+      if (onIsPlayingChange) onIsPlayingChange(false);
+
       firebaseCastPause();
       return;
     }
