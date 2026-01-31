@@ -13,9 +13,10 @@ import Image from "next/image";
 import { useEffect, useRef, useState, useMemo } from "react";
 import { DebounceInput } from "react-debounce-input";
 import { useDualScreenSender } from "../hooks/useDualScreenSender";
+import { useReceiverLogic } from "../hooks/useReceiverLogic"; // <--- Import
 import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import YouTube from 'react-youtube';
+import YouTube, { YouTubePlayer as YouTubePlayerType } from 'react-youtube'; // <--- Import Type
 
 import {
   BarsArrowUpIcon,
@@ -143,6 +144,25 @@ function HomePage() {
   } = useYouTubeCast();
 
   const isMobile = useIsMobile();
+
+  // Restore Local Player Ref for Remote Control
+  const localPlayerRef = useRef<YouTube>(null);
+  const [internalPlayer, setInternalPlayer] = useState<YouTubePlayerType | null>(null);
+
+  // Use Receiver Logic (PC acts as TV when controlled via Mobile)
+  const { roomCode: remoteRoomCode } = useReceiverLogic(internalPlayer);
+  const [showRemoteModal, setShowRemoteModal] = useState(false);
+
+  // Poll for internal player instance
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const player = localPlayerRef.current?.getInternalPlayer();
+      if (player && player !== internalPlayer) {
+        setInternalPlayer(player);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [internalPlayer]);
 
   const addPlaylistModalRef = useRef<ModalHandler>(null);
   const createPlaylistModalRef = useRef<ModalHandler>(null);
@@ -736,7 +756,7 @@ function HomePage() {
                     videoId={curVideoId}
                     nextSong={playNext}
                     className="w-full"
-
+                    externalPlayerRef={localPlayerRef}
                   />
                 </div>
               )}
@@ -796,6 +816,14 @@ function HomePage() {
 
 
 
+
+                {/* Remote Control Button (Mobile) */}
+                <div
+                  onClick={() => setShowRemoteModal(true)}
+                  className="btn btn-circle btn-ghost text-base-content sm:hidden relative"
+                >
+                  <DevicePhoneMobileIcon className="h-5 w-5" />
+                </div>
 
                 {/* Mobile Queue Button */}
                 <label htmlFor="modal-playlist" className="btn btn-circle btn-ghost text-base-content sm:hidden relative">
@@ -1039,7 +1067,7 @@ function HomePage() {
                 videoId={curVideoId}
                 nextSong={playNext}
                 className="flex-shrink-0"
-
+                externalPlayerRef={localPlayerRef}
               />
 
               {/* Queue/Playlist */}
@@ -1097,6 +1125,47 @@ function HomePage() {
       />
 
       {/* Remote QR Modal */}
+      {showRemoteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 p-4" onClick={() => setShowRemoteModal(false)}>
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm text-center relative" onClick={e => e.stopPropagation()}>
+            <button
+              onClick={() => setShowRemoteModal(false)}
+              className="absolute top-4 right-4 btn btn-circle btn-sm btn-ghost"
+            >
+              <XMarkIcon className="w-5 h-5" />
+            </button>
+
+            <h3 className="text-xl font-bold mb-2">Remote Control</h3>
+            <p className="text-gray-500 mb-6 text-sm">สแกนเพื่อควบคุม PC นี้ผ่านมือถือ</p>
+
+            <div className="flex justify-center mb-6">
+              <div className="bg-white p-2 rounded-xl border-2 border-primary/20">
+                <QRCodeSVG
+                  value={`${baseUrl}/remote?session=${remoteRoomCode}`}
+                  size={200}
+                  level="M"
+                />
+              </div>
+            </div>
+
+            <div className="bg-base-200 rounded-lg p-4">
+              <p className="text-xs text-gray-500 mb-1">รหัสห้อง</p>
+              <p className="text-3xl font-mono font-bold tracking-widest text-primary">{remoteRoomCode}</p>
+            </div>
+
+            <div className="mt-6 flex flex-col gap-2">
+              <a
+                href={`${baseUrl}/remote?session=${remoteRoomCode}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-primary w-full"
+              >
+                เปิด Remote ในเครื่องนี้
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
 
 
       {/* Share Room Modal */}
