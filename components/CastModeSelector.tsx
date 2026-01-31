@@ -103,7 +103,6 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
                 type="text"
                 placeholder="เลขห้อง 6 หลัก"
                 maxLength={6}
-                className="input input-bordered w-full input-sm"
                 value={roomCode}
                 onChange={(e) => setRoomCode(e.target.value)}
                 className="input input-bordered w-full input-sm text-center tracking-widest"
