@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { YouTubePlayer } from 'react-youtube';
 import { signInAnonymously } from 'firebase/auth';
-import { ref, set, update, onValue } from 'firebase/database';
+import { ref, set, update } from 'firebase/database';
 import { auth, realtimeDb } from '../firebase';
 import { CastState } from '../types/castCommands';
 import { useCommandExecutor } from './useCommandExecutor';
@@ -85,7 +85,7 @@ export const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
         // We ALWAYS generate a room code now, to allow Hybrid Mode (Phone joins Cast session via Web/Firebase)
         // In the future, we might want to sync this with the Cast Session ID, but random is fine for now.
         if (!roomCode) {
-            const newCode = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+            const newCode = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
             setRoomCode(newCode);
         }
     }, []);
@@ -120,68 +120,44 @@ export const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
         const initAuth = async () => {
             try {
                 await signInAnonymously(auth);
-                // Mark as Connected once Auth confirms
-                setIsConnected(true);
-            } catch (e) {
-                console.error("Auth Fail", e);
-                setDebugMsg("Auth Failed");
-            }
+            } catch (e) { console.error(e); }
         };
         initAuth();
 
         const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
 
         // Create Room (Host)
+        // We only set initial state if loop hasn't started
         set(roomRef, {
             hostId: 'tv-' + Date.now(),
             isHost: true,
             state: state,
             createdAt: Date.now(),
             mode: mode
-        }).then(() => {
-            console.log('✅ Room Created:', roomCode);
-            // Also set connected here to be sure
-            setIsConnected(true);
-        }).catch(e => {
-            console.error('❌ Room Create Fail:', e);
-            setDebugMsg("DB Write Failed");
         });
+
+        // Listen (Optional: if we want to sync state back from DB? No, TV is source of truth)
+        // But we DO need to update DB when TV state changes.
+        // This is handled by onStateChange in the component or Executor.
 
     }, [roomCode, mode]);
 
-    // --- PRESENCE LISTENER ---
-    const [remoteStatus, setRemoteStatus] = useState<'offline' | 'active' | 'background'>('offline');
-
-    useEffect(() => {
-        if (!roomCode || !realtimeDb) return;
-
-        const connectedRef = ref(realtimeDb, `rooms/${roomCode}/connected`);
-        const unsubscribe = onValue(connectedRef, (snapshot) => {
-            const val = snapshot.val();
-            if (!val) {
-                setRemoteStatus('offline');
-                return;
-            }
-
-            // Check if any client is active
-            const clients = Object.values(val) as any[];
-            const hasActive = clients.some(c => c.state === 'active');
-
-            if (hasActive) {
-                setRemoteStatus('active');
-            } else {
-                setRemoteStatus('background');
-            }
-        });
-
-        return () => unsubscribe();
-    }, [roomCode]);
+    // --- COMMAND EXECUTOR ---
+    // Enable for BOTH Web and Cast modes to support QR Code guests
+    useCommandExecutor({
+        roomCode: roomCode || '',
+        playerRef,
+        currentState: state,
+        onStateChange: (newState) => {
+            console.log('🔄 State Updated via Command:', newState);
+            setState(prev => ({ ...prev, ...newState }));
+        }
+    });
 
     return {
         roomCode,
         state,
-        isConnected, // Receiver connection status
-        remoteStatus, // Remote device presence status
+        isConnected,
         mode,
         setState,
         debugMsg

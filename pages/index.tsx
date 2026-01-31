@@ -13,10 +13,9 @@ import Image from "next/image";
 import { useEffect, useRef, useState, useMemo } from "react";
 import { DebounceInput } from "react-debounce-input";
 import { useDualScreenSender } from "../hooks/useDualScreenSender";
-import { useReceiverLogic } from "../hooks/useReceiverLogic"; // <--- Import
 import { DndContext, closestCenter, DragEndEvent } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import YouTube, { YouTubePlayer as YouTubePlayerType } from 'react-youtube'; // <--- Import Type
+import YouTube from 'react-youtube';
 
 import {
   BarsArrowUpIcon,
@@ -89,8 +88,8 @@ const QRCodeSVG = dynamic(
   () => import('qrcode.react').then((mod) => mod.QRCodeSVG),
   { ssr: false, loading: () => <div className="w-[180px] h-[180px] bg-gray-200 animate-pulse" /> }
 );
-
-
+import { useRemoteHost } from "../hooks/useRemoteHost";
+import QRModal from "../components/Remote/QRModal";
 
 function HomePage() {
   const {
@@ -144,25 +143,6 @@ function HomePage() {
   } = useYouTubeCast();
 
   const isMobile = useIsMobile();
-
-  // Restore Local Player Ref for Remote Control
-  const localPlayerRef = useRef<YouTube>(null);
-  const [internalPlayer, setInternalPlayer] = useState<YouTubePlayerType | null>(null);
-
-  // Use Receiver Logic (PC acts as TV when controlled via Mobile)
-  const { roomCode: remoteRoomCode, remoteStatus } = useReceiverLogic(internalPlayer);
-  const [showRemoteModal, setShowRemoteModal] = useState(false);
-
-  // Poll for internal player instance
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const player = localPlayerRef.current?.getInternalPlayer();
-      if (player && player !== internalPlayer) {
-        setInternalPlayer(player);
-      }
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [internalPlayer]);
 
   const addPlaylistModalRef = useRef<ModalHandler>(null);
   const createPlaylistModalRef = useRef<ModalHandler>(null);
@@ -226,8 +206,88 @@ function HomePage() {
     }
   }, [isGoogleCastConnected, googleCastConnectedRoomCode, isCasting, room]);
 
-  // useRemoteHost logic removed
+  // Mobile Remote Host Logic
+  const mobilePlayerRef = useRef<YouTube>(null);
+  // Mobile player control - ref and state for MiniPlayer
+  const playerControlRef = useRef<any>(null);
 
+  // Mobile player control - ref and state for MiniPlayer
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [currentTime, setCurrentTime] = useState("0:00");
+  const [duration, setDuration] = useState("0:00");
+  const [isHostFullscreen, setIsHostFullscreen] = useState(false);
+
+  // Listen for Fullscreen Changes (Host Side)
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isFs = !!document.fullscreenElement;
+      console.log('🖥️ Host: Fullscreen changed to', isFs);
+      setIsHostFullscreen(isFs);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  // Determine Active State for Remote Sync (Local vs Cast)
+  const activeQueue = isGoogleCastConnected ? (googleCastPlaylist || [])
+    : isCasting ? (castPlaylist || [])
+      : playlist;
+
+  const activeCurrentVideoId = isGoogleCastConnected ? activeQueue?.[googleCastCurrentIndex]?.videoId
+    : isCasting ? activeQueue?.[castCurrentIndex]?.videoId
+      : curVideoId;
+
+  // For Firebase Cast, use its playing state. For Google Cast/Local, use local hook state (as fallback for GC)
+  const activeIsPlaying = isCasting ? (castState?.controls?.isPlaying || false) : isPlaying;
+
+  const activeSetPlaylist = (newQueue: any[]) => {
+    console.log('🔄 Remote requested reorder for mode:', { isGoogleCastConnected, isCasting });
+    if (isGoogleCastConnected) {
+      updateGoogleCastPlaylistOrder(newQueue);
+    } else if (isCasting) {
+      setCastPlaylist(newQueue);
+    } else {
+      setPlaylist(newQueue);
+    }
+  };
+
+  // Debug: Active Queue Tracing
+  useEffect(() => {
+    const queueSource = isGoogleCastConnected ? 'GoogleCast' : (isCasting ? 'FirebaseCast' : 'Local');
+    const firstItemKey = activeQueue?.[0]?.key;
+    const queueLength = activeQueue?.length || 0;
+
+    console.log(`📡 [Index] Active Queue Updated (${queueSource}):`, {
+      length: queueLength,
+      firstItem: activeQueue?.[0]?.title,
+      firstKey: firstItemKey,
+      currentVideoId: activeCurrentVideoId
+    });
+  }, [activeQueue, isGoogleCastConnected, isCasting, activeCurrentVideoId]);
+
+  const { sessionId, connectedClients, connectionStatus } = useRemoteHost(
+    mobilePlayerRef,
+    playerControlRef,
+    (video) => addVideoToPlaylist(video),
+    activeQueue,          // Sync the ACTIVE queue (Cast or Local)
+    activeCurrentVideoId, // Sync the ACTIVE video ID
+    activeIsPlaying,      // Sync the ACTIVE playing state
+    isHostFullscreen,
+    activeSetPlaylist     // Use the wrapper to route reorder to correct backend
+  );
+  const [showRemoteModal, setShowRemoteModal] = useState(false);
+
+  // Auto-close Remote Modal when client connects
+  useEffect(() => {
+    console.log('🔄 Index: Checking Auto-close conditions:', { showRemoteModal, connectedClients });
+    if (showRemoteModal && connectedClients > 0) {
+      console.log('📱 Client connected! Auto-closing QR Modal.');
+      setShowRemoteModal(false);
+      // Optional: Show a toast "Remote Connected"
+    }
+  }, [connectedClients, showRemoteModal]);
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -319,7 +379,73 @@ function HomePage() {
   };
 
   // Mobile player control functions
+  const handleMobilePlay = async () => {
+    try {
+      const player = mobilePlayerRef.current?.getInternalPlayer();
+      if (!player) return;
+      await player.playVideo();
+      setIsPlaying(true);
+    } catch (error) {
+      console.error('Error playing video:', error);
+    }
+  };
 
+  const handleMobilePause = async () => {
+    try {
+      const player = mobilePlayerRef.current?.getInternalPlayer();
+      if (!player) return;
+      await player.pauseVideo();
+      setIsPlaying(false);
+    } catch (error) {
+      console.error('Error pausing video:', error);
+    }
+  };
+
+  const handleMobilePlayPause = () => {
+    if (isPlaying) {
+      handleMobilePause();
+    } else {
+      handleMobilePlay();
+    }
+  };
+
+  // Update player state periodically
+  useEffect(() => {
+    if (!curVideoId) return;
+
+    const updatePlayerState = async () => {
+      try {
+        const player = mobilePlayerRef.current?.getInternalPlayer();
+        if (!player) return;
+
+        const [state, currentTimeVal, durationVal] = await Promise.all([
+          player.getPlayerState(),
+          player.getCurrentTime(),
+          player.getDuration(),
+        ]);
+
+        // Update playing state (1 = PLAYING)
+        setIsPlaying(state === 1);
+
+        // Update progress
+        if (durationVal > 0) {
+          setProgress((currentTimeVal / durationVal) * 100);
+          setCurrentTime(formatTime(currentTimeVal));
+          setDuration(formatTime(durationVal));
+        }
+      } catch (error) {
+        // Ignore errors (player might not be ready yet)
+      }
+    };
+
+    // Update immediately
+    updatePlayerState();
+
+    // Update every second
+    const interval = setInterval(updatePlayerState, 1000);
+
+    return () => clearInterval(interval);
+  }, [curVideoId]);
 
   useEffect(() => {
     if (!user?.uid) {
@@ -361,7 +487,7 @@ function HomePage() {
 
   // Share Room function - using castRoom parameter
   const handleCopyShareLink = () => {
-    const shareUrl = `${baseUrl}/remote?session=${room}`;
+    const shareUrl = `${baseUrl}/?castRoom=${room}`;
     navigator.clipboard.writeText(shareUrl);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
@@ -729,7 +855,11 @@ function HomePage() {
   );
 
   // Helper for Status Color
-
+  const getStatusColor = () => {
+    if (connectionStatus === 'active') return 'bg-green-500 animate-pulse ring-2 ring-green-100';
+    if (connectionStatus === 'background') return 'bg-orange-500 animate-pulse ring-2 ring-orange-100';
+    return 'bg-gray-300';
+  };
 
   return (
     <div className="flex h-screen overflow-hidden text-sm 2xl:text-xl">
@@ -756,7 +886,9 @@ function HomePage() {
                     videoId={curVideoId}
                     nextSong={playNext}
                     className="w-full"
-                    externalPlayerRef={localPlayerRef}
+                    externalPlayerRef={mobilePlayerRef}
+                    showControls={true}
+                    controlRef={playerControlRef}
                   />
                 </div>
               )}
@@ -810,33 +942,27 @@ function HomePage() {
                   </div>
                 </div>
 
-
-
-
-
-
-
-
-                {/* Remote Control Button (Restored from Commit 30754e0) */}
+                {/* Mobile Remote Button - Visible only on Desktop (XL+) */}
                 <div
-                  className="relative flex items-center"
-                  title={remoteRoomCode ? `Remote ID: ${remoteRoomCode} ${remoteStatus !== 'offline' ? '(เชื่อมต่อแล้ว)' : ''}` : 'Mobile Remote'}
+                  className="relative hidden xl:flex items-center"
+                  title={sessionId ? `Remote ID: ${sessionId} ${connectedClients > 0 ? '(เชื่อมต่อแล้ว)' : ''}` : 'Mobile Remote'}
                 >
                   <button
                     onClick={() => setShowRemoteModal(true)}
                     className="relative btn btn-circle btn-ghost border ml-2 bg-white md:bg-base-200 border-base-200"
                   >
-                    <DevicePhoneMobileIcon className={`w-6 h-6 ${remoteStatus !== 'offline' ? 'text-base-content' : 'text-gray-400'}`} />
+                    <DevicePhoneMobileIcon className={`w-6 h-6 ${connectedClients > 0 ? 'text-base-content' : 'text-gray-400'}`} />
 
                     {/* Status Dot */}
-                    {remoteRoomCode && (
-                      <span className={`absolute top-0 right-0 w-3 h-3 rounded-full border-2 border-white transition-all ${remoteStatus === 'active' ? 'bg-success' :
-                          remoteStatus === 'background' ? 'bg-warning' :
-                            'bg-gray-300' // Offline/Waiting
-                        }`}></span>
+                    {sessionId && (
+                      <span className={`absolute top-0 right-0 w-3 h-3 rounded-full border-2 border-white transition-all ${getStatusColor()}`}></span>
                     )}
                   </button>
                 </div>
+
+
+
+
 
                 {/* Mobile Queue Button */}
                 <label htmlFor="modal-playlist" className="btn btn-circle btn-ghost text-base-content sm:hidden relative">
@@ -1080,7 +1206,8 @@ function HomePage() {
                 videoId={curVideoId}
                 nextSong={playNext}
                 className="flex-shrink-0"
-                externalPlayerRef={localPlayerRef}
+                controlRef={playerControlRef}
+                externalPlayerRef={mobilePlayerRef}
               />
 
               {/* Queue/Playlist */}
@@ -1093,9 +1220,10 @@ function HomePage() {
       </main >
 
       {/* Cast Mode Selector Modal */}
-      <CastModeSelector
+      < CastModeSelector
         isOpen={showCastModeSelector}
-        onClose={() => setShowCastModeSelector(false)}
+        onClose={() => setShowCastModeSelector(false)
+        }
         isCastAvailable={isCastAvailable}
         isMobile={isMobile}
         onSelectWebMonitor={() => {
@@ -1103,11 +1231,6 @@ function HomePage() {
           // Open YoutubePlayer Cast overlay (handled by YoutubePlayer component)
           const castButton = document.querySelector('[data-cast-button]') as HTMLElement;
           if (castButton) castButton.click();
-        }}
-        onJoinWebMonitor={(code) => {
-          setShowCastModeSelector(false);
-          // Redirect to remote with room code (Guest Mode)
-          window.location.href = `/remote?session=${code}`;
         }}
         onSelectDual={() => {
           setShowCastModeSelector(false);
@@ -1142,48 +1265,11 @@ function HomePage() {
       />
 
       {/* Remote QR Modal */}
-      {showRemoteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-80 p-4" onClick={() => setShowRemoteModal(false)}>
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm text-center relative" onClick={e => e.stopPropagation()}>
-            <button
-              onClick={() => setShowRemoteModal(false)}
-              className="absolute top-4 right-4 btn btn-circle btn-sm btn-ghost"
-            >
-              <XMarkIcon className="w-5 h-5" />
-            </button>
-
-            <h3 className="text-xl font-bold mb-2">Remote Control</h3>
-            <p className="text-gray-500 mb-6 text-sm">สแกนเพื่อควบคุม PC นี้ผ่านมือถือ</p>
-
-            <div className="flex justify-center mb-6">
-              <div className="bg-white p-2 rounded-xl border-2 border-primary/20">
-                <QRCodeSVG
-                  value={`${baseUrl}/remote?session=${remoteRoomCode}`}
-                  size={200}
-                  level="M"
-                />
-              </div>
-            </div>
-
-            <div className="bg-base-200 rounded-lg p-4">
-              <p className="text-xs text-gray-500 mb-1">รหัสห้อง</p>
-              <p className="text-3xl font-mono font-bold tracking-widest text-primary">{remoteRoomCode}</p>
-            </div>
-
-            <div className="mt-6 flex flex-col gap-2">
-              <a
-                href={`${baseUrl}/remote?session=${remoteRoomCode}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn btn-primary w-full"
-              >
-                เปิด Remote ในเครื่องนี้
-              </a>
-            </div>
-          </div>
-        </div>
-      )}
-
+      <QRModal
+        isOpen={showRemoteModal}
+        onClose={() => setShowRemoteModal(false)}
+        sessionId={sessionId}
+      />
 
       {/* Share Room Modal */}
       {
@@ -1212,7 +1298,7 @@ function HomePage() {
                   <div className="flex justify-center">
                     <div className="bg-white p-4 rounded-lg shadow-md">
                       <QRCodeSVG
-                        value={`${baseUrl}/remote?session=${room}`}
+                        value={`${baseUrl}/?castRoom=${room}`}
                         size={180}
                         level="M"
                       />
@@ -1226,7 +1312,7 @@ function HomePage() {
                     <input
                       type="text"
                       readOnly
-                      value={`${baseUrl}/remote?session=${room}`}
+                      value={`${baseUrl}/?castRoom=${room}`}
                       className="input input-sm input-bordered flex-1 text-xs bg-white"
                     />
                     <button
