@@ -442,12 +442,14 @@ function YoutubePlayer({
   useEffect(() => {
     // Play Now - explicitly play when video ID changes
     // Add a small delay to ensure player is ready
+    if (isCasting) return; // DSC: Don't auto-handle play on Sender. Host handles it.
+
     if (!!curVideoId) {
       setTimeout(() => {
         handlePlay();
       }, 500);
     }
-  }, [curVideoId]);
+  }, [curVideoId, isCasting]);
 
 
 
