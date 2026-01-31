@@ -1280,10 +1280,10 @@ function YoutubePlayer({
             <div className="text-center pr-8">
               <div className="flex items-center justify-center gap-2 mb-3">
                 <TvIcon className="w-6 h-6 text-primary" />
-                <h2 className="text-lg sm:text-xl font-bold">Web Monitor Cast</h2>
+                <h2 className="text-lg sm:text-xl font-bold">TV Receiver (Smart TV)</h2>
               </div>
               <p className="text-xs text-gray-600">
-                เปิด <span className="font-semibold">{baseUrl ? new URL(baseUrl).hostname : 'youoke.vercel.app'}/monitor</span> บนทีวี
+                เปิด <span className="font-semibold">{baseUrl ? new URL(baseUrl).hostname : 'youoke.vercel.app'}/tv</span> บนทีวี
               </p>
             </div>
 
