@@ -88,8 +88,8 @@ const QRCodeSVG = dynamic(
   () => import('qrcode.react').then((mod) => mod.QRCodeSVG),
   { ssr: false, loading: () => <div className="w-[180px] h-[180px] bg-gray-200 animate-pulse" /> }
 );
-import { useRemoteHost } from "../hooks/useRemoteHost";
-import QRModal from "../components/Remote/QRModal";
+
+
 
 function HomePage() {
   const {
@@ -206,88 +206,8 @@ function HomePage() {
     }
   }, [isGoogleCastConnected, googleCastConnectedRoomCode, isCasting, room]);
 
-  // Mobile Remote Host Logic
-  const mobilePlayerRef = useRef<YouTube>(null);
-  // Mobile player control - ref and state for MiniPlayer
-  const playerControlRef = useRef<any>(null);
+  // useRemoteHost logic removed
 
-  // Mobile player control - ref and state for MiniPlayer
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [currentTime, setCurrentTime] = useState("0:00");
-  const [duration, setDuration] = useState("0:00");
-  const [isHostFullscreen, setIsHostFullscreen] = useState(false);
-
-  // Listen for Fullscreen Changes (Host Side)
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      const isFs = !!document.fullscreenElement;
-      console.log('🖥️ Host: Fullscreen changed to', isFs);
-      setIsHostFullscreen(isFs);
-    };
-
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-  }, []);
-
-  // Determine Active State for Remote Sync (Local vs Cast)
-  const activeQueue = isGoogleCastConnected ? (googleCastPlaylist || [])
-    : isCasting ? (castPlaylist || [])
-      : playlist;
-
-  const activeCurrentVideoId = isGoogleCastConnected ? activeQueue?.[googleCastCurrentIndex]?.videoId
-    : isCasting ? activeQueue?.[castCurrentIndex]?.videoId
-      : curVideoId;
-
-  // For Firebase Cast, use its playing state. For Google Cast/Local, use local hook state (as fallback for GC)
-  const activeIsPlaying = isCasting ? (castState?.controls?.isPlaying || false) : isPlaying;
-
-  const activeSetPlaylist = (newQueue: any[]) => {
-    console.log('🔄 Remote requested reorder for mode:', { isGoogleCastConnected, isCasting });
-    if (isGoogleCastConnected) {
-      updateGoogleCastPlaylistOrder(newQueue);
-    } else if (isCasting) {
-      setCastPlaylist(newQueue);
-    } else {
-      setPlaylist(newQueue);
-    }
-  };
-
-  // Debug: Active Queue Tracing
-  useEffect(() => {
-    const queueSource = isGoogleCastConnected ? 'GoogleCast' : (isCasting ? 'FirebaseCast' : 'Local');
-    const firstItemKey = activeQueue?.[0]?.key;
-    const queueLength = activeQueue?.length || 0;
-
-    console.log(`📡 [Index] Active Queue Updated (${queueSource}):`, {
-      length: queueLength,
-      firstItem: activeQueue?.[0]?.title,
-      firstKey: firstItemKey,
-      currentVideoId: activeCurrentVideoId
-    });
-  }, [activeQueue, isGoogleCastConnected, isCasting, activeCurrentVideoId]);
-
-  const { sessionId, connectedClients, connectionStatus } = useRemoteHost(
-    mobilePlayerRef,
-    playerControlRef,
-    (video) => addVideoToPlaylist(video),
-    activeQueue,          // Sync the ACTIVE queue (Cast or Local)
-    activeCurrentVideoId, // Sync the ACTIVE video ID
-    activeIsPlaying,      // Sync the ACTIVE playing state
-    isHostFullscreen,
-    activeSetPlaylist     // Use the wrapper to route reorder to correct backend
-  );
-  const [showRemoteModal, setShowRemoteModal] = useState(false);
-
-  // Auto-close Remote Modal when client connects
-  useEffect(() => {
-    console.log('🔄 Index: Checking Auto-close conditions:', { showRemoteModal, connectedClients });
-    if (showRemoteModal && connectedClients > 0) {
-      console.log('📱 Client connected! Auto-closing QR Modal.');
-      setShowRemoteModal(false);
-      // Optional: Show a toast "Remote Connected"
-    }
-  }, [connectedClients, showRemoteModal]);
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -942,23 +862,8 @@ function HomePage() {
                   </div>
                 </div>
 
-                {/* Mobile Remote Button - Visible only on Desktop (XL+) */}
-                <div
-                  className="relative hidden xl:flex items-center"
-                  title={sessionId ? `Remote ID: ${sessionId} ${connectedClients > 0 ? '(เชื่อมต่อแล้ว)' : ''}` : 'Mobile Remote'}
-                >
-                  <button
-                    onClick={() => setShowRemoteModal(true)}
-                    className="relative btn btn-circle btn-ghost border ml-2 bg-white md:bg-base-200 border-base-200"
-                  >
-                    <DevicePhoneMobileIcon className={`w-6 h-6 ${connectedClients > 0 ? 'text-base-content' : 'text-gray-400'}`} />
 
-                    {/* Status Dot */}
-                    {sessionId && (
-                      <span className={`absolute top-0 right-0 w-3 h-3 rounded-full border-2 border-white transition-all ${getStatusColor()}`}></span>
-                    )}
-                  </button>
-                </div>
+
 
 
 
@@ -1265,11 +1170,7 @@ function HomePage() {
       />
 
       {/* Remote QR Modal */}
-      <QRModal
-        isOpen={showRemoteModal}
-        onClose={() => setShowRemoteModal(false)}
-        sessionId={sessionId}
-      />
+
 
       {/* Share Room Modal */}
       {
