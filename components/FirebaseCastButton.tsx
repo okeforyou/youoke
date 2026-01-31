@@ -99,7 +99,7 @@ export default function FirebaseCastButton() {
               <div className="text-sm">
                 <p className="font-semibold mb-1">วิธีใช้งาน:</p>
                 <ol className="list-decimal list-inside space-y-1">
-                  <li>เปิด youoke.vercel.app/monitor บนทีวี</li>
+                  <li>เปิด youoke.vercel.app/tv บนทีวี</li>
                   <li>ดูเลขห้อง 4 หลักที่แสดงบนทีวี</li>
                   <li>กรอกเลขห้องด้านล่าง แล้วกดเข้าร่วม</li>
                 </ol>
