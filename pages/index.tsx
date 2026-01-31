@@ -299,73 +299,7 @@ function HomePage() {
   };
 
   // Mobile player control functions
-  const handleMobilePlay = async () => {
-    try {
-      const player = mobilePlayerRef.current?.getInternalPlayer();
-      if (!player) return;
-      await player.playVideo();
-      setIsPlaying(true);
-    } catch (error) {
-      console.error('Error playing video:', error);
-    }
-  };
 
-  const handleMobilePause = async () => {
-    try {
-      const player = mobilePlayerRef.current?.getInternalPlayer();
-      if (!player) return;
-      await player.pauseVideo();
-      setIsPlaying(false);
-    } catch (error) {
-      console.error('Error pausing video:', error);
-    }
-  };
-
-  const handleMobilePlayPause = () => {
-    if (isPlaying) {
-      handleMobilePause();
-    } else {
-      handleMobilePlay();
-    }
-  };
-
-  // Update player state periodically
-  useEffect(() => {
-    if (!curVideoId) return;
-
-    const updatePlayerState = async () => {
-      try {
-        const player = mobilePlayerRef.current?.getInternalPlayer();
-        if (!player) return;
-
-        const [state, currentTimeVal, durationVal] = await Promise.all([
-          player.getPlayerState(),
-          player.getCurrentTime(),
-          player.getDuration(),
-        ]);
-
-        // Update playing state (1 = PLAYING)
-        setIsPlaying(state === 1);
-
-        // Update progress
-        if (durationVal > 0) {
-          setProgress((currentTimeVal / durationVal) * 100);
-          setCurrentTime(formatTime(currentTimeVal));
-          setDuration(formatTime(durationVal));
-        }
-      } catch (error) {
-        // Ignore errors (player might not be ready yet)
-      }
-    };
-
-    // Update immediately
-    updatePlayerState();
-
-    // Update every second
-    const interval = setInterval(updatePlayerState, 1000);
-
-    return () => clearInterval(interval);
-  }, [curVideoId]);
 
   useEffect(() => {
     if (!user?.uid) {
@@ -775,11 +709,7 @@ function HomePage() {
   );
 
   // Helper for Status Color
-  const getStatusColor = () => {
-    if (connectionStatus === 'active') return 'bg-green-500 animate-pulse ring-2 ring-green-100';
-    if (connectionStatus === 'background') return 'bg-orange-500 animate-pulse ring-2 ring-orange-100';
-    return 'bg-gray-300';
-  };
+
 
   return (
     <div className="flex h-screen overflow-hidden text-sm 2xl:text-xl">
@@ -806,9 +736,7 @@ function HomePage() {
                     videoId={curVideoId}
                     nextSong={playNext}
                     className="w-full"
-                    externalPlayerRef={mobilePlayerRef}
-                    showControls={true}
-                    controlRef={playerControlRef}
+
                   />
                 </div>
               )}
@@ -1111,8 +1039,7 @@ function HomePage() {
                 videoId={curVideoId}
                 nextSong={playNext}
                 className="flex-shrink-0"
-                controlRef={playerControlRef}
-                externalPlayerRef={mobilePlayerRef}
+
               />
 
               {/* Queue/Playlist */}
@@ -1125,10 +1052,9 @@ function HomePage() {
       </main >
 
       {/* Cast Mode Selector Modal */}
-      < CastModeSelector
+      <CastModeSelector
         isOpen={showCastModeSelector}
-        onClose={() => setShowCastModeSelector(false)
-        }
+        onClose={() => setShowCastModeSelector(false)}
         isCastAvailable={isCastAvailable}
         isMobile={isMobile}
         onSelectWebMonitor={() => {
