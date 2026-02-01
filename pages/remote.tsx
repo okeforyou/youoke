@@ -419,7 +419,7 @@ const RemotePage = () => {
                     const data = await response.json();
                     if (data) {
                         // SYNC SUPPRESSION: Ignore isPlaying update if user interacted recently
-                        const isInteracting = Date.now() - lastInteractionRef.current < 2000;
+                        const isInteracting = Date.now() - lastInteractionRef.current < 5000;
 
                         setStatus(prev => {
                             if (!prev) return data;
@@ -463,7 +463,8 @@ const RemotePage = () => {
                 // });
 
                 // SYNC SUPPRESSION match polling logic
-                const isInteracting = Date.now() - lastInteractionRef.current < 2000;
+                // SYNC SUPPRESSION match polling logic
+                const isInteracting = Date.now() - lastInteractionRef.current < 5000;
                 setStatus(prev => {
                     if (isInteracting && prev) {
                         return {
@@ -838,7 +839,7 @@ const RemotePage = () => {
             </div>
 
             {/* 2. Top Search Bar */}
-            <div className="p-4 z-20 bg-white dark:bg-transparent dark:bg-gradient-to-b dark:from-black/80 dark:to-transparent shrink-0 space-y-3 border-b border-gray-200 dark:border-none shadow-sm dark:shadow-none">
+            <div className="p-4 z-20 bg-white dark:bg-transparent dark:bg-gradient-to-b dark:from-black/80 dark:to-transparent shrink-0 space-y-3 border-none shadow-sm dark:shadow-none">
                 <div className="relative">
                     <MagnifyingGlassIcon className="absolute left-4 top-3.5 w-5 h-5 text-gray-400 pointer-events-none" />
                     <DebounceInput
