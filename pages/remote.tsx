@@ -846,7 +846,7 @@ const RemotePage = () => {
                         minLength={2}
                         debounceTimeout={500}
                         placeholder={searchType === 'karaoke' ? "ค้นหาเพลงคาราโอเกะ..." : "ค้นหาเพลง..."}
-                        className="w-full bg-gray-50 dark:bg-zinc-900/80 border border-gray-300 dark:border-white/10 rounded-2xl py-3 pl-12 pr-10 text-black dark:text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none placeholder-gray-500 dark:placeholder-gray-500 transition-all font-medium shadow-none dark:shadow-lg backdrop-blur-none dark:backdrop-blur-sm"
+                        className="w-full bg-gray-50 dark:bg-zinc-900/80 border border-gray-300 dark:border-white/10 rounded-2xl py-3 pl-12 pr-10 text-black dark:text-white focus:border-primary focus:ring-0 focus:outline-none placeholder-gray-500 dark:placeholder-gray-500 transition-all font-medium shadow-none dark:shadow-lg backdrop-blur-none dark:backdrop-blur-sm"
                         onChange={(e) => handleSearch(e.target.value)}
                         value={searchQuery}
                     />
