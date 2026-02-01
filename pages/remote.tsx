@@ -119,10 +119,10 @@ const RemotePage = () => {
     const [isHostMode, setIsHostMode] = useState(false);
 
     // Theme State
-    const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+    const [theme, setTheme] = useState<'dark' | 'light'>('light');
 
     useEffect(() => {
-        // Init theme from storage or default to dark
+        // Init theme from storage or default to light
         const savedTheme = localStorage.getItem('youoke_theme') as 'dark' | 'light' | null;
         if (savedTheme) {
             setTheme(savedTheme);
@@ -132,7 +132,8 @@ const RemotePage = () => {
                 document.documentElement.classList.remove('dark');
             }
         } else {
-            document.documentElement.classList.add('dark'); // Default dark
+            setTheme('light');
+            document.documentElement.classList.remove('dark'); // Default Light
         }
     }, []);
 
