@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { UserCircleIcon, MusicalNoteIcon, ArrowRightIcon, SparklesIcon } from '@heroicons/react/24/outline'; // Importing icons
+import { UserCircleIcon, MusicalNoteIcon, ArrowRightIcon, SparklesIcon, DevicePhoneMobileIcon } from '@heroicons/react/24/outline'; // Importing icons
 
 interface GuestNameModalProps {
     isOpen: boolean;
@@ -39,8 +39,8 @@ export default function GuestNameModal({ isOpen, onSave }: GuestNameModalProps) 
 
                     {/* Headline */}
                     {/* Headline */}
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight">
-                        จองคิวเพลงผ่านมือถือ <span className="text-primary">📱</span>
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight flex items-center justify-center gap-2">
+                        จองคิวเพลงผ่านมือถือ <DevicePhoneMobileIcon className="w-6 h-6 text-primary" />
                     </h2>
                     <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
                         เปลี่ยนมือถือเป็นรีโมทส่วนตัว <br />
@@ -50,7 +50,10 @@ export default function GuestNameModal({ isOpen, onSave }: GuestNameModalProps) 
 
                 <form onSubmit={handleSubmit} className="space-y-6 relative">
                     <div className="space-y-2">
-                        <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest pl-1">ชื่อเล่น</label>
+                        <div className="flex justify-between items-baseline">
+                            <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest pl-1">ชื่อเล่น</label>
+                            <span className="text-[10px] text-primary/80 font-medium">✨ จะแสดงบนจอทีวีเมื่อถึงคิวร้อง</span>
+                        </div>
                         <div className="relative">
                             <input
                                 type="text"
