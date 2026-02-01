@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 import YouTube, { YouTubePlayer } from 'react-youtube';
+import { useFullscreen, useToggle } from 'react-use';
 import { QRCodeSVG } from 'qrcode.react';
 import {
     DevicePhoneMobileIcon,
@@ -15,23 +16,52 @@ import {
 } from '@heroicons/react/24/outline';
 import Script from 'next/script';
 import { useReceiverLogic } from '../hooks/useReceiverLogic';
+import UnifiedPlayerInterface from '../components/UnifiedPlayerInterface';
 
 const TVPage = () => {
     // --- NO SSR GUARD ---
     const [mounted, setMounted] = useState(false);
     useEffect(() => { setMounted(true); }, []);
 
+
+
     const [player, setPlayer] = useState<YouTubePlayer | null>(null);
     const { roomCode, state, isConnected, setState, mode, debugMsg } = useReceiverLogic(player);
 
     // UI State (mirrored from monitor.tsx)
-    const [hasUserInteraction, setHasUserInteraction] = useState(false);
     const [showControls, setShowControls] = useState(true);
     const [showQueue, setShowQueue] = useState(true);
     const [baseUrl, setBaseUrl] = useState<string>('');
+    const fullscreenRef = useRef<HTMLDivElement>(null);
+
+    // Aggressive Auto-Unmute
+    useEffect(() => {
+        if (!player) return;
+        const interval = setInterval(() => {
+            try {
+                if (player.isMuted()) {
+                    player.unMute();
+                    player.setVolume(100);
+                }
+            } catch (e) { }
+        }, 1000);
+
+        // Stop checking after 10 seconds to save performance
+        const timeout = setTimeout(() => clearInterval(interval), 10000);
+
+        return () => {
+            clearInterval(interval);
+            clearTimeout(timeout);
+        };
+    }, [player]);
 
     const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const lastQueueLengthRef = useRef(0);
+
+    // Fullscreen Logic
+    const [showFullscreen, toggleFullscreen] = useToggle(false);
+    const isFullscreen = useFullscreen(fullscreenRef, showFullscreen, { onClose: () => toggleFullscreen(false) });
+
 
     // Detect base URL
     useEffect(() => {
@@ -114,7 +144,6 @@ const TVPage = () => {
         return (
             <div
                 className="relative h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white cursor-pointer overflow-hidden font-sans"
-                onClick={() => setHasUserInteraction(true)}
             >
                 {/* Background Pattern */}
                 <div className="absolute inset-0 opacity-5">
@@ -184,14 +213,7 @@ const TVPage = () => {
                                         </div>
                                     </div>
 
-                                    {!hasUserInteraction && (
-                                        <div className="bg-primary/10 border border-primary/30 rounded-xl px-4 py-3">
-                                            <p className="text-sm text-primary flex items-center gap-2">
-                                                <LightBulbIcon className="w-5 h-5" />
-                                                <span className="font-medium">คลิกหน้าจอเพื่อเริ่มเสียง</span>
-                                            </p>
-                                        </div>
-                                    )}
+
                                 </div>
                             </div>
                         </div>
@@ -285,8 +307,11 @@ const TVPage = () => {
     };
 
 
+    // 2. PLAYER SCREEN (Matched to Monitor.tsx)
+    // ... handlers ...
+
     return (
-        <div className="relative w-screen h-screen bg-black overflow-hidden font-sans text-white">
+        <div ref={fullscreenRef} className="relative w-screen h-screen bg-black overflow-hidden font-sans text-white">
             {/* YouTube Player */}
             <div className="absolute inset-0">
                 <YouTube
@@ -307,112 +332,31 @@ const TVPage = () => {
                     className="w-full h-full pointer-events-none"
                     onReady={(e) => {
                         setPlayer(e.target);
-                        if (!hasUserInteraction) e.target.mute();
-                        else e.target.unMute();
+                        // Auto-unmute aggressive attempt
+                        e.target.unMute();
+                        e.target.setVolume(100);
+                        setTimeout(() => e.target.unMute(), 1000);
                     }}
                     onStateChange={onStateChange}
                 />
             </div>
 
-            {/* Audio Hint Overlay */}
-            {!hasUserInteraction && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-50 cursor-pointer" onClick={() => {
-                    setHasUserInteraction(true);
-                    try { player?.unMute(); } catch (e) { }
-                }}>
-                    <div className="text-center bg-primary/90 px-12 py-8 rounded-3xl shadow-xl animate-pulse">
-                        <SpeakerXMarkIcon className="w-16 h-16 mx-auto mb-4" />
-                        <h2 className="text-3xl font-bold">กดเพื่อเปิดเสียง</h2>
-                    </div>
-                </div>
-            )}
-
-            {/* Top Left: Room Code */}
-            <div className="absolute top-8 left-8 z-40">
-                <div className="bg-black/60 backdrop-blur-md rounded-lg px-4 py-2 border border-white/10">
-                    <p className="text-xs text-gray-400 mb-1">Room Code</p>
-                    <p className="text-2xl font-bold text-primary tracking-widest">{roomCode}</p>
-                </div>
-            </div>
-
-            {/* Bottom Center: Floating Controls */}
-            {showControls && (
-                <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 z-40 transition-opacity duration-300">
-                    <div className="bg-black/80 backdrop-blur-md rounded-full px-6 py-3 flex items-center gap-4 shadow-2xl border border-white/10">
-                        <button
-                            onClick={handlePrevious}
-                            disabled={state.currentIndex <= 0}
-                            className={`p-3 rounded-full hover:bg-white/20 transition-all ${state.currentIndex <= 0 ? 'opacity-30 cursor-not-allowed' : ''}`}
-                        >
-                            <BackwardIcon className="w-6 h-6 text-white" />
-                        </button>
-
-                        <button
-                            onClick={handlePlayPause}
-                            className="p-4 rounded-full bg-primary hover:bg-primary/80 transition-all"
-                        >
-                            {state.controls.isPlaying ? <PauseIcon className="w-7 h-7 text-white" /> : <PlayIcon className="w-7 h-7 text-white" />}
-                        </button>
-
-                        <button
-                            onClick={handleNext}
-                            disabled={!state.queue || state.currentIndex >= state.queue.length - 1}
-                            className={`p-3 rounded-full hover:bg-white/20 transition-all ${(!state.queue || state.currentIndex >= state.queue.length - 1) ? 'opacity-30 cursor-not-allowed' : ''}`}
-                        >
-                            <ForwardIcon className="w-6 h-6 text-white" />
-                        </button>
-
-                        <div className="w-px h-8 bg-white/20 mx-2" />
-
-                        <button
-                            onClick={handleMuteToggle}
-                            className="p-3 rounded-full hover:bg-white/20 transition-all"
-                        >
-                            {state.controls.isMuted ? <SpeakerXMarkIcon className="w-6 h-6 text-white" /> : <SpeakerWaveIcon className="w-6 h-6 text-white" />}
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {/* Right Side: Queue Sidebar */}
-            {state.queue && state.queue.length > 0 && showQueue && (
-                <div className="absolute top-0 right-0 h-full w-80 lg:w-96 z-40 bg-gradient-to-l from-black/90 via-black/80 to-transparent backdrop-blur-md p-6 overflow-y-auto">
-                    {/* Now Playing info in Sidebar */}
-                    <div className="mb-6">
-                        <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide">กำลังเล่น</p>
-                        <div className="bg-primary/20 border border-primary/30 rounded-xl p-4">
-                            <h2 className="text-lg font-bold mb-1 line-clamp-2">{currentVideo.title}</h2>
-                            <p className="text-sm text-gray-300 truncate">{currentVideo.author}</p>
-                        </div>
-                    </div>
-
-                    {/* Up Next List */}
-                    <p className="text-xs text-gray-400 mb-3 uppercase tracking-wide flex items-center gap-2">
-                        <MusicalNoteIcon className="w-5 h-5" />
-                        <span>คิวถัดไป</span>
-                        <span className="ml-auto text-xs bg-white/10 px-2 py-0.5 rounded-full">{Math.max(0, state.queue.length - state.currentIndex - 1)} เพลง</span>
-                    </p>
-
-                    <div className="space-y-2">
-                        {state.queue.slice(state.currentIndex + 1).map((video, idx) => (
-                            <div key={idx} className="bg-white/5 rounded-lg p-3 hover:bg-white/10 transition-colors">
-                                <div className="flex items-start gap-3">
-                                    <div className="w-5 h-5 bg-primary/20 rounded-full flex items-center justify-center shrink-0">
-                                        <span className="text-primary text-xs font-bold">{idx + 1}</span>
-                                    </div>
-                                    <div className="min-w-0">
-                                        <p className="text-sm font-semibold line-clamp-2">{video.title}</p>
-                                        <p className="text-xs text-gray-400 truncate">{video.author}</p>
-                                        {video.addedBy && (
-                                            <p className="text-[10px] text-primary/80 mt-1">โดย: {video.addedBy.displayName}</p>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
+            {/* Shared Unified Interface (Queue, Controls, Status) */}
+            <UnifiedPlayerInterface
+                videoId={currentVideo.videoId}
+                queue={state.queue}
+                isPlaying={state.controls.isPlaying}
+                isMuted={state.controls.isMuted}
+                onPlayPause={handlePlayPause}
+                onNext={handleNext}
+                onPrevious={handlePrevious}
+                onMuteToggle={handleMuteToggle}
+                onToggleFullscreen={() => toggleFullscreen()}
+                isFullscreen={isFullscreen}
+                hidePlaybackControls={true}
+            // roomCode={roomCode} // Hide Room Code on SmartTV for clean view
+            // forceShowQueue={true} // Revert to Auto-Hide (only show on update/add)
+            />
 
             <Script src="//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js" strategy="afterInteractive" />
         </div>

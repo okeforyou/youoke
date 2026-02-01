@@ -1095,7 +1095,7 @@ function HomePage() {
               ref={alertRef}
               timer={2500}
               headline="สำเร็จ"
-              headlineColor="text-green-600"
+              titleColorClassName="text-green-600"
               bgColor="bg-green-100"
               content={<span className="text-sm">เพิ่มเพลย์ลิสต์สำเร็จ</span>}
               icon={<CheckCircleIcon />}

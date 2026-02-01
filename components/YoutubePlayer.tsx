@@ -38,6 +38,7 @@ import Alert, { AlertHandler } from "./Alert";
 import BottomAds from "./BottomAds";
 import { CastModeSelector } from "./CastModeSelector";
 import { ShareRoomModal } from "./ShareRoomModal";
+import HostController from './HostController';
 import VideoAds from "./VideoAds";
 import DebugOverlay, { addDebugLog } from "./DebugOverlay";
 import PlayerControls from "./PlayerControls";
@@ -80,35 +81,90 @@ function YoutubePlayer({
   }));
   const playerRef = externalPlayerRef || internalPlayerRef;
   const fullscreenRef = useRef<HTMLDivElement>();
-  const [show, toggleFullscreen] = useToggle(false);
-  const isFullscreen = useFullscreen(fullscreenRef, show, {
-    onClose: () => toggleFullscreen(false),
-  });
+  // Manual Fullscreen State (Robust Fallback)
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Sync fullscreen state with browser events
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+    };
+  }, []);
 
   // ... (rest of the code)
 
   // Enhanced Fullscreen Handler (Supports Remote & Local)
+  // Enhanced Fullscreen Handler (Supports Remote & Local + Error Handling)
   const triggerFullscreen = async (forceState?: boolean) => {
     try {
       if (typeof forceState === 'boolean') {
-        console.log(`🖥️ Triggering Fullscreen Explicitly: ${forceState}`);
-        await toggleFullscreen(forceState);
-        if (!forceState) setIsFullScreenIphone(false); // Force exit iOS CSS fullscreen too
+        if (forceState) {
+          await enterFullscreenSafe();
+        } else {
+          await exitFullscreenSafe();
+        }
+        if (!forceState) setIsFullScreenIphone(false);
         return;
       }
 
       // Toggle Logic
-      // 1. Try Standard API first
       if (!document.fullscreenElement) {
-        await toggleFullscreen(true); // From useFullscreen or useToggle
+        await enterFullscreenSafe();
       } else {
-        await toggleFullscreen(false);
+        await exitFullscreenSafe();
       }
-    } catch (e) {
-      console.warn('⚠️ Fullscreen API blocked (likely remote command without user gesture). Falling back to CSS Fullscreen.', e);
-      // 2. Fallback to CSS Fullscreen (Same as iOS mode)
+    } catch (e: any) {
+      console.warn('⚠️ Fullscreen API blocked. Falling back to CSS Fullscreen.', e);
+      // Fallback to CSS Fullscreen
       const targetState = typeof forceState === 'boolean' ? forceState : !isFullScreenIphone;
       setIsFullScreenIphone(targetState);
+    }
+  };
+
+  const enterFullscreenSafe = async () => {
+    try {
+      if (fullscreenRef.current) {
+        // Handle vendor prefixes if necessary (though React/Modern Browsers handle this)
+        const element = fullscreenRef.current as any;
+        if (element.requestFullscreen) {
+          await element.requestFullscreen();
+        } else if (element.webkitRequestFullscreen) {
+          await element.webkitRequestFullscreen();
+        } else if (element.msRequestFullscreen) {
+          await element.msRequestFullscreen();
+        }
+      }
+    } catch (err: any) {
+      // Explicitly catch "Permissions check failed" to prevent Runtime Error
+      if (err?.message?.includes('Permissions check failed')) {
+        console.warn('⚠️ Suppressed Fullscreen Permission Error');
+        throw new Error('Fullscreen permission denied (benign)');
+      }
+      throw err; // Re-throw other errors to trigger fallback
+    }
+  };
+
+  const exitFullscreenSafe = async () => {
+    try {
+      if (document.fullscreenElement) {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        } else if ((document as any).webkitExitFullscreen) {
+          await (document as any).webkitExitFullscreen();
+        }
+      }
+    } catch (err: any) {
+      console.warn('⚠️ Error exiting fullscreen:', err);
     }
   };
 
@@ -159,9 +215,11 @@ function YoutubePlayer({
     pause: firebaseCastPause,
     next: firebaseCastNext,
     toggleMute: firebaseCastToggleMute,
+    setMute: firebaseCastSetMute,
     toggleFullscreen: firebaseCastToggleFullscreen,
     state: firebaseCastState,
     createRoom,
+    stopSession,
   } = useFirebaseCast();
   const {
     connect: connectGoogleCast,
@@ -332,7 +390,7 @@ function YoutubePlayer({
         console.log('🔄 Portrait detected');
         setIsFullScreenIphone(false);
         if (isFullscreen) {
-          toggleFullscreen(false);
+          triggerFullscreen(false);
         }
       }
     };
@@ -484,6 +542,37 @@ function YoutubePlayer({
     }
   }, [isCasting, firebaseCastState?.controls?.isPlaying]);
 
+  // Robust Audio Sync for Dual Mode & Casting
+  useEffect(() => {
+    // 1. If we are a Monitor/TV, we handle our own audio (never mute unless commanded)
+    if (isMoniter) return;
+
+    // 2. If Dual Mode is Active => Host MUST be Muted (to prevent echo)
+    if (isDualMode) {
+      if (!isMuted) {
+        console.log('🔇 Dual Mode Active: Muting Host');
+        handleMute();
+      }
+    }
+    // 3. If NOT Dual Mode AND NOT Casting => Host MUST have Sound (Safety Unmute)
+    else if (!isCasting) {
+      // Only unmute if we're not currently muted manually? 
+      // Actually, for "bounce back" behavior, we generally want to restore sound.
+      // But we should check if we were muted BEFORE? 
+      // For now, to fix "system plays simultaneously", muting is priority.
+      // To fix "bounce back", unmuting is priority.
+      if (isMuted) {
+        console.log('🔊 Mode Ends: Restoring Host Audio');
+        const p = playerRef.current?.getInternalPlayer();
+        if (p && typeof p.unMute === 'function') {
+          p.unMute();
+          p.setVolume(100);
+          setIsMuted(false);
+        }
+      }
+    }
+  }, [isDualMode, isCasting, isMoniter]);
+
   const handleMute = async () => {
     try {
       const player = playerRef.current?.getInternalPlayer();
@@ -495,10 +584,15 @@ function YoutubePlayer({
     }
   };
   const handleUnMute = async () => {
-    // Block unmute in Dual Control Mode
-    if (isDualMode && !isMoniter) {
-      console.log('🔇 Audio locked in Dual Mode');
-      addToast('เสียงกำลังออกที่หน้าจอ 2');
+    // Block unmute in Dual Control Mode OR Cast Mode (Host Monitor)
+    if ((isDualMode && !isMoniter) || (isCasting && !isMobile)) {
+      console.log('🔇 Audio locked in Cast/Dual Mode');
+      addToast('เสียงกำลังออกที่ TV');
+
+      // Force Mute toggle ONLY on the Remote TV
+      if (isCasting) {
+        firebaseCastSetMute(false); // Send Unmute command to TV
+      }
       return;
     }
 
@@ -532,6 +626,17 @@ function YoutubePlayer({
 
       const result = firebaseCastPlay();
       console.log('📤 firebaseCastPlay returned:', result);
+
+      // SYNC LOCAL PLAYER (Shadow Player)
+      // Visual feedback: Play the local video too (Hidden/Muted) - No Delay needed anymore
+      try {
+        const player = playerRef.current?.getInternalPlayer();
+        if (player) {
+          player.mute();
+          player.playVideo();
+          setPlayerState(YouTube.PlayerState.PLAYING);
+        }
+      } catch (e) { console.error(e); }
       return;
     }
 
@@ -595,6 +700,16 @@ function YoutubePlayer({
       if (onIsPlayingChange) onIsPlayingChange(false);
 
       firebaseCastPause();
+
+      // SYNC LOCAL PLAYER (Shadow Player)
+      // Visual feedback: Stop the local video too
+      try {
+        const player = playerRef.current?.getInternalPlayer();
+        if (player) {
+          player.pauseVideo();
+          setPlayerState(YouTube.PlayerState.PAUSED);
+        }
+      } catch (e) { console.error(e); }
       return;
     }
 
@@ -1107,7 +1222,7 @@ function YoutubePlayer({
   }, [videoId, playerState, isMoniter, isGoogleCastConnected, isCasting, isDualMode]);
 
   const playPauseBtn = [
-    playerState === YouTube.PlayerState.PLAYING || (isCasting && firebaseCastState.controls.isPlaying)
+    (isCasting ? firebaseCastState?.controls?.isPlaying : playerState === YouTube.PlayerState.PLAYING)
       ? {
         icon: PauseIcon,
         label: "หยุด",
@@ -1140,19 +1255,31 @@ function YoutubePlayer({
 
   const muteBtn = useMemo(
     () => [
-      !isMuted
+      !(isCasting ? firebaseCastState?.controls?.isMuted : isMuted)
         ? {
           icon: SpeakerWaveIcon,
           label: "ปิดเสียง",
-          onClick: handleMute,
+          onClick: () => {
+            if (isCasting) {
+              firebaseCastSetMute(true);
+            } else {
+              handleMute();
+            }
+          },
         }
         : {
           icon: SpeakerXMarkIcon,
           label: "เปิดเสียง",
-          onClick: handleUnMute,
+          onClick: () => {
+            if (isCasting) {
+              firebaseCastSetMute(false);
+            } else {
+              handleUnMute();
+            }
+          },
         },
     ],
-    [isMuted, isDualMode]
+    [isMuted, isDualMode, isCasting]
   );
 
   // Cast icon component - same color always
@@ -1180,24 +1307,35 @@ function YoutubePlayer({
   }, [isGoogleCastConnected]);
 
   const fullBtn = useMemo(
-    () => [
-      (isIphone ? !isFullScreenIphone : !isFullscreen)
-        ? {
+    () => {
+      // Disable Fullscreen when Casting (don't hide, just gray out)
+      if (isCasting) {
+        return [{
           icon: ArrowsPointingOutIcon,
           label: "เต็มจอ",
-          onClick: async () => {
-            handleFullscreenButtonClick();
+          onClick: () => { },
+          disabled: true
+        }];
+      }
+      return [
+        (isIphone ? !isFullScreenIphone : !isFullscreen)
+          ? {
+            icon: ArrowsPointingOutIcon,
+            label: "เต็มจอ",
+            onClick: async () => {
+              handleFullscreenButtonClick();
+            },
+          }
+          : {
+            icon: ArrowsPointingInIcon,
+            label: "จอเล็ก",
+            onClick: async () => {
+              handleFullscreenButtonClick();
+            },
           },
-        }
-        : {
-          icon: ArrowsPointingInIcon,
-          label: "จอเล็ก",
-          onClick: async () => {
-            handleFullscreenButtonClick();
-          },
-        },
-    ],
-    [isFullscreen, isFullScreenIphone, isIphone]
+      ]
+    },
+    [isFullscreen, isFullScreenIphone, isIphone, isCasting]
   );
 
   const playerBtns: any = useMemo(
@@ -1278,8 +1416,10 @@ function YoutubePlayer({
   };
 
   const handleCastDisconnect = () => {
-    leaveRoom();
-    addToast('ตัดการเชื่อมต่อแล้ว');
+    stopSession(); // Sends STOP command to TV + Leaves Room
+    addToast('ตัดการเชื่อมต่อแล้ว', 'error');
+    // Audio restoration is handled by useEffect
+    setIsMuted(false); // Update React state locally just in case
   };
 
   const CastOverlayComponent = () => {
@@ -1450,24 +1590,24 @@ function YoutubePlayer({
         ref={alertRef}
         timer={2000}
         headline="เต็มจอ"
-        headlineColor="text-green-600"
-        bgColor="bg-green-100"
-        content={<span className="text-sm">กดเล่นเพื่อเต็มจอ</span>}
-        icon={<PlayIcon />}
+        titleColorClassName="text-white"
+        bgColor="bg-slate-900 border border-white/20 shadow-xl"
+        content={<span className="text-sm text-gray-300">กดเล่นเพื่อเต็มจอ</span>}
+        icon={<PlayIcon className="text-primary" />}
       />
       <span className={`${isIOS && !isIphone ? "" : "hidden"}`}>
         <Alert
           ref={alertFullNotWorkRef}
           timer={3000}
           headline="หากไม่เต็มจอ"
-          headlineColor="text-green-600"
-          bgColor="bg-green-100"
+          titleColorClassName="text-warning"
+          bgColor="bg-slate-900 border border-white/20 shadow-xl"
           content={
             <button
-              className="text-sm btn btn-ghost"
+              className="text-sm btn btn-ghost text-primary hover:bg-white/10"
               onClick={async () => {
                 setIsFullScreenIphone(false);
-                toggleFullscreen(false);
+                triggerFullscreen(false);
                 setIsIphone(true);
                 await handlePause();
               }}
@@ -1475,7 +1615,7 @@ function YoutubePlayer({
               กดที่นี่แล้วลองอีกครั้ง
             </button>
           }
-          icon={<ExclamationTriangleIcon />}
+          icon={<ExclamationTriangleIcon className="text-warning" />}
         />
       </span>
 
@@ -1484,7 +1624,7 @@ function YoutubePlayer({
         <div
           className="absolute top-4 right-4 z-[60] animate-bounce cursor-pointer"
           onClick={() => {
-            toggleFullscreen(true);
+            triggerFullscreen(true);
             setIsFullScreenIphone(false); // Switch off CSS mode as API takes over
           }}
         >
@@ -1505,15 +1645,22 @@ function YoutubePlayer({
         isCastAvailable={isCastAvailable}
         isMobile={isMobile}
         onSelectWebMonitor={async () => {
-          // 1. Create Room
-          const roomCode = await createRoom();
-          if (roomCode) {
-            // 2. Redirect to Remote Page as Host
-            console.log('🚀 Redirecting to Remote Controller:', roomCode);
-            // Use window.location for hard navigation to clean state, or router for SPA
-            // Router is better for UX, but need to ensure index.tsx unmounts cleanly
-            // router.push is fine
-            router.push(`/remote?session=${roomCode}&role=host`);
+          // Logic Split based on Device
+          if (isMobile) {
+            // Mobile: "I want to be the Remote"
+            // Creates Room -> Redirects to Remote Page as Host/Controller
+            // This is the "Quick Start" flow for Mobile
+            const roomCode = await createRoom();
+            if (roomCode) {
+              console.log('🚀 Mobile: Redirecting to Remote Controller:', roomCode);
+              router.push(`/remote?session=${roomCode}&role=host`);
+              setShowCastModeSelector(false);
+            }
+          } else {
+            // PC/Desktop: "DJ Mode" (Connect to TV)
+            // Opens the "Join Room" modal so user can enter the code from the TV
+            console.log('🖥️ Desktop: Opening Cast Input Modal (DJ Mode)');
+            setIsCastOverlayOpen(true); // Re-uses the existing CastOverlay logic
             setShowCastModeSelector(false);
           }
         }}
@@ -1576,7 +1723,7 @@ function YoutubePlayer({
         onClick={() => handleVideoClick()}
       >
         <div className="w-full aspect-video relative bg-black">
-          {isCasting && !isMoniter ? (
+          {isCasting && !isMoniter && isMobile ? (
             <div className="h-full w-full flex flex-col items-center justify-center p-4 gap-3 bg-gradient-to-br from-error to-red-600">
               {/* Compact status banner */}
               <div className="bg-white rounded-xl shadow-2xl px-4 py-3 max-w-sm w-full mx-auto border-2 border-white/50">
@@ -1626,7 +1773,7 @@ function YoutubePlayer({
                   onClick={(e) => {
                     e.stopPropagation(); // Prevent fullscreen trigger
                     disconnectGoogleCast();
-                    addToast('ตัดการเชื่อมต่อ Google Cast แล้ว');
+                    addToast('ตัดการเชื่อมต่อ Google Cast แล้ว', 'error');
                   }}
                   className="btn btn-sm btn-error gap-2"
                 >
@@ -1637,24 +1784,30 @@ function YoutubePlayer({
             </div>
           ) : (
             <>
-              {isDualMode && !isMoniter && (
-                <div className="absolute inset-0 z-[10000] h-full w-full flex flex-col items-center justify-center bg-slate-900 text-center border-b border-white/10">
-                  <div className="text-4xl md:text-5xl mb-4 animate-pulse">🖥️</div>
-                  <h2 className="text-lg md:text-xl font-bold mb-2 text-white">กำลังเล่นที่หน้าจอที่ 2</h2>
-                  <p className="text-xs md:text-sm text-gray-400 mb-6">วิดีโอกำลังเล่นบนหน้าจอ Dual Screen</p>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
+
+              {/* Controller Mode: Replaces Player entirely when Casting/Dual */}
+              {((isDualMode && !isMoniter) || (isCasting && !isMobile)) ? (
+                <HostController
+                  isCasting={isCasting}
+                  isDualMode={isDualMode}
+                  roomCode={roomCode}
+                  currentVideoTitle={firebaseCastState.currentVideo?.title}
+                  onDisconnect={() => {
+                    if (isDualMode) {
                       localStorage.removeItem('youoke-dual-active');
                       setIsDualMode(false);
-                      handleUnMute();
-                    }}
-                    className="btn btn-sm btn-outline btn-error rounded-full px-6 hover:bg-error hover:text-white transition-all"
-                  >
-                    ปิดโหมด 2 หน้าจอ
-                  </button>
-                </div>
+                    } else {
+                      handleCastDisconnect();
+                    }
+                  }}
+                />
+              ) : (
+                /* Standard Local Player Mode */
+                null
               )}
+
+
+
               {!videoId ? (
                 <div
                   className="h-full w-full flex items-center justify-center bg-black"
@@ -1678,7 +1831,7 @@ function YoutubePlayer({
                     className={`w-full bg-black ${!UseFullScreenCss
                       ? "aspect-video cursor-zoom-in"
                       : "h-[calc(100dvh)] cursor-zoom-out"
-                      } ${isDualMode && !isMoniter ? "opacity-0 pointer-events-none invisible" : ""}`}
+                      } ${((isDualMode && !isMoniter) || (isCasting && !isMobile)) ? "opacity-0 pointer-events-none invisible" : ""}`}
                     style={{
                       width: "100%",
                       height: UseFullScreenCss ? "calc(100dvh + 1px)" : "100%",
@@ -1686,33 +1839,68 @@ function YoutubePlayer({
                       top: UseFullScreenCss ? -1 : 0,
                       left: 0,
                       zIndex: UseFullScreenCss ? 9999 : 10,
-                      visibility: (isDualMode && !isMoniter) ? 'hidden' : 'visible'
+                      visibility: ((isDualMode && !isMoniter) || (isCasting && !isMobile)) ? 'hidden' : 'visible'
                     }}
                   >
-                    <YouTube
-                      ref={playerRef}
-                      videoId={videoId}
-                      className="w-full h-full"
-                      iframeClassName="w-full h-full pointer-events-none"
-                      loading="lazy"
-                      opts={{
-                        playerVars: {
-                          autoplay: isMoniter && playerState === PlayerStates.PAUSED ? 0 : 1,
-                          controls: isMoniter ? 1 : 0,
-                          disablekb: 1,
-                          enablejsapi: 1,
-                          modestbranding: 1,
-                          playsinline: isIphone && isFullScreenIphone ? 0 : 1,
-                          fs: 0,
-                        },
-                      }}
-                      onStateChange={(ev) => updatePlayerState(ev.target)}
-                      onEnd={() => nextSong()}
-                      onError={(e) => {
-                        console.error("YouTube Player Error:", e);
-                        nextSong();
-                      }}
-                    />
+
+                    {/* Only render Player if NOT in Controller Mode */}
+                    {!((isDualMode && !isMoniter) || (isCasting && !isMobile)) && (
+                      <YouTube
+                        ref={playerRef}
+                        // Override videoId with Remote State when Casting (Source of Truth)
+                        videoId={isCasting && firebaseCastState?.currentVideo?.videoId ? firebaseCastState.currentVideo.videoId : videoId}
+                        className="w-full h-full"
+                        iframeClassName="w-full h-full pointer-events-none"
+                        loading="lazy"
+                        opts={{
+                          playerVars: {
+                            // HOST: Disable Autoplay during Cast (We handle it manually in onReady for Sync)
+                            // Normal: Autoplay enabled
+                            autoplay: (isCasting && !isMobile && !isMoniter) ? 0 : (isMoniter && playerState === PlayerStates.PAUSED ? 0 : 1),
+                            controls: isMoniter ? 1 : 0,
+                            disablekb: 1,
+                            enablejsapi: 1,
+                            modestbranding: 1,
+                            playsinline: isIphone && isFullScreenIphone ? 0 : 1,
+                            fs: 0,
+                            // @ts-ignore
+                            mute: (isCasting && !isMobile && !isMoniter) ? 1 : 0, // Enforce IFrame Mute for Host
+                          },
+                        }}
+                        onReady={(ev) => {
+                          const p = ev.target;
+
+                          // HOST in Cast Mode: Manual Start (No Delay needed if hidden)
+                          if (isCasting && !isMobile && !isMoniter) {
+                            p.mute();
+                            p.setVolume(0);
+                            p.playVideo(); // Play immediately to keep time
+                            setPlayerState(YouTube.PlayerState.PLAYING);
+                            return;
+                          }
+
+                          if (isDualMode && !isMoniter) {
+                            p.mute();
+                            p.setVolume(0);
+                          }
+                        }}
+                        onStateChange={(ev) => {
+                          const p = ev.target;
+                          // Force Mute if DJ Mode
+                          if ((isDualMode && !isMoniter) || (isCasting && !isMobile)) {
+                            if (!p.isMuted()) p.mute();
+                          }
+                          updatePlayerState(p);
+                        }}
+                        onEnd={() => {
+                          // In Cast Mode (Host), do NOT trigger nextSong locally.
+                          // Let the Receiver (TV) handle the queue logic to avoid double-skipping.
+                          if (isCasting && !isMobile) return;
+                          nextSong();
+                        }}
+
+                      />
+                    )}
                   </div>
                 </>
               )}
@@ -1759,12 +1947,18 @@ function YoutubePlayer({
                   : {}
               }
             >
-              {buttons.map((btn) => {
+              {buttons.map((btn: any) => {
                 return (
                   <button
                     key={btn.label}
-                    className="btn btn-ghost font-normal text-primary flex h-auto flex-col flex-1 overflow-hidden text-[10px] 2xl:text-xs p-1 gap-0.5 hover:bg-base-200"
-                    onClick={btn.onClick}
+                    className={`btn btn-ghost font-normal flex h-auto flex-col flex-1 overflow-hidden text-[10px] 2xl:text-xs p-1 gap-0.5 
+                      ${btn.disabled
+                        ? 'text-base-content/20 cursor-not-allowed hover:bg-transparent'
+                        : 'text-primary hover:bg-base-200'}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (!btn.disabled && btn.onClick) btn.onClick();
+                    }}
                   >
                     <btn.icon className="w-5 h-5 2xl:w-6 2xl:h-6" />
                     {btn.label}

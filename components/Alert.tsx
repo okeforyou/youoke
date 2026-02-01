@@ -1,18 +1,18 @@
 import React, {
-    forwardRef,
-    ForwardRefRenderFunction,
-    useEffect,
-    useImperativeHandle,
-    useState,
+  forwardRef,
+  ForwardRefRenderFunction,
+  useEffect,
+  useImperativeHandle,
+  useState,
 } from 'react'
 
 interface IAlertProps {
   icon: JSX.Element;
   headline: string;
-  headlineColor: "text-green-600" | "text-red-600";
+  titleColorClassName: string;
   content: JSX.Element;
   hideClose?: boolean;
-  bgColor: "bg-green-100" | "bg-red-100";
+  bgColor: string;
   timer?: number;
 }
 
@@ -25,7 +25,7 @@ const Alert: ForwardRefRenderFunction<AlertHandler, IAlertProps> = (
   {
     icon,
     headline,
-    headlineColor,
+    titleColorClassName,
     hideClose,
     timer,
     bgColor,
@@ -64,11 +64,9 @@ const Alert: ForwardRefRenderFunction<AlertHandler, IAlertProps> = (
   return (
     <>
       <div
-        className={`transition-opacity duration-200 ${
-          isAlertOpen ? "opacity-100" : "opacity-0"
-        } ${
-          isAlertOpen ? "" : "hidden"
-        } fixed max-w-fit top-0 right-0 left-0 mx-auto mt-4 z-50`}
+        className={`transition-opacity duration-200 ${isAlertOpen ? "opacity-100" : "opacity-0"
+          } ${isAlertOpen ? "" : "hidden"
+          } fixed max-w-fit top-0 right-0 left-0 mx-auto mt-4 z-50`}
       >
         <div className={`relative flex w-full rounded-lg py-4 px-8 ${bgColor}`}>
           {!hideClose && (
@@ -93,9 +91,9 @@ const Alert: ForwardRefRenderFunction<AlertHandler, IAlertProps> = (
             </div>
           )}
 
-          <div className={`flex w-8 h-8 ${headlineColor}`}>{icon}</div>
+          <div className={`flex w-8 h-8 ${titleColorClassName}`}>{icon}</div>
           <div className="px-2">
-            <span className={`mb-2 font-bold ${headlineColor}`}>
+            <span className={`mb-2 font-bold ${titleColorClassName}`}>
               {headline}
             </span>
             <div>{content}</div>

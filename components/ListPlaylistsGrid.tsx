@@ -482,7 +482,7 @@ export default function ListPlaylistsGrid() {
         ref={alertRef}
         timer={2500}
         headline="สำเร็จ"
-        headlineColor="text-green-600"
+        titleColorClassName="text-green-600"
         bgColor="bg-green-100"
         content={<span className="text-sm">ถูกใจสำเร็จ</span>}
         icon={<HandThumbUpIcon />}

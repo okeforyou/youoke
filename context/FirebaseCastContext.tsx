@@ -12,7 +12,7 @@
  * - Controls YouTube player
  */
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
 import { signInAnonymously } from 'firebase/auth';
 import { realtimeDb, auth } from '../firebase';
 import { RecommendedVideo, SearchResult } from '../types/invidious';
@@ -20,7 +20,7 @@ import { useAuth } from './AuthContext';
 import { sendCommand } from '../utils/castCommands';
 import { CastState, QueueVideo } from '../types/castCommands';
 
-interface CastContextValue {
+interface FirebaseCastContextValue {
   // Connection State
   isConnected: boolean;
   roomCode: string;
@@ -56,8 +56,11 @@ interface CastContextValue {
   next: () => void;
   previous: () => void;
   skipTo: (index: number) => void;
+
   toggleMute: () => void;
+  setMute: (muted: boolean) => void;
   toggleFullscreen: () => void;
+  stopSession: () => void;
 
   // Shortcuts (for backwards compatibility)
   playlist: QueueVideo[];
@@ -66,7 +69,7 @@ interface CastContextValue {
   isMuted: boolean;
 }
 
-const CastContext = createContext<CastContextValue | undefined>(undefined);
+const CastContext = createContext<FirebaseCastContextValue | undefined>(undefined);
 
 const generateRoomCode = (): string => {
   const randomNum = Math.floor(Math.random() * 10000);
@@ -94,6 +97,15 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
     controls: { isPlaying: false, isMuted: true },
   });
 
+  // Ref to track current state for interval access
+  const currentStateRef = useRef<CastState>(state);
+  useEffect(() => { currentStateRef.current = state; }, [state]);
+
+  // Ref to track last command time (to prevent race conditions)
+  const lastCommandTimeRef = useRef(0);
+  // Ref to track the LATEST INTENDED CONTROLS (sync update)
+  const latestControlsRef = useRef(state.controls);
+
   // Listen to state changes using REST API polling
   useEffect(() => {
     if (!roomCode || !realtimeDb) return;
@@ -107,9 +119,19 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
         const newState = await response.json() as CastState | null;
 
         if (newState) {
+          // Grace Period: Ignore remote *CONTROLS* if we sent a command recently (< 4000ms)
+          // This prevents the UI from flickering back to old state before DB updates
+          if (Date.now() - lastCommandTimeRef.current < 4000) {
+            // Force use of LATEST INTENDED CONTROLS (Sync Source of Truth)
+            newState.controls = latestControlsRef.current;
+          } else {
+            // If not in grace period, update our Ref to match Reality
+            latestControlsRef.current = newState.controls;
+          }
+
           // Only update if state changed (reduce re-renders)
           if (JSON.stringify(newState) !== JSON.stringify(lastStateRef)) {
-            console.log('📦 State updated from Firebase (polling):', newState);
+            // console.log('📦 State updated from Firebase (polling):', newState);
             setState(newState);
             lastStateRef = newState;
           }
@@ -308,7 +330,7 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
       queue: [],
       currentIndex: 0,
       currentVideo: null,
-      controls: { isPlaying: false, isMuted: true },
+      controls: { isPlaying: false, isMuted: false },
     });
     console.log('👋 Left room');
   };
@@ -378,16 +400,25 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  // Player Controls - Send Commands
+  // Player Controls - Send Commands (Optimistic Updates)
   const play = () => {
+    lastCommandTimeRef.current = Date.now();
+    const newControls = { ...latestControlsRef.current, isPlaying: true };
+    latestControlsRef.current = newControls; // Sync update for Polling Loop
+    setState(prev => ({ ...prev, controls: newControls }));
     sendCommand(roomCode, { type: 'PLAY', payload: null });
   };
 
   const pause = () => {
+    lastCommandTimeRef.current = Date.now();
+    const newControls = { ...latestControlsRef.current, isPlaying: false };
+    latestControlsRef.current = newControls; // Sync update for Polling Loop
+    setState(prev => ({ ...prev, controls: newControls }));
     sendCommand(roomCode, { type: 'PAUSE', payload: null });
   };
 
   const next = () => {
+    // We can't easily predict next song optimistically without complex logic, so we rely on DB sync
     sendCommand(roomCode, { type: 'NEXT', payload: null });
   };
 
@@ -403,14 +434,36 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
   };
 
   const toggleMute = () => {
+    lastCommandTimeRef.current = Date.now();
+    const newControls = { ...latestControlsRef.current, isMuted: !latestControlsRef.current.isMuted };
+    latestControlsRef.current = newControls; // Sync update for Polling Loop
+    setState(prev => ({ ...prev, controls: newControls }));
     sendCommand(roomCode, { type: 'TOGGLE_MUTE', payload: null });
+  };
+
+  const setMute = (muted: boolean) => {
+    lastCommandTimeRef.current = Date.now();
+    const newControls = { ...latestControlsRef.current, isMuted: muted };
+    latestControlsRef.current = newControls; // Sync update for Polling Loop
+    setState(prev => ({ ...prev, controls: newControls }));
+    if (muted) {
+      sendCommand(roomCode, { type: 'MUTE', payload: null });
+    } else {
+      sendCommand(roomCode, { type: 'UNMUTE', payload: null });
+    }
   };
 
   const toggleFullscreen = () => {
     sendCommand(roomCode, { type: 'TOGGLE_FULLSCREEN', payload: null });
   };
 
-  const value: CastContextValue = {
+  const stopSession = () => {
+    sendCommand(roomCode, { type: 'STOP_SESSION', payload: null });
+    // We also leave the room locally after sending the stop command
+    leaveRoom();
+  };
+
+  const value: FirebaseCastContextValue = {
     isConnected,
     roomCode,
     isHost,
@@ -432,7 +485,9 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
     previous,
     skipTo,
     toggleMute,
+    setMute,
     toggleFullscreen,
+    stopSession,
     // Shortcuts for backwards compatibility
     playlist: state.queue,
     currentIndex: state.currentIndex,
