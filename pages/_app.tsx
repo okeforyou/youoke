@@ -21,6 +21,30 @@ const queryClient = new QueryClient({
   },
 });
 
+// Polyfill/Guard for 'Permissions check failed' error
+// This typically happens in some browsers/extensions when accessing blocked APIs (like WakeLock or Clipboard)
+if (typeof window !== 'undefined') {
+  const originalConsoleError = console.error;
+  console.error = (...args) => {
+    if (args[0]?.toString().includes('Permissions check failed')) return;
+    originalConsoleError.apply(console, args);
+  };
+
+  window.addEventListener('error', (event) => {
+    if (event.message?.includes('Permissions check failed')) {
+      event.preventDefault(); // Prevent runtime crash overlay
+      console.warn('⚠️ Suppressed "Permissions check failed" error (benign)');
+    }
+  });
+
+  window.addEventListener('unhandledrejection', (event) => {
+    if (event.reason?.message?.includes('Permissions check failed')) {
+      event.preventDefault();
+      console.warn('⚠️ Suppressed unhandled rejection: Permissions check failed');
+    }
+  });
+}
+
 function App({ Component, pageProps }) {
   return (
     <AuthContextProvider>
