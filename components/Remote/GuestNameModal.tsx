@@ -40,11 +40,11 @@ export default function GuestNameModal({ isOpen, onSave }: GuestNameModalProps) 
                     {/* Headline */}
                     {/* Headline */}
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight">
-                        ระบบจองคิวเพลงผ่านมือถือ <span className="text-primary">📱</span>
+                        จองคิวเพลงผ่านมือถือ <span className="text-primary">📱</span>
                     </h2>
                     <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
-                        เปลี่ยนมือถือเป็นรีโมทส่วนตัว ค้นหาและส่งเพลงขึ้นจอ TV ได้ทันที <br />
-                        มาร่วมสนุกและร้องเพลงไปด้วยกันครับ!
+                        เปลี่ยนมือถือเป็นรีโมทส่วนตัว <br />
+                        ค้นหาและส่งเพลงขึ้นจอ TV ได้ทันที!
                     </p>
                 </div>
 
