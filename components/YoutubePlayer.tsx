@@ -80,35 +80,90 @@ function YoutubePlayer({
   }));
   const playerRef = externalPlayerRef || internalPlayerRef;
   const fullscreenRef = useRef<HTMLDivElement>();
-  const [show, toggleFullscreen] = useToggle(false);
-  const isFullscreen = useFullscreen(fullscreenRef, show, {
-    onClose: () => toggleFullscreen(false),
-  });
+  // Manual Fullscreen State (Robust Fallback)
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Sync fullscreen state with browser events
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+    };
+  }, []);
 
   // ... (rest of the code)
 
   // Enhanced Fullscreen Handler (Supports Remote & Local)
+  // Enhanced Fullscreen Handler (Supports Remote & Local + Error Handling)
   const triggerFullscreen = async (forceState?: boolean) => {
     try {
       if (typeof forceState === 'boolean') {
-        console.log(`🖥️ Triggering Fullscreen Explicitly: ${forceState}`);
-        await toggleFullscreen(forceState);
-        if (!forceState) setIsFullScreenIphone(false); // Force exit iOS CSS fullscreen too
+        if (forceState) {
+          await enterFullscreenSafe();
+        } else {
+          await exitFullscreenSafe();
+        }
+        if (!forceState) setIsFullScreenIphone(false);
         return;
       }
 
       // Toggle Logic
-      // 1. Try Standard API first
       if (!document.fullscreenElement) {
-        await toggleFullscreen(true); // From useFullscreen or useToggle
+        await enterFullscreenSafe();
       } else {
-        await toggleFullscreen(false);
+        await exitFullscreenSafe();
       }
-    } catch (e) {
-      console.warn('⚠️ Fullscreen API blocked (likely remote command without user gesture). Falling back to CSS Fullscreen.', e);
-      // 2. Fallback to CSS Fullscreen (Same as iOS mode)
+    } catch (e: any) {
+      console.warn('⚠️ Fullscreen API blocked. Falling back to CSS Fullscreen.', e);
+      // Fallback to CSS Fullscreen
       const targetState = typeof forceState === 'boolean' ? forceState : !isFullScreenIphone;
       setIsFullScreenIphone(targetState);
+    }
+  };
+
+  const enterFullscreenSafe = async () => {
+    try {
+      if (fullscreenRef.current) {
+        // Handle vendor prefixes if necessary (though React/Modern Browsers handle this)
+        const element = fullscreenRef.current as any;
+        if (element.requestFullscreen) {
+          await element.requestFullscreen();
+        } else if (element.webkitRequestFullscreen) {
+          await element.webkitRequestFullscreen();
+        } else if (element.msRequestFullscreen) {
+          await element.msRequestFullscreen();
+        }
+      }
+    } catch (err: any) {
+      // Explicitly catch "Permissions check failed" to prevent Runtime Error
+      if (err?.message?.includes('Permissions check failed')) {
+        console.warn('⚠️ Suppressed Fullscreen Permission Error');
+        throw new Error('Fullscreen permission denied (benign)');
+      }
+      throw err; // Re-throw other errors to trigger fallback
+    }
+  };
+
+  const exitFullscreenSafe = async () => {
+    try {
+      if (document.fullscreenElement) {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        } else if ((document as any).webkitExitFullscreen) {
+          await (document as any).webkitExitFullscreen();
+        }
+      }
+    } catch (err: any) {
+      console.warn('⚠️ Error exiting fullscreen:', err);
     }
   };
 
@@ -332,7 +387,7 @@ function YoutubePlayer({
         console.log('🔄 Portrait detected');
         setIsFullScreenIphone(false);
         if (isFullscreen) {
-          toggleFullscreen(false);
+          triggerFullscreen(false);
         }
       }
     };
@@ -1467,7 +1522,7 @@ function YoutubePlayer({
               className="text-sm btn btn-ghost"
               onClick={async () => {
                 setIsFullScreenIphone(false);
-                toggleFullscreen(false);
+                triggerFullscreen(false);
                 setIsIphone(true);
                 await handlePause();
               }}
@@ -1484,7 +1539,7 @@ function YoutubePlayer({
         <div
           className="absolute top-4 right-4 z-[60] animate-bounce cursor-pointer"
           onClick={() => {
-            toggleFullscreen(true);
+            triggerFullscreen(true);
             setIsFullScreenIphone(false); // Switch off CSS mode as API takes over
           }}
         >
