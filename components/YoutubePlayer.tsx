@@ -231,6 +231,11 @@ function YoutubePlayer({
     // Only apply wake lock for Remote (not Monitor)
     if (isMoniter) return;
 
+    // Run only in secure context where API is available
+    if (typeof window === 'undefined' || !window.isSecureContext) return;
+
+    let mounted = true;
+
     const requestWakeLock = async () => {
       // Only request wake lock when casting
       if (!isCasting) {
@@ -248,39 +253,44 @@ function YoutubePlayer({
       }
 
       // Check if Wake Lock API is supported
-      if (!('wakeLock' in navigator)) {
-        console.warn('⚠️ Screen Wake Lock API not supported');
+      if (!navigator || !('wakeLock' in navigator)) {
         return;
       }
 
       try {
         // Request screen wake lock
-        wakeLockRef.current = await (navigator as any).wakeLock.request('screen');
-        console.log('✅ Screen wake lock activated - screen will not sleep during cast');
+        const lock = await (navigator as any).wakeLock.request('screen');
+        if (!mounted) {
+          lock.release().catch(() => { });
+          return;
+        }
+        wakeLockRef.current = lock;
+        console.log('✅ Screen wake lock activated');
 
-        // Listen for wake lock release (e.g., when tab becomes hidden)
-        wakeLockRef.current.addEventListener('release', () => {
+        // Listen for wake lock release
+        lock.addEventListener('release', () => {
           console.log('📱 Screen wake lock was released');
         });
-      } catch (err) {
-        console.warn('⚠️ Failed to request wake lock:', err);
+      } catch (err: any) {
+        // Explicitly catch strict permission errors to prevent Runtime Error overlays
+        console.warn('⚠️ Wake Lock Request Failed (Permission/Type Error):', err.message);
       }
     };
 
-    requestWakeLock();
+    // Execute safely
+    requestWakeLock().catch(e => console.error('WakeLock Fatal:', e));
 
-    // Re-request wake lock when visibility changes (e.g., returning to tab)
+    // Re-request wake lock when visibility changes
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible' && isCasting && !wakeLockRef.current) {
-        console.log('📱 Tab visible again, re-requesting wake lock...');
-        requestWakeLock();
+        requestWakeLock().catch(() => { });
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    // Cleanup
     return () => {
+      mounted = false;
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       if (wakeLockRef.current) {
         wakeLockRef.current.release().catch((err: any) => {
