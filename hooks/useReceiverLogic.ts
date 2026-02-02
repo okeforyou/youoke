@@ -117,62 +117,76 @@ export const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
     useEffect(() => {
         if (!roomCode || !realtimeDb) return;
 
-        const initAuth = async () => {
+        let cleanup: (() => void) | undefined;
+
+        const setupFirebase = async () => {
+            // 0. Ensure Auth first!
+            if (!auth.currentUser) {
+                try {
+                    console.log('🔐 TV: Signing in anonymously...');
+                    await signInAnonymously(auth);
+                    console.log('✅ TV: Signed in as', auth.currentUser?.uid);
+                } catch (e) {
+                    console.error('❌ TV: Auth failed', e);
+                    return;
+                }
+            }
+
+            const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
+
+            // 1. INITIALIZE ROOM (Create if not exists)
+            const { get, set } = require('firebase/database');
             try {
-                await signInAnonymously(auth);
-            } catch (e) { console.error(e); }
+                const snapshot = await get(roomRef);
+                if (!snapshot.exists()) {
+                    console.log('✨ Creating new room in Firebase:', roomCode);
+                    // Set initial state
+                    await set(roomRef, {
+                        state: {
+                            queue: [],
+                            currentIndex: 0,
+                            currentVideo: null,
+                            controls: { isPlaying: false, isMuted: true } // Default muted for browser policy
+                        },
+                        hostId: auth.currentUser?.uid || 'anonymous-tv',
+                        createdAt: Date.now(),
+                        lastConnected: Date.now()
+                    });
+                    console.log('✅ Room created successfully');
+                } else {
+                    console.log('✅ Reconnected to existing room:', roomCode);
+                }
+            } catch (e) {
+                console.error("❌ Room Creation Error:", e);
+            }
+
+            // 2. LISTEN FOR STATE UPDATES FROM FIREBASE (Crucial for remote control)
+            const { onValue } = require('firebase/database');
+            const unsubscribe = onValue(roomRef, (snapshot: any) => {
+                const data = snapshot.val();
+                if (data && data.state) {
+                    const newControls = data.state.controls;
+                    setState(prev => {
+                        if (prev.controls.isMuted === newControls?.isMuted &&
+                            prev.controls.isPlaying === newControls?.isPlaying) {
+                            return prev;
+                        }
+                        return { ...prev, controls: newControls || prev.controls };
+                    });
+                }
+            });
+
+            cleanup = unsubscribe;
         };
-        initAuth();
 
-        const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
+        setupFirebase();
 
-        // 1. INITIALIZE ROOM (Create if not exists)
-        const { get, set } = require('firebase/database');
-        get(roomRef).then((snapshot: any) => {
-            if (!snapshot.exists()) {
-                console.log('✨ Creating new room in Firebase:', roomCode);
-                // Set initial state
-                set(roomRef, {
-                    state: {
-                        queue: [],
-                        currentIndex: 0,
-                        currentVideo: null,
-                        controls: { isPlaying: false, isMuted: true } // Default muted for browser policy
-                    },
-                    hostId: auth.currentUser?.uid || 'anonymous-tv',
-                    createdAt: Date.now(),
-                    lastConnected: Date.now()
-                }).catch((e: any) => console.error("❌ Room Creation Error:", e));
-            } else {
-                console.log('✅ Reconnected to existing room:', roomCode);
-            }
-        });
-
-        // 2. LISTEN FOR STATE UPDATES FROM FIREBASE (Crucial for remote control)
-        // This ensures that when CommandExecutor updates Firebase, we reflect it locally
-        // which then triggers the player sync effect in tv.tsx
-        const { onValue } = require('firebase/database');
-        const unsubscribe = onValue(roomRef, (snapshot: any) => {
-            const data = snapshot.val();
-            if (data && data.state) {
-                // Only update if controls explicitly changed (avoid loops)
-                const newControls = data.state.controls;
-                setState(prev => {
-                    // Deep check equality to prevent re-renders
-                    if (prev.controls.isMuted === newControls.isMuted &&
-                        prev.controls.isPlaying === newControls.isPlaying) {
-                        return prev;
-                    }
-                    return { ...prev, controls: newControls };
-                });
-            }
-        });
-
-        // Create Room (Host) - Only if not exists
-        // (Assuming checking logic handles this, or we just rely on first command)
-
-        return () => unsubscribe();
+        return () => {
+            if (cleanup) cleanup();
+        };
     }, [roomCode]); // Removed mode/state dependencies to avoid re-subscription loops
+
+
 
     // --- COMMAND EXECUTOR ---
     // Enable for BOTH Web and Cast modes to support QR Code guests
