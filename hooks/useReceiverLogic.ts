@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { YouTubePlayer } from 'react-youtube';
 import { signInAnonymously } from 'firebase/auth';
-import { ref, set, update } from 'firebase/database';
+import { ref, set, get, onValue, Unsubscribe } from 'firebase/database';
 import { auth, realtimeDb } from '../firebase';
 import { CastState } from '../types/castCommands';
 import { useCommandExecutor } from './useCommandExecutor';
@@ -117,7 +117,7 @@ export const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
     useEffect(() => {
         if (!roomCode || !realtimeDb) return;
 
-        let cleanup: (() => void) | undefined;
+        let cleanup: Unsubscribe | undefined;
 
         const setupFirebase = async () => {
             // 0. Ensure Auth first!
@@ -135,7 +135,6 @@ export const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
             const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
 
             // 1. INITIALIZE ROOM (Create if not exists)
-            const { get, set } = require('firebase/database');
             try {
                 const snapshot = await get(roomRef);
                 if (!snapshot.exists()) {
@@ -157,11 +156,10 @@ export const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
                     console.log('✅ Reconnected to existing room:', roomCode);
                 }
             } catch (e) {
-                console.error("❌ Room Creation Error:", e);
+                console.error("❌ Room Creation Error (Permission/Network):", e);
             }
 
             // 2. LISTEN FOR STATE UPDATES FROM FIREBASE (Crucial for remote control)
-            const { onValue } = require('firebase/database');
             const unsubscribe = onValue(roomRef, (snapshot: any) => {
                 const data = snapshot.val();
                 if (data && data.state) {
