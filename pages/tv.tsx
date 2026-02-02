@@ -408,6 +408,23 @@ const TVPage = () => {
     // 2. PLAYER SCREEN (Matched to Monitor.tsx)
     // ... handlers ...
 
+    const handleVideoError = (e: any) => {
+        console.error("❌ YouTube Player Error:", e.data);
+        // Error Codes:
+        // 2: Invalid Parameter
+        // 5: HTML5 Error
+        // 100: Video not found/private/removed
+        // 101/150: Embedded playback forbidden
+
+        // Show visual feedback (optional) or just skip
+        console.log("⏭️ Auto-skipping unplayable video...");
+
+        // Delay slightly to avoid rapid-fire skips if playlist is broken
+        setTimeout(() => {
+            handleNext();
+        }, 3000);
+    };
+
     return (
         <div ref={fullscreenRef} className="relative w-screen h-screen bg-black overflow-hidden font-sans text-white">
             {/* YouTube Player */}
@@ -424,8 +441,11 @@ const TVPage = () => {
                         setTimeout(() => e.target.unMute(), 1000);
                     }}
                     onStateChange={onStateChange}
+                    onError={handleVideoError}
                 />
             </div>
+
+            {/* Error/Skip Overlay (Optional - can use toast later) */}
 
             {/* Audio Blocked Overlay */}
             {needsInteraction && (
