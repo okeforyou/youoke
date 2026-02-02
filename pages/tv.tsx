@@ -52,16 +52,58 @@ const TVPage = () => {
         }
     }, []);
 
-    // --- PLAYER SYNC ---
+    // --- ROBUST PLAYER SYNC LOOP ---
+    // Instead of relying solely on reactive updates (which can be missed if player isn't ready),
+    // we use a loop to ENFORCE the desired state. This fixes "multiple clicks needed" and "stuck on mute".
+    const [needsInteraction, setNeedsInteraction] = useState(false);
+
     useEffect(() => {
         if (!player || !state) return;
-        try {
-            if (state.controls.isPlaying) player.playVideo();
-            else player.pauseVideo();
 
-            if (state.controls.isMuted) player.mute();
-            else player.unMute();
-        } catch (e) { console.error("Player Sync Error", e); }
+        const syncInterval = setInterval(async () => {
+            try {
+                // 1. Sync Play/Pause
+                const playerState = await player.getPlayerState();
+                const targetIsPlaying = state.controls.isPlaying;
+
+                // YT Player States: 1 = Playing, 2 = Paused, 3 = Buffering, 5 = Cued
+                if (targetIsPlaying) {
+                    if (playerState !== 1 && playerState !== 3) { // If not playing/buffering
+                        player.playVideo();
+                    }
+                } else {
+                    if (playerState === 1) { // If playing
+                        player.pauseVideo();
+                    }
+                }
+
+                // 2. Sync Mute (Aggressive Unmute)
+                const isPlayerMuted = await player.isMuted();
+                const targetIsMuted = state.controls.isMuted;
+
+                if (targetIsMuted && !isPlayerMuted) {
+                    player.mute();
+                    setNeedsInteraction(false);
+                } else if (!targetIsMuted && isPlayerMuted) {
+                    // Try to unmute
+                    player.unMute();
+                    // If still muted after attempt, it means browser blocked it -> Show Overlay
+                    // We check again next tick, but setting flag here helps UI
+                    setTimeout(async () => {
+                        const stillMuted = await player.isMuted();
+                        if (stillMuted) setNeedsInteraction(true);
+                        else setNeedsInteraction(false);
+                    }, 100);
+                } else {
+                    setNeedsInteraction(false);
+                }
+
+            } catch (e) {
+                // Ignore transient errors (e.g. player destroying)
+            }
+        }, 500); // Check every 500ms
+
+        return () => clearInterval(syncInterval);
     }, [player, state.controls.isPlaying, state.controls.isMuted]);
 
     // Handle Video Load
@@ -309,6 +351,8 @@ const TVPage = () => {
                             iv_load_policy: 3,
                             disablekb: 1,
                             fs: 0,
+                            // start muted to allow autoplay, then we unmute via script
+                            mute: 1
                         }
                     }}
                     className="w-full h-full pointer-events-none"
