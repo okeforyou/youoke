@@ -381,6 +381,8 @@ const TVPage = () => {
                             iv_load_policy: 3,
                             disablekb: 1,
                             fs: 0,
+                            // @ts-ignore - 'mute' is valid for YouTube Player API but missing in Types definition
+                            mute: 1
                         }
                     }}
                     className="w-full h-full pointer-events-none"

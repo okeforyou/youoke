@@ -32,6 +32,18 @@ export function useCommandExecutor({
   const onStopSessionRef = useRef(onStopSession);
   const playerRefRef = useRef(playerRef);
 
+  // Helper to force audio on command
+  const ensureAudio = async () => {
+    const player = playerRefRef.current;
+    if (player && typeof player.unMute === 'function') {
+      try {
+        await player.unMute();
+        // Also force volume up just in case
+        await player.setVolume(100);
+      } catch (e) { /* ignore */ }
+    }
+  };
+
   useEffect(() => {
     currentStateRef.current = currentState;
   }, [currentState]);
@@ -76,6 +88,7 @@ export function useCommandExecutor({
 
         switch (command.type) {
           case 'PLAY_NOW': {
+            ensureAudio();
             const { video } = command.payload;
             const existingIndex = state.queue.findIndex(
               (v) => v.videoId === video.videoId
@@ -122,6 +135,7 @@ export function useCommandExecutor({
           }
 
           case 'PLAY':
+            ensureAudio();
             if (player) {
               await player.playVideo();
             }
@@ -140,6 +154,7 @@ export function useCommandExecutor({
             break;
 
           case 'NEXT': {
+            ensureAudio();
             const nextIndex = state.currentIndex + 1;
             if (nextIndex < state.queue.length) {
               newState = {
