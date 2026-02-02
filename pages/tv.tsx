@@ -351,8 +351,6 @@ const TVPage = () => {
                             iv_load_policy: 3,
                             disablekb: 1,
                             fs: 0,
-                            // start muted to allow autoplay, then we unmute via script
-                            mute: 1
                         }
                     }}
                     className="w-full h-full pointer-events-none"
@@ -366,6 +364,24 @@ const TVPage = () => {
                     onStateChange={onStateChange}
                 />
             </div>
+
+            {/* Audio Blocked Overlay */}
+            {needsInteraction && (
+                <div
+                    className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm cursor-pointer"
+                    onClick={() => {
+                        if (player) {
+                            player.unMute();
+                            setNeedsInteraction(false);
+                        }
+                    }}
+                >
+                    <div className="bg-white/10 p-8 rounded-full animate-pulse border-4 border-primary">
+                        <SpeakerXMarkIcon className="w-24 h-24 text-white" />
+                        <p className="mt-4 text-xl font-bold text-center">แตะเพื่อเปิดเสียง</p>
+                    </div>
+                </div>
+            )}
 
             {/* Shared Unified Interface (Queue, Controls, Status) */}
             <UnifiedPlayerInterface
