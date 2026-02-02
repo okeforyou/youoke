@@ -384,27 +384,30 @@ const TVPage = () => {
     // 2. PLAYER SCREEN (Matched to Monitor.tsx)
     // ... handlers ...
 
+    // Stable Options to prevent re-renders
+    const playerOpts = React.useMemo(() => ({
+        width: '100%',
+        height: '100%',
+        playerVars: {
+            autoplay: 1,
+            controls: 0,
+            modestbranding: 1,
+            rel: 0,
+            iv_load_policy: 3,
+            disablekb: 1,
+            fs: 0,
+            // @ts-ignore - 'mute' is valid for YouTube Player API but missing in Types definition
+            mute: 1
+        }
+    }), []);
+
     return (
         <div ref={fullscreenRef} className="relative w-screen h-screen bg-black overflow-hidden font-sans text-white">
             {/* YouTube Player */}
             <div className="absolute inset-0">
                 <YouTube
                     videoId={currentVideo.videoId}
-                    opts={{
-                        width: '100%',
-                        height: '100%',
-                        playerVars: {
-                            autoplay: 1,
-                            controls: 0,
-                            modestbranding: 1,
-                            rel: 0,
-                            iv_load_policy: 3,
-                            disablekb: 1,
-                            fs: 0,
-                            // @ts-ignore - 'mute' is valid for YouTube Player API but missing in Types definition
-                            mute: 1
-                        }
-                    }}
+                    opts={playerOpts}
                     className="w-full h-full pointer-events-none"
                     onReady={(e) => {
                         setPlayer(e.target);
