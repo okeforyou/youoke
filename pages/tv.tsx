@@ -185,7 +185,7 @@ const TVPage = () => {
             // @ts-ignore - 'mute' is valid for YouTube Player API but missing in Types definition
             mute: 1
         }
-    }), []);
+    } as any), []);
 
     // --- UI HELPERS ---
     const currentVideo = state.currentVideo;
