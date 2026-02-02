@@ -59,6 +59,7 @@ interface FirebaseCastContextValue {
 
   toggleMute: () => void;
   setMute: (muted: boolean) => void;
+  setVolume: (volume: number) => void;
   toggleFullscreen: () => void;
   stopSession: () => void;
 
@@ -68,6 +69,38 @@ interface FirebaseCastContextValue {
   currentVideo: QueueVideo | null;
   isMuted: boolean;
 }
+
+const CastContext = createContext<FirebaseCastContextValue | undefined>(undefined);
+// ...
+// (Inside Provider)
+
+const setVolume = (volume: number) => {
+  lastInteractionRef.current = Date.now();
+  setState(prev => ({
+    ...prev,
+    controls: {
+      ...prev.controls,
+      volume,
+      isMuted: volume > 0 ? false : prev.controls.isMuted
+    }
+  }));
+  sendCommand(roomCode, { type: 'SET_VOLUME', payload: { volume } });
+};
+
+const toggleFullscreen = () => {
+  sendCommand(roomCode, { type: 'TOGGLE_FULLSCREEN', payload: null });
+};
+
+// ...
+
+const value: FirebaseCastContextValue = {
+  // ...
+  toggleMute,
+  setMute,
+  setVolume,
+  toggleFullscreen,
+  // ...
+};
 
 const CastContext = createContext<FirebaseCastContextValue | undefined>(undefined);
 
@@ -476,6 +509,19 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const setVolume = (volume: number) => {
+    lastInteractionRef.current = Date.now();
+    setState(prev => ({
+      ...prev,
+      controls: {
+        ...prev.controls,
+        volume,
+        isMuted: volume > 0 ? false : prev.controls.isMuted
+      }
+    }));
+    sendCommand(roomCode, { type: 'SET_VOLUME', payload: { volume } });
+  };
+
   const toggleFullscreen = () => {
     sendCommand(roomCode, { type: 'TOGGLE_FULLSCREEN', payload: null });
   };
@@ -509,6 +555,7 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
     skipTo,
     toggleMute,
     setMute,
+    setVolume,
     toggleFullscreen,
     stopSession,
     // Shortcuts for backwards compatibility

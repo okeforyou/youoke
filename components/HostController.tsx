@@ -26,6 +26,23 @@ const HostController: React.FC<HostControllerProps> = ({
     onDisconnect,
     currentVideoTitle
 }) => {
+    // Hooks
+    const {
+        play, pause, next, previous,
+        toggleMute, setVolume,
+        state /* Access sync state */
+    } = useFirebaseCast();
+
+    // Local state for smoother slider interaction
+    const [localVolume, setLocalVolume] = React.useState(state.controls.volume ?? 100);
+
+    // Sync local volume with remote state (unless interacting)
+    React.useEffect(() => {
+        if (state.controls.volume !== undefined) {
+            setLocalVolume(state.controls.volume);
+        }
+    }, [state.controls.volume]);
+
     // Logic Helper: Determine which Disconnect action to take
     const handleDisconnectClick = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -33,53 +50,84 @@ const HostController: React.FC<HostControllerProps> = ({
     };
 
     return (
-        <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/10">
-            {/* Background (Optional: Could be a blurred thumbnail if we passed it, currently Slate 900 per request) */}
+        <div className="relative w-full aspect-video bg-black rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/10 group">
+            {/* Background */}
             <div className="absolute inset-0 bg-slate-900" />
 
-            {/* Controller Overlay - Exact Replica of Original UI */}
-            <div className="absolute inset-0 z-[10] h-full w-full flex flex-col items-center justify-center text-center p-6">
-
-                {/* Animated Icon */}
+            {/* Status Overlay (Centered) */}
+            <div className="absolute inset-x-0 top-0 bottom-20 z-[10] flex flex-col items-center justify-center text-center p-6">
                 <div className="text-4xl md:text-5xl mb-4 animate-pulse">
                     {isCasting ? '📺' : '🖥️'}
                 </div>
-
-                {/* Status Text - Original Design */}
                 <h2 className="text-lg md:text-xl font-bold mb-2 text-white">
                     {isCasting
-                        ? `กำลังเล่นบน Smart TV (ห้อง: ${roomCode || '...'})`
-                        : 'กำลังเล่นที่หน้าจอที่ 2'}
+                        ? `เชื่อมต่อกับ TV (ห้อง: ${roomCode})`
+                        : 'โหมดหน้าจอที่ 2'}
                 </h2>
-
-                <p className="text-xs md:text-sm text-gray-400 mb-6 max-w-md mx-auto">
+                <p className="text-xs md:text-sm text-gray-400 max-w-md mx-auto line-clamp-2">
                     {currentVideoTitle
-                        ? <span className="text-primary font-medium block mb-1">กำลังเล่น: {currentVideoTitle}</span>
-                        : (isCasting ? 'ควบคุมการเล่นผ่านหน้าจอนี้' : 'วิดีโอกำลังเล่นบนหน้าจอ Dual Screen')
+                        ? <span className="text-primary font-medium">กำลังเล่น: {currentVideoTitle}</span>
+                        : 'พร้อมรับคำสั่งจากเมนูเพลง'
                     }
                 </p>
+                {isDualMode && (
+                    <button onClick={handleDisconnectClick} className="btn btn-xs btn-outline btn-error mt-4 rounded-full">
+                        ปิดโหมด 2 หน้าจอ
+                    </button>
+                )}
+            </div>
 
-                {/* Action Buttons */}
-                <div className="flex flex-col gap-3 items-center">
+            {/* Control Bar (Bottom) */}
+            <div className="absolute inset-x-0 bottom-0 h-20 bg-black/80 backdrop-blur-md border-t border-white/10 flex items-center justify-between px-6 z-[20]">
 
-                    {isDualMode && (
-                        <button
-                            onClick={handleDisconnectClick}
-                            className="btn btn-sm btn-outline btn-error rounded-full px-6 hover:scale-105 transition-all shadow-lg"
-                        >
-                            ปิดโหมด 2 หน้าจอ
-                        </button>
-                    )}
+                {/* Left: Volume Controls */}
+                <div className="flex items-center gap-3 w-1/3">
+                    <button onClick={toggleMute} className="text-gray-300 hover:text-white transition-colors">
+                        {state.controls.isMuted ? <SpeakerXMarkIcon className="w-6 h-6 text-red-500" /> : <SpeakerWaveIcon className="w-6 h-6" />}
+                    </button>
+                    {/* Volume Slider */}
+                    <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={localVolume}
+                        onChange={(e) => {
+                            const val = parseInt(e.target.value);
+                            setLocalVolume(val);
+                            setVolume(val);
+                        }}
+                        className="w-24 h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer accent-primary hover:h-2 transition-all"
+                    />
+                </div>
 
+                {/* Center: Playback Controls */}
+                <div className="flex items-center justify-center gap-6 w-1/3">
+                    <button onClick={previous} className="text-gray-400 hover:text-white transition-colors">
+                        <BackwardIcon className="w-8 h-8" />
+                    </button>
+                    <button
+                        onClick={state.controls.isPlaying ? pause : play}
+                        className="w-12 h-12 flex items-center justify-center bg-white text-black rounded-full hover:scale-105 active:scale-95 transition-all shadow-lg"
+                    >
+                        {state.controls.isPlaying ? <PauseIcon className="w-6 h-6" /> : <PlayIcon className="w-6 h-6 ml-1" />}
+                    </button>
+                    <button onClick={next} className="text-gray-400 hover:text-white transition-colors">
+                        <ForwardIcon className="w-8 h-8" />
+                    </button>
+                </div>
+
+                {/* Right: Disconnect / Extras */}
+                <div className="flex items-center justify-end gap-3 w-1/3">
                     {isCasting && (
                         <button
                             onClick={handleDisconnectClick}
-                            className="btn btn-sm btn-error w-auto min-w-[120px] rounded-full px-6 hover:scale-105 transition-all shadow-lg"
+                            className="text-xs text-red-400 hover:text-red-300 underline"
                         >
                             ตัดการเชื่อมต่อ
                         </button>
                     )}
                 </div>
+
             </div>
         </div>
     );
