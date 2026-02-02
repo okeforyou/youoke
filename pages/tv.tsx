@@ -174,19 +174,39 @@ const TVPage = () => {
     const currentVideo = state.currentVideo;
     const qrCodeUrl = baseUrl ? `${baseUrl}/?castRoom=${roomCode}` : '';
 
-    const onStateChange = (e: any) => {
+    const onStateChange = async (e: any) => {
         if (e.data === 0) {
-            // Video ended - logic handled by ReceiverLogic via DB updates or local prediction
-            // We implement local optimistic update here for instant feedback
+            // Video ended - Move to next song
             const nextIndex = state.currentIndex + 1;
             if (state.queue && nextIndex < state.queue.length) {
                 const nextVideo = state.queue[nextIndex];
+
+                // 1. Optimistic Update (Local)
                 setState(prev => ({
                     ...prev,
                     currentIndex: nextIndex,
                     currentVideo: nextVideo,
                     controls: { ...prev.controls, isPlaying: true }
                 }));
+
+                // 2. Sync to Firebase (Global)
+                const { update, ref } = await import('firebase/database');
+                const { realtimeDb } = await import('../firebase');
+                if (roomCode && realtimeDb) {
+                    try {
+                        await update(ref(realtimeDb, `rooms/${roomCode}/state`), {
+                            currentIndex: nextIndex,
+                            currentVideo: nextVideo,
+                            controls: { ...state.controls, isPlaying: true }
+                        });
+                        console.log('✅ Auto-Next: Synced to Firebase');
+                    } catch (error) {
+                        console.error('❌ Auto-Next Sync Failed:', error);
+                    }
+                }
+            } else {
+                // End of queue logic (optional: clear current video or stop)
+                console.log('🏁 Queue finished');
             }
         }
     };
