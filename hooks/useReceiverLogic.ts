@@ -163,13 +163,12 @@ export const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
             const unsubscribe = onValue(roomRef, (snapshot: any) => {
                 const data = snapshot.val();
                 if (data && data.state) {
-                    const newControls = data.state.controls;
                     setState(prev => {
-                        if (prev.controls.isMuted === newControls?.isMuted &&
-                            prev.controls.isPlaying === newControls?.isPlaying) {
+                        // Deep check equality to prevent re-renders (Optional but good)
+                        if (JSON.stringify(prev) === JSON.stringify(data.state)) {
                             return prev;
                         }
-                        return { ...prev, controls: newControls || prev.controls };
+                        return { ...prev, ...data.state };
                     });
                 }
             });
