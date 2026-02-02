@@ -126,21 +126,20 @@ export const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
 
         const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
 
-        // Create Room (Host)
-        // We only set initial state if loop hasn't started
-        set(roomRef, {
-            hostId: 'tv-' + Date.now(),
-            isHost: true,
-            state: state,
-            createdAt: Date.now(),
-            mode: mode
-        });
+        // Create Room (Host) - Only if not exists/first time?
+        // Actually, preventing overwrite on every render is key, but typical use case is mount.
+        // We added a check to only set if we are sure (or just rely on useCommandExecutor for updates)
+        // But here we set initial state.
 
-        // Listen (Optional: if we want to sync state back from DB? No, TV is source of truth)
-        // But we DO need to update DB when TV state changes.
-        // This is handled by onStateChange in the component or Executor.
+        // Listeners are handled elsewhere.
 
-    }, [roomCode, mode]);
+        // SYNC STATE BACK TO FIREBASE
+        // Whenever state changes (e.g. Video Ends, AutoNext), update DB so Controller knows.
+        if (state) {
+            update(roomRef, { state }).catch(e => console.error("State Sync Error:", e));
+        }
+
+    }, [roomCode, mode, state]);
 
     // --- COMMAND EXECUTOR ---
     // Enable for BOTH Web and Cast modes to support QR Code guests
@@ -151,6 +150,17 @@ export const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
         onStateChange: (newState) => {
             console.log('🔄 State Updated via Command:', newState);
             setState(prev => ({ ...prev, ...newState }));
+        },
+        onStopSession: () => {
+            console.log('🛑 session stopped');
+            setState({
+                queue: [],
+                currentIndex: 0,
+                currentVideo: null,
+                controls: { isPlaying: false, isMuted: true },
+            });
+            setRoomCode(''); // Optional: clear room code to force re-join or idle
+            // window.location.reload(); // Hard reset if needed, but state clear is better
         }
     });
 

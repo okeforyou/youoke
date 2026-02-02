@@ -16,6 +16,7 @@ interface CommandExecutorProps {
   playerRef: YouTubePlayer | null;
   currentState: CastState;
   onStateChange: (newState: Partial<CastState>) => void;
+  onStopSession?: () => void;
 }
 
 export function useCommandExecutor({
@@ -23,11 +24,13 @@ export function useCommandExecutor({
   playerRef,
   currentState,
   onStateChange,
+  onStopSession,
 }: CommandExecutorProps) {
 
   // Use Ref to access latest state without triggering re-renders/re-subscriptions
   const currentStateRef = useRef(currentState);
   const onStateChangeRef = useRef(onStateChange);
+  const onStopSessionRef = useRef(onStopSession);
   const playerRefRef = useRef(playerRef);
 
   useEffect(() => {
@@ -41,6 +44,10 @@ export function useCommandExecutor({
   useEffect(() => {
     playerRefRef.current = playerRef;
   }, [playerRef]);
+
+  useEffect(() => {
+    onStopSessionRef.current = onStopSession;
+  }, [onStopSession]);
 
 
   const executeCommand = useCallback(
@@ -266,6 +273,19 @@ export function useCommandExecutor({
               queue: playlist,
               currentIndex: newIndex,
               currentVideo: newCurrentVideo,
+            };
+            break;
+          }
+
+          case 'STOP_SESSION': {
+            if (onStopSessionRef.current) {
+              onStopSessionRef.current();
+            }
+            newState = {
+              queue: [],
+              currentIndex: 0,
+              currentVideo: null,
+              controls: { isPlaying: false, isMuted: true }
             };
             break;
           }

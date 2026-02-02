@@ -39,7 +39,8 @@ export type CastCommand =
   | { type: 'MOVE_DOWN'; payload: { index: number } }
   | { type: 'CLEAR_QUEUE'; payload: null }
   | { type: 'SET_PLAYLIST'; payload: { playlist: QueueVideo[] } }
-  | { type: 'TOGGLE_FULLSCREEN'; payload: null };
+  | { type: 'TOGGLE_FULLSCREEN'; payload: null }
+  | { type: 'STOP_SESSION'; payload: null };
 
 export type CommandStatus = 'pending' | 'executing' | 'completed' | 'failed';
 

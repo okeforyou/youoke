@@ -64,7 +64,7 @@ const LoginForm = () => {
             ref={errRef}
             timer={2500}
             headline="Error"
-            headlineColor="text-red-600"
+            titleColorClassName="text-red-600"
             bgColor="bg-red-100"
             content={<span className="text-sm">เข้าสู่ระบบไม่สำเร็จ</span>}
             icon={<ExclamationCircleIcon />}

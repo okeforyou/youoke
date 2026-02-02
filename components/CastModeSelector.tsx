@@ -81,8 +81,12 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
                 {loading ? <ClockIcon className="w-5 h-5 animate-spin text-primary" /> : <TvIcon className="w-5 h-5 text-primary" />}
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-base font-semibold mb-0.5">TV Receiver (Smart TV)</h3>
-                <p className="text-xs text-gray-600">เปิด youoke.vercel.app/tv บนทีวี</p>
+                <h3 className="text-base font-semibold mb-0.5">
+                  {isMobile ? 'Remote Control TV' : 'Connect Smart TV'}
+                </h3>
+                <p className="text-xs text-gray-600">
+                  {isMobile ? 'ใช้มือถือเครื่องนี้เป็นรีโมท' : 'กรอกเลขห้องจากหน้าจอ TV'}
+                </p>
               </div>
             </div>
           </button>
