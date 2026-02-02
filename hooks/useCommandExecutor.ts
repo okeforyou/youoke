@@ -223,6 +223,24 @@ export function useCommandExecutor({
             break;
           }
 
+          case 'SET_VOLUME': {
+            const { volume } = command.payload;
+            if (player) {
+              await player.setVolume(volume);
+              if (volume > 0) {
+                await player.unMute();
+              }
+            }
+            newState = {
+              controls: {
+                ...state.controls,
+                volume,
+                isMuted: volume > 0 ? false : state.controls.isMuted
+              },
+            };
+            break;
+          }
+
           case 'REMOVE_AT': {
             const { index } = command.payload;
             const newQueue = state.queue.filter((_, i) => i !== index);

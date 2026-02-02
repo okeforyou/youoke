@@ -39,6 +39,7 @@ export type CastCommand =
   | { type: 'MOVE_DOWN'; payload: { index: number } }
   | { type: 'CLEAR_QUEUE'; payload: null }
   | { type: 'SET_PLAYLIST'; payload: { playlist: QueueVideo[] } }
+  | { type: 'SET_VOLUME'; payload: { volume: number } }
   | { type: 'TOGGLE_FULLSCREEN'; payload: null }
   | { type: 'STOP_SESSION'; payload: null };
 

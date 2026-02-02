@@ -129,6 +129,15 @@ const TVPage = () => {
                     setNeedsInteraction(false);
                 }
 
+                // 3. Sync Volume
+                const currentVol = await player.getVolume();
+                const targetVol = state.controls.volume ?? 100; // Default to 100 if undefined
+
+                // Allow small drift (e.g. user changed local volume) but enforced if difference is large
+                if (Math.abs(currentVol - targetVol) > 5) {
+                    player.setVolume(targetVol);
+                }
+
             } catch (e) {
                 // Ignore transient errors (e.g. player destroying)
             }
