@@ -1007,36 +1007,18 @@ const RemotePage = () => {
 
                     {/* Controls */}
                     <div className="flex items-center gap-4 shrink-0 pr-2">
-                        {/* Mute/Volume Box */}
-                        <div className="flex items-center gap-2">
-                            {/* Volume Popup (Visible only when needed or toggled) */}
-                            <input
-                                type="range"
-                                min="0"
-                                max="100"
-                                defaultValue={status?.controls?.volume ?? 100}
-                                onChange={(e) => {
-                                    const vol = parseInt(e.target.value);
-                                    // Debounce could be added here, but for now direct send is responsive enough if network holds
-                                    // Actually, let's just send it. The Host's sync loop handles jitter.
-                                    sendCommand('SET_VOLUME', { volume: vol });
-                                    // Optimistic update
-                                    setStatus(prev => prev ? ({ ...prev, controls: { ...prev.controls, volume: vol, isMuted: vol === 0 } }) : null);
-                                }}
-                                className="w-20 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700 accent-primary"
-                            />
-                            <button
-                                onClick={() => {
-                                    const nextState = !(status?.controls?.isMuted || false);
-                                    lastInteractionRef.current = Date.now();
-                                    setStatus(prev => prev ? ({ ...prev, controls: { ...prev.controls, isMuted: nextState } }) : null);
-                                    sendCommand(nextState ? 'MUTE' : 'UNMUTE');
-                                }}
-                                className="p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white active:scale-90 transition-all"
-                            >
-                                {status?.controls?.isMuted ? <SpeakerXMarkIcon className="w-6 h-6" /> : <SpeakerWaveIcon className="w-6 h-6" />}
-                            </button>
-                        </div>
+                        {/* Mute Button */}
+                        <button
+                            onClick={() => {
+                                const nextState = !(status?.controls?.isMuted || false);
+                                lastInteractionRef.current = Date.now();
+                                setStatus(prev => prev ? ({ ...prev, controls: { ...prev.controls, isMuted: nextState } }) : null);
+                                sendCommand(nextState ? 'MUTE' : 'UNMUTE');
+                            }}
+                            className="p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white active:scale-90 transition-all"
+                        >
+                            {status?.controls?.isMuted ? <SpeakerXMarkIcon className="w-6 h-6" /> : <SpeakerWaveIcon className="w-6 h-6" />}
+                        </button>
 
                         <button
                             onClick={() => {

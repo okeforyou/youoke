@@ -463,7 +463,13 @@ const TVPage = () => {
                     onClick={() => {
                         if (player) {
                             player.unMute();
+                            player.setVolume(100); // Also ensure volume is up
                             setNeedsInteraction(false);
+
+                            // CRITICAL: Update Global State so sync loop doesn't re-mute
+                            // If we have handleMuteToggle available in scope, use it.
+                            // Otherwise direct update.
+                            handleMuteToggle(); // Assuming this toggles based on current state (which is muted)
                         }
                     }}
                 >
