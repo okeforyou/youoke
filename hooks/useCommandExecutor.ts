@@ -1,14 +1,13 @@
 /**
- * Command Executor Hook for Monitor
+ * Command Executor Hook for Monitor/TV
  *
- * Listens to pending commands from Firebase and executes them
- * Only Monitor should use this hook
+ * Listens to pending commands from Firebase and executes them.
+ * Uses REST API Polling instead of SDK Listeners for stability on Smart TVs.
  */
 
 import { useEffect, useRef, useCallback } from 'react';
-import { ref, onChildAdded, update, off } from 'firebase/database';
-import { realtimeDb } from '../firebase';
-import { CastCommand, CastCommandEnvelope, CastState, QueueVideo } from '../types/castCommands';
+import { realtimeDb, auth } from '../firebase';
+import { CastCommand, CastCommandEnvelope, CastState } from '../types/castCommands';
 import { YouTubePlayer } from 'react-youtube';
 
 interface CommandExecutorProps {
@@ -53,18 +52,25 @@ export function useCommandExecutor({
   const executeCommand = useCallback(
     async (envelope: CastCommandEnvelope) => {
       const { id, command } = envelope;
-      const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
-      const commandRef = ref(realtimeDb, `rooms/${roomCode}/commands/${id}`);
+      const dbURL = realtimeDb.app.options.databaseURL;
 
       const state = currentStateRef.current;
       const callback = onStateChangeRef.current;
       const player = playerRefRef.current;
 
       try {
-        console.log('🎯 Executing command:', command.type, command.payload);
+        console.log('🎯 Executing command (REST):', command.type, command.payload);
+
+        // Get Auth Token
+        const user = auth.currentUser;
+        const token = user ? await user.getIdToken() : null;
+        const authParam = token ? `?auth=${token}` : '';
 
         // Mark as executing
-        await update(commandRef, { status: 'executing' });
+        await fetch(`${dbURL}/rooms/${roomCode}/commands/${id}.json${authParam}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status: 'executing' })
+        });
 
         let newState: Partial<CastState> = {};
 
@@ -76,14 +82,12 @@ export function useCommandExecutor({
             );
 
             if (existingIndex !== -1) {
-              // Jump to existing
               newState = {
                 currentIndex: existingIndex,
                 currentVideo: state.queue[existingIndex],
                 controls: { ...state.controls, isPlaying: true },
               };
             } else {
-              // Add to front
               const newQueue = [video, ...state.queue];
               newState = {
                 queue: newQueue,
@@ -255,13 +259,12 @@ export function useCommandExecutor({
 
           case 'SET_PLAYLIST': {
             const { playlist } = command.payload;
-            // Keep current video if it exists in new playlist
             let newIndex = 0;
             let newCurrentVideo = playlist[0] || null;
 
             if (state.currentVideo) {
               const existingIndex = playlist.findIndex(
-                (v) => v.videoId === state.currentVideo?.videoId
+                (v: any) => v.videoId === state.currentVideo?.videoId
               );
               if (existingIndex !== -1) {
                 newIndex = existingIndex;
@@ -291,46 +294,79 @@ export function useCommandExecutor({
           }
         }
 
-        // Update state in Firebase
+        // Update state in Firebase via REST
         if (Object.keys(newState).length > 0) {
-          await update(roomRef, { state: { ...state, ...newState } });
+          const mergedState = { ...state, ...newState };
+          await fetch(`${dbURL}/rooms/${roomCode}/state.json${authParam}`, {
+            method: 'PUT',
+            body: JSON.stringify(mergedState)
+          });
+
           callback(newState);
           console.log('✅ Command executed:', command.type);
         }
 
-        // Mark as completed
-        await update(commandRef, { status: 'completed' });
+        // Mark as completed via REST
+        await fetch(`${dbURL}/rooms/${roomCode}/commands/${id}.json${authParam}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status: 'completed' })
+        });
+
       } catch (error) {
         console.error('❌ Command execution failed:', error);
-        await update(commandRef, {
-          status: 'failed',
-          error: error instanceof Error ? error.message : 'Unknown error',
+        // Mark as failed via REST
+        const user = auth.currentUser;
+        const token = user ? await user.getIdToken() : null;
+        const authParam = token ? `?auth=${token}` : '';
+
+        await fetch(`${dbURL}/rooms/${roomCode}/commands/${id}.json${authParam}`, {
+          method: 'PATCH',
+          body: JSON.stringify({
+            status: 'failed',
+            error: error instanceof Error ? error.message : 'Unknown error'
+          })
         });
       }
     },
     [roomCode] // Only depend on roomCode (and refs, which are stable)
   );
 
-  // Listen to new commands
+  // Listen to new commands using REST Polling
   useEffect(() => {
     if (!roomCode || !realtimeDb) return;
 
-    const commandsRef = ref(realtimeDb, `rooms/${roomCode}/commands`);
+    const dbURL = realtimeDb.app.options.databaseURL;
+    const processedCommandIds = new Set<string>();
 
-    console.log('👂 Starting Command Listener for room:', roomCode);
+    console.log('👂 Starting REST Command Polling for room:', roomCode);
 
-    // Listen to new commands being added
-    const unsubscribe = onChildAdded(commandsRef, (snapshot) => {
-      const envelope = snapshot.val() as CastCommandEnvelope;
-      // Only execute pending commands
-      if (envelope && envelope.status === 'pending') {
-        executeCommand(envelope);
+    const pollInterval = setInterval(async () => {
+      try {
+        const response = await fetch(`${dbURL}/rooms/${roomCode}/commands.json`);
+        if (!response.ok) return;
+
+        const commands = await response.json() as Record<string, CastCommandEnvelope> | null;
+        if (!commands) return;
+
+        // Process pending commands
+        for (const [commandId, envelope] of Object.entries(commands)) {
+          // Skip if already processed or not pending
+          if (processedCommandIds.has(commandId) || envelope.status !== 'pending') {
+            continue;
+          }
+
+          console.log('✨ New Pending Command found:', envelope.command.type, commandId);
+          processedCommandIds.add(commandId);
+          executeCommand(envelope);
+        }
+      } catch (error) {
+        console.error('Command polling error:', error);
       }
-    });
+    }, 1000); // Poll every 1 second
 
     return () => {
-      console.log('🛑 Stopping Command Listener');
-      unsubscribe();
+      console.log('🛑 Stopping Command Polling');
+      clearInterval(pollInterval);
     };
   }, [roomCode, executeCommand]);
 }

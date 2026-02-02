@@ -16,7 +16,8 @@ import {
     ListBulletIcon, XMarkIcon, MusicalNoteIcon, MicrophoneIcon,
     ArrowsPointingInIcon, TrashIcon, Bars3Icon,
     UserPlusIcon, QrCodeIcon, ClipboardDocumentCheckIcon, SparklesIcon,
-    SunIcon, MoonIcon, TvIcon
+    SunIcon, MoonIcon, TvIcon,
+    SpeakerWaveIcon, SpeakerXMarkIcon
 } from '@heroicons/react/24/outline';
 import { QRCodeSVG } from 'qrcode.react'; // Import QR Code generator directly if simple Usage needed, or reuse component
 import { DebounceInput } from 'react-debounce-input';
@@ -83,6 +84,10 @@ type RemoteState = {
     currentIndex?: number;
     currentVideo?: any;
     isFullscreen?: boolean; // Optional: synced from host
+    controls?: {
+        isPlaying: boolean;
+        isMuted: boolean;
+    };
 };
 
 type SearchResult = {
@@ -1002,6 +1007,19 @@ const RemotePage = () => {
 
                     {/* Controls */}
                     <div className="flex items-center gap-4 shrink-0 pr-2">
+                        {/* Mute Box */}
+                        <button
+                            onClick={() => {
+                                const nextState = !(status?.controls?.isMuted || false);
+                                lastInteractionRef.current = Date.now();
+                                setStatus(prev => prev ? ({ ...prev, controls: { ...prev.controls, isMuted: nextState } }) : null);
+                                sendCommand(nextState ? 'MUTE' : 'UNMUTE');
+                            }}
+                            className="p-2 text-gray-400 hover:text-gray-900 dark:hover:text-white active:scale-90 transition-all"
+                        >
+                            {status?.controls?.isMuted ? <SpeakerXMarkIcon className="w-6 h-6" /> : <SpeakerWaveIcon className="w-6 h-6" />}
+                        </button>
+
                         <button
                             onClick={() => {
                                 const nextState = !(status?.isPlaying || false);

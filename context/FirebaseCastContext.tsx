@@ -101,10 +101,9 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
   const currentStateRef = useRef<CastState>(state);
   useEffect(() => { currentStateRef.current = state; }, [state]);
 
-  // Ref to track last command time (to prevent race conditions)
-  const lastCommandTimeRef = useRef(0);
-  // Ref to track the LATEST INTENDED CONTROLS (sync update)
-  const latestControlsRef = useRef(state.controls);
+  // Ref to track last user interaction to suppress sync (Prevent UI jumps)
+  // Matches logic from remote.tsx for stability
+  const lastInteractionRef = useRef(0);
 
   // Listen to state changes using REST API polling
   useEffect(() => {
@@ -116,22 +115,27 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
     const pollInterval = setInterval(async () => {
       try {
         const response = await fetch(`${dbURL}/rooms/${roomCode}/state.json`);
+        // If room is gone, we might get null
+        if (!response.ok) return;
+
         const newState = await response.json() as CastState | null;
 
         if (newState) {
-          // Grace Period: Ignore remote *CONTROLS* if we sent a command recently (< 4000ms)
-          // This prevents the UI from flickering back to old state before DB updates
-          if (Date.now() - lastCommandTimeRef.current < 4000) {
-            // Force use of LATEST INTENDED CONTROLS (Sync Source of Truth)
-            newState.controls = latestControlsRef.current;
-          } else {
-            // If not in grace period, update our Ref to match Reality
-            latestControlsRef.current = newState.controls;
+          // SYNC SUPPRESSION: match remote.tsx logic
+          // If user interacted recently (< 5000ms), DO NOT overwrite local state with server state
+          // This allows optimistic updates (drag-drop, add song) to "stick" without jumping back
+          const isInteracting = Date.now() - lastInteractionRef.current < 5000;
+
+          if (isInteracting) {
+            // console.log('🛡️ Sync Suppressed (User Interaction)');
+            // We keep our current local state for Queue and Controls
+            // But we might want to update other things like currentVideo if it changes naturally?
+            // For simplicity and stability, we just HOLD the local state during interaction.
+            return;
           }
 
           // Only update if state changed (reduce re-renders)
           if (JSON.stringify(newState) !== JSON.stringify(lastStateRef)) {
-            // console.log('📦 State updated from Firebase (polling):', newState);
             setState(newState);
             lastStateRef = newState;
           }
@@ -139,7 +143,7 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
       } catch (error) {
         console.error('❌ State polling error:', error);
       }
-    }, 500); // Poll every 500ms for faster response than Monitor
+    }, 500); // Poll every 500ms
 
     return () => {
       clearInterval(pollInterval);
@@ -337,6 +341,8 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
 
   // Queue Operations - Send Commands
   const setPlaylist = (playlist: QueueVideo[]) => {
+    lastInteractionRef.current = Date.now();
+    setState(prev => ({ ...prev, queue: playlist })); // Optimistic
     sendCommand(roomCode, {
       type: 'SET_PLAYLIST',
       payload: { playlist },
@@ -344,11 +350,18 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
   };
 
   const addToQueue = (video: SearchResult | RecommendedVideo) => {
+    lastInteractionRef.current = Date.now();
     const queueVideo: QueueVideo = {
       ...video,
       key: Date.now(),
-      addedBy: userInfo || undefined, // Add who added this song
+      addedBy: userInfo || undefined,
     };
+    // Optimistic Update
+    setState(prev => ({
+      ...prev,
+      queue: [...prev.queue, queueVideo],
+      currentVideo: prev.queue.length === 0 ? queueVideo : prev.currentVideo
+    }));
     sendCommand(roomCode, {
       type: 'ADD_TO_QUEUE',
       payload: { video: queueVideo },
@@ -356,11 +369,14 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
   };
 
   const playNow = (video: SearchResult | RecommendedVideo) => {
+    lastInteractionRef.current = Date.now();
     const queueVideo: QueueVideo = {
       ...video,
       key: Date.now(),
-      addedBy: userInfo || undefined, // Add who added this song
+      addedBy: userInfo || undefined,
     };
+    // Optimistic: This is harder to predict perfectly without duplicating reducer logic, 
+    // but we can at least suppress sync.
     sendCommand(roomCode, {
       type: 'PLAY_NOW',
       payload: { video: queueVideo },
@@ -368,11 +384,13 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
   };
 
   const playNext = (video: SearchResult | RecommendedVideo) => {
+    lastInteractionRef.current = Date.now();
     const queueVideo: QueueVideo = {
       ...video,
       key: Date.now(),
-      addedBy: userInfo || undefined, // Add who added this song
+      addedBy: userInfo || undefined,
     };
+    // Optimistic logic omitted for brevity as it requires slicing, but suppression handles the UI hold.
     sendCommand(roomCode, {
       type: 'PLAY_NEXT',
       payload: { video: queueVideo },
@@ -380,6 +398,12 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
   };
 
   const removeAt = (index: number) => {
+    lastInteractionRef.current = Date.now();
+    setState(prev => {
+      const newQueue = [...prev.queue];
+      newQueue.splice(index, 1);
+      return { ...prev, queue: newQueue };
+    });
     sendCommand(roomCode, {
       type: 'REMOVE_AT',
       payload: { index },
@@ -387,6 +411,8 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
   };
 
   const moveUp = (index: number) => {
+    lastInteractionRef.current = Date.now();
+    // Optimistic array move could go here
     sendCommand(roomCode, {
       type: 'MOVE_UP',
       payload: { index },
@@ -394,6 +420,7 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
   };
 
   const moveDown = (index: number) => {
+    lastInteractionRef.current = Date.now();
     sendCommand(roomCode, {
       type: 'MOVE_DOWN',
       payload: { index },
@@ -402,31 +429,31 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
 
   // Player Controls - Send Commands (Optimistic Updates)
   const play = () => {
-    lastCommandTimeRef.current = Date.now();
-    const newControls = { ...latestControlsRef.current, isPlaying: true };
-    latestControlsRef.current = newControls; // Sync update for Polling Loop
-    setState(prev => ({ ...prev, controls: newControls }));
+    lastInteractionRef.current = Date.now();
+    setState(prev => ({ ...prev, controls: { ...prev.controls, isPlaying: true } }));
     sendCommand(roomCode, { type: 'PLAY', payload: null });
   };
 
   const pause = () => {
-    lastCommandTimeRef.current = Date.now();
-    const newControls = { ...latestControlsRef.current, isPlaying: false };
-    latestControlsRef.current = newControls; // Sync update for Polling Loop
-    setState(prev => ({ ...prev, controls: newControls }));
+    lastInteractionRef.current = Date.now();
+    setState(prev => ({ ...prev, controls: { ...prev.controls, isPlaying: false } }));
     sendCommand(roomCode, { type: 'PAUSE', payload: null });
   };
 
   const next = () => {
-    // We can't easily predict next song optimistically without complex logic, so we rely on DB sync
+    lastInteractionRef.current = Date.now();
+    // Optimistic next is risky without full logic, but suppression helps
     sendCommand(roomCode, { type: 'NEXT', payload: null });
   };
 
   const previous = () => {
+    lastInteractionRef.current = Date.now();
     sendCommand(roomCode, { type: 'PREVIOUS', payload: null });
   };
 
   const skipTo = (index: number) => {
+    lastInteractionRef.current = Date.now();
+    setState(prev => ({ ...prev, currentIndex: index, currentVideo: prev.queue[index] || null }));
     sendCommand(roomCode, {
       type: 'SKIP_TO',
       payload: { index },
@@ -434,18 +461,14 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
   };
 
   const toggleMute = () => {
-    lastCommandTimeRef.current = Date.now();
-    const newControls = { ...latestControlsRef.current, isMuted: !latestControlsRef.current.isMuted };
-    latestControlsRef.current = newControls; // Sync update for Polling Loop
-    setState(prev => ({ ...prev, controls: newControls }));
+    lastInteractionRef.current = Date.now();
+    setState(prev => ({ ...prev, controls: { ...prev.controls, isMuted: !prev.controls.isMuted } }));
     sendCommand(roomCode, { type: 'TOGGLE_MUTE', payload: null });
   };
 
   const setMute = (muted: boolean) => {
-    lastCommandTimeRef.current = Date.now();
-    const newControls = { ...latestControlsRef.current, isMuted: muted };
-    latestControlsRef.current = newControls; // Sync update for Polling Loop
-    setState(prev => ({ ...prev, controls: newControls }));
+    lastInteractionRef.current = Date.now();
+    setState(prev => ({ ...prev, controls: { ...prev.controls, isMuted: muted } }));
     if (muted) {
       sendCommand(roomCode, { type: 'MUTE', payload: null });
     } else {

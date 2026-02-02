@@ -34,26 +34,8 @@ const TVPage = () => {
     const [baseUrl, setBaseUrl] = useState<string>('');
     const fullscreenRef = useRef<HTMLDivElement>(null);
 
-    // Aggressive Auto-Unmute
-    useEffect(() => {
-        if (!player) return;
-        const interval = setInterval(() => {
-            try {
-                if (player.isMuted()) {
-                    player.unMute();
-                    player.setVolume(100);
-                }
-            } catch (e) { }
-        }, 1000);
-
-        // Stop checking after 10 seconds to save performance
-        const timeout = setTimeout(() => clearInterval(interval), 10000);
-
-        return () => {
-            clearInterval(interval);
-            clearTimeout(timeout);
-        };
-    }, [player]);
+    // Aggressive Auto-Unmute Removed - conflicts with remote control
+    // Player sync effect below handles mute state correctly using Firebase state
 
     const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const lastQueueLengthRef = useRef(0);

@@ -126,20 +126,53 @@ export const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
 
         const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
 
-        // Create Room (Host) - Only if not exists/first time?
-        // Actually, preventing overwrite on every render is key, but typical use case is mount.
-        // We added a check to only set if we are sure (or just rely on useCommandExecutor for updates)
-        // But here we set initial state.
+        // 1. INITIALIZE ROOM (Create if not exists)
+        const { get, set } = require('firebase/database');
+        get(roomRef).then((snapshot: any) => {
+            if (!snapshot.exists()) {
+                console.log('✨ Creating new room in Firebase:', roomCode);
+                // Set initial state
+                set(roomRef, {
+                    state: {
+                        queue: [],
+                        currentIndex: 0,
+                        currentVideo: null,
+                        controls: { isPlaying: false, isMuted: true } // Default muted for browser policy
+                    },
+                    hostId: auth.currentUser?.uid || 'anonymous-tv',
+                    createdAt: Date.now(),
+                    lastConnected: Date.now()
+                }).catch((e: any) => console.error("❌ Room Creation Error:", e));
+            } else {
+                console.log('✅ Reconnected to existing room:', roomCode);
+            }
+        });
 
-        // Listeners are handled elsewhere.
+        // 2. LISTEN FOR STATE UPDATES FROM FIREBASE (Crucial for remote control)
+        // This ensures that when CommandExecutor updates Firebase, we reflect it locally
+        // which then triggers the player sync effect in tv.tsx
+        const { onValue } = require('firebase/database');
+        const unsubscribe = onValue(roomRef, (snapshot: any) => {
+            const data = snapshot.val();
+            if (data && data.state) {
+                // Only update if controls explicitly changed (avoid loops)
+                const newControls = data.state.controls;
+                setState(prev => {
+                    // Deep check equality to prevent re-renders
+                    if (prev.controls.isMuted === newControls.isMuted &&
+                        prev.controls.isPlaying === newControls.isPlaying) {
+                        return prev;
+                    }
+                    return { ...prev, controls: newControls };
+                });
+            }
+        });
 
-        // SYNC STATE BACK TO FIREBASE
-        // Whenever state changes (e.g. Video Ends, AutoNext), update DB so Controller knows.
-        if (state) {
-            update(roomRef, { state }).catch(e => console.error("State Sync Error:", e));
-        }
+        // Create Room (Host) - Only if not exists
+        // (Assuming checking logic handles this, or we just rely on first command)
 
-    }, [roomCode, mode, state]);
+        return () => unsubscribe();
+    }, [roomCode]); // Removed mode/state dependencies to avoid re-subscription loops
 
     // --- COMMAND EXECUTOR ---
     // Enable for BOTH Web and Cast modes to support QR Code guests
@@ -147,9 +180,11 @@ export const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
         roomCode: roomCode || '',
         playerRef,
         currentState: state,
-        onStateChange: (newState) => {
-            console.log('🔄 State Updated via Command:', newState);
-            setState(prev => ({ ...prev, ...newState }));
+        onStateChange: async (newState) => {
+            console.log('🔄 Command Executed -> Updating Firebase:', newState);
+            // We DO NOT set local state here immediately.
+            // We rely on CommandExecutor to update Firebase, and our Listener (above) to update Local State.
+            // This ensures Single Source of Truth.
         },
         onStopSession: () => {
             console.log('🛑 session stopped');
