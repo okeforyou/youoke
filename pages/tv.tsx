@@ -45,11 +45,41 @@ const TVPage = () => {
     const isFullscreen = useFullscreen(fullscreenRef, showFullscreen, { onClose: () => toggleFullscreen(false) });
 
 
-    // Detect base URL
+    // --- DETECT BASE URL ---
     useEffect(() => {
         if (typeof window !== 'undefined') {
             setBaseUrl(window.location.origin);
         }
+    }, []);
+
+    // --- SCREEN WAKE LOCK ---
+    useEffect(() => {
+        let wakeLock: any = null;
+        const requestWakeLock = async () => {
+            if ('wakeLock' in navigator) {
+                try {
+                    // @ts-ignore
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log('✅ Screen wake lock activated');
+                } catch (err: any) {
+                    console.error(`❌ Wake Lock error: ${err.name}, ${err.message}`);
+                }
+            }
+        };
+
+        requestWakeLock();
+
+        const handleVisibilityChange = () => {
+            if (wakeLock !== null && document.visibilityState === 'visible') {
+                requestWakeLock();
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            if (wakeLock !== null) wakeLock.release().then(() => console.log('✅ Wake lock released'));
+        };
     }, []);
 
     // --- ROBUST PLAYER SYNC LOOP ---
