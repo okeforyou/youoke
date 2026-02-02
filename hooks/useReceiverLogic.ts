@@ -145,7 +145,7 @@ export const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
                             queue: [],
                             currentIndex: 0,
                             currentVideo: null,
-                            controls: { isPlaying: false, isMuted: true } // Default muted for browser policy
+                            controls: { isPlaying: false, isMuted: false } // Default Unmuted so Sync Loop tries to enable audio
                         },
                         hostId: auth.currentUser?.uid || 'anonymous-tv',
                         createdAt: Date.now(),
