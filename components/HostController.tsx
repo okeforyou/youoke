@@ -25,7 +25,6 @@ const HostController: React.FC<HostControllerProps> = ({
     roomCode,
     onDisconnect,
     currentVideoTitle
-    currentVideoTitle
 }) => {
     // Logic Helper: Determine which Disconnect action to take
     const handleDisconnectClick = (e: React.MouseEvent) => {
