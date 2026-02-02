@@ -192,10 +192,10 @@ export const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
         playerRef,
         currentState: state,
         onStateChange: async (newState) => {
-            console.log('🔄 Command Executed -> Updating Firebase:', newState);
-            // We DO NOT set local state here immediately.
-            // We rely on CommandExecutor to update Firebase, and our Listener (above) to update Local State.
-            // This ensures Single Source of Truth.
+            console.log('🔄 Command Executed -> Updating Firebase & Local:', newState);
+            // OPTIMISTIC UPDATE: Update local state immediately for instant feedback
+            // and to ensure subsequent commands in the loop see the updated state.
+            setState(prev => ({ ...prev, ...newState }));
         },
         onStopSession: () => {
             console.log('🛑 session stopped');
