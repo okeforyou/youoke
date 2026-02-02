@@ -87,10 +87,11 @@ const TVPage = () => {
     // we use a loop to ENFORCE the desired state. This fixes "multiple clicks needed" and "stuck on mute".
     const [needsInteraction, setNeedsInteraction] = useState(false);
 
+    // --- ROBUST PLAYER SYNC LOOP ---
     useEffect(() => {
         if (!player || !state) return;
 
-        const syncInterval = setInterval(async () => {
+        const syncPlayerState = async () => {
             try {
                 // 1. Sync Play/Pause
                 const playerState = await player.getPlayerState();
@@ -131,7 +132,13 @@ const TVPage = () => {
             } catch (e) {
                 // Ignore transient errors (e.g. player destroying)
             }
-        }, 500); // Check every 500ms
+        };
+
+        // Execute IMMEDIATELY on state change (instant response)
+        syncPlayerState();
+
+        // And keep polling for drift/errors (robustness)
+        const syncInterval = setInterval(syncPlayerState, 500);
 
         return () => clearInterval(syncInterval);
     }, [player, state.controls.isPlaying, state.controls.isMuted]);
