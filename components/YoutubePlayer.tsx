@@ -41,6 +41,7 @@ import { VideoAds } from '../src/plugins/ads/components/VideoAds';
 import { BottomAds } from '../src/plugins/ads/components/BottomAds';
 import { HostController } from '../src/plugins/cast/components/HostController';
 import { PluginBoundary } from '../src/core/ui/PluginBoundary';
+import { useDualScreenSender } from '../src/plugins/dual-screen/sender/useDualScreenSender';
 import DebugOverlay, { addDebugLog } from "./DebugOverlay";
 import PlayerControls from "./PlayerControls";
 import GuestLimitModal from "./GuestLimitModal";
@@ -264,6 +265,9 @@ function YoutubePlayer({
   const [isShowAds, setIsShowAds] = useState(false);
   const [videoCount, setVideoCount] = useState<number>(0);
   const [inputRoomId, setInputRoomId] = useState("");
+
+  // Dual Screen Plugin Hook
+  const { play: dualPlay, pause: dualPause, next: dualNext } = useDualScreenSender(nextSong);
 
   const mounted = usePromise();
 
@@ -656,9 +660,8 @@ function YoutubePlayer({
     // If Dual Mode is active, send command to Monitor
     if (isDualMode && !isMoniter) {
       console.log('📤 Broadcasting PLAY command to Dual Screen');
-      const ch = new BroadcastChannel('youoke-dual-sync');
-      ch.postMessage({ type: 'PLAY', videoId: curVideoId });
-      ch.close();
+      dualPlay();
+
       // Also play local player (muted/hidden) to keep state in sync
       setPlayerState(YouTube.PlayerState.PLAYING);
     }
@@ -726,9 +729,8 @@ function YoutubePlayer({
     // If Dual Mode is active, send command to Monitor
     if (isDualMode && !isMoniter) {
       console.log('📤 Broadcasting PAUSE command to Dual Screen');
-      const ch = new BroadcastChannel('youoke-dual-sync');
-      ch.postMessage({ type: 'PAUSE', videoId: curVideoId });
-      ch.close();
+      dualPause();
+
       // Also pause local player to keep state in sync
       setPlayerState(YouTube.PlayerState.PAUSED);
       if (onIsPlayingChange) onIsPlayingChange(false); // Force update state
@@ -814,25 +816,6 @@ function YoutubePlayer({
   // REMOVED: Legacy QUEUE_UPDATE sync effect (Replaced by global useDualScreenSender hook)
 
   // Listen for commands from Dual Screen (Receiver)
-  useEffect(() => {
-    if (isMoniter) return; // Monitor shouldn't listen to itself? Actually Monitor IS sending it... wait.
-    // Dual Screen (Receiver) sends REQUEST_NEXT.
-    // Main Screen (Sender) listens.
-
-    const channel = new BroadcastChannel('youoke-dual-sync');
-    const handler = (event: MessageEvent) => {
-      if (event.data?.type === 'REQUEST_NEXT') {
-        console.log('📡 [Main] Received REQUEST_NEXT from Dual Screen');
-        addDebugLog('📡 [Main] Received REQUEST_NEXT');
-        nextSong();
-      }
-    };
-    channel.addEventListener('message', handler);
-    return () => {
-      channel.removeEventListener('message', handler);
-      channel.close();
-    };
-  }, [nextSong, isMoniter]);
 
   // Auto-connect from QR Code scan
   useEffect(() => {
@@ -1365,9 +1348,7 @@ function YoutubePlayer({
             castNext();
           } else {
             if (isDualMode && !isMoniter) {
-              const ch = new BroadcastChannel('youoke-dual-sync');
-              ch.postMessage({ type: 'NEXT' });
-              ch.close();
+              dualNext();
             }
             nextSong();
           }
