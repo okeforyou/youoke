@@ -137,15 +137,19 @@ export function useCommandExecutor({
           }
 
           case 'PLAY':
-            // ensureAudio(); // Moved to state reactor in TV/Monitor
-            // if (player) await player.playVideo(); // REMOVED: State-driven
+            // Fast Path: Execute immediately
+            if (player) {
+              player.playVideo().catch(e => console.warn('Direct play failed:', e));
+            }
             newState = {
               controls: { ...state.controls, isPlaying: true },
             };
             break;
 
           case 'PAUSE':
-            // if (player) await player.pauseVideo(); // REMOVED: State-driven
+            if (player) {
+              player.pauseVideo().catch(e => console.warn('Direct pause failed:', e));
+            }
             newState = {
               controls: { ...state.controls, isPlaying: false },
             };
@@ -189,14 +193,18 @@ export function useCommandExecutor({
           }
 
           case 'MUTE':
-            // if (player) await player.mute(); // REMOVED: State-driven
+            if (player) {
+              player.mute().catch(e => console.warn('Direct mute failed:', e));
+            }
             newState = {
               controls: { ...state.controls, isMuted: true },
             };
             break;
 
           case 'UNMUTE':
-            // if (player) await player.unMute(); // REMOVED: State-driven
+            if (player) {
+              player.unMute().catch(e => console.warn('Direct unmute failed:', e));
+            }
             newState = {
               controls: { ...state.controls, isMuted: false },
             };
@@ -204,7 +212,9 @@ export function useCommandExecutor({
 
           case 'TOGGLE_MUTE': {
             const newMuted = !state.controls.isMuted;
-            // if (player) ... // REMOVED: State-driven
+            if (player) {
+              if (newMuted) player.mute(); else player.unMute();
+            }
             newState = {
               controls: { ...state.controls, isMuted: newMuted },
             };
@@ -213,7 +223,10 @@ export function useCommandExecutor({
 
           case 'SET_VOLUME': {
             const { volume } = command.payload;
-            // if (player) await player.setVolume(volume); // REMOVED: State-driven
+            if (player) {
+              player.setVolume(volume);
+              if (volume > 0) player.unMute();
+            }
             newState = {
               controls: {
                 ...state.controls,
@@ -352,7 +365,8 @@ export function useCommandExecutor({
 
   // Listen to new commands using REST Polling
   useEffect(() => {
-    if (!roomCode || !realtimeDb || !isReady) return;
+    // Polling matches Monitor.tsx behavior: Robust and Persistent
+    if (!roomCode || !realtimeDb) return; // Removed !isReady check to force polling
 
     const dbURL = realtimeDb.app.options.databaseURL;
 
