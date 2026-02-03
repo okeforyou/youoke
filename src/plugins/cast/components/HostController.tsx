@@ -37,7 +37,7 @@ export const HostController: React.FC<HostControllerProps> = ({
 
     const videoId = state.currentVideo?.videoId || '';
     const thumbnailUrl = videoId
-        ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
+        ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
         : '';
 
     useEffect(() => {
@@ -47,138 +47,115 @@ export const HostController: React.FC<HostControllerProps> = ({
     }, [state.controls.volume]);
 
     return (
-        <div className="w-full h-full relative overflow-hidden bg-black">
-            {/* Background: Blurred Glass Effect */}
-            {thumbnailUrl && (
-                <div
-                    className="absolute inset-0 bg-cover bg-center blur-3xl opacity-40 scale-110"
-                    style={{ backgroundImage: `url(${thumbnailUrl})` }}
-                />
-            )}
-            <div className="absolute inset-0 bg-black/70" />
+        <div className="w-full h-full bg-base-200 flex flex-col">
 
-            {/* Content */}
-            <div className="relative z-10 w-full h-full flex flex-col">
+            {/* Top: Cancel button */}
+            <div className="flex justify-end p-3">
+                <button
+                    onClick={() => setIsDisconnectModalOpen(true)}
+                    className="text-base-content/50 hover:text-error text-sm flex items-center gap-1"
+                >
+                    <XMarkIcon className="w-4 h-4" />
+                    ยกเลิก
+                </button>
+            </div>
 
-                {/* Top: Disconnect Button Only */}
-                <div className="flex justify-end p-4">
-                    <button
-                        onClick={() => setIsDisconnectModalOpen(true)}
-                        className="flex items-center gap-2 text-white/50 hover:text-red-400 px-3 py-2 rounded-lg transition-all hover:bg-white/5"
-                    >
-                        <XMarkIcon className="w-5 h-5" />
-                        <span className="text-sm">ยกเลิก</span>
-                    </button>
-                </div>
+            {/* Main Content */}
+            <div className="flex-1 flex flex-col items-center justify-center px-6 pb-4">
 
-                {/* Center: Connection Status */}
-                <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
-
-                    {/* Animated Rings */}
-                    <div className="relative mb-8">
-                        {/* Outer ring - pulsing */}
-                        <div className={`absolute inset-0 w-32 h-32 rounded-full ${state.controls.isPlaying
-                                ? 'bg-primary/20 animate-ping'
-                                : 'bg-white/5'
-                            }`} style={{ animationDuration: '2s' }} />
-
-                        {/* Middle ring */}
-                        <div className={`absolute inset-2 w-28 h-28 rounded-full border ${state.controls.isPlaying
-                                ? 'border-primary/40'
-                                : 'border-white/10'
-                            }`} />
-
-                        {/* Center circle with status */}
-                        <div className={`relative w-32 h-32 rounded-full flex items-center justify-center ${state.controls.isPlaying
-                                ? 'bg-primary/10 border-2 border-primary'
-                                : 'bg-white/5 border-2 border-white/20'
-                            }`}>
-                            <div className="text-center">
-                                <div className={`text-3xl font-bold ${state.controls.isPlaying ? 'text-primary' : 'text-white/40'
-                                    }`}>
-                                    {roomCode}
-                                </div>
-                            </div>
+                {/* Thumbnail Card */}
+                <div className="relative mb-6">
+                    {thumbnailUrl ? (
+                        <div className="w-40 h-40 sm:w-48 sm:h-48 rounded-2xl overflow-hidden shadow-xl bg-base-300">
+                            <img
+                                src={thumbnailUrl}
+                                alt="cover"
+                                className="w-full h-full object-cover"
+                            />
                         </div>
-                    </div>
+                    ) : (
+                        <div className="w-40 h-40 sm:w-48 sm:h-48 rounded-2xl bg-base-300 flex items-center justify-center">
+                            <span className="text-base-content/30 text-4xl">♪</span>
+                        </div>
+                    )}
 
-                    {/* Connection Text */}
-                    <div className="space-y-2">
-                        <p className="text-white/40 text-sm">
-                            {state.controls.isPlaying ? 'กำลังเล่น' : 'หยุดชั่วคราว'}
-                        </p>
-                        <h3 className="text-white text-xl font-medium">
-                            เชื่อมต่อหน้าจอที่ 2
-                        </h3>
-                        <p className="text-white/30 text-sm">
-                            {isCasting ? 'TV Mode' : 'Dual Screen Mode'}
-                        </p>
-                    </div>
-
-                    {/* Song Title - Very subtle */}
-                    {currentVideoTitle && (
-                        <p className="text-white/20 text-xs mt-6 line-clamp-1 max-w-xs">
-                            {currentVideoTitle}
-                        </p>
+                    {/* Playing indicator */}
+                    {state.controls.isPlaying && (
+                        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-success text-success-content text-xs px-3 py-1 rounded-full">
+                            กำลังเล่น
+                        </div>
                     )}
                 </div>
 
-                {/* Bottom: Control Deck */}
-                <div className="p-4 sm:p-6">
-                    {/* Main Controls */}
-                    <div className="flex items-center justify-center gap-6 sm:gap-8 mb-4">
-                        <button
-                            onClick={previous}
-                            className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all"
-                        >
-                            <BackwardIcon className="w-6 h-6 text-white" />
-                        </button>
+                {/* Room Info */}
+                <div className="text-center mb-4">
+                    <p className="text-base-content/50 text-sm mb-1">เชื่อมต่อหน้าจอที่ 2</p>
+                    <p className="text-base-content text-2xl font-bold">ห้อง {roomCode}</p>
+                </div>
 
-                        <button
-                            onClick={state.controls.isPlaying ? pause : play}
-                            className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-primary hover:bg-primary/80 flex items-center justify-center transition-all shadow-lg shadow-primary/30"
-                        >
-                            {state.controls.isPlaying ? (
-                                <PauseIcon className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
-                            ) : (
-                                <PlayIcon className="w-8 h-8 sm:w-10 sm:h-10 text-white ml-1" />
-                            )}
-                        </button>
+                {/* Song Title */}
+                {currentVideoTitle && (
+                    <p className="text-base-content/60 text-sm text-center line-clamp-2 max-w-xs mb-4">
+                        {currentVideoTitle}
+                    </p>
+                )}
+            </div>
 
-                        <button
-                            onClick={next}
-                            className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all"
-                        >
-                            <ForwardIcon className="w-6 h-6 text-white" />
-                        </button>
-                    </div>
+            {/* Control Deck */}
+            <div className="bg-base-100 p-4 sm:p-6 rounded-t-3xl shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
+                {/* Main Controls */}
+                <div className="flex items-center justify-center gap-6 sm:gap-8 mb-4">
+                    <button
+                        onClick={previous}
+                        className="btn btn-circle btn-ghost btn-lg"
+                    >
+                        <BackwardIcon className="w-7 h-7" />
+                    </button>
 
-                    {/* Volume Control */}
-                    <div className="flex items-center gap-3 max-w-sm mx-auto">
-                        <button
-                            onClick={toggleMute}
-                            className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all"
-                        >
-                            {state.controls.isMuted ? (
-                                <SpeakerXMarkIcon className="w-5 h-5 text-red-400" />
-                            ) : (
-                                <SpeakerWaveIcon className="w-5 h-5 text-white/70" />
-                            )}
-                        </button>
-                        <input
-                            type="range"
-                            min="0"
-                            max="100"
-                            value={localVolume}
-                            className="range range-primary range-xs flex-1"
-                            onChange={(e) => {
-                                const val = parseInt(e.target.value);
-                                setLocalVolume(val);
-                                setVolume(val);
-                            }}
-                        />
-                        <span className="text-white/50 text-xs font-mono w-8 text-right">{localVolume}%</span>
-                    </div>
+                    <button
+                        onClick={state.controls.isPlaying ? pause : play}
+                        className="btn btn-circle btn-primary btn-lg w-16 h-16 sm:w-20 sm:h-20"
+                    >
+                        {state.controls.isPlaying ? (
+                            <PauseIcon className="w-8 h-8 sm:w-10 sm:h-10" />
+                        ) : (
+                            <PlayIcon className="w-8 h-8 sm:w-10 sm:h-10 ml-1" />
+                        )}
+                    </button>
+
+                    <button
+                        onClick={next}
+                        className="btn btn-circle btn-ghost btn-lg"
+                    >
+                        <ForwardIcon className="w-7 h-7" />
+                    </button>
+                </div>
+
+                {/* Volume */}
+                <div className="flex items-center gap-3 max-w-sm mx-auto">
+                    <button
+                        onClick={toggleMute}
+                        className="btn btn-circle btn-ghost btn-sm"
+                    >
+                        {state.controls.isMuted ? (
+                            <SpeakerXMarkIcon className="w-5 h-5 text-error" />
+                        ) : (
+                            <SpeakerWaveIcon className="w-5 h-5" />
+                        )}
+                    </button>
+                    <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={localVolume}
+                        className="range range-primary range-xs flex-1"
+                        onChange={(e) => {
+                            const val = parseInt(e.target.value);
+                            setLocalVolume(val);
+                            setVolume(val);
+                        }}
+                    />
+                    <span className="text-base-content/50 text-xs w-8 text-right">{localVolume}%</span>
                 </div>
             </div>
 
