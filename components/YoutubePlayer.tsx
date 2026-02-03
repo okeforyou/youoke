@@ -35,11 +35,12 @@ import { useKaraokeState } from "../hooks/karaoke";
 import { useRoomState } from "../hooks/room";
 import { useGuestLimit } from "../hooks/useGuestLimit";
 import Alert, { AlertHandler } from "./Alert";
-import BottomAds from "./BottomAds";
 import { CastModeSelector } from "./CastModeSelector";
 import { ShareRoomModal } from "./ShareRoomModal";
-import HostController from './HostController';
-import VideoAds from "./VideoAds";
+import { VideoAds } from '../src/plugins/ads/components/VideoAds';
+import { BottomAds } from '../src/plugins/ads/components/BottomAds';
+import { HostController } from '../src/plugins/cast/components/HostController';
+import { PluginBoundary } from '../src/core/ui/PluginBoundary';
 import DebugOverlay, { addDebugLog } from "./DebugOverlay";
 import PlayerControls from "./PlayerControls";
 import GuestLimitModal from "./GuestLimitModal";
@@ -1787,20 +1788,22 @@ function YoutubePlayer({
 
               {/* Controller Mode: Replaces Player entirely when Casting/Dual */}
               {((isDualMode && !isMoniter) || (isCasting && !isMobile)) ? (
-                <HostController
-                  isCasting={isCasting}
-                  isDualMode={isDualMode}
-                  roomCode={roomCode}
-                  currentVideoTitle={firebaseCastState.currentVideo?.title}
-                  onDisconnect={() => {
-                    if (isDualMode) {
-                      localStorage.removeItem('youoke-dual-active');
-                      setIsDualMode(false);
-                    } else {
-                      handleCastDisconnect();
-                    }
-                  }}
-                />
+                <PluginBoundary name="CastHostController" fallback={<div className="text-red-500 p-4">Cast Controller Error</div>}>
+                  <HostController
+                    isCasting={isCasting}
+                    isDualMode={isDualMode}
+                    roomCode={roomCode}
+                    currentVideoTitle={firebaseCastState.currentVideo?.title}
+                    onDisconnect={() => {
+                      if (isDualMode) {
+                        localStorage.removeItem('youoke-dual-active');
+                        setIsDualMode(false);
+                      } else {
+                        handleCastDisconnect();
+                      }
+                    }}
+                  />
+                </PluginBoundary>
               ) : (
                 /* Standard Local Player Mode */
                 null
@@ -1906,8 +1909,16 @@ function YoutubePlayer({
               )}
 
 
-              {!isLogin && !isMoniter && <BottomAds />}
-              {!isLogin && !isMoniter && isShowAds && <VideoAds />}
+              {!isLogin && !isMoniter && (
+                <PluginBoundary name="BottomAds">
+                  <BottomAds />
+                </PluginBoundary>
+              )}
+              {!isLogin && !isMoniter && isShowAds && (
+                <PluginBoundary name="VideoAds">
+                  <VideoAds />
+                </PluginBoundary>
+              )}
 
               {/* Exit Fullscreen Button */}
               {

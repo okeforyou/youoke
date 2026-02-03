@@ -1,289 +1,27 @@
-import React from "react";
-import Link from "next/link";
-import {
-  UsersIcon,
-  CurrencyDollarIcon,
-  CheckCircleIcon,
-  ArrowTrendingUpIcon,
-  ClockIcon,
-  XMarkIcon,
-  ChartBarIcon,
-} from "@heroicons/react/24/outline";
 import { GetServerSideProps } from "next";
 import nookies from "nookies";
-import AdminLayout from "../../components/admin/LazyAdminLayout";
+import React from "react";
+
+// Import the Feature Component
+import DashboardPage from "../../src/features/admin/pages/DashboardPage";
+
+// Import Firebase AdminSDK for SSR
 import { adminAuth, adminDb, adminFirestore } from "../../firebase-admin";
 
-interface Stats {
-  totalUsers: number;
-  adminUsers: number;
-  freeUsers: number;
-  premiumUsers: number;
-  monthlySubscribers: number;
-  yearlySubscribers: number;
-  lifetimeSubscribers: number;
-  pendingPayments: number;
-  approvedPayments: number;
-  rejectedPayments: number;
-  totalRevenue: number;
+// ============================================================================
+// PAGE COMPONENT (Wrapper)
+// ============================================================================
+export default function AdminIndexPage(props: any) {
+  return <DashboardPage {...props} />;
 }
 
-interface RecentActivity {
-  id: string;
-  type: "user" | "payment";
-  action: string;
-  timestamp: any;
-  details: string;
-}
 
-// Serialized version for SSR
-interface SerializedActivity {
-  id: string;
-  type: "user" | "payment";
-  action: string;
-  timestamp: string | null;
-  details: string;
-}
-
-interface Props {
-  stats: Stats;
-  recentActivities: SerializedActivity[];
-  error?: string;
-}
-
-interface StatCardProps {
-  title: string;
-  value: number | string;
-  icon: React.ReactNode;
-  color: string;
-  subtitle?: string;
-}
-
-const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color, subtitle }) => (
-  <div className="bg-white rounded-lg shadow p-6">
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-sm text-gray-600 mb-1">{title}</p>
-        <p className="text-3xl font-bold text-gray-900">{value}</p>
-        {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
-      </div>
-      <div className={`p-3 rounded-full ${color}`}>{icon}</div>
-    </div>
-  </div>
-);
-
-const AdminDashboard: React.FC<Props> = ({ stats, recentActivities: serializedActivities, error }) => {
-  // Convert serialized activities back to objects with proper dates
-  const recentActivities = serializedActivities.map(a => ({
-    ...a,
-    timestamp: a.timestamp ? new Date(a.timestamp) : null,
-  }));
-
-  // Show error if any
-  if (error) {
-    return (
-      <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <p className="text-red-600 text-lg font-medium">{error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-            >
-              รีโหลดหน้า
-            </button>
-          </div>
-        </div>
-      </AdminLayout>
-    );
-  }
-
-  return (
-    <AdminLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-1">ภาพรวมระบบ YouOke</p>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard
-            title="ผู้ใช้ทั้งหมด"
-            value={stats.totalUsers}
-            icon={<UsersIcon className="w-6 h-6 text-white" />}
-            color="bg-blue-500"
-            subtitle={`${stats.adminUsers} admins, ${stats.freeUsers} free`}
-          />
-          <StatCard
-            title="Premium Users"
-            value={stats.premiumUsers}
-            icon={<ArrowTrendingUpIcon className="w-6 h-6 text-white" />}
-            color="bg-green-500"
-            subtitle={`${stats.monthlySubscribers}M + ${stats.yearlySubscribers}Y + ${stats.lifetimeSubscribers}L`}
-          />
-          <StatCard
-            title="Total Revenue"
-            value={`${stats.totalRevenue.toLocaleString()} ฿`}
-            icon={<CurrencyDollarIcon className="w-6 h-6 text-white" />}
-            color="bg-purple-500"
-            subtitle={`${stats.approvedPayments} approved payments`}
-          />
-          <StatCard
-            title="Pending Payments"
-            value={stats.pendingPayments}
-            icon={<ClockIcon className="w-6 h-6 text-white" />}
-            color="bg-orange-500"
-            subtitle={`${stats.rejectedPayments} rejected`}
-          />
-        </div>
-
-        {/* Payment Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-green-50 rounded-lg shadow p-6 border border-green-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-green-600 font-medium">Approved</p>
-                <p className="text-3xl font-bold text-green-900">{stats.approvedPayments}</p>
-              </div>
-              <CheckCircleIcon className="w-8 h-8 text-green-500" />
-            </div>
-          </div>
-
-          <div className="bg-orange-50 rounded-lg shadow p-6 border border-orange-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-orange-600 font-medium">Pending</p>
-                <p className="text-3xl font-bold text-orange-900">{stats.pendingPayments}</p>
-              </div>
-              <ClockIcon className="w-8 h-8 text-orange-500" />
-            </div>
-          </div>
-
-          <div className="bg-red-50 rounded-lg shadow p-6 border border-red-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-red-600 font-medium">Rejected</p>
-                <p className="text-3xl font-bold text-red-900">{stats.rejectedPayments}</p>
-              </div>
-              <XMarkIcon className="w-8 h-8 text-red-500" />
-            </div>
-          </div>
-        </div>
-
-        {/* Subscription Breakdown */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">
-            Subscription Breakdown
-          </h2>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between py-2 border-b">
-              <span className="text-gray-700">Monthly Subscribers</span>
-              <span className="font-bold text-blue-600">{stats.monthlySubscribers}</span>
-            </div>
-            <div className="flex items-center justify-between py-2 border-b">
-              <span className="text-gray-700">Yearly Subscribers</span>
-              <span className="font-bold text-green-600">{stats.yearlySubscribers}</span>
-            </div>
-            <div className="flex items-center justify-between py-2 border-b">
-              <span className="text-gray-700">Lifetime Members</span>
-              <span className="font-bold text-purple-600">{stats.lifetimeSubscribers}</span>
-            </div>
-            <div className="flex items-center justify-between py-2">
-              <span className="text-gray-700 font-bold">Total Premium</span>
-              <span className="font-bold text-red-600">{stats.premiumUsers}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Recent Activities */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <ChartBarIcon className="w-5 h-5 text-gray-700" />
-            <h2 className="text-xl font-bold text-gray-900">Recent Activities</h2>
-          </div>
-          {recentActivities.length === 0 ? (
-            <p className="text-gray-500 text-center py-4">No recent activities</p>
-          ) : (
-            <div className="space-y-3">
-              {recentActivities.map((activity) => (
-                <div
-                  key={activity.id}
-                  className="flex items-start gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <div
-                    className={`p-2 rounded-full ${activity.type === "payment"
-                      ? "bg-green-100"
-                      : "bg-blue-100"
-                      }`}
-                  >
-                    {activity.type === "payment" ? (
-                      <CurrencyDollarIcon className="w-4 h-4 text-green-600" />
-                    ) : (
-                      <UsersIcon className="w-4 h-4 text-blue-600" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900">
-                      {activity.action}
-                    </p>
-                    <p className="text-xs text-gray-500 truncate">
-                      {activity.details}
-                    </p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      {activity.timestamp
-                        ? activity.timestamp.toLocaleString("th-TH", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
-                        : "N/A"}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Quick Actions */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Link
-              href="/admin/users"
-              className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
-            >
-              <UsersIcon className="w-5 h-5 text-blue-500" />
-              <span className="font-medium text-gray-700">Manage Users</span>
-            </Link>
-            <Link
-              href="/admin/payments"
-              className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-colors"
-            >
-              <CheckCircleIcon className="w-5 h-5 text-orange-500" />
-              <span className="font-medium text-gray-700">Verify Payments</span>
-            </Link>
-            <Link
-              href="/admin/subscriptions"
-              className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors"
-            >
-              <CurrencyDollarIcon className="w-5 h-5 text-green-500" />
-              <span className="font-medium text-gray-700">Manage Plans</span>
-            </Link>
-          </div>
-        </div>
-      </div>
-    </AdminLayout>
-  );
-};
-
-// Server-Side Props
-export const getServerSideProps: GetServerSideProps<Props> = async (context) => {
-  console.log('🚀 [SSR] admin/index getServerSideProps started');
+// ============================================================================
+// SERVER SIDE PROPS (Data Fetching Layer)
+// This stays here in the "Pages" layer as it's specific to Next.js routing
+// ============================================================================
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  // console.log('🚀 [SSR] admin/index getServerSideProps started');
 
   try {
     // 1. Check authentication
@@ -291,7 +29,6 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
     const token = cookies.token;
 
     if (!token) {
-      console.log('❌ [SSR] No token found, redirecting to login');
       return {
         redirect: {
           destination: "/login",
@@ -309,7 +46,6 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
     const userData = userSnapshot.val();
 
     if (!userData || userData.role !== 'admin') {
-      console.log('❌ [SSR] User is not admin, redirecting to home');
       return {
         redirect: {
           destination: "/",
@@ -318,24 +54,16 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
       };
     }
 
-    console.log('✅ [SSR] Admin authenticated:', uid);
+    // 3. Fetch Data Logic 
+    // (Ideally this should be moved to a adminService.getDashboardStats() call)
+    // For now, retaining the logic block to ensure stability during migration.
 
-    // 3. Fetch all stats in parallel
-    const startTime = Date.now();
-
-    // Fetch all users from Realtime Database
-    // TODO: OPTIMIZATION - Consider migrating to Firestore for better querying
-    // Realtime DB doesn't support complex queries, so we fetch all users
-    // For large user bases (>10k), consider:
-    // 1. Pagination
-    // 2. Pre-computed statistics (updated by Cloud Functions)
-    // 3. Firestore migration for better query support
+    // ... [Logic identical to original] ...
     const usersRef = adminDb.ref('users');
     const usersSnapshot = await usersRef.once('value');
     const usersData = usersSnapshot.val() || {};
     const usersArray = Object.entries(usersData);
 
-    // Calculate user stats
     let totalUsers = 0;
     let adminUsers = 0;
     let freeUsers = 0;
@@ -347,10 +75,8 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
     usersArray.forEach(([uid, user]: [string, any]) => {
       totalUsers++;
       if (user.role === 'admin') adminUsers++;
-
       const tier = user.subscription?.plan || user.tier || 'free';
       const isActive = user.subscription?.status === 'active' || user.isPremium;
-
       if (tier === 'free') freeUsers++;
       if (isActive && tier !== 'free') {
         premiumUsers++;
@@ -360,19 +86,11 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
       }
     });
 
-    // Fetch payments from Firestore
-    // TODO: OPTIMIZATION - Currently fetches ALL payments, should use:
-    // 1. Separate queries with where() for each status
-    // 2. Use limit() for recent payments only
-    // 3. Consider aggregation counters updated by Cloud Functions
-    // Current approach: Fetch all → Filter in memory (works for small datasets)
     const paymentsSnapshot = await adminFirestore.collection('payments').get();
-
     let pendingPayments = 0;
     let approvedPayments = 0;
     let rejectedPayments = 0;
     let totalRevenue = 0;
-
     const recentApprovedPayments: any[] = [];
 
     paymentsSnapshot.docs.forEach(doc => {
@@ -381,25 +99,13 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
       else if (data.status === 'approved') {
         approvedPayments++;
         totalRevenue += data.amount || 0;
-        recentApprovedPayments.push({
-          id: doc.id,
-          ...data,
-        });
-      }
-      else if (data.status === 'rejected') rejectedPayments++;
+        recentApprovedPayments.push({ id: doc.id, ...data });
+      } else if (data.status === 'rejected') rejectedPayments++;
     });
 
-    // Sort recent payments by approvedAt
-    recentApprovedPayments.sort((a, b) => {
-      const aTime = a.approvedAt?.toMillis?.() || 0;
-      const bTime = b.approvedAt?.toMillis?.() || 0;
-      return bTime - aTime;
-    });
-
-    // Get top 10 recent approved payments
+    recentApprovedPayments.sort((a, b) => (b.approvedAt?.toMillis?.() || 0) - (a.approvedAt?.toMillis?.() || 0));
     const top10Payments = recentApprovedPayments.slice(0, 10);
 
-    // Get recent users (sort by createdAt)
     const recentUsers = usersArray
       .map(([uid, user]: [string, any]) => ({
         id: uid,
@@ -411,83 +117,43 @@ export const getServerSideProps: GetServerSideProps<Props> = async (context) => 
       .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
       .slice(0, 10);
 
-    // Build activities
-    const activities: SerializedActivity[] = [];
+    const activities: any[] = [];
+    top10Payments.forEach((p) => activities.push({
+      id: p.id, type: "payment", action: "Payment Approved",
+      timestamp: p.approvedAt?.toDate?.()?.toISOString() || null,
+      details: `${p.amount} THB - Plan: ${p.planId}`,
+    }));
+    recentUsers.forEach((u) => activities.push({
+      id: u.id, type: "user", action: "New User Registered",
+      timestamp: u.createdAt ? new Date(u.createdAt).toISOString() : null,
+      details: `${u.displayName || u.email} - ${u.tier}`,
+    }));
 
-    // Add recent payments
-    top10Payments.forEach((payment) => {
-      activities.push({
-        id: payment.id,
-        type: "payment",
-        action: "Payment Approved",
-        timestamp: payment.approvedAt?.toDate?.()?.toISOString() || null,
-        details: `${payment.amount} THB - Plan: ${payment.planId}`,
-      });
-    });
-
-    // Add recent users
-    recentUsers.forEach((user) => {
-      activities.push({
-        id: user.id,
-        type: "user",
-        action: "New User Registered",
-        timestamp: user.createdAt ? new Date(user.createdAt).toISOString() : null,
-        details: `${user.displayName || user.email} - ${user.tier}`,
-      });
-    });
-
-    // Sort activities by timestamp
-    activities.sort((a, b) => {
-      const aTime = a.timestamp ? new Date(a.timestamp).getTime() : 0;
-      const bTime = b.timestamp ? new Date(b.timestamp).getTime() : 0;
-      return bTime - aTime;
-    });
-
-    const finalActivities = activities.slice(0, 10);
-
-    const endTime = Date.now();
-    console.log(`✅ [SSR] admin/index getServerSideProps completed in ${endTime - startTime}ms`);
+    activities.sort((a, b) => (b.timestamp ? new Date(b.timestamp).getTime() : 0) - (a.timestamp ? new Date(a.timestamp).getTime() : 0));
 
     return {
       props: {
         stats: {
-          totalUsers,
-          adminUsers,
-          freeUsers,
-          premiumUsers,
-          monthlySubscribers,
-          yearlySubscribers,
-          lifetimeSubscribers,
-          pendingPayments,
-          approvedPayments,
-          rejectedPayments,
-          totalRevenue,
+          totalUsers, adminUsers, freeUsers, premiumUsers,
+          monthlySubscribers, yearlySubscribers, lifetimeSubscribers,
+          pendingPayments, approvedPayments, rejectedPayments, totalRevenue,
         },
-        recentActivities: finalActivities,
+        recentActivities: activities.slice(0, 10),
       },
     };
   } catch (error: any) {
-    console.error('❌ [SSR] Error in getServerSideProps:', error);
+    console.error('SERVER ERROR', error);
     return {
       props: {
         stats: {
-          totalUsers: 0,
-          adminUsers: 0,
-          freeUsers: 0,
-          premiumUsers: 0,
-          monthlySubscribers: 0,
-          yearlySubscribers: 0,
-          lifetimeSubscribers: 0,
-          pendingPayments: 0,
-          approvedPayments: 0,
-          rejectedPayments: 0,
-          totalRevenue: 0,
+          totalUsers: 0, adminUsers: 0, freeUsers: 0, premiumUsers: 0,
+          monthlySubscribers: 0, yearlySubscribers: 0, lifetimeSubscribers: 0,
+          pendingPayments: 0, approvedPayments: 0, rejectedPayments: 0,
+          totalRevenue: 0
         },
         recentActivities: [],
-        error: "เกิดข้อผิดพลาดในการโหลดข้อมูล",
+        error: "Server Error",
       },
     };
   }
 };
-
-export default AdminDashboard;
