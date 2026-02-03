@@ -151,8 +151,7 @@ const TVPage = () => {
         // We only initialize the Cast Context to keep the session alive.
         // We do NOT use Message Bus (we use Firebase/REST for that).
         const initCast = () => {
-            // @ts-ignore
-            const cast = window.cast;
+            const cast = (window as any).cast;
             if (cast && cast.framework) {
                 const context = cast.framework.CastReceiverContext.getInstance();
                 const options = new cast.framework.CastReceiverOptions();
@@ -168,8 +167,7 @@ const TVPage = () => {
 
         // Retry until cast is available
         const interval = setInterval(() => {
-            // @ts-ignore
-            if (window.cast) {
+            if ((window as any).cast) {
                 initCast();
                 clearInterval(interval);
             }
