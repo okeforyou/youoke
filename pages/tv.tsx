@@ -605,7 +605,7 @@ export default function TVPage() {
                     </div>
                 )}
 
-                {/* Click to Start Overlay - Elegant minimal design */}
+                {/* Click to Start Overlay - Big button for easy activation */}
                 {needsInteraction && videoId && (
                     <div
                         className="absolute inset-0 z-40 flex items-center justify-center cursor-pointer"
@@ -619,37 +619,33 @@ export default function TVPage() {
                             }}
                         />
                         {/* Dark overlay */}
-                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+                        <div className="absolute inset-0 bg-black/70" />
 
                         {/* Content */}
                         <div className="relative z-10 text-center px-8">
                             {/* Room Badge */}
-                            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-6 py-2 mb-8 border border-white/20">
+                            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-6 py-2 mb-10 border border-white/20">
                                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
                                 <span className="text-white/70 text-sm">ห้อง</span>
                                 <span className="text-white font-bold text-lg">{roomCode}</span>
                             </div>
 
-                            {/* Song Info */}
-                            <h2 className="text-3xl md:text-4xl font-bold text-white mb-3 line-clamp-2">
-                                {remoteState?.currentVideo?.title || 'กำลังโหลด...'}
-                            </h2>
-                            <p className="text-white/60 text-lg mb-10">
-                                {remoteState?.currentVideo?.author || ''}
-                            </p>
-
-                            {/* Click instruction - subtle */}
-                            <div className="animate-pulse">
-                                <p className="text-white/50 text-base">คลิกที่ใดก็ได้เพื่อเริ่มเล่น</p>
-                                <p className="text-white/30 text-sm mt-1">หรือกดปุ่มใดๆ บนรีโมท</p>
+                            {/* Big Play Button */}
+                            <div className="w-40 h-40 bg-primary/30 hover:bg-primary/50 rounded-full flex items-center justify-center mx-auto mb-8 transition-all border-4 border-primary shadow-lg shadow-primary/30 cursor-pointer">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="w-20 h-20 text-white ml-3" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M8 5v14l11-7z" />
+                                </svg>
                             </div>
+
+                            {/* Simple instruction */}
+                            <p className="text-white text-xl font-medium mb-2">คลิกเพื่อเริ่มเล่น</p>
+                            <p className="text-white/50 text-sm">หรือกดปุ่มใดๆ บนรีโมท</p>
                         </div>
 
                         {/* Disconnect button - top right */}
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
-                                // Reset room
                                 window.location.reload();
                             }}
                             className="absolute top-6 right-6 z-20 flex items-center gap-2 bg-red-500/20 hover:bg-red-500/40 text-red-400 hover:text-red-300 px-4 py-2 rounded-full transition-all border border-red-500/30"
@@ -675,8 +671,8 @@ export default function TVPage() {
                     />
                 </div>
 
-                {/* Unified Interface */}
-                {videoId && !needsInteraction && (
+                {/* Unified Interface - Always show when video is playing */}
+                {videoId && (
                     <UnifiedPlayerInterface
                         videoId={videoId}
                         queue={queue}
