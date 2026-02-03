@@ -348,6 +348,106 @@ export default function TVPage() {
         };
     }, []);
 
+    // =============================================
+    // 6. TV REMOTE KEYBOARD SUPPORT
+    // =============================================
+    useEffect(() => {
+        const handleKeyDown = async (e: KeyboardEvent) => {
+            console.log('🎮 TV Remote Key:', e.key);
+
+            // Any key press counts as user interaction
+            if (!hasUserInteraction) {
+                setHasUserInteraction(true);
+                setNeedsInteraction(false);
+            }
+
+            if (!playerRef.current) return;
+            const player = playerRef.current.getInternalPlayer();
+            if (!player) return;
+
+            switch (e.key) {
+                case ' ':
+                case 'Enter':
+                case 'MediaPlayPause':
+                    // Play/Pause toggle
+                    e.preventDefault();
+                    try {
+                        const state = await player.getPlayerState();
+                        if (state === 1) {
+                            await player.pauseVideo();
+                            setIsPlaying(false);
+                        } else {
+                            await player.unMute();
+                            await player.playVideo();
+                            setIsPlaying(true);
+                        }
+                    } catch (err) { }
+                    break;
+
+                case 'ArrowRight':
+                case 'MediaTrackNext':
+                    // Next song
+                    e.preventDefault();
+                    await requestNext();
+                    break;
+
+                case 'ArrowLeft':
+                case 'MediaTrackPrevious':
+                    // Previous song
+                    e.preventDefault();
+                    await requestPrevious();
+                    break;
+
+                case 'ArrowUp':
+                    // Volume up
+                    e.preventDefault();
+                    try {
+                        const vol = await player.getVolume();
+                        await player.setVolume(Math.min(100, vol + 10));
+                        await player.unMute();
+                        setIsMuted(false);
+                    } catch (err) { }
+                    break;
+
+                case 'ArrowDown':
+                    // Volume down
+                    e.preventDefault();
+                    try {
+                        const vol = await player.getVolume();
+                        await player.setVolume(Math.max(0, vol - 10));
+                    } catch (err) { }
+                    break;
+
+                case 'm':
+                case 'M':
+                    // Mute toggle
+                    e.preventDefault();
+                    await toggleMute();
+                    break;
+
+                case 'f':
+                case 'F':
+                case 'F11':
+                    // Fullscreen toggle
+                    e.preventDefault();
+                    toggleFullscreen();
+                    break;
+
+                case 'Escape':
+                case 'Backspace':
+                    // Exit fullscreen
+                    if (isFullscreen) {
+                        e.preventDefault();
+                        toggleFullscreen(false);
+                    }
+                    break;
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [hasUserInteraction, isFullscreen, remoteState]);
+
     // Player Ready - Start muted, then handle unmute on interaction
     const onPlayerReady = async (event: any) => {
         console.log('✅ TV: Player ready');
