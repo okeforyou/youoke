@@ -1,31 +1,28 @@
 import { useRouter } from 'next/router';
 import React, { useEffect, useState, useRef } from 'react';
 import YouTube, { YouTubePlayer } from 'react-youtube';
+import { ref, onValue, set } from 'firebase/database';
 import { signInAnonymously } from 'firebase/auth';
 import { realtimeDb, auth } from '../firebase';
 import { QRCodeSVG } from 'qrcode.react';
-import {
-    DevicePhoneMobileIcon,
-    SpeakerXMarkIcon,
-} from '@heroicons/react/24/outline';
+import { DevicePhoneMobileIcon, SpeakerXMarkIcon } from '@heroicons/react/24/outline';
 import Script from 'next/script';
 import UnifiedPlayerInterface from '../components/UnifiedPlayerInterface';
-import { useCommandExecutor } from '../hooks/useCommandExecutor';
-import { CastState } from '../types/castCommands';
 
 // ========================================
-// TV Page - Clean "DJ Mode" Receiver
+// TV Page - State-Driven DJ Mode Receiver
 // ========================================
-// Architecture: Command-Driven (Single Source of Truth)
+// 
+// Architecture: State-Driven (NOT Command-Driven)
 // 
 // Data Flow:
-//   Host/Remote → Firebase /commands → useCommandExecutor → Local State → Player
+//   Host writes state to Firebase → TV subscribes (real-time) → TV mirrors state
 //
-// Key Design Principles:
-// 1. TV is the AUTHORITATIVE source for player state (it writes /state, never reads it)
-// 2. Only useCommandExecutor controls the player (no fighting loops)
-// 3. useEffects are "reactive" - they respond ONCE per state change (not polling)
-// 4. Extensible for Chromecast: Cast Context kept for heartbeat/session management
+// Design Principles:
+// 1. NO commands, NO executor - just state synchronization
+// 2. Firebase SDK real-time listener (not REST polling)
+// 3. Simple useEffects that respond to state changes
+// 4. TV is a "dumb" player - it just does what the state says
 // ========================================
 
 interface QueueVideo {
@@ -35,7 +32,7 @@ interface QueueVideo {
     key: number;
 }
 
-interface RoomData {
+interface RoomState {
     queue: QueueVideo[];
     currentIndex: number;
     currentVideo: QueueVideo | null;
@@ -53,7 +50,7 @@ const TVPage = () => {
 
     // --- Core State ---
     const [roomCode, setRoomCode] = useState<string>('');
-    const [roomData, setRoomData] = useState<RoomData>({
+    const [roomState, setRoomState] = useState<RoomState>({
         queue: [],
         currentIndex: 0,
         currentVideo: null,
@@ -63,37 +60,28 @@ const TVPage = () => {
     const [player, setPlayer] = useState<YouTubePlayer | null>(null);
     const [baseUrl, setBaseUrl] = useState<string>('');
     const [needsInteraction, setNeedsInteraction] = useState(false);
-    const [isLoadingVideo, setIsLoadingVideo] = useState(false);
-
-    // Derived state for compatibility with useCommandExecutor
-    const castState: CastState = {
-        queue: roomData.queue,
-        currentIndex: roomData.currentIndex,
-        currentVideo: roomData.currentVideo,
-        controls: roomData.controls
-    };
 
     // =============================================
-    // INITIALIZATION
+    // 1. INITIALIZATION
     // =============================================
     useEffect(() => {
         if (typeof window !== 'undefined') {
             setBaseUrl(window.location.origin);
         }
 
-        // Anonymous Auth (required for Firebase writes)
-        const loginAnonymously = async () => {
+        // Anonymous Auth
+        const login = async () => {
             try {
                 if (!auth.currentUser) await signInAnonymously(auth);
-                console.log('✅ TV signed in anonymously');
+                console.log('✅ TV: Signed in');
                 setIsAuthReady(true);
             } catch (error) {
-                console.error('❌ Anonymous sign-in failed:', error);
+                console.error('❌ TV: Auth failed:', error);
             }
         };
-        loginAnonymously();
+        login();
 
-        // Room Code (from URL or generate new)
+        // Room Code
         const urlParams = new URLSearchParams(window.location.search);
         const codeParam = urlParams.get('room');
         if (codeParam) {
@@ -105,61 +93,171 @@ const TVPage = () => {
     }, []);
 
     // =============================================
-    // ROOM CREATION (One-time, not polling)
+    // 2. FIREBASE REAL-TIME SUBSCRIPTION
     // =============================================
     useEffect(() => {
         if (!roomCode || !realtimeDb || !isAuthReady) return;
 
-        const dbURL = realtimeDb.app.options.databaseURL;
+        console.log('📡 TV: Subscribing to room:', roomCode);
 
-        const initializeRoom = async () => {
+        // Create room if not exists
+        const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
+        const stateRef = ref(realtimeDb, `rooms/${roomCode}/state`);
+
+        // One-time room creation check
+        const initRoom = async () => {
+            const dbURL = realtimeDb.app.options.databaseURL;
             try {
-                const response = await fetch(`${dbURL}/rooms/${roomCode}.json`);
-                const existingData = await response.json();
-
-                if (!existingData) {
-                    console.log('✨ Creating new room:', roomCode);
-                    await fetch(`${dbURL}/rooms/${roomCode}.json`, {
-                        method: 'PUT',
-                        body: JSON.stringify({
-                            hostId: auth.currentUser?.uid || 'tv',
-                            isHost: true,
-                            state: roomData,
-                            createdAt: Date.now(),
-                            lastConnected: Date.now()
-                        })
+                const res = await fetch(`${dbURL}/rooms/${roomCode}.json`);
+                const data = await res.json();
+                if (!data) {
+                    console.log('✨ TV: Creating room');
+                    await set(roomRef, {
+                        hostId: auth.currentUser?.uid || 'tv',
+                        createdAt: Date.now(),
+                        state: roomState
                     });
-                } else {
-                    console.log('📺 Room exists, joining:', roomCode);
-                    // If room exists, load initial state
-                    if (existingData.state) {
-                        setRoomData(existingData.state);
-                    }
                 }
             } catch (e) {
-                console.error('Room init error', e);
+                console.error('Room init error:', e);
             }
         };
-        initializeRoom();
+        initRoom();
+
+        // Real-time listener (THE ONLY WAY TV GETS STATE)
+        const unsubscribe = onValue(stateRef, (snapshot) => {
+            const state = snapshot.val();
+            if (state) {
+                console.log('📥 TV: State received', {
+                    video: state.currentVideo?.title,
+                    isPlaying: state.controls?.isPlaying,
+                    queueLen: state.queue?.length
+                });
+                setRoomState(state);
+            }
+        });
+
+        return () => {
+            console.log('🛑 TV: Unsubscribing');
+            unsubscribe();
+        };
     }, [roomCode, isAuthReady]);
 
     // =============================================
-    // GOOGLE CAST CONTEXT (Heartbeat for Chromecast)
+    // 3. PLAYER CONTROL: Video Loading
+    // =============================================
+    const lastVideoIdRef = useRef<string | null>(null);
+
+    useEffect(() => {
+        if (!player || !roomState.currentVideo) return;
+
+        const newVideoId = roomState.currentVideo.videoId;
+        if (lastVideoIdRef.current === newVideoId) return;
+
+        console.log('📺 TV: Loading video:', roomState.currentVideo.title);
+        lastVideoIdRef.current = newVideoId;
+        player.loadVideoById(newVideoId);
+    }, [player, roomState.currentVideo?.videoId]);
+
+    // =============================================
+    // 4. PLAYER CONTROL: Play/Pause
     // =============================================
     useEffect(() => {
-        // Initialize Cast Context to keep session alive & support future Chromecast features
+        if (!player || !roomState.currentVideo) return;
+
+        const targetPlaying = roomState.controls.isPlaying;
+
+        const sync = async () => {
+            try {
+                const state = await player.getPlayerState();
+                // 1 = playing, 2 = paused
+                if (targetPlaying && state !== 1) {
+                    console.log('▶️ TV: Playing');
+                    player.playVideo();
+                } else if (!targetPlaying && state === 1) {
+                    console.log('⏸️ TV: Pausing');
+                    player.pauseVideo();
+                }
+            } catch (e) { /* Player not ready */ }
+        };
+        sync();
+    }, [player, roomState.controls.isPlaying, roomState.currentVideo?.videoId]);
+
+    // =============================================
+    // 5. PLAYER CONTROL: Mute/Unmute
+    // =============================================
+    useEffect(() => {
+        if (!player) return;
+
+        const targetMuted = roomState.controls.isMuted;
+
+        const sync = async () => {
+            try {
+                if (targetMuted) {
+                    player.mute();
+                    console.log('🔇 TV: Muted');
+                } else {
+                    player.unMute();
+                    // Check if browser blocked unmute
+                    setTimeout(async () => {
+                        try {
+                            const isMuted = await player.isMuted();
+                            setNeedsInteraction(isMuted);
+                        } catch (e) { /* ignore */ }
+                    }, 300);
+                    console.log('🔊 TV: Unmuted');
+                }
+            } catch (e) { /* Player not ready */ }
+        };
+        sync();
+    }, [player, roomState.controls.isMuted]);
+
+    // =============================================
+    // 6. PLAYER CONTROL: Volume
+    // =============================================
+    useEffect(() => {
+        if (!player) return;
+        const vol = roomState.controls.volume ?? 100;
+        try {
+            player.setVolume(vol);
+        } catch (e) { /* ignore */ }
+    }, [player, roomState.controls.volume]);
+
+    // =============================================
+    // 7. AUTO-NEXT (When video ends)
+    // =============================================
+    const handleVideoEnd = async () => {
+        const nextIndex = roomState.currentIndex + 1;
+        if (nextIndex < roomState.queue.length) {
+            const nextVideo = roomState.queue[nextIndex];
+            const newState = {
+                ...roomState,
+                currentIndex: nextIndex,
+                currentVideo: nextVideo,
+                controls: { ...roomState.controls, isPlaying: true }
+            };
+
+            // Write to Firebase (Host will see it too)
+            const stateRef = ref(realtimeDb, `rooms/${roomCode}/state`);
+            await set(stateRef, newState);
+            console.log('⏭️ TV: Auto-next:', nextVideo.title);
+        }
+    };
+
+    // =============================================
+    // 8. CAST CONTEXT (For real Chromecast - keep for future)
+    // =============================================
+    useEffect(() => {
         const initCast = () => {
             const cast = (window as any).cast;
-            if (cast && cast.framework) {
-                const context = cast.framework.CastReceiverContext.getInstance();
-                const options = new cast.framework.CastReceiverOptions();
-                options.disableIdleTimeout = true;
+            if (cast?.framework) {
                 try {
-                    context.start(options);
-                    console.log('✅ Cast Receiver Context Started');
-                } catch (e) {
-                    console.warn('Cast start failed (may already be started)', e);
-                }
+                    const ctx = cast.framework.CastReceiverContext.getInstance();
+                    const opts = new cast.framework.CastReceiverOptions();
+                    opts.disableIdleTimeout = true;
+                    ctx.start(opts);
+                    console.log('✅ TV: Cast Context started');
+                } catch (e) { /* Already started */ }
             }
         };
 
@@ -173,165 +271,16 @@ const TVPage = () => {
     }, []);
 
     // =============================================
-    // COMMAND EXECUTOR (THE SINGLE CONTROLLER)
-    // =============================================
-    // This hook:
-    // 1. Polls Firebase /commands every 1s
-    // 2. Executes commands directly on player
-    // 3. Updates local roomData via callback
-    // 4. Writes new state to Firebase /state
-    useCommandExecutor({
-        roomCode,
-        playerRef: player,
-        currentState: castState,
-        onStateChange: (newState) => {
-            console.log('⚡ Command Executed → State Updated:', Object.keys(newState));
-            setRoomData(prev => ({ ...prev, ...newState }));
-        }
-    });
-
-    // =============================================
-    // REACTIVE PLAYER SYNC (Monitor-Style)
-    // =============================================
-    // These useEffects ONLY run when state CHANGES (not polling!)
-    // They serve as a backup/correction layer, not primary control.
-
-    // Play/Pause Sync
-    useEffect(() => {
-        if (!player || isLoadingVideo) return;
-        const { isPlaying } = roomData.controls;
-
-        const syncPlayPause = async () => {
-            try {
-                const state = await player.getPlayerState();
-                // 1 = Playing, 2 = Paused
-                if (isPlaying && state !== 1 && state !== 3) {
-                    console.log('▶️ Sync: Playing video');
-                    player.playVideo();
-                } else if (!isPlaying && state === 1) {
-                    console.log('⏸️ Sync: Pausing video');
-                    player.pauseVideo();
-                }
-            } catch (e) { /* Player not ready */ }
-        };
-        syncPlayPause();
-    }, [player, roomData.controls.isPlaying, isLoadingVideo]);
-
-    // Mute Sync
-    useEffect(() => {
-        if (!player) return;
-        const { isMuted } = roomData.controls;
-
-        const syncMute = async () => {
-            try {
-                if (isMuted) {
-                    await player.mute();
-                    console.log('🔇 Sync: Muted');
-                } else {
-                    await player.unMute();
-                    // Check if browser blocked unmute
-                    setTimeout(async () => {
-                        try {
-                            if (await player.isMuted()) {
-                                setNeedsInteraction(true);
-                            } else {
-                                setNeedsInteraction(false);
-                            }
-                        } catch (e) { /* ignore */ }
-                    }, 300);
-                    console.log('🔊 Sync: Unmuted');
-                }
-            } catch (e) { /* Player not ready */ }
-        };
-        syncMute();
-    }, [player, roomData.controls.isMuted]);
-
-    // Volume Sync
-    useEffect(() => {
-        if (!player) return;
-        const targetVol = roomData.controls.volume ?? 100;
-
-        const syncVolume = async () => {
-            try {
-                await player.setVolume(targetVol);
-            } catch (e) { /* ignore */ }
-        };
-        syncVolume();
-    }, [player, roomData.controls.volume]);
-
-    // =============================================
-    // VIDEO LOADING (Separate from Play/Pause)
-    // =============================================
-    const lastVideoIdRef = useRef<string | null>(null);
-    useEffect(() => {
-        if (!player || !roomData.currentVideo) return;
-        if (lastVideoIdRef.current === roomData.currentVideo.videoId) return;
-
-        console.log('📺 Loading new video:', roomData.currentVideo.title);
-        setIsLoadingVideo(true);
-        lastVideoIdRef.current = roomData.currentVideo.videoId;
-
-        // Load and auto-play
-        player.loadVideoById(roomData.currentVideo.videoId);
-
-        // Give player time to load, then ensure playback
-        const ensurePlayback = async () => {
-            for (let i = 0; i < 5; i++) {
-                await new Promise(resolve => setTimeout(resolve, 300 * (i + 1)));
-                try {
-                    const state = await player.getPlayerState();
-                    if (state !== 1) {
-                        console.log(`⚡ Force play attempt ${i + 1}/5`);
-                        await player.playVideo();
-                    } else {
-                        console.log('✅ Video is playing!');
-                        break;
-                    }
-                } catch (e) {
-                    try { await player.playVideo(); } catch (e2) { /* ignore */ }
-                }
-            }
-            setIsLoadingVideo(false);
-        };
-        ensurePlayback();
-    }, [player, roomData.currentVideo?.videoId]);
-
-    // =============================================
-    // AUTO-NEXT (When video ends)
-    // =============================================
-    const handleVideoEnd = async () => {
-        const nextIndex = roomData.currentIndex + 1;
-        if (nextIndex < roomData.queue.length) {
-            const nextVideo = roomData.queue[nextIndex];
-            const newState = {
-                ...roomData,
-                currentIndex: nextIndex,
-                currentVideo: nextVideo,
-                controls: { ...roomData.controls, isPlaying: true }
-            };
-            setRoomData(newState);
-
-            // Sync to Firebase
-            const dbURL = realtimeDb.app.options.databaseURL;
-            fetch(`${dbURL}/rooms/${roomCode}/state.json`, {
-                method: 'PUT',
-                body: JSON.stringify(newState)
-            });
-            console.log('⏭️ Auto-next:', nextVideo.title);
-        }
-    };
-
-    // =============================================
     // RENDER
     // =============================================
     const qrCodeUrl = baseUrl ? `${baseUrl}/?castRoom=${roomCode}` : '';
 
     if (!mounted) return <div className="bg-black w-screen h-screen" />;
 
-    // IDLE SCREEN (No video playing)
-    if (!roomData.currentVideo) {
+    // IDLE SCREEN
+    if (!roomState.currentVideo) {
         return (
-            <div className="relative h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white cursor-pointer overflow-hidden font-sans">
+            <div className="relative h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white overflow-hidden font-sans">
                 <div className="absolute inset-0 opacity-5">
                     <div className="absolute top-0 left-0 w-96 h-96 bg-primary rounded-full blur-3xl"></div>
                     <div className="absolute bottom-0 right-0 w-96 h-96 bg-accent rounded-full blur-3xl"></div>
@@ -409,22 +358,20 @@ const TVPage = () => {
         <div className="relative w-screen h-screen bg-black overflow-hidden font-sans text-white">
             <div className="absolute inset-0">
                 <YouTube
-                    videoId={roomData.currentVideo.videoId}
+                    videoId={roomState.currentVideo.videoId}
                     opts={playerOpts}
                     className="w-full h-full pointer-events-none"
                     onReady={(e) => {
-                        console.log('✅ YouTube Player Ready');
+                        console.log('✅ TV: YouTube ready');
                         setPlayer(e.target);
-                        // Initial unmute attempt
                         e.target.unMute();
                         e.target.setVolume(100);
                     }}
                     onStateChange={(e) => {
-                        if (e.data === 0) handleVideoEnd(); // ENDED
+                        if (e.data === 0) handleVideoEnd();
                     }}
                     onError={(e) => {
                         console.error('YouTube Error:', e.data);
-                        // Auto-skip on error
                         handleVideoEnd();
                     }}
                 />
@@ -439,7 +386,6 @@ const TVPage = () => {
                             player.unMute();
                             player.setVolume(100);
                             setNeedsInteraction(false);
-                            setRoomData(prev => ({ ...prev, controls: { ...prev.controls, isMuted: false } }));
                         }
                     }}
                 >
@@ -451,10 +397,10 @@ const TVPage = () => {
             )}
 
             <UnifiedPlayerInterface
-                videoId={roomData.currentVideo.videoId}
-                queue={roomData.queue}
-                isPlaying={roomData.controls.isPlaying}
-                isMuted={roomData.controls.isMuted}
+                videoId={roomState.currentVideo.videoId}
+                queue={roomState.queue}
+                isPlaying={roomState.controls.isPlaying}
+                isMuted={roomState.controls.isMuted}
                 onPlayPause={() => { }}
                 onNext={() => { }}
                 onPrevious={() => { }}
