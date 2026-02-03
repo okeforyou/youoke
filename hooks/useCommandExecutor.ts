@@ -90,7 +90,7 @@ export function useCommandExecutor({
 
         switch (command.type) {
           case 'PLAY_NOW': {
-            ensureAudio();
+            // ensureAudio(); // Handled by receiver loop
             const { video } = command.payload;
             const existingIndex = state.queue.findIndex(
               (v) => v.videoId === video.videoId
@@ -137,26 +137,22 @@ export function useCommandExecutor({
           }
 
           case 'PLAY':
-            ensureAudio();
-            if (player) {
-              await player.playVideo();
-            }
+            // ensureAudio(); // Moved to state reactor in TV/Monitor
+            // if (player) await player.playVideo(); // REMOVED: State-driven
             newState = {
               controls: { ...state.controls, isPlaying: true },
             };
             break;
 
           case 'PAUSE':
-            if (player) {
-              await player.pauseVideo();
-            }
+            // if (player) await player.pauseVideo(); // REMOVED: State-driven
             newState = {
               controls: { ...state.controls, isPlaying: false },
             };
             break;
 
           case 'NEXT': {
-            ensureAudio();
+            // ensureAudio();
             const nextIndex = state.currentIndex + 1;
             if (nextIndex < state.queue.length) {
               newState = {
@@ -193,18 +189,14 @@ export function useCommandExecutor({
           }
 
           case 'MUTE':
-            if (player) {
-              await player.mute();
-            }
+            // if (player) await player.mute(); // REMOVED: State-driven
             newState = {
               controls: { ...state.controls, isMuted: true },
             };
             break;
 
           case 'UNMUTE':
-            if (player) {
-              await player.unMute();
-            }
+            // if (player) await player.unMute(); // REMOVED: State-driven
             newState = {
               controls: { ...state.controls, isMuted: false },
             };
@@ -212,13 +204,7 @@ export function useCommandExecutor({
 
           case 'TOGGLE_MUTE': {
             const newMuted = !state.controls.isMuted;
-            if (player) {
-              if (newMuted) {
-                await player.mute();
-              } else {
-                await player.unMute();
-              }
-            }
+            // if (player) ... // REMOVED: State-driven
             newState = {
               controls: { ...state.controls, isMuted: newMuted },
             };
@@ -227,12 +213,7 @@ export function useCommandExecutor({
 
           case 'SET_VOLUME': {
             const { volume } = command.payload;
-            if (player) {
-              await player.setVolume(volume);
-              if (volume > 0) {
-                await player.unMute();
-              }
-            }
+            // if (player) await player.setVolume(volume); // REMOVED: State-driven
             newState = {
               controls: {
                 ...state.controls,
