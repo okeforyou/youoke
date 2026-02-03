@@ -5,10 +5,11 @@ import {
     PlayIcon,
     PauseIcon,
     ForwardIcon,
+    BackwardIcon,
     SpeakerWaveIcon,
     SpeakerXMarkIcon,
-    BackwardIcon,
-    XMarkIcon
+    XMarkIcon,
+    TvIcon
 } from '@heroicons/react/24/solid';
 
 interface HostControllerProps {
@@ -37,7 +38,7 @@ export const HostController: React.FC<HostControllerProps> = ({
 
     const videoId = state.currentVideo?.videoId || '';
     const thumbnailUrl = videoId
-        ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+        ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`
         : '';
 
     useEffect(() => {
@@ -47,100 +48,89 @@ export const HostController: React.FC<HostControllerProps> = ({
     }, [state.controls.volume]);
 
     return (
-        <div className="w-full h-full bg-base-200 flex flex-col">
+        <div className="flex flex-col h-full bg-base-100 text-base-content relative">
 
-            {/* Top: Cancel button */}
-            <div className="flex justify-end p-3">
+            {/* 1. Header: Room Info & Disconnect */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-base-200">
+                <div className="flex items-center gap-2">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                        <TvIcon className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                        <div className="text-xs opacity-60">ห้องหมายเลข</div>
+                        <div className="font-bold text-lg leading-none">{roomCode}</div>
+                    </div>
+                </div>
                 <button
                     onClick={() => setIsDisconnectModalOpen(true)}
-                    className="text-base-content/50 hover:text-error text-sm flex items-center gap-1"
+                    className="btn btn-ghost btn-sm text-error gap-1"
                 >
                     <XMarkIcon className="w-4 h-4" />
-                    ยกเลิก
+                    <span className="text-xs">ออก</span>
                 </button>
             </div>
 
-            {/* Main Content */}
-            <div className="flex-1 flex flex-col items-center justify-center px-6 pb-4">
+            {/* 2. Main Content: Thumbnail & Title */}
+            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-6">
 
-                {/* Thumbnail Card */}
-                <div className="relative mb-6">
+                {/* Thumbnail Image */}
+                <div className="relative w-full aspect-video max-w-xs bg-base-200 rounded-xl overflow-hidden shadow-lg">
                     {thumbnailUrl ? (
-                        <div className="w-40 h-40 sm:w-48 sm:h-48 rounded-2xl overflow-hidden shadow-xl bg-base-300">
-                            <img
-                                src={thumbnailUrl}
-                                alt="cover"
-                                className="w-full h-full object-cover"
-                            />
-                        </div>
+                        <img
+                            src={thumbnailUrl}
+                            alt="Video Thumbnail"
+                            className="w-full h-full object-cover"
+                        />
                     ) : (
-                        <div className="w-40 h-40 sm:w-48 sm:h-48 rounded-2xl bg-base-300 flex items-center justify-center">
-                            <span className="text-base-content/30 text-4xl">♪</span>
-                        </div>
-                    )}
-
-                    {/* Playing indicator */}
-                    {state.controls.isPlaying && (
-                        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-success text-success-content text-xs px-3 py-1 rounded-full">
-                            กำลังเล่น
+                        <div className="flex items-center justify-center h-full text-base-content/20">
+                            <PlayIcon className="w-16 h-16" />
                         </div>
                     )}
                 </div>
 
-                {/* Room Info */}
-                <div className="text-center mb-4">
-                    <p className="text-base-content/50 text-sm mb-1">เชื่อมต่อหน้าจอที่ 2</p>
-                    <p className="text-base-content text-2xl font-bold">ห้อง {roomCode}</p>
-                </div>
-
-                {/* Song Title */}
-                {currentVideoTitle && (
-                    <p className="text-base-content/60 text-sm text-center line-clamp-2 max-w-xs mb-4">
-                        {currentVideoTitle}
+                {/* Song Info */}
+                <div>
+                    <h3 className="font-bold text-lg line-clamp-2 px-2">
+                        {currentVideoTitle || 'พร้อมเล่นเพลง'}
+                    </h3>
+                    <p className="text-sm opacity-60 mt-1">
+                        {state.controls.isPlaying ? 'กำลังเล่นบน TV' : 'หยุดชั่วคราว'}
                     </p>
-                )}
+                </div>
             </div>
 
-            {/* Control Deck */}
-            <div className="bg-base-100 p-4 sm:p-6 rounded-t-3xl shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
-                {/* Main Controls */}
-                <div className="flex items-center justify-center gap-6 sm:gap-8 mb-4">
-                    <button
-                        onClick={previous}
-                        className="btn btn-circle btn-ghost btn-lg"
-                    >
-                        <BackwardIcon className="w-7 h-7" />
+            {/* 3. Footer: Controls */}
+            <div className="border-t border-base-200 bg-base-50 p-4">
+
+                {/* Playback Controls */}
+                <div className="flex items-center justify-center gap-6 mb-4">
+                    <button onClick={previous} className="btn btn-circle btn-ghost">
+                        <BackwardIcon className="w-6 h-6" />
                     </button>
 
                     <button
                         onClick={state.controls.isPlaying ? pause : play}
-                        className="btn btn-circle btn-primary btn-lg w-16 h-16 sm:w-20 sm:h-20"
+                        className="btn btn-circle btn-primary btn-lg shadow-md"
                     >
                         {state.controls.isPlaying ? (
-                            <PauseIcon className="w-8 h-8 sm:w-10 sm:h-10" />
+                            <PauseIcon className="w-8 h-8" />
                         ) : (
-                            <PlayIcon className="w-8 h-8 sm:w-10 sm:h-10 ml-1" />
+                            <PlayIcon className="w-8 h-8 ml-1" />
                         )}
                     </button>
 
-                    <button
-                        onClick={next}
-                        className="btn btn-circle btn-ghost btn-lg"
-                    >
-                        <ForwardIcon className="w-7 h-7" />
+                    <button onClick={next} className="btn btn-circle btn-ghost">
+                        <ForwardIcon className="w-6 h-6" />
                     </button>
                 </div>
 
-                {/* Volume */}
-                <div className="flex items-center gap-3 max-w-sm mx-auto">
-                    <button
-                        onClick={toggleMute}
-                        className="btn btn-circle btn-ghost btn-sm"
-                    >
+                {/* Volume Control */}
+                <div className="flex items-center gap-3 px-4 max-w-xs mx-auto">
+                    <button onClick={toggleMute} className="btn btn-circle btn-ghost btn-sm">
                         {state.controls.isMuted ? (
                             <SpeakerXMarkIcon className="w-5 h-5 text-error" />
                         ) : (
-                            <SpeakerWaveIcon className="w-5 h-5" />
+                            <SpeakerWaveIcon className="w-5 h-5 opacity-60" />
                         )}
                     </button>
                     <input
@@ -155,11 +145,9 @@ export const HostController: React.FC<HostControllerProps> = ({
                             setVolume(val);
                         }}
                     />
-                    <span className="text-base-content/50 text-xs w-8 text-right">{localVolume}%</span>
                 </div>
             </div>
 
-            {/* Disconnect Modal */}
             <DisconnectModal
                 isOpen={isDisconnectModalOpen}
                 onClose={() => setIsDisconnectModalOpen(false)}
