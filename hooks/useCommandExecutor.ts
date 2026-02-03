@@ -16,6 +16,7 @@ interface CommandExecutorProps {
   currentState: CastState;
   onStateChange: (newState: Partial<CastState>) => void;
   onStopSession?: () => void;
+  isReady?: boolean;
 }
 
 export function useCommandExecutor({
@@ -24,6 +25,7 @@ export function useCommandExecutor({
   currentState,
   onStateChange,
   onStopSession,
+  isReady = true, // Default to true for backward compatibility
 }: CommandExecutorProps) {
 
   // Use Ref to access latest state without triggering re-renders/re-subscriptions
@@ -366,7 +368,7 @@ export function useCommandExecutor({
 
   // Listen to new commands using REST Polling
   useEffect(() => {
-    if (!roomCode || !realtimeDb) return;
+    if (!roomCode || !realtimeDb || !isReady) return;
 
     const dbURL = realtimeDb.app.options.databaseURL;
     const processedCommandIds = new Set<string>();

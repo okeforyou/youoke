@@ -17,6 +17,7 @@ export const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
     const [isConnected, setIsConnected] = useState(false);
     const [mode, setMode] = useState<'CAST' | 'WEB'>('WEB');
     const [debugMsg, setDebugMsg] = useState('');
+    const [isReady, setIsReady] = useState(false);
 
     // Check if we are in a Cast Environment
     const isCastEnvironment = useRef(false);
@@ -83,7 +84,6 @@ export const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
     // --- DETECT MODE (Fallback for Web) ---
     useEffect(() => {
         // We ALWAYS generate a room code now, to allow Hybrid Mode (Phone joins Cast session via Web/Firebase)
-        // In the future, we might want to sync this with the Cast Session ID, but random is fine for now.
         if (!roomCode) {
             const newCode = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
             setRoomCode(newCode);
@@ -118,6 +118,7 @@ export const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
         if (!roomCode || !realtimeDb) return;
 
         let cleanup: Unsubscribe | undefined;
+        let mounted = true;
 
         const setupFirebase = async () => {
             // 0. Ensure Auth first!
@@ -132,12 +133,14 @@ export const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
                 }
             }
 
+            if (!mounted) return;
+
             const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
 
             // 1. INITIALIZE ROOM (Create if not exists)
             try {
                 const snapshot = await get(roomRef);
-                if (!snapshot.exists()) {
+                if (mounted && !snapshot.exists()) {
                     console.log('✨ Creating new room in Firebase:', roomCode);
                     // Set initial state
                     await set(roomRef, {
@@ -159,6 +162,8 @@ export const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
                 console.error("❌ Room Creation Error (Permission/Network):", e);
             }
 
+            if (!mounted) return;
+
             // 2. LISTEN FOR STATE UPDATES FROM FIREBASE (Crucial for remote control)
             const unsubscribe = onValue(roomRef, (snapshot: any) => {
                 const data = snapshot.val();
@@ -174,27 +179,27 @@ export const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
             });
 
             cleanup = unsubscribe;
+            setIsReady(true);
         };
 
         setupFirebase();
 
         return () => {
+            mounted = false;
             if (cleanup) cleanup();
+            setIsReady(false);
         };
-    }, [roomCode]); // Removed mode/state dependencies to avoid re-subscription loops
-
-
+    }, [roomCode]);
 
     // --- COMMAND EXECUTOR ---
     // Enable for BOTH Web and Cast modes to support QR Code guests
     useCommandExecutor({
         roomCode: roomCode || '',
         playerRef,
+        isReady, // Pass isReady to control when to start polling
         currentState: state,
         onStateChange: async (newState) => {
             console.log('🔄 Command Executed -> Updating Firebase & Local:', newState);
-            // OPTIMISTIC UPDATE: Update local state immediately for instant feedback
-            // and to ensure subsequent commands in the loop see the updated state.
             setState(prev => ({ ...prev, ...newState }));
         },
         onStopSession: () => {
@@ -205,8 +210,7 @@ export const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
                 currentVideo: null,
                 controls: { isPlaying: false, isMuted: true },
             });
-            setRoomCode(''); // Optional: clear room code to force re-join or idle
-            // window.location.reload(); // Hard reset if needed, but state clear is better
+            setRoomCode('');
         }
     });
 
