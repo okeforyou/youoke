@@ -155,7 +155,7 @@ const Monitor = () => {
           try {
             // Get auth token from current user
             const user = auth.currentUser;
-            const token = user ? await user.getIdToken() : null;
+            const token = (user && typeof user.getIdToken === 'function') ? await user.getIdToken() : null;
 
             const restURL = token
               ? `${dbURL}/rooms/${roomCode}.json?auth=${token}`
@@ -454,7 +454,7 @@ const Monitor = () => {
 
             // Update state in Firebase
             const user = auth.currentUser;
-            const token = user ? await user.getIdToken() : null;
+            const token = (user && typeof user.getIdToken === 'function') ? await user.getIdToken() : null;
             const stateURL = token
               ? `${dbURL}/rooms/${roomCode}/state.json?auth=${token}`
               : `${dbURL}/rooms/${roomCode}/state.json`;
@@ -739,7 +739,7 @@ const Monitor = () => {
         try {
           const dbURL = realtimeDb.app.options.databaseURL;
           const user = auth.currentUser;
-          const token = user ? await user.getIdToken() : null;
+          const token = (user && typeof user.getIdToken === 'function') ? await user.getIdToken() : null;
 
           const stateURL = token
             ? `${dbURL}/rooms/${roomCode}/state.json?auth=${token}`
