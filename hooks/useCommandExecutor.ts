@@ -366,12 +366,18 @@ export function useCommandExecutor({
     [roomCode] // Only depend on roomCode (and refs, which are stable)
   );
 
+  // Use Ref to track processed commands across re-renders/reconnections
+  const processedCommandIdsRef = useRef<Set<string>>(new Set());
+
   // Listen to new commands using REST Polling
   useEffect(() => {
     if (!roomCode || !realtimeDb || !isReady) return;
 
     const dbURL = realtimeDb.app.options.databaseURL;
-    const processedCommandIds = new Set<string>();
+
+    // Clear processed IDs if room changes? Maybe not, to be safe.
+    // Actually if room changes we should probably clear it.
+    // But for stability during same-room reconnects, we keep it.
 
     console.log('👂 Starting REST Command Polling for room:', roomCode);
 
@@ -386,13 +392,13 @@ export function useCommandExecutor({
         // Process pending commands
         for (const [commandId, envelope] of Object.entries(commands)) {
           // Skip if already processed or not pending
-          if (processedCommandIds.has(commandId) || envelope.status !== 'pending') {
+          if (processedCommandIdsRef.current.has(commandId) || envelope.status !== 'pending') {
             continue;
           }
 
           console.log('✨ New Pending Command found:', envelope.command.type, commandId);
-          processedCommandIds.add(commandId);
-          executeCommand(envelope);
+          processedCommandIdsRef.current.add(commandId);
+          await executeCommand(envelope);
         }
       } catch (error) {
         console.error('Command polling error:', error);
@@ -403,5 +409,5 @@ export function useCommandExecutor({
       console.log('🛑 Stopping Command Polling');
       clearInterval(pollInterval);
     };
-  }, [roomCode, executeCommand]);
+  }, [roomCode, executeCommand, isReady]);
 }
