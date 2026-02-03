@@ -146,6 +146,37 @@ const TVPage = () => {
         return () => clearInterval(pollInterval);
     }, [roomCode, isAuthReady]);
 
+    // --- GOOGLE CAST INITIALIZATION (Critical for Heartbeat) ---
+    useEffect(() => {
+        // We only initialize the Cast Context to keep the session alive.
+        // We do NOT use Message Bus (we use Firebase/REST for that).
+        const initCast = () => {
+            // @ts-ignore
+            const cast = window.cast;
+            if (cast && cast.framework) {
+                const context = cast.framework.CastReceiverContext.getInstance();
+                const options = new cast.framework.CastReceiverOptions();
+                options.disableIdleTimeout = true; // Prevent sleep
+                try {
+                    context.start(options);
+                    console.log('✅ Cast Receiver Context Started (Hybrid Mode)');
+                } catch (e) {
+                    console.warn('Cast start failed (maybe already started)', e);
+                }
+            }
+        };
+
+        // Retry until cast is available
+        const interval = setInterval(() => {
+            // @ts-ignore
+            if (window.cast) {
+                initCast();
+                clearInterval(interval);
+            }
+        }, 500);
+        return () => clearInterval(interval);
+    }, []);
+
     // --- COMMAND EXECUTOR (Direct Integration) ---
     // This is the "secret sauce" of Monitor - it handles commands directly.
     useCommandExecutor({
@@ -172,10 +203,19 @@ const TVPage = () => {
                 const playerState = await player.getPlayerState();
                 const targetIsPlaying = roomData.controls.isPlaying;
 
-                if (targetIsPlaying && playerState !== 1 && playerState !== 3) {
-                    player.playVideo();
-                } else if (!targetIsPlaying && playerState === 1) {
-                    player.pauseVideo();
+                // STUCK IN BUFFERING FIX:
+                // If we want to play, and it's buffering (3) or unstarted (-1) or cued (5), FORCE PLAY.
+                if (targetIsPlaying) {
+                    if (playerState !== 1 && playerState !== 3) {
+                        player.playVideo();
+                    } else if (playerState === 3) {
+                        // Double tap check for buffering lock
+                        player.playVideo();
+                    }
+                } else {
+                    if (playerState === 1) {
+                        player.pauseVideo();
+                    }
                 }
 
                 // 2. Mute (Unmute if needed)
@@ -286,6 +326,7 @@ const TVPage = () => {
         );
     }
 
+    // 2. PLAYER SCREEN
     const playerOpts: any = {
         width: '100%',
         height: '100%',
