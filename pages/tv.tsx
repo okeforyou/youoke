@@ -443,6 +443,7 @@ const TVPage = () => {
                     opts={playerOpts}
                     className="w-full h-full pointer-events-none"
                     onReady={(e) => {
+                        console.log('✅ YT Player onReady fired!', e.target);
                         setPlayer(e.target);
                         // Auto-unmute aggressive attempt
                         e.target.unMute();

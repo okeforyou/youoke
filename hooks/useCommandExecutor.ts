@@ -73,10 +73,10 @@ export function useCommandExecutor({
       const player = playerRefRef.current;
 
       try {
-        console.log('🎯 Executing command (REST):', command.type, command.payload);
-
         // Get Auth Token
         const user = auth.currentUser;
+        console.log('🎯 Executing command (REST):', command.type, command.payload, 'Player:', player ? 'Available ✅' : 'NULL ❌');
+
         const token = (user && typeof user.getIdToken === 'function') ? await user.getIdToken() : null;
         const authParam = token ? `?auth=${token}` : '';
 
