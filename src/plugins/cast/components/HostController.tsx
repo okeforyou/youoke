@@ -8,9 +8,7 @@ import {
     SpeakerWaveIcon,
     SpeakerXMarkIcon,
     BackwardIcon,
-    XMarkIcon,
-    TvIcon,
-    ComputerDesktopIcon
+    XMarkIcon
 } from '@heroicons/react/24/solid';
 
 interface HostControllerProps {
@@ -37,13 +35,11 @@ export const HostController: React.FC<HostControllerProps> = ({
     const [localVolume, setLocalVolume] = useState(state.controls.volume ?? 100);
     const [isDisconnectModalOpen, setIsDisconnectModalOpen] = useState(false);
 
-    // Get video thumbnail
     const videoId = state.currentVideo?.videoId || '';
     const thumbnailUrl = videoId
         ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
         : '';
 
-    // Sync volume
     useEffect(() => {
         if (state.controls.volume !== undefined) {
             setLocalVolume(state.controls.volume);
@@ -51,79 +47,84 @@ export const HostController: React.FC<HostControllerProps> = ({
     }, [state.controls.volume]);
 
     return (
-        <div className="w-full h-full relative overflow-hidden">
-            {/* Background: Video Thumbnail with HEAVY Dark Overlay */}
+        <div className="w-full h-full relative overflow-hidden bg-black">
+            {/* Background: Blurred Glass Effect */}
             {thumbnailUrl && (
-                <>
-                    <div
-                        className="absolute inset-0 bg-cover bg-center opacity-30"
-                        style={{ backgroundImage: `url(${thumbnailUrl})` }}
-                    />
-                    <div className="absolute inset-0 bg-black/85" />
-                </>
+                <div
+                    className="absolute inset-0 bg-cover bg-center blur-3xl opacity-40 scale-110"
+                    style={{ backgroundImage: `url(${thumbnailUrl})` }}
+                />
             )}
-
-            {/* Fallback Background */}
-            {!thumbnailUrl && (
-                <div className="absolute inset-0 bg-black" />
-            )}
+            <div className="absolute inset-0 bg-black/70" />
 
             {/* Content */}
             <div className="relative z-10 w-full h-full flex flex-col">
 
-                {/* Top Bar: Status + Disconnect */}
-                <div className="flex items-center justify-between p-4">
-                    {/* Connection Status */}
-                    <div className="flex items-center gap-2 bg-white/10 rounded-full px-4 py-2">
-                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                        <span className="text-white/70 text-sm">
-                            {isCasting ? 'เชื่อมต่อกับ TV' : 'โหมด 2 หน้าจอ'}
-                        </span>
-                        <span className="text-white font-medium">ห้อง {roomCode}</span>
-                    </div>
-
-                    {/* Disconnect Button */}
+                {/* Top: Disconnect Button Only */}
+                <div className="flex justify-end p-4">
                     <button
                         onClick={() => setIsDisconnectModalOpen(true)}
-                        className="flex items-center gap-2 bg-red-500/20 hover:bg-red-500/40 text-red-400 hover:text-red-300 px-3 py-2 rounded-full transition-all"
+                        className="flex items-center gap-2 text-white/50 hover:text-red-400 px-3 py-2 rounded-lg transition-all hover:bg-white/5"
                     >
-                        <XMarkIcon className="w-4 h-4" />
-                        <span className="text-sm">ตัดการเชื่อมต่อ</span>
+                        <XMarkIcon className="w-5 h-5" />
+                        <span className="text-sm">ยกเลิก</span>
                     </button>
                 </div>
 
-                {/* Center: Connected Device Display */}
+                {/* Center: Connection Status */}
                 <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
-                    {/* Device Icon */}
-                    <div className={`w-24 h-24 rounded-2xl flex items-center justify-center mb-6 ${state.controls.isPlaying
-                            ? 'bg-primary/20 border border-primary/50'
-                            : 'bg-white/5 border border-white/10'
-                        }`}>
-                        {isCasting ? (
-                            <TvIcon className={`w-12 h-12 ${state.controls.isPlaying ? 'text-primary' : 'text-white/40'}`} />
-                        ) : (
-                            <ComputerDesktopIcon className={`w-12 h-12 ${state.controls.isPlaying ? 'text-primary' : 'text-white/40'}`} />
-                        )}
+
+                    {/* Animated Rings */}
+                    <div className="relative mb-8">
+                        {/* Outer ring - pulsing */}
+                        <div className={`absolute inset-0 w-32 h-32 rounded-full ${state.controls.isPlaying
+                                ? 'bg-primary/20 animate-ping'
+                                : 'bg-white/5'
+                            }`} style={{ animationDuration: '2s' }} />
+
+                        {/* Middle ring */}
+                        <div className={`absolute inset-2 w-28 h-28 rounded-full border ${state.controls.isPlaying
+                                ? 'border-primary/40'
+                                : 'border-white/10'
+                            }`} />
+
+                        {/* Center circle with status */}
+                        <div className={`relative w-32 h-32 rounded-full flex items-center justify-center ${state.controls.isPlaying
+                                ? 'bg-primary/10 border-2 border-primary'
+                                : 'bg-white/5 border-2 border-white/20'
+                            }`}>
+                            <div className="text-center">
+                                <div className={`text-3xl font-bold ${state.controls.isPlaying ? 'text-primary' : 'text-white/40'
+                                    }`}>
+                                    {roomCode}
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Status */}
-                    <p className="text-white/50 text-sm mb-2">
-                        {state.controls.isPlaying ? 'กำลังเล่นบน' : 'หยุดชั่วคราว'}
-                    </p>
-                    <h3 className="text-white text-lg font-medium mb-4">
-                        {isCasting ? 'TV' : 'หน้าจอที่ 2'}
-                    </h3>
+                    {/* Connection Text */}
+                    <div className="space-y-2">
+                        <p className="text-white/40 text-sm">
+                            {state.controls.isPlaying ? 'กำลังเล่น' : 'หยุดชั่วคราว'}
+                        </p>
+                        <h3 className="text-white text-xl font-medium">
+                            เชื่อมต่อหน้าจอที่ 2
+                        </h3>
+                        <p className="text-white/30 text-sm">
+                            {isCasting ? 'TV Mode' : 'Dual Screen Mode'}
+                        </p>
+                    </div>
 
-                    {/* Song Title - Smaller */}
+                    {/* Song Title - Very subtle */}
                     {currentVideoTitle && (
-                        <p className="text-white/40 text-sm line-clamp-1 max-w-xs">
+                        <p className="text-white/20 text-xs mt-6 line-clamp-1 max-w-xs">
                             {currentVideoTitle}
                         </p>
                     )}
                 </div>
 
                 {/* Bottom: Control Deck */}
-                <div className="bg-white/5 p-4 sm:p-6 border-t border-white/10">
+                <div className="p-4 sm:p-6">
                     {/* Main Controls */}
                     <div className="flex items-center justify-center gap-6 sm:gap-8 mb-4">
                         <button
