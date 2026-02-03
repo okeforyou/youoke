@@ -52,7 +52,7 @@ export class PluginBoundary extends Component<Props, State> {
             if (process.env.NODE_ENV === 'development') {
                 return (
                     <div className="p-2 text-xs text-red-500 bg-red-50 border border-red-200 rounded">
-                        Plugin "{this.props.name}" Failed
+                        Plugin &quot;{this.props.name}&quot; Failed
                     </div>
                 );
             }
