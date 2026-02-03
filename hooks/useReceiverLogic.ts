@@ -107,9 +107,15 @@ export const useReceiverLogic = (playerRef: YouTubePlayer | null) => {
 
         try {
             console.log('📡 Broadcasting State to Senders:', payload);
-            castContextRef.current.sendCustomMessage(NAMESPACE, undefined, payload); // undefined = broadcast to all
+            // Defensive Check: Ensure we can actually send
+            const senderManager = castContextRef.current.getSenderManager ? castContextRef.current.getSenderManager() : null;
+            if (senderManager) {
+                castContextRef.current.sendCustomMessage(NAMESPACE, undefined, payload); // undefined = broadcast to all
+            } else {
+                console.warn('⚠️ Cannot broadcast: SenderManager not available (ignoring)');
+            }
         } catch (e) {
-            console.error('Broadcast Error:', e);
+            console.warn('⚠️ Broadcast Error (Ignored to keep app alive):', e);
         }
     }, [state, roomCode, mode]);
 
