@@ -104,8 +104,28 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
   useEffect(() => { currentStateRef.current = state; }, [state]);
 
   // Ref to track last user interaction to suppress sync (Prevent UI jumps)
-  // Matches logic from remote.tsx for stability
   const lastInteractionRef = useRef(0);
+
+  // Helper: Write state directly to Firebase (for TV real-time sync)
+  const writeState = async (newState: CastState) => {
+    if (!roomCode || !realtimeDb) return;
+    const dbURL = realtimeDb.app.options.databaseURL;
+    try {
+      const currentUser = auth.currentUser;
+      const token = currentUser ? await currentUser.getIdToken() : null;
+      const url = token
+        ? `${dbURL}/rooms/${roomCode}/state.json?auth=${token}`
+        : `${dbURL}/rooms/${roomCode}/state.json`;
+      await fetch(url, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newState),
+      });
+      console.log('📤 State written to Firebase');
+    } catch (e) {
+      console.error('❌ writeState failed:', e);
+    }
+  };
 
   // Listen to state changes using REST API polling
   useEffect(() => {
@@ -341,14 +361,17 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
     console.log('👋 Left room');
   };
 
-  // Queue Operations - Send Commands
+  // Queue Operations - Write directly to /state
   const setPlaylist = (playlist: QueueVideo[]) => {
     lastInteractionRef.current = Date.now();
-    setState(prev => ({ ...prev, queue: playlist })); // Optimistic
-    sendCommand(roomCode, {
-      type: 'SET_PLAYLIST',
-      payload: { playlist },
-    });
+    const newState: CastState = {
+      queue: playlist,
+      currentIndex: 0,
+      currentVideo: playlist[0] || null,
+      controls: { isPlaying: playlist.length > 0, isMuted: false },
+    };
+    setState(newState);
+    writeState(newState);
   };
 
   const addToQueue = (video: SearchResult | RecommendedVideo) => {
@@ -358,16 +381,14 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
       key: Date.now(),
       addedBy: userInfo || undefined,
     };
-    // Optimistic Update
-    setState(prev => ({
-      ...prev,
-      queue: [...prev.queue, queueVideo],
-      currentVideo: prev.queue.length === 0 ? queueVideo : prev.currentVideo
-    }));
-    sendCommand(roomCode, {
-      type: 'ADD_TO_QUEUE',
-      payload: { video: queueVideo },
-    });
+    const newState: CastState = {
+      ...currentStateRef.current,
+      queue: [...currentStateRef.current.queue, queueVideo],
+      currentVideo: currentStateRef.current.queue.length === 0 ? queueVideo : currentStateRef.current.currentVideo,
+      currentIndex: currentStateRef.current.queue.length === 0 ? 0 : currentStateRef.current.currentIndex,
+    };
+    setState(newState);
+    writeState(newState);
   };
 
   const playNow = (video: SearchResult | RecommendedVideo) => {
@@ -377,12 +398,16 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
       key: Date.now(),
       addedBy: userInfo || undefined,
     };
-    // Optimistic: This is harder to predict perfectly without duplicating reducer logic, 
-    // but we can at least suppress sync.
-    sendCommand(roomCode, {
-      type: 'PLAY_NOW',
-      payload: { video: queueVideo },
-    });
+    // Insert at front and play immediately
+    const newQueue = [queueVideo, ...currentStateRef.current.queue];
+    const newState: CastState = {
+      queue: newQueue,
+      currentIndex: 0,
+      currentVideo: queueVideo,
+      controls: { ...currentStateRef.current.controls, isPlaying: true },
+    };
+    setState(newState);
+    writeState(newState);
   };
 
   const playNext = (video: SearchResult | RecommendedVideo) => {
@@ -429,53 +454,93 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  // Player Controls - Send Commands (Optimistic Updates)
+  // Player Controls - Write directly to /state
   const play = () => {
     lastInteractionRef.current = Date.now();
-    setState(prev => ({ ...prev, controls: { ...prev.controls, isPlaying: true } }));
-    sendCommand(roomCode, { type: 'PLAY', payload: null });
+    const newState: CastState = {
+      ...currentStateRef.current,
+      controls: { ...currentStateRef.current.controls, isPlaying: true },
+    };
+    setState(newState);
+    writeState(newState);
   };
 
   const pause = () => {
     lastInteractionRef.current = Date.now();
-    setState(prev => ({ ...prev, controls: { ...prev.controls, isPlaying: false } }));
-    sendCommand(roomCode, { type: 'PAUSE', payload: null });
+    const newState: CastState = {
+      ...currentStateRef.current,
+      controls: { ...currentStateRef.current.controls, isPlaying: false },
+    };
+    setState(newState);
+    writeState(newState);
   };
 
   const next = () => {
     lastInteractionRef.current = Date.now();
-    // Optimistic next is risky without full logic, but suppression helps
-    sendCommand(roomCode, { type: 'NEXT', payload: null });
+    const curr = currentStateRef.current;
+    const nextIndex = curr.currentIndex + 1;
+    if (nextIndex < curr.queue.length) {
+      const newState: CastState = {
+        ...curr,
+        currentIndex: nextIndex,
+        currentVideo: curr.queue[nextIndex],
+        controls: { ...curr.controls, isPlaying: true },
+      };
+      setState(newState);
+      writeState(newState);
+    }
   };
 
   const previous = () => {
     lastInteractionRef.current = Date.now();
-    sendCommand(roomCode, { type: 'PREVIOUS', payload: null });
+    const curr = currentStateRef.current;
+    const prevIndex = curr.currentIndex - 1;
+    if (prevIndex >= 0) {
+      const newState: CastState = {
+        ...curr,
+        currentIndex: prevIndex,
+        currentVideo: curr.queue[prevIndex],
+        controls: { ...curr.controls, isPlaying: true },
+      };
+      setState(newState);
+      writeState(newState);
+    }
   };
 
   const skipTo = (index: number) => {
     lastInteractionRef.current = Date.now();
-    setState(prev => ({ ...prev, currentIndex: index, currentVideo: prev.queue[index] || null }));
-    sendCommand(roomCode, {
-      type: 'SKIP_TO',
-      payload: { index },
-    });
+    const curr = currentStateRef.current;
+    if (index >= 0 && index < curr.queue.length) {
+      const newState: CastState = {
+        ...curr,
+        currentIndex: index,
+        currentVideo: curr.queue[index],
+        controls: { ...curr.controls, isPlaying: true },
+      };
+      setState(newState);
+      writeState(newState);
+    }
   };
 
   const toggleMute = () => {
     lastInteractionRef.current = Date.now();
-    setState(prev => ({ ...prev, controls: { ...prev.controls, isMuted: !prev.controls.isMuted } }));
-    sendCommand(roomCode, { type: 'TOGGLE_MUTE', payload: null });
+    const curr = currentStateRef.current;
+    const newState: CastState = {
+      ...curr,
+      controls: { ...curr.controls, isMuted: !curr.controls.isMuted },
+    };
+    setState(newState);
+    writeState(newState);
   };
 
   const setMute = (muted: boolean) => {
     lastInteractionRef.current = Date.now();
-    setState(prev => ({ ...prev, controls: { ...prev.controls, isMuted: muted } }));
-    if (muted) {
-      sendCommand(roomCode, { type: 'MUTE', payload: null });
-    } else {
-      sendCommand(roomCode, { type: 'UNMUTE', payload: null });
-    }
+    const newState: CastState = {
+      ...currentStateRef.current,
+      controls: { ...currentStateRef.current.controls, isMuted: muted },
+    };
+    setState(newState);
+    writeState(newState);
   };
 
   const setVolume = (volume: number) => {
