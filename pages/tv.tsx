@@ -7,7 +7,7 @@ import { ref, onValue, set } from 'firebase/database';
 import { signInAnonymously } from 'firebase/auth';
 import { realtimeDb, auth } from '../firebase';
 import { QRCodeSVG } from 'qrcode.react';
-import { DevicePhoneMobileIcon, PlayIcon } from '@heroicons/react/24/outline';
+import { DevicePhoneMobileIcon } from '@heroicons/react/24/outline';
 import Script from 'next/script';
 
 // ========================================
@@ -605,19 +605,60 @@ export default function TVPage() {
                     </div>
                 )}
 
-                {/* Click to Play Overlay - Shows when remote wants to play but no user interaction yet */}
+                {/* Click to Start Overlay - Elegant minimal design */}
                 {needsInteraction && videoId && (
                     <div
-                        className="absolute inset-0 z-40 flex items-center justify-center bg-black/70 backdrop-blur-sm cursor-pointer"
+                        className="absolute inset-0 z-40 flex items-center justify-center cursor-pointer"
                         onClick={handleUserInteraction}
                     >
-                        <div className="text-center">
-                            <div className="w-32 h-32 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse border-4 border-primary">
-                                <PlayIcon className="w-16 h-16 text-white ml-2" />
+                        {/* Background with video thumbnail */}
+                        <div
+                            className="absolute inset-0 bg-cover bg-center"
+                            style={{
+                                backgroundImage: `url(https://img.youtube.com/vi/${videoId}/maxresdefault.jpg)`,
+                            }}
+                        />
+                        {/* Dark overlay */}
+                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+
+                        {/* Content */}
+                        <div className="relative z-10 text-center px-8">
+                            {/* Room Badge */}
+                            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md rounded-full px-6 py-2 mb-8 border border-white/20">
+                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                                <span className="text-white/70 text-sm">ห้อง</span>
+                                <span className="text-white font-bold text-lg">{roomCode}</span>
                             </div>
-                            <p className="text-2xl font-bold text-white mb-2">แตะเพื่อเล่น</p>
-                            <p className="text-white/60">Tap anywhere to start playback</p>
+
+                            {/* Song Info */}
+                            <h2 className="text-3xl md:text-4xl font-bold text-white mb-3 line-clamp-2">
+                                {remoteState?.currentVideo?.title || 'กำลังโหลด...'}
+                            </h2>
+                            <p className="text-white/60 text-lg mb-10">
+                                {remoteState?.currentVideo?.author || ''}
+                            </p>
+
+                            {/* Click instruction - subtle */}
+                            <div className="animate-pulse">
+                                <p className="text-white/50 text-base">คลิกที่ใดก็ได้เพื่อเริ่มเล่น</p>
+                                <p className="text-white/30 text-sm mt-1">หรือกดปุ่มใดๆ บนรีโมท</p>
+                            </div>
                         </div>
+
+                        {/* Disconnect button - top right */}
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                // Reset room
+                                window.location.reload();
+                            }}
+                            className="absolute top-6 right-6 z-20 flex items-center gap-2 bg-red-500/20 hover:bg-red-500/40 text-red-400 hover:text-red-300 px-4 py-2 rounded-full transition-all border border-red-500/30"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            <span className="text-sm font-medium">ตัดการเชื่อมต่อ</span>
+                        </button>
                     </div>
                 )}
 
