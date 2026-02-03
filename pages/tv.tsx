@@ -286,8 +286,7 @@ const TVPage = () => {
         );
     }
 
-    // 2. PLAYER SCREEN
-    const playerOpts = {
+    const playerOpts: any = {
         width: '100%',
         height: '100%',
         playerVars: {
