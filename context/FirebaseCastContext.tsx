@@ -108,7 +108,11 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
 
   // Helper: Write state directly to Firebase (for TV real-time sync)
   const writeState = async (newState: CastState) => {
-    if (!roomCode || !realtimeDb) return;
+    console.log('📤 writeState called', { roomCode, hasDb: !!realtimeDb });
+    if (!roomCode || !realtimeDb) {
+      console.warn('⚠️ writeState skipped - no roomCode or db', { roomCode });
+      return;
+    }
     const dbURL = realtimeDb.app.options.databaseURL;
     try {
       const currentUser = auth.currentUser;
@@ -116,12 +120,21 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
       const url = token
         ? `${dbURL}/rooms/${roomCode}/state.json?auth=${token}`
         : `${dbURL}/rooms/${roomCode}/state.json`;
-      await fetch(url, {
+
+      console.log('📤 Writing to:', url.split('?')[0]);
+      console.log('📤 State:', { isPlaying: newState.controls?.isPlaying, queueLen: newState.queue?.length });
+
+      const response = await fetch(url, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newState),
       });
-      console.log('📤 State written to Firebase');
+
+      if (response.ok) {
+        console.log('✅ State written successfully to Firebase');
+      } else {
+        console.error('❌ writeState HTTP error:', response.status, await response.text());
+      }
     } catch (e) {
       console.error('❌ writeState failed:', e);
     }
