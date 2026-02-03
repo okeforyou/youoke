@@ -10,7 +10,8 @@ import {
     SpeakerXMarkIcon,
     PowerIcon,
     TvIcon,
-    ComputerDesktopIcon
+    ComputerDesktopIcon,
+    SignalIcon
 } from '@heroicons/react/24/solid';
 
 interface HostControllerProps {
@@ -44,116 +45,115 @@ export const HostController: React.FC<HostControllerProps> = ({
     }, [state.controls.volume]);
 
     return (
-        <div className="flex flex-col h-full bg-[#1a1a1a] text-white">
+        <div className="flex flex-col h-full bg-[#111111] text-white">
 
-            {/* 1. Top Bar: Disconnect Only */}
-            <div className="flex justify-between items-center p-4">
-                <div className="flex items-center gap-2 text-white/50 text-xs uppercase tracking-widest">
+            {/* 1. Top Status Bar - Minimal */}
+            <div className="flex justify-between items-center px-6 py-4 border-b border-white/5 bg-[#161616]">
+                <div className="flex items-center gap-3">
                     <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                    {isCasting ? 'TV Connected' : 'Dual Mode'}
+                    <span className="text-white/60 text-xs tracking-wider font-light uppercase">
+                        {isCasting ? 'TV Connected' : 'Dual Screen Active'}
+                    </span>
                 </div>
                 <button
                     onClick={() => setIsDisconnectModalOpen(true)}
-                    className="flex items-center gap-2 bg-white/5 hover:bg-red-500/20 text-white/70 hover:text-red-400 px-3 py-1.5 rounded-full transition-colors text-sm"
+                    className="flex items-center gap-2 text-white/40 hover:text-white transition-colors text-xs border border-white/10 px-3 py-1 rounded-full hover:bg-white/5"
                 >
-                    <PowerIcon className="w-4 h-4" />
-                    <span>ตัดการเชื่อมต่อ</span>
+                    <PowerIcon className="w-3 h-3" />
+                    <span>Disconnect</span>
                 </button>
             </div>
 
             {/* 2. Main Center: Status & Connection */}
-            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-8">
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-10">
 
-                {/* Connection Icon */}
-                <div className="relative">
-                    <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full"></div>
-                    <div className="relative w-24 h-24 bg-[#2a2a2a] rounded-3xl flex items-center justify-center border border-white/10 shadow-2xl">
+                {/* Circular Device Icon */}
+                <div className="relative group">
+                    {/* Outer glow ring */}
+                    <div className="absolute inset-0 bg-primary/10 rounded-full blur-xl group-hover:bg-primary/20 transition-all duration-700"></div>
+
+                    {/* Circle Container */}
+                    <div className="relative w-32 h-32 rounded-full border border-white/10 bg-[#1a1a1a] flex flex-col items-center justify-center shadow-2xl">
                         {isCasting ? (
-                            <TvIcon className="w-10 h-10 text-primary" />
+                            <TvIcon className="w-10 h-10 text-primary mb-1" />
                         ) : (
-                            <ComputerDesktopIcon className="w-10 h-10 text-primary" />
+                            <ComputerDesktopIcon className="w-10 h-10 text-primary mb-1" />
                         )}
+                        <span className="text-[10px] text-white/30 uppercase tracking-widest font-semibold mt-1">Room</span>
+                        <span className="text-xl font-bold text-white">{roomCode}</span>
                     </div>
-                    {/* Room Badge */}
-                    <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-primary text-primary-content text-xs font-bold px-3 py-0.5 rounded-full shadow-lg whitespace-nowrap">
-                        ห้อง {roomCode}
+
+                    {/* Status Badge below circle */}
+                    <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-max">
+                        <p className="text-sm font-light text-white/50">
+                            {isCasting ? 'ควบคุมจอทีวี' : 'ควบคุมจอที่สอง'}
+                        </p>
                     </div>
                 </div>
 
-                {/* Info Text */}
-                <div>
-                    <h2 className="text-xl font-medium text-white/90">
-                        {isCasting ? 'กำลังควบคุม TV' : 'กำลังควบคุมหน้าจอที่ 2'}
+                {/* Info Text / Current Song - Very Clean */}
+                <div className="w-full max-w-md">
+                    <p className="text-xs text-primary/70 mb-3 tracking-widest uppercase font-medium">Now Playing</p>
+                    <h2 className="text-lg md:text-xl font-light leading-relaxed text-white/90 line-clamp-2">
+                        {currentVideoTitle || 'Ready to play...'}
                     </h2>
-
-                    {currentVideoTitle ? (
-                        <div className="mt-4 p-4 bg-white/5 rounded-xl border border-white/5 max-w-sm mx-auto">
-                            <p className="text-xs text-white/40 mb-1 uppercase">Now Playing</p>
-                            <p className="text-sm font-medium line-clamp-2 text-white/80">
-                                {currentVideoTitle}
-                            </p>
-                        </div>
-                    ) : (
-                        <p className="text-sm text-white/40 mt-2">พร้อมสำหรับเพลงถัดไป</p>
-                    )}
                 </div>
             </div>
 
-            {/* 3. Footer Control Bar */}
-            <div className="bg-[#252525] p-6 border-t border-white/5">
-                <div className="max-w-md mx-auto">
-                    {/* Controls */}
-                    <div className="flex items-center justify-center gap-8 mb-6">
-                        <button onClick={previous} className="text-white/60 hover:text-white transition-colors">
+            {/* 3. Bottom Control Deck - Darker Contrast */}
+            <div className="bg-[#0f0f0f] border-t border-white/5 p-6 pb-8">
+                <div className="max-w-md mx-auto space-y-6">
+
+                    {/* Main Buttons */}
+                    <div className="flex items-center justify-center gap-10">
+                        <button onClick={previous} className="text-white/40 hover:text-white transition-colors p-2">
                             <BackwardIcon className="w-8 h-8" />
                         </button>
 
                         <button
                             onClick={state.controls.isPlaying ? pause : play}
-                            className="w-16 h-16 bg-primary hover:bg-primary-focus rounded-full flex items-center justify-center text-white shadow-lg transition-transform active:scale-95"
+                            className="w-16 h-16 rounded-full bg-primary hover:bg-primary-focus flex items-center justify-center text-white shadow-lg shadow-black/50 transition-all hover:scale-105 active:scale-95"
                         >
                             {state.controls.isPlaying ? (
-                                <PauseIcon className="w-8 h-8" />
+                                <PauseIcon className="w-7 h-7" />
                             ) : (
-                                <PlayIcon className="w-8 h-8 ml-1" />
+                                <PlayIcon className="w-7 h-7 ml-1" />
                             )}
                         </button>
 
-                        <button onClick={next} className="text-white/60 hover:text-white transition-colors">
+                        <button onClick={next} className="text-white/40 hover:text-white transition-colors p-2">
                             <ForwardIcon className="w-8 h-8" />
                         </button>
                     </div>
 
-                    {/* Simple Volume */}
-                    <div className="flex items-center gap-3">
-                        <button onClick={toggleMute} className="text-white/40 hover:text-white">
+                    {/* Volume Line */}
+                    <div className="flex items-center gap-4 px-4">
+                        <button onClick={toggleMute} className="text-white/30 hover:text-white transition-colors">
                             {state.controls.isMuted ? (
-                                <SpeakerXMarkIcon className="w-5 h-5" />
+                                <SpeakerXMarkIcon className="w-4 h-4" />
                             ) : (
-                                <SpeakerWaveIcon className="w-5 h-5" />
+                                <SpeakerWaveIcon className="w-4 h-4" />
                             )}
                         </button>
-                        <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
+                        <div className="flex-1 h-1 bg-white/10 rounded-full relative group cursor-pointer">
                             <div
-                                className="h-full bg-primary"
+                                className="absolute top-0 left-0 h-full bg-primary rounded-full"
                                 style={{ width: `${localVolume}%` }}
                             />
+                            {/* Invisible Slider overlay for interaction */}
+                            <input
+                                type="range"
+                                min="0"
+                                max="100"
+                                value={localVolume}
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                onChange={(e) => {
+                                    const val = parseInt(e.target.value);
+                                    setLocalVolume(val);
+                                    setVolume(val);
+                                }}
+                            />
                         </div>
-                        {/* Hidden Input for interaction */}
-                        <input
-                            type="range"
-                            min="0"
-                            max="100"
-                            value={localVolume}
-                            className="absolute opacity-0 w-full h-8 cursor-pointer" // Hack to make volume changable but invisible slider style
-                            style={{ maxWidth: '28rem' }}
-                            onChange={(e) => {
-                                const val = parseInt(e.target.value);
-                                setLocalVolume(val);
-                                setVolume(val);
-                            }}
-                        />
-                        <span className="text-xs text-white/40 font-mono w-8 text-right">{localVolume}</span>
                     </div>
                 </div>
             </div>
