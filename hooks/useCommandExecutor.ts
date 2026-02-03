@@ -77,7 +77,7 @@ export function useCommandExecutor({
 
         // Get Auth Token
         const user = auth.currentUser;
-        const token = user ? await user.getIdToken() : null;
+        const token = (user && typeof user.getIdToken === 'function') ? await user.getIdToken() : null;
         const authParam = token ? `?auth=${token}` : '';
 
         // Mark as executing

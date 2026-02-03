@@ -38,7 +38,7 @@ export async function sendCommand(roomCode: string, command: CastCommand, from: 
   // Use REST API instead of set() to bypass stack overflow
   try {
     const user = auth?.currentUser;
-    const token = user ? await user.getIdToken() : null;
+    const token = (user && typeof user.getIdToken === 'function') ? await user.getIdToken() : null;
 
     const url = token
       ? `${dbURL}/rooms/${roomCode}/commands/${commandId}.json?auth=${token}`
@@ -84,7 +84,7 @@ export async function cleanupCommands(roomCode: string, olderThanMinutes: number
 
     // Delete old completed/failed commands
     const user = auth?.currentUser;
-    const token = user ? await user.getIdToken() : null;
+    const token = (user && typeof user.getIdToken === 'function') ? await user.getIdToken() : null;
 
     for (const [id, envelope] of Object.entries(commands) as [string, any][]) {
       if (
