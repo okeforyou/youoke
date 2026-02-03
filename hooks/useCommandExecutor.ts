@@ -139,7 +139,7 @@ export function useCommandExecutor({
           case 'PLAY':
             // Fast Path: Execute immediately
             if (player) {
-              player.playVideo().catch(e => console.warn('Direct play failed:', e));
+              try { player.playVideo(); } catch (e) { console.warn('Direct play failed:', e); }
             }
             newState = {
               controls: { ...state.controls, isPlaying: true },
@@ -148,7 +148,7 @@ export function useCommandExecutor({
 
           case 'PAUSE':
             if (player) {
-              player.pauseVideo().catch(e => console.warn('Direct pause failed:', e));
+              try { player.pauseVideo(); } catch (e) { console.warn('Direct pause failed:', e); }
             }
             newState = {
               controls: { ...state.controls, isPlaying: false },
@@ -194,7 +194,7 @@ export function useCommandExecutor({
 
           case 'MUTE':
             if (player) {
-              player.mute().catch(e => console.warn('Direct mute failed:', e));
+              try { player.mute(); } catch (e) { console.warn('Direct mute failed:', e); }
             }
             newState = {
               controls: { ...state.controls, isMuted: true },
@@ -203,7 +203,7 @@ export function useCommandExecutor({
 
           case 'UNMUTE':
             if (player) {
-              player.unMute().catch(e => console.warn('Direct unmute failed:', e));
+              try { player.unMute(); } catch (e) { console.warn('Direct unmute failed:', e); }
             }
             newState = {
               controls: { ...state.controls, isMuted: false },
