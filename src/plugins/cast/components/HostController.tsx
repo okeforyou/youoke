@@ -1,16 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useFirebaseCast } from '../../../../context/FirebaseCastContext';
 import { DisconnectModal } from './DisconnectModal';
 import {
-    PlayIcon,
-    PauseIcon,
-    ForwardIcon,
-    BackwardIcon,
-    SpeakerWaveIcon,
-    SpeakerXMarkIcon,
     TvIcon,
-    ComputerDesktopIcon
+    ComputerDesktopIcon,
+    XMarkIcon
 } from '@heroicons/react/24/solid';
+import Image from 'next/image';
 
 interface HostControllerProps {
     isCasting: boolean;
@@ -27,105 +23,86 @@ export const HostController: React.FC<HostControllerProps> = ({
     onDisconnect,
     currentVideoTitle
 }) => {
-    const {
-        play, pause, next, previous,
-        toggleMute, setVolume,
-        state
-    } = useFirebaseCast();
-
-    const [localVolume, setLocalVolume] = useState(state.controls.volume ?? 100);
+    const { state } = useFirebaseCast();
     const [isDisconnectModalOpen, setIsDisconnectModalOpen] = useState(false);
 
-    useEffect(() => {
-        if (state.controls.volume !== undefined) {
-            setLocalVolume(state.controls.volume);
-        }
-    }, [state.controls.volume]);
+    // Get thumbnail URL from videoId
+    const currentVideo = state.currentVideo;
+    const thumbnailUrl = currentVideo?.videoId
+        ? `https://i.ytimg.com/vi/${currentVideo.videoId}/mqdefault.jpg`
+        : null;
 
     return (
-        <div className="flex flex-col h-full bg-base-100">
+        <div className="relative w-full aspect-video bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center overflow-hidden">
 
-            {/* Simple Header */}
-            <div className="px-4 py-3 border-b border-base-200 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm">
-                    {isCasting ? (
-                        <TvIcon className="w-4 h-4 text-primary" />
-                    ) : (
-                        <ComputerDesktopIcon className="w-4 h-4 text-primary" />
-                    )}
-                    <span className="text-base-content/60">
-                        {isCasting ? 'เชื่อมต่อ TV' : 'หน้าจอที่ 2'}
-                    </span>
-                    <span className="font-bold text-base-content">ห้อง {roomCode}</span>
+            {/* Background Pattern (subtle) */}
+            <div className="absolute inset-0 opacity-5">
+                <div className="w-full h-full" style={{
+                    backgroundImage: 'radial-gradient(circle at 25% 25%, white 1px, transparent 1px)',
+                    backgroundSize: '30px 30px'
+                }} />
+            </div>
+
+            {/* Main Content */}
+            <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 space-y-4">
+
+                {/* Connection Status Icon */}
+                <div className="relative">
+                    <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20 shadow-xl">
+                        {isCasting ? (
+                            <TvIcon className="w-8 h-8 text-primary" />
+                        ) : (
+                            <ComputerDesktopIcon className="w-8 h-8 text-primary" />
+                        )}
+                    </div>
+                    {/* Live indicator */}
+                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-900 animate-pulse" />
                 </div>
+
+                {/* Status Text */}
+                <div className="space-y-1">
+                    <p className="text-white/50 text-xs uppercase tracking-widest">
+                        {isCasting ? 'เชื่อมต่อจอทีวี' : 'เชื่อมต่อหน้าจอที่ 2'}
+                    </p>
+                    <p className="text-white text-lg font-bold">
+                        ห้อง {roomCode}
+                    </p>
+                </div>
+
+                {/* Current Song (small) */}
+                {currentVideo && (
+                    <div className="flex items-center gap-3 bg-black/30 backdrop-blur-sm rounded-lg px-3 py-2 max-w-xs">
+                        {thumbnailUrl && (
+                            <div className="relative w-10 h-10 rounded overflow-hidden flex-shrink-0">
+                                <Image
+                                    src={thumbnailUrl}
+                                    alt="Thumbnail"
+                                    fill
+                                    className="object-cover"
+                                    unoptimized
+                                />
+                            </div>
+                        )}
+                        <div className="text-left min-w-0">
+                            <p className="text-[10px] text-white/40 uppercase">กำลังเล่น</p>
+                            <p className="text-xs text-white/80 truncate">
+                                {currentVideoTitle || currentVideo.title}
+                            </p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Disconnect Button */}
                 <button
                     onClick={() => setIsDisconnectModalOpen(true)}
-                    className="text-xs text-error hover:underline"
+                    className="mt-2 flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-error/80 text-white/70 hover:text-white rounded-full text-xs font-medium transition-all border border-white/10 hover:border-error"
                 >
-                    ตัดการเชื่อมต่อ
+                    <XMarkIcon className="w-3.5 h-3.5" />
+                    <span>ตัดการเชื่อมต่อ</span>
                 </button>
             </div>
 
-            {/* Now Playing Info */}
-            <div className="flex-1 flex flex-col items-center justify-center p-4 text-center">
-                {currentVideoTitle ? (
-                    <div className="max-w-sm">
-                        <p className="text-xs text-base-content/40 mb-2">กำลังเล่น</p>
-                        <h2 className="text-base font-medium text-base-content line-clamp-2">
-                            {currentVideoTitle}
-                        </h2>
-                    </div>
-                ) : (
-                    <p className="text-sm text-base-content/40">รอเพลง...</p>
-                )}
-            </div>
-
-            {/* Simple Controls */}
-            <div className="px-4 py-4 border-t border-base-200">
-                {/* Playback */}
-                <div className="flex items-center justify-center gap-4 mb-3">
-                    <button onClick={previous} className="btn btn-ghost btn-sm btn-circle">
-                        <BackwardIcon className="w-5 h-5" />
-                    </button>
-                    <button
-                        onClick={state.controls.isPlaying ? pause : play}
-                        className="btn btn-primary btn-circle"
-                    >
-                        {state.controls.isPlaying ? (
-                            <PauseIcon className="w-6 h-6" />
-                        ) : (
-                            <PlayIcon className="w-6 h-6 ml-0.5" />
-                        )}
-                    </button>
-                    <button onClick={next} className="btn btn-ghost btn-sm btn-circle">
-                        <ForwardIcon className="w-5 h-5" />
-                    </button>
-                </div>
-
-                {/* Volume */}
-                <div className="flex items-center gap-2 max-w-xs mx-auto">
-                    <button onClick={toggleMute} className="btn btn-ghost btn-xs btn-circle">
-                        {state.controls.isMuted ? (
-                            <SpeakerXMarkIcon className="w-4 h-4 text-error" />
-                        ) : (
-                            <SpeakerWaveIcon className="w-4 h-4" />
-                        )}
-                    </button>
-                    <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        value={localVolume}
-                        className="range range-primary range-xs flex-1"
-                        onChange={(e) => {
-                            const val = parseInt(e.target.value);
-                            setLocalVolume(val);
-                            setVolume(val);
-                        }}
-                    />
-                </div>
-            </div>
-
+            {/* Disconnect Modal */}
             <DisconnectModal
                 isOpen={isDisconnectModalOpen}
                 onClose={() => setIsDisconnectModalOpen(false)}

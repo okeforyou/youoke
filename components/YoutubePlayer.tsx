@@ -1919,7 +1919,7 @@ function YoutubePlayer({
 
         {/* Controls for Remote - OUTSIDE player container (original position) */}
         {
-          !isMoniter && showControls && videoId && !showCastModeSelector && !((isDualMode && !isMoniter) || (isCasting && !isMobile)) && (
+          !isMoniter && showControls && videoId && !showCastModeSelector && (
             <div
               className={`flex-shrink-0 flex flex-row w-full p-1 items-center ${UseFullScreenCss ? "z-[10001]" : "z-10"} ${isMouseMoving ? "hover:opacity-100" : ""
                 } ${(UseFullScreenCss || !isMouseMoving) &&
