@@ -38,13 +38,12 @@ export default function TVPage() {
     // State
     const [roomCode, setRoomCode] = useState<string>('');
     const [isAuthReady, setIsAuthReady] = useState(false);
-    const [videoId, setVideoId] = useState<string>('');
-    const [queue, setQueue] = useState<QueueVideo[]>([]);
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [isConnected, setIsConnected] = useState(false);
     const [baseUrl, setBaseUrl] = useState('');
 
-    // UI State
+    // Remote State (from Firebase)
+    const [remoteState, setRemoteState] = useState<RoomState | null>(null);
+
+    // Local UI State
     const [isPlaying, setIsPlaying] = useState(false);
     const [isMuted, setIsMuted] = useState(false);
 
@@ -111,7 +110,7 @@ export default function TVPage() {
     }, []);
 
     // =============================================
-    // 2. FIREBASE REAL-TIME SYNC (Like BroadcastChannel)
+    // 2. FIREBASE REAL-TIME SYNC
     // =============================================
     useEffect(() => {
         if (!roomCode || !realtimeDb || !isAuthReady) return;
@@ -119,7 +118,7 @@ export default function TVPage() {
         console.log('📡 TV: Subscribing to room:', roomCode);
         const stateRef = ref(realtimeDb, `rooms/${roomCode}/state`);
 
-        // Real-time listener - instant sync like BroadcastChannel
+        // Real-time listener - just update remoteState
         const unsubscribe = onValue(stateRef, (snapshot) => {
             const state = snapshot.val() as RoomState | null;
 
@@ -129,36 +128,11 @@ export default function TVPage() {
                     isPlaying: state.controls?.isPlaying,
                     queueLen: state.queue?.length
                 });
+                setRemoteState(state);
 
-                // Update state
-                if (state.currentVideo?.videoId && state.currentVideo.videoId !== videoId) {
-                    setVideoId(state.currentVideo.videoId);
-                }
-
+                // Update queue with auto-hide
                 if (state.queue) {
                     handleQueueUpdate(state.queue);
-                }
-
-                setCurrentIndex(state.currentIndex || 0);
-                setIsConnected(true);
-
-                // Sync player state
-                if (playerRef.current) {
-                    const player = playerRef.current.getInternalPlayer();
-                    if (player) {
-                        if (state.controls?.isPlaying) {
-                            player.playVideo();
-                            setIsPlaying(true);
-                        } else {
-                            player.pauseVideo();
-                            setIsPlaying(false);
-                        }
-
-                        if (state.controls?.isMuted) {
-                            player.mute();
-                            setIsMuted(true);
-                        }
-                    }
                 }
             }
         });
@@ -167,7 +141,7 @@ export default function TVPage() {
             console.log('🛑 TV: Unsubscribing');
             unsubscribe();
         };
-    }, [roomCode, isAuthReady, videoId]);
+    }, [roomCode, isAuthReady]);
 
     // Create room if needed
     useEffect(() => {
@@ -199,64 +173,114 @@ export default function TVPage() {
         initRoom();
     }, [roomCode, isAuthReady]);
 
+    // =============================================
+    // 3. SYNC PLAYER TO REMOTE STATE (Separate Effect!)
+    // =============================================
+    // Watch isPlaying from remoteState and sync to player
+    useEffect(() => {
+        if (!playerRef.current || !remoteState) return;
+
+        const player = playerRef.current.getInternalPlayer();
+        if (!player) return;
+
+        const targetPlaying = remoteState.controls?.isPlaying ?? false;
+
+        console.log('🎮 TV: Syncing play state:', { targetPlaying, currentIsPlaying: isPlaying });
+
+        const sync = async () => {
+            try {
+                const state = await player.getPlayerState();
+                const currentlyPlaying = state === 1;
+
+                if (targetPlaying && !currentlyPlaying) {
+                    console.log('▶️ TV: Playing video');
+                    await player.playVideo();
+                    setIsPlaying(true);
+                } else if (!targetPlaying && currentlyPlaying) {
+                    console.log('⏸️ TV: Pausing video');
+                    await player.pauseVideo();
+                    setIsPlaying(false);
+                }
+            } catch (e) {
+                console.warn('⚠️ TV: Player sync error:', e);
+                // Fallback: just try to play/pause anyway
+                try {
+                    if (targetPlaying) {
+                        await player.playVideo();
+                        setIsPlaying(true);
+                    } else {
+                        await player.pauseVideo();
+                        setIsPlaying(false);
+                    }
+                } catch (e2) { }
+            }
+        };
+        sync();
+    }, [remoteState?.controls?.isPlaying]);
+
+    // Watch isMuted from remoteState
+    useEffect(() => {
+        if (!playerRef.current || !remoteState) return;
+
+        const player = playerRef.current.getInternalPlayer();
+        if (!player) return;
+
+        const targetMuted = remoteState.controls?.isMuted ?? false;
+
+        const sync = async () => {
+            try {
+                if (targetMuted) {
+                    await player.mute();
+                    setIsMuted(true);
+                } else {
+                    await player.unMute();
+                    setIsMuted(false);
+                }
+            } catch (e) { }
+        };
+        sync();
+    }, [remoteState?.controls?.isMuted]);
+
     // Queue Auto-Hide Helper
     const handleQueueUpdate = (newQueue: QueueVideo[]) => {
-        if (JSON.stringify(newQueue) !== JSON.stringify(queue)) {
-            setQueue(newQueue);
-            setShowQueue(true);
-
-            if (queueTimeoutRef.current) clearTimeout(queueTimeoutRef.current);
-            queueTimeoutRef.current = setTimeout(() => {
-                setShowQueue(false);
-            }, 5000);
-        }
+        setShowQueue(true);
+        if (queueTimeoutRef.current) clearTimeout(queueTimeoutRef.current);
+        queueTimeoutRef.current = setTimeout(() => {
+            setShowQueue(false);
+        }, 5000);
     };
 
     // =============================================
-    // 3. PLAYER CONTROLS
+    // 4. LOCAL PLAYER CONTROLS (for on TV interaction)
     // =============================================
-    const togglePlay = () => {
+    const togglePlay = async () => {
         if (!playerRef.current) return;
         const player = playerRef.current.getInternalPlayer();
-        player.getPlayerState().then((state: number) => {
+        try {
+            const state = await player.getPlayerState();
             if (state === 1) {
-                player.pauseVideo();
+                await player.pauseVideo();
                 setIsPlaying(false);
             } else {
-                player.playVideo();
+                await player.playVideo();
                 setIsPlaying(true);
             }
-        });
+        } catch (e) { }
     };
 
-    const toggleMute = () => {
+    const toggleMute = async () => {
         if (!playerRef.current) return;
         const player = playerRef.current.getInternalPlayer();
-        if (isMuted) {
-            player.unMute();
-            setIsMuted(false);
-        } else {
-            player.mute();
-            setIsMuted(true);
-        }
-    };
-
-    // Poll UI sync
-    useEffect(() => {
-        const interval = setInterval(async () => {
-            if (playerRef.current) {
-                const p = playerRef.current.getInternalPlayer();
-                if (p && typeof p.getPlayerState === 'function') {
-                    try {
-                        const state = await p.getPlayerState();
-                        setIsPlaying(state === 1);
-                        setIsMuted(await p.isMuted());
-                    } catch (e) { }
-                }
+        try {
+            if (isMuted) {
+                await player.unMute();
+                setIsMuted(false);
+            } else {
+                await player.mute();
+                setIsMuted(true);
             }
-        }, 1000);
-        return () => clearInterval(interval);
-    }, []);
+        } catch (e) { }
+    };
 
     // Mouse Auto-Hide
     useEffect(() => {
@@ -276,17 +300,31 @@ export default function TVPage() {
     }, []);
 
     // Player Ready
-    const onPlayerReady = (event: any) => {
-        event.target.playVideo();
-        event.target.unMute();
-        event.target.setVolume(100);
+    const onPlayerReady = async (event: any) => {
+        console.log('✅ TV: Player ready');
 
-        setTimeout(() => {
+        // Unmute and set volume
+        try {
+            await event.target.unMute();
+            await event.target.setVolume(100);
+        } catch (e) { }
+
+        // Start playing if remote says so
+        if (remoteState?.controls?.isPlaying) {
+            console.log('▶️ TV: Auto-playing on ready');
             try {
-                const state = event.target.getPlayerState();
-                if (state !== 1 && state !== 3) {
+                await event.target.playVideo();
+                setIsPlaying(true);
+            } catch (e) { }
+        }
+
+        // Aggressive retry
+        setTimeout(async () => {
+            try {
+                const state = await event.target.getPlayerState();
+                if (remoteState?.controls?.isPlaying && state !== 1 && state !== 3) {
                     console.log('🔄 TV: Force playing (retry)');
-                    event.target.playVideo();
+                    await event.target.playVideo();
                 }
             } catch (e) { }
         }, 1000);
@@ -296,53 +334,58 @@ export default function TVPage() {
     const onPlayerEnd = async () => {
         console.log('🎬 TV: Video ended. Playing next...');
 
-        const nextIndex = currentIndex + 1;
-        if (nextIndex < queue.length) {
-            const nextVideo = queue[nextIndex];
+        if (!remoteState) return;
+        const nextIndex = remoteState.currentIndex + 1;
+        if (nextIndex < remoteState.queue.length) {
+            const nextVideo = remoteState.queue[nextIndex];
 
             // Write to Firebase
             const stateRef = ref(realtimeDb, `rooms/${roomCode}/state`);
             await set(stateRef, {
-                queue,
+                ...remoteState,
                 currentIndex: nextIndex,
                 currentVideo: nextVideo,
-                controls: { isPlaying: true, isMuted }
+                controls: { ...remoteState.controls, isPlaying: true }
             });
         }
     };
 
-    // Request Next
+    // Request Next/Previous
     const requestNext = async () => {
+        if (!remoteState) return;
         console.log('⏭️ TV: Next requested');
-        const nextIndex = currentIndex + 1;
-        if (nextIndex < queue.length) {
-            const nextVideo = queue[nextIndex];
+        const nextIndex = remoteState.currentIndex + 1;
+        if (nextIndex < remoteState.queue.length) {
+            const nextVideo = remoteState.queue[nextIndex];
             const stateRef = ref(realtimeDb, `rooms/${roomCode}/state`);
             await set(stateRef, {
-                queue,
+                ...remoteState,
                 currentIndex: nextIndex,
                 currentVideo: nextVideo,
-                controls: { isPlaying: true, isMuted }
+                controls: { ...remoteState.controls, isPlaying: true }
             });
         }
     };
 
-    // Request Previous
     const requestPrevious = async () => {
+        if (!remoteState) return;
         console.log('⏮️ TV: Previous requested');
-        const prevIndex = currentIndex - 1;
+        const prevIndex = remoteState.currentIndex - 1;
         if (prevIndex >= 0) {
-            const prevVideo = queue[prevIndex];
+            const prevVideo = remoteState.queue[prevIndex];
             const stateRef = ref(realtimeDb, `rooms/${roomCode}/state`);
             await set(stateRef, {
-                queue,
+                ...remoteState,
                 currentIndex: prevIndex,
                 currentVideo: prevVideo,
-                controls: { isPlaying: true, isMuted }
+                controls: { ...remoteState.controls, isPlaying: true }
             });
         }
     };
 
+    // Derived values
+    const videoId = remoteState?.currentVideo?.videoId || '';
+    const queue = remoteState?.queue || [];
     const qrCodeUrl = baseUrl ? `${baseUrl}/?castRoom=${roomCode}` : '';
 
     return (
@@ -355,7 +398,7 @@ export default function TVPage() {
                 ref={fullscreenRef}
                 className="h-screen w-screen bg-black text-white relative overflow-hidden group cursor-none hover:cursor-default"
             >
-                {/* Waiting Screen (Like Dual) */}
+                {/* Waiting Screen */}
                 {!videoId && (
                     <div className="absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-gray-900 via-black to-gray-900">
                         <div className="w-full max-w-5xl mx-auto px-6">
