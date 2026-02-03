@@ -7,7 +7,7 @@ import { ref, onValue, set } from 'firebase/database';
 import { signInAnonymously } from 'firebase/auth';
 import { realtimeDb, auth } from '../firebase';
 import { QRCodeSVG } from 'qrcode.react';
-import { DevicePhoneMobileIcon } from '@heroicons/react/24/outline';
+import { DevicePhoneMobileIcon, PlayIcon } from '@heroicons/react/24/outline';
 import Script from 'next/script';
 
 // ========================================
@@ -47,6 +47,10 @@ export default function TVPage() {
     const [isPlaying, setIsPlaying] = useState(false);
     const [isMuted, setIsMuted] = useState(false);
 
+    // User Interaction State (for autoplay)
+    const [hasUserInteraction, setHasUserInteraction] = useState(false);
+    const [needsInteraction, setNeedsInteraction] = useState(false);
+
     // Queue Auto-Hide
     const [showQueue, setShowQueue] = useState(false);
     const queueTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -75,6 +79,7 @@ export default function TVPage() {
             fs: 0 as 0,
             disablekb: 1 as 1,
             enablejsapi: 1 as 1,
+            mute: 1 as 1, // Start muted to allow autoplay
         },
     }), []);
 
@@ -174,7 +179,7 @@ export default function TVPage() {
     }, [roomCode, isAuthReady]);
 
     // =============================================
-    // 3. SYNC PLAYER TO REMOTE STATE (Separate Effect!)
+    // 3. SYNC PLAYER TO REMOTE STATE
     // =============================================
     // Watch isPlaying from remoteState and sync to player
     useEffect(() => {
@@ -185,7 +190,7 @@ export default function TVPage() {
 
         const targetPlaying = remoteState.controls?.isPlaying ?? false;
 
-        console.log('🎮 TV: Syncing play state:', { targetPlaying, currentIsPlaying: isPlaying });
+        console.log('🎮 TV: Syncing play state:', { targetPlaying, hasUserInteraction });
 
         const sync = async () => {
             try {
@@ -194,8 +199,17 @@ export default function TVPage() {
 
                 if (targetPlaying && !currentlyPlaying) {
                     console.log('▶️ TV: Playing video');
+
+                    // If no user interaction yet, show overlay instead
+                    if (!hasUserInteraction) {
+                        console.log('⚠️ TV: Needs user interaction first');
+                        setNeedsInteraction(true);
+                        return;
+                    }
+
                     await player.playVideo();
                     setIsPlaying(true);
+                    setNeedsInteraction(false);
                 } else if (!targetPlaying && currentlyPlaying) {
                     console.log('⏸️ TV: Pausing video');
                     await player.pauseVideo();
@@ -206,6 +220,10 @@ export default function TVPage() {
                 // Fallback: just try to play/pause anyway
                 try {
                     if (targetPlaying) {
+                        if (!hasUserInteraction) {
+                            setNeedsInteraction(true);
+                            return;
+                        }
                         await player.playVideo();
                         setIsPlaying(true);
                     } else {
@@ -216,7 +234,7 @@ export default function TVPage() {
             }
         };
         sync();
-    }, [remoteState?.controls?.isPlaying]);
+    }, [remoteState?.controls?.isPlaying, hasUserInteraction]);
 
     // Watch isMuted from remoteState
     useEffect(() => {
@@ -232,14 +250,14 @@ export default function TVPage() {
                 if (targetMuted) {
                     await player.mute();
                     setIsMuted(true);
-                } else {
+                } else if (hasUserInteraction) {
                     await player.unMute();
                     setIsMuted(false);
                 }
             } catch (e) { }
         };
         sync();
-    }, [remoteState?.controls?.isMuted]);
+    }, [remoteState?.controls?.isMuted, hasUserInteraction]);
 
     // Queue Auto-Hide Helper
     const handleQueueUpdate = (newQueue: QueueVideo[]) => {
@@ -251,10 +269,39 @@ export default function TVPage() {
     };
 
     // =============================================
-    // 4. LOCAL PLAYER CONTROLS (for on TV interaction)
+    // 4. USER INTERACTION HANDLER
+    // =============================================
+    const handleUserInteraction = async () => {
+        console.log('👆 TV: User interaction detected!');
+        setHasUserInteraction(true);
+        setNeedsInteraction(false);
+
+        if (playerRef.current) {
+            const player = playerRef.current.getInternalPlayer();
+            if (player) {
+                try {
+                    await player.unMute();
+                    await player.setVolume(100);
+
+                    // If remote says play, start playing now
+                    if (remoteState?.controls?.isPlaying) {
+                        await player.playVideo();
+                        setIsPlaying(true);
+                    }
+                } catch (e) {
+                    console.warn('⚠️ TV: Interaction handler error:', e);
+                }
+            }
+        }
+    };
+
+    // =============================================
+    // 5. LOCAL PLAYER CONTROLS
     // =============================================
     const togglePlay = async () => {
         if (!playerRef.current) return;
+        setHasUserInteraction(true);
+
         const player = playerRef.current.getInternalPlayer();
         try {
             const state = await player.getPlayerState();
@@ -270,6 +317,8 @@ export default function TVPage() {
 
     const toggleMute = async () => {
         if (!playerRef.current) return;
+        setHasUserInteraction(true);
+
         const player = playerRef.current.getInternalPlayer();
         try {
             if (isMuted) {
@@ -299,30 +348,32 @@ export default function TVPage() {
         };
     }, []);
 
-    // Player Ready
+    // Player Ready - Start muted, then handle unmute on interaction
     const onPlayerReady = async (event: any) => {
         console.log('✅ TV: Player ready');
 
-        // Unmute and set volume
-        try {
-            await event.target.unMute();
-            await event.target.setVolume(100);
-        } catch (e) { }
-
-        // Start playing if remote says so
-        if (remoteState?.controls?.isPlaying) {
-            console.log('▶️ TV: Auto-playing on ready');
+        // If already has user interaction, unmute and play
+        if (hasUserInteraction) {
             try {
-                await event.target.playVideo();
-                setIsPlaying(true);
+                await event.target.unMute();
+                await event.target.setVolume(100);
+                if (remoteState?.controls?.isPlaying) {
+                    await event.target.playVideo();
+                    setIsPlaying(true);
+                }
             } catch (e) { }
+        } else {
+            // Check if remote wants to play - show interaction needed
+            if (remoteState?.controls?.isPlaying) {
+                setNeedsInteraction(true);
+            }
         }
 
-        // Aggressive retry
+        // Aggressive retry for playback
         setTimeout(async () => {
             try {
                 const state = await event.target.getPlayerState();
-                if (remoteState?.controls?.isPlaying && state !== 1 && state !== 3) {
+                if (hasUserInteraction && remoteState?.controls?.isPlaying && state !== 1 && state !== 3) {
                     console.log('🔄 TV: Force playing (retry)');
                     await event.target.playVideo();
                 }
@@ -397,6 +448,7 @@ export default function TVPage() {
             <div
                 ref={fullscreenRef}
                 className="h-screen w-screen bg-black text-white relative overflow-hidden group cursor-none hover:cursor-default"
+                onClick={handleUserInteraction}
             >
                 {/* Waiting Screen */}
                 {!videoId && (
@@ -453,6 +505,22 @@ export default function TVPage() {
                     </div>
                 )}
 
+                {/* Click to Play Overlay - Shows when remote wants to play but no user interaction yet */}
+                {needsInteraction && videoId && (
+                    <div
+                        className="absolute inset-0 z-40 flex items-center justify-center bg-black/70 backdrop-blur-sm cursor-pointer"
+                        onClick={handleUserInteraction}
+                    >
+                        <div className="text-center">
+                            <div className="w-32 h-32 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse border-4 border-primary">
+                                <PlayIcon className="w-16 h-16 text-white ml-2" />
+                            </div>
+                            <p className="text-2xl font-bold text-white mb-2">แตะเพื่อเล่น</p>
+                            <p className="text-white/60">Tap anywhere to start playback</p>
+                        </div>
+                    </div>
+                )}
+
                 {/* Player Container */}
                 <div className={`w-full h-full transition-opacity duration-500 ${videoId ? 'opacity-100' : 'opacity-0'}`}>
                     <YouTube
@@ -467,7 +535,7 @@ export default function TVPage() {
                 </div>
 
                 {/* Unified Interface */}
-                {videoId && (
+                {videoId && !needsInteraction && (
                     <UnifiedPlayerInterface
                         videoId={videoId}
                         queue={queue}
