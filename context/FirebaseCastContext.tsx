@@ -287,9 +287,9 @@ export function FirebaseCastProvider({ children }: { children: ReactNode }) {
       try {
         const participantURL = `${dbURL}/rooms/${code}/participants/${currentUserInfo.uid}.json`;
 
-        if (user) {
-          // Use auth token for logged-in users
-          const token = await user.getIdToken();
+        if (auth.currentUser) {
+          // Use auth token for logged-in users (or anonymous)
+          const token = await auth.currentUser.getIdToken();
           await fetch(`${participantURL}?auth=${token}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
