@@ -365,6 +365,7 @@ export function useCommandExecutor({
     const pollInterval = setInterval(async () => {
       try {
         const response = await fetch(`${dbURL}/rooms/${roomCode}/commands.json`);
+        // console.log('🔍 Polling Response Status:', response.status); 
         if (!response.ok) return;
 
         const commands = await response.json() as Record<string, CastCommandEnvelope> | null;
