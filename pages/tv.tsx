@@ -156,32 +156,45 @@ const TVPage = () => {
 
         console.log('📺 TV: Loading video:', roomState.currentVideo.title);
         lastVideoIdRef.current = newVideoId;
+
+        // Load and play
         player.loadVideoById(newVideoId);
+
+        // Force play after load (YouTube needs this sometimes)
+        setTimeout(() => {
+            try {
+                player.playVideo();
+                console.log('▶️ TV: Force play after load');
+            } catch (e) { /* ignore */ }
+        }, 500);
     }, [player, roomState.currentVideo?.videoId]);
 
     // =============================================
     // 4. PLAYER CONTROL: Play/Pause
     // =============================================
+    const lastIsPlayingRef = useRef<boolean | null>(null);
+
     useEffect(() => {
-        if (!player || !roomState.currentVideo) return;
+        if (!player) return;
 
         const targetPlaying = roomState.controls.isPlaying;
 
-        const sync = async () => {
-            try {
-                const state = await player.getPlayerState();
-                // 1 = playing, 2 = paused
-                if (targetPlaying && state !== 1) {
-                    console.log('▶️ TV: Playing');
-                    player.playVideo();
-                } else if (!targetPlaying && state === 1) {
-                    console.log('⏸️ TV: Pausing');
-                    player.pauseVideo();
-                }
-            } catch (e) { /* Player not ready */ }
-        };
-        sync();
-    }, [player, roomState.controls.isPlaying, roomState.currentVideo?.videoId]);
+        // Skip if state hasn't changed
+        if (lastIsPlayingRef.current === targetPlaying) return;
+        lastIsPlayingRef.current = targetPlaying;
+
+        console.log('🎮 TV: Play/Pause =', targetPlaying);
+
+        try {
+            if (targetPlaying) {
+                player.playVideo();
+            } else {
+                player.pauseVideo();
+            }
+        } catch (e) {
+            console.error('❌ TV: Play/Pause failed:', e);
+        }
+    }, [player, roomState.controls.isPlaying]);
 
     // =============================================
     // 5. PLAYER CONTROL: Mute/Unmute
@@ -191,25 +204,22 @@ const TVPage = () => {
 
         const targetMuted = roomState.controls.isMuted;
 
-        const sync = async () => {
-            try {
-                if (targetMuted) {
-                    player.mute();
-                    console.log('🔇 TV: Muted');
-                } else {
-                    player.unMute();
-                    // Check if browser blocked unmute
-                    setTimeout(async () => {
-                        try {
-                            const isMuted = await player.isMuted();
-                            setNeedsInteraction(isMuted);
-                        } catch (e) { /* ignore */ }
-                    }, 300);
-                    console.log('🔊 TV: Unmuted');
-                }
-            } catch (e) { /* Player not ready */ }
-        };
-        sync();
+        try {
+            if (targetMuted) {
+                player.mute();
+                console.log('🔇 TV: Muted');
+            } else {
+                player.unMute();
+                // Check if browser blocked unmute
+                setTimeout(async () => {
+                    try {
+                        const isMuted = await player.isMuted();
+                        setNeedsInteraction(isMuted);
+                    } catch (e) { /* ignore */ }
+                }, 300);
+                console.log('🔊 TV: Unmuted');
+            }
+        } catch (e) { /* Player not ready */ }
     }, [player, roomState.controls.isMuted]);
 
     // =============================================
@@ -366,6 +376,8 @@ const TVPage = () => {
                         setPlayer(e.target);
                         e.target.unMute();
                         e.target.setVolume(100);
+                        // Auto-play on ready
+                        e.target.playVideo();
                     }}
                     onStateChange={(e) => {
                         if (e.data === 0) handleVideoEnd();
