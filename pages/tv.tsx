@@ -1,28 +1,19 @@
 import { useRouter } from 'next/router';
 import React, { useEffect, useState, useRef } from 'react';
 import YouTube, { YouTubePlayer } from 'react-youtube';
-import { ref, onValue, set } from 'firebase/database';
+import { ref, set } from 'firebase/database';
 import { signInAnonymously } from 'firebase/auth';
 import { realtimeDb, auth } from '../firebase';
 import { QRCodeSVG } from 'qrcode.react';
 import { DevicePhoneMobileIcon, SpeakerXMarkIcon } from '@heroicons/react/24/outline';
 import Script from 'next/script';
 import UnifiedPlayerInterface from '../components/UnifiedPlayerInterface';
+import { CastCommand, CastCommandEnvelope } from '../types/castCommands';
 
 // ========================================
-// TV Page - State-Driven DJ Mode Receiver
+// TV Page - Exact Copy of Monitor Pattern
 // ========================================
-// 
-// Architecture: State-Driven (NOT Command-Driven)
-// 
-// Data Flow:
-//   Host writes state to Firebase → TV subscribes (real-time) → TV mirrors state
-//
-// Design Principles:
-// 1. NO commands, NO executor - just state synchronization
-// 2. Firebase SDK real-time listener (not REST polling)
-// 3. Simple useEffects that respond to state changes
-// 4. TV is a "dumb" player - it just does what the state says
+// Uses same REST polling and command executor as Monitor.tsx
 // ========================================
 
 interface QueueVideo {
@@ -32,7 +23,7 @@ interface QueueVideo {
     key: number;
 }
 
-interface RoomState {
+interface RoomData {
     queue: QueueVideo[];
     currentIndex: number;
     currentVideo: QueueVideo | null;
@@ -50,16 +41,12 @@ const TVPage = () => {
 
     // --- Core State ---
     const [roomCode, setRoomCode] = useState<string>('');
-    const [roomState, setRoomState] = useState<RoomState>({
-        queue: [],
-        currentIndex: 0,
-        currentVideo: null,
-        controls: { isPlaying: false, isMuted: false, volume: 100 }
-    });
+    const [roomData, setRoomData] = useState<RoomData | null>(null);
     const [isAuthReady, setIsAuthReady] = useState(false);
     const [player, setPlayer] = useState<YouTubePlayer | null>(null);
     const [baseUrl, setBaseUrl] = useState<string>('');
     const [needsInteraction, setNeedsInteraction] = useState(false);
+    const [isLoadingVideo, setIsLoadingVideo] = useState(false);
 
     // =============================================
     // 1. INITIALIZATION
@@ -69,7 +56,6 @@ const TVPage = () => {
             setBaseUrl(window.location.origin);
         }
 
-        // Anonymous Auth
         const login = async () => {
             try {
                 if (!auth.currentUser) await signInAnonymously(auth);
@@ -81,7 +67,6 @@ const TVPage = () => {
         };
         login();
 
-        // Room Code
         const urlParams = new URLSearchParams(window.location.search);
         const codeParam = urlParams.get('room');
         if (codeParam) {
@@ -93,29 +78,40 @@ const TVPage = () => {
     }, []);
 
     // =============================================
-    // 2. FIREBASE REAL-TIME SUBSCRIPTION
+    // 2. REST POLLING FOR STATE (Like Monitor)
     // =============================================
     useEffect(() => {
         if (!roomCode || !realtimeDb || !isAuthReady) return;
 
-        console.log('📡 TV: Subscribing to room:', roomCode);
+        console.log('📡 TV: Starting REST polling for room:', roomCode);
+        const dbURL = realtimeDb.app.options.databaseURL;
+        let lastDataRef: any = null;
 
-        // Create room if not exists
-        const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
-        const stateRef = ref(realtimeDb, `rooms/${roomCode}/state`);
-
-        // One-time room creation check
         const initRoom = async () => {
-            const dbURL = realtimeDb.app.options.databaseURL;
             try {
                 const res = await fetch(`${dbURL}/rooms/${roomCode}.json`);
                 const data = await res.json();
                 if (!data) {
                     console.log('✨ TV: Creating room');
-                    await set(roomRef, {
-                        hostId: auth.currentUser?.uid || 'tv',
-                        createdAt: Date.now(),
-                        state: roomState
+                    const user = auth.currentUser;
+                    const token = user ? await user.getIdToken() : null;
+                    const url = token
+                        ? `${dbURL}/rooms/${roomCode}.json?auth=${token}`
+                        : `${dbURL}/rooms/${roomCode}.json`;
+
+                    await fetch(url, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            hostId: 'tv',
+                            createdAt: Date.now(),
+                            state: {
+                                queue: [],
+                                currentIndex: 0,
+                                currentVideo: null,
+                                controls: { isPlaying: false, isMuted: false }
+                            }
+                        }),
                     });
                 }
             } catch (e) {
@@ -124,138 +120,341 @@ const TVPage = () => {
         };
         initRoom();
 
-        // Real-time listener (THE ONLY WAY TV GETS STATE)
-        const unsubscribe = onValue(stateRef, (snapshot) => {
-            const state = snapshot.val();
-            if (state) {
-                console.log('📥 TV: State received', {
-                    video: state.currentVideo?.title,
-                    isPlaying: state.controls?.isPlaying,
-                    queueLen: state.queue?.length
-                });
-                setRoomState(state);
-            }
-        });
+        // Poll for state (like Monitor)
+        const pollInterval = setInterval(async () => {
+            try {
+                const response = await fetch(`${dbURL}/rooms/${roomCode}.json`);
+                if (!response.ok) return;
 
-        return () => {
-            console.log('🛑 TV: Unsubscribing');
-            unsubscribe();
-        };
+                const data = await response.json();
+                if (!data) return;
+
+                if (JSON.stringify(data) !== JSON.stringify(lastDataRef)) {
+                    lastDataRef = data;
+                    const state = data.state || data;
+                    setRoomData({
+                        queue: state.queue || [],
+                        currentIndex: state.currentIndex || 0,
+                        currentVideo: state.currentVideo || null,
+                        controls: state.controls || { isPlaying: false, isMuted: false }
+                    });
+                }
+            } catch (e) { }
+        }, 500);
+
+        return () => clearInterval(pollInterval);
     }, [roomCode, isAuthReady]);
 
     // =============================================
-    // 3. PLAYER CONTROL: Video Loading
+    // 3. COMMAND EXECUTOR (Exactly like Monitor)
     // =============================================
-    const lastVideoIdRef = useRef<string | null>(null);
-
     useEffect(() => {
-        if (!player || !roomState.currentVideo) return;
+        if (!roomCode || !realtimeDb || !isAuthReady) return;
 
-        const newVideoId = roomState.currentVideo.videoId;
-        if (lastVideoIdRef.current === newVideoId) return;
+        const dbURL = realtimeDb.app.options.databaseURL;
+        const processedCommandIds = new Set<string>();
 
-        console.log('📺 TV: Loading video:', roomState.currentVideo.title);
-        lastVideoIdRef.current = newVideoId;
-
-        // Load and play
-        player.loadVideoById(newVideoId);
-
-        // Force play after load (YouTube needs this sometimes)
-        setTimeout(() => {
+        const commandPollInterval = setInterval(async () => {
             try {
-                player.playVideo();
-                console.log('▶️ TV: Force play after load');
-            } catch (e) { /* ignore */ }
-        }, 500);
-    }, [player, roomState.currentVideo?.videoId]);
+                const response = await fetch(`${dbURL}/rooms/${roomCode}/commands.json`);
+                if (!response.ok) return;
 
-    // =============================================
-    // 4. PLAYER CONTROL: Play/Pause
-    // =============================================
-    const lastIsPlayingRef = useRef<boolean | null>(null);
+                const commands = await response.json() as Record<string, CastCommandEnvelope> | null;
+                if (!commands) return;
 
-    useEffect(() => {
-        if (!player) return;
+                for (const [commandId, envelope] of Object.entries(commands)) {
+                    if (processedCommandIds.has(commandId) || envelope.status !== 'pending') continue;
 
-        const targetPlaying = roomState.controls.isPlaying;
+                    console.log('⚙️ TV: Executing command:', envelope.command.type);
+                    processedCommandIds.add(commandId);
 
-        // Skip if state hasn't changed
-        if (lastIsPlayingRef.current === targetPlaying) return;
-        lastIsPlayingRef.current = targetPlaying;
-
-        console.log('🎮 TV: Play/Pause =', targetPlaying);
-
-        try {
-            if (targetPlaying) {
-                player.playVideo();
-            } else {
-                player.pauseVideo();
-            }
-        } catch (e) {
-            console.error('❌ TV: Play/Pause failed:', e);
-        }
-    }, [player, roomState.controls.isPlaying]);
-
-    // =============================================
-    // 5. PLAYER CONTROL: Mute/Unmute
-    // =============================================
-    useEffect(() => {
-        if (!player) return;
-
-        const targetMuted = roomState.controls.isMuted;
-
-        try {
-            if (targetMuted) {
-                player.mute();
-                console.log('🔇 TV: Muted');
-            } else {
-                player.unMute();
-                // Check if browser blocked unmute
-                setTimeout(async () => {
                     try {
-                        const isMuted = await player.isMuted();
-                        setNeedsInteraction(isMuted);
-                    } catch (e) { /* ignore */ }
-                }, 300);
-                console.log('🔊 TV: Unmuted');
-            }
-        } catch (e) { /* Player not ready */ }
-    }, [player, roomState.controls.isMuted]);
+                        const newState = executeCommand(envelope.command, roomData);
+
+                        const stateToWrite = envelope.command.type === 'CONNECT'
+                            ? { ...newState, lastConnected: Date.now() }
+                            : newState;
+
+                        const user = auth.currentUser;
+                        const token = user ? await user.getIdToken() : null;
+                        const stateURL = token
+                            ? `${dbURL}/rooms/${roomCode}/state.json?auth=${token}`
+                            : `${dbURL}/rooms/${roomCode}/state.json`;
+
+                        await fetch(stateURL, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(stateToWrite),
+                        });
+
+                        const cmdURL = token
+                            ? `${dbURL}/rooms/${roomCode}/commands/${commandId}/status.json?auth=${token}`
+                            : `${dbURL}/rooms/${roomCode}/commands/${commandId}/status.json`;
+
+                        await fetch(cmdURL, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify('completed'),
+                        });
+
+                        console.log('✅ TV: Command executed:', envelope.command.type);
+                    } catch (error) {
+                        console.error('❌ TV: Command failed:', error);
+                    }
+                }
+            } catch (e) { }
+        }, 500);
+
+        return () => clearInterval(commandPollInterval);
+    }, [roomCode, isAuthReady, roomData]);
+
+    // Execute command (exactly like Monitor)
+    const executeCommand = (command: CastCommand, currentState: RoomData | null): RoomData => {
+        const state = currentState || {
+            queue: [],
+            currentIndex: 0,
+            currentVideo: null,
+            controls: { isPlaying: false, isMuted: false }
+        };
+
+        const newState = { ...state, queue: [...state.queue], controls: { ...state.controls } };
+
+        switch (command.type) {
+            case 'CONNECT':
+                break;
+
+            case 'ADD_TO_QUEUE':
+                newState.queue = [...newState.queue, command.payload.video];
+                if (!newState.currentVideo && newState.queue.length > 0) {
+                    newState.currentVideo = newState.queue[0];
+                    newState.currentIndex = 0;
+                    newState.controls.isPlaying = true;
+                }
+                break;
+
+            case 'PLAY_NOW':
+                const existingIdx = newState.queue.findIndex(v => v.videoId === command.payload.video.videoId);
+                if (existingIdx >= 0) {
+                    newState.currentIndex = existingIdx;
+                    newState.currentVideo = newState.queue[existingIdx];
+                } else {
+                    newState.queue = [command.payload.video, ...newState.queue];
+                    newState.currentVideo = command.payload.video;
+                    newState.currentIndex = 0;
+                }
+                newState.controls.isPlaying = true;
+                break;
+
+            case 'PLAY_NEXT':
+                newState.queue.splice(newState.currentIndex + 1, 0, command.payload.video);
+                break;
+
+            case 'PLAY':
+                newState.controls.isPlaying = true;
+                break;
+
+            case 'PAUSE':
+                newState.controls.isPlaying = false;
+                break;
+
+            case 'NEXT':
+                if (newState.currentIndex < newState.queue.length - 1) {
+                    newState.currentIndex++;
+                    newState.currentVideo = newState.queue[newState.currentIndex];
+                    newState.controls.isPlaying = true;
+                }
+                break;
+
+            case 'PREVIOUS':
+                if (newState.currentIndex > 0) {
+                    newState.currentIndex--;
+                    newState.currentVideo = newState.queue[newState.currentIndex];
+                    newState.controls.isPlaying = true;
+                }
+                break;
+
+            case 'SKIP_TO':
+                if (command.payload.index >= 0 && command.payload.index < newState.queue.length) {
+                    newState.currentIndex = command.payload.index;
+                    newState.currentVideo = newState.queue[command.payload.index];
+                    newState.controls.isPlaying = true;
+                }
+                break;
+
+            case 'REMOVE_AT':
+                if (command.payload.index >= 0 && command.payload.index < newState.queue.length) {
+                    newState.queue.splice(command.payload.index, 1);
+                    if (command.payload.index < newState.currentIndex) {
+                        newState.currentIndex--;
+                    } else if (command.payload.index === newState.currentIndex) {
+                        if (newState.queue.length > 0) {
+                            newState.currentVideo = newState.queue[newState.currentIndex] || newState.queue[0];
+                        } else {
+                            newState.currentVideo = null;
+                            newState.controls.isPlaying = false;
+                        }
+                    }
+                }
+                break;
+
+            case 'SET_PLAYLIST':
+                newState.queue = command.payload.playlist;
+                if (newState.queue.length > 0) {
+                    newState.currentIndex = 0;
+                    newState.currentVideo = newState.queue[0];
+                    newState.controls.isPlaying = true;
+                } else {
+                    newState.currentIndex = 0;
+                    newState.currentVideo = null;
+                    newState.controls.isPlaying = false;
+                }
+                break;
+
+            case 'CLEAR_QUEUE':
+                newState.queue = [];
+                newState.currentIndex = 0;
+                newState.currentVideo = null;
+                newState.controls.isPlaying = false;
+                break;
+
+            case 'MUTE':
+                newState.controls.isMuted = true;
+                break;
+
+            case 'UNMUTE':
+                newState.controls.isMuted = false;
+                break;
+
+            case 'TOGGLE_MUTE':
+                newState.controls.isMuted = !newState.controls.isMuted;
+                break;
+        }
+
+        return newState;
+    };
 
     // =============================================
-    // 6. PLAYER CONTROL: Volume
+    // 4. VIDEO LOADING (Like Monitor)
     // =============================================
     useEffect(() => {
-        if (!player) return;
-        const vol = roomState.controls.volume ?? 100;
-        try {
-            player.setVolume(vol);
-        } catch (e) { /* ignore */ }
-    }, [player, roomState.controls.volume]);
+        if (!player || !roomData?.currentVideo) return;
+
+        const { videoId } = roomData.currentVideo;
+        const shouldAutoPlay = roomData.controls.isPlaying;
+
+        console.log('📺 TV: Loading video:', roomData.currentVideo.title);
+
+        if (shouldAutoPlay) {
+            setIsLoadingVideo(true);
+            const loadAndPlay = async () => {
+                try {
+                    await player.mute();
+                    player.loadVideoById(videoId);
+
+                    for (let i = 0; i < 5; i++) {
+                        await new Promise(r => setTimeout(r, 300 * (i + 1)));
+                        try {
+                            const state = await player.getPlayerState();
+                            if (state !== 1) {
+                                console.log(`⚡ TV: Force play ${i + 1}/5`);
+                                await player.playVideo();
+                            } else {
+                                console.log('✅ TV: Playing!');
+                                break;
+                            }
+                        } catch (e) {
+                            try { await player.playVideo(); } catch (e2) { }
+                        }
+                    }
+                    setIsLoadingVideo(false);
+                } catch (e) {
+                    setIsLoadingVideo(false);
+                }
+            };
+            loadAndPlay();
+        } else {
+            player.cueVideoById(videoId);
+        }
+    }, [player, roomData?.currentVideo?.videoId]);
 
     // =============================================
-    // 7. AUTO-NEXT (When video ends)
+    // 5. PLAY/PAUSE (Like Monitor)
+    // =============================================
+    useEffect(() => {
+        if (!player || !roomData || isLoadingVideo) return;
+
+        const { isPlaying } = roomData.controls;
+
+        const sync = async () => {
+            try {
+                const state = await player.getPlayerState();
+                if (isPlaying && state !== 1) {
+                    console.log('▶️ TV: Playing');
+                    player.playVideo();
+                } else if (!isPlaying && state === 1) {
+                    console.log('⏸️ TV: Pausing');
+                    player.pauseVideo();
+                }
+            } catch (e) {
+                if (isPlaying) player.playVideo();
+                else player.pauseVideo();
+            }
+        };
+        sync();
+    }, [player, roomData?.controls.isPlaying, isLoadingVideo]);
+
+    // =============================================
+    // 6. MUTE (Like Monitor)
+    // =============================================
+    useEffect(() => {
+        if (!player || !roomData) return;
+
+        const sync = async () => {
+            try {
+                if (roomData.controls.isMuted) {
+                    await player.mute();
+                    console.log('🔇 TV: Muted');
+                }
+            } catch (e) { }
+        };
+        sync();
+    }, [player, roomData?.controls.isMuted]);
+
+    // =============================================
+    // 7. AUTO-NEXT
     // =============================================
     const handleVideoEnd = async () => {
-        const nextIndex = roomState.currentIndex + 1;
-        if (nextIndex < roomState.queue.length) {
-            const nextVideo = roomState.queue[nextIndex];
+        if (!roomData) return;
+        const nextIndex = roomData.currentIndex + 1;
+        if (nextIndex < roomData.queue.length) {
+            const nextVideo = roomData.queue[nextIndex];
             const newState = {
-                ...roomState,
+                ...roomData,
                 currentIndex: nextIndex,
                 currentVideo: nextVideo,
-                controls: { ...roomState.controls, isPlaying: true }
+                controls: { ...roomData.controls, isPlaying: true }
             };
 
-            // Write to Firebase (Host will see it too)
-            const stateRef = ref(realtimeDb, `rooms/${roomCode}/state`);
-            await set(stateRef, newState);
-            console.log('⏭️ TV: Auto-next:', nextVideo.title);
+            try {
+                const dbURL = realtimeDb.app.options.databaseURL;
+                const user = auth.currentUser;
+                const token = user ? await user.getIdToken() : null;
+                const url = token
+                    ? `${dbURL}/rooms/${roomCode}/state.json?auth=${token}`
+                    : `${dbURL}/rooms/${roomCode}/state.json`;
+
+                await fetch(url, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newState),
+                });
+                console.log('⏭️ TV: Auto-next:', nextVideo.title);
+            } catch (e) { }
         }
     };
 
     // =============================================
-    // 8. CAST CONTEXT (For real Chromecast - keep for future)
+    // 8. CAST CONTEXT
     // =============================================
     useEffect(() => {
         const initCast = () => {
@@ -267,10 +466,9 @@ const TVPage = () => {
                     opts.disableIdleTimeout = true;
                     ctx.start(opts);
                     console.log('✅ TV: Cast Context started');
-                } catch (e) { /* Already started */ }
+                } catch (e) { }
             }
         };
-
         const interval = setInterval(() => {
             if ((window as any).cast) {
                 initCast();
@@ -287,8 +485,7 @@ const TVPage = () => {
 
     if (!mounted) return <div className="bg-black w-screen h-screen" />;
 
-    // IDLE SCREEN
-    if (!roomState.currentVideo) {
+    if (!roomData?.currentVideo) {
         return (
             <div className="relative h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 text-white overflow-hidden font-sans">
                 <div className="absolute inset-0 opacity-5">
@@ -348,7 +545,6 @@ const TVPage = () => {
         );
     }
 
-    // PLAYER SCREEN
     const playerOpts: any = {
         width: '100%',
         height: '100%',
@@ -368,7 +564,7 @@ const TVPage = () => {
         <div className="relative w-screen h-screen bg-black overflow-hidden font-sans text-white">
             <div className="absolute inset-0">
                 <YouTube
-                    videoId={roomState.currentVideo.videoId}
+                    videoId={roomData.currentVideo.videoId}
                     opts={playerOpts}
                     className="w-full h-full pointer-events-none"
                     onReady={(e) => {
@@ -376,7 +572,6 @@ const TVPage = () => {
                         setPlayer(e.target);
                         e.target.unMute();
                         e.target.setVolume(100);
-                        // Auto-play on ready
                         e.target.playVideo();
                     }}
                     onStateChange={(e) => {
@@ -389,7 +584,6 @@ const TVPage = () => {
                 />
             </div>
 
-            {/* Audio Blocked Overlay */}
             {needsInteraction && (
                 <div
                     className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm cursor-pointer"
@@ -409,10 +603,10 @@ const TVPage = () => {
             )}
 
             <UnifiedPlayerInterface
-                videoId={roomState.currentVideo.videoId}
-                queue={roomState.queue}
-                isPlaying={roomState.controls.isPlaying}
-                isMuted={roomState.controls.isMuted}
+                videoId={roomData.currentVideo.videoId}
+                queue={roomData.queue}
+                isPlaying={roomData.controls.isPlaying}
+                isMuted={roomData.controls.isMuted}
                 onPlayPause={() => { }}
                 onNext={() => { }}
                 onPrevious={() => { }}
