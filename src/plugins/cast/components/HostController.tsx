@@ -41,16 +41,16 @@ export const HostController: React.FC<HostControllerProps> = ({
 
     const backgroundStyle: React.CSSProperties = {
         position: 'absolute',
-        top: '-10%', // Offset to ensure coverage
-        left: '-10%',
-        width: '120%', // Oversize to guarantee fill
-        height: '120%',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         zIndex: -1,
-        backgroundImage: thumbnailUrl ? `url(${thumbnailUrl})` : 'none',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center center',
-        backgroundRepeat: 'no-repeat',
-        // filter: 'blur(20px) brightness(0.5)', // Removed for debugging
+        backgroundColor: '#222', // Solid color for debugging
+        // backgroundImage: thumbnailUrl ? `url(${thumbnailUrl})` : 'none',
+        // backgroundSize: 'cover',
+        // backgroundPosition: 'center center',
+        // backgroundRepeat: 'no-repeat',
     };
 
     const contentStyle: React.CSSProperties = {
