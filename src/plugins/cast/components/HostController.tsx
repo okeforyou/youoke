@@ -31,78 +31,75 @@ export const HostController: React.FC<HostControllerProps> = ({
         : null;
 
     return (
-        <div className="relative w-full aspect-video bg-black overflow-hidden select-none flex flex-col items-center justify-center group">
+        <div className="relative w-full aspect-video bg-[#050505] overflow-hidden select-none flex flex-col items-center justify-center group">
 
-            {/* 1. LAYERED BACKGROUND BLUR (ROBUST METHOD) */}
+            {/* 1. BACKGROUND (DIRECT FILTER BLUR) - Guaranteed to work */}
             {thumbnailUrl ? (
                 <>
-                    {/* Layer 1: Base Image (Scaled) */}
+                    {/* The Image Itself - Blurred heavily via CSS filter */}
                     <div className="absolute inset-0 z-0">
+                        <div className="absolute inset-0 bg-[#050505] z-0" />
                         <Image
                             src={thumbnailUrl}
                             alt="Background"
                             fill
-                            className="object-cover scale-150 opacity-80"
+                            className="object-cover opacity-60"
+                            style={{ filter: 'blur(40px)', transform: 'scale(1.5)' }} // Inline style for guaranteed blur
                             unoptimized
                         />
                     </div>
-                    {/* Layer 2: Heavy Backdrop Blur Overlay (This effectively blurs the image behind it) */}
-                    <div className="absolute inset-0 z-10 backdrop-blur-[50px] bg-black/40" />
-
-                    {/* Layer 3: Gradient Vignetts */}
-                    <div className="absolute inset-0 z-20 bg-gradient-to-t from-black/80 via-transparent to-black/60 pointer-events-none" />
                 </>
             ) : (
-                <div className="absolute inset-0 z-0 bg-[#0a0a0a]" />
+                <div className="absolute inset-0 z-0 bg-[#050505]" />
             )}
+
+            {/* Dark Overlay for Text Readability */}
+            <div className="absolute inset-0 z-10 bg-black/60" />
 
             {/* Content Container */}
             <div className="relative z-30 flex flex-col items-center justify-center text-center w-full max-w-md px-4 py-2">
 
-                {/* 2. CUSTOM SIGNAL ANIMATION (Inline Styles for guarantee) */}
-                <div className="relative mb-6 transform scale-100">
-                    <div className="h-20 px-8 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center gap-6 shadow-2xl">
+                {/* 2. ANIMATION - Simplified & Robust */}
+                <div className="relative mb-6">
+                    <div className="h-20 px-8 rounded-2xl bg-black/40 border border-white/10 flex items-center gap-6 shadow-2xl relative overflow-hidden">
 
-                        {/* Host PC */}
-                        <div className="flex flex-col items-center gap-1">
-                            <ComputerDesktopIcon className="w-8 h-8 text-white/70" />
-                            <span className="text-[9px] text-white/40 font-mono">HOST</span>
+                        {/* HOST */}
+                        <div className="flex flex-col items-center gap-1 z-10">
+                            <ComputerDesktopIcon className="w-8 h-8 text-white/50" />
+                            <span className="text-[9px] text-white/40 font-mono font-bold">HOST</span>
                         </div>
 
-                        {/* SIGNAL WIRE */}
-                        <div className="relative w-24 h-0.5 bg-white/10 overflow-visible flex items-center">
-                            {/* The Moving Packet (Bright Dot) */}
-                            <div className="signal-dot absolute w-12 h-1 bg-gradient-to-r from-transparent via-green-400 to-transparent blur-[1px]"></div>
-                            {/* Connection Line */}
-                            <div className="w-full h-full bg-white/5 rounded-full"></div>
+                        {/* WIRE & SIGNAL */}
+                        <div className="relative w-24 h-1 bg-white/10 rounded-full flex items-center overflow-hidden">
+                            {/* Moving Dot - Using Tailwind animate-ping or standard transition loop */}
+                            <div className="absolute w-12 h-1 bg-gradient-to-r from-transparent via-green-400 to-transparent blur-[2px] animate-[slide_1.5s_ease-in-out_infinite]"></div>
                         </div>
 
-                        {/* Receiver PC */}
-                        <div className="flex flex-col items-center gap-1 relative">
+                        {/* TV */}
+                        <div className="flex flex-col items-center gap-1 z-10 relative">
                             <ComputerDesktopIcon className="w-8 h-8 text-white drop-shadow-md" />
-                            {/* Active Indicator */}
                             <div className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e] animate-pulse"></div>
-                            <span className="text-[9px] text-green-400/80 font-mono">TV</span>
+                            <span className="text-[9px] text-green-400 font-mono font-bold">TV</span>
                         </div>
-
                     </div>
                 </div>
 
-                {/* 3. Headline */}
+                {/* 3. HEADLINE (High Contrast) */}
                 <div className="space-y-1 mb-6">
                     <h1 className="text-3xl font-bold tracking-tight text-white drop-shadow-2xl">
                         โหมด DJ 2 หน้าจอ
                     </h1>
-                    <p className="text-xs text-white/60 font-medium tracking-wide">
-                        กำลังส่งสัญญาณไปยังห้อง <span className="text-green-400 font-bold tracking-widest">{roomCode}</span>
+                    <p className="text-xs text-white/70 font-medium tracking-wide bg-black/40 px-3 py-1 rounded-full border border-white/5 inline-block">
+                        กำลังส่งสัญญาณไปยังห้อง <span className="text-green-400 font-bold tracking-widest ml-1">{roomCode}</span>
                     </p>
                 </div>
 
-                {/* 4. Now Playing Card */}
-                <div className="w-full max-w-sm relative mt-2 group/card">
-                    <div className="relative bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl p-2.5 flex items-center gap-3 shadow-lg hover:bg-black/50 transition-colors">
+                {/* 4. NOW PLAYING (Clear Card, No Blur on Card) */}
+                <div className="w-full max-w-sm relative mt-2">
+                    <div className="relative bg-[#1a1a1a] border border-white/10 rounded-xl p-2.5 flex items-center gap-3 shadow-xl">
                         {thumbnailUrl ? (
-                            <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 shadow-inner border border-white/10">
+                            <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 shadow-inner border border-white/5">
+                                {/* Clear Thumbnail */}
                                 <Image
                                     src={thumbnailUrl}
                                     alt="Thumbnail"
@@ -118,7 +115,7 @@ export const HostController: React.FC<HostControllerProps> = ({
                         )}
 
                         <div className="text-left flex-1 min-w-0 mr-1">
-                            <p className="text-sm font-bold text-white truncate shadow-black drop-shadow-md">
+                            <p className="text-sm font-bold text-white truncate">
                                 {currentVideoTitle || currentVideo?.title || 'รอเพลงถัดไป...'}
                             </p>
                             <p className="text-[10px] text-white/50 uppercase tracking-wider mt-0.5">
@@ -137,16 +134,13 @@ export const HostController: React.FC<HostControllerProps> = ({
 
             </div>
 
-            {/* INLINE STYLES FOR ANIMATION */}
-            <style jsx>{`
-                .signal-dot {
-                    animation: signal-move 1.5s infinite linear;
-                }
-                @keyframes signal-move {
-                    0% { left: -20%; opacity: 0; }
+            {/* FORCE KEYFRAMES */}
+            <style jsx global>{`
+                @keyframes slide {
+                    0% { transform: translateX(-100%); opacity: 0; }
                     20% { opacity: 1; }
                     80% { opacity: 1; }
-                    100% { left: 100%; opacity: 0; }
+                    100% { transform: translateX(200%); opacity: 0; }
                 }
             `}</style>
 
