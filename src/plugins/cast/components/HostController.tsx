@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useFirebaseCast } from '../../../../context/FirebaseCastContext';
 
 interface HostControllerProps {
@@ -13,19 +13,13 @@ export const HostController: React.FC<HostControllerProps> = ({
     roomCode,
     onDisconnect
 }) => {
-    const { state } = useFirebaseCast();
-    const currentVideo = state.currentVideo;
-
-    // Try maxresdefault first for better quality/aspect ratio
-    const videoId = currentVideo?.videoId;
-    const thumbnailUrl = videoId
-        ? `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`
-        : null;
+    // This is the EXACT code that worked previously (MVP)
+    // No z-index complexities, no absolute positioning layers yet.
 
     const containerStyle: React.CSSProperties = {
         width: '100%',
         height: '100%',
-        backgroundColor: '#111', // Very dark gray instead of pure black to see boundaries
+        backgroundColor: '#222', // Modified to Dark Gray to distinguish from parent black
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -33,70 +27,33 @@ export const HostController: React.FC<HostControllerProps> = ({
         color: 'white',
         fontFamily: 'sans-serif',
         padding: '20px',
-        boxSizing: 'border-box',
-        position: 'relative',
-        overflow: 'hidden',
-        isolation: 'isolate'
+        boxSizing: 'border-box'
     };
 
-    const backgroundStyle: React.CSSProperties = {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: -1,
-        backgroundColor: '#222', // Solid color for debugging
-        // backgroundImage: thumbnailUrl ? `url(${thumbnailUrl})` : 'none',
-        // backgroundSize: 'cover',
-        // backgroundPosition: 'center center',
-        // backgroundRepeat: 'no-repeat',
-    };
-
-    const contentStyle: React.CSSProperties = {
-        position: 'relative',
-        zIndex: 2,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '100%',
-        textShadow: '0 2px 4px rgba(0,0,0,0.8)'
+    const textStyle: React.CSSProperties = {
+        fontSize: '16px',
+        marginBottom: '20px',
+        textAlign: 'center'
     };
 
     const buttonStyle: React.CSSProperties = {
-        backgroundColor: 'rgba(255,255,255,0.15)',
+        backgroundColor: '#dc2626',
         color: 'white',
-        border: '1px solid rgba(255, 255, 255, 0.4)',
-        padding: '6px 16px',
-        borderRadius: '20px',
+        border: 'none',
+        padding: '10px 20px',
+        borderRadius: '5px',
         cursor: 'pointer',
-        fontSize: '12px',
-        marginTop: '12px',
-        backdropFilter: 'blur(4px)'
+        fontSize: '14px'
     };
 
     return (
         <div style={containerStyle}>
-            {/* Background Layer */}
-            {thumbnailUrl && <div style={backgroundStyle} />}
-
-            {/* Content Layer */}
-            <div style={contentStyle}>
-                <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '4px' }}>
-                    โหมด DJ ทำงานอยู่
-                </div>
-                <div style={{ fontSize: '12px', opacity: 0.8 }}>
-                    ห้อง {roomCode}
-                </div>
-
-                <button
-                    style={buttonStyle}
-                    onClick={onDisconnect}
-                >
-                    ยกเลิกการเชื่อมต่อ
-                </button>
+            <div style={textStyle}>
+                โหมด DJ ทำงานอยู่ (ห้อง {roomCode})
             </div>
+            <button style={buttonStyle} onClick={onDisconnect}>
+                ยกเลิกการเชื่อมต่อ
+            </button>
         </div>
     );
 };
