@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useFirebaseCast } from '../../../../context/FirebaseCastContext';
 
 interface HostControllerProps {
@@ -19,33 +19,37 @@ export const HostController: React.FC<HostControllerProps> = ({
         ? `https://i.ytimg.com/vi/${currentVideo.videoId}/maxresdefault.jpg`
         : null;
 
+    // STRATEGY: CSS Grid.
+    // Row 1: Top Bar (Badge) - Fixed height or auto.
+    // Row 2: Content (Icon, Text, Button) - Takes remaining space.
+    // This physically prevents overlap.
+
     const containerStyle: React.CSSProperties = {
         width: '100%',
         height: '100%',
         backgroundColor: '#222',
-        backgroundImage: thumbnailUrl ? `linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url(${thumbnailUrl})` : 'none',
+        backgroundImage: thumbnailUrl ? `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(${thumbnailUrl})` : 'none',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center', // Changed from space-between to center to group things closer
-        justifyContent: 'center',
+
+        display: 'grid',              // <--- KEY CHANGE
+        gridTemplateRows: 'auto 1fr', // Row 1 auto size, Row 2 fills rest
+
         padding: '12px',
         boxSizing: 'border-box',
         color: 'white',
-        // Updated font stack to prioritize Thai fonts as "System Font" usually implies
-        fontFamily: '"Prompt", "Kanit", "Sarabun", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-        overflow: 'hidden',
-        position: 'relative'
+        fontFamily: '"Prompt", "Kanit", "Sarabun", -apple-system, BlinkMacSystemFont, sans-serif',
+        overflow: 'hidden'
     };
 
-    // Absolute position for Badge to keep it independent of center stack
-    const badgeContainerStyle: React.CSSProperties = {
-        position: 'absolute',
-        top: '12px',
-        right: '12px',
-        zIndex: 10
+    // Row 1: Top Bar
+    const topBarStyle: React.CSSProperties = {
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'flex-end',
+        alignItems: 'flex-start',
+        paddingBottom: '0px'
     };
 
     const badgeStyle: React.CSSProperties = {
@@ -58,34 +62,43 @@ export const HostController: React.FC<HostControllerProps> = ({
         display: 'flex',
         alignItems: 'center',
         boxShadow: '0 1px 2px rgba(0,0,0,0.3)',
+        whiteSpace: 'nowrap'
     };
 
-    const centerContentStyle: React.CSSProperties = {
+    // Row 2: Main Content Area
+    const mainContentAreaStyle: React.CSSProperties = {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
-        gap: '6px', // Reduced gap
-        marginBottom: '10px' // Space before button
+        justifyContent: 'center', // Center vertically in the remaining space
+        gap: '12px',              // Gap between Icon/Text group and Button
+        width: '100%'
+    };
+
+    // Icon + Text Group
+    const infoGroupStyle: React.CSSProperties = {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '8px'
     };
 
     const iconWrapperStyle: React.CSSProperties = {
         position: 'relative',
-        width: '50px',
-        height: '50px',
+        width: '44px',
+        height: '44px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: '4px'
     };
 
     const textMainStyle: React.CSSProperties = {
-        fontSize: '14px',
+        fontSize: '15px',
         fontWeight: 'bold',
         textAlign: 'center',
         textShadow: '0 2px 4px rgba(0,0,0,0.8)',
         margin: 0,
-        whiteSpace: 'nowrap'
+        lineHeight: 1.4
     };
 
     const buttonStyle: React.CSSProperties = {
@@ -98,47 +111,52 @@ export const HostController: React.FC<HostControllerProps> = ({
         fontSize: '12px',
         backdropFilter: 'blur(4px)',
         fontWeight: 500,
-        marginTop: '0px' // Removed extra margin
+        transition: 'background-color 0.2s'
     };
 
     return (
         <div style={containerStyle}>
-            {/* Top Right Badge (Absolute) */}
-            <div style={badgeContainerStyle}>
+            {/* GRID ROW 1: Top Bar with Badge */}
+            <div style={topBarStyle}>
                 <div style={badgeStyle}>
                     โหมด DJ
                 </div>
             </div>
 
-            {/* Center Group */}
-            <div style={centerContentStyle}>
-                {/* Icon */}
-                <div style={iconWrapperStyle}>
-                    <div className="pulse-ring"></div>
-                    <img
-                        src="/computer.png"
-                        alt="Monitor"
-                        style={{
-                            width: '32px',
-                            height: '32px',
-                            filter: 'invert(1)',
-                            opacity: 0.9,
-                            position: 'relative',
-                            zIndex: 2
-                        }}
-                    />
+            {/* GRID ROW 2: Main Content */}
+            <div style={mainContentAreaStyle}>
+
+                {/* Icon + Text Group */}
+                <div style={infoGroupStyle}>
+                    <div style={iconWrapperStyle}>
+                        <div className="pulse-ring"></div>
+                        <img
+                            src="/computer.png"
+                            alt="Monitor"
+                            style={{
+                                width: '28px',
+                                height: '28px',
+                                filter: 'invert(1)',
+                                opacity: 0.95,
+                                position: 'relative',
+                                zIndex: 2
+                            }}
+                        />
+                    </div>
+
+                    <h3 style={textMainStyle}>
+                        กำลังเชื่อมหน้าจอที่ 2 (ห้อง {roomCode})
+                    </h3>
                 </div>
 
-                {/* Text: Single Line */}
-                <h3 style={textMainStyle}>
-                    กำลังเชื่อมหน้าจอที่ 2 (ห้อง {roomCode})
-                </h3>
+                {/* Disconnect Button (pushed up close to text via gap) */}
+                <button
+                    style={buttonStyle}
+                    onClick={onDisconnect}
+                >
+                    ยกเลิกการเชื่อมต่อ
+                </button>
             </div>
-
-            {/* Button directly below text */}
-            <button style={buttonStyle} onClick={onDisconnect}>
-                ยกเลิกการเชื่อมต่อ
-            </button>
 
             <style jsx>{`
                 .pulse-ring {
