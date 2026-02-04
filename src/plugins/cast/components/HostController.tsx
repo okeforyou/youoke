@@ -4,7 +4,7 @@ import { DisconnectModal } from './DisconnectModal';
 import {
     Squares2X2Icon,
     XMarkIcon,
-    ComputerDesktopIcon // Solid by default in v2 solid import
+    ComputerDesktopIcon
 } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 
@@ -32,45 +32,62 @@ export const HostController: React.FC<HostControllerProps> = ({
         : null;
 
     return (
-        <div className="relative w-full aspect-video bg-base-300 overflow-hidden select-none flex flex-col items-center justify-center">
+        <div className="relative w-full aspect-video bg-[#121212] overflow-hidden select-none flex flex-col items-center justify-center group">
 
-            {/* Background Gradient Mesh - Matches System Theme */}
-            <div className="absolute inset-0 bg-gradient-to-br from-base-300 via-base-200 to-base-300"></div>
-            <div className="absolute top-[-50%] left-[-20%] w-[80%] h-[80%] bg-primary/20 rounded-full blur-[100px] pointer-events-none opacity-60"></div>
-            <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-secondary/10 rounded-full blur-[80px] pointer-events-none opacity-40"></div>
+            {/* Dynamic Ambient Background */}
+            {thumbnailUrl ? (
+                <>
+                    {/* The Image itself heavily blurred */}
+                    <div className="absolute inset-0 z-0">
+                        <div className="absolute inset-0 bg-black/40 z-10" /> {/* Dark overlay for readability */}
+                        <Image
+                            src={thumbnailUrl}
+                            alt="Ambient Background"
+                            fill
+                            className="object-cover blur-2xl scale-125 opacity-60"
+                            unoptimized
+                        />
+                    </div>
+                </>
+            ) : (
+                /* Fallback Dark Background */
+                <div className="absolute inset-0 bg-[#121212] z-0" />
+            )}
 
-            {/* Main Content Container - Compact */}
+            {/* Content Container (z-10 to sit above background) */}
             <div className="relative z-10 flex flex-col items-center justify-center text-center w-full max-w-md px-4 py-2">
 
-                {/* 1. Dual Screen Icon - Computer Desktop Solid */}
-                <div className="relative mb-3 transform scale-90">
-                    <div className="w-16 h-16 rounded-2xl bg-base-100 shadow-xl flex items-center justify-center relative z-10 border border-base-content/5">
-                        <ComputerDesktopIcon className="w-8 h-8 text-primary" />
+                {/* 1. Computer Icon */}
+                <div className="relative mb-3 transform scale-95">
+                    <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md shadow-2xl flex items-center justify-center border border-white/20">
+                        <ComputerDesktopIcon className="w-8 h-8 text-white drop-shadow-md" />
 
-                        {/* Status Badge */}
-                        <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-success border-2 border-base-100 animate-pulse"></div>
+                        {/* Status Dot */}
+                        <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-green-500 border-2 border-white/20 animate-pulse shadow-lg"></div>
                     </div>
                 </div>
 
-                {/* 2. Headline Text */}
-                <div className="space-y-1 mb-4">
-                    <h1 className="text-2xl font-bold tracking-tight text-base-content drop-shadow-sm">
+                {/* 2. Headline */}
+                <div className="space-y-1 mb-5">
+                    <h1 className="text-2xl font-bold tracking-tight text-white drop-shadow-lg shadow-black">
                         โหมด DJ 2 หน้าจอ
                     </h1>
-                    <p className="text-xs text-base-content/60 font-medium bg-base-100/50 px-3 py-1 rounded-full inline-block backdrop-blur-sm border border-base-content/5">
-                        ควบคุมการเล่นที่ห้อง <span className="text-primary font-bold">{roomCode}</span>
-                    </p>
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-black/40 backdrop-blur-md rounded-full border border-white/10 shadow-lg">
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
+                        <span className="text-xs text-white/90 font-medium">
+                            ห้อง {roomCode}
+                        </span>
+                    </div>
                 </div>
 
-                {/* 3. Now Playing Card (Polished with Theme Colors) */}
-                <div className="w-full max-w-sm relative group">
-                    {/* Glow effect */}
-                    <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/50 to-secondary/50 rounded-xl blur opacity-30 group-hover:opacity-60 transition duration-500"></div>
+                {/* 3. Now Playing Card (Glassmorphism) */}
+                <div className="w-full max-w-sm relative mt-2 group/card">
+                    {/* Glass Container */}
+                    <div className="relative bg-black/60 backdrop-blur-xl border border-white/10 rounded-xl p-3 flex items-center gap-3 shadow-2xl transition-all duration-300 hover:bg-black/70">
 
-                    <div className="relative bg-base-100 rounded-xl p-2.5 flex items-center gap-3 shadow-lg border border-base-content/10">
-                        {/* Thumbnail */}
+                        {/* Thumbnail (Sharp) */}
                         {thumbnailUrl ? (
-                            <div className="relative w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-base-300 ring-1 ring-base-content/10">
+                            <div className="relative w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 shadow-md border border-white/10">
                                 <Image
                                     src={thumbnailUrl}
                                     alt="Thumbnail"
@@ -80,40 +97,32 @@ export const HostController: React.FC<HostControllerProps> = ({
                                 />
                             </div>
                         ) : (
-                            <div className="w-10 h-10 rounded-lg bg-base-200 flex items-center justify-center">
+                            <div className="w-11 h-11 rounded-lg bg-white/10 flex items-center justify-center">
                                 <span className="text-[10px] opacity-50">🎵</span>
                             </div>
                         )}
 
-                        {/* Song Info */}
-                        <div className="text-left flex-1 min-w-0 pr-2">
-                            <p className="text-sm font-bold text-base-content truncate leading-tight">
+                        {/* Text Info */}
+                        <div className="text-left flex-1 min-w-0 mr-1">
+                            <p className="text-sm font-semibold text-white/95 truncate leading-tight drop-shadow-sm">
                                 {currentVideoTitle || currentVideo?.title || 'รอเพลงถัดไป...'}
                             </p>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                                <span className="text-[10px] text-primary font-bold uppercase tracking-wider flex items-center gap-1">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
-                                    Now Playing
-                                </span>
-                            </div>
+                            <p className="text-[10px] text-white/50 uppercase tracking-wider font-medium mt-0.5">
+                                Now Playing
+                            </p>
                         </div>
 
-                        {/* Disconnect Icon Button */}
+                        {/* Disconnect Button (Subtle) */}
                         <button
                             onClick={() => setIsDisconnectModalOpen(true)}
-                            className="btn btn-ghost btn-xs btn-circle text-error bg-error/10 hover:bg-error hover:text-white transition-all"
+                            className="p-1.5 rounded-full hover:bg-white/20 text-white/50 hover:text-white transition-colors"
                             title="ตัดการเชื่อมต่อ"
                         >
-                            <XMarkIcon className="w-4 h-4" />
+                            <XMarkIcon className="w-5 h-5" />
                         </button>
                     </div>
                 </div>
 
-            </div>
-
-            {/* System Footer Info (Optional) */}
-            <div className="absolute bottom-2 text-[10px] text-base-content/20 font-mono">
-                CONNECTED: {roomCode}
             </div>
 
             <DisconnectModal
