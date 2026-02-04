@@ -46,14 +46,12 @@ export const HostController: React.FC<HostControllerProps> = ({
             {/* Content */}
             <div className="relative z-10 flex flex-col items-center justify-center w-full h-full p-4 space-y-2">
 
-                {/* Custom dual screen icon */}
-                <div className="w-12 h-12 flex items-center justify-center">
-                    <Image
+                {/* Custom dual screen icon - using img tag directly */}
+                <div className="w-10 h-10 flex items-center justify-center">
+                    <img
                         src="/img/computer.png"
-                        alt="Dual Screen"
-                        width={40}
-                        height={40}
-                        className="invert opacity-80"
+                        alt=""
+                        className="w-8 h-8 invert opacity-80"
                     />
                 </div>
 
@@ -64,16 +62,18 @@ export const HostController: React.FC<HostControllerProps> = ({
                 {/* Now Playing Card */}
                 {currentVideo && (
                     <div className="w-full max-w-xs bg-black/50 rounded-lg p-2 border border-white/10">
-                        {/* Song title + marquee */}
+                        {/* Song title - smaller */}
                         <div className="overflow-hidden">
-                            <p className={`text-[11px] font-medium text-white whitespace-nowrap ${songTitle.length > 30 ? 'animate-marquee' : ''}`}>
+                            <p className={`text-[9px] font-medium text-white whitespace-nowrap ${songTitle.length > 30 ? 'animate-marquee' : ''}`}>
                                 {songTitle}
                             </p>
                         </div>
-                        {/* Tiny badge */}
-                        <div className="flex items-center gap-0.5 mt-1">
-                            <span className="w-[3px] h-[3px] bg-red-500 rounded-full animate-pulse"></span>
-                            <span className="text-[6px] text-red-400 font-medium">กำลังเล่น</span>
+                        {/* Tiny badge with red border */}
+                        <div className="flex items-center mt-1">
+                            <span className="inline-flex items-center gap-0.5 px-1 py-[1px] bg-red-600/20 border border-red-500/50 rounded">
+                                <span className="w-[2px] h-[2px] bg-red-500 rounded-full animate-pulse"></span>
+                                <span className="text-[5px] text-red-400 font-medium">กำลังเล่น</span>
+                            </span>
                         </div>
                     </div>
                 )}
