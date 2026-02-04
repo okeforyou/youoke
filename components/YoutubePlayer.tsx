@@ -1769,22 +1769,24 @@ function YoutubePlayer({
 
               {/* Controller Mode: Replaces Player entirely when Casting/Dual */}
               {((isDualMode && !isMoniter) || (isCasting && !isMobile)) ? (
-                <PluginBoundary name="CastHostController" fallback={<div className="text-red-500 p-4">Cast Controller Error</div>}>
-                  <HostController
-                    isCasting={isCasting}
-                    isDualMode={isDualMode}
-                    roomCode={roomCode}
-                    currentVideoTitle={firebaseCastState.currentVideo?.title}
-                    onDisconnect={() => {
-                      if (isDualMode) {
-                        localStorage.removeItem('youoke-dual-active');
-                        setIsDualMode(false);
-                      } else {
-                        handleCastDisconnect();
-                      }
-                    }}
-                  />
-                </PluginBoundary>
+                <div className="w-full aspect-video bg-black overflow-hidden">
+                  <PluginBoundary name="CastHostController" fallback={<div className="text-red-500 p-4">Cast Controller Error</div>}>
+                    <HostController
+                      isCasting={isCasting}
+                      isDualMode={isDualMode}
+                      roomCode={roomCode}
+                      currentVideoTitle={firebaseCastState.currentVideo?.title}
+                      onDisconnect={() => {
+                        if (isDualMode) {
+                          localStorage.removeItem('youoke-dual-active');
+                          setIsDualMode(false);
+                        } else {
+                          handleCastDisconnect();
+                        }
+                      }}
+                    />
+                  </PluginBoundary>
+                </div>
               ) : (
                 /* Standard Local Player Mode */
                 null
