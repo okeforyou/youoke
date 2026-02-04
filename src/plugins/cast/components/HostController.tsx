@@ -28,35 +28,41 @@ export const HostController: React.FC<HostControllerProps> = ({
         : null;
 
     return (
-        <div className="relative w-full aspect-video bg-base-300 flex items-center justify-center">
+        <div className="relative w-full aspect-video bg-[#111111] flex items-center justify-center text-white">
 
-            {/* Center Card - Symmetric Layout */}
-            <div className="bg-base-100 rounded-2xl shadow-xl border border-base-200 p-6 text-center w-full max-w-xs mx-4">
+            {/* Minimal Dark Layout (Reference 2 Style) */}
+            <div className="flex flex-col items-center justify-center text-center space-y-6 w-full max-w-sm px-6">
 
-                {/* Icon + Status */}
-                <div className="flex flex-col items-center gap-3 mb-4">
-                    <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center">
+                {/* 1. Device Icon & Status */}
+                <div className="relative group cursor-default">
+                    {/* Outer Glow */}
+                    <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full opacity-50 group-hover:opacity-80 transition-opacity duration-700"></div>
+
+                    <div className="relative w-24 h-24 bg-[#1a1a1a] rounded-full border border-white/10 flex items-center justify-center shadow-2xl">
                         {isCasting ? (
-                            <TvIcon className="w-7 h-7 text-primary" />
+                            <TvIcon className="w-10 h-10 text-primary mb-1" />
                         ) : (
-                            <ComputerDesktopIcon className="w-7 h-7 text-primary" />
+                            <ComputerDesktopIcon className="w-10 h-10 text-primary mb-1" />
                         )}
+                        {/* Live Dot */}
+                        <span className="absolute top-0 right-0 w-3 h-3 bg-green-500 border-2 border-[#1a1a1a] rounded-full animate-pulse"></span>
                     </div>
-                    <div>
-                        <p className="text-xs text-base-content/50">
-                            {isCasting ? 'เชื่อมต่อจอทีวี' : 'หน้าจอที่ 2'}
+
+                    <div className="mt-4 space-y-1">
+                        <p className="text-white/40 text-xs uppercase tracking-widest font-medium">
+                            {isCasting ? 'Connected to TV' : 'Dual Screen Active'}
                         </p>
-                        <p className="text-lg font-bold text-base-content">
-                            ห้อง {roomCode}
-                        </p>
+                        <h2 className="text-3xl font-bold tracking-tight text-white">
+                            {roomCode}
+                        </h2>
                     </div>
                 </div>
 
-                {/* Now Playing (small) */}
+                {/* 2. Now Playing (Clean & Minimal) */}
                 {currentVideo && (
-                    <div className="flex items-center gap-3 bg-base-200 rounded-lg p-2 mb-4">
-                        {thumbnailUrl && (
-                            <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                    <div className="w-full bg-white/5 border border-white/5 rounded-xl p-3 flex items-center gap-3 hover:bg-white/10 transition-colors">
+                        {thumbnailUrl ? (
+                            <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-black/50">
                                 <Image
                                     src={thumbnailUrl}
                                     alt="Thumbnail"
@@ -65,23 +71,27 @@ export const HostController: React.FC<HostControllerProps> = ({
                                     unoptimized
                                 />
                             </div>
+                        ) : (
+                            <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center">
+                                <span className="text-xs">🎵</span>
+                            </div>
                         )}
-                        <div className="text-left min-w-0 flex-1">
-                            <p className="text-[10px] text-base-content/40">กำลังเล่น</p>
-                            <p className="text-xs text-base-content line-clamp-2">
+                        <div className="text-left flex-1 min-w-0">
+                            <p className="text-[10px] text-primary mb-0.5 uppercase tracking-wide font-bold">Now Playing</p>
+                            <p className="text-sm text-white/90 font-light truncate leading-tight">
                                 {currentVideoTitle || currentVideo.title}
                             </p>
                         </div>
                     </div>
                 )}
 
-                {/* Disconnect Button */}
+                {/* 3. Disconnect Text Link (Less intrusive than a button) */}
                 <button
                     onClick={() => setIsDisconnectModalOpen(true)}
-                    className="btn btn-sm btn-outline btn-error w-full gap-2"
+                    className="text-xs text-white/30 hover:text-error transition-colors flex items-center gap-2 py-2"
                 >
                     <XMarkIcon className="w-4 h-4" />
-                    ตัดการเชื่อมต่อ
+                    <span>Disconnect</span>
                 </button>
             </div>
 
