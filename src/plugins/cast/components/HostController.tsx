@@ -7,17 +7,22 @@ interface HostControllerProps {
     roomCode: string;
     onDisconnect: () => void;
     currentVideoTitle?: string;
+    currentVideoId?: string; // Prop for local fallback
 }
 
 export const HostController: React.FC<HostControllerProps> = ({
     roomCode,
     onDisconnect,
-    isDualMode // Added missing prop
+    isDualMode,
+    currentVideoId
 }) => {
     const { state } = useFirebaseCast();
     const currentVideo = state.currentVideo;
-    const thumbnailUrl = currentVideo?.videoId
-        ? `https://i.ytimg.com/vi/${currentVideo.videoId}/maxresdefault.jpg`
+    // Fallback to local ID if Firebase state is empty (Dual Mode)
+    const targetVideoId = currentVideo?.videoId || currentVideoId;
+
+    const thumbnailUrl = targetVideoId
+        ? `https://i.ytimg.com/vi/${targetVideoId}/maxresdefault.jpg`
         : null;
 
     // STRATEGY: CSS Grid.

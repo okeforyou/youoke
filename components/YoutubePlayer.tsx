@@ -1774,6 +1774,7 @@ function YoutubePlayer({
                     isDualMode={isDualMode}
                     roomCode={roomCode}
                     currentVideoTitle={firebaseCastState.currentVideo?.title}
+                    currentVideoId={videoId}
                     onDisconnect={() => {
                       if (isDualMode) {
                         localStorage.removeItem('youoke-dual-active');
