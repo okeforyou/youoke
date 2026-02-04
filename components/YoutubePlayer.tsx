@@ -1770,10 +1770,6 @@ function YoutubePlayer({
               {/* Controller Mode: Replaces Player entirely when Casting/Dual */}
               {((isDualMode && !isMoniter) || (isCasting && !isMobile)) ? (
                 <div className="w-full aspect-video bg-black overflow-hidden relative">
-                  {/* DEBUG */}
-                  <div className="absolute top-2 left-2 z-50 bg-green-500 text-white text-xs p-1 rounded">
-                    DEBUG: isDual={String(isDualMode)}, isCast={String(isCasting)}, isMob={String(isMobile)}
-                  </div>
                   <HostController
                     isCasting={isCasting}
                     isDualMode={isDualMode}
