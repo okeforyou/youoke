@@ -24,19 +24,19 @@ export const HostController: React.FC<HostControllerProps> = ({
         : null;
 
     return (
-        <div className="w-full h-full relative group bg-black flex flex-col items-center justify-center text-center p-6 space-y-4 overflow-hidden">
+        <div className="w-full h-full relative group bg-neutral-900 flex flex-col items-center justify-center text-center p-6 space-y-4 overflow-hidden">
 
-            {/* 1. Background Art - FULL BLUR */}
+            {/* Background - More Visible Blur */}
             {thumbnailUrl && (
                 <div className="absolute inset-0 pointer-events-none">
                     <Image
                         src={thumbnailUrl}
                         alt=""
                         fill
-                        className="object-cover blur-3xl scale-110 opacity-40"
+                        className="object-cover blur-2xl scale-125 opacity-70"
                         unoptimized
                     />
-                    <div className="absolute inset-0 bg-black/50" />
+                    <div className="absolute inset-0 bg-black/40" />
                 </div>
             )}
 
@@ -47,39 +47,36 @@ export const HostController: React.FC<HostControllerProps> = ({
                 </svg>
             </div>
 
-            {/* Title + Subtitle with Room Code */}
+            {/* Title */}
             <div className="relative z-10 w-full px-4">
                 <h3 className="text-lg font-bold text-white tracking-tight">โหมด DJ 2 หน้าจอ ทำงานอยู่</h3>
-                {/* 2. Room Code in Subtitle */}
-                <p className="text-white/50 text-xs mt-1">วิดีโอกำลังเล่นบนจอแยก (ห้อง {roomCode})</p>
+                <p className="text-white/60 text-xs mt-1">วิดีโอกำลังเล่นบนจอแยก (ห้อง {roomCode})</p>
             </div>
 
-            {/* Now Playing Card with Badge */}
+            {/* Now Playing Card */}
             {currentVideo && (
-                <div className="relative z-10 bg-white/5 backdrop-blur-md rounded-xl p-3 w-full border border-white/10 shrink-0">
-                    {/* 4. NOW PLAYING Badge */}
+                <div className="relative z-10 bg-white/10 backdrop-blur-md rounded-xl p-3 w-full border border-white/20 shrink-0">
                     <div className="flex items-center gap-2 mb-2">
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-500/20 border border-red-500/30">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-500/20 border border-red-500/40">
                             <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
                             <span className="text-[10px] font-bold text-red-300 uppercase tracking-wider">Now Playing</span>
                         </span>
                     </div>
-                    {/* 5. Font adjusted */}
                     <p className="text-sm font-semibold truncate text-white">{currentVideoTitle || currentVideo.title}</p>
                 </div>
             )}
 
-            {/* 3. Buttons: Stop + Disconnect */}
-            <div className="relative z-10 flex items-center gap-3">
+            {/* Buttons - Fixed Styling */}
+            <div className="relative z-10 flex items-center gap-3 mt-2">
                 <button
                     onClick={() => setIsDisconnectModalOpen(true)}
-                    className="btn btn-error btn-sm rounded-full"
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-full transition-colors"
                 >
                     หยุด
                 </button>
                 <button
                     onClick={onDisconnect}
-                    className="btn btn-ghost btn-sm text-white/60 hover:text-white rounded-full border border-white/20"
+                    className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm font-medium rounded-full border border-white/30 transition-colors"
                 >
                     ยกเลิกการเชื่อมต่อ
                 </button>
