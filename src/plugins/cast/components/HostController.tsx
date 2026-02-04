@@ -56,10 +56,10 @@ export const HostController: React.FC<HostControllerProps> = ({
     const badgeStyle: React.CSSProperties = {
         backgroundColor: '#dc2626',
         color: 'white',
-        padding: '4px 10px',
-        borderRadius: '4px',
+        padding: '2px 10px',
+        borderRadius: '99px', // Fully rounded
         fontSize: '11px',
-        fontWeight: 'bold',
+        fontWeight: 400, // "Not thick"
         display: 'flex',
         alignItems: 'center',
         boxShadow: '0 1px 2px rgba(0,0,0,0.3)',
@@ -116,7 +116,7 @@ export const HostController: React.FC<HostControllerProps> = ({
     };
 
     // Dynamic text based on mode
-    const statusText = isDualMode ? 'กำลังเชื่อมหน้าจอที่ 2' : 'กำลัง Cast ไป TV';
+    const statusText = isDualMode ? 'โหมดจอแยก' : 'กำลังสั่งงานทีวี';
 
     return (
         <div style={containerStyle}>
@@ -149,7 +149,7 @@ export const HostController: React.FC<HostControllerProps> = ({
                     </div>
 
                     <h3 style={textMainStyle}>
-                        {statusText} (ห้อง {roomCode})
+                        {statusText} {!isDualMode && `(ห้อง ${roomCode})`}
                     </h3>
                 </div>
 

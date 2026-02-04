@@ -1469,7 +1469,7 @@ function YoutubePlayer({
                     type="text"
                     inputMode="numeric"
                     pattern="[0-9]*"
-                    className="py-3 px-4 block w-full bg-base-200 border border-base-300 rounded-lg text-center text-2xl tracking-widest font-bold focus:border-primary focus:outline-none transition-colors"
+                    className="py-3 px-4 block w-full bg-base-200 border border-base-300 rounded-lg text-center text-2xl tracking-widest font-bold focus:border-primary focus:outline-none focus:ring-0 transition-colors"
                     placeholder="0000"
                     maxLength={4}
                     value={castInputRoomCode}
