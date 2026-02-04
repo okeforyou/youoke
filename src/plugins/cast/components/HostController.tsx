@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useFirebaseCast } from '../../../../context/FirebaseCastContext';
 import { DisconnectModal } from './DisconnectModal';
+import { ComputerDesktopIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 
 interface HostControllerProps {
@@ -26,7 +27,7 @@ export const HostController: React.FC<HostControllerProps> = ({
     return (
         <div className="w-full aspect-video relative bg-black flex flex-col items-center justify-center text-center overflow-hidden">
 
-            {/* 1. Background from THUMBNAIL - proper blur */}
+            {/* Background blur from thumbnail */}
             {thumbnailUrl && (
                 <div className="absolute inset-0">
                     <Image
@@ -44,50 +45,53 @@ export const HostController: React.FC<HostControllerProps> = ({
             {/* Content */}
             <div className="relative z-10 flex flex-col items-center justify-center w-full h-full p-4 space-y-3">
 
-                {/* TV Icon */}
-                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center ring-2 ring-primary/30 animate-pulse">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-primary">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
-                    </svg>
+                {/* 2. Two Computers Animation */}
+                <div className="flex items-center gap-3">
+                    <ComputerDesktopIcon className="w-6 h-6 text-white/60" />
+                    <div className="relative w-10 h-[2px] bg-white/20 rounded overflow-hidden">
+                        <div
+                            className="absolute w-4 h-full bg-green-400 rounded animate-[slide_1s_linear_infinite]"
+                            style={{ boxShadow: '0 0 8px #4ade80' }}
+                        />
+                    </div>
+                    <div className="relative">
+                        <ComputerDesktopIcon className="w-6 h-6 text-white" />
+                        <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                    </div>
                 </div>
 
                 {/* Title */}
                 <h3 className="text-base font-bold text-white drop-shadow-lg">โหมด DJ 2 หน้าจอ ทำงานอยู่</h3>
-
-                {/* 5. Subtitle - more visible */}
                 <p className="text-white/80 text-xs drop-shadow-md">วิดีโอกำลังเล่นบนจอแยก (ห้อง {roomCode})</p>
 
-                {/* Now Playing - 2. Small red box + 4. No blur card */}
+                {/* Now Playing - 1. Smallest badge */}
                 {currentVideo && (
                     <div className="w-full max-w-sm bg-black/60 rounded-lg p-3 border border-white/10">
-                        {/* 2. NOW PLAYING - small red badge with blink */}
-                        <div className="flex items-center gap-1.5 mb-1.5">
-                            <span className="flex items-center gap-1 px-1.5 py-0.5 bg-red-600 rounded text-[9px] font-bold text-white uppercase">
-                                <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
-                                Now Playing
-                            </span>
+                        <div className="flex items-center gap-1 mb-1">
+                            <span className="w-1 h-1 bg-red-500 rounded-full animate-pulse"></span>
+                            <span className="text-[8px] font-bold text-red-400 uppercase">Playing</span>
                         </div>
                         <p className="text-sm font-medium text-white truncate">{currentVideoTitle || currentVideo.title}</p>
                     </div>
                 )}
 
-                {/* 3. Buttons INSIDE player */}
-                <div className="flex items-center gap-2 mt-1">
-                    <button
-                        onClick={() => setIsDisconnectModalOpen(true)}
-                        className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-full"
-                    >
-                        หยุด
-                    </button>
-                    <button
-                        onClick={onDisconnect}
-                        className="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-medium rounded-full border border-white/20"
-                    >
-                        ยกเลิกการเชื่อมต่อ
-                    </button>
-                </div>
+                {/* 3. Single button only (both did same thing) */}
+                <button
+                    onClick={() => setIsDisconnectModalOpen(true)}
+                    className="px-4 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-medium rounded-full border border-white/20"
+                >
+                    ยกเลิกการเชื่อมต่อ
+                </button>
 
             </div>
+
+            {/* Animation keyframe */}
+            <style jsx global>{`
+                @keyframes slide {
+                    0% { transform: translateX(-100%); }
+                    100% { transform: translateX(300%); }
+                }
+            `}</style>
 
             <DisconnectModal
                 isOpen={isDisconnectModalOpen}
