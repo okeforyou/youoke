@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useFirebaseCast } from '../../../../context/FirebaseCastContext';
 import { DisconnectModal } from './DisconnectModal';
-import { XMarkIcon, ComputerDesktopIcon } from '@heroicons/react/24/solid';
+import { XMarkIcon, TvIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 
 interface HostControllerProps {
@@ -25,64 +25,63 @@ export const HostController: React.FC<HostControllerProps> = ({
         : null;
 
     return (
-        <div className="relative w-full aspect-video bg-black overflow-hidden select-none flex flex-col items-center justify-center">
-            {/* BG */}
-            {thumbnailUrl && (
-                <div className="absolute inset-0 z-0">
-                    <Image src={thumbnailUrl} alt="" fill className="object-cover opacity-50" unoptimized priority />
+        <div className="relative w-full aspect-video bg-neutral-900 overflow-hidden select-none flex flex-col">
+
+            {/* Header */}
+            <div className="p-4 text-center">
+                <div className="flex items-center justify-center gap-2 mb-1">
+                    <TvIcon className="w-5 h-5 text-primary" />
+                    <h1 className="text-lg font-bold text-white">โหมด DJ 2 หน้าจอ ทำงานอยู่</h1>
                 </div>
-            )}
-            <div className="absolute inset-0 z-10 bg-black/70 backdrop-blur-3xl" style={{ backdropFilter: 'blur(30px)' }} />
+                <p className="text-xs text-white/50">วิดีโอกำลังเล่นบนจอแยก (Clean Feed)</p>
+            </div>
 
-            {/* Content */}
-            <div className="relative z-20 flex flex-col items-center w-full max-w-xs px-4">
-
-                {/* Animation Card - COMPACT */}
-                <div className="flex items-center gap-4 px-4 py-2 rounded-lg bg-black/30 border border-white/10 mb-3">
-                    <div className="flex flex-col items-center">
-                        <ComputerDesktopIcon className="w-4 h-4 text-white/80" />
-                        <span className="text-[6px] text-white/30 tracking-widest mt-0.5">HOST</span>
-                    </div>
-                    <div className="relative w-10 h-px bg-white/20 overflow-hidden">
-                        <div className="absolute w-6 h-full bg-gradient-to-r from-transparent via-green-400 to-transparent animate-[slide_1.5s_linear_infinite]" />
-                    </div>
-                    <div className="flex flex-col items-center relative">
-                        <ComputerDesktopIcon className="w-4 h-4 text-white" />
-                        <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                        <span className="text-[6px] text-white/30 tracking-widest mt-0.5">TV</span>
-                    </div>
-                </div>
-
-                {/* Headline */}
-                <h1 className="text-base font-bold text-white mb-1">โหมด DJ 2 หน้าจอ</h1>
-                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/5 border border-white/10 mb-3">
-                    <span className="w-1 h-1 bg-green-500 rounded-full animate-pulse" />
-                    <span className="text-[8px] text-white/60">ห้อง <b className="text-white">{roomCode}</b></span>
-                </div>
-
-                {/* Now Playing */}
-                <div className="w-full flex items-center gap-2 p-1.5 rounded-lg bg-black/60 border border-white/10">
-                    <div className="relative w-8 h-8 rounded bg-black flex-shrink-0 overflow-hidden border border-white/10">
-                        {thumbnailUrl && <Image src={thumbnailUrl} alt="" fill className="object-cover" unoptimized />}
-                    </div>
-                    <div className="flex-1 min-w-0 text-left">
-                        <p className="text-[10px] font-bold text-white truncate">{currentVideoTitle || currentVideo?.title || 'รอเพลง...'}</p>
-                        <div className="inline-flex items-center gap-1 px-1 py-px rounded border border-red-500/30 bg-red-500/10 mt-0.5">
-                            <span className="w-0.5 h-0.5 bg-red-500 rounded-full animate-pulse" />
-                            <span className="text-[5px] font-bold text-red-300 tracking-wider">NOW PLAYING</span>
+            {/* Now Playing */}
+            <div className="px-4 pb-3">
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-neutral-800 border border-neutral-700">
+                    {thumbnailUrl ? (
+                        <div className="relative w-16 h-12 rounded overflow-hidden flex-shrink-0">
+                            <Image src={thumbnailUrl} alt="" fill className="object-cover" unoptimized />
                         </div>
+                    ) : (
+                        <div className="w-16 h-12 rounded bg-neutral-700 flex items-center justify-center text-white/30">🎵</div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white truncate">
+                            {currentVideoTitle || currentVideo?.title || 'รอเพลงถัดไป...'}
+                        </p>
+                        <p className="text-xs text-white/50 mt-0.5">กำลังเล่น</p>
                     </div>
-                    <button onClick={() => setIsDisconnectModalOpen(true)} className="p-1 text-white/30 hover:text-white rounded transition-colors">
-                        <XMarkIcon className="w-3 h-3" />
+                    <button
+                        onClick={() => setIsDisconnectModalOpen(true)}
+                        className="px-3 py-1.5 text-xs bg-error/20 text-error hover:bg-error/30 rounded transition-colors"
+                    >
+                        หยุด
                     </button>
                 </div>
             </div>
 
-            <style jsx global>{`
-                @keyframes slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(200%); } }
-            `}</style>
+            {/* Room Code Badge */}
+            <div className="px-4 pb-2">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
+                    <span className="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
+                    <span className="text-xs text-primary font-medium">ห้อง {roomCode}</span>
+                </div>
+            </div>
 
-            <DisconnectModal isOpen={isDisconnectModalOpen} onClose={() => setIsDisconnectModalOpen(false)} onConfirm={() => { setIsDisconnectModalOpen(false); onDisconnect(); }} />
+            {/* Spacer */}
+            <div className="flex-1"></div>
+
+            {/* Footer hint */}
+            <div className="p-3 text-center border-t border-neutral-800">
+                <p className="text-[10px] text-white/30">ควบคุมการเล่นจากหน้าจอนี้</p>
+            </div>
+
+            <DisconnectModal
+                isOpen={isDisconnectModalOpen}
+                onClose={() => setIsDisconnectModalOpen(false)}
+                onConfirm={() => { setIsDisconnectModalOpen(false); onDisconnect(); }}
+            />
         </div>
     );
 };
