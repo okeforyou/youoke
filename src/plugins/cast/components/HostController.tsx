@@ -33,18 +33,17 @@ export const HostController: React.FC<HostControllerProps> = ({
     return (
         <div className="relative w-full aspect-video bg-[#050505] overflow-hidden select-none flex flex-col items-center justify-center group">
 
-            {/* 1. BACKGROUND (DIRECT FILTER BLUR) - Guaranteed to work */}
+            {/* 1. BACKGROUND (DIRECT FILTER BLUR) */}
             {thumbnailUrl ? (
                 <>
-                    {/* The Image Itself - Blurred heavily via CSS filter */}
                     <div className="absolute inset-0 z-0">
                         <div className="absolute inset-0 bg-[#050505] z-0" />
                         <Image
                             src={thumbnailUrl}
                             alt="Background"
                             fill
-                            className="object-cover opacity-60"
-                            style={{ filter: 'blur(40px)', transform: 'scale(1.5)' }} // Inline style for guaranteed blur
+                            className="object-cover opacity-50"
+                            style={{ filter: 'blur(30px)', transform: 'scale(1.2)' }}
                             unoptimized
                         />
                     </div>
@@ -53,53 +52,54 @@ export const HostController: React.FC<HostControllerProps> = ({
                 <div className="absolute inset-0 z-0 bg-[#050505]" />
             )}
 
-            {/* Dark Overlay for Text Readability */}
+            {/* Darker Overlay for better text contrast */}
             <div className="absolute inset-0 z-10 bg-black/60" />
 
-            {/* Content Container */}
-            <div className="relative z-30 flex flex-col items-center justify-center text-center w-full max-w-md px-4 py-2">
+            {/* Content Container - Reduced spacing */}
+            <div className="relative z-30 flex flex-col items-center justify-center text-center w-full max-w-sm px-4 py-2">
 
-                {/* 2. ANIMATION - Simplified & Robust */}
-                <div className="relative mb-6">
-                    <div className="h-20 px-8 rounded-2xl bg-black/40 border border-white/10 flex items-center gap-6 shadow-2xl relative overflow-hidden">
+                {/* 2. ANIMATION & ICON - Scaled Down & Darker Card */}
+                <div className="relative mb-4">
+                    {/* Darker translucent background (bg-black/60) */}
+                    <div className="h-14 px-5 rounded-xl bg-black/60 border border-white/10 flex items-center gap-4 shadow-xl relative overflow-hidden backdrop-blur-sm">
 
                         {/* HOST */}
-                        <div className="flex flex-col items-center gap-1 z-10">
-                            <ComputerDesktopIcon className="w-8 h-8 text-white/50" />
-                            <span className="text-[9px] text-white/40 font-mono font-bold">HOST</span>
+                        <div className="flex flex-col items-center gap-0.5 z-10">
+                            <ComputerDesktopIcon className="w-5 h-5 text-white/70" />
+                            <span className="text-[8px] text-white/40 font-mono font-bold">HOST</span>
                         </div>
 
-                        {/* WIRE & SIGNAL */}
-                        <div className="relative w-24 h-1 bg-white/10 rounded-full flex items-center overflow-hidden">
-                            {/* Moving Dot - Using Tailwind animate-ping or standard transition loop */}
-                            <div className="absolute w-12 h-1 bg-gradient-to-r from-transparent via-green-400 to-transparent blur-[2px] animate-[slide_1.5s_ease-in-out_infinite]"></div>
+                        {/* SIGNAL WIRE - Shorter distance */}
+                        <div className="relative w-16 h-1 bg-white/10 rounded-full flex items-center overflow-hidden">
+                            {/* Moving Dot - Brighter and clearer animation */}
+                            <div className="absolute w-8 h-1 bg-gradient-to-r from-transparent via-green-400 to-transparent blur-[1px] animate-[slide_1.5s_linear_infinite]"></div>
                         </div>
 
                         {/* TV */}
-                        <div className="flex flex-col items-center gap-1 z-10 relative">
-                            <ComputerDesktopIcon className="w-8 h-8 text-white drop-shadow-md" />
-                            <div className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e] animate-pulse"></div>
-                            <span className="text-[9px] text-green-400 font-mono font-bold">TV</span>
+                        <div className="flex flex-col items-center gap-0.5 z-10 relative">
+                            <ComputerDesktopIcon className="w-5 h-5 text-white drop-shadow-md" />
+                            <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e] animate-pulse"></div>
+                            <span className="text-[8px] text-green-400 font-mono font-bold">TV</span>
                         </div>
                     </div>
                 </div>
 
-                {/* 3. HEADLINE (High Contrast) */}
-                <div className="space-y-1 mb-6">
-                    <h1 className="text-3xl font-bold tracking-tight text-white drop-shadow-2xl">
+                {/* 3. HEADLINE - Smaller Font */}
+                <div className="space-y-1 mb-4">
+                    <h1 className="text-xl font-bold tracking-tight text-white drop-shadow-lg">
                         โหมด DJ 2 หน้าจอ
                     </h1>
-                    <p className="text-xs text-white/70 font-medium tracking-wide bg-black/40 px-3 py-1 rounded-full border border-white/5 inline-block">
-                        กำลังส่งสัญญาณไปยังห้อง <span className="text-green-400 font-bold tracking-widest ml-1">{roomCode}</span>
+                    <p className="text-[10px] text-white/60 font-medium tracking-wide bg-black/60 px-2 py-0.5 rounded-full border border-white/5 inline-block backdrop-blur-sm">
+                        ห้อง <span className="text-green-400 font-bold ml-0.5">{roomCode}</span>
                     </p>
                 </div>
 
-                {/* 4. NOW PLAYING (Clear Card, No Blur on Card) */}
-                <div className="w-full max-w-sm relative mt-2">
-                    <div className="relative bg-[#1a1a1a] border border-white/10 rounded-xl p-2.5 flex items-center gap-3 shadow-xl">
+                {/* 4. NOW PLAYING - Darker Card & Compact */}
+                <div className="w-full max-w-xs relative mt-1">
+                    {/* Darker translucent background (bg-black/80) */}
+                    <div className="relative bg-[#111111]/80 backdrop-blur-sm border border-white/10 rounded-lg p-2 flex items-center gap-3 shadow-lg hover:bg-black/90 transition-colors">
                         {thumbnailUrl ? (
-                            <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 shadow-inner border border-white/5">
-                                {/* Clear Thumbnail */}
+                            <div className="relative w-10 h-10 rounded overflow-hidden flex-shrink-0 shadow-inner border border-white/5">
                                 <Image
                                     src={thumbnailUrl}
                                     alt="Thumbnail"
@@ -109,16 +109,16 @@ export const HostController: React.FC<HostControllerProps> = ({
                                 />
                             </div>
                         ) : (
-                            <div className="w-12 h-12 rounded-lg bg-white/5 flex items-center justify-center">
-                                <span className="text-lg opacity-30">🎵</span>
+                            <div className="w-10 h-10 rounded bg-white/5 flex items-center justify-center">
+                                <span className="text-xs opacity-30">🎵</span>
                             </div>
                         )}
 
                         <div className="text-left flex-1 min-w-0 mr-1">
-                            <p className="text-sm font-bold text-white truncate">
+                            <p className="text-xs font-bold text-white truncate opacity-90">
                                 {currentVideoTitle || currentVideo?.title || 'รอเพลงถัดไป...'}
                             </p>
-                            <p className="text-[10px] text-white/50 uppercase tracking-wider mt-0.5">
+                            <p className="text-[9px] text-white/40 uppercase tracking-wider mt-0.5">
                                 Now Playing
                             </p>
                         </div>
@@ -127,19 +127,18 @@ export const HostController: React.FC<HostControllerProps> = ({
                             onClick={() => setIsDisconnectModalOpen(true)}
                             className="p-1.5 rounded-full text-white/30 hover:text-red-400 hover:bg-white/5 transition-colors"
                         >
-                            <XMarkIcon className="w-5 h-5" />
+                            <XMarkIcon className="w-4 h-4" />
                         </button>
                     </div>
                 </div>
 
             </div>
 
-            {/* FORCE KEYFRAMES */}
+            {/* Global Styles for Animation (Ensures it works) */}
             <style jsx global>{`
                 @keyframes slide {
                     0% { transform: translateX(-100%); opacity: 0; }
-                    20% { opacity: 1; }
-                    80% { opacity: 1; }
+                    50% { opacity: 1; }
                     100% { transform: translateX(200%); opacity: 0; }
                 }
             `}</style>
