@@ -25,62 +25,74 @@ export const HostController: React.FC<HostControllerProps> = ({
     const songTitle = currentVideoTitle || currentVideo?.title || '';
 
     return (
-        <div className="w-full aspect-video relative bg-black flex flex-col items-center justify-center text-center overflow-hidden">
+        <div style={{ width: '100%', aspectRatio: '16/9', position: 'relative', backgroundColor: '#000', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
 
             {/* Background blur */}
             {thumbnailUrl && (
-                <div className="absolute inset-0">
+                <div style={{ position: 'absolute', inset: 0 }}>
                     <img
                         src={thumbnailUrl}
                         alt=""
-                        className="w-full h-full object-cover"
-                        style={{ filter: 'blur(20px)', transform: 'scale(1.1)' }}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'blur(20px)', transform: 'scale(1.1)' }}
                     />
-                    <div className="absolute inset-0 bg-black/30" />
+                    <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.3)' }} />
                 </div>
             )}
 
             {/* Content */}
-            <div className="relative z-10 flex flex-col items-center justify-center w-full h-full p-3 space-y-1">
+            <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%', padding: '12px', gap: '6px' }}>
 
-                {/* Icon - from public folder */}
-                <img src="/computer.png" alt="" className="w-6 h-6 invert opacity-80" />
+                {/* Icon */}
+                <img src="/computer.png" alt="" style={{ width: '24px', height: '24px', filter: 'invert(1)', opacity: 0.8 }} />
 
-                {/* Title - smaller */}
-                <h3 className="text-xs font-bold text-white drop-shadow-lg">โหมด DJ 2 หน้าจอ ทำงานอยู่</h3>
-                <p className="text-white/70 text-[8px] drop-shadow-md">วิดีโอกำลังเล่นบนจอแยก (ห้อง {roomCode})</p>
+                {/* Title */}
+                <h3 style={{ fontSize: '11px', fontWeight: 'bold', color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.5)', margin: 0 }}>โหมด DJ 2 หน้าจอ ทำงานอยู่</h3>
+                <p style={{ fontSize: '8px', color: 'rgba(255,255,255,0.7)', margin: 0 }}>วิดีโอกำลังเล่นบนจอแยก (ห้อง {roomCode})</p>
 
-                {/* Now Playing - much smaller */}
+                {/* Now Playing */}
                 {currentVideo && (
-                    <div className="w-full max-w-[200px] bg-black/50 rounded p-1.5 border border-white/10">
-                        <p className={`text-[8px] font-medium text-white whitespace-nowrap overflow-hidden ${songTitle.length > 25 ? 'animate-marquee' : 'truncate'}`}>
+                    <div style={{ width: '100%', maxWidth: '180px', backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: '6px', padding: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                        <p style={{ fontSize: '8px', fontWeight: 500, color: '#fff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', margin: 0 }}>
                             {songTitle}
                         </p>
                         {/* Tiny badge */}
-                        <span className="inline-flex items-center gap-[2px] px-1 py-[1px] mt-0.5 bg-red-600/30 border border-red-500/50 rounded text-[4px] text-red-300 font-medium">
-                            <span className="w-[2px] h-[2px] bg-red-400 rounded-full animate-pulse"></span>
+                        <span style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '2px',
+                            marginTop: '3px',
+                            padding: '1px 4px',
+                            backgroundColor: 'rgba(220,38,38,0.3)',
+                            border: '1px solid rgba(220,38,38,0.5)',
+                            borderRadius: '3px',
+                            fontSize: '6px',
+                            color: '#fca5a5',
+                            fontWeight: 500
+                        }}>
+                            <span style={{ width: '3px', height: '3px', backgroundColor: '#f87171', borderRadius: '50%' }}></span>
                             กำลังเล่น
                         </span>
                     </div>
                 )}
 
-                {/* Disconnect - smaller */}
+                {/* Disconnect */}
                 <button
                     onClick={() => setIsDisconnectModalOpen(true)}
-                    className="px-2 py-0.5 bg-white/10 hover:bg-white/20 text-white text-[8px] font-medium rounded-full border border-white/20"
+                    style={{
+                        padding: '3px 10px',
+                        backgroundColor: 'rgba(255,255,255,0.1)',
+                        color: '#fff',
+                        fontSize: '8px',
+                        fontWeight: 500,
+                        borderRadius: '20px',
+                        border: '1px solid rgba(255,255,255,0.2)',
+                        cursor: 'pointer'
+                    }}
                 >
                     ยกเลิกการเชื่อมต่อ
                 </button>
 
             </div>
-
-            <style jsx global>{`
-                @keyframes marquee {
-                    0% { transform: translateX(0); }
-                    100% { transform: translateX(-50%); }
-                }
-                .animate-marquee { animation: marquee 8s linear infinite; }
-            `}</style>
 
             <DisconnectModal
                 isOpen={isDisconnectModalOpen}
