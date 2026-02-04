@@ -24,6 +24,8 @@ export const HostController: React.FC<HostControllerProps> = ({
         ? `https://i.ytimg.com/vi/${currentVideo.videoId}/maxresdefault.jpg`
         : null;
 
+    const songTitle = currentVideoTitle || currentVideo?.title || '';
+
     return (
         <div className="w-full aspect-video relative bg-black flex flex-col items-center justify-center text-center overflow-hidden">
 
@@ -43,38 +45,54 @@ export const HostController: React.FC<HostControllerProps> = ({
             )}
 
             {/* Content */}
-            <div className="relative z-10 flex flex-col items-center justify-center w-full h-full p-4 space-y-3">
+            <div className="relative z-10 flex flex-col items-center justify-center w-full h-full p-4 space-y-2">
 
-                {/* Single TV Icon (placeholder - will replace with custom image later) */}
-                <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center ring-2 ring-primary/30">
-                    <TvIcon className="w-6 h-6 text-primary" />
+                {/* TV Icon */}
+                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center ring-2 ring-primary/30">
+                    <TvIcon className="w-5 h-5 text-primary" />
                 </div>
 
                 {/* Title */}
-                <h3 className="text-base font-bold text-white drop-shadow-lg">โหมด DJ 2 หน้าจอ ทำงานอยู่</h3>
-                <p className="text-white/80 text-xs drop-shadow-md">วิดีโอกำลังเล่นบนจอแยก (ห้อง {roomCode})</p>
+                <h3 className="text-sm font-bold text-white drop-shadow-lg">โหมด DJ 2 หน้าจอ ทำงานอยู่</h3>
+                <p className="text-white/70 text-[10px] drop-shadow-md">วิดีโอกำลังเล่นบนจอแยก (ห้อง {roomCode})</p>
 
                 {/* Now Playing Card */}
                 {currentVideo && (
-                    <div className="w-full max-w-sm bg-black/60 rounded-lg p-3 border border-white/10">
-                        {/* LIVE-style badge - small red box */}
-                        <div className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-red-600 rounded mb-1.5">
-                            <span className="w-1 h-1 bg-white rounded-full animate-pulse"></span>
-                            <span className="text-[7px] font-bold text-white uppercase leading-none">Live</span>
+                    <div className="w-full max-w-xs bg-black/50 rounded-lg p-2 border border-white/10">
+                        {/* Song title - smaller + marquee if long */}
+                        <div className="overflow-hidden">
+                            <p className={`text-[11px] font-medium text-white whitespace-nowrap ${songTitle.length > 30 ? 'animate-marquee' : ''}`}>
+                                {songTitle}
+                            </p>
                         </div>
-                        <p className="text-sm font-medium text-white truncate">{currentVideoTitle || currentVideo.title}</p>
+                        {/* TINY badge - bottom left */}
+                        <div className="flex items-center gap-0.5 mt-1">
+                            <span className="w-[3px] h-[3px] bg-red-500 rounded-full animate-pulse"></span>
+                            <span className="text-[6px] text-red-400 font-medium">กำลังเล่น</span>
+                        </div>
                     </div>
                 )}
 
                 {/* Disconnect Button */}
                 <button
                     onClick={() => setIsDisconnectModalOpen(true)}
-                    className="px-4 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-medium rounded-full border border-white/20"
+                    className="px-3 py-1 bg-white/10 hover:bg-white/20 text-white text-[10px] font-medium rounded-full border border-white/20"
                 >
                     ยกเลิกการเชื่อมต่อ
                 </button>
 
             </div>
+
+            {/* Marquee animation */}
+            <style jsx global>{`
+                @keyframes marquee {
+                    0% { transform: translateX(0); }
+                    100% { transform: translateX(-50%); }
+                }
+                .animate-marquee {
+                    animation: marquee 8s linear infinite;
+                }
+            `}</style>
 
             <DisconnectModal
                 isOpen={isDisconnectModalOpen}
