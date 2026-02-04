@@ -19,36 +19,33 @@ export const HostController: React.FC<HostControllerProps> = ({
         ? `https://i.ytimg.com/vi/${currentVideo.videoId}/maxresdefault.jpg`
         : null;
 
-    // REVERTING TO THE SAFE SINGLE-CONTAINER METHOD
-    // NO Absolute background layers.
-    // Applied styling directly to this container.
-
     const containerStyle: React.CSSProperties = {
         width: '100%',
         height: '100%',
         backgroundColor: '#222',
-        // Use simpler background strategy that worked
-        backgroundImage: thumbnailUrl ? `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(${thumbnailUrl})` : 'none',
+        backgroundImage: thumbnailUrl ? `linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url(${thumbnailUrl})` : 'none',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
-
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'space-between',
+        alignItems: 'center', // Changed from space-between to center to group things closer
+        justifyContent: 'center',
         padding: '12px',
         boxSizing: 'border-box',
         color: 'white',
-        // System font as requested
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
-        overflow: 'hidden'
+        // Updated font stack to prioritize Thai fonts as "System Font" usually implies
+        fontFamily: '"Prompt", "Kanit", "Sarabun", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        overflow: 'hidden',
+        position: 'relative'
     };
 
-    const topBarStyle: React.CSSProperties = {
-        width: '100%',
-        display: 'flex',
-        justifyContent: 'flex-end',
-        height: '24px'
+    // Absolute position for Badge to keep it independent of center stack
+    const badgeContainerStyle: React.CSSProperties = {
+        position: 'absolute',
+        top: '12px',
+        right: '12px',
+        zIndex: 10
     };
 
     const badgeStyle: React.CSSProperties = {
@@ -61,16 +58,15 @@ export const HostController: React.FC<HostControllerProps> = ({
         display: 'flex',
         alignItems: 'center',
         boxShadow: '0 1px 2px rgba(0,0,0,0.3)',
-        fontFamily: 'inherit'
     };
 
     const centerContentStyle: React.CSSProperties = {
-        flex: 1,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: '8px'
+        gap: '6px', // Reduced gap
+        marginBottom: '10px' // Space before button
     };
 
     const iconWrapperStyle: React.CSSProperties = {
@@ -83,55 +79,40 @@ export const HostController: React.FC<HostControllerProps> = ({
         marginBottom: '4px'
     };
 
-    // Updated Font Sizes as requested
     const textMainStyle: React.CSSProperties = {
-        fontSize: '16px', // Bigger
+        fontSize: '14px',
         fontWeight: 'bold',
         textAlign: 'center',
         textShadow: '0 2px 4px rgba(0,0,0,0.8)',
         margin: 0,
-        fontFamily: 'inherit'
-    };
-
-    const textSubStyle: React.CSSProperties = {
-        fontSize: '13px', // Bigger
-        opacity: 0.9,
-        textAlign: 'center',
-        margin: 0,
-        fontFamily: 'inherit'
-    };
-
-    const buttonContainerStyle: React.CSSProperties = {
-        width: '100%',
-        display: 'flex',
-        justifyContent: 'center',
-        paddingTop: '8px'
+        whiteSpace: 'nowrap'
     };
 
     const buttonStyle: React.CSSProperties = {
         backgroundColor: 'rgba(255, 255, 255, 0.15)',
         color: 'white',
         border: '1px solid rgba(255, 255, 255, 0.3)',
-        padding: '8px 18px',
+        padding: '6px 16px',
         borderRadius: '20px',
         cursor: 'pointer',
         fontSize: '12px',
         backdropFilter: 'blur(4px)',
         fontWeight: 500,
-        fontFamily: 'inherit'
+        marginTop: '0px' // Removed extra margin
     };
 
     return (
         <div style={containerStyle}>
-            {/* Top: Badge */}
-            <div style={topBarStyle}>
+            {/* Top Right Badge (Absolute) */}
+            <div style={badgeContainerStyle}>
                 <div style={badgeStyle}>
                     โหมด DJ
                 </div>
             </div>
 
-            {/* Center: Icon + Text */}
+            {/* Center Group */}
             <div style={centerContentStyle}>
+                {/* Icon */}
                 <div style={iconWrapperStyle}>
                     <div className="pulse-ring"></div>
                     <img
@@ -147,18 +128,17 @@ export const HostController: React.FC<HostControllerProps> = ({
                         }}
                     />
                 </div>
-                <div>
-                    <h3 style={textMainStyle}>เชื่อมต่อระบบ 2 หน้าจอ</h3>
-                    <p style={textSubStyle}>(ห้อง {roomCode})</p>
-                </div>
+
+                {/* Text: Single Line */}
+                <h3 style={textMainStyle}>
+                    กำลังเชื่อมหน้าจอที่ 2 (ห้อง {roomCode})
+                </h3>
             </div>
 
-            {/* Bottom: Button */}
-            <div style={buttonContainerStyle}>
-                <button style={buttonStyle} onClick={onDisconnect}>
-                    ยกเลิกการเชื่อมต่อ
-                </button>
-            </div>
+            {/* Button directly below text */}
+            <button style={buttonStyle} onClick={onDisconnect}>
+                ยกเลิกการเชื่อมต่อ
+            </button>
 
             <style jsx>{`
                 .pulse-ring {
