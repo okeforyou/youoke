@@ -50,7 +50,7 @@ export const HostController: React.FC<HostControllerProps> = ({
         backgroundSize: 'cover',
         backgroundPosition: 'center center',
         backgroundRepeat: 'no-repeat',
-        filter: 'blur(20px) brightness(0.5)',
+        // filter: 'blur(20px) brightness(0.5)', // Removed for debugging
     };
 
     const contentStyle: React.CSSProperties = {
