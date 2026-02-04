@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useFirebaseCast } from '../../../../context/FirebaseCastContext';
 import { DisconnectModal } from './DisconnectModal';
-import { TvIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 
 interface HostControllerProps {
@@ -47,9 +46,15 @@ export const HostController: React.FC<HostControllerProps> = ({
             {/* Content */}
             <div className="relative z-10 flex flex-col items-center justify-center w-full h-full p-4 space-y-2">
 
-                {/* TV Icon */}
-                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center ring-2 ring-primary/30">
-                    <TvIcon className="w-5 h-5 text-primary" />
+                {/* Custom dual screen icon */}
+                <div className="w-12 h-12 flex items-center justify-center">
+                    <Image
+                        src="/img/computer.png"
+                        alt="Dual Screen"
+                        width={40}
+                        height={40}
+                        className="invert opacity-80"
+                    />
                 </div>
 
                 {/* Title */}
@@ -59,13 +64,13 @@ export const HostController: React.FC<HostControllerProps> = ({
                 {/* Now Playing Card */}
                 {currentVideo && (
                     <div className="w-full max-w-xs bg-black/50 rounded-lg p-2 border border-white/10">
-                        {/* Song title - smaller + marquee if long */}
+                        {/* Song title + marquee */}
                         <div className="overflow-hidden">
                             <p className={`text-[11px] font-medium text-white whitespace-nowrap ${songTitle.length > 30 ? 'animate-marquee' : ''}`}>
                                 {songTitle}
                             </p>
                         </div>
-                        {/* TINY badge - bottom left */}
+                        {/* Tiny badge */}
                         <div className="flex items-center gap-0.5 mt-1">
                             <span className="w-[3px] h-[3px] bg-red-500 rounded-full animate-pulse"></span>
                             <span className="text-[6px] text-red-400 font-medium">กำลังเล่น</span>
