@@ -31,75 +31,80 @@ export const HostController: React.FC<HostControllerProps> = ({
         : null;
 
     return (
-        <div className="relative w-full aspect-video bg-[#050505] overflow-hidden select-none flex flex-col items-center justify-center group">
+        <div className="relative w-full aspect-video bg-black overflow-hidden select-none flex flex-col items-center justify-center group">
 
-            {/* 1. BACKGROUND (DIRECT FILTER BLUR) */}
+            {/* 1. ATMOSPHERE BACKGROUND (EXTREME BLUR - REVERTED TO WORKING METHOD) */}
             {thumbnailUrl ? (
-                <>
-                    <div className="absolute inset-0 z-0">
-                        <div className="absolute inset-0 bg-[#050505] z-0" />
-                        <Image
-                            src={thumbnailUrl}
-                            alt="Background"
-                            fill
-                            className="object-cover opacity-50"
-                            style={{ filter: 'blur(30px)', transform: 'scale(1.2)' }}
-                            unoptimized
-                        />
-                    </div>
-                </>
+                <div className="absolute inset-0 z-0 overflow-hidden">
+                    {/* Scale up and blur heavily to create abstract color wash */}
+                    <Image
+                        src={thumbnailUrl}
+                        alt="Atmosphere"
+                        fill
+                        className="object-cover blur-[100px] scale-[2.5] opacity-70"
+                        unoptimized
+                    />
+                    {/* Dark overlay for contrast */}
+                    <div className="absolute inset-0 bg-black/40 z-10" />
+                </div>
             ) : (
                 <div className="absolute inset-0 z-0 bg-[#050505]" />
             )}
 
-            {/* Darker Overlay for better text contrast */}
-            <div className="absolute inset-0 z-10 bg-black/60" />
-
-            {/* Content Container - Reduced spacing */}
+            {/* Content Container */}
             <div className="relative z-30 flex flex-col items-center justify-center text-center w-full max-w-sm px-4 py-2">
 
-                {/* 2. ANIMATION & ICON - Scaled Down & Darker Card */}
-                <div className="relative mb-4">
-                    {/* Darker translucent background (bg-black/60) */}
-                    <div className="h-14 px-5 rounded-xl bg-black/60 border border-white/10 flex items-center gap-4 shadow-xl relative overflow-hidden backdrop-blur-sm">
+                {/* 2. REFINED ANIMATION CARD - DARKER & SMALLER TEXT */}
+                <div className="relative mb-5">
+                    {/* Dark background (bg-[#111]/90) for high contrast */}
+                    <div className="h-16 px-6 rounded-xl bg-[#111]/90 border border-white/10 flex items-center gap-5 shadow-2xl relative overflow-hidden backdrop-blur-md">
 
                         {/* HOST */}
-                        <div className="flex flex-col items-center gap-0.5 z-10">
-                            <ComputerDesktopIcon className="w-5 h-5 text-white/70" />
-                            <span className="text-[8px] text-white/40 font-mono font-bold">HOST</span>
+                        <div className="flex flex-col items-center gap-1 z-10">
+                            <ComputerDesktopIcon className="w-5 h-5 text-white/90" />
+                            <span className="text-[9px] text-white/60 font-bold tracking-wider">HOST</span>
                         </div>
 
-                        {/* SIGNAL WIRE - Shorter distance */}
-                        <div className="relative w-16 h-1 bg-white/10 rounded-full flex items-center overflow-hidden">
-                            {/* Moving Dot - Brighter and clearer animation */}
-                            <div className="absolute w-8 h-1 bg-gradient-to-r from-transparent via-green-400 to-transparent blur-[1px] animate-[slide_1.5s_linear_infinite]"></div>
+                        {/* VISIBLE SIGNAL WIRE */}
+                        <div className="relative w-16 h-0.5 bg-white/20 rounded-full flex items-center overflow-visible">
+                            {/* Moving Light Dot - Bright Green */}
+                            <div className="absolute w-8 h-1 bg-green-500 blur-[2px] rounded-full animate-[signal_1.5s_linear_infinite] shadow-[0_0_10px_#22c55e]"></div>
                         </div>
 
                         {/* TV */}
-                        <div className="flex flex-col items-center gap-0.5 z-10 relative">
+                        <div className="flex flex-col items-center gap-1 z-10 relative">
                             <ComputerDesktopIcon className="w-5 h-5 text-white drop-shadow-md" />
-                            <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e] animate-pulse"></div>
-                            <span className="text-[8px] text-green-400 font-mono font-bold">TV</span>
+                            {/* Status Dot */}
+                            <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e] animate-pulse"></div>
+                            <span className="text-[9px] text-green-400 font-bold tracking-wider">TV</span>
                         </div>
+
+                    </div>
+                    {/* Label */}
+                    <div className="absolute -bottom-4 w-full text-center">
+                        <span className="text-[9px] text-white/30 uppercase tracking-[0.2em]">Connected</span>
                     </div>
                 </div>
 
-                {/* 3. HEADLINE - Smaller Font */}
-                <div className="space-y-1 mb-4">
-                    <h1 className="text-xl font-bold tracking-tight text-white drop-shadow-lg">
+                {/* 3. HEADLINE */}
+                <div className="space-y-1 mb-5 mt-1">
+                    <h1 className="text-2xl font-bold tracking-tight text-white drop-shadow-lg">
                         โหมด DJ 2 หน้าจอ
                     </h1>
-                    <p className="text-[10px] text-white/60 font-medium tracking-wide bg-black/60 px-2 py-0.5 rounded-full border border-white/5 inline-block backdrop-blur-sm">
-                        ห้อง <span className="text-green-400 font-bold ml-0.5">{roomCode}</span>
-                    </p>
+                    <div className="inline-flex items-center gap-1.5 px-3 py-0.5 bg-black/50 rounded-full border border-white/10 backdrop-blur-sm">
+                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                        <p className="text-[10px] text-white/80 font-medium tracking-wide">
+                            ห้อง <span className="font-bold text-white">{roomCode}</span>
+                        </p>
+                    </div>
                 </div>
 
-                {/* 4. NOW PLAYING - Darker Card & Compact */}
-                <div className="w-full max-w-xs relative mt-1">
-                    {/* Darker translucent background (bg-black/80) */}
-                    <div className="relative bg-[#111111]/80 backdrop-blur-sm border border-white/10 rounded-lg p-2 flex items-center gap-3 shadow-lg hover:bg-black/90 transition-colors">
+                {/* 4. NOW PLAYING - DARKER CARD */}
+                <div className="w-full max-w-[280px] relative mt-1">
+                    {/* Dark background (bg-[#111]/90) */}
+                    <div className="relative bg-[#111]/90 border border-white/10 rounded-xl p-2.5 flex items-center gap-3 shadow-xl transition-colors hover:bg-black">
                         {thumbnailUrl ? (
-                            <div className="relative w-10 h-10 rounded overflow-hidden flex-shrink-0 shadow-inner border border-white/5">
+                            <div className="relative w-10 h-10 rounded overflow-hidden flex-shrink-0 shadow-inner border border-white/10">
                                 <Image
                                     src={thumbnailUrl}
                                     alt="Thumbnail"
@@ -115,17 +120,17 @@ export const HostController: React.FC<HostControllerProps> = ({
                         )}
 
                         <div className="text-left flex-1 min-w-0 mr-1">
-                            <p className="text-xs font-bold text-white truncate opacity-90">
+                            <p className="text-xs font-bold text-white/90 truncate">
                                 {currentVideoTitle || currentVideo?.title || 'รอเพลงถัดไป...'}
                             </p>
-                            <p className="text-[9px] text-white/40 uppercase tracking-wider mt-0.5">
+                            <p className="text-[9px] text-white/40 uppercase tracking-wider mt-0.5 font-medium">
                                 Now Playing
                             </p>
                         </div>
 
                         <button
                             onClick={() => setIsDisconnectModalOpen(true)}
-                            className="p-1.5 rounded-full text-white/30 hover:text-red-400 hover:bg-white/5 transition-colors"
+                            className="p-1.5 rounded-full text-white/30 hover:text-red-400 hover:bg-white/10 transition-colors"
                         >
                             <XMarkIcon className="w-4 h-4" />
                         </button>
@@ -134,12 +139,13 @@ export const HostController: React.FC<HostControllerProps> = ({
 
             </div>
 
-            {/* Global Styles for Animation (Ensures it works) */}
+            {/* FORCE KEYFRAMES */}
             <style jsx global>{`
-                @keyframes slide {
-                    0% { transform: translateX(-100%); opacity: 0; }
-                    50% { opacity: 1; }
-                    100% { transform: translateX(200%); opacity: 0; }
+                @keyframes signal {
+                    0% { left: -20px; opacity: 0; }
+                    20% { opacity: 1; }
+                    80% { opacity: 1; }
+                    100% { left: 100%; opacity: 0; }
                 }
             `}</style>
 
