@@ -33,78 +33,73 @@ export const HostController: React.FC<HostControllerProps> = ({
     return (
         <div className="relative w-full aspect-video bg-black overflow-hidden select-none flex flex-col items-center justify-center group">
 
-            {/* 1. ATMOSPHERE BACKGROUND (EXTREME BLUR - REVERTED TO WORKING METHOD) */}
+            {/* 1. BACKGROUND LAYERS (Split for robustness) */}
             {thumbnailUrl ? (
-                <div className="absolute inset-0 z-0 overflow-hidden">
-                    {/* Scale up and blur heavily to create abstract color wash */}
-                    <Image
-                        src={thumbnailUrl}
-                        alt="Atmosphere"
-                        fill
-                        className="object-cover blur-[100px] scale-[2.5] opacity-70"
-                        unoptimized
-                    />
-                    {/* Dark overlay for contrast */}
-                    <div className="absolute inset-0 bg-black/40 z-10" />
-                </div>
+                <>
+                    {/* Layer A: Image (Sharp) */}
+                    <div className="absolute inset-0 z-0">
+                        <Image
+                            src={thumbnailUrl}
+                            alt="Background"
+                            fill
+                            className="object-cover"
+                            unoptimized
+                        />
+                    </div>
+                    {/* Layer B: Heavy Blur Overlay (Independent DIV) */}
+                    <div className="absolute inset-0 z-10 backdrop-blur-[50px] bg-black/60" />
+                </>
             ) : (
-                <div className="absolute inset-0 z-0 bg-[#050505]" />
+                <div className="absolute inset-0 z-0 bg-neutral-900" />
             )}
 
             {/* Content Container */}
             <div className="relative z-30 flex flex-col items-center justify-center text-center w-full max-w-sm px-4 py-2">
 
-                {/* 2. REFINED ANIMATION CARD - DARKER & SMALLER TEXT */}
-                <div className="relative mb-5">
-                    {/* Dark background (bg-[#111]/90) for high contrast */}
-                    <div className="h-16 px-6 rounded-xl bg-[#111]/90 border border-white/10 flex items-center gap-5 shadow-2xl relative overflow-hidden backdrop-blur-md">
+                {/* 2. ANIMATION CARD - High Contrast */}
+                <div className="relative mb-4">
+                    <div className="h-16 px-6 rounded-xl bg-black/80 border border-white/20 flex items-center gap-6 shadow-2xl relative overflow-hidden backdrop-blur-md">
 
                         {/* HOST */}
-                        <div className="flex flex-col items-center gap-1 z-10">
-                            <ComputerDesktopIcon className="w-5 h-5 text-white/90" />
-                            <span className="text-[9px] text-white/60 font-bold tracking-wider">HOST</span>
+                        <div className="flex flex-col items-center gap-0.5 z-20">
+                            <ComputerDesktopIcon className="w-5 h-5 text-white" />
+                            <span className="text-[9px] text-white font-bold tracking-wider">HOST</span>
                         </div>
 
-                        {/* VISIBLE SIGNAL WIRE */}
-                        <div className="relative w-16 h-0.5 bg-white/20 rounded-full flex items-center overflow-visible">
-                            {/* Moving Light Dot - Bright Green */}
-                            <div className="absolute w-8 h-1 bg-green-500 blur-[2px] rounded-full animate-[signal_1.5s_linear_infinite] shadow-[0_0_10px_#22c55e]"></div>
+                        {/* SIGNAL WIRE */}
+                        <div className="relative w-16 h-0.5 bg-white/20 rounded-full flex items-center">
+                            {/* Moving Dot - Pure White & Bright Green */}
+                            <div className="absolute w-8 h-1.5 bg-green-500 rounded-full blur-[1px] animate-[slide_1.5s_linear_infinite] shadow-[0_0_8px_#4ade80]"></div>
                         </div>
 
                         {/* TV */}
-                        <div className="flex flex-col items-center gap-1 z-10 relative">
-                            <ComputerDesktopIcon className="w-5 h-5 text-white drop-shadow-md" />
-                            {/* Status Dot */}
-                            <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e] animate-pulse"></div>
-                            <span className="text-[9px] text-green-400 font-bold tracking-wider">TV</span>
+                        <div className="flex flex-col items-center gap-0.5 z-20 relative">
+                            <ComputerDesktopIcon className="w-5 h-5 text-white" />
+                            <div className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-green-500 border border-black shadow-[0_0_8px_#22c55e] animate-pulse"></div>
+                            <span className="text-[9px] text-white font-bold tracking-wider">TV</span>
                         </div>
 
-                    </div>
-                    {/* Label */}
-                    <div className="absolute -bottom-4 w-full text-center">
-                        <span className="text-[9px] text-white/30 uppercase tracking-[0.2em]">Connected</span>
                     </div>
                 </div>
 
                 {/* 3. HEADLINE */}
-                <div className="space-y-1 mb-5 mt-1">
-                    <h1 className="text-2xl font-bold tracking-tight text-white drop-shadow-lg">
+                <div className="space-y-1 mb-4">
+                    <h1 className="text-2xl font-bold tracking-tight text-white drop-shadow-md">
                         โหมด DJ 2 หน้าจอ
                     </h1>
-                    <div className="inline-flex items-center gap-1.5 px-3 py-0.5 bg-black/50 rounded-full border border-white/10 backdrop-blur-sm">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-0.5 bg-black/40 rounded-full border border-white/10 backdrop-blur-sm">
                         <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
-                        <p className="text-[10px] text-white/80 font-medium tracking-wide">
-                            ห้อง <span className="font-bold text-white">{roomCode}</span>
+                        <p className="text-[10px] text-white font-medium tracking-wide">
+                            ห้อง <span className="font-bold text-green-400">{roomCode}</span>
                         </p>
                     </div>
                 </div>
 
-                {/* 4. NOW PLAYING - DARKER CARD */}
+                {/* 4. NOW PLAYING - High Contrast */}
                 <div className="w-full max-w-[280px] relative mt-1">
-                    {/* Dark background (bg-[#111]/90) */}
-                    <div className="relative bg-[#111]/90 border border-white/10 rounded-xl p-2.5 flex items-center gap-3 shadow-xl transition-colors hover:bg-black">
+                    <div className="relative bg-black/80 border border-white/10 rounded-xl p-2.5 flex items-center gap-3 shadow-xl hover:bg-black/90 transition-colors">
                         {thumbnailUrl ? (
-                            <div className="relative w-10 h-10 rounded overflow-hidden flex-shrink-0 shadow-inner border border-white/10">
+                            <div className="relative w-10 h-10 rounded overflow-hidden flex-shrink-0 border border-white/20">
                                 <Image
                                     src={thumbnailUrl}
                                     alt="Thumbnail"
@@ -114,23 +109,23 @@ export const HostController: React.FC<HostControllerProps> = ({
                                 />
                             </div>
                         ) : (
-                            <div className="w-10 h-10 rounded bg-white/5 flex items-center justify-center">
-                                <span className="text-xs opacity-30">🎵</span>
+                            <div className="w-10 h-10 rounded bg-white/10 flex items-center justify-center">
+                                <span className="text-xs text-white/50">🎵</span>
                             </div>
                         )}
 
                         <div className="text-left flex-1 min-w-0 mr-1">
-                            <p className="text-xs font-bold text-white/90 truncate">
+                            <p className="text-xs font-bold text-white truncate">
                                 {currentVideoTitle || currentVideo?.title || 'รอเพลงถัดไป...'}
                             </p>
-                            <p className="text-[9px] text-white/40 uppercase tracking-wider mt-0.5 font-medium">
+                            <p className="text-[9px] text-white/60 uppercase tracking-wider mt-0.5 font-medium">
                                 Now Playing
                             </p>
                         </div>
 
                         <button
                             onClick={() => setIsDisconnectModalOpen(true)}
-                            className="p-1.5 rounded-full text-white/30 hover:text-red-400 hover:bg-white/10 transition-colors"
+                            className="p-1.5 rounded-full text-white/50 hover:text-white hover:bg-red-500/20 transition-colors"
                         >
                             <XMarkIcon className="w-4 h-4" />
                         </button>
@@ -139,13 +134,13 @@ export const HostController: React.FC<HostControllerProps> = ({
 
             </div>
 
-            {/* FORCE KEYFRAMES */}
+            {/* KEYFRAMES */}
             <style jsx global>{`
-                @keyframes signal {
-                    0% { left: -20px; opacity: 0; }
+                @keyframes slide {
+                    0% { transform: translateX(-100%); opacity: 0; }
                     20% { opacity: 1; }
                     80% { opacity: 1; }
-                    100% { left: 100%; opacity: 0; }
+                    100% { transform: translateX(200%); opacity: 0; }
                 }
             `}</style>
 
