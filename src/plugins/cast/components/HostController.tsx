@@ -78,7 +78,8 @@ export const HostController: React.FC<HostControllerProps> = ({
         alignItems: 'center',
         justifyContent: 'center', // Center vertically in the remaining space
         gap: '6px',              // Reduced gap
-        width: '100%'
+        width: '100%',
+        paddingBottom: '24px'    // Shift visual center up
     };
 
     // Icon + Text Group
