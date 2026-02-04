@@ -16,16 +16,16 @@ export const HostController: React.FC<HostControllerProps> = ({
     const { state } = useFirebaseCast();
     const currentVideo = state.currentVideo;
 
-    // Use proper thumbnail resolution hierarchy
+    // Try maxresdefault first for better quality/aspect ratio
     const videoId = currentVideo?.videoId;
     const thumbnailUrl = videoId
-        ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
+        ? `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`
         : null;
 
     const containerStyle: React.CSSProperties = {
         width: '100%',
         height: '100%',
-        backgroundColor: '#000',
+        backgroundColor: '#111', // Very dark gray instead of pure black to see boundaries
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -39,20 +39,18 @@ export const HostController: React.FC<HostControllerProps> = ({
         isolation: 'isolate'
     };
 
-    // Use div with background-image instead of img tag for better coverage
     const backgroundStyle: React.CSSProperties = {
         position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
+        top: '-10%', // Offset to ensure coverage
+        left: '-10%',
+        width: '120%', // Oversize to guarantee fill
+        height: '120%',
         zIndex: -1,
         backgroundImage: thumbnailUrl ? `url(${thumbnailUrl})` : 'none',
         backgroundSize: 'cover',
-        backgroundPosition: 'center',
+        backgroundPosition: 'center center',
         backgroundRepeat: 'no-repeat',
-        filter: 'blur(20px) brightness(0.4)',
-        transform: 'scale(1.2)', // Scale to hide blur edges
+        filter: 'blur(20px) brightness(0.5)',
     };
 
     const contentStyle: React.CSSProperties = {
@@ -67,14 +65,15 @@ export const HostController: React.FC<HostControllerProps> = ({
     };
 
     const buttonStyle: React.CSSProperties = {
-        backgroundColor: 'rgba(255,255,255,0.1)',
+        backgroundColor: 'rgba(255,255,255,0.15)',
         color: 'white',
-        border: '1px solid rgba(255, 255, 255, 0.3)',
+        border: '1px solid rgba(255, 255, 255, 0.4)',
         padding: '6px 16px',
         borderRadius: '20px',
         cursor: 'pointer',
         fontSize: '12px',
         marginTop: '12px',
+        backdropFilter: 'blur(4px)'
     };
 
     return (
