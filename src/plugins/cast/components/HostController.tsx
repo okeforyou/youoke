@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { useFirebaseCast } from '../../../../context/FirebaseCastContext';
 import { DisconnectModal } from './DisconnectModal';
-import { TvIcon, ComputerDesktopIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import {
+    Squares2X2Icon,
+    XMarkIcon,
+    ComputerDesktopIcon
+} from '@heroicons/react/24/outline'; // Use Outline for cleaner look
 import Image from 'next/image';
 
 interface HostControllerProps {
@@ -28,71 +32,88 @@ export const HostController: React.FC<HostControllerProps> = ({
         : null;
 
     return (
-        <div className="relative w-full aspect-video bg-[#111111] flex items-center justify-center text-white">
+        <div className="relative w-full aspect-video bg-[#181921] flex flex-col items-center justify-center text-white overflow-hidden">
 
-            {/* Minimal Dark Layout (Reference 2 Style) */}
-            <div className="flex flex-col items-center justify-center text-center space-y-6 w-full max-w-sm px-6">
+            {/* Background Red Glow (Top) - Matches screenshot */}
+            <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-64 h-64 bg-red-600/10 rounded-full blur-3xl pointer-events-none"></div>
 
-                {/* 1. Device Icon & Status */}
-                <div className="relative group cursor-default">
-                    {/* Outer Glow */}
-                    <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full opacity-50 group-hover:opacity-80 transition-opacity duration-700"></div>
+            {/* Main Content Container */}
+            <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-6 w-full max-w-lg px-8">
 
-                    <div className="relative w-24 h-24 bg-[#1a1a1a] rounded-full border border-white/10 flex items-center justify-center shadow-2xl">
-                        {isCasting ? (
-                            <TvIcon className="w-10 h-10 text-primary mb-1" />
-                        ) : (
-                            <ComputerDesktopIcon className="w-10 h-10 text-primary mb-1" />
-                        )}
-                        {/* Live Dot */}
-                        <span className="absolute top-0 right-0 w-3 h-3 bg-green-500 border-2 border-[#1a1a1a] rounded-full animate-pulse"></span>
-                    </div>
-
-                    <div className="mt-4 space-y-1">
-                        <p className="text-white/40 text-xs uppercase tracking-widest font-medium">
-                            {isCasting ? 'Connected to TV' : 'Dual Screen Active'}
-                        </p>
-                        <h2 className="text-3xl font-bold tracking-tight text-white">
-                            {roomCode}
-                        </h2>
+                {/* 1. Dual Screen Icon (Top Center) */}
+                <div className="relative mb-2">
+                    {/* Circle Background */}
+                    <div className="w-20 h-20 rounded-full bg-[#23242f] border border-white/5 flex items-center justify-center shadow-lg relative z-10">
+                        {/* Using Squares2X2 to represent multiple screens/control */}
+                        <ComputerDesktopIcon className="w-9 h-9 text-red-500/80 stroke-1" />
+                        {/* Second screen Badge */}
+                        <div className="absolute -bottom-1 -right-1 bg-[#181921] rounded-full p-1">
+                            <Squares2X2Icon className="w-4 h-4 text-white/40" />
+                        </div>
                     </div>
                 </div>
 
-                {/* 2. Now Playing (Clean & Minimal) */}
-                {currentVideo && (
-                    <div className="w-full bg-white/5 border border-white/5 rounded-xl p-3 flex items-center gap-3 hover:bg-white/10 transition-colors">
+                {/* 2. Headline Text (Bold Thai) */}
+                <div className="space-y-1">
+                    <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white drop-shadow-md">
+                        โหมด DJ 2 หน้าจอ ทำงานอยู่
+                    </h1>
+                    <p className="text-base text-white/40 font-light">
+                        วิดีโอกำลังเล่นบนจอแยก (Clean Feed)
+                    </p>
+                </div>
+
+                {/* 3. Now Playing Card (Bottom Gradient Style) */}
+                <div className="w-full mt-4 relative group">
+                    {/* Gradient Border/Glow */}
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-transparent via-white/10 to-transparent rounded-xl opacity-50"></div>
+
+                    <div className="relative bg-[#23242f] border border-white/5 rounded-xl p-4 flex items-center gap-4 shadow-xl">
+                        {/* Thumbnail */}
                         {thumbnailUrl ? (
-                            <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-black/50">
+                            <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-black/50 shadow-inner">
                                 <Image
                                     src={thumbnailUrl}
                                     alt="Thumbnail"
                                     fill
-                                    className="object-cover"
+                                    className="object-cover opacity-80"
                                     unoptimized
                                 />
                             </div>
                         ) : (
-                            <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center">
-                                <span className="text-xs">🎵</span>
+                            <div className="w-12 h-12 rounded-lg bg-white/5 flex items-center justify-center animate-pulse">
+                                <span className="text-xs grayscale">🎵</span>
                             </div>
                         )}
-                        <div className="text-left flex-1 min-w-0">
-                            <p className="text-[10px] text-primary mb-0.5 uppercase tracking-wide font-bold">Now Playing</p>
-                            <p className="text-sm text-white/90 font-light truncate leading-tight">
-                                {currentVideoTitle || currentVideo.title}
-                            </p>
-                        </div>
-                    </div>
-                )}
 
-                {/* 3. Disconnect Text Link (Less intrusive than a button) */}
-                <button
-                    onClick={() => setIsDisconnectModalOpen(true)}
-                    className="text-xs text-white/30 hover:text-error transition-colors flex items-center gap-2 py-2"
-                >
-                    <XMarkIcon className="w-4 h-4" />
-                    <span>Disconnect</span>
-                </button>
+                        {/* Song Info */}
+                        <div className="text-left flex-1 min-w-0">
+                            {/* Running Text Effect if needed, simple clamp for now */}
+                            <p className="text-base font-medium text-white/90 truncate mr-2">
+                                {currentVideoTitle || currentVideo?.title || 'รอเพลงถัดไป...'}
+                            </p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                                <span className="text-xs text-white/40 uppercase tracking-wider">Now Playing</span>
+                            </div>
+                        </div>
+
+                        {/* Disconnect Icon Button (Subtle) */}
+                        <button
+                            onClick={() => setIsDisconnectModalOpen(true)}
+                            className="p-2 text-white/20 hover:text-red-400 hover:bg-white/5 rounded-full transition-all"
+                            title="ตัดการเชื่อมต่อ"
+                        >
+                            <XMarkIcon className="w-5 h-5" />
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            {/* Room Code Badge (Floating Bottom Right) - Optional nice touch */}
+            <div className="absolute bottom-4 right-4 text-xs font-mono text-white/20">
+                ROOM: <span className="text-white/40">{roomCode}</span>
             </div>
 
             <DisconnectModal
