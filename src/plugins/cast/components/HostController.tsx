@@ -19,107 +19,143 @@ export const HostController: React.FC<HostControllerProps> = ({
         ? `https://i.ytimg.com/vi/${currentVideo.videoId}/maxresdefault.jpg`
         : null;
 
+    // REVERTING TO THE SAFE SINGLE-CONTAINER METHOD
+    // NO Absolute background layers.
+    // Applied styling directly to this container.
+
     const containerStyle: React.CSSProperties = {
         width: '100%',
         height: '100%',
         backgroundColor: '#222',
-        // Increased blur to 10px and darkened overlay to 0.8 for better text contrast
-        backgroundImage: thumbnailUrl ? `linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url(${thumbnailUrl})` : 'none',
+        // Use simpler background strategy that worked
+        backgroundImage: thumbnailUrl ? `linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url(${thumbnailUrl})` : 'none',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
+
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
         padding: '12px',
         boxSizing: 'border-box',
         color: 'white',
-        // System font stack as requested
+        // System font as requested
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
         overflow: 'hidden'
     };
 
-    // Note: We can't apply CSS filter blur to the background-image directly on the container comfortably 
-    // without affecting content or using pseudo-elements which react inline styles struggle with.
-    // However, the user asked to make it *more blurry*. 
-    // Since we are using the single-container "safe" method, we can simulate blur by making the overlay darker (done above 0.8)
-    // OR we revert to the div overlay method BUT keep it positioned relative/absolute safely.
-    // Let's stick to the container method for stability, but we'll try `backdrop-filter` on the content? No, that blurs the content background.
-    // Actually, to blur the background image *only* with this safe layout, we effectively need a separate div layer again.
-    // BUT since the user said "It works now", I should be very careful not to break layout again.
-    // I will use a separate absolute div for the background *inside* the relative flex container, but keep text in relative z-index 2.
-    // This is the hybrid safe approach.
+    const topBarStyle: React.CSSProperties = {
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'flex-end',
+        height: '24px'
+    };
+
+    const badgeStyle: React.CSSProperties = {
+        backgroundColor: '#dc2626',
+        color: 'white',
+        padding: '4px 10px',
+        borderRadius: '4px',
+        fontSize: '11px',
+        fontWeight: 'bold',
+        display: 'flex',
+        alignItems: 'center',
+        boxShadow: '0 1px 2px rgba(0,0,0,0.3)',
+        fontFamily: 'inherit'
+    };
+
+    const centerContentStyle: React.CSSProperties = {
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '8px'
+    };
+
+    const iconWrapperStyle: React.CSSProperties = {
+        position: 'relative',
+        width: '50px',
+        height: '50px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: '4px'
+    };
+
+    // Updated Font Sizes as requested
+    const textMainStyle: React.CSSProperties = {
+        fontSize: '16px', // Bigger
+        fontWeight: 'bold',
+        textAlign: 'center',
+        textShadow: '0 2px 4px rgba(0,0,0,0.8)',
+        margin: 0,
+        fontFamily: 'inherit'
+    };
+
+    const textSubStyle: React.CSSProperties = {
+        fontSize: '13px', // Bigger
+        opacity: 0.9,
+        textAlign: 'center',
+        margin: 0,
+        fontFamily: 'inherit'
+    };
+
+    const buttonContainerStyle: React.CSSProperties = {
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        paddingTop: '8px'
+    };
+
+    const buttonStyle: React.CSSProperties = {
+        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+        color: 'white',
+        border: '1px solid rgba(255, 255, 255, 0.3)',
+        padding: '8px 18px',
+        borderRadius: '20px',
+        cursor: 'pointer',
+        fontSize: '12px',
+        backdropFilter: 'blur(4px)',
+        fontWeight: 500,
+        fontFamily: 'inherit'
+    };
 
     return (
-        <div style={{ ...containerStyle, position: 'relative', isolation: 'isolate', backgroundImage: 'none' }}>
-            {/* Safe Background Layer */}
-            {thumbnailUrl && (
-                <div style={{
-                    position: 'absolute',
-                    top: '-10%', left: '-10%', right: '-10%', bottom: '-10%', // Oversize to hide blur edges
-                    zIndex: -1,
-                    backgroundImage: `url(${thumbnailUrl})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    filter: 'blur(8px) brightness(0.4)', // Increased blur as requested
-                }} />
-            )}
-
+        <div style={containerStyle}>
             {/* Top: Badge */}
-            <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', height: '24px', zIndex: 2 }}>
-                <div style={{
-                    backgroundColor: '#dc2626',
-                    color: 'white',
-                    padding: '4px 10px',
-                    borderRadius: '4px',
-                    fontSize: '11px', // Slightly larger
-                    fontWeight: 'bold',
-                    display: 'flex',
-                    alignItems: 'center',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.4)',
-                    fontFamily: 'inherit'
-                }}>
+            <div style={topBarStyle}>
+                <div style={badgeStyle}>
                     โหมด DJ
                 </div>
             </div>
 
             {/* Center: Icon + Text */}
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px', zIndex: 2 }}>
-                <div style={{ position: 'relative', width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '8px' }}>
+            <div style={centerContentStyle}>
+                <div style={iconWrapperStyle}>
                     <div className="pulse-ring"></div>
                     <img
                         src="/computer.png"
                         alt="Monitor"
-                        style={{ width: '32px', height: '32px', filter: 'invert(1)', opacity: 0.95, position: 'relative', zIndex: 2 }}
+                        style={{
+                            width: '32px',
+                            height: '32px',
+                            filter: 'invert(1)',
+                            opacity: 0.9,
+                            position: 'relative',
+                            zIndex: 2
+                        }}
                     />
                 </div>
                 <div>
-                    <h3 style={{ fontSize: '16px', fontWeight: 'bold', textAlign: 'center', textShadow: '0 2px 4px rgba(0,0,0,1)', margin: 0, fontFamily: 'inherit' }}>
-                        เชื่อมต่อระบบ 2 หน้าจอ
-                    </h3>
-                    <p style={{ fontSize: '13px', opacity: 0.9, textAlign: 'center', margin: '4px 0 0', textShadow: '0 1px 2px rgba(0,0,0,0.8)', fontFamily: 'inherit' }}>
-                        (ห้อง {roomCode})
-                    </p>
+                    <h3 style={textMainStyle}>เชื่อมต่อระบบ 2 หน้าจอ</h3>
+                    <p style={textSubStyle}>(ห้อง {roomCode})</p>
                 </div>
             </div>
 
             {/* Bottom: Button */}
-            <div style={{ width: '100%', display: 'flex', justifyContent: 'center', paddingTop: '8px', zIndex: 2 }}>
-                <button
-                    onClick={onDisconnect}
-                    style={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                        color: 'white',
-                        border: '1px solid rgba(255, 255, 255, 0.4)',
-                        padding: '8px 18px',
-                        borderRadius: '20px',
-                        cursor: 'pointer',
-                        fontSize: '12px',
-                        backdropFilter: 'blur(4px)',
-                        fontFamily: 'inherit',
-                        fontWeight: 500
-                    }}
-                >
+            <div style={buttonContainerStyle}>
+                <button style={buttonStyle} onClick={onDisconnect}>
                     ยกเลิกการเชื่อมต่อ
                 </button>
             </div>
@@ -130,11 +166,11 @@ export const HostController: React.FC<HostControllerProps> = ({
                     width: 100%;
                     height: 100%;
                     border-radius: 50%;
-                    background: rgba(255, 255, 255, 0.15);
-                    animation: pulse 2.5s infinite ease-out;
+                    background: rgba(255, 255, 255, 0.2);
+                    animation: pulse 2s infinite ease-out;
                 }
                 @keyframes pulse {
-                    0% { transform: scale(0.8); opacity: 0.6; }
+                    0% { transform: scale(0.8); opacity: 0.8; }
                     100% { transform: scale(1.6); opacity: 0; }
                 }
             `}</style>
