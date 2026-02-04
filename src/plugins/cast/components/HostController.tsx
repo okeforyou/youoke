@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useFirebaseCast } from '../../../../context/FirebaseCastContext';
 
 interface HostControllerProps {
@@ -15,15 +15,17 @@ export const HostController: React.FC<HostControllerProps> = ({
 }) => {
     const { state } = useFirebaseCast();
     const currentVideo = state.currentVideo;
+    const [imgError, setImgError] = useState(false);
+
+    // Use a high-quality thumbnail if available, otherwise standard
     const thumbnailUrl = currentVideo?.videoId
-        ? `https://i.ytimg.com/vi/${currentVideo.videoId}/maxresdefault.jpg`
+        ? `https://i.ytimg.com/vi/${currentVideo.videoId}/hqdefault.jpg`
         : null;
 
-    // Basic inline styles to guarantee rendering without Tailwind conflicts
     const containerStyle: React.CSSProperties = {
         width: '100%',
         height: '100%',
-        backgroundColor: 'black',
+        backgroundColor: '#1a1a1a', // Fallback color
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -33,7 +35,8 @@ export const HostController: React.FC<HostControllerProps> = ({
         padding: '20px',
         boxSizing: 'border-box',
         position: 'relative',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        isolation: 'isolate' // Create new stacking context
     };
 
     const backgroundContainerStyle: React.CSSProperties = {
@@ -42,71 +45,69 @@ export const HostController: React.FC<HostControllerProps> = ({
         left: 0,
         width: '100%',
         height: '100%',
-        zIndex: 0
+        zIndex: -1, // Behind content
     };
 
     const bgImageStyle: React.CSSProperties = {
         width: '100%',
         height: '100%',
         objectFit: 'cover',
-        filter: 'blur(20px)',
-        transform: 'scale(1.1)' // Scale up to hide blur edges
-    };
-
-    const overlayStyle: React.CSSProperties = {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)', // Dark overlay for text readability
-        zIndex: 1
+        filter: 'blur(15px) brightness(0.4)', // Blur and darken in one go
+        transform: 'scale(1.2)', // Scale up to hide blur edges
     };
 
     const contentStyle: React.CSSProperties = {
         position: 'relative',
-        zIndex: 10, // Ensure content is above background
+        zIndex: 2,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        width: '100%'
-    };
-
-    const textStyle: React.CSSProperties = {
-        fontSize: '16px',
-        marginBottom: '20px',
-        textAlign: 'center',
-        textShadow: '0 2px 4px rgba(0,0,0,0.5)'
+        width: '100%',
+        textShadow: '0 2px 4px rgba(0,0,0,0.8)'
     };
 
     const buttonStyle: React.CSSProperties = {
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        backgroundColor: 'transparent',
         color: 'white',
-        border: '1px solid rgba(255, 255, 255, 0.3)',
-        padding: '8px 16px',
+        border: '1px solid rgba(255, 255, 255, 0.5)',
+        padding: '6px 16px',
         borderRadius: '20px',
         cursor: 'pointer',
         fontSize: '12px',
-        backdropFilter: 'blur(5px)'
+        marginTop: '15px',
+        transition: 'background-color 0.2s'
     };
 
     return (
         <div style={containerStyle}>
-            {/* Background Blur */}
-            {thumbnailUrl && (
+            {/* Background Layer */}
+            {thumbnailUrl && !imgError && (
                 <div style={backgroundContainerStyle}>
-                    <img src={thumbnailUrl} alt="" style={bgImageStyle} />
-                    <div style={overlayStyle} />
+                    <img
+                        src={thumbnailUrl}
+                        alt=""
+                        style={bgImageStyle}
+                        onError={() => setImgError(true)}
+                    />
                 </div>
             )}
 
-            {/* Content */}
+            {/* Content Layer */}
             <div style={contentStyle}>
-                <div style={textStyle}>
-                    โหมด DJ ทำงานอยู่ (ห้อง {roomCode})
+                <div style={{ fontSize: '14px', fontWeight: 'bold', marginBottom: '4px' }}>
+                    โหมด DJ ทำงานอยู่
                 </div>
-                <button style={buttonStyle} onClick={onDisconnect}>
+                <div style={{ fontSize: '12px', opacity: 0.8 }}>
+                    ห้อง {roomCode}
+                </div>
+
+                <button
+                    style={buttonStyle}
+                    onClick={onDisconnect}
+                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'}
+                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
                     ยกเลิกการเชื่อมต่อ
                 </button>
             </div>
