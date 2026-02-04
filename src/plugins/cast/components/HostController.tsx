@@ -1,11 +1,7 @@
 import React, { useState } from 'react';
 import { useFirebaseCast } from '../../../../context/FirebaseCastContext';
 import { DisconnectModal } from './DisconnectModal';
-import {
-    TvIcon,
-    ComputerDesktopIcon,
-    XMarkIcon
-} from '@heroicons/react/24/solid';
+import { TvIcon, ComputerDesktopIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 
 interface HostControllerProps {
@@ -26,54 +22,41 @@ export const HostController: React.FC<HostControllerProps> = ({
     const { state } = useFirebaseCast();
     const [isDisconnectModalOpen, setIsDisconnectModalOpen] = useState(false);
 
-    // Get thumbnail URL from videoId
     const currentVideo = state.currentVideo;
     const thumbnailUrl = currentVideo?.videoId
         ? `https://i.ytimg.com/vi/${currentVideo.videoId}/mqdefault.jpg`
         : null;
 
     return (
-        <div className="relative w-full aspect-video bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center overflow-hidden">
+        <div className="relative w-full aspect-video bg-base-300 flex items-center justify-center">
 
-            {/* Background Pattern (subtle) */}
-            <div className="absolute inset-0 opacity-5">
-                <div className="w-full h-full" style={{
-                    backgroundImage: 'radial-gradient(circle at 25% 25%, white 1px, transparent 1px)',
-                    backgroundSize: '30px 30px'
-                }} />
-            </div>
+            {/* Center Card - Symmetric Layout */}
+            <div className="bg-base-100 rounded-2xl shadow-xl border border-base-200 p-6 text-center w-full max-w-xs mx-4">
 
-            {/* Main Content */}
-            <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 space-y-4">
-
-                {/* Connection Status Icon */}
-                <div className="relative">
-                    <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center border border-white/20 shadow-xl">
+                {/* Icon + Status */}
+                <div className="flex flex-col items-center gap-3 mb-4">
+                    <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center">
                         {isCasting ? (
-                            <TvIcon className="w-8 h-8 text-primary" />
+                            <TvIcon className="w-7 h-7 text-primary" />
                         ) : (
-                            <ComputerDesktopIcon className="w-8 h-8 text-primary" />
+                            <ComputerDesktopIcon className="w-7 h-7 text-primary" />
                         )}
                     </div>
-                    {/* Live indicator */}
-                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-900 animate-pulse" />
+                    <div>
+                        <p className="text-xs text-base-content/50">
+                            {isCasting ? 'เชื่อมต่อจอทีวี' : 'หน้าจอที่ 2'}
+                        </p>
+                        <p className="text-lg font-bold text-base-content">
+                            ห้อง {roomCode}
+                        </p>
+                    </div>
                 </div>
 
-                {/* Status Text */}
-                <div className="space-y-1">
-                    <p className="text-white/50 text-xs uppercase tracking-widest">
-                        {isCasting ? 'เชื่อมต่อจอทีวี' : 'เชื่อมต่อหน้าจอที่ 2'}
-                    </p>
-                    <p className="text-white text-lg font-bold">
-                        ห้อง {roomCode}
-                    </p>
-                </div>
-
-                {/* Current Song (small) */}
+                {/* Now Playing (small) */}
                 {currentVideo && (
-                    <div className="flex items-center gap-3 bg-black/30 backdrop-blur-sm rounded-lg px-3 py-2 max-w-xs">
+                    <div className="flex items-center gap-3 bg-base-200 rounded-lg p-2 mb-4">
                         {thumbnailUrl && (
-                            <div className="relative w-10 h-10 rounded overflow-hidden flex-shrink-0">
+                            <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
                                 <Image
                                     src={thumbnailUrl}
                                     alt="Thumbnail"
@@ -83,9 +66,9 @@ export const HostController: React.FC<HostControllerProps> = ({
                                 />
                             </div>
                         )}
-                        <div className="text-left min-w-0">
-                            <p className="text-[10px] text-white/40 uppercase">กำลังเล่น</p>
-                            <p className="text-xs text-white/80 truncate">
+                        <div className="text-left min-w-0 flex-1">
+                            <p className="text-[10px] text-base-content/40">กำลังเล่น</p>
+                            <p className="text-xs text-base-content line-clamp-2">
                                 {currentVideoTitle || currentVideo.title}
                             </p>
                         </div>
@@ -95,14 +78,13 @@ export const HostController: React.FC<HostControllerProps> = ({
                 {/* Disconnect Button */}
                 <button
                     onClick={() => setIsDisconnectModalOpen(true)}
-                    className="mt-2 flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-error/80 text-white/70 hover:text-white rounded-full text-xs font-medium transition-all border border-white/10 hover:border-error"
+                    className="btn btn-sm btn-outline btn-error w-full gap-2"
                 >
-                    <XMarkIcon className="w-3.5 h-3.5" />
-                    <span>ตัดการเชื่อมต่อ</span>
+                    <XMarkIcon className="w-4 h-4" />
+                    ตัดการเชื่อมต่อ
                 </button>
             </div>
 
-            {/* Disconnect Modal */}
             <DisconnectModal
                 isOpen={isDisconnectModalOpen}
                 onClose={() => setIsDisconnectModalOpen(false)}

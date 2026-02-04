@@ -1386,7 +1386,7 @@ function YoutubePlayer({
         setIsCastOverlayOpen(false);
         setCastInputRoomCode('');
         setGuestName('');
-        addToast('เชื่อมต่อสำเร็จ! 🎉');
+        // Toast removed - HostController shows connection status instead
       } else {
         setCastError('ไม่พบห้อง กรุณาตรวจสอบเลขห้องอีกครั้ง');
       }
