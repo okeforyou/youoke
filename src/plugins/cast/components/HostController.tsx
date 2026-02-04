@@ -39,7 +39,7 @@ export const HostController: React.FC<HostControllerProps> = ({
         padding: '12px',
         boxSizing: 'border-box',
         color: 'white',
-        fontFamily: '"Prompt", "Kanit", "Sarabun", -apple-system, BlinkMacSystemFont, sans-serif',
+        // fontFamily: '"Prompt", "Kanit", "Sarabun", -apple-system, BlinkMacSystemFont, sans-serif', // Removed to inherit app font
         overflow: 'hidden'
     };
 
@@ -71,7 +71,7 @@ export const HostController: React.FC<HostControllerProps> = ({
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center', // Center vertically in the remaining space
-        gap: '12px',              // Gap between Icon/Text group and Button
+        gap: '6px',              // Reduced gap (was 12px)
         width: '100%'
     };
 
@@ -80,7 +80,7 @@ export const HostController: React.FC<HostControllerProps> = ({
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: '8px'
+        gap: '4px' // Reduced gap (was 8px)
     };
 
     const iconWrapperStyle: React.CSSProperties = {

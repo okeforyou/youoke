@@ -1399,7 +1399,6 @@ function YoutubePlayer({
 
   const handleCastDisconnect = () => {
     stopSession(); // Sends STOP command to TV + Leaves Room
-    addToast('ตัดการเชื่อมต่อแล้ว', 'error');
     // Audio restoration is handled by useEffect
     setIsMuted(false); // Update React state locally just in case
   };
