@@ -4,8 +4,8 @@ import { DisconnectModal } from './DisconnectModal';
 import {
     Squares2X2Icon,
     XMarkIcon,
-    ComputerDesktopIcon
-} from '@heroicons/react/24/outline';
+    ComputerDesktopIcon // Solid by default in v2 solid import
+} from '@heroicons/react/24/solid';
 import Image from 'next/image';
 
 interface HostControllerProps {
@@ -32,72 +32,76 @@ export const HostController: React.FC<HostControllerProps> = ({
         : null;
 
     return (
-        <div className="relative w-full aspect-video bg-[#181921] flex flex-col items-center justify-center text-white overflow-hidden select-none">
+        <div className="relative w-full aspect-video bg-base-300 overflow-hidden select-none flex flex-col items-center justify-center">
 
-            {/* Background Red Glow (Top - Subtle) */}
-            <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-48 h-48 bg-red-600/10 rounded-full blur-3xl pointer-events-none"></div>
+            {/* Background Gradient Mesh - Matches System Theme */}
+            <div className="absolute inset-0 bg-gradient-to-br from-base-300 via-base-200 to-base-300"></div>
+            <div className="absolute top-[-50%] left-[-20%] w-[80%] h-[80%] bg-primary/20 rounded-full blur-[100px] pointer-events-none opacity-60"></div>
+            <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] bg-secondary/10 rounded-full blur-[80px] pointer-events-none opacity-40"></div>
 
             {/* Main Content Container - Compact */}
             <div className="relative z-10 flex flex-col items-center justify-center text-center w-full max-w-md px-4 py-2">
 
-                {/* 1. Dual Screen Icon */}
+                {/* 1. Dual Screen Icon - Computer Desktop Solid */}
                 <div className="relative mb-3 transform scale-90">
-                    <div className="w-16 h-16 rounded-full bg-[#23242f] border border-white/5 flex items-center justify-center shadow-lg relative z-10">
-                        <ComputerDesktopIcon className="w-7 h-7 text-red-500/80 stroke-1" />
-                        <div className="absolute -bottom-1 -right-1 bg-[#181921] rounded-full p-0.5">
-                            <Squares2X2Icon className="w-3.5 h-3.5 text-white/40" />
-                        </div>
+                    <div className="w-16 h-16 rounded-2xl bg-base-100 shadow-xl flex items-center justify-center relative z-10 border border-base-content/5">
+                        <ComputerDesktopIcon className="w-8 h-8 text-primary" />
+
+                        {/* Status Badge */}
+                        <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-success border-2 border-base-100 animate-pulse"></div>
                     </div>
                 </div>
 
-                {/* 2. Headline Text (Compact & Bold) */}
-                <div className="space-y-0.5 mb-4">
-                    <h1 className="text-2xl font-bold tracking-tight text-white drop-shadow-md">
-                        โหมด DJ 2 หน้าจอ ทำงานอยู่
+                {/* 2. Headline Text */}
+                <div className="space-y-1 mb-4">
+                    <h1 className="text-2xl font-bold tracking-tight text-base-content drop-shadow-sm">
+                        โหมด DJ 2 หน้าจอ
                     </h1>
-                    <p className="text-xs text-white/40 font-light">
-                        วิดีโอกำลังเล่นบนจอแยก (ห้อง {roomCode})
+                    <p className="text-xs text-base-content/60 font-medium bg-base-100/50 px-3 py-1 rounded-full inline-block backdrop-blur-sm border border-base-content/5">
+                        ควบคุมการเล่นที่ห้อง <span className="text-primary font-bold">{roomCode}</span>
                     </p>
                 </div>
 
-                {/* 3. Now Playing Card (Compact) */}
+                {/* 3. Now Playing Card (Polished with Theme Colors) */}
                 <div className="w-full max-w-sm relative group">
-                    {/* Gradient Border/Glow */}
-                    <div className="absolute -inset-px bg-gradient-to-r from-transparent via-white/10 to-transparent rounded-lg opacity-40"></div>
+                    {/* Glow effect */}
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/50 to-secondary/50 rounded-xl blur opacity-30 group-hover:opacity-60 transition duration-500"></div>
 
-                    <div className="relative bg-[#23242f] border border-white/5 rounded-lg p-2.5 flex items-center gap-3 shadow-lg">
+                    <div className="relative bg-base-100 rounded-xl p-2.5 flex items-center gap-3 shadow-lg border border-base-content/10">
                         {/* Thumbnail */}
                         {thumbnailUrl ? (
-                            <div className="relative w-10 h-10 rounded overflow-hidden flex-shrink-0 bg-black/50 shadow-inner">
+                            <div className="relative w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-base-300 ring-1 ring-base-content/10">
                                 <Image
                                     src={thumbnailUrl}
                                     alt="Thumbnail"
                                     fill
-                                    className="object-cover opacity-80"
+                                    className="object-cover"
                                     unoptimized
                                 />
                             </div>
                         ) : (
-                            <div className="w-10 h-10 rounded bg-white/5 flex items-center justify-center">
-                                <span className="text-[10px] grayscale opacity-50">🎵</span>
+                            <div className="w-10 h-10 rounded-lg bg-base-200 flex items-center justify-center">
+                                <span className="text-[10px] opacity-50">🎵</span>
                             </div>
                         )}
 
                         {/* Song Info */}
-                        <div className="text-left flex-1 min-w-0">
-                            <p className="text-sm font-medium text-white/90 truncate pr-2 leading-tight">
+                        <div className="text-left flex-1 min-w-0 pr-2">
+                            <p className="text-sm font-bold text-base-content truncate leading-tight">
                                 {currentVideoTitle || currentVideo?.title || 'รอเพลงถัดไป...'}
                             </p>
                             <div className="flex items-center gap-1.5 mt-0.5">
-                                <span className="w-1 h-1 rounded-full bg-red-500 animate-pulse"></span>
-                                <span className="text-[10px] text-white/40 uppercase tracking-wider font-medium">Now Playing</span>
+                                <span className="text-[10px] text-primary font-bold uppercase tracking-wider flex items-center gap-1">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                                    Now Playing
+                                </span>
                             </div>
                         </div>
 
                         {/* Disconnect Icon Button */}
                         <button
                             onClick={() => setIsDisconnectModalOpen(true)}
-                            className="p-1.5 text-white/20 hover:text-red-400 hover:bg-white/5 rounded-full transition-all"
+                            className="btn btn-ghost btn-xs btn-circle text-error bg-error/10 hover:bg-error hover:text-white transition-all"
                             title="ตัดการเชื่อมต่อ"
                         >
                             <XMarkIcon className="w-4 h-4" />
@@ -105,6 +109,11 @@ export const HostController: React.FC<HostControllerProps> = ({
                     </div>
                 </div>
 
+            </div>
+
+            {/* System Footer Info (Optional) */}
+            <div className="absolute bottom-2 text-[10px] text-base-content/20 font-mono">
+                CONNECTED: {roomCode}
             </div>
 
             <DisconnectModal
