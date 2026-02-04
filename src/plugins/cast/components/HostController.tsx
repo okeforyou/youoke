@@ -11,7 +11,8 @@ interface HostControllerProps {
 
 export const HostController: React.FC<HostControllerProps> = ({
     roomCode,
-    onDisconnect
+    onDisconnect,
+    isDualMode // Added missing prop
 }) => {
     const { state } = useFirebaseCast();
     const currentVideo = state.currentVideo;
@@ -33,13 +34,13 @@ export const HostController: React.FC<HostControllerProps> = ({
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
 
-        display: 'grid',              // <--- KEY CHANGE
-        gridTemplateRows: 'auto 1fr', // Row 1 auto size, Row 2 fills rest
+        display: 'grid',
+        gridTemplateRows: 'auto 1fr',
 
         padding: '12px',
         boxSizing: 'border-box',
         color: 'white',
-        // fontFamily: '"Prompt", "Kanit", "Sarabun", -apple-system, BlinkMacSystemFont, sans-serif', // Removed to inherit app font
+        // fontFamily removed to inherit app font
         overflow: 'hidden'
     };
 
@@ -71,7 +72,7 @@ export const HostController: React.FC<HostControllerProps> = ({
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center', // Center vertically in the remaining space
-        gap: '6px',              // Reduced gap (was 12px)
+        gap: '6px',              // Reduced gap
         width: '100%'
     };
 
@@ -80,13 +81,13 @@ export const HostController: React.FC<HostControllerProps> = ({
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: '4px' // Reduced gap (was 8px)
+        gap: '4px' // Reduced gap
     };
 
     const iconWrapperStyle: React.CSSProperties = {
         position: 'relative',
-        width: '44px',
-        height: '44px',
+        width: '64px', // Increased size
+        height: '64px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -114,6 +115,9 @@ export const HostController: React.FC<HostControllerProps> = ({
         transition: 'background-color 0.2s'
     };
 
+    // Dynamic text based on mode
+    const statusText = isDualMode ? 'กำลังเชื่อมหน้าจอที่ 2' : 'กำลัง Cast ไป TV';
+
     return (
         <div style={containerStyle}>
             {/* GRID ROW 1: Top Bar with Badge */}
@@ -134,8 +138,8 @@ export const HostController: React.FC<HostControllerProps> = ({
                             src="/computer.png"
                             alt="Monitor"
                             style={{
-                                width: '28px',
-                                height: '28px',
+                                width: '40px', // Increased size
+                                height: '40px',
                                 filter: 'invert(1)',
                                 opacity: 0.95,
                                 position: 'relative',
@@ -145,11 +149,11 @@ export const HostController: React.FC<HostControllerProps> = ({
                     </div>
 
                     <h3 style={textMainStyle}>
-                        กำลังเชื่อมหน้าจอที่ 2 (ห้อง {roomCode})
+                        {statusText} (ห้อง {roomCode})
                     </h3>
                 </div>
 
-                {/* Disconnect Button (pushed up close to text via gap) */}
+                {/* Disconnect Button */}
                 <button
                     style={buttonStyle}
                     onClick={onDisconnect}
@@ -164,12 +168,13 @@ export const HostController: React.FC<HostControllerProps> = ({
                     width: 100%;
                     height: 100%;
                     border-radius: 50%;
-                    background: rgba(255, 255, 255, 0.2);
+                    background: rgba(220, 38, 38, 0.5); /* Red pulse */
                     animation: pulse 2s infinite ease-out;
+                    box-shadow: 0 0 10px rgba(220, 38, 38, 0.4); /* Glow effect */
                 }
                 @keyframes pulse {
-                    0% { transform: scale(0.8); opacity: 0.8; }
-                    100% { transform: scale(1.6); opacity: 0; }
+                    0% { transform: scale(0.6); opacity: 0.8; }
+                    100% { transform: scale(1.4); opacity: 0; }
                 }
             `}</style>
         </div>
