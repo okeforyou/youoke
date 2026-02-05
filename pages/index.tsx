@@ -859,13 +859,19 @@ function HomePage() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col lg:flex-row bg-base-100 overflow-hidden">
+      <main className="flex-1 flex flex-col lg:flex-row bg-[#050505] overflow-hidden relative">
+        {/* Ambient Background Blobs */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-red-600/10 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '8s' }} />
+          <div className="absolute bottom-[20%] right-[-5%] w-[35%] h-[35%] bg-red-900/10 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '12s', animationDelay: '2s' }} />
+        </div>
+
         {/* Content Section (Search + Grid Results) */}
-        <div className="flex-1 flex flex-col overflow-hidden bg-base-100">
+        <div className="flex-1 flex flex-col overflow-hidden bg-transparent z-10">
           <div className="flex flex-col h-full overflow-hidden relative">
 
             {/* Sticky Top Header Section: Video + Controls + Search */}
-            <div className="sticky top-0 z-40 bg-base-100 shadow-sm shrink-0">
+            <div className="sticky top-0 z-40 bg-[#050505]/60 backdrop-blur-xl shrink-0 border-b border-white/5">
 
               {/* 1. Video Player (Always Top) */}
               {!isXlScreen && curVideoId && (
@@ -884,16 +890,16 @@ function HomePage() {
 
 
               {/* 3. Search Bar (Below Controls) */}
-              <div className="flex flex-row gap-3 px-4 py-3 items-center bg-base-200 md:bg-base-100 shadow-sm sticky top-0 z-30">
+              <div className="flex flex-row gap-3 px-4 py-3 items-center bg-transparent sticky top-0 z-30">
                 {/* Host Connection Status (Remote) - REMOVED (Duplicate) */}
 
                 {/* Search Input */}
-                <div className="flex-1 flex items-center gap-2 px-4 py-2 h-11 bg-base-100 border border-base-300 rounded-full hover:border-base-content/30 hover:shadow-sm transition-all">
-                  <MagnifyingGlassIcon className="w-5 h-5 text-base-content/60 flex-shrink-0" />
+                <div className="flex-1 flex items-center gap-3 px-5 h-12 md:h-14 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-full hover:border-[#FF0000]/40 hover:bg-white/10 hover:shadow-[0_0_25px_rgba(255,0,0,0.1)] transition-all duration-300 group focus-within:border-[#FF0000]/50 focus-within:bg-white/10 focus-within:shadow-[0_0_30px_rgba(255,0,0,0.15)] focus-within:ring-1 focus-within:ring-[#FF0000]/20">
+                  <MagnifyingGlassIcon className="w-5 h-5 text-white/30 group-hover:text-[#FF0000] group-focus-within:text-[#FF0000] transition-colors flex-shrink-0" />
                   <DebounceInput
                     type="search"
-                    placeholder="ค้นหาเพลง"
-                    className="input input-ghost w-full p-0 h-full min-h-0 text-base xl:text-lg focus:outline-none bg-transparent"
+                    placeholder="ค้นหาเพลงที่คุณต้องการ..."
+                    className="input input-ghost w-full p-0 h-full min-h-0 text-base md:text-lg focus:outline-none bg-transparent text-white placeholder-white/20"
                     value={searchTerm}
                     debounceTimeout={500}
                     onChange={(ev) => setSearchTerm(ev.target.value)}
@@ -903,27 +909,27 @@ function HomePage() {
 
                 {/* Karaoke Switch (Sliding Segmented Control) - Optimized for Mobile space */}
                 <div
-                  className="relative flex items-center h-11 bg-white md:bg-base-200 rounded-full p-1 cursor-pointer select-none w-[84px] md:w-[150px] flex-shrink-0 border border-base-200"
+                  className="relative flex items-center h-12 md:h-14 bg-white/5 backdrop-blur-2xl rounded-full p-1 cursor-pointer select-none w-[90px] md:w-[180px] flex-shrink-0 border border-white/10 hover:border-white/20 transition-all group"
                   onClick={() => setIsKaraoke(!isKaraoke)}
                 >
                   {/* Sliding Pill */}
                   <div
-                    className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-error md:bg-white rounded-full shadow-sm transition-all duration-300 ease-out ${isKaraoke ? 'left-1 translate-x-full' : 'left-1'
+                    className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-gradient-to-br from-[#FF0000] to-[#B00000] rounded-full shadow-[0_0_15px_rgba(255,0,0,0.4)] transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isKaraoke ? 'left-1 translate-x-full' : 'left-1'
                       }`}
                   />
 
                   {/* Options Layer */}
                   <div className="relative z-10 flex w-full h-full">
                     {/* Option 1: Song (Left) */}
-                    <div className={`flex-1 flex items-center justify-center transition-colors duration-200 ${!isKaraoke ? 'text-white md:text-base-content font-bold' : 'text-base-content/60'}`}>
+                    <div className={`flex-1 flex items-center justify-center transition-all duration-300 ${!isKaraoke ? 'text-white font-bold scale-105' : 'text-white/40 hover:text-white/60'}`}>
                       <MusicalNoteIcon className="w-5 h-5 md:hidden" />
-                      <span className="hidden md:inline text-xs font-bold">เพลง</span>
+                      <span className="hidden md:inline text-[11px] uppercase tracking-[0.2em] font-black">เพลง</span>
                     </div>
 
                     {/* Option 2: Karaoke (Right) */}
-                    <div className={`flex-1 flex items-center justify-center transition-colors duration-200 ${isKaraoke ? 'text-white md:text-base-content font-bold' : 'text-base-content/60'}`}>
+                    <div className={`flex-1 flex items-center justify-center transition-all duration-300 ${isKaraoke ? 'text-white font-bold scale-105' : 'text-white/40 hover:text-white/60'}`}>
                       <MicrophoneIcon className="w-5 h-5 md:hidden" />
-                      <span className="hidden md:inline text-xs font-bold">คาราโอเกะ</span>
+                      <span className="hidden md:inline text-[11px] uppercase tracking-[0.2em] font-black">คาราโอเกะ</span>
                     </div>
                   </div>
                 </div>
@@ -951,9 +957,9 @@ function HomePage() {
 
 
                 {/* Mobile Queue Button */}
-                <label htmlFor="modal-playlist" className="btn btn-circle btn-ghost text-base-content sm:hidden relative">
+                <label htmlFor="modal-playlist" className="btn btn-circle btn-ghost text-white sm:hidden relative bg-white/5 border-white/10">
                   <ListBulletIcon className="h-5 w-5" />
-                  <span className="badge badge-sm badge-primary absolute -top-1 -right-1 text-[10px] px-1 min-h-0 h-4">
+                  <span className="badge badge-sm bg-[#FF0000] border-none absolute -top-1 -right-1 text-[10px] px-1 min-h-0 h-4 text-white">
                     {displayPlaylist?.length || 0}
                   </span>
                 </label>
@@ -1183,26 +1189,30 @@ function HomePage() {
         {/* END Recommend Videos List */}
 
         {/* Video Player + Queue Section - Desktop LG+ (iPad Landscape included) */}
-        {
-          isXlScreen && !showVideoPlayerModal && (
-            <aside className="hidden lg:flex lg:w-80 xl:w-96 2xl:w-[450px] flex-col overflow-hidden border-l border-base-300 bg-base-100">
-              {/* Video Player */}
-              {/* Video Player */}
-              <YoutubePlayer
-                videoId={curVideoId}
-                nextSong={playNext}
-                className="flex-shrink-0"
-                controlRef={playerControlRef}
-                externalPlayerRef={mobilePlayerRef}
-              />
+        <aside
+          className={`
+            hidden lg:flex flex-col overflow-hidden border-l border-white/5 bg-[#0A0A0A]/80 backdrop-blur-3xl z-20
+            transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] transform origin-right
+            ${isXlScreen && !showVideoPlayerModal && activeQueue.length > 0
+              ? 'w-80 xl:w-96 2xl:w-[450px] opacity-100 translate-x-0'
+              : 'w-0 opacity-0 translate-x-full border-none'
+            }
+          `}
+        >
+          {/* Video Player */}
+          <YoutubePlayer
+            videoId={curVideoId}
+            nextSong={playNext}
+            className="flex-shrink-0"
+            controlRef={playerControlRef}
+            externalPlayerRef={mobilePlayerRef}
+          />
 
-              {/* Queue/Playlist */}
-              <div className={`flex-1 w-full px-3 py-2 overflow-y-scroll flex flex-col ${scrollbarCls}`}>
-                {PlaylistScreen}
-              </div>
-            </aside>
-          )
-        }
+          {/* Queue/Playlist */}
+          <div className={`flex-1 w-full px-3 py-2 overflow-y-scroll flex flex-col ${scrollbarCls}`}>
+            {PlaylistScreen}
+          </div>
+        </aside>
       </main >
 
       {/* Cast Mode Selector Modal */}
