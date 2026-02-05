@@ -14,8 +14,19 @@ import {
   ComputerDesktopIcon,
   SignalIcon,
   PlayCircleIcon,
-  ClockIcon
+  ClockIcon,
+  DevicePhoneMobileIcon,
+  RectangleStackIcon,
+  PlayIcon
 } from '@heroicons/react/24/outline';
+
+// Custom Google Cast Icon (Standard Cast Logo)
+const GoogleCastIcon = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M2 16.1A5 5 0 0 1 5.9 20M2 12.05A9 9 0 0 1 9.95 20M2 8V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6" />
+    <line x1="2" y1="20" x2="2.01" y2="20" strokeWidth="3" />
+  </svg>
+);
 
 interface CastModeSelectorProps {
   isOpen: boolean;
@@ -78,14 +89,14 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
           >
             <div className="flex items-center gap-3">
               <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                {loading ? <ClockIcon className="w-5 h-5 animate-spin text-primary" /> : <TvIcon className="w-5 h-5 text-primary" />}
+                {loading ? <ClockIcon className="w-5 h-5 animate-spin text-primary" /> : <DevicePhoneMobileIcon className="w-5 h-5 text-primary" />}
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-base font-semibold mb-0.5">
-                  {isMobile ? 'Remote Control TV' : 'Connect Smart TV'}
+                <h3 className="text-base font-semibold mb-0.5 whitespace-nowrap overflow-hidden text-ellipsis">
+                  {isMobile ? 'คุมทีวีจากเครื่องนี้' : 'ใช้มือถือคุม (ใส่รหัส)'}
                 </h3>
-                <p className="text-xs text-gray-600">
-                  {isMobile ? 'ใช้มือถือเครื่องนี้เป็นรีโมท' : 'กรอกเลขห้องจากหน้าจอ TV'}
+                <p className="text-xs text-gray-500">
+                  {isMobile ? 'ใช้เครื่องนี้เป็นรีโมท' : 'ใช้มือถือเป็นรีโมท เสียงออกที่ทีวี'}
                 </p>
               </div>
             </div>
@@ -99,11 +110,11 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
             >
               <div className="flex items-center gap-3">
                 <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                  <ComputerDesktopIcon className="w-5 h-5 text-primary" />
+                  <RectangleStackIcon className="w-5 h-5 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-base font-semibold mb-0.5">2 หน้าจอ (Dual Screen)</h3>
-                  <p className="text-xs text-gray-600">เปิดหน้าจอที่ 2 ทันที</p>
+                  <h3 className="text-base font-semibold mb-0.5">จอแยก (ต่อสาย HDMI)</h3>
+                  <p className="text-xs text-gray-500">คุมที่คอม ร้องเพลงบนจอใหญ่</p>
                 </div>
               </div>
             </button>
@@ -122,17 +133,17 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
               <div className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${isCastAvailable ? 'bg-primary/10 group-hover:bg-primary/20' : 'bg-gray-200'
                 }`}>
                 {isCastAvailable ? (
-                  <SignalIcon className="w-5 h-5 text-primary" />
+                  <GoogleCastIcon className="w-5 h-5 text-primary" />
                 ) : (
                   <ClockIcon className="w-5 h-5 text-gray-400 animate-spin" />
                 )}
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-base font-semibold mb-0.5">
-                  Google Cast (Chromecast)
+                  ยิงขึ้นจอ (ไร้สาย)
                 </h3>
-                <p className="text-xs text-gray-600">
-                  {isCastAvailable ? 'Auto-discover ไม่ต้องกรอกรหัส' : 'ไม่รองรับ iOS/Safari - ใช้ Android Chrome'}
+                <p className="text-xs text-gray-500">
+                  {isCastAvailable ? 'สำหรับ Google TV / Android TV' : 'ไม่รองรับ iOS/Safari - ใช้ Android Chrome'}
                 </p>
               </div>
             </div>
@@ -146,11 +157,11 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
             >
               <div className="flex items-center gap-3">
                 <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                  <PlayCircleIcon className="w-5 h-5 text-primary" />
+                  <PlayIcon className="w-5 h-5 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-base font-semibold mb-0.5">YouTube Cast</h3>
-                  <p className="text-xs text-gray-600">ส่งตรงไป YouTube app</p>
+                  <h3 className="text-base font-semibold mb-0.5">ส่งเข้าแอป YouTube</h3>
+                  <p className="text-xs text-gray-500">ร้องเพลงผ่านแอป YouTube โดยตรง</p>
                 </div>
               </div>
             </button>
