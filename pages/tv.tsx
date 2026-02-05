@@ -115,6 +115,54 @@ export default function TVPage() {
     }, []);
 
     // =============================================
+    // 1.5 CHROMECAST RECEIVER PROTOCOL
+    // =============================================
+    useEffect(() => {
+        // Poll for Cast Framework to be ready
+        const interval = setInterval(() => {
+            const cast = (window as any).cast;
+            if (cast && cast.framework) {
+                clearInterval(interval);
+                console.log('📺 CAST: Framework detected, initializing receiver...');
+
+                try {
+                    const context = cast.framework.CastReceiverContext.getInstance();
+
+                    // Listen for Custom Message Bus Setup
+                    const CUSTOM_NAMESPACE = 'urn:x-cast:com.okeforyou.cast';
+
+                    context.addCustomMessageListener(CUSTOM_NAMESPACE, (event: any) => {
+                        console.log('📺 CAST: Message received:', event.data);
+                        if (event.data) {
+                            let data = event.data;
+                            if (typeof data === 'string') {
+                                try { data = JSON.parse(data); } catch (e) { }
+                            }
+
+                            if (data.type === 'JOIN_ROOM' && data.payload?.roomCode) {
+                                const code = data.payload.roomCode;
+                                console.log('📺 CAST: Joining Room from Sender:', code);
+                                setRoomCode(code);
+                            }
+                        }
+                    });
+
+                    // Start Receiver
+                    const options = new cast.framework.CastReceiverOptions();
+                    options.disableIdleTimeout = true; // Prevent sleep
+                    context.start(options);
+                    console.log('📺 CAST: Receiver Context Started');
+
+                } catch (e) {
+                    console.error('📺 CAST: Initialization failed:', e);
+                }
+            }
+        }, 500);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    // =============================================
     // 2. FIREBASE REAL-TIME SYNC
     // =============================================
     useEffect(() => {

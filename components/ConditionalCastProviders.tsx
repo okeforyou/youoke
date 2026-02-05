@@ -13,6 +13,11 @@ const FirebaseCastProvider = dynamic(
   { ssr: false }
 );
 
+const GoogleCastProvider = dynamic(
+  () => import('../context/GoogleCastContext').then((mod) => mod.GoogleCastProvider),
+  { ssr: false }
+);
+
 const YouTubeCastProvider = dynamic(
   () => import('../context/YouTubeCastContext').then((mod) => mod.YouTubeCastProvider),
   { ssr: false }
@@ -41,9 +46,11 @@ export default function ConditionalCastProviders({ children }: ConditionalCastPr
   return (
     <CastProvider>
       <FirebaseCastProvider>
-        <YouTubeCastProvider>
-          {children}
-        </YouTubeCastProvider>
+        <GoogleCastProvider>
+          <YouTubeCastProvider>
+            {children}
+          </YouTubeCastProvider>
+        </GoogleCastProvider>
       </FirebaseCastProvider>
     </CastProvider>
   );
