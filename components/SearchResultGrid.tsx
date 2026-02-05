@@ -4,7 +4,6 @@ import VideoThumbnail from "./ui/VideoThumbnail";
 import { useQuery } from "react-query";
 import { useLocalStorageValue } from "@react-hookz/web";
 import { Squares2X2Icon, ListBulletIcon } from "@heroicons/react/24/outline";
-import { PlayIcon } from "@heroicons/react/24/solid";
 
 import { useKaraokeState } from "../hooks/karaoke";
 import { RecommendedVideo, SearchResult } from "../types/invidious";
@@ -91,16 +90,16 @@ export default function SearchResultGrid({
           ref={divRef}
           className="col-span-full bg-transparent px-2 pt-2 pb-2 flex justify-between items-center"
         >
-          <h2 className="text-lg font-bold text-white/90 tracking-tight">ผลการค้นหา</h2>
+          <h2 className="text-lg font-semibold text-gray-900">ผลการค้นหา</h2>
           <div className="flex gap-1" role="group" aria-label="View mode toggle">
             <button
               onClick={() => setViewMode("grid")}
               title="Grid View"
               aria-label="Switch to grid view"
               aria-pressed={viewMode === "grid"}
-              className={`p-2 rounded-lg transition-all ${viewMode === "grid"
-                ? "text-[#FF0000] bg-white/10 shadow-[0_0_15px_rgba(255,0,0,0.1)]"
-                : "text-white/40 hover:text-white/60 hover:bg-white/5"
+              className={`p-2 rounded btn-hover ${viewMode === "grid"
+                ? "text-gray-900 opacity-100"
+                : "text-gray-500 opacity-75 hover:opacity-90"
                 }`}
             >
               <Squares2X2Icon className="w-5 h-5" aria-hidden="true" />
@@ -110,9 +109,9 @@ export default function SearchResultGrid({
               title="List View"
               aria-label="Switch to list view"
               aria-pressed={viewMode === "list"}
-              className={`p-2 rounded-lg transition-all ${viewMode === "list"
-                ? "text-[#FF0000] bg-white/10 shadow-[0_0_15px_rgba(255,0,0,0.1)]"
-                : "text-white/40 hover:text-white/60 hover:bg-white/5"
+              className={`p-2 rounded btn-hover ${viewMode === "list"
+                ? "text-gray-900 opacity-100"
+                : "text-gray-500 opacity-75 hover:opacity-90"
                 }`}
             >
               <ListBulletIcon className="w-5 h-5" aria-hidden="true" />
@@ -167,8 +166,8 @@ export default function SearchResultGrid({
               <Fragment key={rcm.videoId}>
                 {/* The button to open modal */}
                 <label htmlFor="modal-video" onClick={() => onClick(rcm)}>
-                  <div className="group card rounded-xl overflow-hidden bg-white/5 backdrop-blur-md border border-white/5 cursor-pointer flex flex-col h-full transition-all duration-500 hover:bg-white/10 hover:border-[#FF0000]/30 hover:shadow-[0_10px_30px_rgba(255,0,0,0.1)] hover:-translate-y-1">
-                    <figure className="relative w-full aspect-video flex-shrink-0 overflow-hidden">
+                  <div className="card rounded-lg overflow-hidden bg-white shadow cursor-pointer flex flex-col h-full card-hover">
+                    <figure className="relative w-full aspect-video flex-shrink-0">
                       <VideoThumbnail
                         src={
                           rcm.videoThumbnails?.find((t) => t.quality === "medium")?.url ||
@@ -177,19 +176,14 @@ export default function SearchResultGrid({
                         }
                         alt={rcm.title}
                         priority={i < 6}
-                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                        className="object-cover"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                        <div className="w-10 h-10 rounded-full bg-[#FF0000] flex items-center justify-center shadow-lg shadow-[#FF0000]/40 scale-0 group-hover:scale-100 transition-transform duration-500 delay-100">
-                          <PlayIcon className="w-5 h-5 text-white" />
-                        </div>
-                      </div>
                     </figure>
-                    <div className="card-body p-3 gap-y-0.5 flex-1 flex flex-col bg-transparent">
-                      <h2 className="font-bold text-xs sm:text-sm line-clamp-2 flex-1 text-white/90 group-hover:text-[#FF0000] transition-colors duration-300">
+                    <div className="card-body p-2 gap-y-0 flex-1 flex flex-col">
+                      <h2 className="font-semibold text-xs sm:text-sm line-clamp-2 flex-1">
                         {rcm.title}
                       </h2>
-                      <h2 className="text-[10px] sm:text-xs text-white/40 truncate font-semibold">
+                      <h2 className="text-xs text-gray-400 truncate">
                         {rcm.author}
                       </h2>
                     </div>

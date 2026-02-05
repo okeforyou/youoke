@@ -46,43 +46,43 @@ export default function BottomNavigation() {
   const isAccountPage = router.pathname === '/account';
 
   return (
-    <div className="btm-nav fixed bottom-0 w-full lg:hidden text-sm z-50 h-16 landscape:hidden pb-safe bg-black/60 backdrop-blur-xl border-t border-white/10">
+    <div className="btm-nav fixed bottom-0 w-full lg:hidden text-sm z-50 h-16 landscape:hidden pb-safe">
       <button
         type="button"
-        className={`flex flex-col items-center justify-center gap-1 min-h-[64px] transition-all duration-300 ${isHomePage && (activeIndex === 0 || activeIndex === 1) ? "text-[#FF0000] border-t-2 border-[#FF0000]" : "text-white/40"}`}
+        className={`flex flex-col items-center justify-center gap-1 min-h-[64px] text-primary p-2 ${isHomePage && (activeIndex === 0 || activeIndex === 1) ? "active" : ""}`}
         onClick={() => navigateToHome(1)}
       >
-        <MusicalNoteIcon className={`w-6 h-6 pointer-events-none ${isHomePage && (activeIndex === 0 || activeIndex === 1) ? "fill-[#FF0000]/10" : ""}`} />
-        <span className="btm-nav-label pointer-events-none font-medium">แนะนำ</span>
+        <MusicalNoteIcon className="w-6 h-6 pointer-events-none" />
+        <span className="btm-nav-label pointer-events-none">แนะนำ</span>
       </button>
       <button
         type="button"
-        className={`flex flex-col items-center justify-center gap-1 min-h-[64px] transition-all duration-300 ${isHomePage && activeIndex === 2 ? "text-[#FF0000] border-t-2 border-[#FF0000]" : "text-white/40"}`}
+        className={`flex flex-col items-center justify-center gap-1 min-h-[64px] text-primary p-2 ${isHomePage && activeIndex === 2 ? "active" : ""}`}
         onClick={() => navigateToHome(2)}
       >
-        <TrophyIcon className={`w-6 h-6 pointer-events-none ${isHomePage && activeIndex === 2 ? "fill-[#FF0000]/10" : ""}`} />
-        <span className="btm-nav-label pointer-events-none font-medium">มาแรง</span>
+        <TrophyIcon className="w-6 h-6 pointer-events-none" />
+        <span className="btm-nav-label pointer-events-none">มาแรง</span>
       </button>
       <button
         type="button"
-        className={`flex flex-col items-center justify-center gap-1 min-h-[64px] transition-all duration-300 ${isHomePage && activeIndex === 3 ? "text-[#FF0000] border-t-2 border-[#FF0000]" : "text-white/40"}`}
+        className={`flex flex-col items-center justify-center gap-1 min-h-[64px] text-primary p-2 ${isHomePage && activeIndex === 3 ? "active" : ""}`}
         onClick={() => navigateToHome(3)}
       >
-        <RectangleStackIcon className={`w-6 h-6 pointer-events-none ${isHomePage && activeIndex === 3 ? "fill-[#FF0000]/10" : ""}`} />
-        <span className="btm-nav-label pointer-events-none font-medium">เพลย์ลิสต์</span>
+        <RectangleStackIcon className="w-6 h-6 pointer-events-none" />
+        <span className="btm-nav-label pointer-events-none">เพลย์ลิสต์</span>
       </button>
       <button
         type="button"
-        className="flex flex-col items-center justify-center gap-1 min-h-[64px] text-white/40 p-2"
+        className="flex flex-col items-center justify-center gap-1 min-h-[64px] text-primary p-2"
         onClick={() => window.open("https://line.me/R/ti/p/@243lercy", "_blank")}
       >
         <ChatBubbleLeftIcon className="w-6 h-6 pointer-events-none" />
-        <span className="btm-nav-label pointer-events-none font-medium">ติดต่อ</span>
+        <span className="btm-nav-label pointer-events-none">ติดต่อ</span>
       </button>
       {!user.uid ? (
         <button
           type="button"
-          className="flex flex-col items-center justify-center gap-1 min-h-[64px] text-white/40 p-2"
+          className="flex flex-col items-center justify-center gap-1 min-h-[64px] text-primary p-2"
           onClick={navigateToLogin}
           disabled={isPending}
         >
@@ -91,12 +91,12 @@ export default function BottomNavigation() {
           ) : (
             <ArrowLeftOnRectangleIcon className="w-6 h-6 pointer-events-none" />
           )}
-          <span className="btm-nav-label pointer-events-none font-medium">เข้าสู่ระบบ</span>
+          <span className="btm-nav-label pointer-events-none">เข้าสู่ระบบ</span>
         </button>
       ) : (
         <button
           type="button"
-          className="flex flex-col items-center justify-center gap-1 min-h-[64px] text-white/40 p-2"
+          className="flex flex-col items-center justify-center gap-1 min-h-[64px] text-primary p-2"
           onClick={() => logOut()}
           disabled={isPending}
         >
@@ -105,7 +105,7 @@ export default function BottomNavigation() {
           ) : (
             <ArrowLeftOnRectangleIcon className="w-6 h-6 pointer-events-none" />
           )}
-          <span className="btm-nav-label pointer-events-none font-medium">ออก</span>
+          <span className="btm-nav-label pointer-events-none">ออก</span>
         </button>
       )}
     </div>
