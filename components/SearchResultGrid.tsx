@@ -88,33 +88,38 @@ export default function SearchResultGrid({
       {renderList && renderList.length > 0 && (
         <div
           ref={divRef}
-          className="col-span-full bg-transparent px-2 pt-2 pb-2 flex justify-between items-center"
+          className="col-span-full bg-white/50 backdrop-blur-sm sticky top-0 z-10 px-4 py-3 flex justify-between items-center border-b border-gray-100 mb-2 -mx-2 rounded-t-xl"
         >
-          <h2 className="text-lg font-semibold text-gray-900">ผลการค้นหา</h2>
-          <div className="flex gap-1" role="group" aria-label="View mode toggle">
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm md:text-base font-bold text-gray-800">ผลการค้นหา</h2>
+            <span className="text-[10px] md:text-xs font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+              {renderList.length} รายการ
+            </span>
+          </div>
+          <div className="flex bg-gray-100 p-1 rounded-lg" role="group" aria-label="View mode toggle">
             <button
               onClick={() => setViewMode("grid")}
               title="Grid View"
               aria-label="Switch to grid view"
               aria-pressed={viewMode === "grid"}
-              className={`p-2 rounded btn-hover ${viewMode === "grid"
-                ? "text-gray-900 opacity-100"
-                : "text-gray-500 opacity-75 hover:opacity-90"
+              className={`p-1.5 rounded-md transition-all duration-200 ${viewMode === "grid"
+                ? "bg-white text-primary shadow-sm scale-100"
+                : "text-gray-400 hover:text-gray-600 scale-95"
                 }`}
             >
-              <Squares2X2Icon className="w-5 h-5" aria-hidden="true" />
+              <Squares2X2Icon className="w-4 h-4" aria-hidden="true" />
             </button>
             <button
               onClick={() => setViewMode("list")}
               title="List View"
               aria-label="Switch to list view"
               aria-pressed={viewMode === "list"}
-              className={`p-2 rounded btn-hover ${viewMode === "list"
-                ? "text-gray-900 opacity-100"
-                : "text-gray-500 opacity-75 hover:opacity-90"
+              className={`p-1.5 rounded-md transition-all duration-200 ${viewMode === "list"
+                ? "bg-white text-primary shadow-sm scale-100"
+                : "text-gray-400 hover:text-gray-600 scale-95"
                 }`}
             >
-              <ListBulletIcon className="w-5 h-5" aria-hidden="true" />
+              <ListBulletIcon className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -122,13 +127,13 @@ export default function SearchResultGrid({
 
       {/* List View */}
       {viewMode === "list" && (
-        <div className="col-span-full flex flex-col gap-2">
+        <div className="col-span-full flex flex-col gap-3 px-1 md:px-2">
           {isLoading && (
             <>
               {getSkeletonItems(8).map((s) => (
                 <div
                   key={s}
-                  className="bg-gray-300 animate-pulse w-full h-16 rounded"
+                  className="bg-gray-200 animate-pulse w-full h-24 rounded-xl"
                 />
               ))}
             </>
@@ -136,7 +141,7 @@ export default function SearchResultGrid({
           {renderList?.map((rcm, i) => {
             return !rcm ? null : (
               <Fragment key={rcm.videoId}>
-                <label htmlFor="modal-video">
+                <label htmlFor="modal-video" className="block">
                   <SearchResultHorizontalCard
                     video={rcm}
                     onClick={() => onClick(rcm)}

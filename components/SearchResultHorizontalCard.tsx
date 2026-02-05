@@ -18,12 +18,12 @@ export default function SearchResultHorizontalCard({
 }: SearchResultHorizontalCardProps) {
   return (
     <div
-      className="relative bg-white shadow hover:shadow-md rounded overflow-hidden group cursor-pointer transition-shadow"
+      className="relative bg-white border border-gray-100/50 shadow-sm hover:shadow-md rounded-xl overflow-hidden group cursor-pointer transition-all duration-300 md:h-28"
       onClick={onClick}
     >
-      <div className="grid grid-cols-3 overflow-hidden">
+      <div className="flex h-full flex-row overflow-hidden">
         {/* Thumbnail - Left Side */}
-        <figure className="relative w-full aspect-video">
+        <figure className="relative h-full aspect-video w-32 sm:w-40 md:w-48 flex-shrink-0 overflow-hidden">
           <VideoThumbnail
             src={
               video.videoThumbnails?.find((t) => t.quality === "medium")?.url ||
@@ -31,22 +31,26 @@ export default function SearchResultHorizontalCard({
               `https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`
             }
             alt={video.title}
-            className="object-cover"
+            className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-110"
           />
           {/* Play Icon Overlay */}
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-            <PlayIcon className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full bg-primary/90 flex items-center justify-center opacity-0 group-hover:opacity-100 scale-75 group-hover:scale-100 transition-all duration-300 shadow-lg translate-y-2 group-hover:translate-y-0">
+              <PlayIcon className="w-4 h-4 text-white ml-0.5" />
+            </div>
           </div>
         </figure>
 
         {/* Video Info - Right Side */}
-        <div className="col-span-2 flex flex-col py-2 pl-3 pr-2 justify-center overflow-hidden">
-          <h2 className="font-semibold text-xs leading-tight line-clamp-2 text-gray-900">
+        <div className="flex-1 flex flex-col pt-2.5 pb-2 px-4 justify-start overflow-hidden">
+          <h2 className="font-bold text-sm md:text-base leading-snug line-clamp-2 text-gray-800 transition-colors group-hover:text-primary">
             {video.title}
           </h2>
-          <p className="text-xs text-gray-500 truncate mt-0.5">
-            {video.author}
-          </p>
+          <div className="mt-auto flex items-center gap-2 pb-1">
+            <p className="text-[11px] md:text-xs font-medium text-gray-500 truncate bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100">
+              {video.author}
+            </p>
+          </div>
         </div>
       </div>
     </div>
