@@ -667,10 +667,10 @@ export default function TVPage() {
                                             </div>
                                         </div>
 
-                                        {/* Tagline - Refined alignment in right column */}
+                                        {/* Tagline - Centered within the right column for symmetry */}
                                         <div className="pt-8 border-t border-white/10 mt-2">
-                                            <div className="flex items-center gap-3">
-                                                <img src="/img/cast.png" alt="Cast" className="w-6 h-6 invert opacity-80" />
+                                            <div className="flex items-center justify-center gap-3">
+                                                <img src="/img/cast.png" alt="Cast" className="w-7 h-7 invert opacity-90" />
                                                 <p className="text-white text-lg font-medium opacity-90">ร้องได้ทุกที่ ควบคุมจากมือถือ</p>
                                             </div>
                                         </div>
