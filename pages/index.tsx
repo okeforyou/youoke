@@ -173,6 +173,9 @@ function HomePage() {
   // Track XL breakpoint (1280px) for conditional player rendering
   const [isXlScreen, setIsXlScreen] = useState(false);
 
+  // Toggle sidebar visibility (desktop)
+  const [showSidebar, setShowSidebar] = useState(false);
+
   // Ensure Host is Authenticated (Anonymous) for Firebase RDB writes
   useEffect(() => {
     const signIn = async () => {
@@ -512,6 +515,9 @@ function HomePage() {
       setPlaylist(playlist?.concat([newVideo]));
       console.log('✅ Local playlist update scheduled');
     }
+
+    // Always show sidebar when adding a song to queue/starting playback
+    setShowSidebar(true);
   }
 
   function priorityVideo(
@@ -536,6 +542,9 @@ function HomePage() {
       setCurVideoId(video.videoId);
       setCurrentIndex(0); // Playing first item
     }
+
+    // Always show sidebar when playing or prioritising a video
+    setShowSidebar(true);
   }
 
   function skipVideoTo(
@@ -1193,7 +1202,7 @@ function HomePage() {
           className={`
             hidden lg:flex flex-col overflow-hidden border-l border-white/5 bg-[#0A0A0A]/80 backdrop-blur-3xl z-20
             transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] transform origin-right
-            ${isXlScreen && !showVideoPlayerModal && activeQueue.length > 0
+            ${isXlScreen && !showVideoPlayerModal && activeQueue.length > 0 && showSidebar
               ? 'w-80 xl:w-96 2xl:w-[450px] opacity-100 translate-x-0'
               : 'w-0 opacity-0 translate-x-full border-none'
             }
