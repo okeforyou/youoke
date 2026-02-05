@@ -7,7 +7,7 @@ import { ref, onValue, set } from 'firebase/database';
 import { signInAnonymously } from 'firebase/auth';
 import { realtimeDb, auth } from '../firebase';
 import { QRCodeSVG } from 'qrcode.react';
-import { DevicePhoneMobileIcon } from '@heroicons/react/24/outline';
+import { DevicePhoneMobileIcon, MicrophoneIcon } from '@heroicons/react/24/outline';
 import Script from 'next/script';
 
 // ========================================
@@ -598,57 +598,90 @@ export default function TVPage() {
                 className="h-screen w-screen bg-black text-white relative overflow-hidden group cursor-none hover:cursor-default"
                 onClick={handleUserInteraction}
             >
-                {/* Waiting Screen */}
+                {/* Waiting Screen - Premium Dark Theme Design */}
                 {!videoId && (
-                    <div className="absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-gray-900 via-black to-gray-900">
-                        <div className="w-full max-w-5xl mx-auto px-6">
-                            <div className="text-center mb-10">
-                                <h1 className="text-6xl font-bold mb-2 text-primary">YouOke TV</h1>
-                                <p className="text-base text-gray-400">คาราโอเกะออนไลน์</p>
+                    <div className="absolute inset-0 z-50 flex items-center justify-center overflow-hidden">
+                        {/* Ambient Gradient Background - Pure Black with Red */}
+                        <div className="absolute inset-0">
+                            {/* Base gradient - Pure black */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-black via-neutral-950 to-black" />
+
+                            {/* Animated ambient blobs - Red colors only */}
+                            <div className="absolute top-1/4 -left-1/4 w-[600px] h-[600px] bg-red-600/15 rounded-full blur-[120px] animate-pulse" style={{ animationDuration: '8s' }} />
+                            <div className="absolute bottom-1/4 -right-1/4 w-[500px] h-[500px] bg-red-700/15 rounded-full blur-[100px] animate-pulse" style={{ animationDuration: '10s', animationDelay: '2s' }} />
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-red-500/10 rounded-full blur-[150px]" />
+
+                            {/* Subtle noise texture overlay */}
+                            <div className="absolute inset-0 opacity-[0.02]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.8\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")' }} />
+                        </div>
+
+                        {/* Connected Status Badge - Top Right */}
+                        <div className="absolute top-8 right-8 flex items-center gap-2 bg-white/5 backdrop-blur-md rounded-full px-4 py-2 border border-white/10">
+                            <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+                            <span className="text-white/70 text-sm font-medium">พร้อมเชื่อมต่อ</span>
+                        </div>
+
+                        {/* Main Content */}
+                        <div className="relative z-10 w-full max-w-4xl mx-auto px-8">
+                            {/* Logo */}
+                            <div className="text-center mb-16">
+                                <h1 className="text-7xl font-bold tracking-tight text-white mb-3">
+                                    YouOke
+                                </h1>
+                                <p className="text-white/50 text-lg font-medium tracking-widest">Cast. Sing. Enjoy.</p>
                             </div>
 
-                            <div className="bg-black/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10 overflow-hidden">
-                                <div className="grid md:grid-cols-2 gap-0">
-                                    <div className="flex flex-col items-center justify-center p-12 bg-black">
+                            {/* Glass Card */}
+                            <div className="bg-white/5 backdrop-blur-2xl rounded-3xl border border-white/10 shadow-2xl overflow-hidden">
+                                <div className="grid md:grid-cols-2 divide-x divide-white/10">
+                                    {/* Left - QR Code */}
+                                    <div className="flex flex-col items-center justify-center p-12">
                                         {qrCodeUrl && (
-                                            <div className="bg-white p-6 rounded-2xl shadow-2xl mb-6">
-                                                <QRCodeSVG value={qrCodeUrl} size={220} level="M" />
+                                            <div className="bg-white p-5 rounded-2xl shadow-xl mb-6">
+                                                <QRCodeSVG value={qrCodeUrl} size={180} level="M" />
                                             </div>
                                         )}
-                                        <div className="text-center">
-                                            <p className="text-sm text-white/70 mb-2">เลขห้อง</p>
-                                            <p className="text-6xl font-bold tracking-widest text-primary">{roomCode}</p>
-                                        </div>
+                                        <p className="text-white/50 text-sm mb-2 tracking-wider uppercase">Room Code</p>
+                                        <p className="text-5xl font-bold tracking-[0.3em] text-white">{roomCode}</p>
                                     </div>
 
+                                    {/* Right - Instructions */}
                                     <div className="flex flex-col justify-center p-12 space-y-6">
-                                        <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                                            <DevicePhoneMobileIcon className="w-8 h-8 text-primary" />
-                                            วิธีใช้งาน
-                                        </h2>
-                                        <div className="space-y-4">
-                                            <div className="flex items-start gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                                                    <span className="text-primary font-bold">1</span>
-                                                </div>
-                                                <p className="text-white">
-                                                    <span className="font-semibold text-primary">Scan QR Code</span> ด้วยกล้องมือถือ
-                                                </p>
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 rounded-2xl bg-red-500/20 border border-red-500/30 flex items-center justify-center">
+                                                <span className="text-white font-semibold text-lg">1</span>
                                             </div>
-                                            <div className="flex items-start gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                                                    <span className="text-primary font-bold">2</span>
-                                                </div>
-                                                <p className="text-white">ควบคุมผ่านมือถือได้ทันที</p>
+                                            <div>
+                                                <p className="text-white font-medium text-lg">Scan QR Code</p>
+                                                <p className="text-white/40 text-sm">ใช้กล้องมือถือสแกน</p>
                                             </div>
                                         </div>
-                                        <div className="mt-4 flex justify-center gap-2">
-                                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                            <span className="text-sm text-green-500">Real-time Sync Active</span>
+
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 rounded-2xl bg-red-500/20 border border-red-500/30 flex items-center justify-center">
+                                                <span className="text-white font-semibold text-lg">2</span>
+                                            </div>
+                                            <div>
+                                                <p className="text-white font-medium text-lg">ควบคุมผ่านมือถือ</p>
+                                                <p className="text-white/40 text-sm">เลือกเพลง, ปรับเสียง, ข้ามเพลง</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Tagline - Refined alignment in right column */}
+                                        <div className="pt-8 border-t border-white/10 mt-2">
+                                            <div className="flex items-center gap-3">
+                                                <img src="/img/cast.png" alt="Cast" className="w-6 h-6 invert opacity-80" />
+                                                <p className="text-white text-lg font-medium opacity-90">ร้องได้ทุกที่ ควบคุมจากมือถือ</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Footer hint */}
+                            <p className="text-center text-white/30 text-sm mt-8">
+                                หรือไปที่ <span className="text-white/50 font-medium">{baseUrl ? new URL(baseUrl).hostname : 'youoke.vercel.app'}</span> แล้วใส่รหัสห้อง
+                            </p>
                         </div>
                     </div>
                 )}
