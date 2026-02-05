@@ -88,7 +88,7 @@ export default function SearchResultGrid({
       {renderList && renderList.length > 0 && (
         <div
           ref={divRef}
-          className="col-span-full bg-white/50 backdrop-blur-sm sticky top-0 z-10 px-4 py-3 flex justify-between items-center border-b border-gray-100 mb-2 -mx-2 rounded-t-xl"
+          className="col-span-full bg-transparent px-2 py-3 flex justify-between items-center mb-1"
         >
           <div className="flex items-center gap-2">
             <h2 className="text-sm md:text-base font-bold text-gray-800">ผลการค้นหา</h2>
