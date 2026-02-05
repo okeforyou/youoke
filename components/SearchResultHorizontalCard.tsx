@@ -18,12 +18,12 @@ export default function SearchResultHorizontalCard({
 }: SearchResultHorizontalCardProps) {
   return (
     <div
-      className="relative bg-white border border-gray-100/50 shadow-sm hover:shadow-md rounded-xl overflow-hidden group cursor-pointer transition-all duration-300"
+      className="relative bg-white shadow hover:shadow-md rounded overflow-hidden group cursor-pointer transition-shadow"
       onClick={onClick}
     >
-      <div className="flex flex-row overflow-hidden">
+      <div className="grid grid-cols-3 overflow-hidden">
         {/* Thumbnail - Left Side */}
-        <figure className="relative aspect-video w-[140px] sm:w-44 md:w-52 flex-shrink-0 overflow-hidden bg-gray-100">
+        <figure className="relative w-full aspect-video">
           <VideoThumbnail
             src={
               video.videoThumbnails?.find((t) => t.quality === "medium")?.url ||
@@ -31,26 +31,22 @@ export default function SearchResultHorizontalCard({
               `https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`
             }
             alt={video.title}
-            className="object-contain w-full h-full transition-transform duration-500 group-hover:scale-105"
+            className="object-contain"
           />
           {/* Play Icon Overlay */}
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300 flex items-center justify-center">
-            <div className="w-8 h-8 rounded-full bg-primary/90 flex items-center justify-center opacity-0 group-hover:opacity-100 scale-75 group-hover:scale-100 transition-all duration-300 shadow-lg translate-y-2 group-hover:translate-y-0">
-              <PlayIcon className="w-4 h-4 text-white ml-0.5" />
-            </div>
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+            <PlayIcon className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
         </figure>
 
         {/* Video Info - Right Side */}
-        <div className="flex-1 min-w-0 flex flex-col py-2 px-3 md:px-4 justify-between">
-          <h2 className="font-bold text-xs md:text-sm lg:text-base leading-snug line-clamp-2 text-gray-800 transition-colors group-hover:text-primary">
+        <div className="col-span-2 flex flex-col py-2 pl-3 pr-2 justify-center overflow-hidden">
+          <h2 className="font-semibold text-xs leading-tight line-clamp-2 text-gray-900">
             {video.title}
           </h2>
-          <div className="flex items-center gap-2 mt-auto">
-            <p className="text-[10px] md:text-xs font-medium text-gray-400 truncate bg-gray-50/80 px-2 py-0.5 rounded border border-gray-100/50">
-              {video.author}
-            </p>
-          </div>
+          <p className="text-xs text-gray-500 truncate mt-0.5">
+            {video.author}
+          </p>
         </div>
       </div>
     </div>

@@ -176,6 +176,7 @@ function HomePage() {
   // Toggle sidebar visibility (desktop)
   const [showSidebar, setShowSidebar] = useState(false);
 
+
   // Ensure Host is Authenticated (Anonymous) for Firebase RDB writes
   useEffect(() => {
     const signIn = async () => {
@@ -520,6 +521,7 @@ function HomePage() {
     setShowSidebar(true);
   }
 
+
   function priorityVideo(
     video: SearchResult | RecommendedVideo,
     videoIndex?: number
@@ -546,6 +548,7 @@ function HomePage() {
     // Always show sidebar when playing or prioritising a video
     setShowSidebar(true);
   }
+
 
   function skipVideoTo(
     video: SearchResult | RecommendedVideo,

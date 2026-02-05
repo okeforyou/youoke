@@ -96,6 +96,7 @@ export default function SearchResultGrid({
               {renderList.length} รายการ
             </span>
           </div>
+
           <div className="flex bg-gray-100 p-1 rounded-lg" role="group" aria-label="View mode toggle">
             <button
               onClick={() => setViewMode("grid")}
@@ -122,18 +123,19 @@ export default function SearchResultGrid({
               <ListBulletIcon className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
+
         </div>
       )}
 
       {/* List View */}
       {viewMode === "list" && (
-        <div className="col-span-full flex flex-col gap-3 px-1 md:px-2">
+        <div className="col-span-full flex flex-col gap-2">
           {isLoading && (
             <>
               {getSkeletonItems(8).map((s) => (
                 <div
                   key={s}
-                  className="bg-gray-200 animate-pulse w-full h-24 rounded-xl"
+                  className="bg-gray-300 animate-pulse w-full h-16 rounded"
                 />
               ))}
             </>
@@ -141,7 +143,7 @@ export default function SearchResultGrid({
           {renderList?.map((rcm, i) => {
             return !rcm ? null : (
               <Fragment key={rcm.videoId}>
-                <label htmlFor="modal-video" className="block">
+                <label htmlFor="modal-video">
                   <SearchResultHorizontalCard
                     video={rcm}
                     onClick={() => onClick(rcm)}
