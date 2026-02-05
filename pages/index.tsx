@@ -759,20 +759,7 @@ function HomePage() {
         {!isMobile && (
           <span className="text-gray-900 text-xs 2xl:text-xl">
             คิวเพลง ( {displayPlaylist?.length || 0} เพลง )
-            {(isGoogleCastConnected || isCasting) && <span className="text-xs ml-1">📺</span>}
           </span>
-        )}
-
-        {/* Share Room button - only show for Owner when casting to Monitor */}
-        {isCasting && !isGoogleCastConnected && isCastHost && (
-          <button
-            onClick={() => setShowShareModal(true)}
-            className="btn btn-xs btn-ghost text-primary gap-1"
-            title="แชร์ห้องให้เพื่อน"
-          >
-            <ShareIcon className="w-4 h-4" />
-            <span className="hidden lg:inline">แชร์</span>
-          </button>
         )}
       </div>
 
