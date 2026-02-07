@@ -17,8 +17,7 @@ import AdminLayout from '../layouts/AdminLayout';
 import { AdminService } from '../services/adminService';
 import { EditUserModal } from '../components/EditUserModal';
 import { collection, query, orderBy, getDocs, doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
-import { db, realtimeDb } from '../../../../firebase';
-import { ref, get, child, update, remove } from "firebase/database";
+import { db } from '../../../../firebase';
 import { cn } from '../../../utils/cn';
 
 // Mock Modules Config (since we don't have the file physically yet or it's in config)
@@ -43,24 +42,24 @@ export default function UsersPage() {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      // 1. Fetch Users from RTDB (as per AdminService discovery)
-      if (!realtimeDb) return;
-      const dbRef = ref(realtimeDb);
-      const snapshot = await get(child(dbRef, "users"));
+      // 1. Fetch Users from Firestore
+      if (!db) return;
+      const usersQuery = query(collection(db, "users"));
+      const snapshot = await getDocs(usersQuery);
 
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        const usersList = Object.keys(data).map(key => ({
-          uid: key,
-          ...data[key]
-        }));
+      if (!snapshot.empty) {
+        const usersList: any[] = [];
+        snapshot.forEach(doc => {
+          usersList.push({ uid: doc.id, ...doc.data() });
+        });
+
         // Sort: Admin first, then newest
         usersList.sort((a, b) => {
           if (a.role === 'admin' && b.role !== 'admin') return -1;
           if (a.role !== 'admin' && b.role === 'admin') return 1;
-          // createdAt might be number or ISO string in RTDB, handling safe comparison
-          const timeA = new Date(a.createdAt || 0).getTime();
-          const timeB = new Date(b.createdAt || 0).getTime();
+          // createdAt might be Firestore Timestamp or Date or string
+          const timeA = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : new Date(a.createdAt || 0).getTime();
+          const timeB = b.createdAt?.seconds ? b.createdAt.seconds * 1000 : new Date(b.createdAt || 0).getTime();
           return timeB - timeA;
         });
         setUsers(usersList);
@@ -108,8 +107,9 @@ export default function UsersPage() {
   const handleUpdateRole = async (uid: string, newRole: 'admin' | 'user') => {
     if (!confirm(`Confirm role change to ${newRole}?`)) return;
     try {
-      if (!realtimeDb) return;
-      await update(ref(realtimeDb, `users/${uid}`), { role: newRole });
+      if (!db) return;
+      const userRef = doc(db, "users", uid);
+      await updateDoc(userRef, { role: newRole });
       alert("✅ Role updated!");
       setSelectedUser(null);
       fetchUsers();
@@ -127,8 +127,9 @@ export default function UsersPage() {
       : [...currentModules, moduleId];
 
     try {
-      if (!realtimeDb) return;
-      await update(ref(realtimeDb, `users/${selectedUser.uid}`), { installed_modules: newModules });
+      if (!db) return;
+      const userRef = doc(db, "users", selectedUser.uid);
+      await updateDoc(userRef, { installed_modules: newModules });
       // Optimistic update for modal
       setSelectedUser({ ...selectedUser, installed_modules: newModules });
       const updatedUsers = users.map(u => u.uid === selectedUser.uid ? { ...u, installed_modules: newModules } : u);
