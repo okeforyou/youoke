@@ -34,8 +34,9 @@ if (!admin.apps.length) {
     if (projectId === 'playokeforyou' && databaseURL?.includes('playokeforyou-dev')) {
       console.warn('⚠️ Hybrid Mode Detected: Prod Auth + Dev DB. Admin SDK cannot access Dev DB with Prod Creds.');
       console.warn('⚠️ Switching Admin SDK to use PROD Database URL to prevent hang.');
-      // Fallback to default Prod URL or null. Using 'undefined' lets SDK auto-discover default.
-      targetDatabaseURL = `https://${projectId}-default-rtdb.asia-southeast1.firebasedatabase.app`;
+      // Fallback to undefined to prevent RTDB connection attempt entirely.
+      // This ensures Firestore works without hanging on unauthorized RTDB access.
+      targetDatabaseURL = undefined;
     }
 
     admin.initializeApp({
