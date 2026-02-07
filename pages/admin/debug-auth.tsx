@@ -1,7 +1,7 @@
 import { GetServerSideProps } from "next";
 import nookies from "nookies";
 import React from "react";
-import { adminAuth, adminDb } from "../../firebase-admin";
+import { adminAuth, adminDb, adminFirestore } from "../../firebase-admin";
 
 export default function DebugAuthPage({ data, error }: any) {
     return (
