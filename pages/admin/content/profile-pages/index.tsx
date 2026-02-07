@@ -1,4 +1,4 @@
-import ProfilePagesAdmin from '../../../../../src/features/admin/pages/content/profile-pages';
+import ProfilePagesAdmin from '../../../../src/features/admin/pages/content/profile-pages';
 import { GetServerSideProps } from 'next';
 import nookies from 'nookies';
 import { adminAuth, adminDb } from '../../../../../firebase-admin';

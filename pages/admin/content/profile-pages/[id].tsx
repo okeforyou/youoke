@@ -1,4 +1,4 @@
-import EditProfilePage from '../../../../../src/features/admin/pages/content/profile-pages/EditProfilePage';
+import EditProfilePage from '../../../../src/features/admin/pages/content/profile-pages/EditProfilePage';
 import { GetServerSideProps } from 'next';
 import nookies from 'nookies';
 import { adminAuth, adminDb } from '../../../../../firebase-admin';

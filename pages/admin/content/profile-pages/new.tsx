@@ -1,4 +1,4 @@
-import NewProfilePage from '../../../../../src/features/admin/pages/content/profile-pages/new';
+import NewProfilePage from '../../../../src/features/admin/pages/content/profile-pages/new';
 import { GetServerSideProps } from 'next';
 import nookies from 'nookies';
 import { adminAuth, adminDb } from '../../../../../firebase-admin';
