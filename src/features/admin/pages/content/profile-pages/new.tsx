@@ -1,5 +1,5 @@
-import { PageEditor } from '@/features/admin/components/cms/PageEditor';
-import AdminLayout from '@/features/admin/layouts/AdminLayout';
+import { PageEditor } from '../../../components/cms/PageEditor';
+import AdminLayout from '../../../layouts/AdminLayout';
 
 const NewProfilePage = () => {
     return (
