@@ -283,23 +283,20 @@ export default function ChromecastReceiverPage() {
             </div>
 
             {/* UI Overlay */}
+            {/* UI Overlay */}
             <UnifiedPlayerInterface
-                currentVideo={currentVideo || undefined}
-                // queue={queue} // Interface might check queue length
-                // The UnifiedPlayerInterface might expect different props than QueueVideo
-                // Let's check comp definition if needed. 
-                // For now passing basic props.
+                videoId={videoId}
+                queue={queue}
                 isPlaying={isPlaying}
                 isMuted={isMuted}
-                currentTime="0:00" // Todo: sync time
-                duration="0:00"
-                onPlayPause={() => { }} // Read-only
+                onPlayPause={() => { }}
                 onNext={() => { }}
                 onPrevious={() => { }}
-                hasNext={queue.length > 0}
-                hasPrevious={false}
-                isReceiver={true} // Special flag for TV styling
+                onMuteToggle={() => { }}
+                isReceiver={true}
                 roomCode={roomCode}
+                hidePlaybackControls={true}
+                forceShowQueue={true}
             />
         </div>
     );

@@ -30,6 +30,7 @@ interface UnifiedPlayerInterfaceProps {
     showQrCode?: boolean; // For TV idle state? No, usually separate.
     forceShowQueue?: boolean; // Force queue to show (for TV debugging or persistent mode)
     hidePlaybackControls?: boolean; // Hide Play/Pause/Next/Prev for Passive Mode
+    isReceiver?: boolean; // Optimized for TV/Cast Receiver
 }
 
 export default function UnifiedPlayerInterface({
@@ -46,6 +47,7 @@ export default function UnifiedPlayerInterface({
     roomCode,
     forceShowQueue = false,
     hidePlaybackControls = false,
+    isReceiver = false,
 }: UnifiedPlayerInterfaceProps) {
     // UI State
     const [showQueue, setShowQueue] = useState(false);
