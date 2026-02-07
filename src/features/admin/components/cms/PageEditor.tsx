@@ -11,7 +11,7 @@ import {
     GlobeAltIcon
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { cn } from '../../../utils/cn';
+import { cn } from '../../../../utils/cn';
 import dynamic from 'next/dynamic';
 import 'react-quill/dist/quill.snow.css';
 

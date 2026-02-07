@@ -10,7 +10,7 @@ import {
     ChevronDownIcon,
     DocumentTextIcon
 } from '@heroicons/react/24/outline';
-import { cn } from '../../../utils/cn';
+import { cn } from '../../../../utils/cn';
 import Link from 'next/link';
 
 interface CMSPage {
