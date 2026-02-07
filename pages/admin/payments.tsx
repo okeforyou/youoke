@@ -1,10 +1,10 @@
 import PaymentsPage from '../../src/features/admin/pages/PaymentsPage';
 import { GetServerSideProps } from 'next';
 import nookies from 'nookies';
-import { adminAuth, adminDb } from '../../firebase-admin';
+import { adminAuth, adminFirestore } from '../../firebase-admin';
 
 export default function AdminPaymentsRoute(props: any) {
-  return <PaymentsPage {...props} />;
+  return <PaymentsPage />;
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -18,11 +18,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
     const decodedToken = await adminAuth.verifyIdToken(token);
     const uid = decodedToken.uid;
-    const userRef = adminDb.ref(`users/${uid}`);
-    const userSnapshot = await userRef.once('value');
-    const userData = userSnapshot.val();
 
-    if (!userData || userData.role !== 'admin') {
+    // Check Firestore (Hybrid Mode Support)
+    const userDoc = await adminFirestore.collection('users').doc(uid).get();
+    const userData = userDoc.data();
+
+    if (!userDoc.exists || userData?.role !== 'admin') {
       return { redirect: { destination: "/", permanent: false } };
     }
 
