@@ -1245,11 +1245,11 @@ function HomePage() {
           }
           window.open('/dual', '_blank');
         }}
-        onSelectGoogleCast={() => {
+        onSelectGoogleCast={async () => {
           setShowCastModeSelector(false);
           // Set playlist and connect to Chromecast
           setGoogleCastPlaylist(playlist);
-          connectGoogleCast();
+          await connectGoogleCast(playlist, room);
           console.log('📡 Google Cast: Connecting to Chromecast...');
         }}
         onSelectYouTube={() => {

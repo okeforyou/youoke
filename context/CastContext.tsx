@@ -19,7 +19,7 @@ interface CastContextValue {
   currentVideo: QueueVideo | null;
 
   // Connection Actions
-  connect: (initialPlaylist?: QueueVideo[]) => void;
+  connect: (initialPlaylist?: QueueVideo[], roomCode?: string) => void;
   disconnect: () => void;
 
   // Queue Operations
@@ -47,7 +47,8 @@ interface CastContextValue {
 const CastContext = createContext<CastContextValue | undefined>(undefined);
 
 // Message namespace for communication (must match receiver)
-const CAST_NAMESPACE = 'urn:x-cast:com.youoke.cast';
+// Message namespace for communication (must match receiver)
+const CAST_NAMESPACE = 'urn:x-cast:com.okeforyou.cast';
 
 // Cast message types (must match receiver message handler)
 type CastMessage =
@@ -584,7 +585,8 @@ export function CastProvider({ children }: { children: ReactNode }) {
   };
 
   // Connection Actions
-  const connect = (initialPlaylist?: QueueVideo[]) => {
+
+  const connect = (initialPlaylist?: QueueVideo[], roomCode?: string) => {
     const cast = (window as any).cast;
     if (!cast || !cast.framework) {
       console.error('Google Cast SDK not loaded yet. Please wait a moment and try again.');
@@ -605,23 +607,38 @@ export function CastProvider({ children }: { children: ReactNode }) {
       }
     }
 
+    // Store roomCode to send after connection
+    if (roomCode) {
+      console.log('🔑 Storing room code for handshake:', roomCode);
+      setConnectedRoomCode(roomCode);
+    }
+
     try {
       const context = cast.framework.CastContext.getInstance();
       console.log('🔌 Requesting Cast session...');
       context.requestSession().then(
-        () => {
+        (session: any) => {
           console.log('✅ Cast session requested successfully');
+          // If we have a room code, send it now!
+          if (roomCode) {
+            // Defer slightly to ensure channel is open
+            setTimeout(() => {
+              const message = JSON.stringify({
+                type: 'JOIN_ROOM',
+                payload: { roomCode }
+              });
+              session.sendMessage(
+                CAST_NAMESPACE,
+                message,
+                () => console.log('✅ JOIN_ROOM sent with code:', roomCode),
+                (e: any) => console.error('❌ Failed to send JOIN_ROOM:', e)
+              );
+            }, 500);
+          }
         },
         (error: any) => {
           console.error('❌ Error requesting session:', error);
-          console.error('Error details:', {
-            code: error?.code,
-            description: error?.description,
-            details: error?.details,
-            message: error?.message,
-          });
-
-          // Show user-friendly error
+          // ... error handling
           let errorMessage = 'ไม่สามารถเชื่อมต่อ Google Cast ได้';
           if (error === 'cancel') {
             errorMessage = 'การเชื่อมต่อถูกยกเลิก';
@@ -666,7 +683,8 @@ export function CastProvider({ children }: { children: ReactNode }) {
           videoId: v.videoId,
           title: v.title || 'Unknown'
         })),
-      });
+        startIndex: 0 // Reset index when loading new queue? Or keep?
+      } as any);
     }
   };
 
@@ -692,7 +710,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
           videoId: v.videoId,
           title: v.title || 'Unknown'
         })),
-      });
+      } as any);
     } else {
       console.warn('⚠️ Not connected! Queue not sent to TV');
     }
@@ -721,7 +739,8 @@ export function CastProvider({ children }: { children: ReactNode }) {
           videoId: v.videoId,
           title: v.title || 'Unknown'
         })),
-      });
+        startIndex: 0
+      } as any);
     }
   };
 
@@ -773,7 +792,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
           videoId: v.videoId,
           title: v.title || 'Unknown'
         })),
-      });
+      } as any);
     }
   };
 
@@ -791,7 +810,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
           videoId: v.videoId,
           title: v.title || 'Unknown'
         })),
-      });
+      } as any);
     }
   };
 
@@ -825,7 +844,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
           videoId: v.videoId,
           title: v.title || 'Unknown'
         })),
-      });
+      } as any);
     }
   };
 
@@ -844,7 +863,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
           videoId: v.videoId,
           title: v.title || 'Unknown'
         })),
-      });
+      } as any);
     }
   };
 
@@ -863,7 +882,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
           videoId: v.videoId,
           title: v.title || 'Unknown'
         })),
-      });
+      } as any);
     }
   };
 
@@ -979,7 +998,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
           videoId: v.videoId,
           title: v.title || 'Unknown'
         })),
-      });
+      } as any);
     }
   };
 
