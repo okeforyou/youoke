@@ -5,10 +5,11 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth'
+import { doc, getDoc } from 'firebase/firestore';
 import nookies from 'nookies'
 import React, { createContext, useContext, useEffect, useState } from 'react'
 
-import { auth } from '../firebase'
+import { auth, database } from '../firebase'
 
 // User data type interface
 interface UserType {
@@ -41,10 +42,8 @@ export const AuthContextProvider = ({
   });
   const [loading, setLoading] = useState<Boolean>(true);
 
-  import { doc, getDoc } from 'firebase/firestore'; // Import Firestore functions
-  import { auth, database } from '../firebase'; // Import database (Firestore)
-
-  // ... (existing imports/interfaces)
+  // (imports will be moved to top level in the next replacement chunk or handled here if possible) 
+  // Intent: Remove these lines as they are invalid here.
 
   // listen for token changes
   // call setUser and write new token as a cookie
