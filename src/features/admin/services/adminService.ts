@@ -325,26 +325,24 @@ export const AdminService = {
         else if (durationDays > 300) membershipType = 'yearly';
         if (durationDays === 0) membershipType = 'lifetime';
 
-        // 3. Update User Membership (RTDB)
-        if (realtimeDb) {
-            const userRef = ref(realtimeDb, `users/${userId}`);
-            await update(userRef, {
-                membership: {
-                    type: membershipType,
-                    status: 'active',
-                    updatedAt: Date.now(),
-                    expiresAt: expiresAt ? expiresAt.getTime() : null,
-                    packageId: packageId
-                },
-                isPremium: true
-            });
-        }
+        // 3. Update User Membership (Firestore)
+        const userRef = doc(db, "users", userId);
+        await updateDoc(userRef, {
+            membership: {
+                type: membershipType,
+                status: 'active',
+                updatedAt: new Date(),
+                expiresAt: expiresAt,
+                packageId: packageId
+            },
+            isPremium: true
+        });
 
         // 4. Update Payment Status (Firestore)
         const paymentRef = doc(db, "payment_proofs", paymentId);
         await updateDoc(paymentRef, {
             status: 'approved',
-            processedAt: rtdbServerTimestamp(), // Use compat timestamp or firestore one? Using standard Date for now if needed or import
+            processedAt: new Date(),
             processedBy: adminUid
         });
     },
