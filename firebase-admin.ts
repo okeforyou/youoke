@@ -55,8 +55,19 @@ if (!admin.apps.length) {
   }
 }
 
+
+// Safe initialization for database (adminDb) to prevent crash when databaseURL is undefined (Hybrid Mode)
+let _adminDb = null;
+try {
+  if (admin.apps.length && admin.app().options.databaseURL) {
+    _adminDb = admin.database();
+  }
+} catch (e) {
+  console.warn('⚠️ adminDb initialization skipped (likely no databaseURL provided in Hybrid Mode)');
+}
+
 export const adminAuth = admin.apps.length ? admin.auth() : null;
-export const adminDb = admin.apps.length ? admin.database() : null;
+export const adminDb = _adminDb;
 export const adminFirestore = admin.apps.length ? admin.firestore() : null;
 
 export default admin;
