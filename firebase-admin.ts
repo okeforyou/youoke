@@ -26,13 +26,25 @@ if (!admin.apps.length) {
       throw new Error('Firebase Admin credentials not configured');
     }
 
+    // HYBRID MODE SAFEGUARD:
+    // If we are using PROD credentials (playokeforyou) but pointing to DEV Database (playokeforyou-dev),
+    // the Admin SDK will hang indefinitely trying to connect to the unauthorized DB.
+    // We must force it to use the PROD Database URL (or undefined) to allow Firestore to work.
+    let targetDatabaseURL = databaseURL;
+    if (projectId === 'playokeforyou' && databaseURL?.includes('playokeforyou-dev')) {
+      console.warn('⚠️ Hybrid Mode Detected: Prod Auth + Dev DB. Admin SDK cannot access Dev DB with Prod Creds.');
+      console.warn('⚠️ Switching Admin SDK to use PROD Database URL to prevent hang.');
+      // Fallback to default Prod URL or null. Using 'undefined' lets SDK auto-discover default.
+      targetDatabaseURL = `https://${projectId}-default-rtdb.asia-southeast1.firebasedatabase.app`;
+    }
+
     admin.initializeApp({
       credential: admin.credential.cert({
         projectId: projectId,
         clientEmail: clientEmail,
         privateKey: privateKey,
       }),
-      databaseURL: databaseURL,
+      databaseURL: targetDatabaseURL,
     });
 
     console.log('✅ Firebase Admin initialized successfully');
