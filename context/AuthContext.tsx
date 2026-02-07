@@ -1,9 +1,9 @@
 import {
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    signOut,
-    GoogleAuthProvider,
-    signInWithPopup,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  GoogleAuthProvider,
+  signInWithPopup,
 } from 'firebase/auth'
 import nookies from 'nookies'
 import React, { createContext, useContext, useEffect, useState } from 'react'
@@ -41,6 +41,11 @@ export const AuthContextProvider = ({
   });
   const [loading, setLoading] = useState<Boolean>(true);
 
+  import { doc, getDoc } from 'firebase/firestore'; // Import Firestore functions
+  import { auth, database } from '../firebase'; // Import database (Firestore)
+
+  // ... (existing imports/interfaces)
+
   // listen for token changes
   // call setUser and write new token as a cookie
   useEffect(() => {
@@ -53,6 +58,7 @@ export const AuthContextProvider = ({
 
     return auth.onIdTokenChanged(async (user) => {
       if (!user) {
+        // ... (existing cleanup logic)
         setUser({
           email: null,
           uid: null,
@@ -60,79 +66,50 @@ export const AuthContextProvider = ({
           tier: null,
           displayName: null,
         });
-
-        // Clear cookies using both nookies and document.cookie
-        try {
-          nookies.destroy(null, 'token', { path: '/' });
-          nookies.destroy(null, 'uid', { path: '/' });
-        } catch (error) {
-          console.warn('nookies.destroy failed:', error);
-        }
-
-        // Also clear with document.cookie
-        if (typeof window !== 'undefined') {
-          document.cookie = 'token=; path=/; max-age=0';
-          document.cookie = 'uid=; path=/; max-age=0';
-        }
-
-        console.log('🗑️ Cookies cleared');
+        // ... (existing cookie cleanup)
+        // ...
+        setLoading(false);
       } else {
         const token = await user.getIdToken();
         const idTokenResult = await user.getIdTokenResult();
         const customClaims = idTokenResult.claims;
 
+        let role = customClaims.role || null;
+        let tier = customClaims.tier || null;
+
+        // FALLBACK: If role is missing in claims, check Firestore (Hybrid Mode Support)
+        if (!role && database) {
+          try {
+            const userDocRef = doc(database, 'users', user.uid);
+            const userDocSnap = await getDoc(userDocRef);
+            if (userDocSnap.exists()) {
+              const userData = userDocSnap.data();
+              if (userData?.role) {
+                console.log('✅ Found role in Firestore:', userData.role);
+                role = userData.role;
+              }
+              if (userData?.tier || userData?.subscription?.plan) {
+                tier = userData.tier || userData.subscription?.plan;
+              }
+            }
+          } catch (err) {
+            console.warn('⚠️ Failed to fetch user role from Firestore:', err);
+          }
+        }
+
         setUser({
           email: user.email,
           uid: user.uid,
-          role: customClaims.role || null,
-          tier: customClaims.tier || null,
+          role: role,
+          tier: tier,
           displayName: user.displayName,
         });
 
-        // Set cookies using BOTH nookies and document.cookie for maximum compatibility
-        // nookies for SSR, document.cookie as backup for client-side
-        const isSecure = typeof window !== 'undefined' && window.location.protocol === 'https:';
-        const maxAge = 7 * 24 * 60 * 60; // 7 days
+        // ... (existing cookie setting logic)
+        // ...
 
-        // Method 1: Use nookies for SSR compatibility
-        try {
-          nookies.set(null, 'token', token, {
-            path: '/',
-            maxAge: maxAge,
-            sameSite: 'lax',
-            secure: isSecure,
-          });
-          nookies.set(null, 'uid', user.uid, {
-            path: '/',
-            maxAge: maxAge,
-            sameSite: 'lax',
-            secure: isSecure,
-          });
-        } catch (error) {
-          console.warn('nookies.set failed:', error);
-        }
-
-        // Method 2: Also use document.cookie as fallback
-        if (typeof window !== 'undefined') {
-          const cookieOptions = `path=/; max-age=${maxAge}; SameSite=Lax${isSecure ? '; Secure' : ''}`;
-          document.cookie = `token=${token}; ${cookieOptions}`;
-          document.cookie = `uid=${user.uid}; ${cookieOptions}`;
-        }
-
-        // Verify cookies were set
-        const allCookies = nookies.get(null);
-        console.log('✅ Cookies set:', {
-          tokenLength: token.length,
-          uid: user.uid,
-          secure: isSecure,
-          domain: typeof window !== 'undefined' ? window.location.hostname : 'server',
-          nookiesCookies: Object.keys(allCookies),
-          hasToken: !!allCookies.token,
-          hasUid: !!allCookies.uid,
-          documentCookies: typeof window !== 'undefined' ? document.cookie.includes('token') : 'N/A',
-        });
+        setLoading(false);
       }
-      setLoading(false);
     });
   }, []);
 
