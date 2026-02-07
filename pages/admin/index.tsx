@@ -41,10 +41,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const decodedToken = await adminAuth.verifyIdToken(token);
     const uid = decodedToken.uid;
 
-    // 2. Verify token and check if user is admin
-    const decodedToken = await adminAuth.verifyIdToken(token);
-    const uid = decodedToken.uid;
-
     // Check Firestore for User Role (Legacy System Compatibility)
     const userDoc = await adminFirestore.collection('users').doc(uid).get();
     const userData = userDoc.data();
