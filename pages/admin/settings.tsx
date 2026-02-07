@@ -7,9 +7,10 @@ import SettingsPage from "../../src/features/admin/pages/SettingsPage";
 
 // Services (SSR Logic)
 import { adminAuth, adminDb, adminFirestore } from "../../firebase-admin";
+import { adminAuth, adminFirestore } from "../../firebase-admin";
 
-export default function SettingsRoute(props: any) {
-  return <SettingsPage {...props} />;
+export default function AdminSettingsRoute(props: any) {
+  return <SettingsPage />;
 }
 
 // ============================================================================
@@ -19,13 +20,18 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   try {
     const cookies = nookies.get(context);
     const token = cookies.token;
-    if (!token) return { redirect: { destination: "/login", permanent: false } };
+
+    if (!token) {
+      return { redirect: { destination: "/login", permanent: false } };
+    }
 
     const decodedToken = await adminAuth.verifyIdToken(token);
-    const userRef = adminDb.ref(`users/${decodedToken.uid}`);
-    const userSnapshot = await userRef.once("value");
+    // Check Firestore (Hybrid Mode Support)
+    const uid = decodedToken.uid;
+    const userDoc = await adminFirestore.collection('users').doc(uid).get();
+    const userData = userDoc.data();
 
-    if (!userSnapshot.exists() || userSnapshot.val().role !== "admin") {
+    if (!userDoc.exists || userData?.role !== 'admin') {
       return { redirect: { destination: "/", permanent: false } };
     }
 

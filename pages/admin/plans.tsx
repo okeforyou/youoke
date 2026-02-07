@@ -4,7 +4,7 @@ import nookies from 'nookies';
 import { adminAuth, adminFirestore } from '../../firebase-admin';
 
 export default function AdminPlansRoute(props: any) {
-    return <PlansPage />;
+    return <ModulesPage />;
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {

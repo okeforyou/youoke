@@ -7,9 +7,10 @@ import SubscriptionsPage from "../../src/features/admin/pages/SubscriptionsPage"
 
 // Services (SSR Logic)
 import { adminAuth, adminDb, adminFirestore } from "../../firebase-admin";
+import { adminAuth, adminFirestore } from "../../firebase-admin";
 
-export default function SubscriptionsRoute(props: any) {
-  return <SubscriptionsPage {...props} />;
+export default function AdminSubscriptionsRoute(props: any) {
+  return <SubscriptionPage />;
 }
 
 // ============================================================================
@@ -22,10 +23,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     if (!token) return { redirect: { destination: "/login", permanent: false } };
 
     const decodedToken = await adminAuth.verifyIdToken(token);
-    const userRef = adminDb.ref(`users/${decodedToken.uid}`);
-    const userSnapshot = await userRef.once("value");
+    const uid = decodedToken.uid;
 
-    if (!userSnapshot.exists() || userSnapshot.val().role !== "admin") {
+    // Check Firestore (Hybrid Mode Support)
+    const userDoc = await adminFirestore.collection('users').doc(uid).get();
+    const userData = userDoc.data();
+
+    if (!userDoc.exists || userData?.role !== 'admin') {
       return { redirect: { destination: "/", permanent: false } };
     }
 
