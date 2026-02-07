@@ -37,12 +37,19 @@
 #### 🛠 สำหรับ Preview Environment (เพื่อการทดสอบ)
 *ค่าเหล่านี้จะถูกใช้เมื่อ Deploy ลง "Preview" (Branch อื่นๆ หรือ Pull Request)*
 
-| Variable | Value (จาก Dev FB) | Target Environment |
+**⚠️ Hybrid Configuration (สำคัญมาก):**
+เพื่อให้ระบบทำงานถูกต้องตาม Architecture (Users อยู่ Prod / Rooms อยู่ Dev):
+ต้องตั้งค่า Project ID เป็น **Production** แต่ Database URL เป็น **Development**
+
+| Variable | Value (ผสมกัน) | หมายเหตุ |
 | :--- | :--- | :--- |
-| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | **`playokeforyou-dev`** | ☑️ Preview, Development |
-| `NEXT_PUBLIC_FIREBASE_DATABASE_URL` | `https://playokeforyou-dev-default-rtdb.asia-southeast1.firebasedatabase.app` | ☑️ Preview, Development |
-| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | `playokeforyou-dev.firebaseapp.com` | ☑️ Preview, Development |
-| ... (และตัวอื่นๆ) | ... | ☑️ Preview, Development |
+| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | **`playokeforyou`** | ✅ ใช้ Auth/Users จริง (Prod) |
+| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | `playokeforyou.firebaseapp.com` | ✅ ใช้ Auth จริง (Prod) |
+| `FIREBASE_PRIVATE_KEY` | (Key ของ **playokeforyou**) | ✅ ใช้ Service Account จริง |
+| `FIREBASE_CLIENT_EMAIL` | (Email ของ **playokeforyou**) | ✅ ใช้ Service Account จริง |
+| `NEXT_PUBLIC_FIREBASE_DATABASE_URL` | `https://playokeforyou-dev-default-rtdb.asia-southeast1.firebasedatabase.app` | 🛠 ใช้ RTDB ทดสอบ (Dev) |
+
+*หมายเหตุ: ต้องแน่ใจว่า Rules ใน RTDB ของ Dev อนุญาตให้ Auth จาก Prod เข้าใช้งานได้ (Open Rules หรือ Cross-project Auth)*
 
 ---
 
