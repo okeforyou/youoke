@@ -1,5 +1,5 @@
-import { PageList } from '@/features/admin/components/cms/PageList';
-import AdminLayout from '@/features/admin/layouts/AdminLayout';
+import { PageList } from '../../../components/cms/PageList';
+import AdminLayout from '../../../layouts/AdminLayout';
 
 const ProfilePagesAdmin = () => {
     return (
