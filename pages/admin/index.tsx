@@ -41,11 +41,17 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     const decodedToken = await adminAuth.verifyIdToken(token);
     const uid = decodedToken.uid;
 
-    const userRef = adminDb.ref(`users/${uid}`);
-    const userSnapshot = await userRef.once('value');
-    const userData = userSnapshot.val();
+    // 2. Verify token and check if user is admin
+    const decodedToken = await adminAuth.verifyIdToken(token);
+    const uid = decodedToken.uid;
 
-    if (!userData || userData.role !== 'admin') {
+    // Check Firestore for User Role (Legacy System Compatibility)
+    const userDoc = await adminFirestore.collection('users').doc(uid).get();
+    const userData = userDoc.data();
+
+    // Debugging: Log what we found if access is denied
+    if (!userDoc.exists || userData?.role !== 'admin') {
+      console.warn(`[AdminAccess] Access denied for user ${uid}. Role: ${userData?.role}`);
       return {
         redirect: {
           destination: "/",
@@ -59,9 +65,12 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     // For now, retaining the logic block to ensure stability during migration.
 
     // ... [Logic identical to original] ...
-    const usersRef = adminDb.ref('users');
-    const usersSnapshot = await usersRef.once('value');
-    const usersData = usersSnapshot.val() || {};
+    // Fetch All Users from Firestore
+    const usersSnapshot = await adminFirestore.collection('users').get();
+    const usersData: Record<string, any> = {};
+    usersSnapshot.forEach(doc => {
+      usersData[doc.id] = doc.data();
+    });
     const usersArray = Object.entries(usersData);
 
     let totalUsers = 0;
