@@ -27,6 +27,13 @@
 #### ✅ สำหรับ Production Environment (เพื่อเป็น Backup)
 *ค่าเหล่านี้จะถูกใช้เมื่อ Deploy ลง "Production" (Branch `main`)*
 
+**🔑 วิธีการเอา Key (FIREBASE_PRIVATE_KEY):**
+1. เข้าไปที่ [Firebase Console > Project Settings > Service Accounts](https://console.firebase.google.com/project/playokeforyou/settings/serviceaccounts/adminsdk) (ของโปรเจค `playokeforyou`)
+2. กดปุ่ม **Generate new private key** (จะได้ไฟล์ .json มา)
+3. เปิดไฟล์ .json:
+   - ก๊อปปี้ค่า `private_key` ไปใส่ในตัวแปร `FIREBASE_PRIVATE_KEY` (รวม `-----BEGIN...` จนจบ)
+   - ก๊อปปี้ค่า `client_email` ไปใส่ในตัวแปร `FIREBASE_CLIENT_EMAIL`
+
 | Variable | Value (จาก Production FB) | Target Environment |
 | :--- | :--- | :--- |
 | `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | **`playokeforyou`** | ☑️ Production |
