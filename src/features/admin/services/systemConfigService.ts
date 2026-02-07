@@ -1,0 +1,86 @@
+import { doc, getDoc, setDoc, onSnapshot } from "firebase/firestore";
+import { db } from "../../../../firebase";
+
+export const DEFAULT_CONFIG = {
+    maintenanceMode: false,
+    announcement: {
+        enabled: false,
+        message: "",
+        type: "info"
+    },
+    features: {
+        guestMode: true,
+        registration: true,
+        search: true,
+        remoteControl: true,
+        cast: true,
+        karaokeMode: true
+    },
+    content: {
+        login: {
+            title: "Welcome to YouOke",
+            subtitle: "Sing your heart out!",
+            features: [],
+            termsLink: "",
+            privacyLink: ""
+        }
+    },
+    player: {
+        defaultVolume: 80,
+        crossfade: 3,
+        autoplay: true,
+        defaultProvider: 'spotify'
+    },
+    ui: {
+        showHero: true,
+        showTrending: true,
+        showGenres: true,
+        font: {
+            family: "Kanit",
+            url: "https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;700&display=swap"
+        }
+    },
+    integrations: {
+        youtube: { useApi: false, apiKeys: [] },
+        spotify: { enabled: true, clientId: "", clientSecret: "", refreshToken: "" }
+    },
+    payment: {
+        bankAccount: { bankName: "", accountName: "", accountNumber: "", branch: "" },
+        promptPay: { id: "", name: "" }
+    }
+};
+
+export const SystemConfigService = {
+    getConfig: async () => {
+        if (!db) return DEFAULT_CONFIG;
+        try {
+            const docRef = doc(db, "settings", "default");
+            const snapshot = await getDoc(docRef);
+            if (snapshot.exists()) {
+                return { ...DEFAULT_CONFIG, ...snapshot.data() };
+            }
+            return DEFAULT_CONFIG;
+        } catch (error) {
+            console.error("Error fetching config:", error);
+            return DEFAULT_CONFIG;
+        }
+    },
+
+    updateConfig: async (newConfig: any) => {
+        if (!db) throw new Error("Firebase not initialized");
+        const docRef = doc(db, "settings", "default");
+        await setDoc(docRef, newConfig, { merge: true });
+    },
+
+    subscribeToConfig: (callback: (config: any) => void) => {
+        if (!db) return () => { };
+        const docRef = doc(db, "settings", "default");
+        return onSnapshot(docRef, (doc) => {
+            if (doc.exists()) {
+                callback({ ...DEFAULT_CONFIG, ...doc.data() });
+            } else {
+                callback(DEFAULT_CONFIG);
+            }
+        });
+    }
+};

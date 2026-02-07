@@ -1,534 +1,289 @@
-import { doc, updateDoc, deleteDoc, Timestamp } from "firebase/firestore";
-import { GetServerSideProps } from "next";
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from 'react';
+import Head from 'next/head';
 import {
+  UsersIcon,
   MagnifyingGlassIcon,
-  PencilIcon,
-  CheckIcon,
-  XMarkIcon,
-  ArrowDownTrayIcon,
   TrashIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ArrowPathIcon,
-} from "@heroicons/react/24/outline";
-import nookies from "nookies";
+  UserPlusIcon,
+  ShieldCheckIcon,
+  CheckCircleIcon,
+  NoSymbolIcon,
+  EllipsisHorizontalIcon,
+  BellIcon,
+  PencilSquareIcon,
+  Squares2X2Icon
+} from '@heroicons/react/24/outline';
+import AdminLayout from '../layouts/AdminLayout';
+import { AdminService } from '../services/adminService';
+import { EditUserModal } from '../components/EditUserModal';
+import { collection, query, orderBy, getDocs, doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { db, realtimeDb } from '../../../../firebase';
+import { ref, get, child, update, remove } from "firebase/database";
+import { cn } from '../../../utils/cn';
 
-import AdminLayout from "../layouts/AdminLayout";
-import { db } from "../../../../firebase";
-import { adminAuth, adminDb } from "../../../../firebase-admin";
-import { exportToCSV, flattenForCSV } from "../../../../utils/exportCSV";
-import { useToast } from "../../../../context/ToastContext";
+// Mock Modules Config (since we don't have the file physically yet or it's in config)
+const AVAILABLE_MODULES = [
+  { id: 'midi_lab', name: 'Midi Lab', icon: Squares2X2Icon },
+  { id: 'cast_sender', name: 'Cast Sender', icon: Squares2X2Icon },
+];
 
-interface User {
-  uid: string;
-  email: string;
-  displayName: string;
-  role: string;
-  tier: string;
-  isPremium: boolean;
-  isActive: boolean;
-  isLegacy: boolean;
-  createdAt: any;
-  subscriptionExpiry?: any;
-}
-
-// Serialized version for SSR
-interface SerializedUser {
-  uid: string;
-  email: string;
-  displayName: string;
-  role: string;
-  tier?: string;
-  isPremium?: boolean;
-  isActive?: boolean;
-  isLegacy?: boolean;
-  createdAt: string | null;
-  subscriptionExpiry?: string | null;
-}
-
-interface Props {
-  users: SerializedUser[];
-  totalUsers: number;
-  error?: string;
-}
-
-const USERS_PER_PAGE = 20;
-
-const UsersPage: React.FC<Props> = ({ users: initialUsers, totalUsers: initialTotal, error }) => {
-  const toast = useToast();
-  // Convert serialized users back to User objects
-  const convertedUsers: User[] = initialUsers.map(u => ({
-    ...u,
-    tier: u.tier || 'free',
-    isPremium: u.isPremium || false,
-    isActive: u.isActive !== false, // default true
-    isLegacy: u.isLegacy || false,
-    createdAt: u.createdAt ? new Date(u.createdAt) : new Date(),
-    subscriptionExpiry: u.subscriptionExpiry ? new Date(u.subscriptionExpiry) : undefined,
-  }));
-
-  const [allUsers] = useState<User[]>(convertedUsers);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>(convertedUsers);
+export default function UsersPage() {
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterRole, setFilterRole] = useState("all");
-  const [filterTier, setFilterTier] = useState("all");
-  const [editingUser, setEditingUser] = useState<User | null>(null);
-
-  // Loading states
-  const [isSaving, setIsSaving] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  // Client-side pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  const totalUsers = initialTotal;
+  const [showGuests, setShowGuests] = useState(true);
+  const [selectedUser, setSelectedUser] = useState<any | null>(null);
+  const [packages, setPackages] = useState<any[]>([]);
 
   useEffect(() => {
-    filterUsers();
-  }, [searchTerm, filterRole, filterTier, allUsers]);
+    fetchUsers();
+  }, []);
 
-  const filterUsers = () => {
-    let filtered = [...allUsers];
-
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (u) =>
-          u.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          u.displayName?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Role filter
-    if (filterRole !== "all") {
-      filtered = filtered.filter((u) => u.role === filterRole);
-    }
-
-    // Tier filter
-    if (filterTier !== "all") {
-      filtered = filtered.filter((u) => u.tier === filterTier);
-    }
-
-    setFilteredUsers(filtered);
-    setCurrentPage(1); // Reset to page 1 when filtering
-  };
-
-  // Client-side pagination
-  const paginatedUsers = filteredUsers.slice(
-    (currentPage - 1) * USERS_PER_PAGE,
-    currentPage * USERS_PER_PAGE
-  );
-
-  const totalPages = Math.ceil(filteredUsers.length / USERS_PER_PAGE);
-
-  const goToNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-  const goToPreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const handleEditUser = (user: User) => {
-    setEditingUser({ ...user });
-  };
-
-  const handleSaveUser = async () => {
-    if (!editingUser) return;
-
-    setIsSaving(true);
+  // Hybrid Fetch: Users from RTDB, Packages from Firestore
+  const fetchUsers = async () => {
+    setLoading(true);
     try {
-      // Note: User data is in Realtime Database, not Firestore
-      // This will need to use adminDb instead
-      toast?.warning("ฟังก์ชันนี้ต้องแก้ไขให้ใช้ Realtime Database API endpoint");
-      setEditingUser(null);
+      // 1. Fetch Users from RTDB (as per AdminService discovery)
+      if (!realtimeDb) return;
+      const dbRef = ref(realtimeDb);
+      const snapshot = await get(child(dbRef, "users"));
 
-      // TODO: Create API route to update user in Realtime Database
-      // For now, just close the modal
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const usersList = Object.keys(data).map(key => ({
+          uid: key,
+          ...data[key]
+        }));
+        // Sort: Admin first, then newest
+        usersList.sort((a, b) => {
+          if (a.role === 'admin' && b.role !== 'admin') return -1;
+          if (a.role !== 'admin' && b.role === 'admin') return 1;
+          // createdAt might be number or ISO string in RTDB, handling safe comparison
+          const timeA = new Date(a.createdAt || 0).getTime();
+          const timeB = new Date(b.createdAt || 0).getTime();
+          return timeB - timeA;
+        });
+        setUsers(usersList);
+      } else {
+        setUsers([]);
+      }
+
+      // 2. Fetch Packages (Firestore)
+      if (db) {
+        const q = query(collection(db, "packages"), orderBy("price", "asc"));
+        const pkgSnap = await getDocs(q);
+        const pkgList: any[] = [];
+        pkgSnap.forEach(doc => pkgList.push({ id: doc.id, ...doc.data() }));
+        // Default packages if empty
+        if (pkgList.length === 0) {
+          setPackages([
+            { id: 'monthly', name: 'Monthly Plan', durationDays: 30 },
+            { id: 'yearly', name: 'Yearly Plan', durationDays: 365 },
+            { id: 'day_pass', name: 'Day Pass', durationDays: 1 },
+          ]);
+        } else {
+          setPackages(pkgList);
+        }
+      }
+
     } catch (error) {
-      console.error("Error updating user:", error);
-      toast?.error("Error updating user");
+      console.error("Error fetching users:", error);
     } finally {
-      setIsSaving(false);
+      setLoading(false);
     }
   };
 
-  const handleDeleteUser = async (user: User) => {
-    if (user.role === "admin") {
-      toast?.warning("ไม่สามารถลบ Admin ได้");
-      return;
-    }
-
-    if (!confirm(`ยืนยันการลบผู้ใช้ "${user.displayName || user.email}"?\n\nการดำเนินการนี้ไม่สามารถยกเลิกได้`)) {
-      return;
-    }
-
-    setIsDeleting(true);
+  const handleAssignPackage = async (pkgId: string) => {
+    if (!selectedUser) return;
     try {
-      // Note: User data is in Realtime Database, not Firestore
-      toast?.warning("ฟังก์ชันนี้ต้องแก้ไขให้ใช้ Realtime Database API endpoint");
-
-      // TODO: Create API route to delete user in Realtime Database
-    } catch (error) {
-      console.error("Error deleting user:", error);
-      toast?.error("เกิดข้อผิดพลาดในการลบผู้ใช้");
-    } finally {
-      setIsDeleting(false);
+      await AdminService.assignPackage(selectedUser.uid, pkgId, 'admin');
+      alert("✅ Package assigned successfully!");
+      setSelectedUser(null);
+      fetchUsers(); // Refresh
+    } catch (error: any) {
+      alert("Error: " + error.message);
     }
   };
 
-  const handleExportCSV = () => {
-    // Use filtered users for export
-    const dataToExport = filteredUsers.map((user) => flattenForCSV(user));
-    exportToCSV(dataToExport, "users");
+  const handleUpdateRole = async (uid: string, newRole: 'admin' | 'user') => {
+    if (!confirm(`Confirm role change to ${newRole}?`)) return;
+    try {
+      if (!realtimeDb) return;
+      await update(ref(realtimeDb, `users/${uid}`), { role: newRole });
+      alert("✅ Role updated!");
+      setSelectedUser(null);
+      fetchUsers();
+    } catch (error: any) {
+      alert("Error: " + error.message);
+    }
   };
 
-  const formatDate = (timestamp: any) => {
-    if (!timestamp) return "N/A";
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-    return date.toLocaleDateString("th-TH", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+  const handleToggleModule = async (moduleId: string) => {
+    if (!selectedUser) return;
+    const currentModules = selectedUser.installed_modules || [];
+    const hasModule = currentModules.includes(moduleId);
+    const newModules = hasModule
+      ? currentModules.filter((id: string) => id !== moduleId)
+      : [...currentModules, moduleId];
+
+    try {
+      if (!realtimeDb) return;
+      await update(ref(realtimeDb, `users/${selectedUser.uid}`), { installed_modules: newModules });
+      // Optimistic update for modal
+      setSelectedUser({ ...selectedUser, installed_modules: newModules });
+      const updatedUsers = users.map(u => u.uid === selectedUser.uid ? { ...u, installed_modules: newModules } : u);
+      setUsers(updatedUsers);
+    } catch (error: any) {
+      alert("Error: " + error.message);
+    }
   };
 
-  if (error) {
-    return (
-      <AdminLayout>
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <p className="text-xl text-red-600 mb-4">{error}</p>
-            <button
-              onClick={() => window.location.reload()}
-              className="btn btn-primary"
-            >
-              Reload
-            </button>
-          </div>
-        </div>
-      </AdminLayout>
-    );
-  }
+  const handleBanToggle = async (user: any) => {
+    const newBanStatus = !user.banned;
+    if (confirm(`${newBanStatus ? 'Ban' : 'Unban'} user ${user.displayName}?`)) {
+      await AdminService.updateUserBanStatus(user.uid, newBanStatus);
+      fetchUsers();
+    }
+  };
+
+  // Filter Logic
+  const filteredUsers = users.filter((u: any) => {
+    const matchesSearch = (u.displayName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (u.email || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const isGuest = !u.email;
+    if (!showGuests && isGuest) return false;
+    return matchesSearch;
+  });
+
+  const getMembershipStyle = (user: any) => {
+    const type = user.membership?.type || 'free';
+    if (type === 'lifetime') return 'bg-purple-100 text-purple-700 border-purple-200';
+    if (type === 'monthly' || type === 'yearly') return 'bg-green-100 text-green-700 border-green-200';
+    return 'bg-gray-100 text-gray-600 border-gray-200';
+  };
 
   return (
     <AdminLayout>
+      <Head>
+        <title>User Management - Admin</title>
+      </Head>
+
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-            <p className="text-gray-600 mt-1">
-              จัดการผู้ใช้ทั้งหมด ({filteredUsers.length} users แสดง, หน้า {currentPage} / {totalPages})
-            </p>
+            <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
+            <p className="text-sm text-gray-500">Manage users, roles and memberships</p>
           </div>
-          <button
-            onClick={handleExportCSV}
-            className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-          >
-            <ArrowDownTrayIcon className="w-5 h-5" />
-            Export CSV
-          </button>
+          <div className="flex gap-2">
+            <button className="btn btn-sm bg-primary text-white border-none gap-2">
+              <UserPlusIcon className="w-4 h-4" /> Add User
+            </button>
+          </div>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Search */}
-            <div className="relative">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Search by email or name..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              />
-            </div>
-
-            {/* Role Filter */}
-            <select
-              value={filterRole}
-              onChange={(e) => setFilterRole(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-            >
-              <option value="all">All Roles</option>
-              <option value="admin">Admin</option>
-              <option value="user">User</option>
-            </select>
-
-            {/* Tier Filter */}
-            <select
-              value={filterTier}
-              onChange={(e) => setFilterTier(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
-            >
-              <option value="all">All Tiers</option>
-              <option value="free">Free</option>
-              <option value="monthly">Monthly</option>
-              <option value="yearly">Yearly</option>
-              <option value="lifetime">Lifetime</option>
-            </select>
+        <div className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+          <div className="relative flex-1">
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search users..."
+              className="input input-sm w-full pl-9 bg-gray-50 border-gray-200"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <div className="flex items-center gap-3">
+            <label className="label cursor-pointer gap-2">
+              <span className="label-text text-xs">Show Guests</span>
+              <input type="checkbox" className="toggle toggle-primary toggle-sm" checked={showGuests} onChange={(e) => setShowGuests(e.target.checked)} />
+            </label>
           </div>
         </div>
 
-        {/* Users Table */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        {/* Table */}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="table w-full">
+              <thead className="bg-gray-50 text-gray-500 text-xs uppercase">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    User
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Role
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Tier
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Created
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
+                  <th className="font-semibold">User</th>
+                  <th className="font-semibold">Role</th>
+                  <th className="font-semibold">Membership</th>
+                  <th className="font-semibold text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {paginatedUsers.map((user) => (
-                  <tr key={user.uid} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">
-                          {user.displayName || "No name"}
+              <tbody>
+                {loading ? (
+                  <tr><td colSpan={4} className="text-center py-8">Loading users...</td></tr>
+                ) : filteredUsers.length === 0 ? (
+                  <tr><td colSpan={4} className="text-center py-8">No users found.</td></tr>
+                ) : (
+                  filteredUsers.map((user: any) => (
+                    <tr key={user.uid} className="hover:bg-gray-50 transition-colors group">
+                      <td>
+                        <div className="flex items-center gap-3">
+                          <div className="avatar placeholder">
+                            <div className="bg-gray-100 text-gray-600 rounded-full w-10 h-10 border border-gray-200">
+                              <span>{user.displayName?.charAt(0) || 'U'}</span>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="font-bold text-gray-900 flex items-center gap-2">
+                              {user.displayName || 'Guest User'}
+                              {user.banned && <span className="badge badge-error badge-xs">BANNED</span>}
+                            </div>
+                            <div className="text-xs text-gray-500">{user.email || 'No Email'}</div>
+                          </div>
                         </div>
-                        <div className="text-sm text-gray-500">{user.email}</div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${user.role === "admin"
-                            ? "bg-purple-100 text-purple-800"
-                            : "bg-gray-100 text-gray-800"
-                          }`}
-                      >
-                        {user.role}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${user.tier === "lifetime"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : user.tier === "yearly"
-                              ? "bg-green-100 text-green-800"
-                              : user.tier === "monthly"
-                                ? "bg-blue-100 text-blue-800"
-                                : "bg-gray-100 text-gray-800"
-                          }`}
-                      >
-                        {user.tier}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        {user.isPremium && (
-                          <span className="text-xs text-green-600 font-medium">
-                            Premium
-                          </span>
+                      </td>
+                      <td>
+                        <div className={cn("badge badge-sm border-0 gap-1", user.role === 'admin' ? "bg-red-100 text-red-700" : "bg-blue-50 text-blue-700")}>
+                          {user.role === 'admin' && <ShieldCheckIcon className="w-3 h-3" />}
+                          {user.role || 'user'}
+                        </div>
+                      </td>
+                      <td>
+                        <div className={cn("badge badge-sm border", getMembershipStyle(user))}>
+                          {user.membership?.type || 'free'}
+                        </div>
+                        {user.membership?.expiresAt && (
+                          <div className="text-[10px] text-gray-400 mt-1">
+                            Exp: {new Date(user.membership.expiresAt).toLocaleDateString()}
+                          </div>
                         )}
-                        {user.isActive ? (
-                          <CheckIcon className="w-5 h-5 text-green-500" />
-                        ) : (
-                          <XMarkIcon className="w-5 h-5 text-red-500" />
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(user.createdAt)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => handleEditUser(user)}
-                          className="text-blue-600 hover:text-blue-900"
-                          title="Edit user"
-                        >
-                          <PencilIcon className="w-5 h-5" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteUser(user)}
-                          className="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed"
-                          title="Delete user"
-                          disabled={user.role === "admin" || isDeleting}
-                        >
-                          {isDeleting ? (
-                            <ArrowPathIcon className="w-5 h-5 animate-spin" />
-                          ) : (
-                            <TrashIcon className={`w-5 h-5 ${user.role === "admin" ? "opacity-30" : ""}`} />
-                          )}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="text-right">
+                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => setSelectedUser(user)} className="btn btn-ghost btn-xs btn-square" title="Edit">
+                            <PencilSquareIcon className="w-4 h-4 text-blue-500" />
+                          </button>
+                          <button onClick={() => handleBanToggle(user)} className="btn btn-ghost btn-xs btn-square" title={user.banned ? "Unban" : "Ban"}>
+                            {user.banned ? <CheckCircleIcon className="w-4 h-4 text-green-500" /> : <NoSymbolIcon className="w-4 h-4 text-red-500" />}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
-          </div>
-
-          {/* Pagination Controls */}
-          <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between bg-gray-50">
-            <div className="text-sm text-gray-700">
-              แสดง <span className="font-medium">{(currentPage - 1) * USERS_PER_PAGE + 1}</span> ถึง{" "}
-              <span className="font-medium">{Math.min(currentPage * USERS_PER_PAGE, filteredUsers.length)}</span> จาก{" "}
-              <span className="font-medium">{filteredUsers.length}</span> users (ทั้งหมด {totalUsers} users)
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={goToPreviousPage}
-                disabled={currentPage <= 1}
-                className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                <ChevronLeftIcon className="w-5 h-5" />
-                Previous
-              </button>
-              <span className="px-4 py-2 text-sm text-gray-700">
-                หน้า {currentPage} / {totalPages}
-              </span>
-              <button
-                onClick={goToNextPage}
-                disabled={currentPage >= totalPages}
-                className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                Next
-                <ChevronRightIcon className="w-5 h-5" />
-              </button>
-            </div>
           </div>
         </div>
       </div>
 
-      {/* Edit Modal */}
-      {editingUser && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Edit User</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
-                <input
-                  type="text"
-                  value={editingUser.email}
-                  disabled
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Role
-                </label>
-                <select
-                  value={editingUser.role}
-                  onChange={(e) =>
-                    setEditingUser({ ...editingUser, role: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
-                >
-                  <option value="user">User</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Tier
-                </label>
-                <select
-                  value={editingUser.tier}
-                  onChange={(e) =>
-                    setEditingUser({ ...editingUser, tier: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
-                >
-                  <option value="free">Free</option>
-                  <option value="monthly">Monthly</option>
-                  <option value="yearly">Yearly</option>
-                  <option value="lifetime">Lifetime</option>
-                </select>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={editingUser.isPremium}
-                    onChange={(e) =>
-                      setEditingUser({
-                        ...editingUser,
-                        isPremium: e.target.checked,
-                      })
-                    }
-                    className="rounded border-gray-300 text-red-500 focus:ring-red-500"
-                  />
-                  <span className="text-sm text-gray-700">Premium</span>
-                </label>
-
-                <label className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={editingUser.isActive}
-                    onChange={(e) =>
-                      setEditingUser({
-                        ...editingUser,
-                        isActive: e.target.checked,
-                      })
-                    }
-                    className="rounded border-gray-300 text-red-500 focus:ring-red-500"
-                  />
-                  <span className="text-sm text-gray-700">Active</span>
-                </label>
-              </div>
-            </div>
-
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={handleSaveUser}
-                disabled={isSaving}
-                className="flex-1 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSaving ? (
-                  <>
-                    <ArrowPathIcon className="w-5 h-5 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  "Save Changes"
-                )}
-              </button>
-              <button
-                onClick={() => setEditingUser(null)}
-                className="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
+      {selectedUser && (
+        <EditUserModal
+          user={selectedUser}
+          onClose={() => setSelectedUser(null)}
+          onUpdateRole={handleUpdateRole}
+          onAssignPackage={handleAssignPackage}
+          onToggleModule={handleToggleModule}
+          availableModules={AVAILABLE_MODULES}
+          packages={packages}
+        />
       )}
     </AdminLayout>
   );
-};
-
-// getServerSideProps removed (handled in wrapper)
-
-export default UsersPage;
+}

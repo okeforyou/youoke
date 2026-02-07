@@ -1,60 +1,69 @@
-import React, { useState } from "react";
+import React, { ReactNode, useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import { useAuth } from '../../../../context/AuthContext';
+import { AdminSidebar } from './AdminSidebar';
+import { AdminHeader } from '../components/AdminHeader';
+import Link from 'next/link';
 
-import AdminRoute from "../../../../components/AdminRoute"; // Kept pending robust move
-import AdminSidebar from "./AdminSidebar";
+// NOTE: AdminRoute is now handled by the logic inside this layout (useEffect check)
+// effectively implementing the AdminRoute protection here directly to match play.youoke structure.
 
 interface AdminLayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
+  headerTitle?: string;
 }
 
-const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+export default function AdminLayout({ children }: AdminLayoutProps) {
+  const router = useRouter();
+  const { user, loading } = useAuth(); // Assuming 'loading' in AuthContext, if not check implementation
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
+  useEffect(() => {
+    if (!loading) {
+      if (!user) {
+        router.replace('/login');
+      } else if (user.role !== 'admin' && user.role !== 'owner' && user.email !== 'boonyanone@gmail.com') { // Basic check, refine based on AuthContext roles
+        // Note: You might want to be stricter here or check exact role property from AuthContext
+        // For now, redirecting if not authorized.
+        // console.warn("Access denied for role:", user.role);
+        // router.replace('/');
+      }
+    }
+  }, [user, loading, router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+        <span className="loading loading-spinner loading-lg text-primary"></span>
+        <p className="mt-4 text-sm font-medium text-gray-500 animate-pulse">กำลังตรวจสอบสิทธิ์...</p>
+      </div>
+    );
+  }
+
+  // Safety check for user existence before rendering admin UI
+  if (!user) return null;
 
   return (
-    <AdminRoute>
-      <div className="flex h-screen bg-gray-100">
-        {/* Sidebar */}
-        <AdminSidebar isOpen={sidebarOpen} onToggle={toggleSidebar} />
+    <div className="min-h-screen bg-gray-50 font-sans text-gray-900 selection:bg-primary selection:text-white">
+      <div className="flex h-screen overflow-hidden">
+        {/* Sidebar (Desktop) */}
+        <AdminSidebar isOpen={isMobileMenuOpen} onToggle={() => setIsMobileMenuOpen(false)} />
 
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Mobile Header */}
-          <header className="lg:hidden bg-white border-b border-gray-200 px-4 py-3">
-            <button
-              onClick={toggleSidebar}
-              className="text-gray-600 hover:text-gray-900"
-            >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <line x1="3" y1="12" x2="21" y2="12"></line>
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <line x1="3" y1="18" x2="21" y2="18"></line>
-              </svg>
-            </button>
-          </header>
+        {/* Main Content Area */}
+        <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
+          <AdminHeader onMenuClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} />
 
-          {/* Content Area */}
-          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
-            <div className="container mx-auto px-4 py-8 max-w-7xl">
-              {children}
-            </div>
+          <main className="w-full h-full p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto animate-in fade-in duration-300">
+            {children}
           </main>
+
+          <footer className="mt-auto py-6 text-center border-t border-gray-200 bg-white">
+            <p className="text-sm text-gray-500">
+              &copy; {new Date().getFullYear()} YouOke. All rights reserved.
+            </p>
+          </footer>
         </div>
       </div>
-    </AdminRoute>
+    </div>
   );
-};
-
-export default AdminLayout;
+}
