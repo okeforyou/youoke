@@ -28,39 +28,33 @@ export const AdminService = {
     /**
      * Get Dashboard Stats (Users from RTDB, Revenue from Firestore)
      */
+    /**
+     * Get Dashboard Stats (Users from Firestore, Revenue from Firestore)
+     */
     getDashboardStats: async (): Promise<AdminStats> => {
         try {
-            if (!db || !realtimeDb) return { totalUsers: 0, activeSubs: 0, revenue: 0, loading: false };
+            if (!db) return { totalUsers: 0, activeSubs: 0, revenue: 0, loading: false };
 
-            // 1. Total Users & Active Subs (From Realtime Database)
-            // Note: RTDB doesn't have efficient "count" without downloading data or using counters.
-            // For now, we fetch all users (assuming scale allows < 10k users for client-side).
-            // Optimization: Create a centralized 'stats/users' counter in RTDB ideally.
-            const dbRef = ref(realtimeDb);
-            const snapshot = await get(child(dbRef, "users"));
+            // 1. Total Users (From Firestore)
+            // Using getCount for efficiency if available, or fallback to size
+            // const usersColl = collection(db, "users");
+            // const snapshot = await getCountFromServer(usersColl); // Need to import getCountFromServer? Let's check imports.
+            // Simplified: Query Active Users
+            const usersQuery = query(collection(db, "users"));
+            const usersSnapshot = await getDocs(usersQuery);
+            const totalUsers = usersSnapshot.size;
 
-            let totalUsers = 0;
             let activeSubs = 0;
-
-            if (snapshot.exists()) {
-                const usersData = snapshot.val();
-                totalUsers = Object.keys(usersData).length;
-
-                // Calculate active subs
-                Object.values(usersData).forEach((user: any) => {
-                    // Check subscription status
-                    // Structure depends on how it's stored. detailed in assignPackage
-                    const isActive = user.membership?.status === 'active' || user.isPremium === true;
-                    // Also check expiry if needed, but status 'active' is usually sufficient if maintained correctly
-                    if (isActive) {
-                        activeSubs++;
-                    }
-                });
-            }
+            usersSnapshot.forEach(doc => {
+                const user = doc.data();
+                if (user.membership?.status === 'active' || user.isPremium === true) {
+                    activeSubs++;
+                }
+            });
 
             // 2. Revenue (From Firestore 'payments' collection)
             const paymentsQuery = query(
-                collection(db, "payments"),
+                collection(db, "payments"), // Note: Collection name check - verify if 'payments' or 'payment_proofs'
                 where("status", "==", "approved")
             );
             const paymentsSnapshot = await getDocs(paymentsQuery);
@@ -78,38 +72,27 @@ export const AdminService = {
             };
         } catch (error) {
             console.error("AdminService.getDashboardStats error:", error);
-            // Return zeros on error to prevent crash
             return { totalUsers: 0, activeSubs: 0, revenue: 0, loading: false };
         }
     },
 
     /**
-     * Ban or Unban a user (Realtime Database)
+     * Ban or Unban a user (Firestore)
      */
     updateUserBanStatus: async (uid: string, ban: boolean): Promise<void> => {
-        if (!realtimeDb) throw new Error("Realtime DB not initialized");
-        const updates: any = {};
-        updates[`/users/${uid}/banned`] = ban;
-        updates[`/users/${uid}/updatedAt`] = rtdbServerTimestamp();
-
-        await update(ref(realtimeDb), updates);
+        if (!db) throw new Error("Firestore not initialized");
+        const userRef = doc(db, "users", uid);
+        await updateDoc(userRef, {
+            banned: ban,
+            updatedAt: new Date() // Firestore timestamp ideally, but Date works
+        });
     },
 
     /**
-     * Manually assign a package to a user (Realtime Database Update)
+     * Manually assign a package to a user (Firestore Update)
      */
     assignPackage: async (uid: string, packageId: string, adminUid: string): Promise<void> => {
-        if (!realtimeDb) throw new Error("Realtime DB not initialized");
-
-        // Note: Packages might be in Firestore or RTDB. Assuming Firestore based on 'packages' collection reference in source.
-        // If packages are in Firestore, we fetch them first.
-        // But for assigning, we mostly need the duration logic.
-        // Let's assume we fetch package details from Firestore 'packages' collection first.
-
-        // 1. Get Package Details (Firestore)
-        // const pkgRef = doc(db, "packages", packageId); 
-        // const pkgSnap = await getDoc(pkgRef);
-        // Using mock logic for now or simple mapping if collection missing
+        if (!db) throw new Error("Firestore not initialized");
 
         // Simplified logic: Assuming standard packages exist (monthly, yearly)
         let durationDays = 30;
@@ -127,48 +110,49 @@ export const AdminService = {
         }
 
         // Calculate Expiry
-        let expiresAt: number | null = Date.now();
+        const now = new Date();
+        let expiresAt: Date | null = new Date();
         if (durationDays === 0) {
             expiresAt = null; // Lifetime
         } else {
-            expiresAt += durationDays * 24 * 60 * 60 * 1000;
+            expiresAt.setDate(now.getDate() + durationDays);
         }
 
-        // 2. Update User (RTDB)
-        const updates: any = {};
-        updates[`/users/${uid}/membership`] = {
-            type: membershipType,
-            status: 'active',
-            startedAt: rtdbServerTimestamp(),
-            expiresAt: expiresAt, // Store as timestamp or null
-            pkgId: packageId,
-            assignedBy: adminUid
-        };
-        updates[`/users/${uid}/isPremium`] = true; // Legacy support
-        updates[`/users/${uid}/updatedAt`] = rtdbServerTimestamp();
-
-        await update(ref(realtimeDb), updates);
+        // 2. Update User (Firestore)
+        const userRef = doc(db, "users", uid);
+        await updateDoc(userRef, {
+            membership: {
+                type: membershipType,
+                status: 'active',
+                startedAt: now,
+                expiresAt: expiresAt,
+                pkgId: packageId,
+                assignedBy: adminUid
+            },
+            isPremium: true,
+            updatedAt: now
+        });
     },
 
     /**
-     * Assign Lifetime access directly (Realtime Database)
+     * Assign Lifetime access directly (Firestore)
      */
     assignLifetime: async (uid: string, adminUid: string): Promise<void> => {
-        if (!realtimeDb) throw new Error("Realtime DB not initialized");
+        if (!db) throw new Error("Firestore not initialized");
 
-        const updates: any = {};
-        updates[`/users/${uid}/membership`] = {
-            type: 'lifetime',
-            status: 'active',
-            startedAt: rtdbServerTimestamp(),
-            expiresAt: null,
-            assignedBy: adminUid
-        };
-        updates[`/users/${uid}/isPremium`] = true;
-        updates[`/users/${uid}/tier`] = 'lifetime'; // Update tier claim reflection usually needs Functions
-        updates[`/users/${uid}/updatedAt`] = rtdbServerTimestamp();
-
-        await update(ref(realtimeDb), updates);
+        const userRef = doc(db, "users", uid);
+        await updateDoc(userRef, {
+            membership: {
+                type: 'lifetime',
+                status: 'active',
+                startedAt: new Date(),
+                expiresAt: null,
+                assignedBy: adminUid
+            },
+            isPremium: true,
+            tier: 'lifetime',
+            updatedAt: new Date()
+        });
     },
 
     /**
@@ -230,24 +214,25 @@ export const AdminService = {
     },
 
     /**
-     * Get Weekly User Growth Stats (Realtime Database)
+     * Get Weekly User Growth Stats (Firestore)
      */
     getUserGrowthStats: async (): Promise<{ name: string; active: number; new: number }[]> => {
         try {
-            if (!realtimeDb) return [];
+            if (!db) return [];
 
-            // Note: Querying RTDB by child 'createdAt' requires index on .indexOn: ["createdAt"] rules.
-            // Assuming we fetch all and filter for now due to lack of known rules.
-            const dbRef = ref(realtimeDb, "users");
-            // const q = query(dbRef, orderByChild('createdAt'), startAt(sevenDaysAgo.getTime())); 
-            // ^ This would be better if indexed.
-
-            const snapshot = await get(dbRef);
-
-            const dailyStats: Record<string, number> = {};
             const sevenDaysAgo = new Date();
             sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
             sevenDaysAgo.setHours(0, 0, 0, 0);
+
+            const q = query(
+                collection(db, "users"),
+                where("createdAt", ">=", sevenDaysAgo),
+                orderBy("createdAt", "asc")
+            );
+
+            const snapshot = await getDocs(q);
+
+            const dailyStats: Record<string, number> = {};
 
             for (let i = 0; i < 7; i++) {
                 const d = new Date();
@@ -256,22 +241,17 @@ export const AdminService = {
                 dailyStats[key] = 0;
             }
 
-            if (snapshot.exists()) {
-                const users = snapshot.val();
-                Object.values(users).forEach((user: any) => {
-                    const createdAt = user.createdAt; // Check if timestamp or date string
-                    if (createdAt) {
-                        const date = new Date(createdAt);
-                        if (date >= sevenDaysAgo) {
-                            const day = date.toLocaleDateString('en-US', { weekday: 'short' });
-                            // eslint-disable-next-line no-prototype-builtins
-                            if (dailyStats.hasOwnProperty(day)) {
-                                dailyStats[day]++;
-                            }
-                        }
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.createdAt) {
+                    const date = data.createdAt.toDate();
+                    const day = date.toLocaleDateString('en-US', { weekday: 'short' });
+                    // eslint-disable-next-line no-prototype-builtins
+                    if (dailyStats.hasOwnProperty(day)) {
+                        dailyStats[day]++;
                     }
-                });
-            }
+                }
+            });
 
             const result = [];
             for (let i = 6; i >= 0; i--) {
