@@ -6,11 +6,10 @@ import React from "react";
 import SettingsPage from "../../src/features/admin/pages/SettingsPage";
 
 // Services (SSR Logic)
-import { adminAuth, adminDb, adminFirestore } from "../../firebase-admin";
 import { adminAuth, adminFirestore } from "../../firebase-admin";
 
 export default function AdminSettingsRoute(props: any) {
-  return <SettingsPage />;
+  return <SettingsPage {...props} />;
 }
 
 // ============================================================================

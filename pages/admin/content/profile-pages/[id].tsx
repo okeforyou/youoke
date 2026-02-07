@@ -1,11 +1,10 @@
-```
 import EditProfilePage from '../../../../src/features/admin/pages/content/profile-pages/EditProfilePage';
 import { GetServerSideProps } from 'next';
 import nookies from 'nookies';
 import { adminAuth, adminFirestore } from '../../../../firebase-admin';
 
 export default function AdminProfileContentEditRoute(props: any) {
-    return <ProfileContentEditPage />;
+    return <EditProfilePage />;
 }
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -19,7 +18,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
         const decodedToken = await adminAuth.verifyIdToken(token);
         const uid = decodedToken.uid;
-        
+
         // Check Firestore (Hybrid Mode Support)
         const userDoc = await adminFirestore.collection('users').doc(uid).get();
         const userData = userDoc.data();

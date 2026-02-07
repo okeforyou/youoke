@@ -6,11 +6,10 @@ import React from "react";
 import SubscriptionsPage from "../../src/features/admin/pages/SubscriptionsPage";
 
 // Services (SSR Logic)
-import { adminAuth, adminDb, adminFirestore } from "../../firebase-admin";
 import { adminAuth, adminFirestore } from "../../firebase-admin";
 
 export default function AdminSubscriptionsRoute(props: any) {
-  return <SubscriptionPage />;
+  return <SubscriptionsPage {...props} />;
 }
 
 // ============================================================================

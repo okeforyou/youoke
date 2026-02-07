@@ -1,4 +1,3 @@
-```typescript
 import ProfileContentIndexPage from '../../../../src/features/admin/pages/content/profile-pages';
 import { GetServerSideProps } from 'next';
 import nookies from 'nookies';
@@ -19,7 +18,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
         const decodedToken = await adminAuth.verifyIdToken(token);
         const uid = decodedToken.uid;
-        
+
         // Check Firestore (Hybrid Mode Support)
         const userDoc = await adminFirestore.collection('users').doc(uid).get();
         const userData = userDoc.data();
