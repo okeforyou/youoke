@@ -1,7 +1,7 @@
 import ProfilePagesAdmin from '../../../../src/features/admin/pages/content/profile-pages';
 import { GetServerSideProps } from 'next';
 import nookies from 'nookies';
-import { adminAuth, adminDb } from '../../../../../firebase-admin';
+import { adminAuth, adminDb } from '../../../../firebase-admin';
 
 export default function ProfilePagesRoute(props: any) {
     return <ProfilePagesAdmin />;

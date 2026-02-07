@@ -1,7 +1,7 @@
 import EditProfilePage from '../../../../src/features/admin/pages/content/profile-pages/EditProfilePage';
 import { GetServerSideProps } from 'next';
 import nookies from 'nookies';
-import { adminAuth, adminDb } from '../../../../../firebase-admin';
+import { adminAuth, adminDb } from '../../../../firebase-admin';
 
 export default function EditProfilePageRoute(props: any) {
     return <EditProfilePage />;
