@@ -56,8 +56,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             debugData.uid = decodedToken.uid;
             debugData.email = decodedToken.email;
 
-            /* 
-            // Check RTDB - TEMPORARILY DISABLED TO DEBUG HANG
+            // Check RTDB
             if (adminDb) {
                 const userRef = adminDb.ref(`users/${decodedToken.uid}`);
                 const userSnapshot = await userRef.once('value');
@@ -68,23 +67,24 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                     data: userData
                 };
             } else {
-                debugData.rtdb = { status: "adminDb is null" };
+                debugData.rtdb = { status: "adminDb is null (Hybrid Mode Safe)" };
             }
 
-            // Check Firestore - TEMPORARILY DISABLED TO DEBUG HANG
+            // Check Firestore 
             if (adminFirestore) {
                 const userDoc = await adminFirestore.collection('users').doc(decodedToken.uid).get();
+                const userData = userDoc.data();
                 debugData.firestore = {
                     path: `users/${decodedToken.uid}`,
                     exists: userDoc.exists,
-                    data: userDoc.data()
+                    data: userData
                 };
+
+                // Add to main debug data for checklist
+                debugData.userData = userData;
             } else {
                 debugData.firestore = { status: "adminFirestore is null" };
             }
-            */
-            debugData.rtdb = { status: "Disabled for debugging" };
-            debugData.firestore = { status: "Disabled for debugging" };
 
         } catch (e: any) {
             debugData.verificationError = e.message;
