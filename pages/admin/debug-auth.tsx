@@ -56,7 +56,8 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             debugData.uid = decodedToken.uid;
             debugData.email = decodedToken.email;
 
-            // Check RTDB
+            /* 
+            // Check RTDB - TEMPORARILY DISABLED TO DEBUG HANG
             if (adminDb) {
                 const userRef = adminDb.ref(`users/${decodedToken.uid}`);
                 const userSnapshot = await userRef.once('value');
@@ -70,7 +71,7 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                 debugData.rtdb = { status: "adminDb is null" };
             }
 
-            // Check Firestore (Legacy System uses this!)
+            // Check Firestore - TEMPORARILY DISABLED TO DEBUG HANG
             if (adminFirestore) {
                 const userDoc = await adminFirestore.collection('users').doc(decodedToken.uid).get();
                 debugData.firestore = {
@@ -81,6 +82,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
             } else {
                 debugData.firestore = { status: "adminFirestore is null" };
             }
+            */
+            debugData.rtdb = { status: "Disabled for debugging" };
+            debugData.firestore = { status: "Disabled for debugging" };
 
         } catch (e: any) {
             debugData.verificationError = e.message;
