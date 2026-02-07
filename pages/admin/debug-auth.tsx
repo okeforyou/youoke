@@ -61,10 +61,25 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
                 const userRef = adminDb.ref(`users/${decodedToken.uid}`);
                 const userSnapshot = await userRef.once('value');
                 const userData = userSnapshot.val();
-                debugData.userData = userData;
-                debugData.dbPath = `users/${decodedToken.uid}`;
+                debugData.rtdb = {
+                    path: `users/${decodedToken.uid}`,
+                    exists: !!userData,
+                    data: userData
+                };
             } else {
-                debugData.dbStatus = "adminDb is null";
+                debugData.rtdb = { status: "adminDb is null" };
+            }
+
+            // Check Firestore (Legacy System uses this!)
+            if (adminFirestore) {
+                const userDoc = await adminFirestore.collection('users').doc(decodedToken.uid).get();
+                debugData.firestore = {
+                    path: `users/${decodedToken.uid}`,
+                    exists: userDoc.exists,
+                    data: userDoc.data()
+                };
+            } else {
+                debugData.firestore = { status: "adminFirestore is null" };
             }
 
         } catch (e: any) {
