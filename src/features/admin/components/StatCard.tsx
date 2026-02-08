@@ -15,12 +15,12 @@ interface StatCardProps {
 }
 
 const iconColorClasses = {
-    primary: "bg-primary text-white",
-    secondary: "bg-secondary text-white",
-    accent: "bg-accent text-accent-content",
-    success: "bg-success/20 text-success",
-    warning: "bg-warning/20 text-warning",
-    info: "bg-info/20 text-info",
+    primary: "bg-primary/10 text-primary ring-1 ring-primary/20",
+    secondary: "bg-secondary text-secondary-foreground",
+    accent: "bg-accent/10 text-accent ring-1 ring-accent/20",
+    success: "bg-success/10 text-success ring-1 ring-success/20",
+    warning: "bg-warning/10 text-warning ring-1 ring-warning/20",
+    info: "bg-info/10 text-info ring-1 ring-info/20",
 };
 
 export const StatCard = ({
@@ -33,24 +33,24 @@ export const StatCard = ({
 }: StatCardProps) => {
     return (
         <div className={cn(
-            "rounded-lg border border-gray-200 bg-white p-6 shadow-sm",
+            "rounded-xl border border-border bg-card p-6 shadow-sm hover:shadow-md transition-all duration-300 card-hover",
             className
         )}>
             <div className="flex items-start justify-between">
                 <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-500">{title}</p>
-                    <h3 className="mt-2 text-3xl font-bold tracking-tight text-gray-900">
+                    <p className="text-sm font-medium text-muted-foreground">{title}</p>
+                    <h3 className="mt-2 text-3xl font-bold tracking-tight text-foreground">
                         {typeof value === 'number' ? value.toLocaleString() : value}
                     </h3>
                     {change && (
                         <div className="mt-3 flex items-center gap-2">
                             <span className={cn(
-                                "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
+                                "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold",
                                 change.type === "increase"
-                                    ? "bg-green-100 text-green-700"
+                                    ? "bg-success/10 text-success"
                                     : change.type === "decrease"
-                                        ? "bg-red-100 text-red-700"
-                                        : "bg-gray-100 text-gray-600"
+                                        ? "bg-destructive/10 text-destructive"
+                                        : "bg-secondary text-muted-foreground"
                             )}>
                                 {change.type === "increase" ? (
                                     <ArrowTrendingUpIcon className="h-3 w-3" />
@@ -61,12 +61,12 @@ export const StatCard = ({
                                 )}
                                 {Math.abs(change.value)}%
                             </span>
-                            <span className="text-xs text-gray-400">vs last month</span>
+                            <span className="text-xs text-muted-foreground">vs last month</span>
                         </div>
                     )}
                 </div>
                 <div className={cn(
-                    "flex h-12 w-12 items-center justify-center rounded-xl",
+                    "flex h-12 w-12 items-center justify-center rounded-xl transition-transform group-hover:scale-110 duration-300",
                     iconColorClasses[iconColor]
                 )}>
                     <Icon className="h-6 w-6" />
