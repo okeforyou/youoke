@@ -61,7 +61,7 @@ export const StatCard = ({
                                 )}
                                 {Math.abs(change.value)}%
                             </span>
-                            <span className="text-xs text-muted-foreground">vs last month</span>
+                            <span className="text-xs text-muted-foreground">เทียบกับเดือนก่อน</span>
                         </div>
                     )}
                 </div>
