@@ -98,8 +98,8 @@ export const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
                             <span className="text-xs text-muted-foreground font-normal block lowercase p-0 mt-0.5 truncate">{user?.email}</span>
                         </li>
                         <li className="mt-1">
-                            <Link href="/admin/settings" className="text-muted-foreground hover:bg-secondary hover:text-foreground rounded-lg py-2 font-medium">
-                                <Cog6ToothIcon className="h-4 w-4" /> ตั้งค่าส่วนตัว
+                            <Link href="/admin/config" className="text-muted-foreground hover:bg-secondary hover:text-foreground rounded-lg py-2 font-medium">
+                                <Cog6ToothIcon className="h-4 w-4" /> ตั้งค่าระบบ
                             </Link>
                         </li>
                         <div className="divider my-1 border-border/50 h-px p-0"></div>
