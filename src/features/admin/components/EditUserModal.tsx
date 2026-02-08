@@ -117,7 +117,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                                 disabled={loading}
                                 className="btn btn-sm bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-none hover:opacity-90"
                             >
-                                Lifetime
+                                ตลอดชีพ (Lifetime)
                             </button>
                         </div>
                     </div>
@@ -125,7 +125,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                     {/* Modules */}
                     <div>
                         <label className="text-sm font-semibold text-gray-900 flex items-center gap-2 mb-3">
-                            <CubeIcon className="w-4 h-4 text-blue-500" /> Installed Modules
+                            <CubeIcon className="w-4 h-4 text-blue-500" /> โมดูลเสริม (Add-ons)
                         </label>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {availableModules.map(module => {
@@ -147,7 +147,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                                         </div>
                                         <div className="flex-1">
                                             <div className="text-sm font-medium">{module.name}</div>
-                                            <div className="text-xs text-gray-500">{isInstalled ? 'Installed' : 'Not Installed'}</div>
+                                            <div className="text-xs text-gray-500">{isInstalled ? 'ติดตั้งแล้ว (Installed)' : 'ยังไม่ติดตั้ง'}</div>
                                         </div>
                                         <input type="checkbox" className="checkbox checkbox-primary checkbox-sm" checked={isInstalled || false} readOnly />
                                     </div>
