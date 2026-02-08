@@ -162,17 +162,43 @@ export default function Sidebar({ activeTab = 0, onTabChange, className = '' }: 
       {/* User Profile Card (Bottom) */}
       <div className="p-4 border-t border-base-300">
         {user?.uid ? (
-          <button
-            onClick={() => logOut()}
-            className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-800 transition-all font-medium"
-          >
-            <ArrowLeftOnRectangleIcon className="w-5 h-5" />
-            <span>ออกจากระบบ</span>
-          </button>
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={() => handleNavigation('/profile')}
+              className="flex items-center gap-3 w-full p-2 rounded-xl hover:bg-base-200 transition-all text-left group"
+            >
+              <div className="avatar placeholder flex-shrink-0">
+                <div className="bg-primary text-primary-content rounded-full w-10 ring ring-primary ring-offset-base-100 ring-offset-2">
+                  {user.photoURL ? (
+                    <img src={user.photoURL} alt={user.displayName || "User"} />
+                  ) : (
+                    <span className="text-lg font-bold">
+                      {(user.displayName || user.email || "U").charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-bold text-sm truncate text-base-content group-hover:text-primary transition-colors">
+                  {user.displayName || "ผู้ใช้ทั่วไป"}
+                </div>
+                <div className="text-xs text-base-content/60 truncate">
+                  {user.email || "ไม่มีอีเมล"}
+                </div>
+              </div>
+            </button>
+            <button
+              onClick={() => logOut()}
+              className="w-full flex items-center justify-center gap-2 p-2 rounded-lg text-error hover:bg-error/10 transition-all text-sm font-medium"
+            >
+              <ArrowLeftOnRectangleIcon className="w-4 h-4" />
+              <span>ออกจากระบบ</span>
+            </button>
+          </div>
         ) : (
           <button
             onClick={() => handleNavigation('/login')}
-            className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-gray-200 hover:bg-gray-300 text-gray-800 transition-all font-medium"
+            className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-primary text-white hover:bg-primary-focus transition-all font-bold shadow-lg shadow-primary/30"
           >
             <ArrowLeftOnRectangleIcon className="w-5 h-5" />
             <span>เข้าสู่ระบบ</span>
