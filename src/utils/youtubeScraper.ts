@@ -337,7 +337,9 @@ const INVIDIOUS_INSTANCES = [
   'https://vid.puffyan.us',
   'https://invidious.nerdvpn.de',
   'https://yt.artemislena.eu',
-  // 'https://invidious.io' // Listing
+  'https://invidious.drgns.space',
+  'https://iv.ggtyler.dev',
+  'https://invidious.lunar.icu'
 ];
 
 async function scrapeInvidious(query: string): Promise<YouTubeScraperResult[]> {
