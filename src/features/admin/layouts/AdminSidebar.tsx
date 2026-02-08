@@ -74,7 +74,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) 
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 w-72 bg-sidebar border-r border-sidebar-border transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-auto",
+        "fixed inset-y-0 left-0 z-50 w-72 bg-sidebar border-r border-sidebar-border transform transition-transform duration-300 ease-in-out lg:translate-x-0",
         isOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         {/* Logo */}
