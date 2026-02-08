@@ -128,7 +128,7 @@ export default function PackagesPage() {
         try {
             parsedFeatures = JSON.parse(featuresJson);
         } catch (e: any) {
-            setJsonError('Invalid JSON: ' + e.message);
+            setJsonError('รูปแบบ JSON ไม่ถูกต้อง: ' + e.message);
             alert("JSON Syntax Error: " + e.message);
             return;
         }
@@ -164,7 +164,7 @@ export default function PackagesPage() {
 
             await setDoc(doc(db, 'packages', finalId), payload, { merge: true });
 
-            alert("✅ Saved successfully!");
+            alert("✅ บันทึกข้อมูลสำเร็จ!");
             setEditMode(null);
             setIsCreating(false);
 
@@ -174,7 +174,7 @@ export default function PackagesPage() {
 
         } catch (e: any) {
             console.error("Save Error:", e);
-            alert(`❌ Error: ${e.message}`);
+            alert(`❌ เกิดข้อผิดพลาด: ${e.message}`);
         } finally {
             setLoading(false);
         }
@@ -182,7 +182,7 @@ export default function PackagesPage() {
 
     const handleDelete = async (id: string) => {
         if (!db) return;
-        if (confirm(`Are you sure you want to delete package ${id}?`)) {
+        if (confirm(`คุณแน่ใจหรือไม่ที่จะลบแพ็กเกจ ${id}?`)) {
             await deleteDoc(doc(db, 'packages', id));
         }
     };
@@ -315,11 +315,11 @@ export default function PackagesPage() {
                                         </li>
                                     ))}
                                     {featureList.length === 0 && (
-                                        <li className="text-xs text-gray-400 italic">No specific features listed</li>
+                                        <li className="text-xs text-gray-400 italic">ไม่มีฟีเจอร์ระบุ</li>
                                     )}
                                     {featureList.length > 4 && (
                                         <li className="text-xs text-gray-400 pl-6">
-                                            +{featureList.length - 4} more
+                                            +{featureList.length - 4} เพิ่มเติม
                                         </li>
                                     )}
                                 </ul>

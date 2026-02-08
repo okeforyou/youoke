@@ -132,15 +132,15 @@ export const PageList = () => {
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="grid grid-cols-12 border-b border-gray-100 bg-gray-50 p-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    <div className="col-span-1 text-center">Order</div>
-                    <div className="col-span-4">Page Title</div>
-                    <div className="col-span-3">Section</div>
-                    <div className="col-span-2 text-center">Status</div>
-                    <div className="col-span-2 text-center">Actions</div>
+                    <div className="col-span-1 text-center">ลำดับ (Order)</div>
+                    <div className="col-span-4">ชื่อหน้า (Title)</div>
+                    <div className="col-span-3">หมวดหมู่ (Section)</div>
+                    <div className="col-span-2 text-center">สถานะ (Status)</div>
+                    <div className="col-span-2 text-center">จัดการ (Actions)</div>
                 </div>
 
                 {loading ? (
-                    <div className="p-8 text-center text-gray-500">Loading pages...</div>
+                    <div className="p-8 text-center text-gray-500">กำลังโหลดข้อมูล...</div>
                 ) : pages.length === 0 ? (
                     <div className="p-8 text-center text-gray-500">
                         <p className="mb-4">ยังไม่มีหน้าในระบบ</p>

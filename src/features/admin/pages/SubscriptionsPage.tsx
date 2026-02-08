@@ -807,17 +807,17 @@ const SubscriptionsPage: React.FC = () => {
                 {isCreating ? (
                   <>
                     <ArrowPathIcon className="w-5 h-5 animate-spin" />
-                    Creating...
+                    กำลังสร้าง...
                   </>
                 ) : (
-                  "Create Plan"
+                  "สร้างแผน"
                 )}
               </button>
               <button
                 onClick={() => setCreatingPlan(false)}
                 className="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
               >
-                Cancel
+                ยกเลิก
               </button>
             </div>
           </div>

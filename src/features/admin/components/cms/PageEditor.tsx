@@ -81,7 +81,7 @@ export const PageEditor = ({ pageId }: PageEditorProps) => {
         }
     };
 
-    if (fetching) return <div className="p-8 text-center">Loading editor...</div>;
+    if (fetching) return <div className="p-8 text-center">กำลังโหลดข้อมูล...</div>;
 
     return (
         <div className="max-w-4xl mx-auto p-6">
