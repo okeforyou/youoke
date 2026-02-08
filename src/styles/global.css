@@ -1,0 +1,226 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Clean White Background */
+    --background: 0 0% 98%;
+    --foreground: 220 9% 20%;
+
+    /* Typography (Dynamic) */
+    --font-primary: "IBM Plex Sans Thai Looped", sans-serif;
+
+    /* Card - Pure white */
+    --card: 0 0% 100%;
+    --card-foreground: 220 9% 20%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 9% 20%;
+
+    /* Primary - Red */
+    --primary: 0 72% 51%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary - Light gray */
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 9% 20%;
+
+    /* Muted */
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+
+    /* Accent */
+    --accent: 220 14% 96%;
+    --accent-foreground: 220 9% 20%;
+
+    /* Status */
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
+
+    /* Borders */
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 0 72% 51%;
+
+    --radius: 0.5rem;
+
+    /* Sidebar - Dark */
+    --sidebar-background: 220 17% 17%;
+    --sidebar-foreground: 220 9% 70%;
+    --sidebar-primary: 0 72% 51%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 17% 22%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 220 17% 25%;
+    --sidebar-ring: 0 72% 51%;
+    --sidebar-muted: 220 9% 55%;
+
+    /* Chart */
+    --chart-1: 0 72% 51%;
+    --chart-2: 199 89% 48%;
+    --chart-3: 142 71% 45%;
+    --chart-4: 262 83% 58%;
+    --chart-5: 38 92% 50%;
+  }
+
+  .glass-card {
+    @apply rounded-lg border border-border bg-card;
+  }
+}
+
+@import "./theme.css";
+
+.aspect-video {
+  @apply aspect-w-16 aspect-h-9;
+}
+
+.aspect-square {
+  @apply aspect-w-1 aspect-h-1;
+}
+
+html {
+  font-family: var(--font-primary);
+  /* Base Font Size Scale - Defaults to 16px if var not set */
+  font-size: var(--base-font-size, 16px);
+  font-weight: 300;
+}
+
+.toast {
+  background-color: #333;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.toast button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.25rem;
+  cursor: pointer;
+}
+
+
+
+.chip-container {
+  position: relative;
+  display: inline-block;
+  /* margin: 1rem; */
+}
+
+.chip {
+  @apply text-white py-2 px-4 rounded-full shadow-lg;
+  position: relative;
+  animation: floating 3s ease-in-out infinite;
+  text-align: center;
+}
+
+@keyframes floating {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+.sparkle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: white;
+  clip-path: polygon(50% 0%,
+      60% 40%,
+      100% 50%,
+      60% 60%,
+      50% 100%,
+      40% 60%,
+      0% 50%,
+      40% 40%);
+  opacity: 0;
+  animation: sparkle-animation 3s infinite ease-in-out;
+}
+
+.sparkle1 {
+  top: -10px;
+  left: 20px;
+  animation-delay: 0s;
+}
+
+.sparkle2 {
+  top: 10px;
+  right: -10px;
+  animation-delay: 0.5s;
+}
+
+.sparkle3 {
+  bottom: -5px;
+  left: 15px;
+  animation-delay: 1s;
+}
+
+.sparkle4 {
+  bottom: 10px;
+  right: -5px;
+  animation-delay: 1.5s;
+}
+
+@keyframes sparkle-animation {
+
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.5);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Force YouTube Iframe to fill container */
+  .youtube-player-wrapper iframe {
+    width: 100% !important;
+    height: 100% !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out;
+}

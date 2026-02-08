@@ -1,0 +1,136 @@
+import { useEffect, useRef } from 'react';
+import { usePlayerStore } from '../stores/usePlayerStore';
+import { useDjPresence } from '../../../hooks/useDjPresence';
+import { playerService } from '../services/playerService';
+import { YouTubeAdapter } from '../adapters/YouTubeAdapter';
+
+export const usePlayerSync = (
+    isPassive: boolean,
+    isDjMode: boolean,
+    currentTime: number,
+    setCurrentTime: (time: number) => void,
+    playerRef: React.MutableRefObject<any>
+) => {
+    // Check local storage for Dual Mode state
+    useEffect(() => {
+        if (isPassive) return;
+
+        const checkDualMode = () => {
+            const dualActive = localStorage.getItem('youoke-dual-active') === 'true';
+            setIsDualActive(dualActive);
+        };
+
+        checkDualMode();
+
+        // Listen for storage changes (when dual screen closes/opens)
+        const handleStorage = (e: StorageEvent) => {
+            if (e.key === 'youoke-dual-active') {
+                setIsDualActive(e.newValue === 'true');
+            }
+        };
+
+        window.addEventListener('storage', handleStorage);
+        // Poll regularly in case storage event misses (e.g. same window)
+        const interval = setInterval(checkDualMode, 2000);
+
+        return () => {
+            window.removeEventListener('storage', handleStorage);
+            clearInterval(interval);
+        };
+    }, [isPassive]);
+
+    const [isDualActive, setIsDualActive] = useRefVal(false);
+
+    // DJ Mode Presence
+    const { isDjConnected, remoteMode } = useDjPresence(isDjMode);
+
+    // AUTO-MUTE: If Sound is on TV (DJ Mode), mute local player
+    // If Sound is on PC (Mirror Mode), unmute local player (or user preference)
+    // AUTO-MUTE REMOVED by User Request: allow manual independent control
+    // Both screens will play audio by default (unless user mutes them manually)
+
+    const { currentSource, isPlaying, duration } = usePlayerStore(state => ({
+        currentSource: state.currentSource,
+        isPlaying: state.isPlaying,
+        duration: state.duration
+    }));
+
+    const isSeekingRef = useRef(false);
+
+    // ⏱️ Sync Time & Enforce Duration Limit
+    useEffect(() => {
+        if (!playerRef.current || !isPlaying || isPassive) return;
+
+        const interval = setInterval(() => {
+            // Safety check for method existence
+            if (typeof playerRef.current.getCurrentTime !== 'function') return;
+
+            // LOCK: If seeking, do not overwrite store time (prevents rubber-banding)
+            if (isSeekingRef.current) return;
+
+            const currentTime = playerRef.current.getCurrentTime();
+            const currentDuration = playerRef.current.getDuration();
+
+            // SYNC: Keep store updated so external controls can trigger handoff
+            usePlayerStore.getState().setCurrentTime(currentTime);
+
+            // SYNC Duration
+            const storeDuration = usePlayerStore.getState().duration;
+            if (currentDuration && currentDuration > 0 && Math.abs(currentDuration - storeDuration) > 1) {
+                usePlayerStore.getState().setDuration(currentDuration);
+            }
+
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [isPlaying, currentSource, isPassive]);
+
+    // ⏩ SYNC: If Store's currentTime changes (via Handoff), seek to it
+    useEffect(() => {
+        // Block Sync if Dual Mode is active (Controller Mode)
+        if (!playerRef.current || isPassive || currentTime <= 0 || isDualActive) return;
+
+        try {
+            if (typeof playerRef.current.getCurrentTime === 'function') {
+                const playerTime = playerRef.current.getCurrentTime();
+                if (Math.abs(currentTime - playerTime) > 2) {
+                    console.log(`⏩ Syncing time: ${playerTime} -> ${currentTime}`);
+
+                    // LOCK Heartbeat
+                    isSeekingRef.current = true;
+                    playerRef.current.seekTo(currentTime);
+
+                    // Release Lock
+                    setTimeout(() => {
+                        isSeekingRef.current = false;
+                    }, 2000);
+                }
+            }
+        } catch (e) {
+            console.warn("Seek failed:", e);
+        }
+    }, [currentTime, isPassive, isDualActive]);
+
+    // Sync Play/Pause
+    useEffect(() => {
+        if (!playerRef.current || isDualActive) return;
+        try {
+            if (isPlaying) {
+                playerRef.current.playVideo();
+            } else {
+                playerRef.current.pauseVideo();
+            }
+        } catch (e) {
+            console.warn("Player control error:", e);
+        }
+    }, [isPlaying, isDualActive]);
+
+    return {
+        showDjOverlay: isDualActive,
+        isDjConnected
+    };
+};
+
+function useRefVal<T>(initial: T): [T, (val: T) => void] {
+    const [val, setVal] = require('react').useState(initial);
+    return [val, setVal];
+}

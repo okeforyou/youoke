@@ -1,0 +1,58 @@
+import dynamic from "next/dynamic";
+import { memo } from "react";
+import { usePlayerStore } from "../../modules/player/stores/usePlayerStore";
+import { useShallow } from 'zustand/react/shallow';
+
+// Dynamic imports moved here
+const MusicProviderContainer = dynamic(() => import("../MusicProviderContainer"), {
+    loading: () => <div className="grid grid-cols-6 gap-4 p-4">{[...Array(12)].map((_, i) => <div key={i} className="aspect-square bg-gray-100 rounded-2xl animate-pulse" />)}</div>,
+    ssr: false,
+});
+const ListTopicsGrid = dynamic(() => import("../ListTopicsGrid"), {
+    loading: () => <div className="h-48 bg-gray-100 rounded-2xl animate-pulse m-4" />,
+    ssr: false,
+});
+const SearchResultGrid = dynamic(() => import("../SearchResultGrid"), {
+    loading: () => <div className="h-96 bg-gray-100 rounded-2xl animate-pulse m-4" />,
+    ssr: false,
+});
+const ListPlaylistsGrid = dynamic(() => import("../ListPlaylistsGrid"), {
+    loading: () => <div className="grid grid-cols-5 gap-4 p-4">{[...Array(5)].map((_, i) => <div key={i} className="aspect-square bg-gray-100 rounded-2xl animate-pulse" />)}</div>,
+    ssr: false,
+});
+const ListRecommendedPlaylists = dynamic(() => import("../ListRecommendedPlaylists"), {
+    loading: () => <div className="grid grid-cols-5 gap-4 p-4">{[...Array(10)].map((_, i) => <div key={i} className="aspect-square bg-gray-100 rounded-2xl animate-pulse" />)}</div>,
+    ssr: false,
+});
+const ListCommunityPlaylists = dynamic(() => import("../ListCommunityPlaylists"), {
+    loading: () => <div className="grid grid-cols-5 gap-4 p-4">{[...Array(5)].map((_, i) => <div key={i} className="aspect-square bg-gray-100 rounded-2xl animate-pulse" />)}</div>,
+    ssr: false,
+});
+const ListHitsGrid = dynamic(() => import("../ListHitsGrid"), {
+    loading: () => <div className="grid grid-cols-5 gap-4 p-4">{[...Array(10)].map((_, i) => <div key={i} className="aspect-square bg-gray-100 rounded-2xl animate-pulse" />)}</div>,
+    ssr: false,
+});
+
+export const HomePageContent = memo(() => {
+    // Only subscribe to activeIndex to prevent unnecessary re-renders
+    const activeIndex = usePlayerStore(useShallow(state => state.activeIndex));
+
+    switch (activeIndex) {
+        case 0: return <SearchResultGrid onClick={(video) => {
+            const videoToAdd = {
+                id: video.videoId, // map videoId to id for Video type
+                sourceType: 'youtube', // default source
+                videoId: video.videoId,
+                title: video.title,
+                author: video.author,
+                thumbnail: undefined,
+            } as any;
+            usePlayerStore.getState().addToQueue(videoToAdd);
+        }} />;
+        case 1: return <MusicProviderContainer showTab={false} />;
+        case 2: return <ListRecommendedPlaylists />; // Replaced with External Playlists
+        case 3: return <ListHitsGrid />;
+        case 4: return <ListPlaylistsGrid defaultTab={1} />;
+        default: return <MusicProviderContainer showTab={false} />;
+    }
+});

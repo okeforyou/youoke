@@ -57,5 +57,9 @@ public/sw.js.map
 public/workbox-*.js.map
 public/worker-*.js.map
 
+
 # BeMusic (for reference only, not part of YouOke)
 bemusic/
+
+# Design Agency Mockups
+mockup dashboard/

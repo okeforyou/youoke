@@ -1,32 +1,10 @@
-import { ComponentType } from 'react';
+import { ModuleDefinition } from '@/modules/marketplace/types';
 import {
     MusicalNoteIcon,
     DevicePhoneMobileIcon,
     UserGroupIcon,
+    CpuChipIcon
 } from '@heroicons/react/24/outline';
-
-export type ModuleCategory = 'music' | 'utility' | 'social' | 'core';
-export type ModuleTier = 'free' | 'paid' | 'enterprise';
-export type BillingPeriod = 'one-time' | 'monthly' | 'yearly';
-
-export interface ModulePricing {
-    tier: ModuleTier;
-    priceTHB: number;
-    billingPeriod: BillingPeriod;
-}
-
-export interface ModuleDefinition {
-    id: string;
-    name: string;
-    description: string;
-    icon?: ComponentType<{ className?: string }>;
-    version: string;
-    category: ModuleCategory;
-    isHidden?: boolean;
-    pricing: ModulePricing;
-    features?: Record<string, boolean | string | number>;
-    requires?: string[];
-}
 
 export const MODULES: ModuleDefinition[] = [
     // --- CORE MODULES (Hidden) ---

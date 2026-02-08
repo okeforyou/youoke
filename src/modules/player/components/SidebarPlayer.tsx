@@ -1,0 +1,316 @@
+import React, { useEffect, useRef, useState } from "react";
+import { Maximize2 } from 'lucide-react';
+// import YouTube from "react-youtube"; // Removing direct dependency
+import { UniversalPlayer } from "./UniversalPlayer";
+import { usePlayerStore } from "../stores/usePlayerStore";
+import { playerService } from "../services/playerService";
+import { YouTubeAdapter } from "../adapters/YouTubeAdapter";
+import { useSystemConfig } from "../../../hooks/useSystemConfig";
+import { useUIStore } from "../../../stores/useUIStore";
+
+import { useShallow } from 'zustand/react/shallow';
+import { QuotaIndicator } from "./QuotaIndicator";
+
+// Hooks
+import { usePlayerLifecycle } from "../hooks/usePlayerLifecycle";
+import { usePlayerSync } from "../hooks/usePlayerSync";
+
+interface SidebarPlayerProps {
+    isPassive?: boolean;
+    isDjMode?: boolean;
+}
+
+export const SidebarPlayer = ({ isPassive = false, isDjMode = false }: SidebarPlayerProps) => {
+    const { currentSource, isPlaying, currentVideo, setCurrentTime, currentTime } = usePlayerStore(
+        useShallow(state => ({
+            currentSource: state.currentSource,
+            isPlaying: state.isPlaying,
+            currentVideo: state.currentVideo,
+            setCurrentTime: state.setCurrentTime,
+            currentTime: state.currentTime,
+        }))
+    );
+    const playerRef = useRef<any>(null);
+
+    // System Config Check for Allowed Sources
+    const { config } = useSystemConfig();
+    const allowedSources = config?.player?.allowedSources || ['youtube'];
+    const isSourceAllowed = allowedSources.includes('youtube');
+
+    useEffect(() => {
+        if (!isSourceAllowed && currentSource) {
+            console.warn("⛔ Source type 'youtube' is disabled by admin.");
+            usePlayerStore.getState().pause();
+        }
+    }, [isSourceAllowed, currentSource]);
+
+    // --- HOOKS INTEGRATION ---
+    const { showDjOverlay } = usePlayerSync(isPassive, isDjMode, currentTime, setCurrentTime, playerRef);
+    const { dailyCount, maxDailySongs, maxDuration, showAds, userRole } = usePlayerLifecycle(currentSource, showDjOverlay);
+
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => { setMounted(true); }, []);
+
+    // Sync Fullscreen State with Global Store
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            const isFs = !!document.fullscreenElement;
+            import('../../../stores/useUIStore').then(({ useUIStore }) => {
+                useUIStore.getState().setFullscreen(isFs);
+            });
+        };
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange); // Safari
+        return () => {
+            document.removeEventListener('fullscreenchange', handleFullscreenChange);
+            document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+        };
+    }, []);
+
+    const toggleFullscreen = () => {
+        const playerEl = document.getElementById('global-video-player-container');
+        if (playerEl) {
+            if (!document.fullscreenElement) {
+                playerEl.requestFullscreen().catch(err => console.error(err));
+            } else {
+                document.exitFullscreen();
+            }
+        }
+    };
+
+    const onReady = (target: any) => {
+        playerRef.current = target;
+        // Register this player instance with the adapter
+        const adapter = playerService.getAdapter();
+        if (adapter instanceof YouTubeAdapter) {
+            adapter.setPlayer(target);
+        }
+
+        // LOAD VIDEO MANUALLY (Restored: Legacy logic proves more stable)
+        const currentSrc = usePlayerStore.getState().currentSource;
+        const isStorePlaying = usePlayerStore.getState().isPlaying;
+
+        // BLOCK: If DJ Overlay is active, do NOT load video locally
+        // This prevents the "Video load error" and double playing
+        if (showDjOverlay) {
+            console.log("🚫 onReady: DJ Overlay active, skipping local load.");
+            return;
+        }
+
+        if (currentSrc) {
+            if (isStorePlaying) {
+                console.log("▶️ onReady: Loading & Playing initial video:", currentSrc);
+                target.loadVideoById(currentSrc);
+            } else {
+                console.log("⏸️ onReady: Cued initial video (Paused):", currentSrc);
+                target.cueVideoById(currentSrc);
+            }
+        }
+
+        // AUTO-FIX: Force play if store says we are playing
+        if (isStorePlaying) {
+            const savedTime = usePlayerStore.getState().currentTime;
+            if (savedTime > 2) {
+                console.log("⏩ Resuming from:", savedTime);
+                target.seekTo(savedTime);
+            }
+            target.playVideo();
+        }
+    };
+
+    // 🕵️ SEARCH RESOLVER: If source is 'search:Query', find ID and play it
+    useEffect(() => {
+        if (!currentSource || !currentSource.startsWith('search:')) return;
+
+        const performSearch = async () => {
+            try {
+                const query = currentSource.replace('search:', '');
+                console.log("🕵️ Resolving Search Query:", query);
+
+                // Dynamic Import to avoid cyclic if possible, or just standard import
+                const { getSearchResult } = await import('../../../utils/api');
+
+                const results = await getSearchResult({ q: query, page: 0 });
+                if (results && results.length > 0) {
+                    const firstHit = results[0];
+                    console.log("✅ Resolved:", firstHit.title, firstHit.videoId);
+
+                    // Update Store Entry (Optional but good for UI)
+                    // But strictly we just need to load it into player
+                    if (playerRef.current) {
+                        playerRef.current.loadVideoById(firstHit.videoId);
+                    }
+                } else {
+                    console.warn("❌ No results found for:", query);
+                }
+            } catch (e) {
+                console.error("Search resolution failed:", e);
+            }
+        };
+
+        performSearch();
+    }, [currentSource]);
+
+    // 🎵 Sync Source (Video ID) MANUALLY
+    useEffect(() => {
+        if (!playerRef.current || !currentSource || showDjOverlay) {
+            if (showDjOverlay) console.log("🚫 Manual Load Blocked: DJ Overlay Active");
+            return;
+        }
+        try {
+            console.log("🔄 Manual Load Code: Switching to", currentSource);
+            playerRef.current.loadVideoById(currentSource);
+        } catch (e) {
+            console.warn("Video load error:", e);
+        }
+    }, [currentSource, showDjOverlay]);
+
+    // 🍞 Toast Logic
+    const [showToast, setShowToast] = React.useState(false);
+
+    useEffect(() => {
+        if (currentSource && currentVideo?.addedBy) {
+            setShowToast(true);
+            const timer = setTimeout(() => setShowToast(false), 8000); // Hide after 8s
+            return () => clearTimeout(timer);
+        } else {
+            setShowToast(false);
+        }
+    }, [currentSource, currentVideo]);
+
+    // --- RENDER LOGIC ---
+
+    // 1. DJ Overlay Mode (Controller View)
+    if (showDjOverlay) {
+        return (
+            <div className="w-full h-full relative group bg-black flex flex-col items-center justify-center text-center p-6 space-y-6 overflow-hidden">
+                {/* Background Art (Blurred) */}
+                {currentVideo?.thumbnail && (
+                    <div className="absolute inset-0 opacity-20 blur-xl pointer-events-none">
+                        <img src={currentVideo.thumbnail} className="w-full h-full object-cover" />
+                    </div>
+                )}
+
+                <div className="relative z-10 w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center ring-4 ring-primary/20 animate-pulse shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-primary">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
+                    </svg>
+                </div>
+
+                <div className="relative z-10 w-full px-4">
+                    <h3 className="text-xl font-bold text-white tracking-tight">โหมด DJ 2 หน้าจอ ทำงานอยู่</h3>
+                    <p className="text-white/50 text-xs mt-2">วิดีโอกำลังเล่นบนจอแยก (Clean Feed)</p>
+                </div>
+
+                {/* Mini Controls for Controller */}
+                {currentVideo && (
+                    <div className="relative z-10 bg-white/5 backdrop-blur-md rounded-xl p-4 w-full border border-white/10 shrink-0">
+                        <p className="text-sm font-bold truncate text-white mb-1">{currentVideo.title}</p>
+                        <p className="text-xs text-white/40 truncate">{currentVideo.author}</p>
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    // 1.5. Disabled Source Mode
+    if (!isSourceAllowed) {
+        return (
+            <div className="w-full h-full bg-black flex flex-col items-center justify-center text-center p-6 space-y-4">
+                <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center ring-1 ring-red-500/20">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-red-500">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                    </svg>
+                </div>
+                <div>
+                    <h3 className="text-lg font-bold text-white">ปิดการเล่นวิดีโอ</h3>
+                    <p className="text-white/50 text-sm mt-1">ผู้ดูแลระบบปิดการใช้งานโหมดนี้ กรุณาติดต่อ Admin</p>
+                </div>
+            </div>
+        );
+    }
+
+    // 2. Standard Video Mode
+    return (
+        <div className="w-full h-full relative group">
+            {/* Universal Player Layer (Youtube / MIDI / VCD) */}
+            {/* CRITICAL FIX: Unmount player if DJ Overlay is active to prevent "Seek failed" and state conflicts */}
+            {!showDjOverlay && (
+                <div className={`absolute inset-0 max-h-full max-w-full z-0 youtube-player-wrapper`}>
+                    <UniversalPlayer
+                        onReady={onReady} // Pass ref up for legacy control (Youtube)
+                        onEnded={() => {
+                            console.log("🎬 Media ended, playing next...");
+                            if (!isPassive && !showDjOverlay) {
+                                usePlayerStore.getState().playNext();
+                            }
+                        }}
+                        showControls={false}
+                        className="w-full h-full pointer-events-auto"
+                    />
+                </div>
+            )}
+
+            {/* AD OVERLAY (If show_ads is TRUE) */}
+            {mounted && showAds && isPlaying && (
+                <div className="absolute inset-x-0 bottom-0 h-16 bg-red-600 text-white z-40 flex items-center justify-between px-4 animate-bounce">
+                    <span className="font-bold text-sm">📢 พื้นที่โฆษณาประชาสัมพันธ์</span>
+                    <button className="btn btn-xs btn-white text-red-600">อัปเกรดเพื่อปิดโฆษณา</button>
+                </div>
+            )}
+
+            {/* Overlay (Waiting) */}
+            {!currentSource && (
+                <div className="absolute inset-0 bg-black/80 z-10 flex items-center justify-center text-white/50">
+                    <p>รอเลือกเพลง...</p>
+                </div>
+            )}
+
+            {/* Limit Indicator */}
+            {mounted && maxDuration > 0 && currentSource && (
+                <div className="absolute top-2 right-2 z-20 badge badge-warning gap-1 opacity-80 text-xs">
+                    <span>⏱️ จำกัดเวลา: {maxDuration}วิ</span>
+                </div>
+            )}
+
+            {/* Desktop Fullscreen Toggle (Top Left - Hover Only) */}
+            <button
+                onClick={toggleFullscreen}
+                className="absolute top-2 left-2 z-30 p-2 bg-black/40 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60 backdrop-blur-sm"
+                title="ขยายเต็มจอ"
+            >
+                <Maximize2 size={20} />
+            </button>
+
+            {/* Daily Limit Badge (OLD) -> Quota Indicator (NEW) */}
+            {maxDailySongs > 0 && currentSource && !showDjOverlay && (
+                <div className="absolute top-4 right-4 z-20">
+                    <QuotaIndicator current={dailyCount} max={maxDailySongs} />
+                </div>
+            )}
+
+            {/* Added By Toast (Animated) */}
+            {showToast && currentVideo?.addedBy && (
+                <div className={`absolute bottom-8 left-6 z-30 transition-all duration-700 ${showToast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+                    <div className="flex items-center gap-4 bg-black/70 backdrop-blur-xl border border-white/10 rounded-full pl-2 pr-6 py-2 shadow-2xl ring-1 ring-white/5">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-xl shadow-inner text-white font-bold ring-2 ring-black/50">
+                            {/* Avatar or Initial */}
+                            {currentVideo.addedBy.photoURL ? (
+                                <img src={currentVideo.addedBy.photoURL} className="w-full h-full rounded-full object-cover" />
+                            ) : (
+                                <span>{((currentVideo.addedBy as any).name || currentVideo.addedBy.displayName || '?').charAt(0).toUpperCase()}</span>
+                            )}
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="text-[10px] text-indigo-300 font-bold uppercase tracking-wider leading-none mb-1">ขอเพลงโดย</span>
+                            <span className="text-base font-bold text-white leading-none truncate max-w-[200px] drop-shadow-md">
+                                {(currentVideo.addedBy as any).name || currentVideo.addedBy.displayName}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+        </div>
+    );
+};

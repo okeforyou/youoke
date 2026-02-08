@@ -1,0 +1,37 @@
+:root {
+  /* Default Theme (Light) */
+  --color-primary: 229 9 20;
+  /* #E50914 */
+  --color-secondary: 107 114 128;
+  /* #6b7280 */
+
+  --color-bg-base: 255 255 255;
+  --color-bg-muted: 243 244 246;
+  /* gray-100 */
+
+  --color-text-base: 17 24 39;
+  /* gray-900 */
+  --color-text-muted: 107 114 128;
+  /* gray-500 */
+
+  --color-border: 229 231 235;
+  /* gray-200 */
+}
+
+/* Dark Theme */
+[data-theme='dark'] {
+  --color-bg-base: 17 24 39;
+  /* gray-900 */
+  --color-bg-muted: 31 41 55;
+  /* gray-800 */
+
+  --color-text-base: 249 250 251;
+  /* gray-50 */
+  --color-text-muted: 156 163 175;
+  /* gray-400 */
+
+  --color-border: 55 65 81;
+  /* gray-700 */
+}
+
+/* Helper classes if needed or used via Tailwind config */

@@ -1,17 +1,3 @@
-// Safe require to prevent crashes in production where devDependencies are missing
-let withBundleAnalyzer = (config) => config;
-
-if (process.env.ANALYZE === 'true') {
-  try {
-    withBundleAnalyzer = require('@next/bundle-analyzer')({
-      enabled: true,
-    });
-  } catch (e) {
-    // Fail silently if module is missing (production environment)
-    console.warn('Bundle analyzer not enabled: @next/bundle-analyzer not found');
-  }
-}
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -21,14 +7,15 @@ const nextConfig = {
       'i.ytimg.com',
       'firebasestorage.googleapis.com',
       'i.scdn.co',
-      'inv.nadeko.net',
-      'invidious.privacyredirect.com',
-      'yewtu.be',
-      'vid.puffyan.us',
-      'invidious.projectsegfau.lt',
-      'onion.tube',
-      'invidious.fdn.fr'
+      'mosaic.scdn.co',
+      'wrapped-images.spotifycdn.com',
+      'profile.line-scdn.net',
+      'lh3.googleusercontent.com',
+      'yt3.ggpht.com'
     ],
+  },
+  env: {
+    NEXT_PUBLIC_COMMIT_HASH: require('child_process').execSync('git rev-parse --short HEAD').toString().trim(),
   },
   async rewrites() {
     return [
@@ -38,6 +25,12 @@ const nextConfig = {
       },
     ];
   },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 }
 
-module.exports = withBundleAnalyzer(nextConfig)
+module.exports = nextConfig

@@ -366,10 +366,78 @@
           playNext();
           break;
 
+        case 'ADD_ITEM':
+          if (data.video) {
+            videoQueue.push(data.video);
+            console.log('➕ Added item to queue:', data.video.title);
+            updateQueueInfo();
+            broadcastState();
+          }
+          break;
+
+        case 'REMOVE_ITEM':
+          if (typeof data.index === 'number' && data.index >= 0 && data.index < videoQueue.length) {
+            const removed = videoQueue.splice(data.index, 1);
+            console.log('➖ Removed item at index:', data.index, removed[0]?.title);
+            
+            // Adjust currentIndex if necessary
+            if (data.index < currentIndex) {
+              currentIndex--;
+            } else if (data.index === currentIndex) {
+              // If we removed the current song, play the next one (which is now at currentIndex)
+              // unless we are at the end
+              if (currentIndex >= videoQueue.length) {
+                  currentIndex = 0; // Loop or stop?
+                  // Stop stopping for now, usually we just let it finish or wait
+              }
+            }
+            updateQueueInfo();
+            broadcastState();
+          }
+          break;
+
+        case 'MOVE_ITEM':
+          if (typeof data.fromIndex === 'number' && typeof data.toIndex === 'number') {
+            const item = videoQueue[data.fromIndex];
+            videoQueue.splice(data.fromIndex, 1);
+            videoQueue.splice(data.toIndex, 0, item);
+            
+            // Adjust currentIndex logic if needed (complex), for now simple reorder
+            // Ideally we track the playing item ID to restore currentIndex correctly
+            if (currentVideoId) {
+                const newIdx = videoQueue.findIndex(v => v.videoId === currentVideoId);
+                if (newIdx !== -1) currentIndex = newIdx;
+            }
+
+            console.log('⇄ Moved item from', data.fromIndex, 'to', data.toIndex);
+            updateQueueInfo();
+            broadcastState();
+          }
+          break;
+
+        case 'CLEAR_QUEUE':
+          videoQueue = [];
+          currentIndex = 0;
+          console.log('🧹 Queue cleared');
+          updateQueueInfo();
+          broadcastState();
+          break;
+
         default:
           console.log('Unknown message type:', data.type);
       }
     });
+
+    function broadcastState() {
+      const currentState = {
+          type: 'RECEIVER_STATE',
+          queue: videoQueue.map(v => ({ videoId: v.videoId, title: v.title })),
+          currentIndex: currentIndex,
+          currentVideoId: currentVideoId,
+          isPlaying: ytPlayer ? (ytPlayer.getPlayerState() === 1) : false
+      };
+      sendMessageToSender(currentState);
+    }
 
     // Listen for sender connected/reconnected event
     context.addEventListener(cast.framework.system.EventType.SENDER_CONNECTED, (event) => {

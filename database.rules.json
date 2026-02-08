@@ -3,7 +3,7 @@
     "users": {
       "$uid": {
         ".read": "auth != null",
-        ".write": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin')"
+        ".write": "auth != null && auth.uid === $uid"
       }
     },
     "rooms": {
@@ -28,15 +28,18 @@
         }
       }
     },
-    "sessions": {
+    "playlists": {
       ".read": true,
-      ".write": true,
-      "$sessionId": {
-        "commands": {
-          ".indexOn": [
-            "timestamp"
-          ]
-        }
+      ".write": "auth != null"
+    },
+    "antigravity_rooms": {
+      ".read": true,
+      ".write": true
+    },
+    "system": {
+      "config": {
+        ".read": true,
+        ".write": "auth != null"
       }
     }
   }
