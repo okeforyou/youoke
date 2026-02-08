@@ -35,23 +35,96 @@ interface SerializedActivity {
   details: string;
 }
 
-interface Props {
-  stats: Stats;
-  recentActivities: SerializedActivity[];
-  error?: string;
-}
+import { collection, query, where, getDocs, limit, orderBy, getCountFromServer, Timestamp } from "firebase/firestore";
+import { db } from "../../../../firebase";
 
-const AdminDashboard: React.FC<Props> = ({ stats, recentActivities, error }) => {
+const AdminDashboard: React.FC = () => {
+  const [stats, setStats] = useState<Stats>({
+    totalUsers: 0, adminUsers: 0, freeUsers: 0, premiumUsers: 0,
+    monthlySubscribers: 0, yearlySubscribers: 0, lifetimeSubscribers: 0,
+    pendingPayments: 0, approvedPayments: 0, rejectedPayments: 0,
+    totalRevenue: 0,
+  });
+  const [recentActivities, setRecentActivities] = useState<SerializedActivity[]>([]);
   const [revenueHistory, setRevenueHistory] = useState<{ name: string; revenue: number }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const history = await AdminService.getRevenueHistory();
-        setRevenueHistory(history);
-      } catch (e) {
-        console.error("Failed to fetch dashboard extra data", e);
+        // Parallel fetching
+        const [
+          totalUsersSnap,
+          recentUsersSnap,
+          paymentsSnap,
+          revenueHistoryData
+        ] = await Promise.all([
+          getCountFromServer(collection(db, "users")),
+          getDocs(query(collection(db, "users"), orderBy("createdAt", "desc"), limit(10))),
+          getDocs(query(collection(db, "payments"), orderBy("createdAt", "desc"), limit(100))), // Limit for performance? Or fetch all if needed
+          AdminService.getRevenueHistory().catch(() => [])
+        ]);
+
+        // Process Users
+        const totalUsers = totalUsersSnap.data().count;
+
+        // Process Recent Users for Activity
+        const recentUsers = recentUsersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        // Process Payments for Stats
+        let pendingPayments = 0;
+        let approvedPayments = 0;
+        let rejectedPayments = 0;
+        let totalRevenue = 0;
+        const recentPayments: any[] = [];
+
+        paymentsSnap.docs.forEach(doc => {
+          const data = doc.data();
+          if (data.status === 'pending') pendingPayments++;
+          else if (data.status === 'approved') {
+            approvedPayments++;
+            totalRevenue += Number(data.amount) || 0;
+            recentPayments.push({ id: doc.id, ...data });
+          } else if (data.status === 'rejected') rejectedPayments++;
+        });
+
+        // Combine Activities
+        const activities: SerializedActivity[] = [];
+        recentPayments.slice(0, 10).forEach((p: any) => activities.push({
+          id: p.id, type: "payment", action: "Payment Approved",
+          timestamp: p.approvedAt?.toDate?.()?.toISOString() || null,
+          details: `${p.amount} THB - Plan: ${p.planId}`,
+        }));
+        recentUsers.forEach((u: any) => activities.push({
+          id: u.id, type: "user", action: "New User Registered",
+          timestamp: u.createdAt ? new Date(u.createdAt.seconds * 1000).toISOString() : null,
+          details: `${u.displayName || u.email} - ${u.tier || 'free'}`,
+        }));
+        activities.sort((a, b) => (b.timestamp ? new Date(b.timestamp).getTime() : 0) - (a.timestamp ? new Date(a.timestamp).getTime() : 0));
+
+        // Update State
+        setStats(prev => ({
+          ...prev,
+          totalUsers,
+          pendingPayments,
+          approvedPayments,
+          rejectedPayments,
+          totalRevenue,
+          // Rough estimates or placeholders for now to avoid fetching ALL users
+          adminUsers: 0,
+          freeUsers: totalUsers,
+          premiumUsers: 0,
+          monthlySubscribers: 0,
+          yearlySubscribers: 0,
+          lifetimeSubscribers: 0
+        }));
+        setRecentActivities(activities.slice(0, 10));
+        setRevenueHistory(revenueHistoryData);
+
+      } catch (err: any) {
+        console.error("Dashboard data fetch failed:", err);
+        setError("Failed to load dashboard data.");
       } finally {
         setLoading(false);
       }
@@ -70,6 +143,20 @@ const AdminDashboard: React.FC<Props> = ({ stats, recentActivities, error }) => 
       membershipType: a.details.includes('monthly') ? 'monthly' : a.details.includes('yearly') ? 'yearly' : 'free',
       registeredAt: a.timestamp ? new Date(a.timestamp).toLocaleDateString('th-TH') : '-'
     }));
+
+  // Loading state
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center h-screen">
+          <div className="flex flex-col items-center gap-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500"></div>
+            <p className="text-gray-500 animate-pulse">Loading dashboard...</p>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   if (error) {
     return (
