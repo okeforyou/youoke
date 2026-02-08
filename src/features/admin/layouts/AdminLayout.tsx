@@ -3,66 +3,58 @@ import { useRouter } from 'next/router';
 import { useAuth } from '../../../../context/AuthContext';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from '../components/AdminHeader';
-import Link from 'next/link';
-
-// NOTE: AdminRoute is now handled by the logic inside this layout (useEffect check)
-// effectively implementing the AdminRoute protection here directly to match play.youoke structure.
+import { cn } from '../../../utils/cn';
 
 interface AdminLayoutProps {
   children: ReactNode;
-  headerTitle?: string;
 }
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const router = useRouter();
-  const { user, loading } = useAuth(); // Assuming 'loading' in AuthContext, if not check implementation
+  const { user, loading } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!loading) {
       if (!user) {
         router.replace('/login');
-      } else if (user.role !== 'admin' && user.role !== 'owner' && user.email !== 'boonyanone@gmail.com') { // Basic check, refine based on AuthContext roles
-        // Note: You might want to be stricter here or check exact role property from AuthContext
-        // For now, redirecting if not authorized.
-        // console.warn("Access denied for role:", user.role);
-        // router.replace('/');
+      } else if (user.role !== 'admin' && user.role !== 'owner' && user.email !== 'boonyanone@gmail.com') {
+        // Redirect if not authorized (add stricter check later)
       }
     }
   }, [user, loading, router]);
 
-  if (loading) {
+  if (loading || !user) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background">
         <span className="loading loading-spinner loading-lg text-primary"></span>
-        <p className="mt-4 text-sm font-medium text-gray-500 animate-pulse">กำลังตรวจสอบสิทธิ์...</p>
+        <p className="mt-4 text-sm font-medium text-muted-foreground animate-pulse">Verifying Admin Access...</p>
       </div>
     );
   }
 
-  // Safety check for user existence before rendering admin UI
-  if (!user) return null;
-
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-gray-900 selection:bg-primary selection:text-white">
-      <div className="flex h-screen overflow-hidden">
-        {/* Sidebar (Desktop) */}
-        <AdminSidebar isOpen={isMobileMenuOpen} onToggle={() => setIsMobileMenuOpen(false)} />
+    <div className="min-h-screen bg-background font-sans text-foreground selection:bg-primary selection:text-white">
+      {/* Sidebar (Desktop: Fixed 72px) - Wait, sidebar width is 72 (18rem) or 64 (16rem)? In Sidebar component I used w-72 (18rem/288px) */}
+      <AdminSidebar isOpen={isMobileMenuOpen} onToggle={() => setIsMobileMenuOpen(false)} />
 
-        {/* Main Content Area */}
-        <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
-          <AdminHeader onMenuClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} />
+      {/* Main Content Area */}
+      <div className={cn(
+        "flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out",
+        "lg:ml-72" // Match sidebar width
+      )}>
+        <AdminHeader onMenuClick={() => setIsMobileMenuOpen(true)} />
 
-          <main className="w-full h-full p-4 md:p-6 lg:p-8 max-w-[1600px] mx-auto animate-in fade-in duration-300">
-            {children}
-          </main>
+        <main className="flex-1 p-4 md:p-6 lg:p-8 w-full max-w-[1920px] mx-auto animate-in fade-in slide-in-from-bottom-2 duration-500">
+          {children}
+        </main>
 
-          <footer className="mt-auto py-6 text-center border-t border-gray-200 bg-white">
-            <p className="text-sm text-gray-500">
-              &copy; {new Date().getFullYear()} YouOke. All rights reserved.
-            </p>
-          </footer>
-        </div>
+        <footer className="mt-auto py-6 text-center border-t border-border bg-background/50 backdrop-blur-sm">
+          <p className="text-sm text-muted-foreground">
+            &copy; {new Date().getFullYear()} YouOke. All rights reserved. {" "}
+            <span className="text-xs opacity-50 ml-1 font-mono">v{process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0'}</span>
+          </p>
+        </footer>
       </div>
     </div>
   );

@@ -67,33 +67,33 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) 
       {/* Mobile Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-20 bg-black bg-opacity-50 lg:hidden"
+          className="fixed inset-0 z-40 bg-black/80 lg:hidden backdrop-blur-sm transition-opacity"
           onClick={onToggle}
         />
       )}
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-30 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-auto",
+        "fixed inset-y-0 left-0 z-50 w-72 bg-sidebar border-r border-sidebar-border transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-auto",
         isOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         {/* Logo */}
-        <div className="flex h-16 items-center gap-3 border-b border-gray-200 px-6">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white">
+        <div className="flex h-16 items-center gap-3 border-b border-sidebar-border px-6">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white shadow-lg shadow-primary/20">
             <PlayCircleIcon className="h-5 w-5" />
           </div>
           <div className="flex flex-col">
-            <h1 className="text-lg font-bold text-gray-900 leading-none">YouOke</h1>
-            <p className="text-xs text-primary font-medium">Admin</p>
+            <h1 className="text-lg font-bold text-sidebar-foreground leading-none tracking-tight">YouOke</h1>
+            <p className="text-xs text-primary font-medium tracking-wide opacity-90">ADMIN DASHBOARD</p>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4">
-          <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gray-500">
-            Menu
+        <nav className="flex-1 overflow-y-auto px-4 py-6 scrollbar-thin scrollbar-thumb-sidebar-border scrollbar-track-transparent">
+          <p className="mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-muted">
+            Main Menu
           </p>
-          <ul className="space-y-1">
+          <ul className="space-y-1.5">
             {mainMenuItems.map((item) => {
               const isActive = router.pathname === item.path;
 
@@ -110,10 +110,10 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) 
                   <Link
                     href={item.path}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150",
+                      "group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
                       isActive
-                        ? "bg-primary/10 text-primary"
-                        : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
+                        : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
                     )}
                     onClick={() => {
                       if (window.innerWidth < 1024 && onToggle) {
@@ -121,14 +121,14 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) 
                       }
                     }}
                   >
-                    <item.icon className={cn("h-5 w-5 flex-shrink-0", isActive ? "text-primary" : "text-gray-400 group-hover:text-gray-500")} />
+                    <item.icon className={cn("h-5 w-5 flex-shrink-0 transition-colors", isActive ? "text-primary" : "text-sidebar-muted group-hover:text-sidebar-foreground")} />
                     <span className="flex-1 truncate">{item.title}</span>
                     {badgeContent && (
                       <span className={cn(
-                        "rounded-full px-2 py-0.5 text-xs font-medium",
+                        "rounded-full px-2 py-0.5 text-[10px] font-bold shadow-sm",
                         (item as any).badgeColor === "warning"
-                          ? "bg-orange-100 text-orange-700"
-                          : "bg-gray-100 text-gray-600"
+                          ? "bg-yellow-500/20 text-yellow-500 border border-yellow-500/20"
+                          : "bg-sidebar-border text-sidebar-foreground/80"
                       )}>
                         {badgeContent}
                       </span>
@@ -141,16 +141,16 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) 
         </nav>
 
         {/* Bottom User Section */}
-        <div className="border-t border-gray-200 p-4">
+        <div className="border-t border-sidebar-border p-4 bg-sidebar-accent/10">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-600 text-sm font-medium shrink-0">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sidebar-border text-sidebar-foreground text-sm font-medium shrink-0 shadow-sm ring-2 ring-sidebar-border">
               {user?.displayName?.charAt(0) || 'A'}
             </div>
             <div className="flex-1 min-w-0 overflow-hidden">
-              <p className="truncate text-sm font-medium text-gray-900">
+              <p className="truncate text-sm font-medium text-sidebar-foreground">
                 {user?.displayName || 'Admin'}
               </p>
-              <p className="truncate text-xs text-gray-500">
+              <p className="truncate text-xs text-sidebar-muted">
                 {user?.email || 'admin@youoke.com'}
               </p>
             </div>
@@ -163,10 +163,10 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) 
                   console.error("Logout failed", e);
                 }
               }}
-              className="shrink-0 rounded p-1.5 text-gray-400 hover:bg-gray-100 hover:text-red-500 transition-colors cursor-pointer"
+              className="shrink-0 rounded-lg p-2 text-sidebar-muted hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer group"
               title="Logout"
             >
-              <ArrowRightOnRectangleIcon className="h-5 w-5" />
+              <ArrowRightOnRectangleIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
             </button>
           </div>
         </div>
