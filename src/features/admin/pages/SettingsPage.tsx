@@ -10,7 +10,7 @@ const SettingsPage = () => {
 
   return (
     <div className="flex items-center justify-center min-h-screen">
-      <p className="text-gray-500 animate-pulse">Redirecting to System Config...</p>
+      <p className="text-gray-500 animate-pulse">กำลังนำทางไปหน้าตั้งค่าระบบ...</p>
     </div>
   );
 };

@@ -81,56 +81,61 @@ export default function PaymentsPage() {
   return (
     <AdminLayout>
       <Head>
-        <title>Payments - Admin</title>
+        <title>ตรวจสอบการชำระเงิน - Admin</title>
       </Head>
 
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Payment Verification</h1>
-            <p className="text-sm text-gray-500">Verify slips and approve subscriptions</p>
+            <h1 className="text-2xl font-bold text-gray-900">ตรวจสอบการชำระเงิน (Payment Verification)</h1>
+            <p className="text-sm text-gray-500">ตรวจสอบสลิปและอนุมัติการสมัครสมาชิก</p>
           </div>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-            <div className="text-gray-500 text-xs uppercase font-bold">Total</div>
+            <div className="text-gray-500 text-xs uppercase font-bold">ทั้งหมด (Total)</div>
             <div className="text-2xl font-bold text-gray-900">{payments.length}</div>
           </div>
           <div className="bg-orange-50 p-4 rounded-xl shadow-sm border border-orange-100">
-            <div className="text-orange-600 text-xs uppercase font-bold">Pending</div>
+            <div className="text-orange-600 text-xs uppercase font-bold">รอตรวจสอบ (Pending)</div>
             <div className="text-2xl font-bold text-orange-700">{payments.filter(p => p.status === 'pending').length}</div>
           </div>
           <div className="bg-green-50 p-4 rounded-xl shadow-sm border border-green-100">
-            <div className="text-green-600 text-xs uppercase font-bold">Approved</div>
+            <div className="text-green-600 text-xs uppercase font-bold">อนุมัติแล้ว (Approved)</div>
             <div className="text-2xl font-bold text-green-700">{payments.filter(p => p.status === 'approved').length}</div>
           </div>
           <div className="bg-red-50 p-4 rounded-xl shadow-sm border border-red-100">
-            <div className="text-red-600 text-xs uppercase font-bold">Rejected</div>
+            <div className="text-red-600 text-xs uppercase font-bold">ปฏิเสธแล้ว (Rejected)</div>
             <div className="text-2xl font-bold text-red-700">{payments.filter(p => p.status === 'rejected').length}</div>
           </div>
         </div>
 
         {/* Tabs */}
         <div className="tabs tabs-boxed bg-transparent p-0 gap-2">
-          {(['all', 'pending', 'approved', 'rejected'] as const).map(tab => (
+          {[
+            { id: 'all', label: 'ทั้งหมด' },
+            { id: 'pending', label: 'รอตรวจสอบ' },
+            { id: 'approved', label: 'อนุมัติแล้ว' },
+            { id: 'rejected', label: 'ปฏิเสธแล้ว' },
+          ].map(tab => (
             <a
-              key={tab}
-              className={cn("tab tab-md rounded-lg", filter === tab ? "bg-primary text-white" : "bg-white text-gray-500 hover:bg-gray-100")}
-              onClick={() => setFilter(tab)}
+              key={tab.id}
+              className={cn("tab tab-md rounded-lg", filter === tab.id ? "bg-primary text-white" : "bg-white text-gray-500 hover:bg-gray-100")}
+              onClick={() => setFilter(tab.id as any)}
             >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {tab.label}
             </a>
           ))}
         </div>
 
         {/* Grid */}
         {loading ? (
-          <div className="text-center py-12">Loading...</div>
+          <div className="text-center py-12">กำลังโหลดข้อมูล...</div>
         ) : filterPayments.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">No payments found.</div>
+          <div className="text-center py-12 text-gray-500">ไม่พบรายการสั่งซื้อ</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filterPayments.map(payment => (
@@ -149,18 +154,19 @@ export default function PaymentsPage() {
                     payment.status === 'pending' ? "bg-orange-100 text-orange-700" :
                       payment.status === 'approved' ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
                   )}>
-                    {payment.status}
+                    {payment.status === 'pending' ? 'รอตรวจสอบ' :
+                      payment.status === 'approved' ? 'อนุมัติแล้ว' : 'ปฏิเสธ'}
                   </div>
                 </div>
                 <div className="p-4 flex-1">
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-gray-500">Package</span>
+                      <span className="text-gray-500">แพ็กเกจ</span>
                       <span className="font-medium text-gray-900">{payment.packageName}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-500">Date</span>
-                      <span className="text-gray-900">{payment.createdAt?.toLocaleDateString()}</span>
+                      <span className="text-gray-500">วันที่แจ้ง</span>
+                      <span className="text-gray-900">{payment.createdAt?.toLocaleDateString('th-TH')}</span>
                     </div>
                   </div>
                 </div>
@@ -169,7 +175,7 @@ export default function PaymentsPage() {
                     onClick={() => setSelectedSlip(payment)}
                     className="btn btn-sm w-full btn-outline border-gray-300 text-gray-700 hover:bg-white hover:text-primary hover:border-primary"
                   >
-                    <EyeIcon className="w-4 h-4 mr-2" /> View Slip
+                    <EyeIcon className="w-4 h-4 mr-2" /> ดูสลิป (View Slip)
                   </button>
                 </div>
               </div>
@@ -186,21 +192,21 @@ export default function PaymentsPage() {
               <img src={selectedSlip.slipUrl} alt="Slip" className="max-h-full max-w-full object-contain" />
             </div>
             <div className="w-full md:w-80 p-6 flex flex-col border-l border-gray-200 bg-white">
-              <h3 className="font-bold text-lg mb-4 text-gray-900">Payment Details</h3>
+              <h3 className="font-bold text-lg mb-4 text-gray-900">รายละเอียดการชำระเงิน</h3>
               <div className="space-y-4 flex-1">
                 <div>
-                  <label className="text-xs text-gray-500 uppercase font-bold">User</label>
+                  <label className="text-xs text-gray-500 uppercase font-bold">ผู้ใช้งาน (User)</label>
                   <div className="text-gray-900 font-medium">{selectedSlip.userDisplayName || 'Unknown'}</div>
                   <div className="text-xs text-gray-400 font-mono">{selectedSlip.userId}</div>
                 </div>
                 <div>
-                  <label className="text-xs text-gray-500 uppercase font-bold">Package</label>
+                  <label className="text-xs text-gray-500 uppercase font-bold">แพ็กเกจ (Package)</label>
                   <div className="text-gray-900 font-medium">{selectedSlip.packageName}</div>
                   <div className="text-primary font-bold text-lg">{selectedSlip.amount.toLocaleString()} ฿</div>
                 </div>
                 {selectedSlip.status === 'rejected' && (
                   <div className="bg-red-50 p-3 rounded-lg border border-red-100">
-                    <div className="text-red-700 text-xs font-bold mb-1">Rejection Reason</div>
+                    <div className="text-red-700 text-xs font-bold mb-1">เหตุผลที่ปฏิเสธ</div>
                     <div className="text-red-600 text-sm">{selectedSlip.rejectionReason}</div>
                   </div>
                 )}
@@ -210,15 +216,15 @@ export default function PaymentsPage() {
                 {selectedSlip.status === 'pending' ? (
                   <>
                     <button onClick={handleApprove} className="btn btn-primary w-full text-white">
-                      <CheckCircleIcon className="w-5 h-5 mr-2" /> Approve
+                      <CheckCircleIcon className="w-5 h-5 mr-2" /> อนุมัติ (Approve)
                     </button>
                     <button onClick={handleReject} className="btn btn-outline btn-error w-full">
-                      <XCircleIcon className="w-5 h-5 mr-2" /> Reject
+                      <XCircleIcon className="w-5 h-5 mr-2" /> ปฏิเสธ (Reject)
                     </button>
                   </>
                 ) : (
                   <button onClick={() => setSelectedSlip(null)} className="btn btn-ghost w-full">
-                    Close
+                    ปิดหน้าต่าง
                   </button>
                 )}
               </div>

@@ -87,23 +87,23 @@ export default function AdminModulesPage() {
     return (
         <AdminLayout>
             <Head>
-                <title>Admin - Module Management</title>
+                <title>Admin - จัดการโมดูล (Module Management)</title>
             </Head>
 
             <div className="">
                 <header className="mb-8">
                     <h1 className="text-2xl font-bold flex items-center gap-2">
                         <UserGroupIcon className="w-8 h-8 text-primary" />
-                        User Access Control
+                        ควบคุมการเข้าถึงของผู้ใช้ (User Access Control)
                     </h1>
-                    <p className="text-gray-500">Grant or revoke module access for users manually.</p>
+                    <p className="text-gray-500">จัดการสิทธิ์การใช้งานโมดูลของผู้ใช้รายบุคคล</p>
                 </header>
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 pb-20">
                     {/* Module Selector Sidebar */}
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden h-fit">
                         <div className="p-4 bg-gray-50 border-b">
-                            <h2 className="font-semibold text-gray-700">Select Module</h2>
+                            <h2 className="font-semibold text-gray-700">เลือกโมดูล (Select Module)</h2>
                         </div>
                         <ul className="divide-y divide-gray-100">
                             {displayModules.map(module => (
@@ -123,7 +123,7 @@ export default function AdminModulesPage() {
                     <div className="lg:col-span-3 bg-white rounded-xl shadow-sm border border-gray-100">
                         <div className="p-6 border-b flex justify-between items-center">
                             <div>
-                                <h3 className="text-lg font-bold">{currentModule?.name || 'Select a Module'}</h3>
+                                <h3 className="text-lg font-bold">{currentModule?.name || 'กรุณาเลือกโมดูล'}</h3>
                                 <p className="text-sm text-gray-400">{currentModule?.description}</p>
                             </div>
                             {currentModule && <div className="badge badge-accent text-white">Version {currentModule.version}</div>}
@@ -133,10 +133,10 @@ export default function AdminModulesPage() {
                             <table className="table w-full">
                                 <thead>
                                     <tr>
-                                        <th>User</th>
-                                        <th>Email</th>
-                                        <th>Access</th>
-                                        <th>Actions</th>
+                                        <th>ผู้ใช้ (User)</th>
+                                        <th>อีเมล (Email)</th>
+                                        <th>สถานะ (Access)</th>
+                                        <th>จัดการ (Actions)</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -152,10 +152,10 @@ export default function AdminModulesPage() {
                                                 <td>
                                                     {hasAccess ? (
                                                         <span className="badge badge-success gap-1 text-white">
-                                                            <SignalIcon className="w-3 h-3" /> Active
+                                                            <SignalIcon className="w-3 h-3" /> ใช้งานอยู่
                                                         </span>
                                                     ) : (
-                                                        <span className="badge badge-ghost opacity-50">Inactive</span>
+                                                        <span className="badge badge-ghost opacity-50">ไม่มีสิทธิ์</span>
                                                     )}
                                                 </td>
                                                 <td>
@@ -164,9 +164,9 @@ export default function AdminModulesPage() {
                                                         className={`btn btn-xs ${hasAccess ? 'btn-error btn-outline' : 'btn-primary'}`}
                                                     >
                                                         {hasAccess ? (
-                                                            <><PowerIcon className="w-3 h-3 mr-1" /> Revoke</>
+                                                            <><PowerIcon className="w-3 h-3 mr-1" /> ถอนสิทธิ์</>
                                                         ) : (
-                                                            <><PowerIcon className="w-3 h-3 mr-1" /> Grant</>
+                                                            <><PowerIcon className="w-3 h-3 mr-1" /> มอบสิทธิ์</>
                                                         )}
                                                     </button>
                                                 </td>
@@ -175,8 +175,8 @@ export default function AdminModulesPage() {
                                     })}
                                 </tbody>
                             </table>
-                            {loading && <div className="p-8 text-center text-gray-500">Loading users...</div>}
-                            {!loading && users.length === 0 && <div className="p-8 text-center text-gray-500">No users found.</div>}
+                            {loading && <div className="p-8 text-center text-gray-500">กำลังโหลดข้อมูล...</div>}
+                            {!loading && users.length === 0 && <div className="p-8 text-center text-gray-500">ไม่พบรายชื่อผู้ใช้</div>}
                         </div>
                     </div>
                 </div>

@@ -123,11 +123,11 @@ const SubscriptionsPage: React.FC = () => {
         updatedAt: Timestamp.now(),
       });
 
-      toast?.success("Plan updated successfully!");
+      toast?.success("อัปเดตแผนเรียบร้อยแล้ว!");
       setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
       console.error("Error updating plan:", error);
-      toast?.error("Error updating plan");
+      toast?.error("เกิดข้อผิดพลาดในการอัปเดตแผน");
     } finally {
       setIsSaving(false);
     }
@@ -146,7 +146,7 @@ const SubscriptionsPage: React.FC = () => {
       setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
       console.error("Error updating plan:", error);
-      toast?.error("Error updating plan");
+      toast?.error("เกิดข้อผิดพลาดในการอัปเดตแผน");
     } finally {
       setTogglingPlanId(null);
     }
@@ -181,7 +181,7 @@ const SubscriptionsPage: React.FC = () => {
 
   const handleCreatePlan = async () => {
     if (!newPlan.name || !newPlan.displayName) {
-      toast?.warning("กรุณากรอก Plan ID และ Display Name");
+      toast?.warning("กรุณากรอก Plan ID และชื่อแสดงผล");
       return;
     }
 
@@ -194,11 +194,11 @@ const SubscriptionsPage: React.FC = () => {
         updatedAt: Timestamp.now(),
       });
 
-      toast?.success("Plan created successfully!");
+      toast?.success("สร้างแผนใหม่เรียบร้อยแล้ว!");
       setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
       console.error("Error creating plan:", error);
-      toast?.error("Error creating plan");
+      toast?.error("เกิดข้อผิดพลาดในการสร้างแผน");
     } finally {
       setIsCreating(false);
     }
@@ -293,10 +293,10 @@ const SubscriptionsPage: React.FC = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
-              Subscription Plans
+              จัดการแผนสมาชิก (Subscription Plans)
             </h1>
             <p className="text-gray-600 mt-1">
-              จัดการแพ็คเกจสมาชิก ({plans.length} plans)
+              จัดการแพ็คเกจสมาชิกทั้งหมด ({plans.length} แผน)
             </p>
           </div>
           <button
@@ -304,7 +304,7 @@ const SubscriptionsPage: React.FC = () => {
             className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
           >
             <PlusIcon className="w-5 h-5" />
-            Create New Plan
+            สร้างแผนใหม่
           </button>
         </div>
 
@@ -350,11 +350,11 @@ const SubscriptionsPage: React.FC = () => {
 
                 <div className="mt-6 pt-6 border-t border-gray-200 space-y-2">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Max Rooms:</span>
+                    <span className="text-gray-600">ห้องสูงสุด (Rooms):</span>
                     <span className="font-bold">{plan.maxRooms}</span>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Max Songs:</span>
+                    <span className="text-gray-600">คิวเพลงสูงสุด (Queue):</span>
                     <span className="font-bold">{plan.maxSongsInQueue}</span>
                   </div>
                 </div>
@@ -372,7 +372,7 @@ const SubscriptionsPage: React.FC = () => {
                     {togglingPlanId === plan.id ? (
                       <ArrowPathIcon className="w-4 h-4 animate-spin inline" />
                     ) : (
-                      plan.isActive ? "Active" : "Inactive"
+                      plan.isActive ? "เปิดขาย" : "ปิด"
                     )}
                   </button>
                   <button
@@ -386,7 +386,7 @@ const SubscriptionsPage: React.FC = () => {
                     {togglingPlanId === plan.id ? (
                       <ArrowPathIcon className="w-4 h-4 animate-spin inline" />
                     ) : (
-                      plan.isVisible ? <EyeIcon className="w-5 h-5" /> : <EyeSlashIcon className="w-5 h-5" />
+                      plan.isVisible ? <EyeIcon className="w-5 h-5 inline" /> : <EyeSlashIcon className="w-5 h-5 inline" />
                     )}
                   </button>
                 </div>
@@ -397,7 +397,7 @@ const SubscriptionsPage: React.FC = () => {
                   className="w-full mt-4 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center gap-2"
                 >
                   <PencilIcon className="w-5 h-5" />
-                  Edit Plan
+                  แก้ไขแผน
                 </button>
               </div>
             </div>
@@ -410,14 +410,14 @@ const SubscriptionsPage: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Edit Plan: {editingPlan.displayName}
+              แก้ไขแผน: {editingPlan.displayName}
             </h2>
 
             <div className="space-y-4">
               {/* Display Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Display Name (Thai)
+                  ชื่อแสดงผล (Display Name - Thai)
                 </label>
                 <input
                   type="text"
@@ -433,7 +433,7 @@ const SubscriptionsPage: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Price (THB)
+                    ราคา (THB)
                   </label>
                   <input
                     type="number"
@@ -449,7 +449,7 @@ const SubscriptionsPage: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Duration (days)
+                    ระยะเวลา (วัน)
                   </label>
                   <input
                     type="number"
@@ -461,7 +461,7 @@ const SubscriptionsPage: React.FC = () => {
                       })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
-                    placeholder="null = lifetime"
+                    placeholder="ว่างไว้ = ตลอดชีพ"
                   />
                 </div>
               </div>
@@ -470,7 +470,7 @@ const SubscriptionsPage: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Max Rooms
+                    จำนวนห้องสูงสุด (Max Rooms)
                   </label>
                   <input
                     type="number"
@@ -486,7 +486,7 @@ const SubscriptionsPage: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Max Songs in Queue
+                    คิวเพลงสูงสุด (Max Queue)
                   </label>
                   <input
                     type="number"
@@ -505,7 +505,7 @@ const SubscriptionsPage: React.FC = () => {
               {/* Features */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Features
+                  ฟีเจอร์ (Features)
                 </label>
                 <div className="space-y-2">
                   {editingPlan.features.map((feature, idx) => (
@@ -528,7 +528,7 @@ const SubscriptionsPage: React.FC = () => {
                     onClick={addFeature}
                     className="w-full px-3 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-red-500 hover:text-red-500 transition-colors"
                   >
-                    + Add Feature
+                    + เพิ่มฟีเจอร์
                   </button>
                 </div>
               </div>
@@ -547,7 +547,7 @@ const SubscriptionsPage: React.FC = () => {
                     }
                     className="rounded border-gray-300 text-red-500 focus:ring-red-500"
                   />
-                  <span className="text-sm text-gray-700">Active</span>
+                  <span className="text-sm text-gray-700">เปิดขาย (Active)</span>
                 </label>
 
                 <label className="flex items-center gap-2">
@@ -562,7 +562,7 @@ const SubscriptionsPage: React.FC = () => {
                     }
                     className="rounded border-gray-300 text-red-500 focus:ring-red-500"
                   />
-                  <span className="text-sm text-gray-700">Visible</span>
+                  <span className="text-sm text-gray-700">แสดงผล (Visible)</span>
                 </label>
               </div>
             </div>
@@ -578,17 +578,17 @@ const SubscriptionsPage: React.FC = () => {
                   {isSaving ? (
                     <>
                       <ArrowPathIcon className="w-5 h-5 animate-spin" />
-                      Saving...
+                      กำลังบันทึก...
                     </>
                   ) : (
-                    "Save Changes"
+                    "บันทึกการเปลี่ยนแปลง"
                   )}
                 </button>
                 <button
                   onClick={() => setEditingPlan(null)}
                   className="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors"
                 >
-                  Cancel
+                  ยกเลิก
                 </button>
               </div>
               {!["free", "monthly", "yearly", "lifetime"].includes(editingPlan.id) && (
@@ -600,12 +600,12 @@ const SubscriptionsPage: React.FC = () => {
                   {isDeleting ? (
                     <>
                       <ArrowPathIcon className="w-5 h-5 animate-spin" />
-                      Deleting...
+                      กำลังลบ...
                     </>
                   ) : (
                     <>
                       <TrashIcon className="w-5 h-5" />
-                      Delete Plan
+                      ลบแผนนี้
                     </>
                   )}
                 </button>
@@ -620,7 +620,7 @@ const SubscriptionsPage: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Create New Plan
+              สร้างแผนใหม่ (Create New Plan)
             </h2>
 
             <div className="space-y-4">
@@ -639,14 +639,14 @@ const SubscriptionsPage: React.FC = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  This will be used as the document ID in Firestore
+                  ใช้สำหรับอ้างอิงในระบบ (ห้ามซ้ำ)
                 </p>
               </div>
 
               {/* Display Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Display Name (Thai)
+                  ชื่อแสดงผล (Display Name - Thai)
                 </label>
                 <input
                   type="text"
@@ -663,7 +663,7 @@ const SubscriptionsPage: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Price (THB)
+                    ราคา (THB)
                   </label>
                   <input
                     type="number"
@@ -679,7 +679,7 @@ const SubscriptionsPage: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Duration (days)
+                    ระยะเวลา (วัน)
                   </label>
                   <input
                     type="number"
@@ -691,7 +691,7 @@ const SubscriptionsPage: React.FC = () => {
                       })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
-                    placeholder="null = lifetime"
+                    placeholder="ว่างไว้ = ตลอดชีพ"
                   />
                 </div>
               </div>
@@ -700,7 +700,7 @@ const SubscriptionsPage: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Max Rooms
+                    จำนวนห้องสูงสุด (Max Rooms)
                   </label>
                   <input
                     type="number"
@@ -716,7 +716,7 @@ const SubscriptionsPage: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Max Songs in Queue
+                    คิวเพลงสูงสุด (Max Queue)
                   </label>
                   <input
                     type="number"
@@ -735,7 +735,7 @@ const SubscriptionsPage: React.FC = () => {
               {/* Features */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Features
+                  ฟีเจอร์ (Features)
                 </label>
                 <div className="space-y-2">
                   {newPlan.features.map((feature, idx) => (
@@ -758,7 +758,7 @@ const SubscriptionsPage: React.FC = () => {
                     onClick={addNewPlanFeature}
                     className="w-full px-3 py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-red-500 hover:text-red-500 transition-colors"
                   >
-                    + Add Feature
+                    + เพิ่มฟีเจอร์
                   </button>
                 </div>
               </div>
@@ -777,7 +777,7 @@ const SubscriptionsPage: React.FC = () => {
                     }
                     className="rounded border-gray-300 text-red-500 focus:ring-red-500"
                   />
-                  <span className="text-sm text-gray-700">Active</span>
+                  <span className="text-sm text-gray-700">เปิดขาย (Active)</span>
                 </label>
 
                 <label className="flex items-center gap-2">
@@ -792,7 +792,7 @@ const SubscriptionsPage: React.FC = () => {
                     }
                     className="rounded border-gray-300 text-red-500 focus:ring-red-500"
                   />
-                  <span className="text-sm text-gray-700">Visible</span>
+                  <span className="text-sm text-gray-700">แสดงผล (Visible)</span>
                 </label>
               </div>
             </div>
