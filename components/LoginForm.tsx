@@ -108,12 +108,46 @@ const LoginForm = () => {
               containerClassName="mb-5"
             />
 
+            <div className="flex justify-end mb-6">
+              <a href="#" className="text-sm font-medium text-primary hover:underline">
+                ลืมรหัสผ่าน?
+              </a>
+            </div>
+
             <button
               type="submit"
               disabled={!canSubmit}
-              className="btn btn-primary mb-8 mt-2 w-full rounded-lg px-5 py-3 text-center text-sm font-medium text-white focus:outline-none focus:ring-4 focus:ring-primary disabled:cursor-not-allowed disabled:bg-gray-100  disabled:text-gray-400 group-invalid:pointer-events-none group-invalid:bg-gray-100 group-invalid:text-gray-400 group-invalid:opacity-70 btn-hover"
+              className="btn btn-primary mb-4 w-full rounded-lg px-5 py-3 text-center text-sm font-bold text-white shadow-lg transition-all hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-primary disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
             >
               เข้าสู่ระบบ
+            </button>
+
+            <div className="relative mb-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="bg-white px-2 text-gray-500">หรือเข้าสู่ระบบด้วย</span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleGoogleSignIn}
+              disabled={googleLoading}
+              className="flex w-full items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-5 py-3 text-sm font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 focus:outline-none focus:ring-4 focus:ring-gray-100"
+            >
+              {googleLoading ? (
+                <span className="loading loading-spinner loading-sm"></span>
+              ) : (
+                <Image
+                  src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                  alt="Google"
+                  width={20}
+                  height={20}
+                />
+              )}
+              <span>เข้าสู่ระบบด้วย Google</span>
             </button>
           </form>
           <button
