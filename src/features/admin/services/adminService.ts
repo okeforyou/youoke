@@ -130,8 +130,32 @@ export const AdminService = {
                 assignedBy: adminUid
             },
             isPremium: true,
+            tier: membershipType,
             updatedAt: now
         });
+
+        // 3. Sync to Realtime Database
+        if (realtimeDb) {
+            try {
+                const rtdbUserRef = ref(realtimeDb, `users/${uid}`);
+                const rtdbSubscription = {
+                    plan: membershipType,
+                    status: 'active',
+                    startDate: now.toISOString(),
+                    endDate: expiresAt ? expiresAt.toISOString() : null
+                };
+
+                await update(rtdbUserRef, {
+                    role: 'premium',
+                    tier: membershipType,
+                    subscription: rtdbSubscription,
+                    updatedAt: rtdbServerTimestamp()
+                });
+                console.log("✅ Synced package assignment to RealtimeDB for user:", uid);
+            } catch (e) {
+                console.error("❌ Failed to sync to RealtimeDB:", e);
+            }
+        }
     },
 
     /**
@@ -153,6 +177,29 @@ export const AdminService = {
             tier: 'lifetime',
             updatedAt: new Date()
         });
+
+        // Sync to Realtime Database
+        if (realtimeDb) {
+            try {
+                const rtdbUserRef = ref(realtimeDb, `users/${uid}`);
+                const rtdbSubscription = {
+                    plan: 'lifetime',
+                    status: 'active',
+                    startDate: new Date().toISOString(),
+                    endDate: null
+                };
+
+                await update(rtdbUserRef, {
+                    role: 'premium',
+                    tier: 'lifetime',
+                    subscription: rtdbSubscription,
+                    updatedAt: rtdbServerTimestamp()
+                });
+                console.log("✅ Synced lifetime assignment to RealtimeDB for user:", uid);
+            } catch (e) {
+                console.error("❌ Failed to sync to RealtimeDB:", e);
+            }
+        }
     },
 
     /**
