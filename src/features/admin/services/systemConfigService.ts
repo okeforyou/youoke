@@ -8,13 +8,24 @@ export const DEFAULT_CONFIG = {
         message: "",
         type: "info"
     },
+    general: {
+        siteName: "YouOke",
+        siteDescription: "คาราโอเกะออนไลน์บน YouTube",
+        maxGuestsPerRoom: 10,
+        defaultLanguage: "th"
+    },
     features: {
         guestMode: true,
         registration: true,
         search: true,
         remoteControl: true,
         cast: true,
-        karaokeMode: true
+        karaokeMode: true,
+        queue: true,
+        shareRoom: true,
+        voiceControl: false,
+        lyrics: false,
+        midi: false
     },
     content: {
         login: {

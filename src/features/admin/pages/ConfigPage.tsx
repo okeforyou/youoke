@@ -114,6 +114,49 @@ export default function ConfigPage() {
                     {/* Tab Content */}
                     {activeTab === 'system' && (
                         <div className="space-y-6">
+                            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                                <h3 className="font-bold">General Settings</h3>
+                                <div>
+                                    <label className="label">Site Name</label>
+                                    <input
+                                        className="input input-bordered w-full"
+                                        value={localConfig.general?.siteName || ''}
+                                        onChange={(e) => setLocalConfig({ ...localConfig, general: { ...localConfig.general, siteName: e.target.value } })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="label">Site Description</label>
+                                    <textarea
+                                        className="textarea textarea-bordered w-full"
+                                        rows={2}
+                                        value={localConfig.general?.siteDescription || ''}
+                                        onChange={(e) => setLocalConfig({ ...localConfig, general: { ...localConfig.general, siteDescription: e.target.value } })}
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="label">Max Guests / Room</label>
+                                        <input
+                                            type="number"
+                                            className="input input-bordered w-full"
+                                            value={localConfig.general?.maxGuestsPerRoom || 10}
+                                            onChange={(e) => setLocalConfig({ ...localConfig, general: { ...localConfig.general, maxGuestsPerRoom: parseInt(e.target.value) } })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="label">Default Language</label>
+                                        <select
+                                            className="select select-bordered w-full"
+                                            value={localConfig.general?.defaultLanguage || 'th'}
+                                            onChange={(e) => setLocalConfig({ ...localConfig, general: { ...localConfig.general, defaultLanguage: e.target.value } })}
+                                        >
+                                            <option value="th">Thai</option>
+                                            <option value="en">English</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div className="p-6 border border-red-100 bg-red-50/50 rounded-2xl">
                                 <ConfigToggle
                                     label="Maintenance Mode"
@@ -123,6 +166,7 @@ export default function ConfigPage() {
                                     onChange={(val) => setLocalConfig({ ...localConfig, maintenanceMode: val })}
                                 />
                             </div>
+
                             <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
                                 <h3 className="font-bold mb-4">Announcement Bar</h3>
                                 <ConfigToggle
@@ -156,8 +200,9 @@ export default function ConfigPage() {
 
                     {activeTab === 'features' && (
                         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                            <h3 className="font-bold mb-2">Core Features</h3>
                             <ConfigToggle
-                                label="Guest Mode"
+                                label="Guest Access"
                                 checked={localConfig.features?.guestMode ?? true}
                                 onChange={(val) => setLocalConfig({ ...localConfig, features: { ...localConfig.features, guestMode: val } })}
                             />
@@ -171,8 +216,11 @@ export default function ConfigPage() {
                                 checked={localConfig.features?.search ?? true}
                                 onChange={(val) => setLocalConfig({ ...localConfig, features: { ...localConfig.features, search: val } })}
                             />
+
+                            <div className="divider">Room Features</div>
+
                             <ConfigToggle
-                                label="Remote Control"
+                                label="Remote Control (Mobile)"
                                 checked={localConfig.features?.remoteControl ?? true}
                                 onChange={(val) => setLocalConfig({ ...localConfig, features: { ...localConfig.features, remoteControl: val } })}
                             />
@@ -180,6 +228,34 @@ export default function ConfigPage() {
                                 label="Cast to TV"
                                 checked={localConfig.features?.cast ?? true}
                                 onChange={(val) => setLocalConfig({ ...localConfig, features: { ...localConfig.features, cast: val } })}
+                            />
+                            <ConfigToggle
+                                label="Queue Management"
+                                checked={localConfig.features?.queue ?? true}
+                                onChange={(val) => setLocalConfig({ ...localConfig, features: { ...localConfig.features, queue: val } })}
+                            />
+                            <ConfigToggle
+                                label="Share Room Link"
+                                checked={localConfig.features?.shareRoom ?? true}
+                                onChange={(val) => setLocalConfig({ ...localConfig, features: { ...localConfig.features, shareRoom: val } })}
+                            />
+
+                            <div className="divider">Coming Soon / Lab</div>
+
+                            <ConfigToggle
+                                label="Voice Control"
+                                checked={localConfig.features?.voiceControl ?? false}
+                                onChange={(val) => setLocalConfig({ ...localConfig, features: { ...localConfig.features, voiceControl: val } })}
+                            />
+                            <ConfigToggle
+                                label="Lyrics Display"
+                                checked={localConfig.features?.lyrics ?? false}
+                                onChange={(val) => setLocalConfig({ ...localConfig, features: { ...localConfig.features, lyrics: val } })}
+                            />
+                            <ConfigToggle
+                                label="MIDI Player"
+                                checked={localConfig.features?.midi ?? false}
+                                onChange={(val) => setLocalConfig({ ...localConfig, features: { ...localConfig.features, midi: val } })}
                             />
                         </div>
                     )}
