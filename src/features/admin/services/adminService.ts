@@ -327,16 +327,45 @@ export const AdminService = {
 
         // 3. Update User Membership (Firestore)
         const userRef = doc(db, "users", userId);
+        const membershipData = {
+            type: membershipType,
+            status: 'active',
+            startedAt: new Date(), // Use JS Date for Firestore
+            expiresAt: expiresAt,
+            packageId: packageId,
+            assignedBy: adminUid
+        };
+
         await updateDoc(userRef, {
-            membership: {
-                type: membershipType,
-                status: 'active',
-                updatedAt: new Date(),
-                expiresAt: expiresAt,
-                packageId: packageId
-            },
-            isPremium: true
+            membership: membershipData,
+            role: 'premium', // Sync role naming convention
+            isPremium: true,
+            tier: membershipType, // Sync tier naming
+            updatedAt: new Date()
         });
+
+        // 3.5 Sync to Realtime Database (Critical for Profile Page)
+        if (realtimeDb) {
+            try {
+                const rtdbUserRef = ref(realtimeDb, `users/${userId}`);
+                const rtdbSubscription = {
+                    plan: membershipType,
+                    status: 'active',
+                    startDate: new Date().toISOString(),
+                    endDate: expiresAt ? expiresAt.toISOString() : null
+                };
+
+                await update(rtdbUserRef, {
+                    role: 'premium',
+                    tier: membershipType,
+                    subscription: rtdbSubscription,
+                    updatedAt: rtdbServerTimestamp()
+                });
+                console.log("✅ Synced approval to RealtimeDB for user:", userId);
+            } catch (e) {
+                console.error("❌ Failed to sync to RealtimeDB:", e);
+            }
+        }
 
         // 4. Update Payment Status (Firestore)
         const paymentRef = doc(db, "payment_proofs", paymentId);
