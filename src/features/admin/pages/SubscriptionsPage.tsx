@@ -20,12 +20,8 @@ import {
   TrashIcon,
   ArrowPathIcon,
 } from "@heroicons/react/24/outline";
-import { GetServerSideProps } from "next";
-import nookies from "nookies";
-
 import AdminLayout from "../layouts/AdminLayout";
 import { db } from "../../../../firebase";
-import { adminAuth, adminDb, adminFirestore } from "../../../../firebase-admin";
 import { useToast } from "../../../../context/ToastContext";
 
 interface Plan {
@@ -42,14 +38,12 @@ interface Plan {
   isVisible: boolean;
 }
 
-interface Props {
-  plans: Plan[];
-  error?: string;
-}
-
-const SubscriptionsPage: React.FC<Props> = ({ plans: initialPlans, error }) => {
+const SubscriptionsPage: React.FC = () => {
   const toast = useToast();
-  const [plans, setPlans] = useState<Plan[]>(initialPlans);
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
   const [creatingPlan, setCreatingPlan] = useState(false);
 
@@ -71,6 +65,40 @@ const SubscriptionsPage: React.FC<Props> = ({ plans: initialPlans, error }) => {
     isActive: true,
     isVisible: true,
   });
+
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const q = query(collection(db, "plans"));
+        const querySnapshot = await getDocs(q);
+        const fetchedPlans = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Plan[];
+
+        // Sort: Core plans first
+        const corePlans = ["free", "monthly", "yearly", "lifetime"];
+        fetchedPlans.sort((a, b) => {
+          const indexA = corePlans.indexOf(a.id);
+          const indexB = corePlans.indexOf(b.id);
+          if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+          if (indexA !== -1) return -1;
+          if (indexB !== -1) return 1;
+          return 0;
+        });
+
+        setPlans(fetchedPlans);
+      } catch (err) {
+        console.error("Error fetching plans:", err);
+        setError("Failed to load plans. Please try again.");
+        toast?.error("Failed to load plans");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPlans();
+  }, [toast]);
 
 
   const handleEditPlan = (plan: Plan) => {
@@ -224,6 +252,20 @@ const SubscriptionsPage: React.FC<Props> = ({ plans: initialPlans, error }) => {
       features: newPlan.features.filter((_, i) => i !== index),
     });
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="flex flex-col items-center gap-4">
+            <ArrowPathIcon className="w-8 h-8 text-red-500 animate-spin" />
+            <p className="text-gray-500 animate-pulse">Loading plans...</p>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   // Show error if any
   if (error) {

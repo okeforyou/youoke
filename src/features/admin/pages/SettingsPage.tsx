@@ -1,13 +1,8 @@
 import { doc, getDoc, updateDoc, Timestamp } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import { ArrowDownTrayIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
-import { GetServerSideProps } from "next";
-import nookies from "nookies";
-
-
 import AdminLayout from "../layouts/AdminLayout";
 import { db } from "../../../../firebase";
-import { adminAuth, adminDb, adminFirestore } from "../../../../firebase-admin";
 import { useToast } from "../../../../context/ToastContext";
 
 interface GeneralSettings {
@@ -28,16 +23,57 @@ interface FeatureFlags {
   midiPlayerEnabled: boolean;
 }
 
-interface Props {
-  generalSettings: GeneralSettings;
-  featureFlags: FeatureFlags;
-  error?: string;
-}
-
-const SettingsPage: React.FC<Props> = ({ generalSettings: initialGeneral, featureFlags: initialFlags, error }) => {
+const SettingsPage: React.FC = () => {
   const toast = useToast();
-  const [generalSettings, setGeneralSettings] = useState<GeneralSettings>(initialGeneral);
-  const [featureFlags, setFeatureFlags] = useState<FeatureFlags>(initialFlags);
+
+  const defaultGeneral: GeneralSettings = {
+    siteName: "YouOke",
+    siteDescription: "คาราโอเกะออนไลน์",
+    maintenanceMode: false,
+    allowGuestAccess: true,
+    maxGuestsPerRoom: 10,
+    defaultLanguage: "th",
+  };
+
+  const defaultFeatures: FeatureFlags = {
+    castModeEnabled: true,
+    queueManagementEnabled: true,
+    shareRoomEnabled: true,
+    voiceControlEnabled: false,
+    lyricsEnabled: false,
+    midiPlayerEnabled: false,
+  };
+
+  const [generalSettings, setGeneralSettings] = useState<GeneralSettings>(defaultGeneral);
+  const [featureFlags, setFeatureFlags] = useState<FeatureFlags>(defaultFeatures);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const [generalDoc, featuresDoc] = await Promise.all([
+          getDoc(doc(db, "settings", "general")),
+          getDoc(doc(db, "settings", "features")),
+        ]);
+
+        if (generalDoc.exists()) {
+          setGeneralSettings({ ...defaultGeneral, ...(generalDoc.data() as Partial<GeneralSettings>) });
+        }
+
+        if (featuresDoc.exists()) {
+          setFeatureFlags({ ...defaultFeatures, ...(featuresDoc.data() as Partial<FeatureFlags>) });
+        }
+      } catch (err) {
+        console.error("Error fetching settings:", err);
+        setError("Failed to load settings.");
+        toast?.error("Failed to load settings");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchSettings();
+  }, [toast]);
 
   // Loading states (separate for each operation)
   const [isSavingGeneral, setIsSavingGeneral] = useState(false);
@@ -78,6 +114,20 @@ const SettingsPage: React.FC<Props> = ({ generalSettings: initialGeneral, featur
       setIsSavingFeatures(false);
     }
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center h-64">
+          <div className="flex flex-col items-center gap-4">
+            <ArrowPathIcon className="w-8 h-8 text-red-500 animate-spin" />
+            <p className="text-gray-500 animate-pulse">Loading settings...</p>
+          </div>
+        </div>
+      </AdminLayout>
+    );
+  }
 
   // Show error if any
   if (error) {
