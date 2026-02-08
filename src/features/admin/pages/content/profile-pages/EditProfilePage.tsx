@@ -7,7 +7,7 @@ const EditProfilePage = () => {
     const { id } = router.query;
     const pageId = Array.isArray(id) ? id[0] : id;
 
-    if (!router.isReady) return <div className="p-8 text-center">Loading...</div>;
+    if (!router.isReady) return <div className="p-8 text-center">กำลังโหลดข้อมูล...</div>;
 
     return (
         <AdminLayout>
