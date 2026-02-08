@@ -310,6 +310,21 @@ export default function LoginPage() {
                                 &larr; กลับหน้าหลัก
                             </Link>
                         </div>
+
+                        {/* Dev Login Button (Development Only) */}
+                        {process.env.NODE_ENV === 'development' && (
+                            <div className="mt-8 pt-8 border-t border-gray-100/50">
+                                <button
+                                    onClick={() => {
+                                        const { devLogin } = useAuthStore.getState();
+                                        devLogin();
+                                    }}
+                                    className="w-full py-2 px-4 bg-gray-100 text-gray-500 rounded-lg text-xs font-mono hover:bg-gray-200 transition-colors"
+                                >
+                                    Login as Dev Admin (LocalHost Only)
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
