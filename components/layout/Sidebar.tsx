@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/router';
+import ProfileDrawer from '../profile/ProfileDrawer';
 import {
   HomeIcon,
   MicrophoneIcon,
@@ -52,6 +53,7 @@ const NavLink: React.FC<NavLinkProps> = ({ icon: Icon, label, active, onClick, b
 export default function Sidebar({ activeTab = 0, onTabChange, className = '' }: SidebarProps) {
   const { user, logOut } = useAuth();
   const router = useRouter();
+  const [isProfileDrawerOpen, setIsProfileDrawerOpen] = useState(false);
   const isHomePage = router.pathname === '/';
 
   const handleTabChange = (tab: number) => {
@@ -161,10 +163,14 @@ export default function Sidebar({ activeTab = 0, onTabChange, className = '' }: 
 
       {/* User Profile Card (Bottom) */}
       <div className="p-4 border-t border-base-300">
+        <ProfileDrawer
+          isOpen={isProfileDrawerOpen}
+          onClose={() => setIsProfileDrawerOpen(false)}
+        />
         {user?.uid ? (
           <div className="flex flex-col gap-2">
             <button
-              onClick={() => handleNavigation('/profile')}
+              onClick={() => setIsProfileDrawerOpen(true)}
               className="flex items-center gap-3 w-full p-2 rounded-xl hover:bg-base-200 transition-all text-left group"
             >
               <div className="avatar placeholder flex-shrink-0">
