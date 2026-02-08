@@ -178,22 +178,22 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-            <p className="text-sm text-gray-500">ภาพรวมระบบ YouOke</p>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
+            <p className="text-sm text-muted-foreground mt-1">ภาพรวมและข้อมูลเชิงลึกของระบบ YouOke</p>
           </div>
-          <div className="flex gap-2">
-            <Link href="/admin/config" className="btn btn-sm btn-outline">
-              ตั้งค่าระบบ
+          <div className="flex gap-3">
+            <Link href="/admin/config" className="btn btn-sm btn-outline border-border text-foreground hover:bg-secondary hover:text-foreground no-animation shadow-sm">
+              <span className="font-normal">⚙️ ตั้งค่าระบบ</span>
             </Link>
           </div>
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <StatCard
             title="ผู้ใช้ทั้งหมด"
             value={stats.totalUsers}
@@ -223,38 +223,45 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         {/* Charts & Health */}
-        <div className="mt-4 grid grid-cols-12 gap-4 md:mt-6 md:gap-6 2xl:mt-7.5 2xl:gap-7.5">
-          <ChartOne
-            title="Revenue Overview"
-            subtitle="รายรับ 6 เดือนย้อนหลัง"
-            categories={revenueHistory.map(r => r.name)}
-            series={[{
-              name: "Revenue",
-              data: revenueHistory.map(r => r.revenue)
-            }]}
-          />
-          <div className="col-span-12 xl:col-span-4">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 xl:grid-cols-12 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-100">
+          <div className="lg:col-span-2 xl:col-span-8 bg-card border border-border rounded-xl shadow-sm p-1">
+            {/* Chart Wrapper - Note: ChartOne needs internal update too, passing generic style for now */}
+            <ChartOne
+              title="Revenue Overview"
+              subtitle="รายรับ 6 เดือนย้อนหลัง"
+              categories={revenueHistory.map(r => r.name)}
+              series={[{
+                name: "Revenue",
+                data: revenueHistory.map(r => r.revenue)
+              }]}
+            />
+          </div>
+          <div className="lg:col-span-1 xl:col-span-4">
             <ServiceHealth />
           </div>
         </div>
 
         {/* Recent Users & Quick Actions */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
+          <div className="lg:col-span-2 bg-card border border-border rounded-xl shadow-sm overflow-hidden">
+            {/* Recent Users Table Wrapper */}
             <RecentUsersTable users={tableUsers} />
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Quick Actions</h3>
+          <div className="bg-card rounded-xl border border-border shadow-sm p-6 h-fit sticky top-24">
+            <h3 className="text-lg font-bold text-foreground mb-4">Quick Actions</h3>
             <div className="space-y-3">
-              <Link href="/admin/users" className="block w-full text-center py-2 px-4 border border-blue-500 text-blue-500 rounded-lg hover:bg-blue-50 transition">
-                จัดการผู้ใช้
+              <Link href="/admin/users" className="flex items-center justify-between w-full py-3 px-4 bg-primary/5 border border-primary/20 text-primary rounded-lg hover:bg-primary/10 transition-colors group">
+                <span className="font-medium">จัดการผู้ใช้</span>
+                <span className="text-xs bg-primary text-white px-2 py-0.5 rounded-full group-hover:scale-110 transition-transform">{stats.totalUsers}</span>
               </Link>
-              <Link href="/admin/payments" className="block w-full text-center py-2 px-4 border border-orange-500 text-orange-500 rounded-lg hover:bg-orange-50 transition">
-                ตรวจสอบสลิป ({stats.pendingPayments})
+              <Link href="/admin/payments" className="flex items-center justify-between w-full py-3 px-4 bg-warning/5 border border-warning/20 text-warning rounded-lg hover:bg-warning/10 transition-colors group">
+                <span className="font-medium">ตรวจสอบสลิป</span>
+                {stats.pendingPayments > 0 && <span className="text-xs bg-warning text-white px-2 py-0.5 rounded-full animate-pulse">{stats.pendingPayments}</span>}
               </Link>
-              <Link href="/admin/packages" className="block w-full text-center py-2 px-4 border border-green-500 text-green-500 rounded-lg hover:bg-green-50 transition">
-                จัดการแพ็กเกจ
+              <Link href="/admin/packages" className="flex items-center justify-between w-full py-3 px-4 bg-success/5 border border-success/20 text-success rounded-lg hover:bg-success/10 transition-colors group">
+                <span className="font-medium">จัดการแพ็กเกจ</span>
+                <span className="text-xs text-success/70">→</span>
               </Link>
             </div>
           </div>
