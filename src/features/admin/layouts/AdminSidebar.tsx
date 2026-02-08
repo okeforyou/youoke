@@ -84,14 +84,14 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) 
           </div>
           <div className="flex flex-col">
             <h1 className="text-lg font-bold text-sidebar-foreground leading-none tracking-tight">YouOke</h1>
-            <p className="text-xs text-primary font-medium tracking-wide opacity-90">ADMIN DASHBOARD</p>
+            <p className="text-xs text-primary font-medium tracking-wide opacity-90">แผงควบคุมหลัก</p>
           </div>
         </div>
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto px-4 py-6 scrollbar-thin scrollbar-thumb-sidebar-border scrollbar-track-transparent">
           <p className="mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-sidebar-muted">
-            Main Menu
+            เมนูหลัก
           </p>
           <ul className="space-y-1.5">
             {mainMenuItems.map((item) => {
@@ -148,7 +148,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) 
             </div>
             <div className="flex-1 min-w-0 overflow-hidden">
               <p className="truncate text-sm font-medium text-sidebar-foreground">
-                {user?.displayName || 'Admin'}
+                {user?.displayName || 'ผู้ควบคุม'}
               </p>
               <p className="truncate text-xs text-sidebar-muted">
                 {user?.email || 'admin@youoke.com'}
@@ -164,7 +164,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) 
                 }
               }}
               className="shrink-0 rounded-lg p-2 text-sidebar-muted hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer group"
-              title="Logout"
+              title="ออกจากระบบ"
             >
               <ArrowRightOnRectangleIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
             </button>

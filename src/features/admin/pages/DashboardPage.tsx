@@ -182,7 +182,7 @@ const AdminDashboard: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">แดชบอร์ด</h1>
             <p className="text-sm text-muted-foreground mt-1">ภาพรวมและข้อมูลเชิงลึกของระบบ YouOke</p>
           </div>
           <div className="flex gap-3">
@@ -227,11 +227,11 @@ const AdminDashboard: React.FC = () => {
           <div className="lg:col-span-2 xl:col-span-8 bg-card border border-border rounded-xl shadow-sm p-1">
             {/* Chart Wrapper - Note: ChartOne needs internal update too, passing generic style for now */}
             <ChartOne
-              title="Revenue Overview"
+              title="ภาพรวมรายได้"
               subtitle="รายรับ 6 เดือนย้อนหลัง"
               categories={revenueHistory.map(r => r.name)}
               series={[{
-                name: "Revenue",
+                name: "ยอดขาย",
                 data: revenueHistory.map(r => r.revenue)
               }]}
             />
@@ -249,7 +249,7 @@ const AdminDashboard: React.FC = () => {
           </div>
 
           <div className="bg-card rounded-xl border border-border shadow-sm p-6 h-fit sticky top-24">
-            <h3 className="text-lg font-bold text-foreground mb-4">Quick Actions</h3>
+            <h3 className="text-lg font-bold text-foreground mb-4">เมนูลัด</h3>
             <div className="space-y-3">
               <Link href="/admin/users" className="flex items-center justify-between w-full py-3 px-4 bg-primary/5 border border-primary/20 text-primary rounded-lg hover:bg-primary/10 transition-colors group">
                 <span className="font-medium">จัดการผู้ใช้</span>

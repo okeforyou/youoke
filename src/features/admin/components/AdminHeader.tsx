@@ -68,7 +68,7 @@ export const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
                         <div className="card-body p-0">
                             <div className="px-4 py-3 border-b border-border flex justify-between items-center">
                                 <h3 className="font-semibold text-foreground">การแจ้งเตือน</h3>
-                                <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">Coming Soon</span>
+                                <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">เร็วๆ นี้</span>
                             </div>
                             <div className="p-8 text-center text-muted-foreground text-sm">
                                 <BellIcon className="h-8 w-8 mx-auto mb-2 opacity-20" />
@@ -88,7 +88,7 @@ export const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
                         </div>
                         <div className="hidden md:flex flex-col items-start gap-0.5 text-left ml-1.5">
                             <span className="text-sm font-semibold text-foreground leading-none">{user?.displayName || 'Admin'}</span>
-                            <span className="text-[10px] text-muted-foreground leading-none font-medium">Administrator</span>
+                            <span className="text-[10px] text-muted-foreground leading-none font-medium">ผู้ดูแลระบบ</span>
                         </div>
                         <ChevronDownIcon className="h-3 w-3 text-muted-foreground ml-1 hidden md:block" />
                     </label>
