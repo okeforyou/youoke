@@ -21,10 +21,10 @@ import {
 import { cn } from '../../../utils/cn';
 
 const THAI_FONTS = [
-    { family: 'Kanit', label: 'Kanit (Modern)', url: '...' },
-    { family: 'Prompt', label: 'Prompt (Loopless)', url: '...' },
-    { family: 'Sarabun', label: 'Sarabun (Formal)', url: '...' },
-    { family: 'Mali', label: 'Mali (Handwritten)', url: '...' },
+    { family: 'Kanit', label: 'Kanit (ทันสมัย)', url: '...' },
+    { family: 'Prompt', label: 'Prompt (ไม่มีหัว)', url: '...' },
+    { family: 'Sarabun', label: 'Sarabun (ทางการ)', url: '...' },
+    { family: 'Mali', label: 'Mali (ลายมือ)', url: '...' },
 ];
 
 export default function ConfigPage() {
@@ -44,32 +44,32 @@ export default function ConfigPage() {
         setSaving(true);
         try {
             await SystemConfigService.updateConfig(localConfig);
-            alert("✅ Settings saved!");
+            alert("✅ บันทึกการตั้งค่าเรียบร้อย!");
         } catch (error) {
             console.error(error);
-            alert("❌ Save failed");
+            alert("❌ บันทึกไม่สำเร็จ");
         } finally {
             setSaving(false);
         }
     };
 
     const MENU_ITEMS = [
-        { id: 'system', label: 'System', icon: Cog6ToothIcon, desc: 'Maintenance, Defaults' },
-        { id: 'features', label: 'Features', icon: ComputerDesktopIcon, desc: 'Toggle Modules' },
-        { id: 'marketing', label: 'Marketing', icon: MegaphoneIcon, desc: 'Upsells & Ads' },
-        { id: 'login', label: 'Login Page', icon: PuzzlePieceIcon, desc: 'Content & texts' },
-        { id: 'player', label: 'Player', icon: MusicalNoteIcon, desc: 'Audio settings' },
-        { id: 'ui', label: 'Appearance', icon: AdjustmentsHorizontalIcon, desc: 'Theme & Fonts' },
-        { id: 'integrations', label: 'Integrations', icon: WrenchScrewdriverIcon, desc: 'Youtube, Spotify' },
-        { id: 'payment', label: 'Payments', icon: BanknotesIcon, desc: 'Bank Accounts' },
+        { id: 'system', label: 'ระบบ', icon: Cog6ToothIcon, desc: 'โหมดปิดปรับปรุง, ค่าเริ่มต้น' },
+        { id: 'features', label: 'ฟีเจอร์', icon: ComputerDesktopIcon, desc: 'เปิด/ปิด ระบบต่างๆ' },
+        { id: 'marketing', label: 'การตลาด', icon: MegaphoneIcon, desc: 'Upsells & โฆษณา' },
+        { id: 'login', label: 'หน้าล็อกอิน', icon: PuzzlePieceIcon, desc: 'เนื้อหาและข้อความ' },
+        { id: 'player', label: 'เครื่องเล่น', icon: MusicalNoteIcon, desc: 'ตั้งค่าเสียง' },
+        { id: 'ui', label: 'รูปลักษณ์', icon: AdjustmentsHorizontalIcon, desc: 'ธีมและฟอนต์' },
+        { id: 'integrations', label: 'เชื่อมต่อระบบ', icon: WrenchScrewdriverIcon, desc: 'Youtube, Spotify' },
+        { id: 'payment', label: 'การชำระเงิน', icon: BanknotesIcon, desc: 'บัญชีธนาคาร' },
     ];
 
-    if (loading) return <div className="p-12 text-center">Loading config...</div>;
+    if (loading) return <div className="p-12 text-center text-gray-500">กำลังโหลดการตั้งค่า...</div>;
 
     return (
         <AdminLayout>
             <Head>
-                <title>System Config - Admin</title>
+                <title>ตั้งค่าระบบ (System Config) - Admin</title>
             </Head>
 
             <div className="flex flex-col lg:flex-row gap-8 pb-20 relative">
@@ -107,7 +107,7 @@ export default function ConfigPage() {
                             disabled={saving}
                             className="btn btn-primary btn-sm gap-2"
                         >
-                            {saving ? "Saving..." : "Save Changes"}
+                            {saving ? "กำลังบันทึก..." : "บันทึกการเปลี่ยนแปลง"}
                         </button>
                     </div>
 
@@ -115,9 +115,9 @@ export default function ConfigPage() {
                     {activeTab === 'system' && (
                         <div className="space-y-6">
                             <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
-                                <h3 className="font-bold">General Settings</h3>
+                                <h3 className="font-bold">ตั้งค่าทั่วไป</h3>
                                 <div>
-                                    <label className="label">Site Name</label>
+                                    <label className="label">ชื่อเว็บไซต์</label>
                                     <input
                                         className="input input-bordered w-full"
                                         value={localConfig.general?.siteName || ''}
@@ -125,7 +125,7 @@ export default function ConfigPage() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="label">Site Description</label>
+                                    <label className="label">คำอธิบายเว็บไซต์</label>
                                     <textarea
                                         className="textarea textarea-bordered w-full"
                                         rows={2}
@@ -135,7 +135,7 @@ export default function ConfigPage() {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="label">Max Guests / Room</label>
+                                        <label className="label">จำนวนผู้ใช้สูงสุด / ห้อง</label>
                                         <input
                                             type="number"
                                             className="input input-bordered w-full"
@@ -144,14 +144,14 @@ export default function ConfigPage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="label">Default Language</label>
+                                        <label className="label">ภาษาเริ่มต้น</label>
                                         <select
                                             className="select select-bordered w-full"
                                             value={localConfig.general?.defaultLanguage || 'th'}
                                             onChange={(e) => setLocalConfig({ ...localConfig, general: { ...localConfig.general, defaultLanguage: e.target.value } })}
                                         >
-                                            <option value="th">Thai</option>
-                                            <option value="en">English</option>
+                                            <option value="th">ไทย</option>
+                                            <option value="en">อังกฤษ (English)</option>
                                         </select>
                                     </div>
                                 </div>
@@ -159,8 +159,8 @@ export default function ConfigPage() {
 
                             <div className="p-6 border border-red-100 bg-red-50/50 rounded-2xl">
                                 <ConfigToggle
-                                    label="Maintenance Mode"
-                                    description="Restrict access to admins only"
+                                    label="โหมดปิดปรับปรุง"
+                                    description="จำกัดการเข้าถึงเฉพาะผู้ดูแลระบบเท่านั้น"
                                     color="toggle-error"
                                     checked={localConfig.maintenanceMode || false}
                                     onChange={(val) => setLocalConfig({ ...localConfig, maintenanceMode: val })}
@@ -168,9 +168,9 @@ export default function ConfigPage() {
                             </div>
 
                             <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-                                <h3 className="font-bold mb-4">Announcement Bar</h3>
+                                <h3 className="font-bold mb-4">แถบประกาศ</h3>
                                 <ConfigToggle
-                                    label="Enable Announcement"
+                                    label="เปิดใช้งานแถบประกาศ"
                                     checked={localConfig.announcement?.enabled || false}
                                     onChange={(val) => setLocalConfig({ ...localConfig, announcement: { ...localConfig.announcement, enabled: val } })}
                                 />
@@ -179,7 +179,7 @@ export default function ConfigPage() {
                                         <input
                                             type="text"
                                             className="input input-bordered w-full"
-                                            placeholder="Message..."
+                                            placeholder="ข้อความประกาศ..."
                                             value={localConfig.announcement?.message || ''}
                                             onChange={(e) => setLocalConfig({ ...localConfig, announcement: { ...localConfig.announcement, message: e.target.value } })}
                                         />
@@ -188,9 +188,9 @@ export default function ConfigPage() {
                                             value={localConfig.announcement?.type || 'info'}
                                             onChange={(e) => setLocalConfig({ ...localConfig, announcement: { ...localConfig.announcement, type: e.target.value } })}
                                         >
-                                            <option value="info">Info</option>
-                                            <option value="warning">Warning</option>
-                                            <option value="error">Critical</option>
+                                            <option value="info">ข้อมูลทั่วไป (Info)</option>
+                                            <option value="warning">แจ้งเตือน (Warning)</option>
+                                            <option value="error">สำคัญ (Critical)</option>
                                         </select>
                                     </div>
                                 )}
@@ -200,55 +200,55 @@ export default function ConfigPage() {
 
                     {activeTab === 'features' && (
                         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
-                            <h3 className="font-bold mb-2">Core Features</h3>
+                            <h3 className="font-bold mb-2">ฟีเจอร์หลัก (Core Features)</h3>
                             <ConfigToggle
-                                label="Guest Access"
+                                label="โหมดผู้เยี่ยมชม (Guest Access)"
                                 checked={localConfig.features?.guestMode ?? true}
                                 onChange={(val) => setLocalConfig({ ...localConfig, features: { ...localConfig.features, guestMode: val } })}
                             />
                             <ConfigToggle
-                                label="User Registration"
+                                label="สมัครสมาชิกใหม่"
                                 checked={localConfig.features?.registration ?? true}
                                 onChange={(val) => setLocalConfig({ ...localConfig, features: { ...localConfig.features, registration: val } })}
                             />
                             <ConfigToggle
-                                label="Global Search"
+                                label="ค้นหาเพลงทั่วโลก (Global Search)"
                                 checked={localConfig.features?.search ?? true}
                                 onChange={(val) => setLocalConfig({ ...localConfig, features: { ...localConfig.features, search: val } })}
                             />
 
-                            <div className="divider">Room Features</div>
+                            <div className="divider">ฟีเจอร์ภายในห้อง</div>
 
                             <ConfigToggle
-                                label="Remote Control (Mobile)"
+                                label="รีโมทคอนโทรล (ผ่านมือถือ)"
                                 checked={localConfig.features?.remoteControl ?? true}
                                 onChange={(val) => setLocalConfig({ ...localConfig, features: { ...localConfig.features, remoteControl: val } })}
                             />
                             <ConfigToggle
-                                label="Cast to TV"
+                                label="แคสต์ขึ้นจอทีวี (Cast)"
                                 checked={localConfig.features?.cast ?? true}
                                 onChange={(val) => setLocalConfig({ ...localConfig, features: { ...localConfig.features, cast: val } })}
                             />
                             <ConfigToggle
-                                label="Queue Management"
+                                label="จัดการคิวเพลง"
                                 checked={localConfig.features?.queue ?? true}
                                 onChange={(val) => setLocalConfig({ ...localConfig, features: { ...localConfig.features, queue: val } })}
                             />
                             <ConfigToggle
-                                label="Share Room Link"
+                                label="แชร์ลิ้งค์ห้อง"
                                 checked={localConfig.features?.shareRoom ?? true}
                                 onChange={(val) => setLocalConfig({ ...localConfig, features: { ...localConfig.features, shareRoom: val } })}
                             />
 
-                            <div className="divider">Coming Soon / Lab</div>
+                            <div className="divider">ทดลองใช้ / กำลังพัฒนา (Labs)</div>
 
                             <ConfigToggle
-                                label="Voice Control"
+                                label="สั่งงานด้วยเสียง (Voice Control)"
                                 checked={localConfig.features?.voiceControl ?? false}
                                 onChange={(val) => setLocalConfig({ ...localConfig, features: { ...localConfig.features, voiceControl: val } })}
                             />
                             <ConfigToggle
-                                label="Lyrics Display"
+                                label="แสดงเนื้อเพลง (Lyrics Display)"
                                 checked={localConfig.features?.lyrics ?? false}
                                 onChange={(val) => setLocalConfig({ ...localConfig, features: { ...localConfig.features, lyrics: val } })}
                             />
@@ -264,9 +264,9 @@ export default function ConfigPage() {
 
                     {activeTab === 'login' && (
                         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
-                            <h3 className="font-bold">Login Screen Content</h3>
+                            <h3 className="font-bold">เนื้อหาหน้าล็อกอิน</h3>
                             <div>
-                                <label className="label">Title</label>
+                                <label className="label">หัวข้อ (Title)</label>
                                 <input
                                     className="input input-bordered w-full"
                                     value={localConfig.content?.login?.title || ''}
@@ -274,7 +274,7 @@ export default function ConfigPage() {
                                 />
                             </div>
                             <div>
-                                <label className="label">Subtitle</label>
+                                <label className="label">คำอธิบายรอง (Subtitle)</label>
                                 <textarea
                                     className="textarea textarea-bordered w-full"
                                     value={localConfig.content?.login?.subtitle || ''}
@@ -286,9 +286,9 @@ export default function ConfigPage() {
 
                     {activeTab === 'player' && (
                         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
-                            <h3 className="font-bold">Player Defaults</h3>
+                            <h3 className="font-bold">ตั้งค่าเครื่องเล่นเริ่มต้น</h3>
                             <div>
-                                <label className="label">Default Volume ({localConfig.player?.defaultVolume}%)</label>
+                                <label className="label">ความดังเริ่มต้น ({localConfig.player?.defaultVolume}%)</label>
                                 <input
                                     type="range" min="0" max="100"
                                     className="range range-xs range-primary"
@@ -306,7 +306,7 @@ export default function ConfigPage() {
                                 />
                             </div>
                             <ConfigToggle
-                                label="Autoplay"
+                                label="เล่นอัตโนมัติ (Autoplay)"
                                 checked={localConfig.player?.autoplay ?? true}
                                 onChange={(val) => setLocalConfig({ ...localConfig, player: { ...localConfig.player, autoplay: val } })}
                             />
@@ -315,23 +315,23 @@ export default function ConfigPage() {
 
                     {activeTab === 'ui' && (
                         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
-                            <h3 className="font-bold">Appearance</h3>
+                            <h3 className="font-bold">รูปลักษณ์ (Appearance)</h3>
                             <ConfigToggle
-                                label="Show Hero Banner"
+                                label="แสดงแบนเนอร์ (Hero Banner)"
                                 checked={localConfig.ui?.showHero ?? true}
                                 onChange={(val) => setLocalConfig({ ...localConfig, ui: { ...localConfig.ui, showHero: val } })}
                             />
                             <ConfigToggle
-                                label="Show Trending"
+                                label="แสดงเพลงฮิต (Trending)"
                                 checked={localConfig.ui?.showTrending ?? true}
                                 onChange={(val) => setLocalConfig({ ...localConfig, ui: { ...localConfig.ui, showTrending: val } })}
                             />
                             <ConfigToggle
-                                label="Show Genres"
+                                label="แสดงหมวดหมู่ (Genres)"
                                 checked={localConfig.ui?.showGenres ?? true}
                                 onChange={(val) => setLocalConfig({ ...localConfig, ui: { ...localConfig.ui, showGenres: val } })}
                             />
-                            <h4 className="font-semibold mt-4">Font Family</h4>
+                            <h4 className="font-semibold mt-4">รูปแบบตัวอักษร (Font Family)</h4>
                             <div className="grid grid-cols-2 gap-2">
                                 {THAI_FONTS.map(f => (
                                     <div
@@ -352,7 +352,7 @@ export default function ConfigPage() {
 
                     {activeTab === 'integrations' && (
                         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
-                            <h3 className="font-bold">Integrations</h3>
+                            <h3 className="font-bold">เชื่อมต่อระบบภายนอก (Integrations)</h3>
                             <div className="form-control">
                                 <label className="label">Spotify Client ID</label>
                                 <input
@@ -375,22 +375,22 @@ export default function ConfigPage() {
 
                     {activeTab === 'payment' && (
                         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
-                            <h3 className="font-bold">Bank Account</h3>
+                            <h3 className="font-bold">บัญชีธนาคาร (Bank Account)</h3>
                             <input
                                 className="input input-bordered w-full"
-                                placeholder="Bank Name"
+                                placeholder="ชื่อธนาคาร"
                                 value={localConfig.payment?.bankAccount?.bankName || ''}
                                 onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment, bankAccount: { ...localConfig.payment.bankAccount, bankName: e.target.value } } })}
                             />
                             <input
                                 className="input input-bordered w-full"
-                                placeholder="Account Name"
+                                placeholder="ชื่อบัญชี"
                                 value={localConfig.payment?.bankAccount?.accountName || ''}
                                 onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment, bankAccount: { ...localConfig.payment.bankAccount, accountName: e.target.value } } })}
                             />
                             <input
                                 className="input input-bordered w-full font-mono"
-                                placeholder="Account Number"
+                                placeholder="เลขที่บัญชี"
                                 value={localConfig.payment?.bankAccount?.accountNumber || ''}
                                 onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment, bankAccount: { ...localConfig.payment.bankAccount, accountNumber: e.target.value } } })}
                             />
