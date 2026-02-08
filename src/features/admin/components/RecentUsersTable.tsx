@@ -32,12 +32,12 @@ interface RecentUsersTableProps {
 }
 
 const membershipStyles: any = {
-    free: { bg: "bg-gray-100", text: "text-gray-600", label: "Free" },
-    pro: { bg: "bg-blue-50", text: "text-blue-700", label: "Pro" },
+    free: { bg: "bg-gray-100", text: "text-gray-600", label: "ทั่วไป" },
+    pro: { bg: "bg-blue-50", text: "text-blue-700", label: "โปร" },
     vip: { bg: "bg-purple-50", text: "text-purple-700", label: "VIP" },
-    monthly: { bg: "bg-green-50", text: "text-green-700", label: "Monthly" },
-    yearly: { bg: "bg-orange-50", text: "text-orange-700", label: "Yearly" },
-    lifetime: { bg: "bg-indigo-50", text: "text-indigo-700", label: "Lifetime" },
+    monthly: { bg: "bg-green-50", text: "text-green-700", label: "รายเดือน" },
+    yearly: { bg: "bg-orange-50", text: "text-orange-700", label: "รายปี" },
+    lifetime: { bg: "bg-indigo-50", text: "text-indigo-700", label: "ตลอดชีพ" },
 };
 
 export const RecentUsersTable = ({ users = [] }: RecentUsersTableProps) => {
