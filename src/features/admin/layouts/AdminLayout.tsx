@@ -41,7 +41,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {/* Main Content Area */}
       <div className={cn(
         "flex-1 flex flex-col min-h-screen transition-all duration-300 ease-in-out",
-        "lg:ml-72" // Match sidebar width
+        "lg:ml-64" // Match sidebar width
       )}>
         <AdminHeader onMenuClick={() => setIsMobileMenuOpen(true)} />
 
