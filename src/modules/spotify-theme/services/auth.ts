@@ -12,8 +12,30 @@ const getAccessToken = async () => {
     return accessToken;
   }
 
-  const config = await getSystemConfig();
-  let { clientId, clientSecret, refreshToken } = config.integrations?.spotify || {};
+  let clientId, clientSecret, refreshToken;
+
+  // Server-Side: Use Admin SDK to fetch sensitive config securely
+  if (typeof window === 'undefined') {
+    try {
+      const { adminDb } = await import('../../../modules/admin/utils/firebaseAdmin');
+      const docSnap = await adminDb.collection('settings').doc('default').get();
+
+      if (docSnap.exists) {
+        const data = docSnap.data();
+        const spotifyConfig = data?.integrations?.spotify || {};
+        clientId = spotifyConfig.clientId;
+        clientSecret = spotifyConfig.clientSecret;
+        refreshToken = spotifyConfig.refreshToken;
+        console.log("🔐 [SpotifyAuth] Fetched credentials via Admin SDK");
+      }
+    } catch (adminErr) {
+      console.warn("⚠️ [SpotifyAuth] Failed to fetch via Admin SDK:", adminErr);
+    }
+  } else {
+    // Client-Side: Cannot securely fetch secrets.
+    console.error("❌ [SpotifyAuth] Attempting to get access token on client-side (Unsafe/Impossible)");
+    throw new Error("Spotify Access Token retrieval is Server-Side only");
+  }
 
   // 🛡️ Fallback: If Firestore/Config has missing/empty values, try process.env directly
   if (!clientId) clientId = process.env.SPOTIFY_CLIENT_ID;
@@ -21,7 +43,7 @@ const getAccessToken = async () => {
   if (!refreshToken) refreshToken = process.env.SPOTIFY_REFRESH_TOKEN;
 
   console.log("🔐 [SpotifyAuth] Credentials Check:", {
-    source: "Firestore/Env",
+    source: "AdminSDK/Env",
     hasClientId: !!clientId,
     hasClientSecret: !!clientSecret,
     hasRefreshToken: !!refreshToken
@@ -33,7 +55,8 @@ const getAccessToken = async () => {
       hasClientSecret: !!clientSecret,
       hasRefreshToken: !!refreshToken
     });
-    throw new Error("No Spotify credentials configured (Check System Config or Environment Variables)");
+    // Don't throw immediately, let the API handle the lack of token
+    return null;
   }
 
   try {
