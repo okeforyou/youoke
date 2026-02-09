@@ -254,16 +254,16 @@ export default async function handler(
       const fallbackArtists: GetTopArtists = {
         status: "success",
         artist: [
-          { name: "Three Man Down", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebc40618dc2b22f77839352755" },
-          { name: "Jeff Satur", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb46112c9b20d58849b28ba551" },
-          { name: "NONT TANONT", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb2e361c4c1a74284b3d39589d" },
-          { name: "BOWKYLION", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb1d2b0cb0407c427042a492bd" },
-          { name: "Ink Waruntorn", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb435645543c72635467431f4e" },
-          { name: "Fellow Fellow", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb564016147424ad4df344ba44" },
-          { name: "Pop Pongkool", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb4e6e02613998797f62058b76" },
-          { name: "TaitosmitH", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebabcf712869584347712395d8" },
-          { name: "Cocktail", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebd76c5b964998822a84a9561b" },
-          { name: "Potato", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebd940c6c1920ae1076b4a2f8d" }
+          { name: "Three Man Down", imageUrl: "https://ui-avatars.com/api/?name=Three+Man+Down&background=random&size=400" },
+          { name: "Jeff Satur", imageUrl: "https://ui-avatars.com/api/?name=Jeff+Satur&background=random&size=400" },
+          { name: "NONT TANONT", imageUrl: "https://ui-avatars.com/api/?name=NONT+TANONT&background=random&size=400" },
+          { name: "BOWKYLION", imageUrl: "https://ui-avatars.com/api/?name=BOWKYLION&background=random&size=400" },
+          { name: "Ink Waruntorn", imageUrl: "https://ui-avatars.com/api/?name=Ink+Waruntorn&background=random&size=400" },
+          { name: "Fellow Fellow", imageUrl: "https://ui-avatars.com/api/?name=Fellow+Fellow&background=random&size=400" },
+          { name: "Pop Pongkool", imageUrl: "https://ui-avatars.com/api/?name=Pop+Pongkool&background=random&size=400" },
+          { name: "TaitosmitH", imageUrl: "https://ui-avatars.com/api/?name=TaitosmitH&background=random&size=400" },
+          { name: "Cocktail", imageUrl: "https://ui-avatars.com/api/?name=Cocktail&background=random&size=400" },
+          { name: "Potato", imageUrl: "https://ui-avatars.com/api/?name=Potato&background=random&size=400" }
         ],
         artistCategories: [
           { tag_id: "yt-PLpOT2ApxaBcq09ZNzwzdKsb2Sy8tt8EWg", tag_name: "ลูกทุ่ง 100 ล้านวิว", imageUrl: "https://ui-avatars.com/api/?name=ลูกทุ่ง&background=random&size=300" },
