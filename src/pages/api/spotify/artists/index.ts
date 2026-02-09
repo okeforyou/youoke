@@ -100,11 +100,15 @@ export default async function handler(
     console.log(`🎵 [Spotify API] Fetching top artists...`);
 
     // Fetch Main Playlist and Featured Categories in Parallel
-    // Strategy: Try Main Playlist -> Backup Playlist -> Global Top 50
+    // Strategy: Try Community Playlist (Verified Working) -> Backup Playlist -> Global Top 50
     let playlistResponse: any = { data: { items: [] } };
-    const mainPlaylistId = "37i9dQZEVXbMnz8KIWsvf9"; // Thailand Top 50
-    const backupPlaylistId = "37i9dQZF1DXa2SPUyWl8Y5"; // GMM Grammy Hits
-    const globalPlaylistId = "37i9dQZEVXbMDoHDwVN2tF"; // Global Top 50
+
+    // 🟢 Verified Working Playlists (from debug script)
+    // 1. "Thai Top Hits 2025" by chivassvpt - ID: 6H6DccZQ0NFw7rDaYu5h10
+    // 2. "Popup" - ID: 1TOOUD3g3dnF4WBTIlLr9B (as fallback)
+    const mainPlaylistId = "6H6DccZQ0NFw7rDaYu5h10";
+    const backupPlaylistId = "1TOOUD3g3dnF4WBTIlLr9B";
+    const globalPlaylistId = "37i9dQZEVXbMDoHDwVN2tF"; // Global (Risk of null, but good last resort)
 
     try {
       console.log(`🎵 Trying to fetch Playlist: ${mainPlaylistId}`);
