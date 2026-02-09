@@ -248,6 +248,37 @@ export default async function handler(
       imageUrl: artist.imageUrl,
     }));
 
+    // 🛡️ Fallback: If no artists found (e.g. Spotify Auth missing), use hardcoded data
+    if (artistList.length === 0) {
+      console.warn("⚠️ [API] Artist list empty. Using Hardcoded Fallback Data.");
+      const fallbackArtists: GetTopArtists = {
+        status: "success",
+        artist: [
+          { name: "Three Man Down", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebc40618dc2b22f77839352755" },
+          { name: "Jeff Satur", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb46112c9b20d58849b28ba551" },
+          { name: "NONT TANONT", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb2e361c4c1a74284b3d39589d" },
+          { name: "BOWKYLION", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb1d2b0cb0407c427042a492bd" },
+          { name: "Ink Waruntorn", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb435645543c72635467431f4e" },
+          { name: "Fellow Fellow", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb564016147424ad4df344ba44" },
+          { name: "Pop Pongkool", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb4e6e02613998797f62058b76" },
+          { name: "TaitosmitH", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebabcf712869584347712395d8" },
+          { name: "Cocktail", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebd76c5b964998822a84a9561b" },
+          { name: "Potato", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebd940c6c1920ae1076b4a2f8d" }
+        ],
+        artistCategories: [
+          { tag_id: "yt-PLpOT2ApxaBcq09ZNzwzdKsb2Sy8tt8EWg", tag_name: "ลูกทุ่ง 100 ล้านวิว", imageUrl: "https://ui-avatars.com/api/?name=ลูกทุ่ง&background=random&size=300" },
+          { tag_id: "yt-PL0X-JpLCn4aOvsQYWPLir4lOMR0Ykf7_9", tag_name: "GMM Grammy ฮิต", imageUrl: "https://ui-avatars.com/api/?name=GMM&background=random&size=300" },
+          { tag_id: "yt-PLBu7mKQnV2hc2v01t6rEsjyK2aH0OGfdX", tag_name: "T-Pop Hits", imageUrl: "https://ui-avatars.com/api/?name=T-Pop&background=random&size=300" }
+        ]
+      };
+
+      // Update Cache with fallback to prevent re-fetching immediately
+      cachedData = fallbackArtists;
+      lastFetch = Date.now();
+
+      return res.status(200).json(fallbackArtists);
+    }
+
     const artists: GetTopArtists = {
       status: "success",
       artist: artistList,
