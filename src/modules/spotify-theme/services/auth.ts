@@ -13,10 +13,15 @@ const getAccessToken = async () => {
   }
 
   const config = await getSystemConfig();
-  const { clientId, clientSecret, refreshToken } = config.integrations?.spotify || {};
+  let { clientId, clientSecret, refreshToken } = config.integrations?.spotify || {};
+
+  // 🛡️ Fallback: If Firestore/Config has missing/empty values, try process.env directly
+  if (!clientId) clientId = process.env.SPOTIFY_CLIENT_ID;
+  if (!clientSecret) clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
+  if (!refreshToken) refreshToken = process.env.SPOTIFY_REFRESH_TOKEN;
 
   if (!refreshToken || !clientId || !clientSecret) {
-    console.error("❌ Spotify credentials missing in System Config", {
+    console.error("❌ Spotify credentials missing in System Config & Env", {
       hasClientId: !!clientId,
       hasClientSecret: !!clientSecret,
       hasRefreshToken: !!refreshToken
