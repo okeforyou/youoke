@@ -100,15 +100,41 @@ export default async function handler(
     console.log(`🎵 [Spotify API] Fetching top artists...`);
 
     // Fetch Main Playlist and Featured Categories in Parallel
-    const [playlistResponse, ...categoryResponses] = await Promise.all([
-      axios.get(`https://api.spotify.com/v1/playlists/37i9dQZEVXbMnz8KIWsvf9/tracks`, { // Standard Thailand Top 50
+    // Strategy: Try Main Playlist -> Backup Playlist -> Global Top 50
+    let playlistResponse: any = { data: { items: [] } };
+    const mainPlaylistId = "37i9dQZEVXbMnz8KIWsvf9"; // Thailand Top 50
+    const backupPlaylistId = "37i9dQZF1DXa2SPUyWl8Y5"; // GMM Grammy Hits
+    const globalPlaylistId = "37i9dQZEVXbMDoHDwVN2tF"; // Global Top 50
+
+    try {
+      console.log(`🎵 Trying to fetch Playlist: ${mainPlaylistId}`);
+      playlistResponse = await axios.get(`https://api.spotify.com/v1/playlists/${mainPlaylistId}/tracks`, {
         headers: { Authorization: `Bearer ${accessToken}` },
-        params: { limit: 50 }
-      }).catch(e => {
-        console.warn("Failed to fetch Top 50:", e.message);
-        return { data: { items: [] } };
-      }),
-      ...featuredPlaylists.map(cat =>
+        params: { limit: 50, market: 'TH' }
+      });
+    } catch (e: any) {
+      console.warn(`⚠️ Main Playlist (${mainPlaylistId}) failed: ${e.message}. Trying backup...`);
+      try {
+        playlistResponse = await axios.get(`https://api.spotify.com/v1/playlists/${backupPlaylistId}/tracks`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          params: { limit: 50, market: 'TH' }
+        });
+      } catch (e2: any) {
+        console.warn(`⚠️ Backup Playlist (${backupPlaylistId}) failed: ${e2.message}. Trying Global...`);
+        try {
+          playlistResponse = await axios.get(`https://api.spotify.com/v1/playlists/${globalPlaylistId}/tracks`, {
+            headers: { Authorization: `Bearer ${accessToken}` },
+            params: { limit: 50, market: 'TH' }
+          });
+        } catch (e3: any) {
+          console.error(`❌ All Playlist fetches failed.`, e3.message);
+          // Fallback to empty
+        }
+      }
+    }
+
+    const categoryResponses = await Promise.all(
+      featuredPlaylists.map(cat =>
         axios.get(`https://api.spotify.com/v1/playlists/${cat.id}?fields=id,name,images`, {
           headers: { Authorization: `Bearer ${accessToken}` }
         }).catch(err => {
@@ -116,7 +142,7 @@ export default async function handler(
           return { data: null };
         })
       )
-    ]);
+    );
 
     // Populate Categories
     artistCategories = categoryResponses
