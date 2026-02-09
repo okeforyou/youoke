@@ -207,6 +207,7 @@ export const AdminService = {
      * Get 6-month Revenue History (Firestore 'payments')
      */
     getRevenueHistory: async (): Promise<{ name: string; revenue: number }[]> => {
+        console.log('📊 AdminService: Getting Revenue History (v2.0 fixed)');
         try {
             if (!db) return [];
 

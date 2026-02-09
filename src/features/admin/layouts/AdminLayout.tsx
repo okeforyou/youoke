@@ -16,11 +16,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    if (!loading) {
+    // Only redirect if NOT loading and user data is settled
+    if (!loading && user !== undefined) {
       if (!user) {
+        console.log('⛔ AdminLayout: No User. Redirecting to Login.');
         router.replace('/login');
       } else if (user.role !== 'admin' && user.role !== 'owner' && user.email !== 'boonyanone@gmail.com') {
+        console.log('⛔ AdminLayout: Unauthorized Role (' + user.role + '). Redirecting to Home.');
         router.replace('/');
+      } else {
+        console.log('✅ AdminLayout: Access Granted (' + user.email + ')');
       }
     }
   }, [user, loading, router]);

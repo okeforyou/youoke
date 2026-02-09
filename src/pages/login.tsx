@@ -38,9 +38,11 @@ export default function LoginPage() {
             let redirectUrl = (router.query.redirect as string) || '/';
 
             // If no specific redirect is active, send Admins/Owners to Dashboard
-            if (redirectUrl === '/' && (user.role === 'admin' || user.role === 'owner' || user.email === 'boonyanone@gmail.com')) {
-                redirectUrl = '/admin';
-            }
+            // If no specific redirect is active, send Admins/Owners to Dashboard
+            // FIXME: Disabled to prevent Redirect Loop (Login -> Admin -> Login)
+            // if (redirectUrl === '/' && (user.role === 'admin' || user.role === 'owner' || user.email === 'boonyanone@gmail.com')) {
+            //      redirectUrl = '/admin';
+            // }
 
             // Prevent redirect loop if redirectUrl is current page
             if (redirectUrl === router.asPath) return;
