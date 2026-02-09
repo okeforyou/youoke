@@ -8,32 +8,35 @@ import { getStorage } from 'firebase/storage'
 
 // Force rebuild to pick up new environment variables (Nov 22, 2025)
 
+// Sanitize helper
+const cleanEnv = (val: string | undefined) => val ? val.trim().replace(/\\n/g, '\n') : undefined;
+
 // Sanitize DATABASE_URL - remove trailing slash if present
-// Sanitize DATABASE_URL - remove trailing slash if present
-const rawDatabaseURL = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL ||
-  process.env.NEXT_PUBLIC_DATABASE_URL ||
-  `https://${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_PROJECT_ID || 'dummy-project'}.firebaseio.com`;
-const databaseURL = rawDatabaseURL.replace(/\/$/, '');  // Remove trailing slash
+const rawDatabaseURL = cleanEnv(process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL) ||
+  cleanEnv(process.env.NEXT_PUBLIC_DATABASE_URL) ||
+  `https://${cleanEnv(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) || cleanEnv(process.env.NEXT_PUBLIC_PROJECT_ID) || 'dummy-project'}.firebaseio.com`;
+
+const databaseURL = rawDatabaseURL?.replace(/\/$/, '');
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_PUBLIC_API_KEY ||
-    process.env.NEXT_PUBLIC_FIREBASE_API_KEY ||
-    process.env.NEXT_PUBLIC_API_KEY ||
+  apiKey: cleanEnv(process.env.NEXT_PUBLIC_FIREBASE_PUBLIC_API_KEY) ||
+    cleanEnv(process.env.NEXT_PUBLIC_FIREBASE_API_KEY) ||
+    cleanEnv(process.env.NEXT_PUBLIC_API_KEY) ||
     'dummy-api-key',
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ||
-    process.env.NEXT_PUBLIC_AUTH_DOMAIN ||
+  authDomain: cleanEnv(process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN) ||
+    cleanEnv(process.env.NEXT_PUBLIC_AUTH_DOMAIN) ||
     'dummy.firebaseapp.com',
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ||
-    process.env.NEXT_PUBLIC_PROJECT_ID ||
+  projectId: cleanEnv(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) ||
+    cleanEnv(process.env.NEXT_PUBLIC_PROJECT_ID) ||
     'dummy-project',
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET ||
-    process.env.NEXT_PUBLIC_STORAGE_BUCKET ||
+  storageBucket: cleanEnv(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET) ||
+    cleanEnv(process.env.NEXT_PUBLIC_STORAGE_BUCKET) ||
     'dummy.appspot.com',
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID ||
-    process.env.NEXT_PUBLIC_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID ||
-    process.env.NEXT_PUBLIC_APP_ID,
+  messagingSenderId: cleanEnv(process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID) ||
+    cleanEnv(process.env.NEXT_PUBLIC_MESSAGING_SENDER_ID),
+  appId: cleanEnv(process.env.NEXT_PUBLIC_FIREBASE_APP_ID) ||
+    cleanEnv(process.env.NEXT_PUBLIC_APP_ID),
   databaseURL: databaseURL,
 };
 
