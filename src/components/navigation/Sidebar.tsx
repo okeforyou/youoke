@@ -5,7 +5,6 @@ import { memo, useState } from 'react';
 import clsx from 'clsx';
 import { Home, Star, Flame, Library, MessageCircle, Shield, LogOut, Key, Grid, Lock, PlusCircle } from 'lucide-react';
 import { UserGroupIcon } from '@heroicons/react/24/outline'; // Import Heroicon for Party
-import { UserGroupIcon } from '@heroicons/react/24/outline'; // Import Heroicon for Party
 import { useAuthStore } from '../../modules/auth/useAuthStore'; // Updated hook
 import ProfileDrawer from '../profile/ProfileDrawer';
 import { usePlayerStore } from '../../modules/player/stores/usePlayerStore';
