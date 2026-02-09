@@ -85,7 +85,7 @@ export default function SpotifyDashboard({ showTab = true }) {
   const songlistRef = useRef<HTMLDivElement>(null);
 
   const { data: tempTopArtistsData, isLoading: isLoadTopArtists } = useQuery({
-    queryKey: ["getTopArtists"],
+    queryKey: ["getTopArtists", "v2"], // Force cache refresh for V2 logic
     queryFn: getTopArtists,
     retry: false,
     refetchInterval: 0,
