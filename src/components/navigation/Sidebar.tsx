@@ -100,7 +100,7 @@ export const Sidebar = memo(() => {
                             <div onClick={() => setIsProfileDrawerOpen(true)} className="flex items-center gap-3 overflow-hidden flex-1 group cursor-pointer hover:bg-gray-50 p-2 rounded-2xl transition-all duration-300">
                                 {user.photoURL ? <img src={user.photoURL} className="w-10 h-10 rounded-full border border-gray-100 group-hover:ring-2 ring-primary/20 transition-all shadow-sm" alt="" /> : <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">{user.email?.[0]?.toUpperCase() || 'G'}</div>}
                                 <div className="overflow-hidden">
-                                    <p className="text-sm font-bold truncate text-gray-900 group-hover:text-primary transition-colors">{user.displayName || 'ผู้ใช้งานทั่วไป'}</p>
+                                    <p className="text-sm font-bold truncate text-gray-900 group-hover:text-primary transition-colors">{user.displayName || user.email?.split('@')[0] || 'ผู้ใช้งานทั่วไป'}</p>
                                     <p className="text-[10px] text-gray-400 truncate uppercase tracking-wider font-semibold">{isPremium ? 'สมาชิก Pro' : 'สมาชิกทั่วไป'}</p>
                                 </div>
                             </div>

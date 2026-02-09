@@ -125,7 +125,7 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
 
     return (
         <Transition.Root show={isOpen} as={Fragment}>
-            <Dialog as="div" className="relative z-50" onClose={onClose}>
+            <Dialog as="div" className="relative z-[100]" onClose={onClose}>
                 <Transition.Child
                     as={Fragment}
                     enter="ease-in-out duration-500"
@@ -196,7 +196,7 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                                     </div>
 
                                                     <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                                                        {profile?.displayName || user.displayName || "YouOke User"}
+                                                        {profile?.displayName || user.displayName || user.email?.split('@')[0] || "YouOke User"}
                                                         {(profile?.role === 'admin' || user.role === 'admin') &&
                                                             <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold uppercase">Admin</span>
                                                         }
