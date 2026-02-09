@@ -16,7 +16,7 @@ import {
     CreditCard as IconCard
 } from "lucide-react";
 import { collection, query, orderBy, limit, getDocs, doc, updateDoc, serverTimestamp, getDoc, addDoc, where } from "firebase/firestore";
-import { db } from "../../firebase";
+import { db } from "@/firebase";
 import { PaymentSlip } from "@/modules/billing/types";
 import { cn } from "@/lib/utils";
 

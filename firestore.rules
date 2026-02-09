@@ -2,124 +2,99 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Default: Deny all
-    match /{document=**} {
-      allow read, write: if false;
+    // =========================================================================
+    // 🛡️ Global Helper Functions
+    // =========================================================================
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Check if user is the owner of the document
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // Check if user is an Admin or Owner (Hardcoded UID + Role Check)
+    function isAdmin() {
+      return isAuthenticated() && (
+        request.auth.uid == 'P6r7fkMfvherVvzXV35NPhF5TVw2' || 
+        request.auth.uid == 'I4UmiD5gNDMY04LkvtuEIBtrEkK2' || // Your UID from logs
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'owner']
+      );
     }
 
     // =========================================================================
-    // 👤 User Profiles (Strict Schema)
+    // 👤 User Profiles
     // =========================================================================
     match /users/{userId} {
-      // Helper to check if user owns this document
-      function isOwner() {
-        return request.auth.uid == userId;
-      }
-      
-      // Helper to check if user is Admin
-      function isAdmin() {
-          return (request.auth.uid == 'P6r7fkMfvherVvzXV35NPhF5TVw2') || 
-                 (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-                  get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
-      }
+      allow read: if true; // Public profiles
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
 
-      // Helper to validate membership structure on write
-      function isValidMembership(data) {
-        return data.membership.type in ['free', 'day_pass', 'monthly', 'yearly', 'lifetime']
-            && (data.membership.status == 'active' || data.membership.status == 'expired');
-      }
+    // =========================================================================
+    // 📦 System Collections
+    // =========================================================================
 
-      // Allow reading public profiles
+    // Payment Proofs (Formerly 'payments')
+    match /payment_proofs/{paymentId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Legacy support for 'payments' if any
+    match /payments/{paymentId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Packages & Plans
+    match /packages/{packageId} {
       allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /plans/{planId} {
+      allow read: if true;
+      allow write: if isAdmin(); // Fixed syntax error from previous
+    }
 
-      // Allow Owner to write, but must maintain valid schema
-      allow create: if isOwner();
-      allow update: if isOwner(); // Relaxed validation for now to isolate issues
-      
-      // Admin can do anything
+    // Playlists
+    match /playlists/{playlistId} {
+      allow read: if true;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (
+        resource.data.createdBy == request.auth.uid || 
+        isAdmin() ||
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['starCount'])
+      );
+      allow delete: if isAuthenticated() && (resource.data.createdBy == request.auth.uid || isAdmin());
+    }
+
+    // Orders
+    match /orders/{orderId} {
+       allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+       allow create: if isAuthenticated();
+       allow update: if isAdmin();
+    }
+
+    // Settings & Config
+    match /settings/{settingId} {
+      allow read: if true;
       allow write: if isAdmin();
     }
     
-    // Allow listing all users for admin
-    match /users {
-      allow read: if true; // Simplification for 'list users' query
-    }
-
-    // Playlists collection
-    match /playlists/{playlistId} {
-      allow read: if true;
-      allow create: if request.auth != null;
-      // Update: Owner can edit/add songs/remove songs. Others can only like (update starCount).
-      allow update: if request.auth != null && (
-        request.auth.uid == resource.data.createdBy ||
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['starCount'])
-      );
-      allow delete: if request.auth != null && request.auth.uid == resource.data.createdBy;
-    }
-
-    // Orders collection
-    match /orders/{orderId} {
-      allow read: if true; // Or restrict to admin/owner
-      allow create: if true;
-      allow update: if true; // Simplify for now, verify later
-    }
-
-    // Payments collection
-    match /payments/{paymentId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
-      allow update, delete: if request.auth != null &&
-                               get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-
-    // Plans collection
-    match /plans/{planId} {
-      allow read: if true;
-      allow write: if request.auth != null &&
-                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-
-    // Packages collection
-    // Packages collection
-    match /packages/{packageId} {
-      allow read: if true;
-      // Use the robust isAdmin() helper defined above? 
-      // ERROR: Functions are scoped to the match block.
-      // We must copy the logic or rely on the user having access.
-      // To be safe and identical, I will copy the exact robust logic:
-      allow write: if request.auth != null && (
-          request.auth.uid == 'P6r7fkMfvherVvzXV35NPhF5TVw2' ||
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
-      );
-    }
-
-    // Settings collection
-    match /settings/{settingId} {
-      allow read: if true;
-      allow write: if request.auth != null &&
-                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-
-    // Share Tokens collection
-    match /shareTokens/{tokenId} {
-      // Anyone can read (to validate tokens)
-      allow read: if true;
-      // Authenticated users can create tokens (including anonymous)
-      allow create: if request.auth != null;
-      // Only token owner can update or delete
-      allow update, delete: if request.auth != null &&
-                               request.auth.uid == resource.data.ownerId;
-    }
-
-    // CMS Pages collection
     match /cms_pages/{pageId} {
-      // Public read (necessary for guest users to see Help/Rules)
       allow read: if true;
-      // Admin write access
-      allow write: if request.auth != null && (
-          request.auth.uid == 'P6r7fkMfvherVvzXV35NPhF5TVw2' ||
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
-      );
+      allow write: if isAdmin();
+    }
+
+    // Default: Deny all others
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

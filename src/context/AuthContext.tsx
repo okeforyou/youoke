@@ -9,7 +9,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import nookies from 'nookies'
 import React, { createContext, useContext, useEffect, useState } from 'react'
 
-import { auth, database } from '../firebase'
+import { auth, database } from '@/firebase'
 
 // User data type interface
 interface UserType {

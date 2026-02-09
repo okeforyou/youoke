@@ -13,7 +13,7 @@
  */
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { realtimeDb } from '../firebase';
+import { realtimeDb } from "@/firebase";
 import { RecommendedVideo, SearchResult } from '../types/invidious';
 import { useAuth } from './AuthContext';
 import { sendCommand } from '../utils/castCommands';

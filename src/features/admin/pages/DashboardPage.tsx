@@ -36,7 +36,7 @@ interface SerializedActivity {
 }
 
 import { collection, query, where, getDocs, limit, orderBy, getCountFromServer, Timestamp } from "firebase/firestore";
-import { db } from "../../../../firebase";
+import { db } from "@/firebase";
 
 const AdminDashboard: React.FC = () => {
   const [stats, setStats] = useState<Stats>({

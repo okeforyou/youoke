@@ -1,4 +1,4 @@
-import { database as db } from "../firebase";
+import { database as db } from "@/firebase";
 import { collection, getDocs, doc, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { PricingPackage, DEFAULT_PRICING_PACKAGES } from "../types/subscription";
 

@@ -1,4 +1,4 @@
-import { db, realtimeDb } from "../../../../firebase";
+import { db, realtimeDb } from "@/firebase";
 import {
     collection,
     query,

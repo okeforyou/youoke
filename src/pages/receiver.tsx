@@ -19,7 +19,7 @@ import { signInAnonymously } from 'firebase/auth';
 import { QRCodeSVG } from 'qrcode.react';
 import { MusicalNoteIcon, UserIcon, ListBulletIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
-import { realtimeDb, auth } from '../firebase';
+import { realtimeDb, auth } from '@/firebase';
 import { useCommandExecutor } from '../hooks/useCommandExecutor';
 import { CastState } from '../types/castCommands';
 

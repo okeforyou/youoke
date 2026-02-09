@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ref, set, get } from 'firebase/database';
-import { realtimeDb } from '../firebase';
+import { realtimeDb } from '@/firebase';
 import { useAuth } from '../context/AuthContext';
 
 export default function DebugFirebase() {

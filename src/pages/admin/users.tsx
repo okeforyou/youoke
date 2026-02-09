@@ -23,7 +23,7 @@ import {
     Package
 } from "lucide-react";
 import { collection, query, orderBy, limit, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, addDoc } from "firebase/firestore";
-import { db } from "../../firebase";
+import { db } from "@/firebase";
 import { cn } from "@/lib/utils";
 
 interface User {

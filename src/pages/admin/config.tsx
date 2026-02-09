@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 import { THAI_FONTS, FONT_SIZES } from '../../data/fonts';
 import { UpsellConfigPanel } from '@/features/admin/components/UpsellConfigPanel';
 import { doc, setDoc } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { db } from '@/firebase';
 
 export default function AdminConfigPage() {
     const { config, loading } = useSystemConfig();

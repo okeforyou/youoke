@@ -7,6 +7,7 @@ import { cn } from '../../../utils/cn';
 
 interface AdminLayoutProps {
   children: ReactNode;
+  headerTitle?: string;
 }
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
