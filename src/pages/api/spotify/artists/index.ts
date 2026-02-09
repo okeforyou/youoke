@@ -27,9 +27,15 @@ export default async function handler(
 
   try {
     console.log("🚀 [API] Starting Spotify Top Artists Fetch...");
-    const accessToken = await getAccessToken();
-    if (!accessToken) throw new Error("No access token");
-    console.log("✅ [API] Access Token Obtained");
+
+    let accessToken: string | null = null;
+    try {
+      accessToken = await getAccessToken();
+      if (!accessToken) console.warn("⚠️ [API] No access token returned (but no error thrown)");
+      else console.log("✅ [API] Access Token Obtained");
+    } catch (authErr: any) {
+      console.warn("⚠️ [API] Spotify Auth failed, continuing with Hybrid/Fallback mode:", authErr.message);
+    }
 
     let artistList: Artist[] = [];
     let artistCategories: ArtistCategory[] = [];
@@ -109,40 +115,43 @@ export default async function handler(
     const backupPlaylistId = "1TOOUD3g3dnF4WBTIlLr9B";
     const globalPlaylistId = "37i9dQZEVXbMDoHDwVN2tF";
 
-    try {
-      console.log(`🎵 [API] Fetching Main Playlist: ${mainPlaylistId}`);
-      const res = await axios.get(`https://api.spotify.com/v1/playlists/${mainPlaylistId}/tracks`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-        params: { limit: 50, market: 'TH' }
-      });
-      playlistData = res.data;
-      console.log(`✅ [API] Main Playlist Fetched: ${playlistData.items?.length} tracks`);
-    } catch (e: any) {
-      console.warn(`⚠️ [API] Main Playlist failed: ${e.message}. Trying backup...`);
+    if (accessToken) {
       try {
-        console.log(`🎵 [API] Fetching Backup Playlist: ${backupPlaylistId}`);
-        const res = await axios.get(`https://api.spotify.com/v1/playlists/${backupPlaylistId}/tracks`, {
+        console.log(`🎵 [API] Fetching Main Playlist: ${mainPlaylistId}`);
+        const res = await axios.get(`https://api.spotify.com/v1/playlists/${mainPlaylistId}/tracks`, {
           headers: { Authorization: `Bearer ${accessToken}` },
           params: { limit: 50, market: 'TH' }
         });
         playlistData = res.data;
-        console.log(`✅ [API] Backup Playlist Fetched: ${playlistData.items?.length} tracks`);
-      } catch (e2: any) {
-        console.warn(`⚠️ [API] Backup Playlist failed: ${e2.message}. Trying Global...`);
+        console.log(`✅ [API] Main Playlist Fetched: ${playlistData.items?.length} tracks`);
+      } catch (e: any) {
+        console.warn(`⚠️ [API] Main Playlist failed: ${e.message}. Trying backup...`);
         try {
-          console.log(`🎵 [API] Fetching Global Playlist: ${globalPlaylistId}`);
-          const res = await axios.get(`https://api.spotify.com/v1/playlists/${globalPlaylistId}/tracks`, {
+          console.log(`🎵 [API] Fetching Backup Playlist: ${backupPlaylistId}`);
+          const res = await axios.get(`https://api.spotify.com/v1/playlists/${backupPlaylistId}/tracks`, {
             headers: { Authorization: `Bearer ${accessToken}` },
             params: { limit: 50, market: 'TH' }
           });
           playlistData = res.data;
-          console.log(`✅ [API] Global Playlist Fetched: ${playlistData.items?.length} tracks`);
-        } catch (e3: any) {
-          console.error(`❌ [API] All Playlist fetches failed.`, e3.message);
+          console.log(`✅ [API] Backup Playlist Fetched: ${playlistData.items?.length} tracks`);
+        } catch (e2: any) {
+          console.warn(`⚠️ [API] Backup Playlist failed: ${e2.message}. Trying Global...`);
+          try {
+            console.log(`🎵 [API] Fetching Global Playlist: ${globalPlaylistId}`);
+            const res = await axios.get(`https://api.spotify.com/v1/playlists/${globalPlaylistId}/tracks`, {
+              headers: { Authorization: `Bearer ${accessToken}` },
+              params: { limit: 50, market: 'TH' }
+            });
+            playlistData = res.data;
+            console.log(`✅ [API] Global Playlist Fetched: ${playlistData.items?.length} tracks`);
+          } catch (e3: any) {
+            console.error(`❌ [API] All Playlist fetches failed.`, e3.message);
+          }
         }
       }
+    } else {
+      console.log("ℹ️ [API] Skipping Spotify Playlist fetch (No Access Token)");
     }
-
     console.log("🎵 [API] Fetching Categories...");
     const categoryResponses = await Promise.all(
       featuredPlaylists.map(async cat => {
@@ -159,13 +168,17 @@ export default async function handler(
         }
 
         // Spotify ID
-        return axios.get(`https://api.spotify.com/v1/playlists/${cat.id}?fields=id,name,images`, {
-          headers: { Authorization: `Bearer ${accessToken}` }
-        }).then(res => ({ ...res, _id: cat.id }))
-          .catch(err => {
-            console.error(`❌ [API] Failed to fetch category ${cat.name} (${cat.id}):`, err.message);
-            return { data: null };
-          });
+        if (accessToken) {
+          return axios.get(`https://api.spotify.com/v1/playlists/${cat.id}?fields=id,name,images`, {
+            headers: { Authorization: `Bearer ${accessToken}` }
+          }).then(res => ({ ...res, _id: cat.id }))
+            .catch(err => {
+              console.error(`❌ [API] Failed to fetch category ${cat.name} (${cat.id}):`, err.message);
+              return { data: null };
+            });
+        }
+
+        return { data: null };
       })
     );
 
