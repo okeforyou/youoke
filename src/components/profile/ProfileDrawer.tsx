@@ -73,6 +73,32 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
     const isLifetime = profile?.subscription?.plan === 'lifetime';
 
     const menuItems = [
+        // Admin Item (Conditional)
+        ...((user?.role === 'admin' || profile?.role === 'admin') ? [{
+            icon: SparklesIcon, // Re-using Sparkles or import new one? Let's use Sparkles for now or add import.
+            // Actually, let's just use Sparkles to avoid import error if I can't see the file top easily.
+            // But I can see the file top. I'll add the import in a separate block if needed.
+            // Wait, I am doing replace_file_content on the `menuItems` block. 
+            // I should use an existing icon or make this a multi-step if I need input.
+            // `SparklesIcon` is already imported.
+            // `UserCircleIcon` is imported.
+            // Let's use `SparklesIcon` as a placeholder or just `UserCircleIcon`?
+            // No, that's confusing.
+            // I'll use `CreditCardIcon` for now? No.
+            // I'll stick to the existing imports.
+            // `BookOpenIcon`?
+            // Let's just use `SparklesIcon` for "Admin Magic" for now, or `UserCircleIcon`.
+            // User: "Admin Panel".
+            // Actually I should add the import first.
+            // But I can't do multiple unrelated edits in one replace_file_content easily without context.
+            // I will use `UserCircleIcon` temporarily or just standard one.
+            // Ah, I can request `ShieldCheckIcon` in the imports if I replace the top too?
+            // No, `replace_file_content` is for single contiguous block.
+            // I will use `BookOpenIcon` (Manual) for Admin? No.
+            // I will use `UserCircleIcon` and label it "Admin Panel".
+            label: 'จัดการระบบ (Admin)',
+            href: '/admin',
+        }] : []),
         {
             icon: UserCircleIcon,
             label: 'แก้ไขข้อมูลส่วนตัว',
