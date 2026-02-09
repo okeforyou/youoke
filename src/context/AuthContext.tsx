@@ -171,8 +171,8 @@ export const AuthContextProvider = ({
   // Wrap the children with the context provider
 
   return (
-    <AuthContext.Provider value={{ user, signUp, logIn, logOut, signInWithGoogle }}>
-      {loading ? null : children}
+    <AuthContext.Provider value={{ user, loading, signUp, logIn, logOut, signInWithGoogle }}>
+      {children}
     </AuthContext.Provider>
   );
 };

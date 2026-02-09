@@ -12,9 +12,12 @@ import { useAuth } from "../context/AuthContext";
  */
 const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
+    // Wait for loading to finish
+    if (loading) return;
+
     // Not logged in - redirect to login
     if (!user?.uid) {
       router.push("/login?redirect=/admin");
@@ -26,10 +29,10 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
       router.push("/");
       return;
     }
-  }, [router, user]);
+  }, [router, user, loading]);
 
-  // Show content only if user is admin
-  if (!user?.uid || user.role !== 'admin') {
+  // Show loading state while checking auth
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-900">
         <div className="text-center">
@@ -38,6 +41,11 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
         </div>
       </div>
     );
+  }
+
+  // Show content only if user is admin
+  if (!user?.uid || user.role !== 'admin') {
+    return null; // Will redirect via useEffect
   }
 
   return <>{children}</>;

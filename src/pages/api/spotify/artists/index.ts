@@ -152,12 +152,7 @@ export default async function handler(
             data: {
               id: cat.id,
               name: cat.name,
-              images: [{ url: `https://i.ytimg.com/vi/${cat.id.replace('yt-PL', '')}/mqdefault.jpg` }] // Approximate thumb or generic
-              // Actually YouTube Playlist IDs don't map to video thumbs directly like that.
-              // We'll use a generic placeholder or verify if we can fetch it. 
-              // For speed, let's use a nice gradient or hardcoded image if possible, 
-              // OR just leave it empty and let frontend handle it.
-              // Better: Use a static image for each genre?
+              images: [{ url: `https://ui-avatars.com/api/?name=${encodeURIComponent(cat.name)}&background=random&size=300` }] // Use UI Avatars as placeholder
             },
             _id: cat.id
           };
