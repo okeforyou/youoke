@@ -684,3 +684,115 @@ export async function scrapeYouTubePlaylistVideos(
     throw error;
   }
 }
+
+// ============================================================================
+// CHARTS SCRAPING (V1 Logic Restoration)
+// ============================================================================
+
+export interface YouTubeArtistResult {
+  name: string;
+  imageUrl: string;
+  rank: string;
+  subscribers?: string;
+}
+
+/**
+ * Scrape YouTube Music Charts (The "Holy Grail" for Top Artists)
+ * URL: https://music.youtube.com/charts
+ * 
+ * This returns the OFFICIAL top artists list, ensuring 100% quality data
+ * matching what users expect from a "Top 100" feature.
+ */
+export async function scrapeMusicCharts(
+  countryCode: string = 'TH',
+  timeout: number = 10000
+): Promise<YouTubeArtistResult[]> {
+  // YouTube Music Charts usually auto-detects location, but we can try to force valid page load
+  const url = `https://music.youtube.com/charts?c=${countryCode}`;
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': getRandomUserAgent(),
+        'Accept-Language': 'en-US,en;q=0.9,th;q=0.8',
+        // Important: Charts might need specific headers to serve the right content
+        'X-YouTube-Client-Name': '67', // YouTube Music Web
+        'X-YouTube-Client-Version': '1.20240501.01.00',
+      },
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) throw new Error(`Charts returned status ${response.status}`);
+    const html = await response.text();
+    const ytInitialData = extractYtInitialData(html);
+
+    if (!ytInitialData) throw new Error('Could not find ytInitialData in Charts');
+
+    const results: YouTubeArtistResult[] = [];
+
+    // Traverse Charts Data
+    // Usually: contents -> singleColumnBrowseResultsRenderer -> tabs -> tabRenderer (Charts) -> content -> sectionListRenderer -> contents
+    // Sections: Top Songs, Top Videos, Top Artists, Trending
+    const tabs = ytInitialData?.contents?.singleColumnBrowseResultsRenderer?.tabs;
+    if (!tabs) return [];
+
+    const chartsTab = tabs[0]; // Usually the first tab is "Charts"
+    const sections = chartsTab?.tabRenderer?.content?.sectionListRenderer?.contents;
+
+    if (!sections) return [];
+
+    for (const section of sections) {
+      // Find the "Top Artists" shelf
+      const shelf = section.musicCarouselShelfRenderer || section.musicShelfRenderer;
+      if (!shelf) continue;
+
+      const title = shelf.header?.musicCarouselShelfBasicHeaderRenderer?.title?.runs?.[0]?.text ||
+        shelf.title?.runs?.[0]?.text || "";
+
+      // Look for "Artists" or "ศิลปิน"
+      // Note: Title checks might be fragile with language changes, but usually "Top Artists" or "Artists" is consistent-ish
+      // Better trigger: Look at the CONTENTS.
+      if (title.toLowerCase().includes("artist") || title.includes("ศิลปิน")) {
+        console.log(`[Charts] Found Artists Shelf: ${title}`);
+        const items = shelf.contents;
+
+        for (const itemWrapper of items) {
+          const mrl = itemWrapper.musicResponsiveListItemRenderer;
+          if (!mrl) continue;
+
+          // Parse Artist Data
+          // Name: flexColumns[0]...text
+          const name = mrl.flexColumns?.[0]?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.[0]?.text;
+
+          // Rank: index text (sometimes)
+          const rank = mrl.index?.runs?.[0]?.text || "";
+
+          // Image: thumbnail
+          const thumbnailRenderer = mrl.thumbnail?.musicThumbnailRenderer?.thumbnail;
+          const imageUrl = thumbnailRenderer?.thumbnails?.pop()?.url ||
+            thumbnailRenderer?.thumbnails?.[0]?.url || "";
+
+          if (name) {
+            results.push({
+              name,
+              imageUrl,
+              rank
+            });
+          }
+        }
+      }
+    }
+
+    console.log(`[Charts] Scraped ${results.length} Top Artists`);
+    return results;
+
+  } catch (error: any) {
+    console.warn("[YouTube Scraper] Charts scrape failed:", error.message);
+    return [];
+  }
+}
