@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
-import AdminLayout from '@/components/layouts/AdminLayout';
+import AdminLayout from '@/features/admin/layouts/AdminLayout';
 import { MODULES } from '@/config/modules';
 import { UserGroupIcon, SignalIcon, PowerIcon } from '@heroicons/react/24/outline';
 import { db } from '@/firebase';

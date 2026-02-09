@@ -1,6 +1,6 @@
 import Head from "next/head";
 import { useState, useEffect } from "react";
-import AdminLayout from "../../layouts/AdminLayout";
+import AdminLayout from '@/features/admin/layouts/AdminLayout';
 import {
     Search,
     CreditCard,
@@ -136,7 +136,7 @@ export default function AdminOrdersPage() {
     };
 
     return (
-        <AdminLayout headerTitle="ตรวจสอบการชำระเงิน">
+        <AdminLayout>
             <Head>
                 <title>รายการสั่งซื้อ (Orders) - YouOke Admin</title>
             </Head>

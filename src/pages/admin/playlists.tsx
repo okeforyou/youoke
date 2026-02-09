@@ -1,6 +1,6 @@
 import Head from "next/head";
 import { useEffect, useState } from "react";
-import AdminLayout from "../../layouts/AdminLayout";
+import AdminLayout from '@/features/admin/layouts/AdminLayout';
 import { PlaylistService, CommunityPlaylist } from "../../services/playlistService";
 import { Trash2, ExternalLink, RefreshCw, BadgeCheck, Music } from "lucide-react";
 import { useToast } from "../../context/ToastContext";
@@ -50,7 +50,7 @@ export default function AdminPlaylists() {
     };
 
     return (
-        <AdminLayout headerTitle="Manage Playlists">
+        <AdminLayout>
             <Head>
                 <title>YouOke Admin | Playlists</title>
             </Head>

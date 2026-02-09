@@ -15,7 +15,7 @@ import GoogleAnalytics from '../components/GoogleAnalytics'
 import { AdsProvider } from '../context/AdsContext'
 import { AuthContextProvider } from '../context/AuthContext' // Re-enabled
 import { useAuthStore } from '@/modules/auth/useAuthStore';
-import { CastProvider } from '../modules/cast-system/context/CastContext'
+import { CastProvider } from '../plugins/cast/context/CastContext'
 import { FirebaseCastProvider } from '../context/FirebaseCastContext'
 import { YouTubeCastProvider } from '../context/YouTubeCastContext'
 import { ToastProvider } from '../context/ToastContext'
@@ -24,6 +24,7 @@ import { FontLoader } from '../components/FontLoader';
 // import { ErrorBoundary } from '../components/ErrorBoundary';
 
 import { useSystemThemeSync } from '../hooks/useSystemThemeSync';
+import { SystemProvider } from '../core/container/SystemContext';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -129,41 +130,43 @@ function App({ Component, pageProps }: AppProps) {
           </>
         )}
         <QueryClientProvider client={queryClient}>
-          {shouldLoadCast ? (
-            // Full Player Stack (Home, Rooms) - Includes Cast SENDER
-            <MidiEngineProvider>
-              <CastProvider>
-                <Script
-                  src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"
-                  strategy="afterInteractive"
-                />
-                <FirebaseCastProvider>
-                  <YouTubeCastProvider>
-                    <AdsProvider>
-                      <Component {...pageProps} />
-                    </AdsProvider>
-                  </YouTubeCastProvider>
-                </FirebaseCastProvider>
-              </CastProvider>
-            </MidiEngineProvider>
-          ) : isMonitorPage ? (
-            // Monitor Stack (Receiver) - Needs MIDI but NO Cast Sender
-            <MidiEngineProvider>
+          <SystemProvider>
+            {shouldLoadCast ? (
+              // Full Player Stack (Home, Rooms) - Includes Cast SENDER
+              <MidiEngineProvider>
+                <CastProvider>
+                  <Script
+                    src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"
+                    strategy="afterInteractive"
+                  />
+                  <FirebaseCastProvider>
+                    <YouTubeCastProvider>
+                      <AdsProvider>
+                        <Component {...pageProps} />
+                      </AdsProvider>
+                    </YouTubeCastProvider>
+                  </FirebaseCastProvider>
+                </CastProvider>
+              </MidiEngineProvider>
+            ) : isMonitorPage ? (
+              // Monitor Stack (Receiver) - Needs MIDI but NO Cast Sender
+              <MidiEngineProvider>
+                <AdsProvider>
+                  <Component {...pageProps} />
+                </AdsProvider>
+              </MidiEngineProvider>
+            ) : (
+              // Lightweight Stack (Login, Admin)
+              // Admin/Login don't really need AdsProvider but keeping it for consistency/safety if they define slots
               <AdsProvider>
                 <Component {...pageProps} />
               </AdsProvider>
-            </MidiEngineProvider>
-          ) : (
-            // Lightweight Stack (Login, Admin)
-            // Admin/Login don't really need AdsProvider but keeping it for consistency/safety if they define slots
-            <AdsProvider>
-              <Component {...pageProps} />
-            </AdsProvider>
-          )}
+            )}
+          </SystemProvider>
         </QueryClientProvider>
         <Analytics />
-      </AuthContextProvider>
-    </ToastProvider>
+      </AuthContextProvider >
+    </ToastProvider >
   );
 }
 

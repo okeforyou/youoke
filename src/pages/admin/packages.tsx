@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import AdminLayout from '../../layouts/AdminLayout';
+import AdminLayout from '@/features/admin/layouts/AdminLayout';
 import { db } from '../../firebase';
 import { collection, onSnapshot, doc, updateDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import {

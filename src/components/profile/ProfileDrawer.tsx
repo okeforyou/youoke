@@ -12,7 +12,7 @@ import {
     MusicalNoteIcon,
     PlayCircleIcon
 } from '@heroicons/react/24/outline';
-import { useAuthStore } from '../../modules/auth/useAuthStore';
+import { useSystem } from '../../core/container/SystemContext'; // DI Container
 import Link from 'next/link';
 import { getUserProfile } from '../../services/userService';
 import { UserProfile } from '../../types/subscription';
@@ -23,7 +23,7 @@ interface ProfileDrawerProps {
 }
 
 export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
-    const { user, signOut: logOut } = useAuthStore();
+    const { user, signOut: logOut } = useSystem().auth(); // specific hook
     const router = useRouter();
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(false);

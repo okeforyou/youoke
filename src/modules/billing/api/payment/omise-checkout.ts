@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { adminDb } from "@/modules/admin/utils/firebaseAdmin";
+import { adminFirestore as adminDb } from "@/firebase-admin";
 import { OmiseService } from "@/services/omise";
 
 /**

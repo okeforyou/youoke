@@ -6,18 +6,18 @@ import { Square2StackIcon, QrCodeIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { DebounceInput } from 'react-debounce-input';
-import { useAuthStore } from '@/modules/auth/useAuthStore';
+import { useSystem } from '@/core/container/SystemContext'; // DI Container
 import { usePlayerStore } from '../modules/player/stores/usePlayerStore';
 import { SidebarPlayer } from '../modules/player/components/SidebarPlayer';
 import { PlayerControls } from '../modules/player/components/PlayerControls';
 import { QueueList } from '../modules/player/components/QueueList';
 import { useSystemConfig } from '../hooks/useSystemConfig';
 import { useUIStore } from '../stores/useUIStore';
-import { UnifiedCastButton } from '../modules/cast-system/components/UnifiedCastButton';
+import { UnifiedCastButton } from '../plugins/cast/components/UnifiedCastButton';
 // Static critical imports
 import { MobileBottomNav } from '../components/navigation/MobileBottomNav';
 import { Sidebar } from '../components/navigation/Sidebar';
-import { useCast } from '../modules/cast-system/context/CastContext';
+import { useCast } from '../plugins/cast/context/CastContext';
 import { useToast } from '../context/ToastContext';
 import useIsMobile from '../hooks/isMobile';
 import { useShallow } from 'zustand/react/shallow';
@@ -25,7 +25,7 @@ import { useShallow } from 'zustand/react/shallow';
 // Dynamic (Lazy) Imports for Heavy/hidden Components
 const ProfileDrawer = dynamic(() => import('../components/profile/ProfileDrawer').then(mod => mod.ProfileDrawer), { ssr: false });
 const ShareRoomModal = dynamic(() => import('../modules/party-system/components/ShareRoomModal').then(mod => mod.ShareRoomModal), { ssr: false });
-const CastModeSelector = dynamic(() => import('../modules/cast-system/components/CastModeSelector').then(mod => mod.CastModeSelector), { ssr: false });
+const CastModeSelector = dynamic(() => import('../plugins/cast/components/CastModeSelector').then(mod => mod.CastModeSelector), { ssr: false });
 const LimitReachedModal = dynamic(() => import('../modules/player/components/LimitReachedModal').then(mod => mod.LimitReachedModal), { ssr: false });
 const ReceiverInfoModal = dynamic(() => import('../modules/party-system/components/ReceiverInfoModal').then(mod => mod.ReceiverInfoModal), { ssr: false });
 
@@ -73,7 +73,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     };
 
     // Auth & Config
-    const { user } = useAuthStore();
+    const { user, signOut } = useSystem().auth();
     const isPremium = user?.membership?.type !== 'free';
     const { config } = useSystemConfig();
     const allowRemote = config?.membership?.[isPremium ? 'premium' : 'free']?.allow_remote;
@@ -155,7 +155,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         if (!roomCode) return;
 
         const initCast = async () => {
-            const { castService } = await import('../modules/cast-system/services/CastService');
+            const { castService } = await import('../plugins/cast/services/CastService');
             // Check if service is already initialized with this room
             // But initialize() handles cleanup internally, so it's safe to call.
             console.log('🔗 MainLayout: Connecting to Remote Room', roomCode);
@@ -171,7 +171,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             // But MainLayout unmounts rarely (only on full refresh or page change if not in _app).
             // Actually, MainLayout re-renders but doesn't unmount on page transitions in Next.js? 
             // Better to cleanup to avoid memory leaks or double listeners.
-            import('../modules/cast-system/services/CastService').then(({ castService }) => {
+            import('../plugins/cast/services/CastService').then(({ castService }) => {
                 castService.cleanup();
             });
         };
@@ -405,7 +405,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         {/* Party Mode Button */}
                         <button
                             onClick={async () => {
-                                const { castService } = await import('../modules/cast-system/services/CastService');
+                                const { castService } = await import('../plugins/cast/services/CastService');
                                 const code = await castService.initialize();
                                 setPartyRoomCode(code);
                                 setPartyModalOpen(true);
@@ -579,7 +579,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 {user.photoURL ? <img src={user.photoURL} className="w-10 h-10 rounded-full" /> : <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center text-primary font-bold">{user.email?.[0]}</div>}
                                 <div><p className="text-sm font-bold truncate text-gray-900">{user.displayName}</p><p className="text-[10px] text-gray-500 uppercase font-semibold">{isPremium ? 'สมาชิก Pro' : 'สมาชิกทั่วไป'}</p></div>
                             </div>
-                            <button onClick={() => useAuthStore.getState().signOut()} className="p-2 text-gray-400 hover:text-red-500"><LogOut className="w-5 h-5" /></button>
+                            <button onClick={() => signOut()} className="p-2 text-gray-400 hover:text-red-500"><LogOut className="w-5 h-5" /></button>
                         </div>
                     ) : (<Link href="/login" className="flex items-center gap-3 px-3 py-3 rounded-lg bg-white border border-gray-200 text-gray-700 font-medium shadow-sm justify-center"> <Key className="w-5 h-5" /> <span>เข้าสู่ระบบ</span> </Link>)}
                 </div>

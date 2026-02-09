@@ -5,14 +5,14 @@ import { memo, useState } from 'react';
 import clsx from 'clsx';
 import { Home, Star, Flame, Library, MessageCircle, Shield, LogOut, Key, Grid, Lock, PlusCircle } from 'lucide-react';
 import { UserGroupIcon } from '@heroicons/react/24/outline'; // Import Heroicon for Party
-import { useAuthStore } from '../../modules/auth/useAuthStore'; // Updated hook
+import { useSystem } from '../../core/container/SystemContext'; // DI Container
 import ProfileDrawer from '../profile/ProfileDrawer';
 import { usePlayerStore } from '../../modules/player/stores/usePlayerStore';
 import { useUIStore } from '../../stores/useUIStore';
 
 export const Sidebar = memo(() => {
     const router = useRouter();
-    const { user, signOut: logOut } = useAuthStore(); // specific hook
+    const { user, signOut: logOut } = useSystem().auth(); // specific hook
     const isPremium = user?.membership?.status === 'active' && user?.membership?.type !== 'free'; // Updated check for new UserData structure
     const { activeIndex, setActiveIndex, setSearchTerm } = usePlayerStore();
     const [isProfileDrawerOpen, setIsProfileDrawerOpen] = useState(false); // State for drawer

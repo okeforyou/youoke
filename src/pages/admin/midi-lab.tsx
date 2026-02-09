@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import AdminLayout from '../../layouts/AdminLayout';
+import AdminLayout from '@/features/admin/layouts/AdminLayout';
 import { FileUp, Music, Play, Square, Pause } from 'lucide-react';
 
 // Safely import spessasynth only on client side
@@ -194,7 +194,10 @@ export default function MidiLab() {
     const filteredSongs = getFilteredSongs();
 
     return (
-        <AdminLayout headerTitle="MIDI Lab (Smart Import)">
+        <AdminLayout>
+            <div className="p-6 pb-0 max-w-6xl mx-auto">
+                <h1 className="text-2xl font-bold">MIDI Lab (Smart Import)</h1>
+            </div>
             <div className="p-6 space-y-6 max-w-6xl mx-auto h-[calc(100vh-100px)] flex flex-col">
 
                 {/* Top Controls */}

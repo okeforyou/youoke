@@ -1,6 +1,6 @@
 import { ReactElement } from 'react';
-import { PageList } from '@/modules/admin/components/cms/PageList';
-import AdminLayout from '@/layouts/AdminLayout';
+import { PageList } from '@/features/admin/components/cms/PageList';
+import AdminLayout from '@/features/admin/layouts/AdminLayout';
 
 const ProfilePagesAdmin = () => {
     return (

@@ -1,6 +1,6 @@
 import Head from "next/head";
 import { useState, useEffect } from "react";
-import AdminLayout from "../../layouts/AdminLayout";
+import AdminLayout from '@/features/admin/layouts/AdminLayout';
 import {
     Users,
     MoreHorizontal,
@@ -312,7 +312,7 @@ export default function AdminUsersPage() {
         const newBanStatus = !user.banned;
         if (confirm(`คุณต้องการ ${newBanStatus ? 'ระงับการใช้งาน (BAN)' : 'ปลดระงับ (UNBAN)'} ผู้ใช้ ${user.displayName} หรือไม่?`)) {
             try {
-                const { AdminService } = await import('@/modules/admin/services/adminService');
+                const { AdminService } = await import('@/features/admin/services/adminService');
                 await AdminService.updateUserBanStatus(user.uid, newBanStatus);
 
                 const updatedUser = { ...user, banned: newBanStatus };

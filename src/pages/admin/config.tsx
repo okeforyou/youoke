@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import AdminLayout from '../../layouts/AdminLayout';
+import AdminLayout from '@/features/admin/layouts/AdminLayout';
 import { useSystemConfig } from '../../hooks/useSystemConfig';
 import { updateSystemConfig, DEFAULT_CONFIG } from '../../services/systemConfigService';
-import ConfigToggle from '@/modules/admin/components/ConfigToggle';
+import ConfigToggle from '@/features/admin/components/ConfigToggle';
 import { Cog6ToothIcon, ComputerDesktopIcon, MusicalNoteIcon, AdjustmentsHorizontalIcon, WrenchScrewdriverIcon, BanknotesIcon, PuzzlePieceIcon } from '@heroicons/react/24/solid';
 import { Save, AlertCircle, PartyPopper, Trash2, Plus, CheckCircle, Smartphone, Youtube, Disc } from 'lucide-react';
 import { useRouter } from 'next/router';
 import { cn } from '@/lib/utils';
 import { THAI_FONTS, FONT_SIZES } from '../../data/fonts';
-import { UpsellConfigPanel } from '@/modules/admin/components/UpsellConfigPanel';
+import { UpsellConfigPanel } from '@/features/admin/components/UpsellConfigPanel';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
 

@@ -3,7 +3,6 @@ import { Home, Star, Flame, Library, User, ListMusic, Search, Gem } from 'lucide
 import { usePlayerStore } from '../../modules/player/stores/usePlayerStore';
 import { useUIStore } from '../../stores/useUIStore';
 import clsx from 'clsx';
-import { useAuthStore } from '@/modules/auth/useAuthStore';
 import { useShallow } from 'zustand/react/shallow';
 import { useRouter } from 'next/router';
 
@@ -17,7 +16,6 @@ export const MobileBottomNav = () => {
         }))
     );
     const { setPlayerHidden, setQueueOpen, isQueueOpen, isPlayerHidden } = useUIStore();
-    const { user } = useAuthStore();
 
     const navItems = [
         { id: 1, label: 'หน้าหลัก', icon: Home },

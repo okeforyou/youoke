@@ -17,16 +17,18 @@ const getAccessToken = async () => {
   // Server-Side: Use Admin SDK to fetch sensitive config securely
   if (typeof window === 'undefined') {
     try {
-      const { adminDb } = await import('../../../modules/admin/utils/firebaseAdmin');
-      const docSnap = await adminDb.collection('settings').doc('default').get();
+      const { adminFirestore } = await import('../../../firebase-admin');
+      if (adminFirestore) {
+        const docSnap = await adminFirestore.collection('settings').doc('default').get();
 
-      if (docSnap.exists) {
-        const data = docSnap.data();
-        const spotifyConfig = data?.integrations?.spotify || {};
-        clientId = spotifyConfig.clientId;
-        clientSecret = spotifyConfig.clientSecret;
-        refreshToken = spotifyConfig.refreshToken;
-        console.log("🔐 [SpotifyAuth] Fetched credentials via Admin SDK");
+        if (docSnap.exists) {
+          const data = docSnap.data();
+          const spotifyConfig = data?.integrations?.spotify || {};
+          clientId = spotifyConfig.clientId;
+          clientSecret = spotifyConfig.clientSecret;
+          refreshToken = spotifyConfig.refreshToken;
+          console.log("🔐 [SpotifyAuth] Fetched credentials via Admin SDK");
+        }
       }
     } catch (adminErr) {
       console.warn("⚠️ [SpotifyAuth] Failed to fetch via Admin SDK:", adminErr);

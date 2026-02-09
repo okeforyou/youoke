@@ -113,7 +113,7 @@ export default function MonitorPage() {
 
     const initCast = async () => {
       try {
-        const { castService } = await import('../modules/cast-system/services/CastService');
+        const { castService } = await import('../plugins/cast/services/CastService');
         if (!localCode) return;
         await castService.initialize(localCode);
 

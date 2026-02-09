@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
-import { adminDb } from "@/modules/admin/utils/firebaseAdmin";
+import { adminFirestore } from "@/firebase-admin";
 
 const OMISE_SECRET_KEY = process.env.OMISE_SECRET_KEY || '';
 
@@ -55,29 +55,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         expiryDate.setDate(expiryDate.getDate() + 30);
                     }
 
-                    await adminDb.collection('users').doc(userId).set({
-                        membership: {
-                            type: 'pro', // or vip, depending on mapping
-                            status: 'active',
-                            sku: packageId,
-                            packageName: packageName || 'Premium',
-                            expiryDate: expiryDate.toISOString(),
-                            updatedAt: new Date().toISOString()
-                        }
-                    }, { merge: true });
+                    if (adminFirestore) {
+                        await adminFirestore.collection('users').doc(userId).set({
+                            membership: {
+                                type: 'pro', // or vip, depending on mapping
+                                status: 'active',
+                                sku: packageId,
+                                packageName: packageName || 'Premium',
+                                expiryDate: expiryDate.toISOString(),
+                                updatedAt: new Date().toISOString()
+                            }
+                        }, { merge: true });
+                    }
 
                     // Log Proof
-                    await adminDb.collection('payment_proofs').add({
-                        userId: userId,
-                        packageId: packageId,
-                        packageName: packageName,
-                        amount: charge.amount / 100,
-                        slipUrl: "AUTO_OMISE_QR",
-                        paymentMethod: 'omise_qr',
-                        status: 'approved',
-                        transactionId: chargeId,
-                        createdAt: new Date()
-                    });
+                    if (adminFirestore) {
+                        await adminFirestore.collection('payment_proofs').add({
+                            userId: userId,
+                            packageId: packageId,
+                            packageName: packageName,
+                            amount: charge.amount / 100,
+                            slipUrl: "AUTO_OMISE_QR",
+                            paymentMethod: 'omise_qr',
+                            status: 'approved',
+                            transactionId: chargeId,
+                            createdAt: new Date()
+                        });
+                    }
                 }
             } catch (dbError) {
                 console.error("DB Update Failed during Status Check:", dbError);

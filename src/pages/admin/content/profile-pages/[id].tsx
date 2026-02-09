@@ -1,7 +1,7 @@
 import { ReactElement } from 'react';
 import { useRouter } from 'next/router';
-import { PageEditor } from '@/modules/admin/components/cms/PageEditor';
-import AdminLayout from '@/layouts/AdminLayout';
+import { PageEditor } from '@/features/admin/components/cms/PageEditor';
+import AdminLayout from '@/features/admin/layouts/AdminLayout';
 
 const EditProfilePage = () => {
     const router = useRouter();

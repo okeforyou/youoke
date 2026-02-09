@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { adminDb } from "@/modules/admin/utils/firebaseAdmin";
+import { adminFirestore as adminDb } from "@/firebase-admin";
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 
 /**
@@ -44,30 +44,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     expiresAt.setDate(expiresAt.getDate() + daysToAdd);
 
                     // 2. Update User Membership (Secure Write)
-                    await adminDb.collection('users').doc(userId).update({
-                        membership: {
-                            type: packageId === 'lifetime' ? 'lifetime' : 'pro',
-                            status: 'active',
-                            updatedAt: Timestamp.now(),
-                            expiresAt: Timestamp.fromDate(expiresAt),
-                            packageId: packageId
-                        },
-                        isPremium: true
-                    });
+                    if (adminDb) {
+                        await adminDb.collection('users').doc(userId).update({
+                            membership: {
+                                type: packageId === 'lifetime' ? 'lifetime' : 'pro',
+                                status: 'active',
+                                updatedAt: Timestamp.now(),
+                                expiresAt: Timestamp.fromDate(expiresAt),
+                                packageId: packageId
+                            },
+                            isPremium: true
+                        });
 
-                    // 3. Log Order
-                    await adminDb.collection('payment_proofs').add({
-                        userId,
-                        packageId,
-                        amount: charge.amount / 100, // Convert satang back to unit
-                        slipUrl: charge.authorize_uri || 'omise_auto',
-                        status: 'approved',
-                        createdAt: Timestamp.now(),
-                        processedAt: Timestamp.now(),
-                        processedBy: 'omise_webhook',
-                        gatewayId: charge.id,
-                        paymentMethod: charge.source?.type || 'credit_card'
-                    });
+                        // 3. Log Order
+                        await adminDb.collection('payment_proofs').add({
+                            userId,
+                            packageId,
+                            amount: charge.amount / 100, // Convert satang back to unit
+                            slipUrl: charge.authorize_uri || 'omise_auto',
+                            status: 'approved',
+                            createdAt: Timestamp.now(),
+                            processedAt: Timestamp.now(),
+                            processedBy: 'omise_webhook',
+                            gatewayId: charge.id,
+                            paymentMethod: charge.source?.type || 'credit_card'
+                        });
+                    }
 
                     console.log('🎉 User Upgraded Automatically!');
                 }
