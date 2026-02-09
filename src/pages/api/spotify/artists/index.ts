@@ -249,6 +249,7 @@ export default async function handler(
     res.status(200).json(artists);
   } catch (error: any) {
     console.error("❌ [API] CRITICAL ERROR fetching top artists:", error);
+    console.error("❌ [API] Error Stack:", error.stack);
 
     // Fallback if Spotify fails?
     if (cachedData) {
@@ -257,6 +258,6 @@ export default async function handler(
     }
 
     // Return a safe empty response instead of 500 if possible, or just the error
-    res.status(500).json({ error: (error as Error).message });
+    return res.status(500).json({ error: (error as Error).message });
   }
 }
