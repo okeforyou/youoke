@@ -176,15 +176,27 @@ export default async function handler(
       )
     );
 
-    // Populate Categories
-    artistCategories = categoryResponses
-      .map(res => res.data)
-      .filter(data => data && data.id)
-      .map(data => ({
-        tag_id: data.id,
-        tag_name: data.name,
-        imageUrl: data.images?.[0]?.url || ""
-      }));
+    // Populate Categories with safety check
+    try {
+      artistCategories = categoryResponses
+        .map(res => {
+          if (!res || !res.data) {
+            console.warn(`⚠️ [API] Category response invalid for ID: ${res?._id}`);
+            return null;
+          }
+          return res.data;
+        })
+        .filter(data => data && data.id)
+        .map(data => ({
+          tag_id: data.id,
+          tag_name: data.name,
+          imageUrl: data.images?.[0]?.url || ""
+        }));
+    } catch (mapError: any) {
+      console.error("❌ [API] Error mapping categories:", mapError.message);
+      // Continue with empty categories rather than crashing
+      artistCategories = [];
+    }
 
     console.log(`✅ [API] Categories Processed: ${artistCategories.length}/${featuredPlaylists.length}`);
 
