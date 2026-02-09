@@ -16,8 +16,12 @@ const getAccessToken = async () => {
   const { clientId, clientSecret, refreshToken } = config.integrations?.spotify || {};
 
   if (!refreshToken || !clientId || !clientSecret) {
-    console.error("Spotify credentials missing in System Config");
-    throw new Error("No Spotify credentials configured");
+    console.error("❌ Spotify credentials missing in System Config", {
+      hasClientId: !!clientId,
+      hasClientSecret: !!clientSecret,
+      hasRefreshToken: !!refreshToken
+    });
+    throw new Error("No Spotify credentials configured (Check System Config or Environment Variables)");
   }
 
   try {
