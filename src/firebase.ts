@@ -23,21 +23,21 @@ const firebaseConfig = {
   apiKey: cleanEnv(process.env.NEXT_PUBLIC_FIREBASE_PUBLIC_API_KEY) ||
     cleanEnv(process.env.NEXT_PUBLIC_FIREBASE_API_KEY) ||
     cleanEnv(process.env.NEXT_PUBLIC_API_KEY) ||
-    'dummy-api-key',
+    'AIzaSyAtUvNGX9ibvl4YCNURA9q3XYJusa-iYDc', // Fallback: Production Key
   authDomain: cleanEnv(process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN) ||
     cleanEnv(process.env.NEXT_PUBLIC_AUTH_DOMAIN) ||
-    'dummy.firebaseapp.com',
+    'playokeforyou.firebaseapp.com',
   projectId: cleanEnv(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) ||
     cleanEnv(process.env.NEXT_PUBLIC_PROJECT_ID) ||
-    'dummy-project',
+    'playokeforyou',
   storageBucket: cleanEnv(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET) ||
     cleanEnv(process.env.NEXT_PUBLIC_STORAGE_BUCKET) ||
-    'dummy.appspot.com',
+    'playokeforyou.firebasestorage.app',
   messagingSenderId: cleanEnv(process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID) ||
     cleanEnv(process.env.NEXT_PUBLIC_MESSAGING_SENDER_ID),
   appId: cleanEnv(process.env.NEXT_PUBLIC_FIREBASE_APP_ID) ||
     cleanEnv(process.env.NEXT_PUBLIC_APP_ID),
-  databaseURL: databaseURL,
+  databaseURL: databaseURL || 'https://playokeforyou-default-rtdb.asia-southeast1.firebasedatabase.app',
 };
 
 // Initialize Firebase only if config is valid
