@@ -96,6 +96,12 @@ export const AuthContextProvider = ({
           }
         }
 
+        // HARDCODE OWNER ROLE
+        if (user.email === 'boonyanone@gmail.com') {
+          role = 'owner';
+          console.log('👑 Owner Identified: Access Granted');
+        }
+
         setUser({
           email: user.email,
           uid: user.uid,

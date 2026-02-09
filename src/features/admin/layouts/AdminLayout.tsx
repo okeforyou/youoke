@@ -26,9 +26,27 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   if (loading || !user) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
         <span className="loading loading-spinner loading-lg text-primary"></span>
-        <p className="mt-4 text-sm font-medium text-muted-foreground animate-pulse">Verifying Admin Access...</p>
+        <p className="text-sm font-medium text-muted-foreground animate-pulse">Verifying Admin Access...</p>
+
+        {/* Debug Info (Visible after 2s) */}
+        <div className="animate-in fade-in delay-1000 duration-1000 mt-8 p-4 bg-gray-100 rounded-lg text-xs font-mono text-left max-w-md border border-gray-300">
+          <p className="font-bold text-gray-500 mb-2">Debug Info (Developer Use):</p>
+          <p>Loading: {loading ? 'YES' : 'NO'}</p>
+          <p>User: {user ? 'LOGGED_IN' : 'NULL'}</p>
+          <p>Email: {user?.email || '-'}</p>
+          <p>Role: {user?.role || '-'}</p>
+          <p>UID: {user?.uid || '-'}</p>
+          <div className="mt-4 flex gap-2">
+            <button onClick={() => router.push('/login')} className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+              Force Login
+            </button>
+            <button onClick={() => window.location.reload()} className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600">
+              Reload
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
