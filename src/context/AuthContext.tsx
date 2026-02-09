@@ -56,6 +56,7 @@ export const AuthContextProvider = ({
     }
 
     return auth.onIdTokenChanged(async (user) => {
+      console.log('⚡ [Debug] AuthContext Token Changed:', user ? 'User Found' : 'No User', user?.uid);
       if (!user) {
         // ... (existing cleanup logic)
         setUser({

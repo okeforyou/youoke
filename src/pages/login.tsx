@@ -30,22 +30,19 @@ export default function LoginPage() {
     };
 
     // Redirect if logged in
+    // Redirect if logged in
     useEffect(() => {
-        console.log("⚡ [LoginPage] Check:", {
-            isReady: router.isReady,
-            userUid: user?.uid,
-            query: router.query,
-            asPath: router.asPath
-        });
+        if (!router.isReady || isLoading) return;
 
-        if (user && router.isReady) {
-            const redirectUrl = (router.query.redirect as string);
-            const finalUrl = redirectUrl && !redirectUrl.startsWith('/login') ? redirectUrl : '/';
+        if (user) {
+            const redirectUrl = (router.query.redirect as string) || '/';
+            // Prevent redirect loop if redirectUrl is current page
+            if (redirectUrl === router.asPath) return;
 
-            console.log(`⚡ [LoginPage] Authenticated. Redirecting to: ${finalUrl} (Original: ${redirectUrl})`);
-            router.push(finalUrl);
+            console.log(`⚡ [LoginPage] Authenticated (${user.email}). Redirecting to: ${redirectUrl}`);
+            router.replace(redirectUrl); // Use replace to avoid history stack buildup
         }
-    }, [user, router, router.isReady]);
+    }, [user, router.isReady, isLoading, router.query, router.asPath]);
 
     // Handle LINE Callback (Same logic as before)
     useEffect(() => {

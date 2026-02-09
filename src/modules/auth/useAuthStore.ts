@@ -84,7 +84,8 @@ export const useAuthStore = create<UserState & AuthActions>()(
                 console.log('🔐 Auth Store: Initializing...');
 
                 const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
-                    console.log('⚡ AuthStateChanged:', firebaseUser ? 'User Found' : 'No User', firebaseUser?.uid);
+                    console.log('⚡ [Debug] AuthStateChanged:', firebaseUser ? 'User Found' : 'No User', firebaseUser?.uid);
+                    console.log('⚡ [Debug] isAnonymous:', firebaseUser?.isAnonymous);
                     if (!firebaseUser) {
                         // 🛑 SYSTEM FIX: Don't kill Dev Admin session
                         const currentUser = get().user;
@@ -112,10 +113,12 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                 const isAllowedGuestPage = path.startsWith('/monitor') || path.startsWith('/remote');
 
                                 if (!isAllowedGuestPage) {
-                                    console.warn('🚫 Guest Session detected on unauthorized page. Forcing Logout.');
-                                    if (auth) await firebaseSignOut(auth);
-                                    set({ user: null, isLoading: false });
-                                    return;
+                                    console.warn('🚫 [Debug] Guest Session detected on unauthorized page.', window.location.pathname);
+                                    // TEMPORARY DEBUG: Disable Force Logout
+                                    // console.warn('🚫 Guest Session detected on unauthorized page. Forcing Logout.');
+                                    // if (auth) await firebaseSignOut(auth);
+                                    // set({ user: null, isLoading: false });
+                                    // return;
                                 }
                             }
 
@@ -401,6 +404,8 @@ export const useAuthStore = create<UserState & AuthActions>()(
             },
 
             signOut: async () => {
+                console.log('⚡ [Debug] SignOut Action Triggered (Nuclear Mode)');
+                console.trace('SignOut Trace');
                 console.log('⚡ SignOut: Started (Nuclear Mode)');
                 set({ isLoading: true });
                 try {
