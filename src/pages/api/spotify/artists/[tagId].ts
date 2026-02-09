@@ -37,7 +37,40 @@ export default async function handler(
       return res.status(200).json(cached.data);
     }
 
-    // Fetching the specific playlist by ID (Full Details)
+    // Check for YouTube Playlist (Hybrid Mode)
+    if (playlistId.startsWith('yt-')) {
+      console.log(`[API] Fetching YouTube Playlist: ${playlistId}`);
+      const ytId = playlistId.replace('yt-', '');
+
+      // Dynamic Import to avoid top-level await/module issues if any
+      const { scrapeYouTubePlaylistVideos } = require('../../../../utils/youtubeScraper');
+
+      const videos = await scrapeYouTubePlaylistVideos(ytId);
+
+      const artists = {
+        status: "success",
+        playlist: {
+          id: playlistId,
+          name: "YouTube Playlist", // We might want to fetch title, but for now simple
+          description: "Tracks from YouTube",
+          imageUrl: videos[0]?.videoThumbnails?.[1]?.url || "", // Use first video thumb
+          owner: "YouTube"
+        },
+        artist: videos.map((v: any) => ({
+          id: v.videoId,
+          title: v.title,
+          artist_name: v.author,
+          coverImageURL: v.videoThumbnails?.[1]?.url || v.videoThumbnails?.[0]?.url || "",
+          imageUrl: v.videoThumbnails?.[1]?.url || v.videoThumbnails?.[0]?.url || "",
+        }))
+      };
+
+      // Cache
+      playlistCache.set(playlistId, { data: artists, timestamp: Date.now() });
+      return res.status(200).json(artists);
+    }
+
+    // Fetching the specific playlist by ID (Spotify)
     const playlistResponse = await axios.get(
       `https://api.spotify.com/v1/playlists/${playlistId}`,
       {
