@@ -31,11 +31,18 @@ export default function LoginPage() {
 
     // Redirect if logged in
     useEffect(() => {
+        console.log("⚡ [LoginPage] Check:", {
+            isReady: router.isReady,
+            userUid: user?.uid,
+            query: router.query,
+            asPath: router.asPath
+        });
+
         if (user && router.isReady) {
-            const redirectUrl = (router.query.redirect as string) || '/';
-            // Prevent redirect loop if redirectUrl is /login
-            const finalUrl = redirectUrl.startsWith('/login') ? '/' : redirectUrl;
-            console.log("⚡ Redirecting to:", finalUrl);
+            const redirectUrl = (router.query.redirect as string);
+            const finalUrl = redirectUrl && !redirectUrl.startsWith('/login') ? redirectUrl : '/';
+
+            console.log(`⚡ [LoginPage] Authenticated. Redirecting to: ${finalUrl} (Original: ${redirectUrl})`);
             router.push(finalUrl);
         }
     }, [user, router, router.isReady]);

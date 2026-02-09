@@ -15,20 +15,26 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
 
   useEffect(() => {
+    console.log("🛡️ [AdminRoute] Check:", { loading, userUid: user?.uid, role: user?.role });
+
     // Wait for loading to finish
     if (loading) return;
 
     // Not logged in - redirect to login
     if (!user?.uid) {
+      console.warn("⛔ [AdminRoute] No User -> Redirecting to Login");
       router.push("/login?redirect=/admin");
       return;
     }
 
     // Logged in but not admin - redirect to home
     if (user.role !== 'admin') {
+      console.warn(`⛔ [AdminRoute] Role '${user.role}' is not 'admin' -> Redirecting to Home`);
       router.push("/");
       return;
     }
+
+    console.log("✅ [AdminRoute] Access Granted");
   }, [router, user, loading]);
 
   // Show loading state while checking auth

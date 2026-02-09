@@ -20,6 +20,13 @@ const getAccessToken = async () => {
   if (!clientSecret) clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
   if (!refreshToken) refreshToken = process.env.SPOTIFY_REFRESH_TOKEN;
 
+  console.log("🔐 [SpotifyAuth] Credentials Check:", {
+    source: "Firestore/Env",
+    hasClientId: !!clientId,
+    hasClientSecret: !!clientSecret,
+    hasRefreshToken: !!refreshToken
+  });
+
   if (!refreshToken || !clientId || !clientSecret) {
     console.error("❌ Spotify credentials missing in System Config & Env", {
       hasClientId: !!clientId,
