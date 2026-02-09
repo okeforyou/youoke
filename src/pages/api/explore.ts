@@ -1,28 +1,11 @@
-
 import { NextApiRequest, NextApiResponse } from 'next';
-// @ts-ignore
-import YTMusic from 'ytmusic-api';
-
-let ytmusic: any;
-
-const initializeYT = async () => {
-    if (!ytmusic) {
-        ytmusic = new YTMusic();
-        // Initialize with Thailand Locale
-        await ytmusic.initialize({ gl: 'TH', hl: 'th' });
-    }
-    return ytmusic;
-};
+import { scrapeYouTubeSearch } from '../../utils/youtubeScraper';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
-        console.log('[API/Explore] Initializing YTMusic...');
-        const yt = await initializeYT();
-
-        console.log('[API/Explore] Fetching Data (Rich Thai Content)...');
+        console.log('[API/Explore] Fetching Data (Rich Thai Content) via Scraper...');
 
         // CATEGORY CONFIGURATION (Thai Content Focus)
-        // TODO: Move this to Admin Database later for dynamic configuration
         const CATEGORIES = [
             { query: 'Top 100 Thailand', title: '🏆 Thailand Top 100' },
             { query: 'เพลงไทยฮิตล่าสุด', title: '🔥 เพลงไทยมาแรง 2025' },
@@ -39,33 +22,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         console.log(`[API/Explore] Fetching ${CATEGORIES.length} Thai Categories...`);
 
-        // Parallel Fetch with Individual Error Handling
+        // Parallel Fetch using our Robust Scraper
         const results = await Promise.all(
-            CATEGORIES.map(cat => yt.search(cat.query).then((res: any) => res).catch((e: any) => {
-                console.error(`[API/Explore] Failed to search '${cat.query}':`, e.message);
-                return [];
-            }))
+            CATEGORIES.map(cat =>
+                scrapeYouTubeSearch(cat.query)
+                    .then(res => res)
+                    .catch(e => {
+                        console.error(`[API/Explore] Failed to search '${cat.query}':`, e.message);
+                        return [];
+                    })
+            )
         );
 
-        // Helper to map items
-        const mapItems = (items: any[]) => items.map((item: any) => {
-            const id = item.videoId || item.playlistId || item.browseId;
-            if (!id) return null;
+        // Helper to map scraper items to Shelf items
+        const mapItems = (items: any[]) => items.map((item: any) => ({
+            title: item.title,
+            subtitle: item.author || '',
+            thumbnail: item.videoThumbnails?.[0]?.url || item.videoThumbnails?.[1]?.url || '',
+            id: item.videoId,
+            type: 'video' // Scraper returns videos
+        }));
 
-            const thumbnails = item.thumbnails || [];
-            const thumbnail = thumbnails.length > 0 ? thumbnails[thumbnails.length - 1].url : undefined;
-
-            return {
-                title: item.name || item.title || 'Unknown',
-                subtitle: Array.isArray(item.artists) ? item.artists.map((a: any) => a.name).join(', ') : (item.artist?.name || ''),
-                thumbnail: thumbnail,
-                id: id,
-                type: item.videoId ? 'video' : (item.playlistId ? 'playlist' : 'unknown')
-            };
-        }).filter((i: any) => i !== null);
-
-
-        // Construct Shelves (100% Custom Categories)
+        // Construct Shelves
         const parsedData = CATEGORIES.map((cat, index) => ({
             title: cat.title,
             items: mapItems(results[index] || []).slice(0, 25)
