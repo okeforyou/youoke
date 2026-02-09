@@ -207,21 +207,24 @@ export const AdminService = {
      */
     getRevenueHistory: async (): Promise<{ name: string; revenue: number }[]> => {
         try {
-            const sixMonthsAgo = new Date();
-            sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
-            sixMonthsAgo.setDate(1);
-
             if (!db) return [];
+
+            // Simplified Query: Fetch last 100 approved payments OR just fetch by date if possible
+            // To avoid "Missing Index" error, we should either:
+            // 1. Create the index (User needs to do this in console)
+            // 2. Simplify query to just status == approved (and sort in memory) or just orderBy createdAt (and filter status in memory)
+
+            // OPTION 2: Query all recent payments and filter in memory (Safer for immediate fix)
             const q = query(
                 collection(db, "payment_proofs"),
-                where("status", "==", "approved"),
-                where("createdAt", ">=", sixMonthsAgo),
-                orderBy("createdAt", "asc")
+                orderBy("createdAt", "desc"),
+                limit(100)
             );
 
             const snapshot = await getDocs(q);
             const monthlyData: Record<string, number> = {};
 
+            // Init 6 months
             for (let i = 0; i < 6; i++) {
                 const d = new Date();
                 d.setMonth(d.getMonth() - i);
@@ -229,13 +232,20 @@ export const AdminService = {
                 monthlyData[key] = 0;
             }
 
+            const sixMonthsAgo = new Date();
+            sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+            sixMonthsAgo.setDate(1);
+
             snapshot.forEach(doc => {
                 const data = doc.data();
-                if (data.createdAt && data.amount) {
+                // Client-side filtering
+                if (data.status === 'approved' && data.createdAt && data.amount) {
                     const date = data.createdAt.toDate();
-                    const month = date.toLocaleString('en-US', { month: 'short' });
-                    if (monthlyData[month] !== undefined) {
-                        monthlyData[month] += Number(data.amount);
+                    if (date >= sixMonthsAgo) {
+                        const month = date.toLocaleString('en-US', { month: 'short' });
+                        if (monthlyData[month] !== undefined) {
+                            monthlyData[month] += Number(data.amount);
+                        }
                     }
                 }
             });
@@ -251,12 +261,7 @@ export const AdminService = {
             return result;
         } catch (error) {
             console.error("Failed to get revenue history:", error);
-            // Return empty fallback
-            return [
-                { name: "Jan", revenue: 0 }, { name: "Feb", revenue: 0 },
-                { name: "Mar", revenue: 0 }, { name: "Apr", revenue: 0 },
-                { name: "May", revenue: 0 }, { name: "Jun", revenue: 0 }
-            ];
+            return [];
         }
     },
 
