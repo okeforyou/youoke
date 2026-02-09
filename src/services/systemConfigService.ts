@@ -178,7 +178,7 @@ export const DEFAULT_CONFIG: SystemConfig = {
         crossfade: 3,
         allowedSources: ['youtube'],
         autoplay: true,
-        defaultProvider: 'youtube',
+        defaultProvider: 'spotify',
     },
     ui: {
         showHero: false,

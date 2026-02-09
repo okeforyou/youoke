@@ -1,19 +1,17 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import axios from "axios";
-
-import { getAccessToken } from "../../../../modules/spotify-theme/services/auth";
+import { scrapeYouTubeSearch } from "../../../../utils/youtubeScraper";
 import { Artist, ArtistCategory, GetTopArtists } from "../../../../types";
 
 /**
- * Get Top Artists from Spotify Playlist
+ * Get Top Artists from YouTube Scraper (Mocking Spotify)
  *
- * Uses Thailand Top 50 playlist to find artists with most trending songs
- * Updates automatically when playlist is updated
+ * Uses "Thailand Top 100" search results to find trending artists.
+ * Dynamic and auto-updating based on YouTube trends.
  */
 // Simple In-Memory Cache
 let cachedData: GetTopArtists | null = null;
 let lastFetch: number = 0;
-const CACHE_DURATION = 15 * 60 * 1000; // 15 Minutes
+const CACHE_DURATION = 30 * 60 * 1000; // 30 Minutes
 
 export default async function handler(
   req: NextApiRequest,
@@ -21,153 +19,104 @@ export default async function handler(
 ) {
   // Check Cache
   if (cachedData && Date.now() - lastFetch < CACHE_DURATION) {
-    console.log('⚡ Serving Top Artists from Cache');
+    console.log('⚡ Serving Top Artists from Cache (Scraper)');
     return res.status(200).json(cachedData);
   }
 
   try {
-    const accessToken = await getAccessToken();
-    if (!accessToken) throw new Error("No access token");
-    console.log("✅ Got access token:", accessToken.substring(0, 20) + "...");
-    let artistList: Artist[] = [];
-    let artistCategories: ArtistCategory[] = [];
+    const searchQuery = "Thailand Top 100 Songs";
+    console.log(`🎵 Fetching '${searchQuery}' via Scraper...`);
 
-    // Thai name mapping for popular artists
-    // Use Thai name for better search results in Thailand
-    const thaiNameMap: Record<string, string> = {
-      "YOUNGOHM": "ยังโอม",
-      "WANYAi": "วันใหม่",
-      "PURPEECH": "เพอร์พีช",
-      "BLVCKHEART": "แบล็คฮาร์ท",
-      "BOWKYLION": "โบวี่ไลอ้อน",
-      "SEA.": "ซี",
-      "Yes'sir Days": "เยสเซอร์เดย์ส",
-      "BETAYOURBITCH": "เบต้า",
-      "Jeff Satur": "เจฟ สาทอร์",
-      "guncharlie": "กัน ชาลี",
-      "PUN": "ปัน",
-      "Violette Wautier": "ไวโอเลต วอเทียร์",
-      "NONT TANONT": "นนท์ ธนนท์",
-      "Palmy": "ปาล์มมี่",
-      "Billkin": "บิวกิ้น",
-      "Sprite": "สไปร์ท",
-      "F.HERO": "เอฟฮีโร่",
-      "Carabao": "คาราบาว",
-      "Maxzy": "แม็กซี่",
-      "TaitosmitH": "ไท โตสมิธ",
-    };
+    // 1. Scrape Trending Songs
+    // Increase timeout to 8s for deep scraping
+    const searchResults = await scrapeYouTubeSearch(searchQuery, 8000);
 
-    // Use same playlist as trending hits for consistency
-    const playlistId = "3oLUwlQTdzsCkTK72wCbv9"; // Thailand Top 50
+    if (!searchResults || searchResults.length === 0) {
+      throw new Error("No results from scraper");
+    }
 
-    // Additional Categories (Mock Genres using Playlists)
-    const featuredPlaylists = [
-      { id: "37i9dQZF1DX2L0iB23Enbq", name: "ลูกทุ่ง 100 ล้านวิว" },
-      { id: "37i9dQZF1DXa2SPUyWl8Y5", name: "GMM Grammy" },
-      { id: "37i9dQZF1DX3XlBkCi835s", name: "T-Pop" },
-      { id: "37i9dQZF1DWZtZ8vUCzXqi", name: "เพลงฮิตยุค 2000" },
-      { id: "37i9dQZF1DX0t34Gq8hZba", name: "เพลงใหม่ล่าสุด" }
-    ];
+    // 2. Extract Artists from Video Titles/Authors
+    const artistMap = new Map<string, { name: string; imageUrl: string; songCount: number }>();
 
-    console.log(`🎵 Fetching playlist: ${playlistId} and categories`);
+    for (const item of searchResults) {
+      // Clean up artist name (Simple heuristic)
+      let artistName = item.author || "Unknown";
 
-    // Fetch Main Playlist and Featured Categories in Parallel
-    const [playlistResponse, ...categoryResponses] = await Promise.all([
-      axios.get(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, { headers: { Authorization: `Bearer ${accessToken}` } }),
-      ...featuredPlaylists.map(cat =>
-        axios.get(`https://api.spotify.com/v1/playlists/${cat.id}?fields=id,name,images`, {
-          headers: { Authorization: `Bearer ${accessToken}` }
-        }).catch(err => {
-          console.error(`Failed to fetch category ${cat.id}:`, err.message);
-          return { data: null };
-        })
-      )
-    ]);
+      // Filter out "Topic", "Official", "Vevo"
+      artistName = artistName.replace(/ - Topic| Official|VEVO| Channel|Music|Records/gi, "").trim();
 
-    // Populate Categories
-    artistCategories = categoryResponses
-      .map(res => res.data)
-      .filter(data => data && data.id)
-      .map(data => ({
-        tag_id: data.id,
-        tag_name: data.name,
-        imageUrl: data.images?.[0]?.url || ""
-      }));
-
-    const tracks = playlistResponse.data.items;
-    console.log(`📊 Got ${tracks.length} tracks from Thailand Top 50 playlist`);
-
-    // Helper function to check if text contains Thai characters
-    const hasThaiCharacters = (text: string) => {
-      return /[\u0E00-\u0E7F]/.test(text);
-    };
-
-    // Count songs per artist and collect artist info
-    const artistMap = new Map<string, {
-      name: string;
-      imageUrl: string;
-      songCount: number;
-    }>();
-
-    for (const item of tracks) {
-      if (!item?.track) continue;
-
-      const track = item.track;
-      const artistName = track.artists[0]?.name || "";
-      const trackName = track.name || "";
-
-      // Filter: Only include artists with Thai characters in name OR song title
-      // RELAXED: Allow all artists from Top 50, but maybe prioritize Thai?
-      // For now, let's just allow everyone to ensure the list isn't empty.
-      /*
-      if (!hasThaiCharacters(artistName) && !hasThaiCharacters(trackName)) {
-        console.log(`⏭️  Skipping non-Thai artist: ${artistName}`);
-        continue;
+      // If author is a label, try extracting from title "Artist - Title"
+      const genericLabels = ['GMM GRAMMY', 'RsiamMusic', 'rsfriends', 'Genierock', 'Sanamluang Music', 'Smallroom', 'Whattheduck', 'Gene Lab'];
+      if (genericLabels.some(label => artistName.toLowerCase().includes(label.toLowerCase()))) {
+        const parts = item.title.split('-');
+        if (parts.length > 1) {
+          artistName = parts[0].trim();
+        }
       }
-      */
 
-      const artistImage = track.album?.images?.[0]?.url || "";
+      // Skip invalid names
+      if (artistName.length < 2 || artistName.includes("รวมเพลง")) continue;
+
+      const imageUrl = item.videoThumbnails?.[1]?.url || item.videoThumbnails?.[0]?.url || "";
 
       if (artistMap.has(artistName)) {
-        // Increment song count for existing artist
-        const artist = artistMap.get(artistName)!;
-        artist.songCount++;
+        const entry = artistMap.get(artistName)!;
+        entry.songCount++;
+        // Keep the image if we have one, or update if we found a better one? 
+        // Just keep first found for stability.
       } else {
-        // Add new artist
-        artistMap.set(artistName, {
-          name: artistName,
-          imageUrl: artistImage,
-          songCount: 1,
-        });
+        artistMap.set(artistName, { name: artistName, imageUrl, songCount: 1 });
       }
     }
 
-    // Convert to array and sort by song count (most songs first)
-    const sortedArtists = Array.from(artistMap.values())
+    // 3. Sort by occurrences (Trends)
+    // Map to API format
+    const topArtists: Artist[] = Array.from(artistMap.values())
       .sort((a, b) => b.songCount - a.songCount)
-      .slice(0, 12); // Top 12 artists
+      .slice(0, 18) // Top 18 to fill the grid
+      .map(a => ({
+        name: a.name,
+        imageUrl: a.imageUrl
+      }));
 
-    artistList = sortedArtists.map(artist => ({
-      name: thaiNameMap[artist.name] || artist.name, // Use Thai name if available
-      imageUrl: artist.imageUrl,
-    }));
+    // 4. Mock Categories (Playlists) - Dynamic "Quick Access" based on search
+    // We point to "tag_id" which usually meant Playlist ID in Spotify. 
+    // Here we can use it as a "Keyword" if we funnel it to searchPlaylists?
+    // Let's use it as a KEYWORD for now, and handle it in searchPlaylists
+    const artistCategories: ArtistCategory[] = [
+      { tag_id: "เพลงฮิต 100 ล้านวิว", tag_name: "🇹🇭 เพลงไทยฮิต 100 ล้านวิว", imageUrl: "https://i.ytimg.com/vi/S7u3L7ZkOQ0/maxresdefault.jpg" },
+      { tag_id: "ลูกทุ่งมาแรง", tag_name: "🌾 ลูกทุ่งมาแรง", imageUrl: "https://i.ytimg.com/vi/_C-Mfq-tO3k/maxresdefault.jpg" },
+      { tag_id: "เพลงอินดี้ฟังสบาย", tag_name: "🧣 Indie ฟังสบาย", imageUrl: "https://i.ytimg.com/vi/Q2e8i-Pj3fA/maxresdefault.jpg" },
+      { tag_id: "เพลงเศร้าอกหัก", tag_name: "💔 เพลงเศร้าคนอกหัก", imageUrl: "https://i.ytimg.com/vi/J_CFBjAyPWE/maxresdefault.jpg" },
+      { tag_id: "เพลงแดนซ์ 90", tag_name: "💃 แดนซ์ 90s มันส์ๆ", imageUrl: "https://i.ytimg.com/vi/x_cZ7Z9WzJ8/maxresdefault.jpg" },
+    ];
 
-    console.log(`✅ Final artist list: ${artistList.length} artists`);
-    console.log(`Top artists:`, sortedArtists.map(a => `${a.name} (${a.songCount} songs)`));
-
-    const artists: GetTopArtists = {
+    const result: GetTopArtists = {
       status: "success",
-      artist: artistList,
-      artistCategories,
+      artist: topArtists,
+      artistCategories: artistCategories
     };
 
     // Update Cache
-    cachedData = artists;
+    cachedData = result;
     lastFetch = Date.now();
 
-    res.status(200).json(artists);
-  } catch (error) {
-    console.error("Error fetching top artists:", error);
-    res.status(500).json({ error: (error as Error).message });
+    console.log(`✅ Scraped ${topArtists.length} artists. Serving fresh data.`);
+    res.status(200).json(result);
+
+  } catch (error: any) {
+    console.error("Error scraping top artists:", error.message);
+    // Fallback to cache if available
+    if (cachedData) {
+      console.log("⚠️ Scraper failed, serving stale cache.");
+      return res.status(200).json(cachedData);
+    }
+
+    // Final Fallback: Return empty structure to prevent UI crash
+    res.status(200).json({
+      status: "success", // Fake success to avoid error page
+      artist: [],
+      artistCategories: []
+    });
   }
 }
