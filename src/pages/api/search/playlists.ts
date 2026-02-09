@@ -17,14 +17,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const limit = 20;
         const offset = (page - 1) * limit;
 
-        // 1. YouTube Scraper (Primary Source for Reliability)
-        let results = await scrapeYouTubePlaylistSearch(q as string);
+        // 1. Try Spotify First (Spotitube V1 Logic)
+        let results: any[] = [];
+        try {
+            let spotifyResults: any[] = [];
+            try {
+                // This calls the internal service which uses getAccessToken
+                spotifyResults = await searchSpotifyPlaylists(q as string, limit, offset);
+            } catch (err) {
+                console.warn("Spotify Search Skipped/Failed:", err);
+            }
 
-        // 2. Spotify Fallback (Optional/Legacy check)
-        // If scraper fails (empty), we *could* try Spotify, but since Spotify Auth is broken...
-        // let's just stick to YouTube for now to ensure consistency.
+            if (spotifyResults && Array.isArray(spotifyResults) && spotifyResults.length > 0) {
+                results = spotifyResults
+                    .filter((item: any) => item && item.id)
+                    .map((item: any) => ({
+                        playlistId: `sp-${item.id}`, // Mark as Spotify ID
+                        title: item.name,
+                        thumbnail: item.images?.[0]?.url || "",
+                        author: item.owner?.display_name || "Spotify",
+                        videoCount: item.tracks?.total?.toString() || "playlist"
+                    }));
+                console.log(`[API] Spotify search returned ${results.length} playlists`);
+            }
+        } catch (e) {
+            console.warn("[API] Spotify Search failed, trying fallback...", e);
+        }
+
+        // 2. Fallback to YouTube Scraper if Spotify failed or empty
         if (results.length === 0) {
-            console.warn(`[API] Scraper returned 0 playlists for '${q}'.`);
+            console.log(`[API] Fallback: Searching YouTube for: ${q}`);
+            const ytResults = await scrapeYouTubePlaylistSearch(q as string);
+            results = ytResults;
         }
 
         if (results.length === 0) {
