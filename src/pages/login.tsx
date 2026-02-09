@@ -35,7 +35,13 @@ export default function LoginPage() {
         if (!router.isReady || isLoading) return;
 
         if (user) {
-            const redirectUrl = (router.query.redirect as string) || '/';
+            let redirectUrl = (router.query.redirect as string) || '/';
+
+            // If no specific redirect is active, send Admins/Owners to Dashboard
+            if (redirectUrl === '/' && (user.role === 'admin' || user.role === 'owner' || user.email === 'boonyanone@gmail.com')) {
+                redirectUrl = '/admin';
+            }
+
             // Prevent redirect loop if redirectUrl is current page
             if (redirectUrl === router.asPath) return;
 
