@@ -57,6 +57,17 @@ function App({ Component, pageProps }: AppProps) {
   const initializeAuth = useAuthStore((state) => state.initialize);
   useEffect(() => {
     const unsub = initializeAuth();
+
+    // Unregister Service Workers to fix IndexedDB errors
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        for (let registration of registrations) {
+          registration.unregister();
+          console.log('🧹 Service Worker Unregistered');
+        }
+      });
+    }
+
     return () => unsub();
   }, [initializeAuth]);
 
