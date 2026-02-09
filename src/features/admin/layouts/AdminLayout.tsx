@@ -1,6 +1,6 @@
 import React, { ReactNode, useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { useAuth } from '../../../../context/AuthContext';
+import { useAuthStore } from '@/modules/auth/useAuthStore'; // Use the same store as Login
 import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from '../components/AdminHeader';
 import { cn } from '../../../utils/cn';
@@ -12,7 +12,7 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { user, isLoading: loading } = useAuthStore(); // Map isLoading to loading for compatibility
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
