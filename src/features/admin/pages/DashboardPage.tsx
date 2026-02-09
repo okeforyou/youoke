@@ -62,7 +62,7 @@ const AdminDashboard: React.FC = () => {
         ] = await Promise.all([
           getCountFromServer(collection(db, "users")),
           getDocs(query(collection(db, "users"), orderBy("createdAt", "desc"), limit(10))),
-          getDocs(query(collection(db, "payments"), orderBy("createdAt", "desc"), limit(100))), // Limit for performance? Or fetch all if needed
+          getDocs(query(collection(db, "payment_proofs"), orderBy("createdAt", "desc"), limit(100))), // Limit for performance? Or fetch all if needed
           AdminService.getRevenueHistory().catch(() => [])
         ]);
 

@@ -54,7 +54,7 @@ export const AdminService = {
 
             // 2. Revenue (From Firestore 'payments' collection)
             const paymentsQuery = query(
-                collection(db, "payments"), // Note: Collection name check - verify if 'payments' or 'payment_proofs'
+                collection(db, "payment_proofs"), // Note: Ensure consistent collection name
                 where("status", "==", "approved")
             );
             const paymentsSnapshot = await getDocs(paymentsQuery);
@@ -213,7 +213,7 @@ export const AdminService = {
 
             if (!db) return [];
             const q = query(
-                collection(db, "payments"),
+                collection(db, "payment_proofs"),
                 where("status", "==", "approved"),
                 where("createdAt", ">=", sixMonthsAgo),
                 orderBy("createdAt", "asc")

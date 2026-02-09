@@ -19,7 +19,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       if (!user) {
         router.replace('/login');
       } else if (user.role !== 'admin' && user.role !== 'owner' && user.email !== 'boonyanone@gmail.com') {
-        // Redirect if not authorized (add stricter check later)
+        router.replace('/');
       }
     }
   }, [user, loading, router]);
