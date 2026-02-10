@@ -53,8 +53,8 @@ service cloud.firestore {
 
     // Payment Proofs
     match /payment_proofs/{paymentId} {
-      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
-      allow list: if isAdmin(); // Explicit list permission
+      allow get: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow list: if isAdmin();
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isAdmin();
     }
@@ -102,6 +102,33 @@ service cloud.firestore {
     match /cms_pages/{pageId} {
       allow read: if true;
       allow write: if isAdmin();
+    }
+
+    // =========================================================================
+    // 📊 Admin Dashboard Collections
+    // =========================================================================
+    
+    // Revenue tracking (admin only)
+    match /revenue/{revenueId} {
+      allow read, write: if isAdmin();
+    }
+    
+    // Subscriptions (admin can read all, users can read their own)
+    match /subscriptions/{subscriptionId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isAuthenticated();
+      allow update, delete: if isAdmin();
+    }
+    
+    // Dashboard stats (admin only)
+    match /dashboard/{docId} {
+      allow read, write: if isAdmin();
+    }
+    
+    // Analytics (admin only)
+    match /analytics/{docId} {
+      allow read, write: if isAdmin();
     }
 
     // Default: Deny all others
