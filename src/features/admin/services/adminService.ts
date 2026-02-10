@@ -1,4 +1,4 @@
-import { db, realtimeDb } from "@/firebase";
+import { db, realtimeDb, auth } from "@/firebase";
 import {
     collection,
     query,
@@ -34,7 +34,18 @@ export const AdminService = {
      */
     getDashboardStats: async (): Promise<AdminStats> => {
         try {
-            if (!db) return { totalUsers: 0, activeSubs: 0, revenue: 0, loading: false };
+            console.log("📊 AdminService.getDashboardStats: Starting...");
+            if (!db) {
+                console.error("❌ Firestore DB not initialized");
+                return { totalUsers: 0, activeSubs: 0, revenue: 0, loading: false };
+            }
+
+            const currentUser = auth?.currentUser;
+            console.log(`👤 Current Auth User: ${currentUser ? currentUser.uid : 'NULL'}`);
+
+            if (!currentUser) {
+                console.warn("⚠️ No authenticated user found during AdminService call. This might cause permission errors.");
+            }
 
             // 1. Total Users (From Firestore)
             // Using getCount for efficiency if available, or fallback to size
@@ -207,9 +218,10 @@ export const AdminService = {
      * Get 6-month Revenue History (Firestore 'payments')
      */
     getRevenueHistory: async (): Promise<{ name: string; revenue: number }[]> => {
-        console.log('📊 AdminService: Getting Revenue History (v2.0 fixed)');
+        console.log('📊 AdminService: Getting Revenue History (v2.1 Debug)');
         try {
             if (!db) return [];
+            console.log(`👤 Revenue History Auth Check: ${auth?.currentUser?.uid || 'NULL'}`);
 
             // Simplified Query: Fetch last 100 approved payments OR just fetch by date if possible
             // To avoid "Missing Index" error, we should either:

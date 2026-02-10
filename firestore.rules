@@ -6,34 +6,44 @@ service cloud.firestore {
     // 🛡️ Global Helper Functions
     // =========================================================================
     
-    // Check if user is authenticated
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    // Check if user is the owner of the document
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
 
-    // Check if user is an Admin or Owner (Hardcoded UID + Role Check)
+    // 1. Super Admin (Hardcoded UIDs) - Always Allowed, No DB Lookup Cost
+    function isSuperAdmin() {
+      return request.auth.uid == 'P6r7fkMfvherVvzXV35NPhF5TVw2' || 
+             request.auth.uid == 'I4UmiD5gNDMY04LkvtuEIBtrEkK2';
+    }
+
+    // 2. DB Admin (Role Check) - Costs 1 Read
+    function isDbAdmin() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'owner'];
+    }
+
+    // Combined Check (Use SuperAdmin first to short-circuit)
     function isAdmin() {
-      return isAuthenticated() && (
-        request.auth.uid == 'P6r7fkMfvherVvzXV35NPhF5TVw2' || 
-        request.auth.uid == 'I4UmiD5gNDMY04LkvtuEIBtrEkK2' || 
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'owner'])
-      );
+      return isSuperAdmin() || isDbAdmin();
     }
 
     // =========================================================================
     // 👤 User Profiles
     // =========================================================================
     match /users/{userId} {
-      allow read: if isOwner(userId) || isAdmin(); // Changed from 'true' to safer logic, but ensure admin can read all
-      allow list: if isAdmin(); // Explicitly allow list for admins
+      // SuperAdmins can always read/write without triggering a self-lookup loop
+      allow read, write: if isSuperAdmin();
+      
+      // Standard rules for others
+      allow read: if isOwner(userId) || isDbAdmin(); 
+      allow list: if isAdmin(); 
       allow create: if isOwner(userId);
-      allow update: if isOwner(userId) || isAdmin();
+      allow update: if isOwner(userId) || isDbAdmin();
       allow delete: if isAdmin();
     }
 
@@ -41,15 +51,15 @@ service cloud.firestore {
     // 📦 System Collections
     // =========================================================================
 
-    // Payment Proofs (Formerly 'payments')
+    // Payment Proofs
     match /payment_proofs/{paymentId} {
       allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow list: if isAdmin(); // Explicit list permission
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
-      allow update: if isAdmin();
-      allow delete: if isAdmin();
+      allow update, delete: if isAdmin();
     }
     
-    // Legacy support for 'payments' if any
+    // Legacy 'payments'
     match /payments/{paymentId} {
       allow read, write: if isAdmin();
     }
@@ -61,7 +71,7 @@ service cloud.firestore {
     }
     match /plans/{planId} {
       allow read: if true;
-      allow write: if isAdmin(); // Fixed syntax error from previous
+      allow write: if isAdmin();
     }
 
     // Playlists
@@ -80,7 +90,7 @@ service cloud.firestore {
     match /orders/{orderId} {
        allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
        allow create: if isAuthenticated();
-       allow update: if isAdmin();
+       allow update, delete: if isAdmin();
     }
 
     // Settings & Config
