@@ -83,7 +83,16 @@ export const useAuthStore = create<UserState & AuthActions>()(
 
                 console.log('🔐 Auth Store: Initializing...');
 
+                // 🛡️ SAFETY TIMEOUT: Force UI unlock if Firebase is slow/stuck
+                const safetyTimeout = setTimeout(() => {
+                    if (get().isLoading) {
+                        console.warn('⚠️ Auth Init Timeout (5s). Forcing UI unlock.');
+                        set({ isLoading: false });
+                    }
+                }, 5000);
+
                 const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
+                    clearTimeout(safetyTimeout); // ✅ Clear timeout on response
                     console.log('⚡ [Debug] AuthStateChanged:', firebaseUser ? 'User Found' : 'No User', firebaseUser?.uid);
                     console.log('⚡ [Debug] isAnonymous:', firebaseUser?.isAnonymous);
                     if (!firebaseUser) {
@@ -216,7 +225,10 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     }
                 });
 
-                return unsubscribe;
+                return () => {
+                    clearTimeout(safetyTimeout);
+                    unsubscribe();
+                };
             },
 
             signIn: async (email, password) => {
