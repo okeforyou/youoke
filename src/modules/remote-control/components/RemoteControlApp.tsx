@@ -107,6 +107,7 @@ export default function RemoteControlApp() {
 
         const cmdId = Date.now().toString();
         const command = {
+            id: cmdId,  // Add id property for useCommandExecutor
             command: {
                 type,
                 payload: {
@@ -119,9 +120,13 @@ export default function RemoteControlApp() {
             senderId: auth.currentUser.uid
         };
 
+        console.log('📤 Sending command:', { type, roomCode, cmdId });
+
         // Write directly to commands list
         const cmdRef = ref(realtimeDb, `rooms/${roomCode}/commands/${cmdId}`);
         await set(cmdRef, command);
+
+        console.log('✅ Command sent successfully');
     };
 
     // Handlers
@@ -136,11 +141,20 @@ export default function RemoteControlApp() {
     };
 
     const handleAddVideo = (video: any) => {
+        console.log('➕ Adding video to queue:', video.title);
         sendCommand('ADD_TO_QUEUE', { video });
         setSearchOpen(false);
     };
 
-    if (!roomCode) return <div className="h-screen flex items-center justify-center text-gray-500">No Room Code</div>;
+    if (!roomCode) {
+        return (
+            <div className="h-screen flex flex-col items-center justify-center text-gray-500 p-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-2">ไม่พบรหัสห้อง</h2>
+                <p className="text-sm text-center">กรุณาเข้าใช้งานผ่าน QR Code หรือลิงก์ที่มีรหัสห้อง</p>
+                <p className="text-xs text-gray-400 mt-4">URL ต้องมี: ?room=1234</p>
+            </div>
+        );
+    }
 
     // --- RENDER ---
     return (
