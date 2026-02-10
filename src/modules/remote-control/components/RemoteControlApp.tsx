@@ -66,7 +66,7 @@ export default function RemoteControlApp() {
                 if (!auth.currentUser) await signInAnonymously(auth);
 
                 // Listen to State
-                const stateRef = ref(realtimeDb, `antigravity_rooms/${roomCode}/state`);
+                const stateRef = ref(realtimeDb, `rooms/${roomCode}/state`);
                 const unsubscribe = onValue(stateRef, (snapshot) => {
                     if (snapshot.exists()) {
                         const data = snapshot.val();
@@ -120,7 +120,7 @@ export default function RemoteControlApp() {
         };
 
         // Write directly to commands list
-        const cmdRef = ref(realtimeDb, `antigravity_rooms/${roomCode}/commands/${cmdId}`);
+        const cmdRef = ref(realtimeDb, `rooms/${roomCode}/commands/${cmdId}`);
         await set(cmdRef, command);
     };
 
