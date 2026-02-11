@@ -522,8 +522,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 : "max-lg:inset-0 max-lg:w-full max-lg:h-full max-lg:opacity-100 lg:opacity-100", // Expanded
 
                             // Desktop Logic
-                            "lg:top-0 lg:w-[320px] lg:AspectRatio-[16/9] lg:h-[180px]",
-                            (isQueueOpen && queue.length > 0) ? "lg:right-0" : "lg:-right-[320px]"
+                            "lg:top-0 lg:w-[420px] lg:AspectRatio-[16/9] lg:h-[236px]",
+                            (isQueueOpen && queue.length > 0) ? "lg:right-0" : "lg:-right-[420px]"
                         )}>
                         <div className="relative w-full h-full">
                             <SidebarPlayer />
@@ -535,10 +535,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
             {/* Right Sidebar (Queue Only - Collapsible) */}
             <aside className={clsx(
-                "hidden lg:flex w-[320px] bg-white border-l border-gray-100 flex-col shadow-xl z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
-                isQueueOpen && queue.length > 0 ? "mr-0 w-[320px] opacity-100" : "-mr-[320px] w-0 opacity-0"
+                "hidden lg:flex w-[420px] bg-white border-l border-gray-100 flex-col shadow-xl z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+                isQueueOpen && queue.length > 0 ? "mr-0 w-[420px] opacity-100" : "-mr-[420px] w-0 opacity-0"
             )}>
-                <div className="flex-1 flex flex-col pt-[180px] bg-white h-full relative">
+                <div className="flex-1 flex flex-col pt-[236px] bg-white h-full relative">
                     {/* Main Content Area */}
                     <div className="flex-1 flex flex-col min-h-0 bg-white">
                         <QueueList />
