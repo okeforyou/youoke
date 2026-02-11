@@ -1,5 +1,5 @@
 import React from "react";
-import { ListMusic, Trash2, GripVertical } from "lucide-react";
+import { ListMusic, Trash2, Menu } from "lucide-react";
 import { usePlayerStore } from "../stores/usePlayerStore";
 import Image from 'next/image';
 import {
@@ -47,61 +47,59 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
         <div
             ref={setNodeRef}
             style={style}
-            className="group flex items-center gap-3 p-3 mx-3 my-2 bg-white hover:bg-gray-50 transition-all rounded-lg border border-gray-200 shadow-sm hover:shadow-md"
+            className="group flex items-center gap-2 px-2 py-1.5"
         >
-            {/* Drag Handle */}
+            {/* Drag Handle - Outside the card */}
             <div
                 {...attributes}
                 {...listeners}
-                className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-primary transition-colors flex-shrink-0 touch-none px-1"
+                className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-primary transition-colors flex-shrink-0 touch-none px-2"
             >
-                <GripVertical className="w-5 h-5" />
+                <Menu className="w-5 h-5 opacity-50" />
             </div>
 
-            {/* Thumbnail - Wide horizontal like reference */}
-            <div
-                className="relative w-28 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 shadow-sm cursor-pointer group/thumb"
-                onClick={() => onPlay(actualIndex)}
-            >
-                <Image
-                    src={`https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`}
-                    alt={video.title}
-                    fill
-                    className="object-cover transition-transform duration-500 group-hover/thumb:scale-110"
-                    unoptimized
-                    onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = '/icon-cover.png';
-                    }}
-                />
-            </div>
+            {/* Card Content - Starts from the thumbnail */}
+            <div className="flex-1 flex items-center gap-3 p-2 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                {/* Thumbnail - Flush with the card's left side (mostly) */}
+                <div
+                    className="relative w-28 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 shadow-sm cursor-pointer group/thumb"
+                    onClick={() => onPlay(actualIndex)}
+                >
+                    <Image
+                        src={`https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`}
+                        alt={video.title}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover/thumb:scale-110"
+                        unoptimized
+                        onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '/icon-cover.png';
+                        }}
+                    />
+                </div>
 
-            {/* Info */}
-            <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onPlay(actualIndex)}>
-                <div className="flex items-center gap-2 mb-0.5">
-                    <div className="flex-shrink-0 w-4 h-4 bg-primary/10 rounded-full flex items-center justify-center">
-                        <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
-                    </div>
-                    <h4 className="text-sm font-bold text-gray-900 line-clamp-1 leading-tight">
+                {/* Info */}
+                <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onPlay(actualIndex)}>
+                    <h4 className="text-sm font-bold text-gray-900 line-clamp-1 leading-tight mb-1">
                         {video.title}
                     </h4>
+                    <p className="text-[11px] text-gray-500 truncate font-semibold flex items-center gap-1">
+                        <span className="text-gray-400 font-normal">ศิลปิน:</span> {video.author}
+                    </p>
                 </div>
-                <p className="text-[11px] text-gray-500 truncate font-semibold flex items-center gap-1 mt-0.5">
-                    <span className="text-gray-400">ศิลปิน:</span> {video.author}
-                </p>
-            </div>
 
-            {/* Remove Button */}
-            <button
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onRemove(video.uuid);
-                }}
-                className="w-10 h-10 flex items-center justify-center text-red-400 hover:text-white hover:bg-red-500 rounded-full transition-all flex-shrink-0 bg-red-50"
-                aria-label="ลบออกจากคิว"
-            >
-                <Trash2 className="w-5 h-5" />
-            </button>
+                {/* Remove Button - Also inside the card */}
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onRemove(video.uuid);
+                    }}
+                    className="w-10 h-10 flex items-center justify-center text-red-400 hover:text-white hover:bg-red-500 rounded-full transition-all flex-shrink-0 bg-red-50"
+                    aria-label="ลบออกจากคิว"
+                >
+                    <Trash2 className="w-5 h-5" />
+                </button>
+            </div>
         </div>
     );
 }
