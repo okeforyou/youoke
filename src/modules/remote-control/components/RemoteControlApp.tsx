@@ -9,10 +9,26 @@ import {
     ListMusic, Plus, User, Share2, Maximize
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragEndEvent,
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
 
 // Components
 import { RemoteMiniPlayer } from './RemoteMiniPlayer';
 import { SearchOverlay } from './SearchOverlay';
+import { DraggableQueueItem } from './DraggableQueueItem';
 
 // Types
 type RemoteStatus = 'connecting' | 'connected' | 'error';
@@ -146,6 +162,34 @@ export default function RemoteControlApp() {
         setSearchOpen(false);
     };
 
+    // Drag & Drop
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8, // Require 8px movement before drag starts
+            },
+        }),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+
+        if (active.id !== over?.id) {
+            const oldIndex = roomState.queue.findIndex((item) => item.videoId === active.id);
+            const newIndex = roomState.queue.findIndex((item) => item.videoId === over?.id);
+
+            if (oldIndex !== -1 && newIndex !== -1) {
+                const newQueue = arrayMove(roomState.queue, oldIndex, newIndex);
+
+                // Send REORDER_QUEUE command
+                sendCommand('REORDER_QUEUE', { queue: newQueue });
+            }
+        }
+    };
+
     if (!roomCode) {
         return (
             <div className="h-screen flex flex-col items-center justify-center text-gray-500 p-6">
@@ -229,24 +273,26 @@ export default function RemoteControlApp() {
                         </button>
                     </div>
                 ) : (
-                    <div className="space-y-3">
-                        {roomState.queue.slice(1).map((video, idx) => (
-                            <div key={idx} className="bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex gap-3 items-center">
-                                <span className="font-bold text-gray-300 w-6 text-center text-sm">{idx + 1}</span>
-                                <div className="flex-1 min-w-0">
-                                    <h4 className="font-bold text-sm truncate">{video.title}</h4>
-                                    <div className="flex items-center gap-2 mt-0.5">
-                                        <p className="text-xs text-gray-500 truncate">{video.author}</p>
-                                        {video.addedBy && (
-                                            <span className="text-[10px] bg-gray-100 px-1.5 rounded text-gray-500 border border-gray-200">
-                                                {(video.addedBy as any).name || video.addedBy.displayName || 'Guest'}
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
+                    <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={handleDragEnd}
+                    >
+                        <SortableContext
+                            items={roomState.queue.slice(1).map(v => v.videoId).filter((id): id is string => Boolean(id))}
+                            strategy={verticalListSortingStrategy}
+                        >
+                            <div className="space-y-3">
+                                {roomState.queue.slice(1).map((video, idx) => (
+                                    <DraggableQueueItem
+                                        key={video.videoId}
+                                        video={video}
+                                        index={idx}
+                                    />
+                                ))}
                             </div>
-                        ))}
-                    </div>
+                        </SortableContext>
+                    </DndContext>
                 )}
             </div>
 

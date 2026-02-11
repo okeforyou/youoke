@@ -37,6 +37,7 @@ export type CastCommand =
   | { type: 'MOVE_UP'; payload: { index: number } }
   | { type: 'MOVE_DOWN'; payload: { index: number } }
   | { type: 'CLEAR_QUEUE'; payload: null }
+  | { type: 'REORDER_QUEUE'; payload: { queue: QueueVideo[] } }
   | { type: 'SET_PLAYLIST'; payload: { playlist: QueueVideo[] } }
   | { type: 'SET_LAYOUT'; payload: { mode: 'split' | 'fullscreen' } }
   | { type: 'TOGGLE_QUEUE_OVERLAY'; payload: null };

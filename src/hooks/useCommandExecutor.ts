@@ -91,6 +91,20 @@ export function useCommandExecutor({
             break;
           }
 
+          case 'REORDER_QUEUE': {
+            const { queue } = command.payload;
+            // Update queue with new order
+            // Note: currentIndex stays the same, but currentVideo might shift position
+            const currentVideoId = currentState.currentVideo?.videoId;
+            const newCurrentIndex = queue.findIndex((v: any) => v.videoId === currentVideoId);
+
+            newState = {
+              queue: queue,
+              currentIndex: newCurrentIndex !== -1 ? newCurrentIndex : currentState.currentIndex,
+            };
+            break;
+          }
+
           case 'PLAY':
             if (playerRef) {
               await playerRef.playVideo();
