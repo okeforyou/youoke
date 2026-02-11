@@ -47,20 +47,20 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
         <div
             ref={setNodeRef}
             style={style}
-            className="group flex items-center gap-3 px-5 py-3 hover:bg-gray-50 border-b border-gray-50 last:border-0 bg-white"
+            className="group flex items-center gap-3 px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-0 bg-white"
         >
             {/* Drag Handle */}
             <div
                 {...attributes}
                 {...listeners}
-                className="cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500 transition-colors flex-shrink-0 touch-none"
+                className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0 touch-none"
             >
                 <GripVertical className="w-5 h-5" />
             </div>
 
             {/* Thumbnail */}
             <div
-                className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 shadow-sm cursor-pointer"
+                className="relative w-28 h-16 rounded-md overflow-hidden flex-shrink-0 bg-gray-200 shadow-sm cursor-pointer"
                 onClick={() => onPlay(actualIndex)}
             >
                 <Image
@@ -78,7 +78,7 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
 
             {/* Info */}
             <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onPlay(actualIndex)}>
-                <h4 className="text-sm font-medium text-gray-900 line-clamp-2 leading-snug mb-1">
+                <h4 className="text-sm font-semibold text-gray-900 line-clamp-1 leading-tight mb-1">
                     {video.title}
                 </h4>
                 <p className="text-xs text-gray-500 truncate">
@@ -92,10 +92,10 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
                     e.stopPropagation();
                     onRemove(video.uuid);
                 }}
-                className="p-2.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100 flex-shrink-0"
+                className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all flex-shrink-0"
                 aria-label="ลบออกจากคิว"
             >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-5 h-5" />
             </button>
         </div>
     );
