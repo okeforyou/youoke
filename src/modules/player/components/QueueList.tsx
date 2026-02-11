@@ -53,21 +53,21 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
             <div
                 {...attributes}
                 {...listeners}
-                className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0 touch-none"
+                className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-primary transition-colors flex-shrink-0 touch-none px-1"
             >
                 <GripVertical className="w-5 h-5" />
             </div>
 
-            {/* Thumbnail */}
+            {/* Thumbnail - Wide horizontal like reference */}
             <div
-                className="relative w-28 h-16 rounded-md overflow-hidden flex-shrink-0 bg-gray-200 shadow-sm cursor-pointer"
+                className="relative w-28 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 shadow-sm cursor-pointer group/thumb"
                 onClick={() => onPlay(actualIndex)}
             >
                 <Image
                     src={`https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`}
                     alt={video.title}
                     fill
-                    className="object-cover"
+                    className="object-cover transition-transform duration-500 group-hover/thumb:scale-110"
                     unoptimized
                     onError={(e) => {
                         const target = e.target as HTMLImageElement;
@@ -78,11 +78,16 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
 
             {/* Info */}
             <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onPlay(actualIndex)}>
-                <h4 className="text-sm font-semibold text-gray-900 line-clamp-1 leading-tight mb-1">
-                    {video.title}
-                </h4>
-                <p className="text-xs text-gray-500 truncate">
-                    {video.author}
+                <div className="flex items-center gap-2 mb-0.5">
+                    <div className="flex-shrink-0 w-4 h-4 bg-primary/10 rounded-full flex items-center justify-center">
+                        <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
+                    </div>
+                    <h4 className="text-sm font-bold text-gray-900 line-clamp-1 leading-tight">
+                        {video.title}
+                    </h4>
+                </div>
+                <p className="text-[11px] text-gray-500 truncate font-semibold flex items-center gap-1 mt-0.5">
+                    <span className="text-gray-400">ศิลปิน:</span> {video.author}
                 </p>
             </div>
 
@@ -92,7 +97,7 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
                     e.stopPropagation();
                     onRemove(video.uuid);
                 }}
-                className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all flex-shrink-0"
+                className="w-10 h-10 flex items-center justify-center text-red-400 hover:text-white hover:bg-red-500 rounded-full transition-all flex-shrink-0 bg-red-50"
                 aria-label="ลบออกจากคิว"
             >
                 <Trash2 className="w-5 h-5" />
@@ -173,7 +178,7 @@ export function QueueList() {
             </div>
 
             {/* Queue Items with Drag & Drop */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto bg-slate-50/50 pt-2 pb-6 custom-scrollbar">
                 <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}
