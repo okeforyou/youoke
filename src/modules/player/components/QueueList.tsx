@@ -47,7 +47,7 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
         <div
             ref={setNodeRef}
             style={style}
-            className="group flex items-center gap-2 px-2 py-1.5"
+            className="group flex items-center gap-2 py-1.5 px-1"
         >
             {/* Drag Handle - Outside the card */}
             <div
@@ -59,7 +59,7 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
             </div>
 
             {/* Card Content - Starts from the thumbnail */}
-            <div className="flex-1 flex items-center gap-3 p-2 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex-1 flex items-center gap-3 p-2 bg-white rounded-xl border-y border-gray-100 shadow-sm hover:shadow-md transition-shadow">
                 {/* Thumbnail - Flush with the card's left side (mostly) */}
                 <div
                     className="relative w-28 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 shadow-sm cursor-pointer group/thumb"
@@ -84,7 +84,7 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
                         {video.title}
                     </h4>
                     <p className="text-[11px] text-gray-500 truncate font-semibold flex items-center gap-1">
-                        <span className="text-gray-400 font-normal">ศิลปิน:</span> {video.author}
+                        {video.author}
                     </p>
                 </div>
 

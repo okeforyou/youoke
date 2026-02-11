@@ -450,7 +450,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                     // Mobile: Full width, docked above nav (71px for 1px overlap to prevent gaps)
                                     "bottom-[calc(71px+env(safe-area-inset-bottom))] w-full left-0 right-0",
                                     // Desktop: Floating, centered, reset positioning
-                                    "lg:!bottom-6 lg:w-[95%] lg:max-w-2xl lg:mx-auto lg:!h-[86px] lg:left-auto lg:right-auto",
+                                    "lg:hidden lg:!bottom-6 lg:w-[95%] lg:max-w-2xl lg:mx-auto lg:!h-[86px] lg:left-auto lg:right-auto",
                                     showPlayer ? "translate-y-0 opacity-100 scale-100" : "translate-y-[120%] opacity-0 scale-95 pointer-events-none",
                                     "isolate" // Remove overflow-hidden and bg/border from here to allow tab protrusion
                                 )}
@@ -493,11 +493,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                             </div>
 
                                             {/* Player Controls - Hidden on lg (desktop) if using Sidebar controls */}
-                                            <div className="shrink-0 p-2 sm:p-3 relative z-10 bg-white/10 sm:bg-transparent backdrop-blur-none sm:backdrop-blur-none h-[86px] flex lg:hidden items-center">
-                                                <div className="w-full">
-                                                    <PlayerControls />
+                                            {!isMobile && (
+                                                <div className="shrink-0 p-2 sm:p-3 relative z-10 bg-white/10 sm:bg-transparent backdrop-blur-none sm:backdrop-blur-none h-[86px] flex lg:hidden items-center">
+                                                    <div className="w-full">
+                                                        <PlayerControls />
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            )}
                                         </>
                                     )}
                                 </div>
@@ -523,7 +525,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 : "max-lg:inset-0 max-lg:w-full max-lg:h-full max-lg:opacity-100 lg:opacity-100", // Expanded
 
                             // Desktop Logic
-                            "lg:top-0 lg:w-[420px] lg:AspectRatio-[16/9] lg:h-[236px]",
+                            "lg:top-0 lg:w-[420px] lg:AspectRatio-[16/9] lg:h-[314px]",
                             (isQueueOpen && queue.length > 0) ? "lg:right-0" : "lg:-right-[420px]"
                         )}>
                         <div className="relative w-full h-full flex flex-col">
