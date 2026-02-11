@@ -177,17 +177,36 @@ export default function RemoteControlApp() {
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
 
-        if (active.id !== over?.id) {
-            const oldIndex = roomState.queue.findIndex((item) => item.videoId === active.id);
-            const newIndex = roomState.queue.findIndex((item) => item.videoId === over?.id);
+        if (!over || active.id === over.id) return;
 
-            if (oldIndex !== -1 && newIndex !== -1) {
-                const newQueue = arrayMove(roomState.queue, oldIndex, newIndex);
+        // We're working with queue.slice(1) in the UI, so adjust indices
+        const queueWithoutFirst = roomState.queue.slice(1);
 
-                // Send REORDER_QUEUE command
-                sendCommand('REORDER_QUEUE', { queue: newQueue });
-            }
+        const oldIndex = queueWithoutFirst.findIndex((item) => {
+            const itemId = item.videoId || `${item.title}-${item.author}`;
+            return itemId === active.id;
+        });
+
+        const newIndex = queueWithoutFirst.findIndex((item) => {
+            const itemId = item.videoId || `${item.title}-${item.author}`;
+            return itemId === over.id;
+        });
+
+        if (oldIndex === -1 || newIndex === -1) {
+            console.warn('⚠️ Drag indices not found:', { oldIndex, newIndex, activeId: active.id, overId: over.id });
+            return;
         }
+
+        // Reorder only the queue without the first item
+        const reorderedQueue = arrayMove(queueWithoutFirst, oldIndex, newIndex);
+
+        // Reconstruct full queue with first item
+        const fullQueue = [roomState.queue[0], ...reorderedQueue];
+
+        console.log('🔄 Reordering queue:', { oldIndex, newIndex, newQueueLength: fullQueue.length });
+
+        // Send REORDER_QUEUE command with full queue
+        sendCommand('REORDER_QUEUE', { queue: fullQueue });
     };
 
     if (!roomCode) {
@@ -279,17 +298,22 @@ export default function RemoteControlApp() {
                         onDragEnd={handleDragEnd}
                     >
                         <SortableContext
-                            items={roomState.queue.slice(1).map(v => v.videoId).filter((id): id is string => Boolean(id))}
+                            items={roomState.queue.slice(1).map(v => v.videoId || `${v.title}-${v.author}`)}
                             strategy={verticalListSortingStrategy}
                         >
                             <div className="space-y-3">
-                                {roomState.queue.slice(1).map((video, idx) => (
-                                    <DraggableQueueItem
-                                        key={video.videoId}
-                                        video={video}
-                                        index={idx}
-                                    />
-                                ))}
+                                {roomState.queue.slice(1).map((video, idx) => {
+                                    // Use videoId if available, otherwise create stable ID from title+author
+                                    const uniqueId = video.videoId || `${video.title}-${video.author}`;
+                                    return (
+                                        <DraggableQueueItem
+                                            key={uniqueId}
+                                            video={video}
+                                            index={idx}
+                                            uniqueId={uniqueId}
+                                        />
+                                    );
+                                })}
                             </div>
                         </SortableContext>
                     </DndContext>

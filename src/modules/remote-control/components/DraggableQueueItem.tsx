@@ -5,13 +5,20 @@ import { GripVertical } from 'lucide-react';
 import { QueueItem } from '../../../modules/player/types';
 
 interface DraggableQueueItemProps {
-    video: QueueItem;
+    video: {
+        videoId?: string;
+        title: string;
+        author: string;
+        addedBy?: {
+            name?: string;
+            displayName?: string;
+        };
+    };
     index: number;
+    uniqueId: string; // Stable ID for drag & drop
 }
 
-export function DraggableQueueItem({ video, index }: DraggableQueueItemProps) {
-    const videoId = video.videoId || `temp-${index}`;
-
+export function DraggableQueueItem({ video, index, uniqueId }: DraggableQueueItemProps) {
     const {
         attributes,
         listeners,
@@ -19,7 +26,7 @@ export function DraggableQueueItem({ video, index }: DraggableQueueItemProps) {
         transform,
         transition,
         isDragging,
-    } = useSortable({ id: videoId });
+    } = useSortable({ id: uniqueId });
 
     const style = {
         transform: CSS.Transform.toString(transform),
