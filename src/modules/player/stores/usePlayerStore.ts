@@ -94,9 +94,11 @@ export const usePlayerStore = create<PlayerStore>()(
             // Mobile Fullscreen Trigger (Signal Sync)
             fullscreenTrigger: 0,
             triggerFullscreen: () => set((state) => {
+                // Toggle between fullscreen and split modes
+                const newMode = state.layoutMode === 'fullscreen' ? 'split' : 'fullscreen';
                 const newVal = Date.now();
-                broadcast({ fullscreenTrigger: newVal });
-                return { fullscreenTrigger: newVal };
+                broadcast({ fullscreenTrigger: newVal, layoutMode: newMode });
+                return { fullscreenTrigger: newVal, layoutMode: newMode };
             }),
 
             // UI State (Unification)
