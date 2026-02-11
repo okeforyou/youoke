@@ -42,7 +42,8 @@ export function useCommandExecutor({
         switch (command.type) {
           case 'PLAY_NOW': {
             const { video } = command.payload;
-            const existingIndex = currentState.queue.findIndex(
+            const queue = currentState.queue || [];
+            const existingIndex = queue.findIndex(
               (v) => v.videoId === video.videoId
             );
 
@@ -50,12 +51,12 @@ export function useCommandExecutor({
               // Jump to existing
               newState = {
                 currentIndex: existingIndex,
-                currentVideo: currentState.queue[existingIndex],
+                currentVideo: queue[existingIndex],
                 controls: { ...currentState.controls, isPlaying: true },
               };
             } else {
               // Add to front
-              const newQueue = [video, ...currentState.queue];
+              const newQueue = [video, ...queue];
               newState = {
                 queue: newQueue,
                 currentIndex: 0,
@@ -68,21 +69,23 @@ export function useCommandExecutor({
 
           case 'ADD_TO_QUEUE': {
             const { video } = command.payload;
-            const newQueue = [...currentState.queue, video];
+            const queue = currentState.queue || [];
+            const newQueue = [...queue, video];
             newState = {
               queue: newQueue,
-              currentVideo: currentState.queue.length === 0 ? video : currentState.currentVideo,
+              currentVideo: queue.length === 0 ? video : currentState.currentVideo,
             };
             break;
           }
 
           case 'PLAY_NEXT': {
             const { video } = command.payload;
+            const queue = currentState.queue || [];
             const insertIndex = currentState.currentIndex + 1;
             const newQueue = [
-              ...currentState.queue.slice(0, insertIndex),
+              ...queue.slice(0, insertIndex),
               video,
-              ...currentState.queue.slice(insertIndex),
+              ...queue.slice(insertIndex),
             ];
             newState = { queue: newQueue };
             break;
