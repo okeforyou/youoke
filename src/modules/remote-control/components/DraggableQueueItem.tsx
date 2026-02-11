@@ -30,7 +30,7 @@ export function DraggableQueueItem({ video, index, uniqueId }: DraggableQueueIte
 
     const style = {
         transform: CSS.Transform.toString(transform),
-        transition,
+        // Removed transition for smooth, direct movement (no bounce)
         zIndex: isDragging ? 50 : 'auto',
         opacity: isDragging ? 0.5 : 1,
     };
