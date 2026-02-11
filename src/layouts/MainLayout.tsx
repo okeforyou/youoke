@@ -10,6 +10,7 @@ import { useSystem } from '@/core/container/SystemContext'; // DI Container
 import { usePlayerStore } from '../modules/player/stores/usePlayerStore';
 import { SidebarPlayer } from '../modules/player/components/SidebarPlayer';
 import { PlayerControls } from '../modules/player/components/PlayerControls';
+import { SidebarControls } from '../modules/player/components/SidebarControls';
 import { QueueList } from '../modules/player/components/QueueList';
 import { useSystemConfig } from '../hooks/useSystemConfig';
 import { useUIStore } from '../stores/useUIStore';
@@ -491,8 +492,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                 </div>
                                             </div>
 
-                                            {/* Player Controls */}
-                                            <div className="shrink-0 p-2 sm:p-3 relative z-10 bg-white/10 sm:bg-transparent backdrop-blur-none sm:backdrop-blur-none h-[86px] flex items-center">
+                                            {/* Player Controls - Hidden on lg (desktop) if using Sidebar controls */}
+                                            <div className="shrink-0 p-2 sm:p-3 relative z-10 bg-white/10 sm:bg-transparent backdrop-blur-none sm:backdrop-blur-none h-[86px] flex lg:hidden items-center">
                                                 <div className="w-full">
                                                     <PlayerControls />
                                                 </div>
@@ -525,8 +526,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             "lg:top-0 lg:w-[420px] lg:AspectRatio-[16/9] lg:h-[236px]",
                             (isQueueOpen && queue.length > 0) ? "lg:right-0" : "lg:-right-[420px]"
                         )}>
-                        <div className="relative w-full h-full">
+                        <div className="relative w-full h-full flex flex-col">
                             <SidebarPlayer />
+                            {/* Integrated Sidebar Controls directly under video */}
+                            <SidebarControls />
                             <button onClick={() => setMobilePlayerExpanded(false)} className="absolute top-4 left-4 z-50 p-2 bg-black/50 text-white rounded-full lg:hidden"><ChevronDown className="w-6 h-6" /></button>
                         </div>
                     </div>
@@ -538,7 +541,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 "hidden lg:flex w-[420px] bg-white border-l border-gray-100 flex-col shadow-xl z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
                 isQueueOpen && queue.length > 0 ? "mr-0 w-[420px] opacity-100" : "-mr-[420px] w-0 opacity-0"
             )}>
-                <div className="flex-1 flex flex-col pt-[236px] bg-white h-full relative">
+                {/* 236px (Video) + 78px (SidebarControls approx) = ~314px */}
+                <div className="flex-1 flex flex-col pt-[314px] bg-white h-full relative">
                     {/* Main Content Area */}
                     <div className="flex-1 flex flex-col min-h-0 bg-white">
                         <QueueList />
