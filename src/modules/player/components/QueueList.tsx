@@ -47,7 +47,7 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
         <div
             ref={setNodeRef}
             style={style}
-            className="group flex items-center gap-3 px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-0 bg-white"
+            className="group flex items-center gap-3 p-3 mx-3 my-2 bg-white hover:bg-gray-50 transition-all rounded-lg border border-gray-200 shadow-sm hover:shadow-md"
         >
             {/* Drag Handle */}
             <div
