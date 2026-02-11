@@ -141,128 +141,134 @@ const Monitor = () => {
       const cast = (window as any).cast;
       if (!cast || !cast.framework) return;
 
-      console.log('🎬 Initializing Cast Receiver SDK...');
-      const context = cast.framework.CastReceiverContext.getInstance();
+      try {
+        console.log('🎬 Initializing Cast Receiver SDK...');
+        const context = cast.framework.CastReceiverContext.getInstance();
 
-      // Message Listener
-      context.addCustomMessageListener(CAST_NAMESPACE, async (event: any) => {
-        const message = event.data;
-        console.log('📨 [Receiver] Message received:', message);
-        setLastDebugMsg(JSON.stringify(message).slice(0, 100));
-        setLastDebugTime(new Date().toLocaleTimeString());
+        // Message Listener
+        context.addCustomMessageListener(CAST_NAMESPACE, async (event: any) => {
+          const message = event.data;
+          console.log('📨 [Receiver] Message received:', message);
+          setLastDebugMsg(JSON.stringify(message).slice(0, 100));
+          setLastDebugTime(new Date().toLocaleTimeString());
 
-        if (!realtimeDb) {
-          console.error('❌ RealtimeDB not initialized');
-          return;
-        }
-        const currentState = stateRef.current;
-        const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
-
-        try {
-          switch (message.type) {
-            case 'LOAD_QUEUE':
-            case 'UPDATE_QUEUE': {
-              const newQueue = (message.videos || []).map((v: any) => ({
-                videoId: v.videoId,
-                title: v.title || 'Unknown',
-                author: v.author || 'Unknown',
-                addedBy: v.addedBy || { name: 'Remote' },
-                uuid: v.uuid || Math.random().toString(36).substr(2, 9)
-              }));
-
-              const startIndex = typeof message.startIndex === 'number' ? message.startIndex : currentState.currentIndex;
-
-              const updates: any = {
-                'state/queue': newQueue,
-              };
-
-              if (message.type === 'LOAD_QUEUE') {
-                updates['state/currentIndex'] = startIndex;
-                updates['state/currentVideo'] = newQueue[startIndex] || null;
-                updates['state/controls/isPlaying'] = true;
-              }
-
-              await update(roomRef, updates);
-              console.log('✅ Queue updated from Cast Sender');
-              break;
-            }
-
-            case 'LOAD_VIDEO': {
-              const { videoId } = message;
-              const index = currentState.queue.findIndex((v: any) => v.videoId === videoId);
-              if (index !== -1) {
-                await update(roomRef, {
-                  'state/currentIndex': index,
-                  'state/currentVideo': currentState.queue[index],
-                  'state/controls/isPlaying': true
-                });
-              }
-              break;
-            }
-
-            case 'PLAY':
-              await update(roomRef, { 'state/controls/isPlaying': true });
-              break;
-            case 'PAUSE':
-              await update(roomRef, { 'state/controls/isPlaying': false });
-              break;
-            case 'NEXT': {
-              const nextIndex = currentState.currentIndex + 1;
-              if (nextIndex < currentState.queue.length) {
-                await update(roomRef, {
-                  'state/currentIndex': nextIndex,
-                  'state/currentVideo': currentState.queue[nextIndex],
-                  'state/controls/isPlaying': true
-                });
-              }
-              break;
-            }
-            case 'PREVIOUS': {
-              const prevIndex = currentState.currentIndex - 1;
-              if (prevIndex >= 0) {
-                await update(roomRef, {
-                  'state/currentIndex': prevIndex,
-                  'state/currentVideo': currentState.queue[prevIndex],
-                  'state/controls/isPlaying': true
-                });
-              }
-              break;
-            }
+          if (!realtimeDb) {
+            console.error('❌ RealtimeDB not initialized');
+            return;
           }
-        } catch (err) {
-          console.error('❌ Error handling Cast Message:', err);
-        }
-      });
+          const currentState = stateRef.current;
+          const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
 
-      // Start Receiver
-      const options = new cast.framework.CastReceiverOptions();
-      options.disableIdleTimeout = true;
-      context.start(options);
-      console.log('✅ Cast Receiver Started');
+          try {
+            switch (message.type) {
+              case 'LOAD_QUEUE':
+              case 'UPDATE_QUEUE': {
+                const newQueue = (message.videos || []).map((v: any) => ({
+                  videoId: v.videoId,
+                  title: v.title || 'Unknown',
+                  author: v.author || 'Unknown',
+                  addedBy: v.addedBy || { name: 'Remote' },
+                  uuid: v.uuid || Math.random().toString(36).substr(2, 9)
+                }));
 
-      // Handle Sender Connection
-      context.addEventListener(cast.framework.system.EventType.SENDER_CONNECTED, (event: any) => {
-        console.log('📱 Sender Connected:', event);
-        setIsConnected(true);
+                const startIndex = typeof message.startIndex === 'number' ? message.startIndex : currentState.currentIndex;
 
-        // HANDSHAKE: Tell Sender we are ready to receive queue
-        // We broadcast to all connected senders on our custom namespace
-        const senders = context.getSenders();
-        console.log('📡 Broadcasting RECEIVER_READY to', senders.length, 'senders');
+                const updates: any = {
+                  'state/queue': newQueue,
+                };
 
-        // Broadcast to all senders
-        context.sendCustomMessage(CAST_NAMESPACE, undefined, {
-          type: 'RECEIVER_READY',
-          status: 'ready'
+                if (message.type === 'LOAD_QUEUE') {
+                  updates['state/currentIndex'] = startIndex;
+                  updates['state/currentVideo'] = newQueue[startIndex] || null;
+                  updates['state/controls/isPlaying'] = true;
+                }
+
+                await update(roomRef, updates);
+                console.log('✅ Queue updated from Cast Sender');
+                break;
+              }
+
+              case 'LOAD_VIDEO': {
+                const { videoId } = message;
+                const index = currentState.queue.findIndex((v: any) => v.videoId === videoId);
+                if (index !== -1) {
+                  await update(roomRef, {
+                    'state/currentIndex': index,
+                    'state/currentVideo': currentState.queue[index],
+                    'state/controls/isPlaying': true
+                  });
+                }
+                break;
+              }
+
+              case 'PLAY':
+                await update(roomRef, { 'state/controls/isPlaying': true });
+                break;
+              case 'PAUSE':
+                await update(roomRef, { 'state/controls/isPlaying': false });
+                break;
+              case 'NEXT': {
+                const nextIndex = currentState.currentIndex + 1;
+                if (nextIndex < currentState.queue.length) {
+                  await update(roomRef, {
+                    'state/currentIndex': nextIndex,
+                    'state/currentVideo': currentState.queue[nextIndex],
+                    'state/controls/isPlaying': true
+                  });
+                }
+                break;
+              }
+              case 'PREVIOUS': {
+                const prevIndex = currentState.currentIndex - 1;
+                if (prevIndex >= 0) {
+                  await update(roomRef, {
+                    'state/currentIndex': prevIndex,
+                    'state/currentVideo': currentState.queue[prevIndex],
+                    'state/controls/isPlaying': true
+                  });
+                }
+                break;
+              }
+            }
+          } catch (err) {
+            console.error('❌ Error handling Cast Message:', err);
+          }
         });
-      });
 
-      context.addEventListener(cast.framework.system.EventType.SENDER_DISCONNECTED, (event: any) => {
-        console.log('📱 Sender Disconnected:', event);
-        if (context.getSenders().length === 0) {
-          setIsConnected(false);
-        }
-      });
+        // Start Receiver
+        const options = new cast.framework.CastReceiverOptions();
+        options.disableIdleTimeout = true;
+        context.start(options);
+        console.log('✅ Cast Receiver Started');
+
+        // Handle Sender Connection
+        context.addEventListener(cast.framework.system.EventType.SENDER_CONNECTED, (event: any) => {
+          console.log('📱 Sender Connected:', event);
+          setIsConnected(true);
+
+          // HANDSHAKE: Tell Sender we are ready to receive queue
+          // We broadcast to all connected senders on our custom namespace
+          const senders = context.getSenders();
+          console.log('📡 Broadcasting RECEIVER_READY to', senders.length, 'senders');
+
+          // Broadcast to all senders
+          context.sendCustomMessage(CAST_NAMESPACE, undefined, {
+            type: 'RECEIVER_READY',
+            status: 'ready'
+          });
+        });
+
+        context.addEventListener(cast.framework.system.EventType.SENDER_DISCONNECTED, (event: any) => {
+          console.log('📱 Sender Disconnected:', event);
+          if (context.getSenders().length === 0) {
+            setIsConnected(false);
+          }
+        });
+      } catch (error) {
+        console.warn('⚠️ Cast SDK initialization failed (expected in dev):', error);
+        // This is normal when running in dev/testing - Cast SDK only works on Chromecast devices
+        // We use Firebase RTDB for dev testing instead
+      }
     };
 
     const interval = setInterval(() => {
