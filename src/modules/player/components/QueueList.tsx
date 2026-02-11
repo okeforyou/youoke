@@ -47,7 +47,7 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
         <div
             ref={setNodeRef}
             style={style}
-            className="group flex items-center gap-2 py-1.5 px-1"
+            className="group flex items-center gap-1.5 py-1 pr-1 pl-0.5"
         >
             {/* Drag Handle - Outside the card */}
             <div
@@ -59,7 +59,7 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
             </div>
 
             {/* Card Content - Starts from the thumbnail */}
-            <div className="flex-1 flex items-center gap-3 p-2 bg-white rounded-xl border-y border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex-1 flex items-center gap-3 p-1.5 bg-white rounded-none border-y border-gray-100 shadow-sm hover:bg-gray-50 transition-all">
                 {/* Thumbnail - Flush with the card's left side (mostly) */}
                 <div
                     className="relative w-28 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 shadow-sm cursor-pointer group/thumb"
@@ -176,7 +176,7 @@ export function QueueList() {
             </div>
 
             {/* Queue Items with Drag & Drop */}
-            <div className="flex-1 overflow-y-auto bg-slate-50/50 pt-2 pb-6 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto bg-slate-50/50 pb-6 custom-scrollbar">
                 <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}
