@@ -131,6 +131,27 @@ const Monitor = () => {
     };
   }, [roomCode, isAuthReady]);
 
+  // Handle Fullscreen Toggle from Remote
+  useEffect(() => {
+    if (!state.layoutMode) return;
+
+    if (state.layoutMode === 'fullscreen') {
+      // Enter fullscreen
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          console.warn('⚠️ Fullscreen request denied (user gesture required):', err);
+        });
+      }
+    } else if (state.layoutMode === 'split') {
+      // Exit fullscreen
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(err =>
+          console.warn('⚠️ Exit fullscreen failed:', err)
+        );
+      }
+    }
+  }, [state.layoutMode]);
+
   // Initialize Cast Receiver SDK
   useEffect(() => {
     if (typeof window === 'undefined') return;
