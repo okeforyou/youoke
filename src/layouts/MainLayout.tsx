@@ -517,7 +517,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     <div
                         id="global-video-player-container"
                         className={clsx(
-                            "fixed transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] z-[70] bg-black overflow-hidden",
+                            "fixed transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] z-[70] bg-black overflow-hidden lg:border-l lg:border-gray-200",
 
                             // Mobile Logic
                             !isMobilePlayerExpanded
@@ -540,7 +540,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
             {/* Right Sidebar (Queue Only - Collapsible) */}
             <aside className={clsx(
-                "hidden lg:flex w-[420px] border-l border-gray-200/50 flex-col z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+                "hidden lg:flex w-[420px] border-l border-gray-200 flex-col z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
                 isQueueOpen ? "mr-0 w-[420px] opacity-100" : "-mr-[420px] w-0 opacity-0"
             )} style={{ backgroundColor: '#ffffff', background: '#ffffff' }}>
                 {/* 236px (Video) + 54px (SidebarControls) + 14px (Space) = 304px */}

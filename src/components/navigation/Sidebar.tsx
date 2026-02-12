@@ -31,7 +31,7 @@ export const Sidebar = memo(() => {
     };
 
     return (
-        <aside className="hidden lg:flex w-[260px] bg-white border-r border-gray-200/50 flex-col shrink-0 z-30">
+        <aside className="hidden lg:flex w-[260px] bg-white border-r border-gray-200 flex-col shrink-0 z-30">
             {/* Sidebar Header */}
             <div className="h-20 flex items-center px-6 shrink-0 z-40">
                 <div className="flex items-center gap-3">
