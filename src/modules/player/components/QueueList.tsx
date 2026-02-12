@@ -59,7 +59,7 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
             </div>
 
             {/* Card Content - V1 Style with border and rounding */}
-            <div className="flex-1 flex items-center gap-3 p-2 rounded-xl border border-gray-100 transition-all" style={{ backgroundColor: '#f8f8f8' }}>
+            <div className="flex-1 flex items-center gap-3 p-2 rounded-xl border border-gray-100 transition-all" style={{ backgroundColor: '#ffffff' }}>
                 {/* Thumbnail - Flush with the card's left side (mostly) */}
                 <div
                     className="relative w-28 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 shadow-sm cursor-pointer group/thumb"
@@ -154,11 +154,10 @@ export function QueueList() {
     return (
         <div className="flex-1 flex flex-col h-full" style={{ backgroundColor: '#ffffff' }}>
             {/* Header */}
-            {/* FLAT MINIMAL HEADER v3 */}
-            <div className="px-6 pt-16 pb-4 flex items-center justify-between" style={{ backgroundColor: '#ffffff' }}>
+            {/* ULTRA-MINIMAL HEADER v4 */}
+            <div className="px-6 pt-8 pb-3 flex items-center justify-between" style={{ backgroundColor: '#ffffff' }}>
                 <div className="flex items-center gap-2">
-                    <div className="w-1 h-3 bg-primary rounded-full" />
-                    <span className="text-[12px] font-bold text-gray-800 uppercase tracking-tight">
+                    <span className="text-[12px] font-normal text-gray-400">
                         รายการคิวเพลง ({queueItems.length})
                     </span>
                 </div>
@@ -169,7 +168,7 @@ export function QueueList() {
                                 usePlayerStore.getState().clearQueue();
                             }
                         }}
-                        className="text-[10px] font-bold text-red-500 hover:text-red-600 uppercase tracking-wider"
+                        className="text-[10px] font-medium text-gray-400 hover:text-red-500 transition-colors"
                     >
                         ล้างทั้งหมด
                     </button>
