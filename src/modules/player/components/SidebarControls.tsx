@@ -36,32 +36,32 @@ export const SidebarControls = () => {
             label: "เล่น/หยุด",
             onClick: togglePlay,
             active: isPlaying,
-            color: "text-red-500"
+            color: "text-primary"
         },
         {
             icon: SkipForward,
             label: "เพลงถัดไป",
             onClick: () => playNext(),
-            color: "text-red-500"
+            color: "text-primary"
         },
         {
             icon: RotateCcw,
             label: "ร้องซ้ำ",
             onClick: () => seekTo(0),
-            color: "text-red-500"
+            color: "text-primary"
         },
         {
             icon: isMuted ? VolumeX : Volume2,
             label: isMuted ? "เปิดเสียง" : "ปิดเสียง",
             onClick: () => setMuted(!isMuted),
             active: isMuted,
-            color: "text-red-500"
+            color: "text-primary"
         },
         {
             icon: Maximize,
             label: "เต็มจอ",
             onClick: triggerFullscreen,
-            color: "text-red-500"
+            color: "text-primary"
         },
         {
             icon: Cast,
@@ -70,7 +70,7 @@ export const SidebarControls = () => {
                 // Cast logic or trigger
                 console.log("Cast triggered");
             },
-            color: "text-red-500"
+            color: "text-primary"
         }
     ];
 
@@ -101,7 +101,7 @@ export const SidebarControls = () => {
                                 className={`${item.color} ${item.active ? 'fill-current' : ''}`}
                             />
                         </div>
-                        <span className="text-[9px] font-bold text-red-500 uppercase tracking-tighter group-hover:text-red-600 transition-colors">
+                        <span className="text-[9px] font-bold text-primary uppercase tracking-tighter group-hover:text-primary transition-colors">
                             {item.label}
                         </span>
                     </button>
