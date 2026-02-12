@@ -198,8 +198,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
             {/* Left Sidebar (Premium White) - Extracted & Memoized */}
             <Sidebar />
 
-            {/* Main Content Area */}
-            <div className="flex-1 flex flex-col min-w-0 relative bg-white shadow-[0_0_50px_rgba(0,0,0,0.06)] z-10">
+            {/* Main Content Area - Elevated with Shadow to cast over sidebars */}
+            <div className="flex-1 flex flex-col min-w-0 relative bg-white shadow-[0_0_60px_rgba(0,0,0,0.08)] z-40 border-x border-gray-200/50">
                 {/* Mobile Header (Visible only on mobile) */}
                 <header className="lg:hidden h-16 flex items-center justify-between px-4 border-b border-gray-100 bg-white sticky top-0 z-30">
                     <div className="flex items-center gap-3">
@@ -540,7 +540,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
             {/* Right Sidebar (Queue Only - Collapsible) */}
             <aside className={clsx(
-                "hidden lg:flex w-[420px] border-l border-gray-100 flex-col z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+                "hidden lg:flex w-[420px] border-l border-gray-200 flex-col z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
                 isQueueOpen ? "mr-0 w-[420px] opacity-100" : "-mr-[420px] w-0 opacity-0"
             )} style={{ backgroundColor: '#ffffff', background: '#ffffff' }}>
                 {/* 236px (Video) + 54px (SidebarControls) + 14px (Space) = 304px */}
