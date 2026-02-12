@@ -96,10 +96,10 @@ export const SidebarControls = () => {
                         <div className={`p-1.5 rounded-lg transition-all ${item.active ? 'bg-red-50' : ''}`}>
                             <item.icon
                                 size={18}
-                                className={`text-gray-900 transition-colors ${item.active ? 'fill-current' : ''}`}
+                                className={`text-primary transition-colors ${item.active ? 'fill-current' : ''}`}
                             />
                         </div>
-                        <span className="text-[9px] font-bold text-gray-900 uppercase tracking-tighter transition-colors">
+                        <span className="text-[9px] font-bold text-primary uppercase tracking-tighter transition-colors">
                             {item.label}
                         </span>
                     </button>
@@ -123,7 +123,7 @@ export const SidebarControls = () => {
                                 usePlayerStore.getState().clearQueue();
                             }
                         }}
-                        className="group flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all duration-300 active:scale-95"
+                        className="group flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black text-white hover:bg-gray-800 transition-all duration-300 active:scale-95 shadow-sm"
                     >
                         <Trash2 size={11} className="transition-transform group-hover:scale-110" />
                         <span className="text-[10px] font-black uppercase tracking-wider">ล้างทั้งหมด</span>
