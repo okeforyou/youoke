@@ -561,11 +561,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     <div
                         id="global-video-player-container"
                         className={clsx(
-                            "fixed transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] z-[101] overflow-hidden lg:border-l lg:border-gray-200",
+                            "fixed transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] z-30 overflow-hidden lg:border-l lg:border-gray-200",
 
                             // Fullscreen Override (Remote Controlled)
                             layoutMode === 'fullscreen'
-                                ? "fixed inset-0 w-full h-full z-[200] border-none bg-black"
+                                ? "fixed inset-0 w-full h-full z-40 border-none bg-black"
                                 : [
                                     // Mobile Logic
                                     !isMobilePlayerExpanded
