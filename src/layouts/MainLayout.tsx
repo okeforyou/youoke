@@ -543,8 +543,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 "hidden lg:flex w-[420px] bg-white border-l border-gray-100 flex-col shadow-xl z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
                 isQueueOpen && queue.length > 0 ? "mr-0 w-[420px] opacity-100" : "-mr-[420px] w-0 opacity-0"
             )}>
-                {/* 236px (Video) + 60px (SidebarControls slim) = ~296px */}
-                <div className="flex-1 flex flex-col pt-[296px] bg-white h-full relative">
+                {/* 236px (Video) + 54px (SidebarControls ultra slim) = ~290px */}
+                <div className="flex-1 flex flex-col pt-[290px] bg-white h-full relative">
                     {/* Main Content Area */}
                     <div className="flex-1 flex flex-col min-h-0 bg-white">
                         <QueueList />
