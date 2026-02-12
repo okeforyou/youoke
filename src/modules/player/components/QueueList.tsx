@@ -59,8 +59,8 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
                 <Menu className="w-5 h-5 opacity-50" />
             </div>
 
-            {/* Card Content - V1 Style with border and rounding */}
-            <div className="flex-1 flex items-center gap-4 rounded-xl border border-gray-200 transition-all overflow-hidden hover:border-primary" style={{ backgroundColor: '#fafafa' }}>
+            {/* Card Content - V1 Style with border, shadow, and lift on hover */}
+            <div className="flex-1 flex items-center gap-4 rounded-xl border border-gray-200 transition-all overflow-hidden hover:border-primary hover:shadow-lg hover:shadow-gray-200/50 hover:-translate-y-0.5" style={{ backgroundColor: '#fafafa' }}>
                 {/* Thumbnail - Flush with the card's left side */}
                 <div
                     className="relative w-28 h-16 flex-shrink-0 bg-gray-200 cursor-pointer group/thumb"
