@@ -34,6 +34,7 @@ import { DraggableQueueItem } from './DraggableQueueItem';
 type RemoteStatus = 'connecting' | 'connected' | 'error';
 interface RoomState {
     queue: QueueItem[];
+    currentIndex: number;
     currentVideo: QueueItem | null;
     controls: { isPlaying: boolean; isMuted: boolean; volume: number };
     isQueueVisible: boolean;
@@ -47,6 +48,7 @@ export default function RemoteControlApp() {
     const [status, setStatus] = useState<RemoteStatus>('connecting');
     const [roomState, setRoomState] = useState<RoomState>({
         queue: [],
+        currentIndex: 0,
         currentVideo: null,
         controls: { isPlaying: false, isMuted: false, volume: 100 },
         isQueueVisible: false
@@ -92,6 +94,7 @@ export default function RemoteControlApp() {
 
                         setRoomState({
                             queue: queue.filter((i: any) => i && (i.videoId || i.id)),
+                            currentIndex: data.currentIndex ?? 0,
                             currentVideo: data.currentVideo,
                             controls: data.controls || { isPlaying: false, isMuted: false, volume: 100 },
                             isQueueVisible: data.isQueueVisible
@@ -198,8 +201,8 @@ export default function RemoteControlApp() {
 
         if (!over || active.id === over.id) return;
 
-        // We're working with queue.slice(1) in the UI, so adjust indices
-        const queueWithoutFirst = roomState.queue.slice(1);
+        // Up Next songs are those after currentIndex
+        const queueWithoutFirst = roomState.queue.slice(roomState.currentIndex + 1);
 
         const oldIndex = queueWithoutFirst.findIndex((item) => {
             const itemId = item.videoId || `${item.title}-${item.author}`;
@@ -219,8 +222,11 @@ export default function RemoteControlApp() {
         // Reorder only the queue without the first item
         const reorderedQueue = arrayMove(queueWithoutFirst, oldIndex, newIndex);
 
-        // Reconstruct full queue with first item
-        const fullQueue = [roomState.queue[0], ...reorderedQueue];
+        // Reconstruct full queue: [0...currentIndex, ...reorderedItems]
+        const fullQueue = [
+            ...roomState.queue.slice(0, roomState.currentIndex + 1),
+            ...reorderedQueue
+        ];
 
         console.log('🔄 Reordering queue:', { oldIndex, newIndex, newQueueLength: fullQueue.length });
 
@@ -292,7 +298,7 @@ export default function RemoteControlApp() {
                         Up Next (คิวเพลง)
                     </h2>
                     <span className="text-xs font-bold bg-gray-200 text-gray-600 px-2 py-1 rounded-full">
-                        {Math.max(0, roomState.queue.length - 1)}
+                        {Math.max(0, roomState.queue.length - (roomState.currentIndex + 1))}
                     </span>
                 </div>
 
@@ -317,13 +323,13 @@ export default function RemoteControlApp() {
                         onDragEnd={handleDragEnd}
                     >
                         <SortableContext
-                            items={roomState.queue.slice(1).map(v => v.videoId || `${v.title}-${v.author}`)}
+                            items={roomState.queue.slice(roomState.currentIndex + 1).map(v => v.videoId || v.uuid || `${v.title}-${v.author}`)}
                             strategy={verticalListSortingStrategy}
                         >
                             <div className="space-y-3">
-                                {roomState.queue.slice(1).map((video, idx) => {
+                                {roomState.queue.slice(roomState.currentIndex + 1).map((video, idx) => {
                                     // Use videoId if available, otherwise create stable ID from title+author
-                                    const uniqueId = video.videoId || `${video.title}-${video.author}`;
+                                    const uniqueId = video.videoId || video.uuid || `${video.title}-${video.author}`;
                                     return (
                                         <DraggableQueueItem
                                             key={uniqueId}
@@ -349,7 +355,7 @@ export default function RemoteControlApp() {
 
             {/* Bottom Player */}
             <RemoteMiniPlayer
-                currentVideo={roomState.currentVideo || (roomState.queue[0] || null)}
+                currentVideo={roomState.currentVideo || (roomState.queue[roomState.currentIndex] || null)}
                 isPlaying={roomState.controls.isPlaying}
                 onTogglePlay={() => sendCommand(roomState.controls.isPlaying ? 'PAUSE' : 'PLAY')}
                 onNext={() => sendCommand('NEXT')}

@@ -113,11 +113,11 @@ export const useRemoteHost = (
             // });
 
             set(ref(realtimeDb, `rooms/${sessionId}/state`), statePayload)
-                .catch(e => console.error('❌ Host: State sync failed (Auth ready?)', e));
+                .catch(e => console.error('❌ Host: State sync failed', e));
 
         } catch (e) { console.error('❌ Host: Sync Logic Error', e); }
 
-    }, [sessionId, currentVideoId, queue, isPlaying, isFullscreen, user]); // Added user dependency
+    }, [sessionId, currentVideoId, queue, isPlaying, isFullscreen, user, roomCode]); // Added roomCode dependency
 
     // State for connection status
     const [connectedClients, setConnectedClients] = useState<number>(0);
@@ -275,15 +275,16 @@ export const useRemoteHost = (
             if (cmd.payload && Array.isArray(incomingQueue)) {
                 console.log('[RemoteHost] Reordering queue:', incomingQueue.length, 'items');
                 if (setPlaylistRef.current) {
-                    // SANITIZE: Strip 'key', 'dndId' and other transient props to prevent corruption cycles
                     const cleanQueue = incomingQueue.map((item: any) => ({
                         videoId: item.videoId,
+                        id: item.id || item.videoId,
                         title: item.title,
                         thumbnail: item.thumbnail,
+                        author: item.author,
                         duration: item.duration,
                         addedBy: item.addedBy,
                         addedAt: item.addedAt,
-                        // uuid: item.uuid // Keep if used
+                        uuid: item.uuid // Essential for host QueueList mapping
                     }));
                     setPlaylistRef.current(cleanQueue);
                 }
