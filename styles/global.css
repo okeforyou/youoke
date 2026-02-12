@@ -5,13 +5,15 @@
 .aspect-video {
   @apply aspect-w-16 aspect-h-9;
 }
+
 .aspect-square {
   @apply aspect-w-1 aspect-h-1;
 }
+
 @layer base {
   :root {
     /* Clean White Background */
-    --background: 0 0% 98%;
+    --background: 0 0% 100%;
     --foreground: 220 9% 20%;
 
     /* Typography (Dynamic) */
@@ -114,35 +116,37 @@ html {
 }
 
 .chip {
-  @apply  text-white py-2 px-4 rounded-full shadow-lg;
+  @apply text-white py-2 px-4 rounded-full shadow-lg;
   position: relative;
   animation: floating 3s ease-in-out infinite;
   text-align: center;
 }
 
 @keyframes floating {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-2px);
   }
 }
+
 .sparkle {
   position: absolute;
   width: 10px;
   height: 10px;
   background-color: white;
-  clip-path: polygon(
-    50% 0%,
-    60% 40%,
-    100% 50%,
-    60% 60%,
-    50% 100%,
-    40% 60%,
-    0% 50%,
-    40% 40%
-  );
+  clip-path: polygon(50% 0%,
+      60% 40%,
+      100% 50%,
+      60% 60%,
+      50% 100%,
+      40% 60%,
+      0% 50%,
+      40% 40%);
   opacity: 0;
   animation: sparkle-animation 3s infinite ease-in-out;
 }
@@ -172,10 +176,13 @@ html {
 }
 
 @keyframes sparkle-animation {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 0;
     transform: scale(0);
   }
+
   50% {
     opacity: 1;
     transform: scale(1.5);
@@ -187,6 +194,7 @@ html {
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -226,6 +234,7 @@ textarea {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -242,6 +251,7 @@ textarea {
     opacity: 0;
     transform: translateX(100%);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -254,9 +264,12 @@ textarea {
 
 /* Pulse animation for loading states */
 @keyframes gentle-pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.7;
   }
@@ -272,6 +285,7 @@ textarea {
     opacity: 0;
     transform: scale(0.9);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
