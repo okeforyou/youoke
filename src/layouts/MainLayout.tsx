@@ -561,7 +561,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     <div
                         id="global-video-player-container"
                         className={clsx(
-                            "fixed transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] z-[101] bg-white overflow-hidden lg:border-l lg:border-gray-200",
+                            "fixed transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] z-[101] overflow-hidden lg:border-l lg:border-gray-200",
 
                             // Fullscreen Override (Remote Controlled)
                             layoutMode === 'fullscreen'
@@ -569,11 +569,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 : [
                                     // Mobile Logic
                                     !isMobilePlayerExpanded
-                                        ? "max-lg:opacity-0 max-lg:pointer-events-none max-lg:fixed max-lg:bottom-0 max-lg:right-0 max-lg:w-1 max-lg:h-1 lg:opacity-100"
-                                        : "max-lg:inset-0 max-lg:w-full max-lg:h-full max-lg:opacity-100 lg:opacity-100",
+                                        ? "max-lg:opacity-0 max-lg:pointer-events-none max-lg:fixed max-lg:bottom-0 max-lg:right-0 max-lg:w-1 max-lg:h-1 lg:opacity-100 bg-black"
+                                        : "max-lg:inset-0 max-lg:w-full max-lg:h-full max-lg:opacity-100 lg:opacity-100 bg-black",
 
                                     // Desktop Logic
-                                    "lg:top-0 lg:w-[420px] lg:h-[314px]",
+                                    "lg:top-0 lg:w-[420px] lg:h-[236px] bg-transparent",
                                     (isQueueOpen && queue.length > 0) ? "lg:right-0" : "lg:-right-[420px]"
                                 ]
                         )}>
@@ -581,8 +581,12 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             <div className="w-full aspect-video bg-black shrink-0 relative overflow-hidden">
                                 <SidebarPlayer />
                             </div>
-                            {/* Integrated Sidebar Controls - Hidden if in fullscreen mode */}
-                            {layoutMode !== 'fullscreen' && <SidebarControls />}
+                            {/* Mobile Only Controls (Desktop controls moved to Aside for better interaction) */}
+                            {layoutMode !== 'fullscreen' && (
+                                <div className="lg:hidden">
+                                    <SidebarControls />
+                                </div>
+                            )}
                             <button onClick={() => setMobilePlayerExpanded(false)} className="absolute top-4 left-4 z-50 p-2 bg-black/50 text-white rounded-full lg:hidden"><ChevronDown className="w-6 h-6" /></button>
                         </div>
                     </div>
@@ -597,10 +601,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 )}
                 style={{ backgroundColor: '#ffffff', background: '#ffffff' }}
             >
-                {/* 314px corresponds to the fixed Player + Controls height */}
-                <div className="flex-1 flex flex-col pt-[314px] h-full relative z-10 bg-white" style={{ backgroundColor: '#ffffff' }}>
+                {/* 236px corresponds to the fixed SidebarPlayer height (16:9 for 420px) */}
+                <div className="flex-1 flex flex-col pt-[236px] h-full relative z-10 bg-white" style={{ backgroundColor: '#ffffff' }}>
+                    {/* Desktop Sidebar Controls (Moved here to prevent blocking QueueList) */}
+                    <div className="shrink-0 bg-white relative z-20">
+                        <SidebarControls />
+                    </div>
                     {/* Main Content Area */}
-                    <div className="flex-1 flex flex-col min-h-0 bg-white" style={{ backgroundColor: '#ffffff' }}>
+                    <div className="flex-1 flex flex-col min-h-0 bg-white relative z-10" style={{ backgroundColor: '#ffffff' }}>
                         <QueueList />
                     </div>
                 </div>

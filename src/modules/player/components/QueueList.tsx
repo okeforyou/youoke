@@ -115,7 +115,11 @@ export function QueueList() {
     const remainingCount = Math.max(0, queue.length - (currentIndex + 1));
 
     const sensors = useSensors(
-        useSensor(PointerSensor)
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 5, // Require 5px movement to start dragging, differentiating from click
+            },
+        })
     );
 
     const handleDragEnd = (event: DragEndEvent) => {
