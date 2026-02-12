@@ -279,10 +279,10 @@ export default function SpotifyDashboard({ showTab = true }) {
             key={gen}
             onClick={() => setUpdatedGenreText(gen)}
             className={`
-                 w-full py-2.5 px-4 rounded-2xl text-sm font-medium transition-all duration-300 border
+                 w-full py-2.5 px-4 rounded-2xl text-sm font-black transition-all duration-300 border
                  ${genreText == gen
                 ? "bg-primary text-white shadow-lg shadow-primary/30 border-primary transform -translate-y-0.5"
-                : "bg-white text-gray-600 border-gray-100 hover:border-primary/30 hover:shadow-md hover:text-primary hover:-translate-y-0.5"
+                : "bg-gray-100 text-black border-gray-100 hover:bg-white hover:border-primary/30 hover:shadow-md hover:text-primary hover:-translate-y-0.5"
               }
               `}
           >
@@ -293,10 +293,10 @@ export default function SpotifyDashboard({ showTab = true }) {
         <button
           onClick={() => setUpdatedGenreText(OKE_PLAYLIST)}
           className={`
-               w-full py-2.5 px-4 rounded-2xl text-sm font-medium transition-all duration-300 border
+               w-full py-2.5 px-4 rounded-2xl text-sm font-black transition-all duration-300 border
                ${genreText === OKE_PLAYLIST
               ? "bg-primary text-white shadow-lg shadow-primary/30 border-primary transform -translate-y-0.5"
-              : "bg-white text-gray-600 border-gray-100 hover:border-primary/30 hover:shadow-md hover:text-primary hover:-translate-y-0.5"
+              : "bg-gray-100 text-black border-gray-100 hover:bg-white hover:border-primary/30 hover:shadow-md hover:text-primary hover:-translate-y-0.5"
             }
             `}
         >
