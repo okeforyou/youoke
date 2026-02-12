@@ -143,10 +143,10 @@ export function QueueList() {
 
     if (queueItems.length === 0) {
         return (
-            <div className="h-full flex flex-col items-center justify-center p-8 text-gray-400 bg-white min-h-[400px]">
-                <ListMusic className="w-12 h-12 mb-3 opacity-30" />
-                <p className="text-sm font-medium">ยังไม่มีคิวเพลง</p>
-                <p className="text-xs text-gray-400 mt-1">เพิ่มเพลงเข้าคิวเพื่อเล่นต่อ</p>
+            <div className="h-full flex flex-col items-center justify-center p-8 bg-white min-h-[400px]">
+                <ListMusic className="w-12 h-12 mb-3 text-primary/40" />
+                <p className="text-sm font-bold text-primary">ยังไม่มีคิวเพลง</p>
+                <p className="text-xs text-primary/60 mt-1">เพิ่มเพลงเข้าคิวเพื่อเล่นต่อ</p>
             </div>
         );
     }

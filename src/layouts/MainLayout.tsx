@@ -201,7 +201,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col min-w-0 relative bg-white">
                 {/* Mobile Header (Visible only on mobile) */}
-                <header className="lg:hidden h-16 flex items-center justify-between px-4 border-b border-gray-100 bg-white/95 backdrop-blur sticky top-0 z-30">
+                <header className="lg:hidden h-16 flex items-center justify-between px-4 border-b border-gray-100 bg-white sticky top-0 z-30">
                     <div className="flex items-center gap-3">
                         {/* Profile Button instead of Hamburger */}
                         {/* Back Button or Profile Button */}
@@ -334,7 +334,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 </div>
 
                 {/* Desktop Header */}
-                <header className="hidden lg:flex h-20 items-center justify-between px-8 border-b border-gray-100 bg-white/80 backdrop-blur-xl sticky top-0 z-20 transition-all">
+                <header className="hidden lg:flex h-20 items-center justify-between px-8 border-b border-gray-100 bg-white sticky top-0 z-20 transition-all">
                     <div className="flex-1 max-w-2xl relative group">
                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                             <Search className="h-5 w-5 text-gray-400 group-focus-within:text-primary transition-colors" />
@@ -461,7 +461,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 {/* Inner Content Wrapper (Handles BG/Blur/Overflow) */}
                                 <div className={clsx(
                                     "flex-1 flex flex-col overflow-hidden relative z-10 w-full h-full shadow-[0_-4px_24px_rgba(0,0,0,0.08)] border-t border-l border-r border-gray-200/50 lg:border lg:shadow-[0_8px_48px_-12px_rgba(0,0,0,0.6)]",
-                                    "bg-white/70 supports-[backdrop-filter]:bg-white/60 backdrop-blur-2xl backdrop-saturate-150",
+                                    "bg-white",
                                     isQueueOpen ? "rounded-t-[32px] rounded-b-none lg:rounded-[40px] lg:rounded-b-[40px] lg:!rounded-tr-[40px]" : "rounded-t-[24px] rounded-b-none lg:rounded-[32px] lg:rounded-b-[32px]"
                                 )}>
 
@@ -472,7 +472,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                 "flex-1 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] flex flex-col border-b border-white/10 lg:hidden",
                                                 isQueueOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
                                             )}>
-                                                <div className="px-4 py-3 flex items-center justify-between shrink-0 bg-white/10 h-[48px]">
+                                                <div className="px-4 py-3 flex items-center justify-between shrink-0 bg-white h-[48px]">
                                                     <div className="flex items-center gap-3">
                                                         <span className="font-bold text-gray-800/90 text-sm flex items-center gap-2 drop-shadow-sm">
                                                             <ListMusic className="w-4 h-4 text-primary" />
@@ -487,14 +487,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                         </button>
                                                     </div>
                                                 </div>
-                                                <div className="flex-1 overflow-y-auto bg-white/40">
+                                                <div className="flex-1 overflow-y-auto bg-white">
                                                     <QueueList />
                                                 </div>
                                             </div>
 
                                             {/* Player Controls - Hidden on lg (desktop) if using Sidebar controls */}
                                             {!isMobile && (
-                                                <div className="shrink-0 p-2 sm:p-3 relative z-10 bg-white/10 sm:bg-transparent backdrop-blur-none sm:backdrop-blur-none h-[86px] flex lg:hidden items-center">
+                                                <div className="shrink-0 p-2 sm:p-3 relative z-10 bg-white h-[86px] flex lg:hidden items-center">
                                                     <div className="w-full">
                                                         <PlayerControls />
                                                     </div>
