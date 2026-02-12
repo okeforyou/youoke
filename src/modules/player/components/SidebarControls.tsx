@@ -76,7 +76,7 @@ export const SidebarControls = () => {
     ];
 
     return (
-        <div className="border-b border-gray-200 shrink-0 select-none" style={{ backgroundColor: '#ffffff' }}>
+        <div className="border-b border-gray-200/50 shrink-0 select-none" style={{ backgroundColor: '#ffffff' }}>
             {/* Slim Progress Bar */}
             <div className="w-full h-[3px] bg-gray-100 overflow-hidden relative">
                 <div
@@ -107,7 +107,7 @@ export const SidebarControls = () => {
             </div>
 
             {/* Integrated Queue Info Row (Dark Mastery) */}
-            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 mt-2" style={{ backgroundColor: '#ffffff' }}>
+            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200/50 mt-2" style={{ backgroundColor: '#ffffff' }}>
                 <div className="flex items-center gap-2">
                     <div className="w-5 h-5 rounded-full bg-gray-50 flex items-center justify-center">
                         <ListMusic size={12} className="text-gray-900" />
