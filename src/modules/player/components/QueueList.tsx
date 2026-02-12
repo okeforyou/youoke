@@ -143,10 +143,10 @@ export function QueueList() {
 
     if (queueItems.length === 0) {
         return (
-            <div className="h-full flex flex-col items-center justify-center p-8 min-h-[400px]" style={{ backgroundColor: '#ffffff' }}>
-                <ListMusic className="w-12 h-12 mb-3 text-primary/40" />
-                <p className="text-sm font-bold text-primary">ยังไม่มีคิวเพลง</p>
-                <p className="text-xs text-primary/60 mt-1">เพิ่มเพลงเข้าคิวเพื่อเล่นต่อ</p>
+            <div className="h-full flex flex-col items-center justify-center p-8 text-gray-400 min-h-[400px]" style={{ backgroundColor: '#ffffff' }}>
+                <ListMusic className="w-12 h-12 mb-3 opacity-30" />
+                <p className="text-sm font-medium">ยังไม่มีคิวเพลง</p>
+                <p className="text-xs text-gray-400 mt-1">เพิ่มเพลงเข้าคิวเพื่อเล่นต่อ</p>
             </div>
         );
     }
@@ -154,7 +154,7 @@ export function QueueList() {
     return (
         <div className="flex-1 flex flex-col h-full" style={{ backgroundColor: '#ffffff' }}>
             {/* Header */}
-            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between sticky top-0 z-10" style={{ backgroundColor: '#ffffff' }}>
+            <div className="px-5 pt-7 pb-4 border-b border-gray-100 flex items-center justify-between sticky top-0 z-10" style={{ backgroundColor: '#ffffff' }}>
                 <div className="flex items-center gap-2">
                     <ListMusic className="w-4 h-4 text-gray-500" />
                     <span className="text-sm font-semibold text-gray-700">
