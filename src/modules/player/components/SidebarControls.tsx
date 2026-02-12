@@ -95,10 +95,10 @@ export const SidebarControls = () => {
                         <div className={`p-1.5 rounded-lg transition-all ${item.active ? 'bg-red-50' : 'hover:bg-gray-50'}`}>
                             <item.icon
                                 size={18}
-                                className="text-primary transition-colors"
+                                className={`text-primary transition-colors ${item.active ? 'fill-current' : ''}`}
                             />
                         </div>
-                        <span className="text-[9px] font-bold text-primary uppercase tracking-tighter group-hover:text-primary transition-colors">
+                        <span className="text-[9px] font-bold text-primary uppercase tracking-tighter transition-colors">
                             {item.label}
                         </span>
                     </button>

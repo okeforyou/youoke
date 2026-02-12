@@ -152,7 +152,7 @@ export function QueueList() {
     }
 
     return (
-        <div className="flex-1 flex flex-col h-full">
+        <div className="flex-1 flex flex-col h-full bg-white">
             {/* Header */}
             <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between sticky top-0 z-10 bg-white">
                 <div className="flex items-center gap-2">
