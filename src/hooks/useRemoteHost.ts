@@ -153,8 +153,10 @@ export const useRemoteHost = (
                 setConnectionStatus('active');
             } else if (hasBackground) {
                 setConnectionStatus('background');
+            } else if (count > 0) {
+                setConnectionStatus('active'); // Fallback if count > 0 but state mixed
             } else {
-                setConnectionStatus('active');
+                setConnectionStatus('disconnected');
             }
         };
 

@@ -372,9 +372,22 @@ export const usePlayerStore = create<PlayerStore>()(
             },
 
             clearQueue: () => {
-                const updates = { queue: [], currentVideo: null, currentSource: null, isPlaying: false, currentIndex: 0 };
-                set(updates);
-                broadcast(updates);
+                const state = get();
+                // Keep the current song if something is playing/selected
+                if (state.queue && state.queue.length > 0 && state.currentIndex >= 0 && state.currentIndex < state.queue.length) {
+                    const currentItem = state.queue[state.currentIndex];
+                    const updates = {
+                        queue: [currentItem],
+                        currentIndex: 0
+                    };
+                    set(updates);
+                    broadcast(updates);
+                    console.log('🧹 Queue cleared (except current song)');
+                } else {
+                    const updates = { queue: [], currentVideo: null, currentSource: null, isPlaying: false, currentIndex: 0 };
+                    set(updates);
+                    broadcast(updates);
+                }
             },
 
             playVideoAtIndex: (index) => {

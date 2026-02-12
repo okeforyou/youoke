@@ -38,8 +38,8 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
 
     const style = {
         transform: CSS.Transform.toString(transform),
-        // NO transition - smooth drag without jumping/swapping
-        opacity: isDragging ? 0.5 : 1,
+        // No opacity change to prevent gray tint from showing through
+        opacity: isDragging ? 0.95 : 1,
         zIndex: isDragging ? 50 : 'auto',
         backgroundColor: '#ffffff',
     };

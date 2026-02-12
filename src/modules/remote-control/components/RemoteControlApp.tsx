@@ -139,23 +139,60 @@ export default function RemoteControlApp() {
         };
     }, []);
 
+    // Presence / Connection Status Heartbeat
+    useEffect(() => {
+        if (!roomCode || !realtimeDb || status !== 'connected') return;
+        const currentUser = auth?.currentUser;
+        if (!currentUser) return;
+
+        const myPresenceRef = ref(realtimeDb, `rooms/${roomCode}/connected/${currentUser.uid}`);
+
+        // Register as connected
+        const setPresence = async () => {
+            try {
+                await set(myPresenceRef, {
+                    uid: currentUser.uid,
+                    name: guestName,
+                    state: 'active',
+                    lastSeen: serverTimestamp()
+                });
+
+                // Cleanup on disconnect
+                const { onDisconnect } = await import('firebase/database');
+                onDisconnect(myPresenceRef).remove();
+            } catch (e) {
+                console.error("Presence sync failed:", e);
+            }
+        };
+
+        setPresence();
+
+        // Also remove immediately on unmount
+        return () => {
+            const { remove } = require('firebase/database');
+            remove(myPresenceRef).catch(() => { });
+        };
+    }, [roomCode, status, guestName]);
+
     // Command Sender
     const sendCommand = async (type: string, payload: any = {}) => {
-        if (!roomCode || !auth?.currentUser || !realtimeDb) return;
+        if (!roomCode || !realtimeDb) return;
+        const currentUser = auth?.currentUser;
+        if (!currentUser) return;
 
         const cmdId = Date.now().toString();
         const command = {
-            id: cmdId,  // Add id property for useCommandExecutor
+            id: cmdId,
             command: {
                 type,
                 payload: {
                     ...payload,
-                    addedBy: { uid: auth.currentUser.uid, name: guestName }
+                    addedBy: { uid: currentUser.uid, name: guestName }
                 }
             },
             status: 'pending',
             timestamp: serverTimestamp(),
-            senderId: auth.currentUser.uid
+            senderId: currentUser.uid
         };
 
         console.log('📤 Sending command:', { type, roomCode, cmdId });
