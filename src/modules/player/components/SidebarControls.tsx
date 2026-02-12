@@ -75,7 +75,7 @@ export const SidebarControls = () => {
     ];
 
     return (
-        <div className="bg-white border-b border-gray-100 shrink-0 select-none">
+        <div className="border-b border-gray-100 shrink-0 select-none" style={{ backgroundColor: '#ffffff' }}>
             {/* Slim Progress Bar */}
             <div className="w-full h-[3px] bg-gray-100 overflow-hidden relative">
                 <div
@@ -85,7 +85,7 @@ export const SidebarControls = () => {
             </div>
 
             {/* Horizontal Controls Row */}
-            <div className="flex items-center justify-between px-1 py-0.5 bg-white">
+            <div className="flex items-center justify-between px-1 py-0.5" style={{ backgroundColor: '#ffffff' }}>
                 {controlItems.map((item, index) => (
                     <button
                         key={index}

@@ -24,7 +24,7 @@ import useIsMobile from '../hooks/isMobile';
 import { useShallow } from 'zustand/react/shallow';
 
 // Dynamic (Lazy) Imports for Heavy/hidden Components
-const ProfileDrawer = dynamic(() => import('../components/profile/ProfileDrawer').then(mod => mod.ProfileDrawer), { ssr: false });
+const ProfileDrawer = dynamic(() => import('../components/profile/ProfileDrawer'), { ssr: false });
 const ShareRoomModal = dynamic(() => import('../modules/party-system/components/ShareRoomModal').then(mod => mod.ShareRoomModal), { ssr: false });
 const CastModeSelector = dynamic(() => import('../plugins/cast/components/CastModeSelector').then(mod => mod.CastModeSelector), { ssr: false });
 const LimitReachedModal = dynamic(() => import('../modules/player/components/LimitReachedModal').then(mod => mod.LimitReachedModal), { ssr: false });
@@ -222,7 +222,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                     {user?.photoURL ? (
                                         <img src={user.photoURL} alt="Profile" className="w-9 h-9 rounded-full border border-gray-100 object-cover" />
                                     ) : (
-                                        <div className="w-9 h-9 bg-gray-50 rounded-full flex items-center justify-center text-gray-400 font-bold border border-gray-100">
+                                        <div className="w-9 h-9 bg-white rounded-full flex items-center justify-center text-gray-400 font-bold border border-gray-100">
                                             <User size={20} />
                                         </div>
                                     )}
@@ -540,13 +540,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
             {/* Right Sidebar (Queue Only - Collapsible) */}
             <aside className={clsx(
-                "hidden lg:flex w-[420px] bg-white border-l border-gray-100 flex-col shadow-xl z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+                "hidden lg:flex w-[420px] border-l border-gray-100 flex-col shadow-xl z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
                 isQueueOpen ? "mr-0 w-[420px] opacity-100" : "-mr-[420px] w-0 opacity-0"
-            )}>
+            )} style={{ backgroundColor: '#ffffff' }}>
                 {/* 236px (Video) + 54px (SidebarControls) + 14px (Space) = 304px */}
-                <div className="flex-1 flex flex-col pt-[304px] bg-white h-full relative z-10">
+                <div className="flex-1 flex flex-col pt-[304px] h-full relative z-10" style={{ backgroundColor: '#ffffff' }}>
                     {/* Main Content Area */}
-                    <div className="flex-1 flex flex-col min-h-0 bg-white">
+                    <div className="flex-1 flex flex-col min-h-0" style={{ backgroundColor: '#ffffff' }}>
                         <QueueList />
                     </div>
                 </div>
@@ -596,7 +596,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
 
             {/* Profile Drawer (Overlay) */}
-            <ProfileDrawer />
+            <ProfileDrawer
+                isOpen={isProfileOpen}
+                onClose={() => setProfileOpen(false)}
+            />
 
             {/* Receiver Info Modal */}
             <ReceiverInfoModal />
