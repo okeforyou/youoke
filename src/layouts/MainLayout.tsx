@@ -142,19 +142,16 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const isMobile = useIsMobile();
     const { queue } = usePlayerStore();
 
-    // Auto-close QR Modal when someone joins
-    const prevConnected = useRef(0);
+    // Auto-close QR Modal when someone joins (PROACTIVE)
     useEffect(() => {
-        // If someone joined while we had modals open, close them!
-        if (connectedClients > prevConnected.current) {
+        if (connectionStatus === 'active') {
             if (partyModalOpen || showQRCode) {
                 setPartyModalOpen(false); // Close ShareRoomModal
                 setShowQRCode(false);    // Close QR Overlay
-                console.log('📱 Someone joined, auto-closing QR modals');
+                console.log('📱 Remote active, hiding all QR overlays/modals');
             }
         }
-        prevConnected.current = connectedClients;
-    }, [connectedClients, partyModalOpen, showQRCode]);
+    }, [connectionStatus, partyModalOpen, showQRCode]);
 
     // Cast Handlers
     const handleCastSelectWebMonitor = () => {

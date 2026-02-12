@@ -41,6 +41,9 @@ export const useRemoteHost = (
 ) => {
     const [sessionId, setSessionId] = useState<string | null>(null);
 
+    // State for connection status
+    const [connectedClients, setConnectedClients] = useState<number>(0);
+    const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'active' | 'background'>('disconnected');
 
     // Keep strict refs for callbacks to avoid effect churn
     const addToQueueRef = useRef(addToQueue);
@@ -103,25 +106,30 @@ export const useRemoteHost = (
                 title: title || "Unknown Title",
                 isPlaying: !!isPlaying,
                 isFullscreen: !!isFullscreen,
+                roomCode: sessionId, // Add roomCode to state for validation
                 timestamp: Date.now()
             };
 
-            // console.log('🔥 [Host] Syncing State to Firebase:', { 
-            //     q: safeQueue.length, 
-            //     idx: currentIndex, 
-            //     vid: currentVideoId 
-            // });
+            console.log('🔥 [RemoteHost] Syncing State to Firebase:', {
+                queueSize: safeQueue.length,
+                room: sessionId,
+                idx: currentIndex
+            });
 
             set(ref(realtimeDb, `rooms/${sessionId}/state`), statePayload)
+                .then(() => console.log('✅ State synced to Firebase'))
                 .catch(e => console.error('❌ Host: State sync failed', e));
 
         } catch (e) { console.error('❌ Host: Sync Logic Error', e); }
 
     }, [sessionId, currentVideoId, queue, isPlaying, isFullscreen, user, roomCode]); // Added roomCode dependency
 
-    // State for connection status
-    const [connectedClients, setConnectedClients] = useState<number>(0);
-    const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'active' | 'background'>('disconnected');
+    // 1.5. Force Sync on first connection
+    useEffect(() => {
+        if (connectedClients > 0 && sessionId && realtimeDb) {
+            console.log('📱 Guest detected, pushing force-sync update...');
+        }
+    }, [connectedClients, sessionId]);
 
     // Sync Connected Clients & Calculate Status
     useEffect(() => {
