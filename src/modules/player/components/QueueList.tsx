@@ -154,21 +154,22 @@ export function QueueList() {
     return (
         <div className="flex-1 flex flex-col h-full" style={{ backgroundColor: '#ffffff' }}>
             {/* Header */}
-            <div className="px-5 pt-7 pb-4 border-b border-gray-100 flex items-center justify-between sticky top-0 z-10" style={{ backgroundColor: '#ffffff' }}>
-                <div className="flex items-center gap-2">
-                    <ListMusic className="w-4 h-4 text-gray-500" />
-                    <span className="text-sm font-semibold text-gray-700">
-                        คิวเพลง ({queueItems.length})
+            {/* NEW CLEAN HEADER SECTION (Rebuilt for Clarity) */}
+            <div className="px-6 pt-12 pb-5 border-b border-gray-50 flex items-center justify-between" style={{ backgroundColor: '#ffffff' }}>
+                <div className="flex items-center gap-3">
+                    <div className="w-1.5 h-6 bg-primary rounded-full" />
+                    <span className="text-lg font-black text-gray-900 tracking-tight">
+                        รายการคิวเพลง ({queueItems.length})
                     </span>
                 </div>
                 {queueItems.length > 0 && (
                     <button
                         onClick={() => {
-                            if (confirm('ลบคิวทั้งหมด?')) {
+                            if (confirm('ต้องการลบคิวเพลงทั้งหมดหรือไม่?')) {
                                 usePlayerStore.getState().clearQueue();
                             }
                         }}
-                        className="text-xs text-red-500 hover:text-red-600 font-medium transition-colors"
+                        className="text-[11px] font-bold text-red-500 hover:text-red-700 uppercase tracking-widest bg-red-50 px-3 py-1.5 rounded-lg transition-all"
                     >
                         ล้างทั้งหมด
                     </button>
