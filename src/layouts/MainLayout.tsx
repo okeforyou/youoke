@@ -517,7 +517,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     <div
                         id="global-video-player-container"
                         className={clsx(
-                            "fixed transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] z-[70] bg-black overflow-hidden shadow-2xl",
+                            "fixed transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] z-[70] bg-black overflow-hidden",
 
                             // Mobile Logic
                             !isMobilePlayerExpanded
