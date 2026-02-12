@@ -60,10 +60,10 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
             </div>
 
             {/* Card Content - V1 Style with border and rounding */}
-            <div className="flex-1 flex items-center gap-3 p-2 rounded-xl border border-gray-100 transition-all bg-white" style={{ backgroundColor: '#ffffff', boxShadow: 'none' }}>
-                {/* Thumbnail - Flush with the card's left side (mostly) */}
+            <div className="flex-1 flex items-center gap-4 rounded-xl border border-gray-100 transition-all overflow-hidden" style={{ backgroundColor: '#f5f5f5' }}>
+                {/* Thumbnail - Flush with the card's left side */}
                 <div
-                    className="relative w-28 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 shadow-sm cursor-pointer group/thumb"
+                    className="relative w-28 h-16 flex-shrink-0 bg-gray-200 cursor-pointer group/thumb"
                     onClick={() => onPlay(actualIndex)}
                 >
                     <Image
@@ -80,26 +80,28 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
                 </div>
 
                 {/* Info */}
-                <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onPlay(actualIndex)}>
-                    <h4 className="text-sm font-bold text-gray-900 line-clamp-1 leading-tight mb-1">
+                <div className="flex-1 min-w-0 py-2 cursor-pointer" onClick={() => onPlay(actualIndex)}>
+                    <h4 className="text-[14px] font-bold text-gray-900 line-clamp-1 leading-snug mb-0.5">
                         {video.title}
                     </h4>
-                    <p className="text-[11px] text-gray-500 truncate font-semibold flex items-center gap-1">
+                    <p className="text-[11px] text-gray-500 truncate font-semibold">
                         {video.author}
                     </p>
                 </div>
 
                 {/* Remove Button - Also inside the card */}
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onRemove(video.uuid);
-                    }}
-                    className="w-10 h-10 flex items-center justify-center text-red-400 hover:text-white hover:bg-red-500 rounded-full transition-all flex-shrink-0 bg-red-50"
-                    aria-label="ลบออกจากคิว"
-                >
-                    <Trash2 className="w-5 h-5" />
-                </button>
+                <div className="pr-3">
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onRemove(video.uuid);
+                        }}
+                        className="w-9 h-9 flex items-center justify-center text-red-400 hover:text-white hover:bg-red-500 rounded-full transition-all flex-shrink-0 bg-red-white"
+                        aria-label="ลบออกจากคิว"
+                    >
+                        <Trash2 className="w-4.5 h-4.5" />
+                    </button>
+                </div>
             </div>
         </div>
     );
