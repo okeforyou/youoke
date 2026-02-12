@@ -278,15 +278,9 @@ export const useRemoteHost = (
                 console.log('[RemoteHost] Reordering queue:', incomingQueue.length, 'items');
                 if (setPlaylistRef.current) {
                     const cleanQueue = incomingQueue.map((item: any) => ({
-                        videoId: item.videoId,
+                        ...item,
                         id: item.id || item.videoId,
-                        title: item.title,
-                        thumbnail: item.thumbnail,
-                        author: item.author,
-                        duration: item.duration,
-                        addedBy: item.addedBy,
-                        addedAt: item.addedAt,
-                        uuid: item.uuid // Essential for host QueueList mapping
+                        uuid: item.uuid // Ensure uuid is explicitly preserved
                     }));
                     setPlaylistRef.current(cleanQueue);
                 }

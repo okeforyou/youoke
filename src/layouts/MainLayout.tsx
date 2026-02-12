@@ -145,13 +145,16 @@ export default function MainLayout({ children }: MainLayoutProps) {
     // Auto-close QR Modal when someone joins
     const prevConnected = useRef(0);
     useEffect(() => {
-        if (prevConnected.current === 0 && connectedClients > 0) {
-            setPartyModalOpen(false); // Close ShareRoomModal
-            setShowQRCode(false);    // Close QR Overlay
-            console.log('📱 Guest connected, auto-closing QR modal & overlay');
+        // If someone joined while we had modals open, close them!
+        if (connectedClients > prevConnected.current) {
+            if (partyModalOpen || showQRCode) {
+                setPartyModalOpen(false); // Close ShareRoomModal
+                setShowQRCode(false);    // Close QR Overlay
+                console.log('📱 Someone joined, auto-closing QR modals');
+            }
         }
         prevConnected.current = connectedClients;
-    }, [connectedClients]);
+    }, [connectedClients, partyModalOpen, showQRCode]);
 
     // Cast Handlers
     const handleCastSelectWebMonitor = () => {

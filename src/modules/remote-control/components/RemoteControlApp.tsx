@@ -273,12 +273,12 @@ export default function RemoteControlApp() {
         const queueWithoutFirst = roomState.queue.slice(roomState.currentIndex + 1);
 
         const oldIndex = queueWithoutFirst.findIndex((item) => {
-            const itemId = item.videoId || `${item.title}-${item.author}`;
+            const itemId = item.uuid || item.videoId || `${item.title}-${item.author}`;
             return itemId === active.id;
         });
 
         const newIndex = queueWithoutFirst.findIndex((item) => {
-            const itemId = item.videoId || `${item.title}-${item.author}`;
+            const itemId = item.uuid || item.videoId || `${item.title}-${item.author}`;
             return itemId === over.id;
         });
 
@@ -391,13 +391,13 @@ export default function RemoteControlApp() {
                         onDragEnd={handleDragEnd}
                     >
                         <SortableContext
-                            items={roomState.queue.slice(roomState.currentIndex + 1).map(v => v.videoId || v.uuid || `${v.title}-${v.author}`)}
+                            items={roomState.queue.slice(roomState.currentIndex + 1).map(v => v.uuid || v.videoId || `${v.title}-${v.author}`)}
                             strategy={verticalListSortingStrategy}
                         >
                             <div className="space-y-3">
                                 {roomState.queue.slice(roomState.currentIndex + 1).map((video, idx) => {
-                                    // Use videoId if available, otherwise create stable ID from title+author
-                                    const uniqueId = video.videoId || video.uuid || `${video.title}-${video.author}`;
+                                    // CRITICAL: Prioritize uuid for stable reordering
+                                    const uniqueId = video.uuid || video.videoId || `${video.title}-${video.author}`;
                                     return (
                                         <DraggableQueueItem
                                             key={uniqueId}
