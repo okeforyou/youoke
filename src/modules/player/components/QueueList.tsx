@@ -59,8 +59,8 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
                 <Menu className="w-5 h-5 opacity-50" />
             </div>
 
-            {/* Card Content - V1 Style with border, shadow, and lift on hover */}
-            <div className="flex-1 flex items-center gap-4 rounded-xl border border-gray-200 transition-all overflow-hidden hover:border-primary hover:shadow-lg hover:shadow-gray-200/50 hover:-translate-y-0.5" style={{ backgroundColor: '#fafafa' }}>
+            {/* Card Content - V1 Style with shadow and lift on hover (No Red Border) */}
+            <div className="flex-1 flex items-center gap-4 rounded-xl border border-gray-200 transition-all overflow-hidden hover:shadow-lg hover:shadow-gray-200/50 hover:-translate-y-0.5" style={{ backgroundColor: '#fafafa' }}>
                 {/* Thumbnail - Flush with the card's left side */}
                 <div
                     className="relative w-28 h-16 flex-shrink-0 bg-gray-200 cursor-pointer group/thumb"
@@ -89,14 +89,14 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
                     </p>
                 </div>
 
-                {/* Remove Button - Also inside the card */}
+                {/* Remove Button - Inside the card (Gray to Red logic) */}
                 <div className="pr-3">
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
                             onRemove(video.uuid);
                         }}
-                        className="w-9 h-9 flex items-center justify-center text-red-400 hover:text-white hover:bg-red-500 rounded-full transition-all flex-shrink-0 bg-red-white"
+                        className="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all flex-shrink-0"
                         aria-label="ลบออกจากคิว"
                     >
                         <Trash2 className="w-4.5 h-4.5" />

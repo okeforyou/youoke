@@ -46,12 +46,6 @@ export const SidebarControls = () => {
             color: "text-primary"
         },
         {
-            icon: RotateCcw,
-            label: "ร้องซ้ำ",
-            onClick: () => seekTo(0),
-            color: "text-primary"
-        },
-        {
             icon: isMuted ? VolumeX : Volume2,
             label: isMuted ? "เปิดเสียง" : "ปิดเสียง",
             onClick: () => setMuted(!isMuted),
@@ -91,11 +85,11 @@ export const SidebarControls = () => {
                     <button
                         key={index}
                         onClick={item.onClick}
-                        className="flex flex-col items-center justify-center flex-1 gap-0 group transition-all active:scale-95 bg-white"
+                        className="flex flex-col items-center justify-center flex-1 gap-1 group transition-all active:scale-95 bg-white"
                     >
-                        <div className={`p-1.5 rounded-lg transition-all ${item.active ? 'bg-red-50' : ''}`}>
+                        <div className={`p-1 rounded-lg transition-all ${item.active ? 'bg-red-50' : ''}`}>
                             <item.icon
-                                size={18}
+                                size={22}
                                 className={`text-primary transition-colors ${item.active ? 'fill-current' : ''}`}
                             />
                         </div>
