@@ -146,8 +146,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const prevConnected = useRef(0);
     useEffect(() => {
         if (prevConnected.current === 0 && connectedClients > 0) {
-            setPartyModalOpen(false);
-            console.log('📱 Guest connected, auto-closing QR modal');
+            setPartyModalOpen(false); // Close ShareRoomModal
+            setShowQRCode(false);    // Close QR Overlay
+            console.log('📱 Guest connected, auto-closing QR modal & overlay');
         }
         prevConnected.current = connectedClients;
     }, [connectedClients]);

@@ -92,8 +92,14 @@ export default function RemoteControlApp() {
                         const rawQueue = data.queue || [];
                         const queue = Array.isArray(rawQueue) ? rawQueue : Object.values(rawQueue);
 
+                        console.log('🔥 [Remote] Syncing state from Firebase', {
+                            queueSize: queue.length,
+                            idx: data.currentIndex,
+                            ts: data.timestamp
+                        });
+
                         setRoomState({
-                            queue: queue.filter((i: any) => i && (i.videoId || i.id)),
+                            queue: queue.filter((i: any) => i && (i.videoId || i.id || i.uuid)),
                             currentIndex: data.currentIndex ?? 0,
                             currentVideo: data.currentVideo,
                             controls: data.controls || { isPlaying: false, isMuted: false, volume: 100 },
@@ -139,40 +145,61 @@ export default function RemoteControlApp() {
         };
     }, []);
 
-    // Presence / Connection Status Heartbeat (RELIABLE)
+    // Presence / Connection Status Heartbeat (V1-Inspired Reliability)
     useEffect(() => {
         if (!roomCode || !realtimeDb) return;
         const currentUser = auth?.currentUser;
         if (!currentUser) return;
 
-        const myPresenceRef = ref(realtimeDb, `rooms/${roomCode}/connected/${currentUser.uid}`);
+        // Use a consistent clientId for this device to prevent duplicate entries
+        let clientId = localStorage.getItem('youoke_remote_client_id');
+        if (!clientId) {
+            clientId = currentUser.uid;
+            localStorage.setItem('youoke_remote_client_id', clientId);
+        }
+
+        const myPresenceRef = ref(realtimeDb, `rooms/${roomCode}/connected/${clientId}`);
         const connectedRef = ref(realtimeDb, '.info/connected');
 
         let unsubscribePresence: () => void;
+
+        const updatePresence = async (presenceState: 'active' | 'background') => {
+            try {
+                await set(myPresenceRef, {
+                    uid: currentUser.uid,
+                    name: guestName || 'Guest',
+                    state: presenceState,
+                    lastSeen: serverTimestamp(),
+                    userAgent: navigator.userAgent
+                });
+            } catch (e) {
+                console.error("Presence update failed:", e);
+            }
+        };
 
         const setupPresence = async () => {
             const { onDisconnect, onValue: onFirebaseValue } = await import('firebase/database');
 
             unsubscribePresence = onFirebaseValue(connectedRef, (snap) => {
                 if (snap.val() === true) {
-                    // We are connected to Firebase
-                    const presenceData = {
-                        uid: currentUser.uid,
-                        name: guestName || 'Guest',
-                        state: 'active',
-                        lastSeen: serverTimestamp()
-                    };
-
                     onDisconnect(myPresenceRef).remove();
-                    set(myPresenceRef, presenceData);
+                    updatePresence('active');
                 }
             });
         };
 
         setupPresence();
 
+        // Listen for visibility changes (V1 logic: Screen off/Tab hidden = background)
+        const handleVisibilityChange = () => {
+            const newState = document.visibilityState === 'hidden' ? 'background' : 'active';
+            updatePresence(newState);
+        };
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
         return () => {
             if (unsubscribePresence) unsubscribePresence();
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
             const { remove } = require('firebase/database');
             remove(myPresenceRef).catch(() => { });
         };
@@ -396,7 +423,7 @@ export default function RemoteControlApp() {
 
             {/* Bottom Player */}
             <RemoteMiniPlayer
-                currentVideo={roomState.currentVideo || roomState.queue[roomState.currentIndex] || null}
+                currentVideo={roomState.currentVideo || roomState.queue[roomState.currentIndex] || (roomState.queue.length > 0 ? roomState.queue[0] : null)}
                 isPlaying={roomState.controls.isPlaying}
                 onTogglePlay={() => sendCommand(roomState.controls.isPlaying ? 'PAUSE' : 'PLAY')}
                 onNext={() => sendCommand('NEXT')}
