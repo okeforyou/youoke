@@ -540,13 +540,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
             {/* Right Sidebar (Queue Only - Collapsible) */}
             <aside className={clsx(
-                "hidden lg:flex w-[420px] bg-white border-l border-gray-100 flex-col shadow-xl z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+                "hidden lg:flex w-[420px] bg-slate-50/30 border-l border-gray-100 flex-col shadow-xl z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
                 isQueueOpen && queue.length > 0 ? "mr-0 w-[420px] opacity-100" : "-mr-[420px] w-0 opacity-0"
             )}>
                 {/* 236px (Video) + 54px (SidebarControls) + 14px (Space) = 304px */}
-                <div className="flex-1 flex flex-col pt-[304px] bg-white h-full relative">
+                <div className="flex-1 flex flex-col pt-[304px] h-full relative">
                     {/* Main Content Area */}
-                    <div className="flex-1 flex flex-col min-h-0 bg-white">
+                    <div className="flex-1 flex flex-col min-h-0">
                         <QueueList />
                     </div>
                 </div>

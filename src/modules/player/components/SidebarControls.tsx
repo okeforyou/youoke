@@ -75,7 +75,7 @@ export const SidebarControls = () => {
     ];
 
     return (
-        <div className="bg-white border-b border-gray-100 shrink-0 select-none">
+        <div className="bg-transparent border-b border-gray-100 shrink-0 select-none">
             {/* Slim Progress Bar */}
             <div className="w-full h-[3px] bg-gray-100 overflow-hidden relative">
                 <div
