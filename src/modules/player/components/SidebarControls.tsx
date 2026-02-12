@@ -2,6 +2,7 @@ import React from "react";
 import { Play, Pause, SkipForward, RotateCcw, Volume2, VolumeX, Maximize, Cast } from "lucide-react";
 import { usePlayerStore } from "../stores/usePlayerStore";
 import { useShallow } from "zustand/react/shallow";
+import { ListMusic, Trash2 } from "lucide-react";
 
 export const SidebarControls = () => {
     const {
@@ -103,6 +104,29 @@ export const SidebarControls = () => {
                         </span>
                     </button>
                 ))}
+            </div>
+
+            {/* Integrated Queue Info Row (Simplified V1 Style) */}
+            <div className="flex items-center justify-between px-4 py-2 border-t border-gray-50" style={{ backgroundColor: '#ffffff' }}>
+                <div className="flex items-center gap-1.5">
+                    <ListMusic size={12} className="text-gray-400" />
+                    <span className="text-[11px] font-medium text-gray-400">
+                        คิวเพลง ({usePlayerStore.getState().queue.length - (usePlayerStore.getState().currentIndex + 1) > 0 ? usePlayerStore.getState().queue.length - (usePlayerStore.getState().currentIndex + 1) : 0})
+                    </span>
+                </div>
+                {usePlayerStore.getState().queue.length > 0 && (
+                    <button
+                        onClick={() => {
+                            if (confirm('ต้องการลบคิวเพลงทั้งหมดหรือไม่?')) {
+                                usePlayerStore.getState().clearQueue();
+                            }
+                        }}
+                        className="text-[10px] font-bold text-red-400 hover:text-red-500 uppercase tracking-tight transition-colors flex items-center gap-1"
+                    >
+                        <Trash2 size={10} />
+                        ล้างทั้งหมด
+                    </button>
+                )}
             </div>
         </div>
     );

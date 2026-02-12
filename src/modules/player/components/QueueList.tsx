@@ -154,30 +154,8 @@ export function QueueList() {
 
     return (
         <div className="flex-1 flex flex-col h-full" style={{ backgroundColor: '#ffffff', background: '#ffffff' }}>
-            {/* Header */}
-            {/* SIMPLE WHITE HEADER v5 */}
-            <div className="px-6 pt-4 pb-3 flex items-center justify-between" style={{ backgroundColor: '#ffffff', background: '#ffffff' }}>
-                <div className="flex items-center gap-2">
-                    <span className="text-[13px] font-normal text-gray-500">
-                        รายการคิวเพลง ({queueItems.length})
-                    </span>
-                </div>
-                {queueItems.length > 0 && (
-                    <button
-                        onClick={() => {
-                            if (confirm('ต้องการลบคิวเพลงทั้งหมดหรือไม่?')) {
-                                usePlayerStore.getState().clearQueue();
-                            }
-                        }}
-                        className="text-[11px] font-normal text-gray-400 hover:text-red-500 transition-colors"
-                    >
-                        ล้างทั้งหมด
-                    </button>
-                )}
-            </div>
-
-            {/* Queue Items with Drag & Drop */}
-            <div className="flex-1 overflow-y-auto pt-1 pb-6" style={{ backgroundColor: '#ffffff', background: '#ffffff' }}>
+            {/* Queue Items with Drag & Drop - Content starts immediately */}
+            <div className="flex-1 overflow-y-auto pt-2 pb-6" style={{ backgroundColor: '#ffffff', background: '#ffffff' }}>
                 <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}
