@@ -14,7 +14,7 @@ import { SidebarControls } from '../modules/player/components/SidebarControls';
 import { QueueList } from '../modules/player/components/QueueList';
 import { useSystemConfig } from '../hooks/useSystemConfig';
 import { useUIStore } from '../stores/useUIStore';
-import { UnifiedCastButton } from '../plugins/cast/components/UnifiedCastButton';
+
 // Static critical imports
 import { MobileBottomNav } from '../components/navigation/MobileBottomNav';
 import { Sidebar } from '../components/navigation/Sidebar';
@@ -239,7 +239,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <UnifiedCastButton className="text-gray-600" />
                         <button
                             onClick={() => setMobileSearchOpen(!isMobileSearchOpen)}
                             className={clsx("p-2 rounded-full transition-colors", isMobileSearchOpen ? "bg-primary/10 text-primary" : "text-gray-600 active:bg-gray-100")}
@@ -421,8 +420,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
 
 
-                        {/* Cast Button */}
-                        <UnifiedCastButton isCircle={false} className="h-12 w-12 rounded-2xl p-0 flex items-center justify-center bg-gray-100 hover:bg-gray-200" />
                     </div>
                 </header>
 

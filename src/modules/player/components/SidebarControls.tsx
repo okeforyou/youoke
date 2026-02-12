@@ -3,6 +3,8 @@ import { Play, Pause, SkipForward, RotateCcw, Volume2, VolumeX, Maximize, Cast }
 import { usePlayerStore } from "../stores/usePlayerStore";
 import { useShallow } from "zustand/react/shallow";
 import { ListMusic, Trash2 } from "lucide-react";
+import { useUIStore } from "../../../stores/useUIStore";
+import { useCast } from "../../../plugins/cast/context/CastContext";
 
 export const SidebarControls = () => {
     const {
@@ -30,6 +32,8 @@ export const SidebarControls = () => {
     );
 
     const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
+    const { setCastModalOpen } = useUIStore();
+    const { isConnected } = useCast();
 
     const controlItems = [
         {
@@ -61,10 +65,8 @@ export const SidebarControls = () => {
         {
             icon: Cast,
             label: "CAST",
-            onClick: () => {
-                // Cast logic or trigger
-                console.log("Cast triggered");
-            },
+            onClick: () => setCastModalOpen(true),
+            active: isConnected,
             color: "text-primary"
         }
     ];
@@ -87,11 +89,14 @@ export const SidebarControls = () => {
                         onClick={item.onClick}
                         className="flex flex-col items-center justify-center flex-1 gap-1 group transition-all active:scale-95 bg-white"
                     >
-                        <div className={`p-1 rounded-lg transition-all ${item.active ? 'bg-red-50' : ''}`}>
+                        <div className={`p-1 rounded-lg transition-all ${item.active ? 'bg-red-50' : ''} relative`}>
                             <item.icon
                                 size={22}
                                 className={`text-primary transition-colors ${item.active ? 'fill-current' : ''}`}
                             />
+                            {item.label === "CAST" && isConnected && (
+                                <span className="absolute top-0 right-0 w-2 h-2 bg-green-500 rounded-full animate-pulse border ring-1 ring-white"></span>
+                            )}
                         </div>
                         <span className="text-[9px] font-medium text-primary uppercase tracking-tighter transition-colors">
                             {item.label}
