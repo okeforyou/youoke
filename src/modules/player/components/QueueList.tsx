@@ -60,7 +60,7 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
             </div>
 
             {/* Card Content - V1 Style with border and rounding */}
-            <div className="flex-1 flex items-center gap-4 rounded-xl border border-gray-100 transition-all overflow-hidden" style={{ backgroundColor: '#f5f5f5' }}>
+            <div className="flex-1 flex items-center gap-4 rounded-xl border border-gray-200 transition-all overflow-hidden" style={{ backgroundColor: '#fafafa' }}>
                 {/* Thumbnail - Flush with the card's left side */}
                 <div
                     className="relative w-28 h-16 flex-shrink-0 bg-gray-200 cursor-pointer group/thumb"
@@ -157,7 +157,7 @@ export function QueueList() {
     return (
         <div className="flex-1 flex flex-col h-full relative z-20" style={{ backgroundColor: '#ffffff', background: '#ffffff' }}>
             {/* Queue Items with Drag & Drop - Content starts immediately */}
-            <div className="flex-1 overflow-y-auto pt-2 pb-6 relative z-10" style={{ backgroundColor: '#ffffff', background: '#ffffff' }}>
+            <div className="flex-1 overflow-y-auto pt-5 pb-6 relative z-10" style={{ backgroundColor: '#ffffff', background: '#ffffff' }}>
                 <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}
