@@ -123,7 +123,7 @@ export const SidebarControls = () => {
                                 usePlayerStore.getState().clearQueue();
                             }
                         }}
-                        className="group flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black text-white hover:bg-gray-800 transition-all duration-300 active:scale-95 shadow-sm"
+                        className="group flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 text-gray-900 hover:bg-gray-200 transition-all duration-300 active:scale-95 border border-gray-200/50"
                     >
                         <Trash2 size={11} className="transition-transform group-hover:scale-110" />
                         <span className="text-[10px] font-black uppercase tracking-wider">ล้างทั้งหมด</span>
