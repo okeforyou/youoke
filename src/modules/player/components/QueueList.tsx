@@ -41,13 +41,14 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
         // NO transition - smooth drag without jumping/swapping
         opacity: isDragging ? 0.5 : 1,
         zIndex: isDragging ? 50 : 'auto',
+        backgroundColor: '#ffffff',
     };
 
     return (
         <div
             ref={setNodeRef}
             style={style}
-            className="group flex items-center gap-2 py-2 px-3"
+            className="group flex items-center gap-2 py-2 px-3 bg-white"
         >
             {/* Drag Handle - Outside the card */}
             <div
@@ -143,7 +144,7 @@ export function QueueList() {
 
     if (queueItems.length === 0) {
         return (
-            <div className="h-full flex flex-col items-center justify-center p-8 text-gray-400 min-h-[400px]" style={{ backgroundColor: '#ffffff' }}>
+            <div className="h-full flex flex-col items-center justify-center p-8 text-gray-400 min-h-[400px] bg-white!" style={{ backgroundColor: '#ffffff' }}>
                 <ListMusic className="w-12 h-12 mb-3 opacity-30" />
                 <p className="text-sm font-medium">ยังไม่มีคิวเพลง</p>
                 <p className="text-xs text-gray-400 mt-1">เพิ่มเพลงเข้าคิวเพื่อเล่นต่อ</p>
@@ -152,10 +153,10 @@ export function QueueList() {
     }
 
     return (
-        <div className="flex-1 flex flex-col h-full" style={{ backgroundColor: '#ffffff' }}>
+        <div className="flex-1 flex flex-col h-full bg-white!" style={{ backgroundColor: '#ffffff' }}>
             {/* Header */}
             {/* SIMPLE WHITE HEADER v5 */}
-            <div className="px-6 pt-4 pb-3 flex items-center justify-between" style={{ backgroundColor: '#ffffff' }}>
+            <div className="px-6 pt-4 pb-3 flex items-center justify-between bg-white!" style={{ backgroundColor: '#ffffff' }}>
                 <div className="flex items-center gap-2">
                     <span className="text-[13px] font-normal text-gray-500">
                         รายการคิวเพลง ({queueItems.length})
@@ -176,7 +177,7 @@ export function QueueList() {
             </div>
 
             {/* Queue Items with Drag & Drop */}
-            <div className="flex-1 overflow-y-auto pt-1 pb-6" style={{ backgroundColor: '#ffffff' }}>
+            <div className="flex-1 overflow-y-auto pt-1 pb-6 bg-white!" style={{ backgroundColor: '#ffffff' }}>
                 <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}
