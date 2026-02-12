@@ -75,7 +75,7 @@ export const SidebarControls = () => {
     ];
 
     return (
-        <div className="bg-transparent border-b border-gray-100 shrink-0 select-none">
+        <div className="bg-white border-b border-gray-100 shrink-0 select-none">
             {/* Slim Progress Bar */}
             <div className="w-full h-[3px] bg-gray-100 overflow-hidden relative">
                 <div
@@ -92,16 +92,13 @@ export const SidebarControls = () => {
                         onClick={item.onClick}
                         className="flex flex-col items-center justify-center flex-1 gap-0 group transition-all active:scale-95"
                     >
-                        <div className={`
-                            p-1 rounded-lg transition-all
-                            ${item.active ? 'bg-red-50' : 'hover:bg-gray-50'}
-                        `}>
+                        <div className="p-1.5 rounded-lg transition-all">
                             <item.icon
-                                size={20}
-                                className={`${item.color} ${item.active ? 'fill-current' : ''}`}
+                                size={18}
+                                className={`${item.active ? 'text-primary fill-current' : 'text-gray-400'} transition-colors`}
                             />
                         </div>
-                        <span className="text-[9px] font-bold text-primary uppercase tracking-tighter group-hover:text-primary transition-colors">
+                        <span className={`text-[9px] font-bold uppercase tracking-tighter transition-colors ${item.active ? 'text-primary' : 'text-gray-400/80'}`}>
                             {item.label}
                         </span>
                     </button>
