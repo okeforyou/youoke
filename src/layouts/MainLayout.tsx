@@ -90,20 +90,18 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const { config } = useSystemConfig();
     const allowRemote = config?.membership?.[isPremium ? 'premium' : 'free']?.allow_remote;
 
-    // Room Code: Use User UID or Generate Guest ID
-    const [guestId, setGuestId] = useState<string | null>(null);
+    // Unified Party Room Code (Always numeric PIN)
+    const [partyPIN, setPartyPIN] = useState<string | null>(null);
     useEffect(() => {
-        if (!user) {
-            let gid = localStorage.getItem('youoke_guest_id');
-            if (!gid) {
-                gid = Math.random().toString(36).substring(2, 8).toUpperCase();
-                localStorage.setItem('youoke_guest_id', gid);
-            }
-            setGuestId(gid);
+        let pin = localStorage.getItem('youoke_party_pin');
+        if (!pin) {
+            pin = Math.floor(1000 + Math.random() * 9000).toString();
+            localStorage.setItem('youoke_party_pin', pin);
         }
-    }, [user]);
+        setPartyPIN(pin);
+    }, []);
 
-    const roomCode = user?.uid || guestId;
+    const roomCode = partyPIN;
 
     // Remote Control Integration - Main Screen acts as a Host
     useRemoteHost(

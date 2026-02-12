@@ -2,9 +2,10 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { realtimeDb } from '../firebase';
 import { ref, set, remove, onValue, onDisconnect, serverTimestamp } from 'firebase/database';
 import { usePlayerStore } from '../modules/player/stores/usePlayerStore';
+import { useToast } from '../context/ToastContext';
 
 export type RemoteCommand = {
-    type: 'PLAY' | 'PAUSE' | 'NEXT' | 'ADD_QUEUE' | 'ADD_TO_QUEUE' | 'SEEK' | 'TOGGLE_FULLSCREEN' | 'SET_FULLSCREEN' | 'REORDER_QUEUE' | 'REMOVE_AT';
+    type: 'PLAY' | 'PAUSE' | 'NEXT' | 'ADD_QUEUE' | 'ADD_TO_QUEUE' | 'SEEK' | 'TOGGLE_FULLSCREEN' | 'SET_FULLSCREEN' | 'REORDER_QUEUE' | 'REMOVE_AT' | 'TOGGLE_QUEUE_OVERLAY';
     payload?: any;
     timestamp: number;
 };
@@ -168,70 +169,58 @@ export const useRemoteHost = (
         };
     }, [sessionId]);
 
-    // Poll for Commands (REST API Polling - Robust)
-    // Use Ref for processed IDs to survive effect re-runs
+    // Listen for Commands (Real-time SDK Listener)
     const processedCommandIdsRef = useRef<Set<string>>(new Set());
 
+    const { addToast } = useToast() || { addToast: () => { } };
+
     useEffect(() => {
-        if (!sessionId) return;
+        if (!sessionId || !realtimeDb) return;
 
-        let isActive = true;
+        console.log('👂 [Host] Listening for remote commands on:', sessionId);
+        const currentDb = realtimeDb;
+        const commandsRef = ref(currentDb, `rooms/${sessionId}/commands`);
 
-        const pollInterval = setInterval(async () => {
-            if (!isActive) return;
+        const unsubscribe = onValue(commandsRef, (snapshot) => {
+            if (!snapshot.exists()) return;
 
-            try {
-                // Get DB URL
-                const { realtimeDb } = await import('../firebase');
-                const dbURL = realtimeDb?.app?.options?.databaseURL;
-                if (!dbURL) return;
+            const commands = snapshot.val() as Record<string, CastCommandEnvelope>;
+            const now = Date.now();
 
-                const response = await fetch(`${dbURL}/rooms/${sessionId}/commands.json`);
-                if (!response.ok) return;
+            Object.entries(commands).forEach(([cmdId, envelope]) => {
+                // 1. Skip if already processed
+                if (processedCommandIdsRef.current.has(cmdId)) return;
 
-                const commands = await response.json() as Record<string, CastCommandEnvelope> | null;
-                if (!commands) return;
-
-                const now = Date.now();
-
-                for (const [cmdId, envelope] of Object.entries(commands)) {
-                    // 1. Skip if already processed in this session
-                    if (processedCommandIdsRef.current.has(cmdId)) continue;
-
-                    // 2. Skip if too old (> 30 seconds) - Prevent "replay from grave"
-                    if (now - envelope.timestamp > 30000) {
-                        // Clean up old junk
-                        fetch(`${dbURL}/rooms/${sessionId}/commands/${cmdId}.json`, { method: 'DELETE' }).catch(() => { });
-                        processedCommandIdsRef.current.add(cmdId);
-                        continue;
-                    }
-
-                    // 3. Mark processed immediately
+                // 2. Skip if too old (> 60 seconds)
+                if (now - (envelope.timestamp || 0) > 60000) {
                     processedCommandIdsRef.current.add(cmdId);
-
-                    if (envelope.status !== 'pending') continue;
-
-                    console.log('✨ Host: New Command', envelope.command.type);
-
-                    // 4. Execute
-                    handleCommand(envelope.command);
-
-                    // 5. Delete immediately to prevent any other client/logic from seeing it
-                    fetch(`${dbURL}/rooms/${sessionId}/commands/${cmdId}.json`, {
-                        method: 'DELETE'
-                    }).catch(console.error);
+                    return;
                 }
 
-            } catch (e) {
-                console.error('❌ Host: Command poll error', e);
-            }
-        }, 1000);
+                // 3. Only process pending
+                if (envelope.status !== 'pending') return;
+
+                // 4. Mark processed and execute
+                processedCommandIdsRef.current.add(cmdId);
+
+                if (envelope.command.type === 'ADD_TO_QUEUE' || envelope.command.type === 'ADD_QUEUE') {
+                    addToast('รีโมท: เพิ่มเพลงเข้าคิวแล้ว');
+                } else {
+                    console.log('✨ [Remote Command]:', envelope.command.type);
+                }
+
+                handleCommand(envelope.command);
+
+                // 5. Cleanup: Delete command using SDK
+                remove(ref(currentDb, `rooms/${sessionId}/commands/${cmdId}`))
+                    .catch(e => console.error('❌ [Host] Failed to cleanup command:', e));
+            });
+        });
 
         return () => {
-            isActive = false;
-            clearInterval(pollInterval);
+            unsubscribe();
         };
-    }, [sessionId]);
+    }, [sessionId, realtimeDb]);
 
     const handleCommand = (cmd: RemoteCommand) => {
         console.log('[RemoteHost] Executing:', cmd.type);
@@ -334,6 +323,10 @@ export const useRemoteHost = (
             case 'NEXT':
                 console.log('🎮 [Remote] Executing NEXT command');
                 store.playNext();
+                break;
+            case 'TOGGLE_QUEUE_OVERLAY':
+                console.log('🎮 [Remote] Executing TOGGLE_QUEUE_OVERLAY command');
+                store.toggleQueueVisibility();
                 break;
         }
     };
