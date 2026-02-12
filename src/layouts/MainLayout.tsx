@@ -199,7 +199,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             <Sidebar />
 
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col min-w-0 relative bg-white">
+            <div className="flex-1 flex flex-col min-w-0 relative bg-white shadow-[0_0_50px_rgba(0,0,0,0.06)] z-10">
                 {/* Mobile Header (Visible only on mobile) */}
                 <header className="lg:hidden h-16 flex items-center justify-between px-4 border-b border-gray-100 bg-white sticky top-0 z-30">
                     <div className="flex items-center gap-3">

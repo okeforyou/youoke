@@ -96,23 +96,23 @@ export const SidebarControls = () => {
                         <div className={`p-1.5 rounded-lg transition-all ${item.active ? 'bg-red-50' : ''}`}>
                             <item.icon
                                 size={18}
-                                className={`text-primary transition-colors ${item.active ? 'fill-current' : ''}`}
+                                className={`text-gray-900 transition-colors ${item.active ? 'fill-current' : ''}`}
                             />
                         </div>
-                        <span className="text-[9px] font-bold text-primary uppercase tracking-tighter transition-colors">
+                        <span className="text-[9px] font-bold text-gray-900 uppercase tracking-tighter transition-colors">
                             {item.label}
                         </span>
                     </button>
                 ))}
             </div>
 
-            {/* Integrated Queue Info Row (Ged-Symmetry & Unified Color) */}
+            {/* Integrated Queue Info Row (Dark Mastery) */}
             <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100/80 mt-2" style={{ backgroundColor: '#ffffff' }}>
                 <div className="flex items-center gap-2">
                     <div className="w-5 h-5 rounded-full bg-gray-50 flex items-center justify-center">
-                        <ListMusic size={12} className="text-gray-400" />
+                        <ListMusic size={12} className="text-gray-900" />
                     </div>
-                    <span className="text-[13px] font-bold text-gray-600 tracking-tight">
+                    <span className="text-[14px] font-black text-black tracking-tight">
                         คิวเพลง <span className="ml-0.5">({usePlayerStore.getState().queue.length - (usePlayerStore.getState().currentIndex + 1) > 0 ? usePlayerStore.getState().queue.length - (usePlayerStore.getState().currentIndex + 1) : 0})</span>
                     </span>
                 </div>

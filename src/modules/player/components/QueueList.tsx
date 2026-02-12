@@ -81,10 +81,10 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
 
                 {/* Info */}
                 <div className="flex-1 min-w-0 py-2 cursor-pointer" onClick={() => onPlay(actualIndex)}>
-                    <h4 className="text-[14px] font-bold text-gray-900 line-clamp-1 leading-snug mb-0.5">
+                    <h4 className="text-[14px] font-black text-black line-clamp-1 leading-snug mb-0.5">
                         {video.title}
                     </h4>
-                    <p className="text-[11px] text-gray-500 truncate font-semibold">
+                    <p className="text-[11px] text-gray-900 truncate font-black">
                         {video.author}
                     </p>
                 </div>
