@@ -590,14 +590,17 @@ export default function MainLayout({ children }: MainLayoutProps) {
             }
 
             {/* Right Sidebar (Queue Only - Collapsible) */}
-            <aside className={clsx(
-                "hidden lg:flex w-[420px] border-l border-gray-200 flex-col z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] bg-white",
-                (isQueueOpen && queue.length > 0 && layoutMode !== 'fullscreen') ? "mr-0 w-[420px] opacity-100" : "-mr-[420px] w-0 opacity-0"
-            )}>
+            <aside
+                className={clsx(
+                    "hidden lg:flex w-[420px] border-l border-gray-200 flex-col z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+                    (isQueueOpen && queue.length > 0 && layoutMode !== 'fullscreen') ? "mr-0 w-[420px] opacity-100" : "-mr-[420px] w-0 opacity-0"
+                )}
+                style={{ backgroundColor: '#ffffff', background: '#ffffff' }}
+            >
                 {/* 314px corresponds to the fixed Player + Controls height */}
-                <div className="flex-1 flex flex-col pt-[314px] h-full relative z-10 bg-white">
+                <div className="flex-1 flex flex-col pt-[314px] h-full relative z-10 bg-white" style={{ backgroundColor: '#ffffff' }}>
                     {/* Main Content Area */}
-                    <div className="flex-1 flex flex-col min-h-0 bg-white">
+                    <div className="flex-1 flex flex-col min-h-0 bg-white" style={{ backgroundColor: '#ffffff' }}>
                         <QueueList />
                     </div>
                 </div>

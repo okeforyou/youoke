@@ -104,31 +104,6 @@ export const SidebarControls = () => {
                     </button>
                 ))}
             </div>
-
-            {/* Integrated Queue Info Row (Dark Mastery) */}
-            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 mt-2 bg-white">
-                <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-full bg-gray-50 flex items-center justify-center">
-                        <ListMusic size={12} className="text-gray-900" />
-                    </div>
-                    <span className="text-[14px] font-black text-black tracking-tight">
-                        คิวเพลง <span className="ml-0.5">({usePlayerStore.getState().queue.length - (usePlayerStore.getState().currentIndex + 1) > 0 ? usePlayerStore.getState().queue.length - (usePlayerStore.getState().currentIndex + 1) : 0})</span>
-                    </span>
-                </div>
-                {usePlayerStore.getState().queue.length > 0 && (
-                    <button
-                        onClick={() => {
-                            if (confirm('ต้องการลบคิวเพลงทั้งหมดหรือไม่?')) {
-                                usePlayerStore.getState().clearQueue();
-                            }
-                        }}
-                        className="group flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 text-gray-900 hover:bg-gray-200 transition-all duration-300 active:scale-95 border border-gray-200/50"
-                    >
-                        <Trash2 size={11} className="transition-transform group-hover:scale-110" />
-                        <span className="text-[10px] font-black uppercase tracking-wider">ล้างทั้งหมด</span>
-                    </button>
-                )}
-            </div>
         </div>
     );
 };

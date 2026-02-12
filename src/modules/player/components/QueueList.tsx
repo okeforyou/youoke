@@ -47,7 +47,7 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
     return (
         <div
             ref={setNodeRef}
-            style={style}
+            style={{ ...style, backgroundColor: '#ffffff' }}
             className="group flex items-center gap-2 py-2 px-3 bg-white"
         >
             {/* Drag Handle - Outside the card */}
@@ -108,14 +108,14 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
 }
 
 export function QueueList() {
-    const { queue, removeFromQueue, currentIndex, setCurrentIndex, reorderQueue } = usePlayerStore();
+    const { queue, removeFromQueue, currentIndex, setCurrentIndex, reorderQueue, clearQueue } = usePlayerStore();
+
+    // Derived State
+    const queueItems = queue.slice(currentIndex + 1);
+    const remainingCount = Math.max(0, queue.length - (currentIndex + 1));
 
     const sensors = useSensors(
-        useSensor(PointerSensor, {
-            activationConstraint: {
-                distance: 8, // Require 8px movement before drag starts
-            },
-        })
+        useSensor(PointerSensor)
     );
 
     const handleDragEnd = (event: DragEndEvent) => {
@@ -141,12 +141,9 @@ export function QueueList() {
         }
     };
 
-    // Skip first item (currently playing)
-    const queueItems = queue.slice(currentIndex + 1);
-
     if (queueItems.length === 0) {
         return (
-            <div className="h-full flex-1 flex flex-col items-center justify-center p-8 text-gray-400 min-h-[400px] relative z-20" style={{ backgroundColor: '#ffffff', background: '#ffffff' }}>
+            <div className="h-full flex-1 flex flex-col items-center justify-center p-8 text-gray-400 min-h-[400px] relative z-20 bg-white" style={{ backgroundColor: '#ffffff' }}>
                 <ListMusic className="w-12 h-12 mb-3 opacity-30" />
                 <p className="text-sm font-medium">ยังไม่มีคิวเพลง</p>
                 <p className="text-xs text-gray-400 mt-1">เพิ่มเพลงเข้าคิวเพื่อเล่นต่อ</p>
@@ -155,9 +152,33 @@ export function QueueList() {
     }
 
     return (
-        <div className="flex-1 flex flex-col h-full relative z-20 bg-white">
+        <div className="flex-1 flex flex-col h-full relative z-20 bg-white" style={{ backgroundColor: '#ffffff' }}>
+            {/* Sticky Queue Header (Restored from SidebarControls) */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white sticky top-0 z-30" style={{ backgroundColor: '#ffffff' }}>
+                <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 rounded-full bg-gray-50 flex items-center justify-center">
+                        <ListMusic size={12} className="text-gray-900" />
+                    </div>
+                    <span className="text-[14px] font-black text-black tracking-tight">
+                        คิวเพลง <span className="ml-0.5 text-primary">({remainingCount})</span>
+                    </span>
+                </div>
+                {queue.length > 0 && (
+                    <button
+                        onClick={() => {
+                            if (confirm('ต้องการลบคิวเพลงทั้งหมดหรือไม่?')) {
+                                clearQueue();
+                            }
+                        }}
+                        className="group flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-50 text-gray-600 hover:bg-red-50 hover:text-red-500 transition-all duration-300 active:scale-95 border border-gray-100"
+                    >
+                        <Trash2 size={11} className="transition-transform group-hover:scale-110" />
+                        <span className="text-[10px] font-black uppercase tracking-wider">ล้างทั้งหมด</span>
+                    </button>
+                )}
+            </div>
             {/* Queue Items with Drag & Drop - Content starts immediately */}
-            <div className="flex-1 overflow-y-auto pt-5 pb-6 relative z-10 bg-white">
+            <div className="flex-1 overflow-y-auto pt-2 pb-6 relative z-10 bg-white" style={{ backgroundColor: '#ffffff' }}>
                 <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}
