@@ -59,7 +59,7 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
             </div>
 
             {/* Card Content - V1 Style with border and rounding */}
-            <div className="flex-1 flex items-center gap-3 p-2 rounded-xl border border-gray-100 shadow-sm hover:border-gray-200 hover:shadow-md transition-all" style={{ backgroundColor: '#f9fafb' }}>
+            <div className="flex-1 flex items-center gap-3 p-2 rounded-xl border border-gray-100 transition-all" style={{ backgroundColor: '#f8f8f8' }}>
                 {/* Thumbnail - Flush with the card's left side (mostly) */}
                 <div
                     className="relative w-28 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 shadow-sm cursor-pointer group/thumb"
@@ -154,11 +154,11 @@ export function QueueList() {
     return (
         <div className="flex-1 flex flex-col h-full" style={{ backgroundColor: '#ffffff' }}>
             {/* Header */}
-            {/* NEW CLEAN HEADER SECTION (Rebuilt for Clarity) */}
-            <div className="px-6 pt-12 pb-5 border-b border-gray-50 flex items-center justify-between" style={{ backgroundColor: '#ffffff' }}>
-                <div className="flex items-center gap-3">
-                    <div className="w-1.5 h-6 bg-primary rounded-full" />
-                    <span className="text-lg font-black text-gray-900 tracking-tight">
+            {/* FLAT MINIMAL HEADER v3 */}
+            <div className="px-6 pt-16 pb-4 flex items-center justify-between" style={{ backgroundColor: '#ffffff' }}>
+                <div className="flex items-center gap-2">
+                    <div className="w-1 h-3 bg-primary rounded-full" />
+                    <span className="text-[12px] font-bold text-gray-800 uppercase tracking-tight">
                         รายการคิวเพลง ({queueItems.length})
                     </span>
                 </div>
@@ -169,7 +169,7 @@ export function QueueList() {
                                 usePlayerStore.getState().clearQueue();
                             }
                         }}
-                        className="text-[11px] font-bold text-red-500 hover:text-red-700 uppercase tracking-widest bg-red-50 px-3 py-1.5 rounded-lg transition-all"
+                        className="text-[10px] font-bold text-red-500 hover:text-red-600 uppercase tracking-wider"
                     >
                         ล้างทั้งหมด
                     </button>
@@ -177,7 +177,7 @@ export function QueueList() {
             </div>
 
             {/* Queue Items with Drag & Drop */}
-            <div className="flex-1 overflow-y-auto pt-1 pb-6 custom-scrollbar" style={{ backgroundColor: '#ffffff' }}>
+            <div className="flex-1 overflow-y-auto pt-1 pb-6" style={{ backgroundColor: '#ffffff' }}>
                 <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}
