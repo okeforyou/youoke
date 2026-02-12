@@ -106,7 +106,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const roomCode = partyPIN;
 
     // Remote Control Integration - Main Screen acts as a Host
-    const { connectionStatus } = useRemoteHost(
+    const { connectionStatus, connectedClients } = useRemoteHost(
         { current: null } as any,
         { current: { toggleFullscreen: triggerFullscreen } } as any,
         addToQueue,
@@ -141,6 +141,16 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const { addToast } = useToast() || { addToast: () => { } };
     const isMobile = useIsMobile();
     const { queue } = usePlayerStore();
+
+    // Auto-close QR Modal when someone joins
+    const prevConnected = useRef(0);
+    useEffect(() => {
+        if (prevConnected.current === 0 && connectedClients > 0) {
+            setPartyModalOpen(false);
+            console.log('📱 Guest connected, auto-closing QR modal');
+        }
+        prevConnected.current = connectedClients;
+    }, [connectedClients]);
 
     // Cast Handlers
     const handleCastSelectWebMonitor = () => {

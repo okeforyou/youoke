@@ -139,40 +139,44 @@ export default function RemoteControlApp() {
         };
     }, []);
 
-    // Presence / Connection Status Heartbeat
+    // Presence / Connection Status Heartbeat (RELIABLE)
     useEffect(() => {
-        if (!roomCode || !realtimeDb || status !== 'connected') return;
+        if (!roomCode || !realtimeDb) return;
         const currentUser = auth?.currentUser;
         if (!currentUser) return;
 
         const myPresenceRef = ref(realtimeDb, `rooms/${roomCode}/connected/${currentUser.uid}`);
+        const connectedRef = ref(realtimeDb, '.info/connected');
 
-        // Register as connected
-        const setPresence = async () => {
-            try {
-                await set(myPresenceRef, {
-                    uid: currentUser.uid,
-                    name: guestName,
-                    state: 'active',
-                    lastSeen: serverTimestamp()
-                });
+        let unsubscribePresence: () => void;
 
-                // Cleanup on disconnect
-                const { onDisconnect } = await import('firebase/database');
-                onDisconnect(myPresenceRef).remove();
-            } catch (e) {
-                console.error("Presence sync failed:", e);
-            }
+        const setupPresence = async () => {
+            const { onDisconnect, onValue: onFirebaseValue } = await import('firebase/database');
+
+            unsubscribePresence = onFirebaseValue(connectedRef, (snap) => {
+                if (snap.val() === true) {
+                    // We are connected to Firebase
+                    const presenceData = {
+                        uid: currentUser.uid,
+                        name: guestName || 'Guest',
+                        state: 'active',
+                        lastSeen: serverTimestamp()
+                    };
+
+                    onDisconnect(myPresenceRef).remove();
+                    set(myPresenceRef, presenceData);
+                }
+            });
         };
 
-        setPresence();
+        setupPresence();
 
-        // Also remove immediately on unmount
         return () => {
+            if (unsubscribePresence) unsubscribePresence();
             const { remove } = require('firebase/database');
             remove(myPresenceRef).catch(() => { });
         };
-    }, [roomCode, status, guestName]);
+    }, [roomCode, guestName]);
 
     // Command Sender
     const sendCommand = async (type: string, payload: any = {}) => {
@@ -392,7 +396,7 @@ export default function RemoteControlApp() {
 
             {/* Bottom Player */}
             <RemoteMiniPlayer
-                currentVideo={roomState.currentVideo || (roomState.queue[roomState.currentIndex] || null)}
+                currentVideo={roomState.currentVideo || roomState.queue[roomState.currentIndex] || null}
                 isPlaying={roomState.controls.isPlaying}
                 onTogglePlay={() => sendCommand(roomState.controls.isPlaying ? 'PAUSE' : 'PLAY')}
                 onNext={() => sendCommand('NEXT')}
