@@ -544,9 +544,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 isQueueOpen && queue.length > 0 ? "mr-0 w-[420px] opacity-100" : "-mr-[420px] w-0 opacity-0"
             )}>
                 {/* 236px (Video) + 54px (SidebarControls) + 14px (Space) = 304px */}
-                <div className="flex-1 flex flex-col pt-[304px] bg-white h-full relative">
+                <div className="flex-1 flex flex-col pt-[304px] bg-white h-full relative z-10">
                     {/* Main Content Area */}
-                    <div className="flex-1 flex flex-col min-h-0">
+                    <div className="flex-1 flex flex-col min-h-0 bg-white">
                         <QueueList />
                     </div>
                 </div>

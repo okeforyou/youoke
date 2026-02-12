@@ -85,14 +85,14 @@ export const SidebarControls = () => {
             </div>
 
             {/* Horizontal Controls Row */}
-            <div className="flex items-center justify-between px-1 py-0.5">
+            <div className="flex items-center justify-between px-1 py-0.5 bg-white">
                 {controlItems.map((item, index) => (
                     <button
                         key={index}
                         onClick={item.onClick}
-                        className="flex flex-col items-center justify-center flex-1 gap-0 group transition-all active:scale-95"
+                        className="flex flex-col items-center justify-center flex-1 gap-0 group transition-all active:scale-95 bg-white"
                     >
-                        <div className={`p-1.5 rounded-lg transition-all ${item.active ? 'bg-red-50' : 'hover:bg-gray-50'}`}>
+                        <div className={`p-1.5 rounded-lg transition-all ${item.active ? 'bg-red-50' : ''}`}>
                             <item.icon
                                 size={18}
                                 className={`text-primary transition-colors ${item.active ? 'fill-current' : ''}`}
