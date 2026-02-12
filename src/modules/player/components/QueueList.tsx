@@ -59,7 +59,7 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
             </div>
 
             {/* Card Content - V1 Style with border and rounding */}
-            <div className="flex-1 flex items-center gap-3 p-2 rounded-xl border border-gray-100 transition-all" style={{ backgroundColor: '#ffffff' }}>
+            <div className="flex-1 flex items-center gap-3 p-2 rounded-xl border border-gray-100 transition-all" style={{ backgroundColor: '#f9fafb' }}>
                 {/* Thumbnail - Flush with the card's left side (mostly) */}
                 <div
                     className="relative w-28 h-16 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 shadow-sm cursor-pointer group/thumb"
@@ -143,7 +143,7 @@ export function QueueList() {
 
     if (queueItems.length === 0) {
         return (
-            <div className="h-full flex flex-col items-center justify-center p-8 text-gray-400 min-h-[400px]" style={{ backgroundColor: '#ffffff' }}>
+            <div className="h-full flex flex-col items-center justify-center p-8 text-gray-400 min-h-[400px]" style={{ backgroundColor: '#fff1f2' }}>
                 <ListMusic className="w-12 h-12 mb-3 opacity-30" />
                 <p className="text-sm font-medium">ยังไม่มีคิวเพลง</p>
                 <p className="text-xs text-gray-400 mt-1">เพิ่มเพลงเข้าคิวเพื่อเล่นต่อ</p>
@@ -152,7 +152,7 @@ export function QueueList() {
     }
 
     return (
-        <div className="flex-1 flex flex-col h-full" style={{ backgroundColor: '#ffffff' }}>
+        <div className="flex-1 flex flex-col h-full" style={{ backgroundColor: '#fff1f2' }}>
             {/* Header */}
             {/* ULTRA-MINIMAL HEADER v4 */}
             <div className="px-6 pt-8 pb-3 flex items-center justify-between" style={{ backgroundColor: '#ffffff' }}>
@@ -176,7 +176,7 @@ export function QueueList() {
             </div>
 
             {/* Queue Items with Drag & Drop */}
-            <div className="flex-1 overflow-y-auto pt-1 pb-6" style={{ backgroundColor: '#ffffff' }}>
+            <div className="flex-1 overflow-y-auto pt-1 pb-6" style={{ backgroundColor: '#fff1f2' }}>
                 <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}
