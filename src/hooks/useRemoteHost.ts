@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { realtimeDb } from '../firebase';
 import { ref, set, remove, onValue, onDisconnect, serverTimestamp } from 'firebase/database';
+import { usePlayerStore } from '../modules/player/stores/usePlayerStore';
 
 export type RemoteCommand = {
-    type: 'PLAY' | 'PAUSE' | 'NEXT' | 'ADD_QUEUE' | 'SEEK' | 'TOGGLE_FULLSCREEN' | 'SET_FULLSCREEN' | 'REORDER_QUEUE' | 'REMOVE_AT';
+    type: 'PLAY' | 'PAUSE' | 'NEXT' | 'ADD_QUEUE' | 'ADD_TO_QUEUE' | 'SEEK' | 'TOGGLE_FULLSCREEN' | 'SET_FULLSCREEN' | 'REORDER_QUEUE' | 'REMOVE_AT';
     payload?: any;
     timestamp: number;
 };
@@ -235,12 +236,24 @@ export const useRemoteHost = (
     const handleCommand = (cmd: RemoteCommand) => {
         console.log('[RemoteHost] Executing:', cmd.type);
 
-        // ADD_QUEUE does NOT need the player to be ready
-        if (cmd.type === 'ADD_QUEUE') {
-            if (cmd.payload && cmd.payload.video) {
-                addToQueueRef.current(cmd.payload.video);
-            } else if (cmd.payload && cmd.payload.videoId) {
-                addToQueueRef.current(cmd.payload);
+        // ADD_TO_QUEUE (Standard) or ADD_QUEUE (Legacy)
+        if (cmd.type === 'ADD_TO_QUEUE' || cmd.type === 'ADD_QUEUE') {
+            const videoPayload = cmd.payload?.video || cmd.payload;
+            if (videoPayload) {
+                // Normalize for Store
+                const videoToAdd = {
+                    id: videoPayload.id || videoPayload.videoId,
+                    videoId: videoPayload.videoId || videoPayload.id,
+                    sourceType: videoPayload.sourceType || 'youtube',
+                    title: videoPayload.title || "Unknown Title",
+                    author: videoPayload.author || "Unknown",
+                    thumbnail: videoPayload.thumbnail || "",
+                    addedBy: cmd.payload?.addedBy || videoPayload.addedBy || null
+                };
+
+                if (videoToAdd.videoId || videoToAdd.id) {
+                    addToQueueRef.current(videoToAdd);
+                }
             }
             return;
         }
@@ -269,12 +282,12 @@ export const useRemoteHost = (
 
         // REORDER_QUEUE
         if (cmd.type === 'REORDER_QUEUE') {
-            if (cmd.payload && Array.isArray(cmd.payload.newQueue)) {
-                console.log('[RemoteHost] Reordering queue:', cmd.payload.newQueue.length, 'items');
+            const incomingQueue = cmd.payload.queue || cmd.payload.newQueue;
+            if (cmd.payload && Array.isArray(incomingQueue)) {
+                console.log('[RemoteHost] Reordering queue:', incomingQueue.length, 'items');
                 if (setPlaylistRef.current) {
                     // SANITIZE: Strip 'key', 'dndId' and other transient props to prevent corruption cycles
-                    // Only keep core data: videoId, title, thumbnail, duration, addedBy, addedAt
-                    const cleanQueue = cmd.payload.newQueue.map((item: any) => ({
+                    const cleanQueue = incomingQueue.map((item: any) => ({
                         videoId: item.videoId,
                         title: item.title,
                         thumbnail: item.thumbnail,
@@ -307,39 +320,20 @@ export const useRemoteHost = (
             return;
         }
 
-        // Other commands need the player
-        if (!playerRef.current) {
-            console.warn('[RemoteHost] Player not ready, ignoring command:', cmd.type);
-            return;
-        }
-
-        const internalPlayer = playerRef.current.getInternalPlayer();
+        const store = usePlayerStore.getState();
 
         switch (cmd.type) {
             case 'PLAY':
                 console.log('🎮 [Remote] Executing PLAY command');
-                if (controlRef?.current?.play) {
-                    console.log('🎮 [Remote] Using controlRef.play()');
-                    controlRef.current.play();
-                } else {
-                    console.warn('⚠️ [Remote] controlRef.play missing, falling back to internalPlayer');
-                    internalPlayer?.playVideo();
-                }
+                store.play();
                 break;
             case 'PAUSE':
                 console.log('🎮 [Remote] Executing PAUSE command');
-                if (controlRef?.current?.pause) {
-                    console.log('🎮 [Remote] Using controlRef.pause()');
-                    controlRef.current.pause();
-                } else {
-                    console.warn('⚠️ [Remote] controlRef.pause missing, falling back to internalPlayer');
-                    internalPlayer?.pauseVideo();
-                }
+                store.pause();
                 break;
             case 'NEXT':
-                const channel = new BroadcastChannel('youoke-dual-sync');
-                channel.postMessage({ type: 'REQUEST_NEXT' });
-                channel.close();
+                console.log('🎮 [Remote] Executing NEXT command');
+                store.playNext();
                 break;
         }
     };

@@ -2,7 +2,6 @@ import React, { ReactNode, useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import clsx from 'clsx';
 import { Menu, Search, ListMusic, Home, X, Monitor, MessageCircle, Shield, Key, Smartphone, Flame, Library, Mic, Music, ChevronDown, ChevronRight, ChevronLeft, Cast, Disc, LogOut, UserCheck, Settings, Info, PartyPopper, Star, Trash2, EyeOff, User } from 'lucide-react';
-import { Square2StackIcon, QrCodeIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { DebounceInput } from 'react-debounce-input';
@@ -22,6 +21,7 @@ import { useCast } from '../plugins/cast/context/CastContext';
 import { useToast } from '../context/ToastContext';
 import useIsMobile from '../hooks/isMobile';
 import { useShallow } from 'zustand/react/shallow';
+import { useRemoteHost } from '../hooks/useRemoteHost';
 
 // Dynamic (Lazy) Imports for Heavy/hidden Components
 const ProfileDrawer = dynamic(() => import('../components/profile/ProfileDrawer'), { ssr: false });
@@ -52,7 +52,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const [partyModalOpen, setPartyModalOpen] = useState(false);
     const [partyRoomCode, setPartyRoomCode] = useState('');
 
-    const { searchTerm, setSearchTerm, activeIndex, setActiveIndex, isKaraoke, setIsKaraoke } = usePlayerStore(
+    const {
+        searchTerm, setSearchTerm, activeIndex, setActiveIndex, isKaraoke, setIsKaraoke,
+        queue: playerQueue, addToQueue, reorderQueue, isPlaying, layoutMode, triggerFullscreen,
+        currentVideo
+    } = usePlayerStore(
         useShallow(state => ({
             searchTerm: state.searchTerm,
             setSearchTerm: state.setSearchTerm,
@@ -60,6 +64,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
             setActiveIndex: state.setActiveIndex,
             isKaraoke: state.isKaraoke,
             setIsKaraoke: state.setIsKaraoke,
+            queue: state.queue,
+            addToQueue: state.addToQueue,
+            reorderQueue: state.reorderQueue,
+            isPlaying: state.isPlaying,
+            layoutMode: state.layoutMode,
+            triggerFullscreen: state.triggerFullscreen,
+            currentVideo: state.currentVideo
         }))
     );
 
@@ -93,6 +104,21 @@ export default function MainLayout({ children }: MainLayoutProps) {
     }, [user]);
 
     const roomCode = user?.uid || guestId;
+
+    // Remote Control Integration - Main Screen acts as a Host
+    useRemoteHost(
+        { current: null } as any,
+        { current: { toggleFullscreen: triggerFullscreen } } as any,
+        addToQueue,
+        playerQueue,
+        currentVideo?.videoId || '',
+        isPlaying,
+        layoutMode === 'fullscreen',
+        reorderQueue,
+        user,
+        roomCode || undefined
+    );
+
     const [showQRCode, setShowQRCode] = useState(false);
     const [mounted, setMounted] = useState(false);
 
@@ -404,18 +430,16 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             </button>
                         </div>
 
-                        {/* Party Mode Button */}
+                        {/* Mobile Remote Button */}
                         <button
-                            onClick={async () => {
-                                const { castService } = await import('../plugins/cast/services/CastService');
-                                const code = await castService.initialize();
-                                setPartyRoomCode(code);
+                            onClick={() => {
+                                setPartyRoomCode(roomCode || '');
                                 setPartyModalOpen(true);
                             }}
                             className="h-12 w-12 rounded-2xl p-0 flex items-center justify-center bg-gray-100 hover:bg-gray-200 mr-2 text-gray-500 hover:text-primary transition-colors tooltip tooltip-bottom"
-                            data-tip="Party Mode (Guests)"
+                            data-tip="Mobile Remote (ควบคุมด้วยมือถือ)"
                         >
-                            <QrCodeIcon className="w-6 h-6" />
+                            <Smartphone className="w-6 h-6" />
                         </button>
 
 
