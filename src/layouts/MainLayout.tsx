@@ -194,7 +194,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     // ... (Return statement remains mostly same)
 
     return (
-        <div className="flex h-screen w-full bg-slate-50/50 text-text-base overflow-hidden">
+        <div className="flex h-screen w-full bg-white text-text-base overflow-hidden">
             {/* Left Sidebar (Premium White) - Extracted & Memoized */}
             <Sidebar />
 
@@ -541,7 +541,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             {/* Right Sidebar (Queue Only - Collapsible) */}
             <aside className={clsx(
                 "hidden lg:flex w-[420px] bg-white border-l border-gray-100 flex-col shadow-xl z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
-                isQueueOpen && queue.length > 0 ? "mr-0 w-[420px] opacity-100" : "-mr-[420px] w-0 opacity-0"
+                isQueueOpen ? "mr-0 w-[420px] opacity-100" : "-mr-[420px] w-0 opacity-0"
             )}>
                 {/* 236px (Video) + 54px (SidebarControls) + 14px (Space) = 304px */}
                 <div className="flex-1 flex flex-col pt-[304px] bg-white h-full relative z-10">
@@ -555,7 +555,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             {/* Mobile Nav Drawer */}
             <div className={clsx("fixed inset-0 bg-black/60 z-40 transition-opacity lg:hidden backdrop-blur-sm", isNavOpen ? "opacity-100" : "opacity-0 pointer-events-none")} onClick={() => setNavOpen(false)} />
             <div className={clsx("fixed inset-y-0 left-0 z-50 bg-white w-[280px] shadow-2xl transition-transform duration-300 lg:hidden flex flex-col", isNavOpen ? "translate-x-0" : "-translate-x-full")}>
-                <div className="h-16 flex items-center px-6 shrink-0 border-b border-gray-100 bg-gray-50/50">
+                <div className="h-16 flex items-center px-6 shrink-0 border-b border-gray-100 bg-white">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold shadow-sm">Y</div>
                         <div>
@@ -577,7 +577,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     <Link href="/monitor" className="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-600 active:bg-gray-100 font-medium"> <Cast className="w-5 h-5" /> <span>จอแยก (Caster)</span> </Link>
                     {user?.role === 'admin' && (<><div className="mt-6 px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Admin</div><Link href="/admin" onClick={() => setNavOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-600 active:bg-gray-100 font-medium"> <Shield className="w-5 h-5" /> <span>Admin Panel</span> </Link></>)}
                 </div>
-                <div className="p-4 border-t border-gray-100 bg-gray-50/50">
+                <div className="p-4 border-t border-gray-100 bg-white">
                     <div className="px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">บัญชี</div>
                     {mounted && user ? (
                         <div className="flex items-center justify-between gap-2 px-2 py-2">

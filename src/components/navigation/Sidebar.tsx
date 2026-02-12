@@ -50,38 +50,38 @@ export const Sidebar = memo(() => {
             >
                 {/* Main Menu */}
                 <div className="px-4 mb-2 mt-2 text-xs font-bold text-gray-400 uppercase tracking-wider">เมนูหลัก</div>
-                <button onClick={() => handleNav(1, 'home')} className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-medium duration-300", (router.pathname === '/' && activeIndex === 1) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-gray-500 hover:bg-gray-50 hover:text-gray-900")}>
+                <button onClick={() => handleNav(1, 'home')} className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-medium duration-300", (router.pathname === '/' && activeIndex === 1) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-gray-500 hover:bg-gray-100/50 hover:text-gray-900")}>
                     <Home className={clsx("w-[22px] h-[22px]", (router.pathname === '/' && activeIndex === 1) ? "text-white" : "text-gray-400")} /> <span>หน้าหลัก</span>
                 </button>
-                <button onClick={() => handleNav(2, 'rec')} className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-medium duration-300 text-sm", (router.pathname === '/' && activeIndex === 2) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-gray-500 hover:bg-gray-50 hover:text-gray-900")}>
+                <button onClick={() => handleNav(2, 'rec')} className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-medium duration-300 text-sm", (router.pathname === '/' && activeIndex === 2) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-gray-500 hover:bg-gray-100/50 hover:text-gray-900")}>
                     <Star className={clsx("w-[22px] h-[22px]", (router.pathname === '/' && activeIndex === 2) ? "text-white" : "text-gray-400")} /> <span>แนะนำ</span>
                 </button>
-                <button onClick={() => handleNav(3, 'trending')} className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-medium duration-300 text-sm", (router.pathname === '/' && activeIndex === 3) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-gray-500 hover:bg-gray-50 hover:text-gray-900")}>
+                <button onClick={() => handleNav(3, 'trending')} className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-medium duration-300 text-sm", (router.pathname === '/' && activeIndex === 3) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-gray-500 hover:bg-gray-100/50 hover:text-gray-900")}>
                     <Flame className={clsx("w-[22px] h-[22px]", (router.pathname === '/' && activeIndex === 3) ? "text-white" : "text-gray-400")} /> <span>มาแรง</span>
                 </button>
-                <button onClick={() => handleNav(4, 'library')} className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-medium duration-300 text-sm", (router.pathname === '/' && activeIndex === 4) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-gray-500 hover:bg-gray-50 hover:text-gray-900")}>
+                <button onClick={() => handleNav(4, 'library')} className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-medium duration-300 text-sm", (router.pathname === '/' && activeIndex === 4) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-gray-500 hover:bg-gray-100/50 hover:text-gray-900")}>
                     <Library className={clsx("w-[22px] h-[22px]", (router.pathname === '/' && activeIndex === 4) ? "text-white" : "text-gray-400")} /> <span>เพลย์ลิสต์</span>
                 </button>
 
                 <div className="mt-8 px-4 mb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">การเชื่อมต่อ</div>
-                <button onClick={() => useUIStore.getState().setReceiverModalOpen(true)} className={clsx("w-full text-left flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-medium text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-900 duration-300")}>
+                <button onClick={() => useUIStore.getState().setReceiverModalOpen(true)} className={clsx("w-full text-left flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-medium text-sm text-gray-500 hover:bg-gray-100/50 hover:text-gray-900 duration-300")}>
                     <UserGroupIcon className="w-[22px] h-[22px] text-gray-400" /> <span>ปาร์ตี้รูม</span>
                 </button>
 
                 <div className="mt-8 px-4 mb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">ฟีเจอร์</div>
-                <Link href="/store" className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-medium duration-300 text-sm", router.pathname === '/store' ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-gray-500 hover:bg-gray-50 hover:text-gray-900")}>
+                <Link href="/store" className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-medium duration-300 text-sm", router.pathname === '/store' ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-gray-500 hover:bg-gray-100/50 hover:text-gray-900")}>
                     <Grid className={clsx("w-[22px] h-[22px]", router.pathname === '/store' ? "text-white" : "text-gray-400")} /> <span>ส่วนเสริม</span>
                 </Link>
 
                 <div className="mt-8 px-4 mb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">ช่วยเหลือ</div>
-                <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-2xl text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-all font-medium text-sm duration-300">
+                <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-2xl text-gray-500 hover:bg-gray-100/50 hover:text-gray-900 transition-all font-medium text-sm duration-300">
                     <MessageCircle className="w-[22px] h-[22px] text-gray-400" /> <span>ติดต่อ LINE</span>
                 </a>
 
                 {user?.role === 'admin' && (
                     <div className="mt-8">
                         <div className="px-4 mb-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Admin</div>
-                        <Link href="/admin" className={clsx("flex items-center gap-3 px-4 py-2.5 rounded-2xl mb-1 transition-all", router.pathname === '/admin' ? "bg-primary/10 text-primary" : "text-gray-500 hover:bg-gray-50")}>
+                        <Link href="/admin" className={clsx("flex items-center gap-3 px-4 py-2.5 rounded-2xl mb-1 transition-all", router.pathname === '/admin' ? "bg-primary/10 text-primary" : "text-gray-500 hover:bg-gray-100/50")}>
                             <Shield size={20} /> <span className="text-sm">ภาพรวมระบบ</span>
                         </Link>
                     </div>
@@ -97,7 +97,7 @@ export const Sidebar = memo(() => {
                 {mounted && (
                     user ? (
                         <div className="flex items-center justify-between gap-2 px-1 py-1">
-                            <div onClick={() => setIsProfileDrawerOpen(true)} className="flex items-center gap-3 overflow-hidden flex-1 group cursor-pointer hover:bg-gray-50 p-2 rounded-2xl transition-all duration-300">
+                            <div onClick={() => setIsProfileDrawerOpen(true)} className="flex items-center gap-3 overflow-hidden flex-1 group cursor-pointer hover:bg-gray-100/50 p-2 rounded-2xl transition-all duration-300">
                                 {user.photoURL ? <img src={user.photoURL} className="w-10 h-10 rounded-full border border-gray-100 group-hover:ring-2 ring-primary/20 transition-all shadow-sm" alt="" /> : <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">{user.email?.[0]?.toUpperCase() || 'G'}</div>}
                                 <div className="overflow-hidden">
                                     <p className="text-sm font-bold truncate text-gray-900 group-hover:text-primary transition-colors">{user.displayName || user.email?.split('@')[0] || 'ผู้ใช้งานทั่วไป'}</p>
