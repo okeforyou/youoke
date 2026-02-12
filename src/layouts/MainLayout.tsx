@@ -182,11 +182,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
         setMounted(true);
     }, []);
 
-    // Auto-open Queue (and Player) when first song is added
+    // Auto-open/close Queue (and Player) based on contents
     const prevQueueLen = useRef(0);
     useEffect(() => {
         if (prevQueueLen.current === 0 && queue.length > 0) {
             useUIStore.getState().setQueueOpen(true);
+        } else if (queue.length === 0) {
+            useUIStore.getState().setQueueOpen(false);
         }
         prevQueueLen.current = queue.length;
     }, [queue.length]);
@@ -541,7 +543,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             {/* Right Sidebar (Queue Only - Collapsible) */}
             <aside className={clsx(
                 "hidden lg:flex w-[420px] border-l border-gray-200 flex-col z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
-                isQueueOpen ? "mr-0 w-[420px] opacity-100" : "-mr-[420px] w-0 opacity-0"
+                (isQueueOpen && queue.length > 0) ? "mr-0 w-[420px] opacity-100" : "-mr-[420px] w-0 opacity-0"
             )} style={{ backgroundColor: '#ffffff', background: '#ffffff' }}>
                 {/* 236px (Video) + 54px (SidebarControls) + 14px (Space) = 304px */}
                 <div className="flex-1 flex flex-col pt-[304px] h-full relative z-10" style={{ backgroundColor: '#ffffff' }}>
