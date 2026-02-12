@@ -154,7 +154,7 @@ export function QueueList() {
     return (
         <div className="flex-1 flex flex-col h-full">
             {/* Header */}
-            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between sticky top-0 z-10 bg-white/80 backdrop-blur-md">
+            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between sticky top-0 z-10 bg-white">
                 <div className="flex items-center gap-2">
                     <ListMusic className="w-4 h-4 text-gray-500" />
                     <span className="text-sm font-semibold text-gray-700">
@@ -176,7 +176,7 @@ export function QueueList() {
             </div>
 
             {/* Queue Items with Drag & Drop */}
-            <div className="flex-1 overflow-y-auto bg-slate-50/50 pt-1 pb-6 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto bg-white pt-1 pb-6 custom-scrollbar">
                 <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}

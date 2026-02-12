@@ -92,13 +92,13 @@ export const SidebarControls = () => {
                         onClick={item.onClick}
                         className="flex flex-col items-center justify-center flex-1 gap-0 group transition-all active:scale-95"
                     >
-                        <div className="p-1.5 rounded-lg transition-all">
+                        <div className={`p-1.5 rounded-lg transition-all ${item.active ? 'bg-red-50' : 'hover:bg-gray-50'}`}>
                             <item.icon
                                 size={18}
-                                className={`${item.active ? 'text-primary fill-current' : 'text-gray-400'} transition-colors`}
+                                className="text-primary transition-colors"
                             />
                         </div>
-                        <span className={`text-[9px] font-bold uppercase tracking-tighter transition-colors ${item.active ? 'text-primary' : 'text-gray-400/80'}`}>
+                        <span className="text-[9px] font-bold text-primary uppercase tracking-tighter group-hover:text-primary transition-colors">
                             {item.label}
                         </span>
                     </button>
