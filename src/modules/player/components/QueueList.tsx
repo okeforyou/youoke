@@ -60,10 +60,10 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
             </div>
 
             {/* Card Content - V1 Style with red border on hover (No Gray, No Lift) */}
-            <div className="flex-1 flex items-center gap-4 rounded-xl border border-gray-200 transition-all overflow-hidden hover:border-primary hover:shadow-sm" style={{ backgroundColor: '#ffffff' }}>
+            <div className="flex-1 flex items-center gap-4 rounded-xl border border-gray-200 transition-all overflow-hidden hover:border-primary hover:shadow-sm bg-white">
                 {/* Thumbnail - Flush with the card's left side */}
                 <div
-                    className="relative w-28 h-16 flex-shrink-0 bg-gray-200 cursor-pointer group/thumb"
+                    className="relative w-28 h-16 flex-shrink-0 bg-black cursor-pointer group/thumb"
                     onClick={() => onPlay(actualIndex)}
                 >
                     <Image
@@ -84,7 +84,7 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
                     <h4 className="text-[14px] font-black text-black line-clamp-1 leading-snug mb-0.5">
                         {video.title}
                     </h4>
-                    <p className="text-[11px] text-gray-900 truncate font-medium">
+                    <p className="text-[11px] text-gray-500 truncate font-medium">
                         {video.author}
                     </p>
                 </div>
@@ -155,9 +155,9 @@ export function QueueList() {
     }
 
     return (
-        <div className="flex-1 flex flex-col h-full relative z-20" style={{ backgroundColor: '#ffffff', background: '#ffffff' }}>
+        <div className="flex-1 flex flex-col h-full relative z-20 bg-white">
             {/* Queue Items with Drag & Drop - Content starts immediately */}
-            <div className="flex-1 overflow-y-auto pt-5 pb-6 relative z-10" style={{ backgroundColor: '#ffffff', background: '#ffffff' }}>
+            <div className="flex-1 overflow-y-auto pt-5 pb-6 relative z-10 bg-white">
                 <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}

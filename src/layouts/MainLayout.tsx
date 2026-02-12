@@ -561,11 +561,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     <div
                         id="global-video-player-container"
                         className={clsx(
-                            "fixed transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] z-[101] bg-black overflow-hidden lg:border-l lg:border-gray-200",
+                            "fixed transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] z-[101] bg-white overflow-hidden lg:border-l lg:border-gray-200",
 
                             // Fullscreen Override (Remote Controlled)
                             layoutMode === 'fullscreen'
-                                ? "fixed inset-0 w-full h-full z-[200] border-none"
+                                ? "fixed inset-0 w-full h-full z-[200] border-none bg-black"
                                 : [
                                     // Mobile Logic
                                     !isMobilePlayerExpanded
@@ -573,12 +573,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                         : "max-lg:inset-0 max-lg:w-full max-lg:h-full max-lg:opacity-100 lg:opacity-100",
 
                                     // Desktop Logic
-                                    "lg:top-0 lg:w-[420px] lg:Aspect-video lg:h-auto",
+                                    "lg:top-0 lg:w-[420px] lg:h-[314px]",
                                     (isQueueOpen && queue.length > 0) ? "lg:right-0" : "lg:-right-[420px]"
                                 ]
                         )}>
                         <div className="relative w-full h-full flex flex-col">
-                            <SidebarPlayer />
+                            <div className="w-full aspect-video bg-black shrink-0 relative overflow-hidden">
+                                <SidebarPlayer />
+                            </div>
                             {/* Integrated Sidebar Controls - Hidden if in fullscreen mode */}
                             {layoutMode !== 'fullscreen' && <SidebarControls />}
                             <button onClick={() => setMobilePlayerExpanded(false)} className="absolute top-4 left-4 z-50 p-2 bg-black/50 text-white rounded-full lg:hidden"><ChevronDown className="w-6 h-6" /></button>
@@ -589,13 +591,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
             {/* Right Sidebar (Queue Only - Collapsible) */}
             <aside className={clsx(
-                "hidden lg:flex w-[420px] border-l border-gray-200 flex-col z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+                "hidden lg:flex w-[420px] border-l border-gray-200 flex-col z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] bg-white",
                 (isQueueOpen && queue.length > 0 && layoutMode !== 'fullscreen') ? "mr-0 w-[420px] opacity-100" : "-mr-[420px] w-0 opacity-0"
-            )} style={{ backgroundColor: '#ffffff', background: '#ffffff' }}>
-                {/* 236px (Video) + 54px (SidebarControls) + 14px (Space) = 304px */}
-                <div className="flex-1 flex flex-col pt-[304px] h-full relative z-10" style={{ backgroundColor: '#ffffff' }}>
+            )}>
+                {/* 314px corresponds to the fixed Player + Controls height */}
+                <div className="flex-1 flex flex-col pt-[314px] h-full relative z-10 bg-white">
                     {/* Main Content Area */}
-                    <div className="flex-1 flex flex-col min-h-0" style={{ backgroundColor: '#ffffff' }}>
+                    <div className="flex-1 flex flex-col min-h-0 bg-white">
                         <QueueList />
                     </div>
                 </div>
