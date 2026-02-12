@@ -143,7 +143,7 @@ export function QueueList() {
 
     if (queueItems.length === 0) {
         return (
-            <div className="h-full flex flex-col items-center justify-center p-8 text-gray-400 min-h-[400px]" style={{ backgroundColor: '#ffffff' }}>
+            <div className="h-full flex flex-col items-center justify-center p-8 text-gray-400 min-h-[400px]" style={{ backgroundColor: '#f9fafb' }}>
                 <ListMusic className="w-12 h-12 mb-3 opacity-30" />
                 <p className="text-sm font-medium">ยังไม่มีคิวเพลง</p>
                 <p className="text-xs text-gray-400 mt-1">เพิ่มเพลงเข้าคิวเพื่อเล่นต่อ</p>
@@ -152,7 +152,7 @@ export function QueueList() {
     }
 
     return (
-        <div className="flex-1 flex flex-col h-full" style={{ backgroundColor: '#ffffff' }}>
+        <div className="flex-1 flex flex-col h-full" style={{ backgroundColor: '#f9fafb' }}>
             {/* Header */}
             <div className="px-5 pt-7 pb-4 border-b border-gray-100 flex items-center justify-between sticky top-0 z-10" style={{ backgroundColor: '#ffffff' }}>
                 <div className="flex items-center gap-2">
@@ -176,7 +176,7 @@ export function QueueList() {
             </div>
 
             {/* Queue Items with Drag & Drop */}
-            <div className="flex-1 overflow-y-auto pt-1 pb-6 custom-scrollbar" style={{ backgroundColor: '#ffffff' }}>
+            <div className="flex-1 overflow-y-auto pt-1 pb-6 custom-scrollbar" style={{ backgroundColor: '#f9fafb' }}>
                 <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}
