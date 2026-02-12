@@ -84,7 +84,7 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
                     <h4 className="text-[14px] font-black text-black line-clamp-1 leading-snug mb-0.5">
                         {video.title}
                     </h4>
-                    <p className="text-[11px] text-gray-900 truncate font-black">
+                    <p className="text-[11px] text-gray-900 truncate font-medium">
                         {video.author}
                     </p>
                 </div>

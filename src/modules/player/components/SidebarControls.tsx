@@ -99,7 +99,7 @@ export const SidebarControls = () => {
                                 className={`text-primary transition-colors ${item.active ? 'fill-current' : ''}`}
                             />
                         </div>
-                        <span className="text-[9px] font-bold text-primary uppercase tracking-tighter transition-colors">
+                        <span className="text-[9px] font-medium text-primary uppercase tracking-tighter transition-colors">
                             {item.label}
                         </span>
                     </button>
