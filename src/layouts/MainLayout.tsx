@@ -51,6 +51,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
     // const [isMobilePlayerExpanded, setMobilePlayerExpanded] = useState(false); // REMOVED
     const [partyModalOpen, setPartyModalOpen] = useState(false);
     const [partyRoomCode, setPartyRoomCode] = useState('');
+    const [mounted, setMounted] = useState(false);
+    const [showQRCode, setShowQRCode] = useState(false);
 
     const {
         searchTerm, setSearchTerm, activeIndex, setActiveIndex, isKaraoke, setIsKaraoke,
@@ -104,7 +106,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const roomCode = partyPIN;
 
     // Remote Control Integration - Main Screen acts as a Host
-    useRemoteHost(
+    const { connectionStatus } = useRemoteHost(
         { current: null } as any,
         { current: { toggleFullscreen: triggerFullscreen } } as any,
         addToQueue,
@@ -117,8 +119,21 @@ export default function MainLayout({ children }: MainLayoutProps) {
         roomCode || undefined
     );
 
-    const [showQRCode, setShowQRCode] = useState(false);
-    const [mounted, setMounted] = useState(false);
+    // Sync Fullscreen with Remote Command (layoutMode)
+    useEffect(() => {
+        if (!mounted) return;
+        if (layoutMode === 'fullscreen') {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => { });
+            }
+        } else if (layoutMode === 'split') {
+            if (document.fullscreenElement) {
+                document.exitFullscreen().catch(() => { });
+            }
+        }
+    }, [layoutMode, mounted]);
+
+
 
     // Cast & UI Store
     const { isCastModalOpen, setCastModalOpen } = useUIStore();
@@ -434,10 +449,18 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 setPartyRoomCode(roomCode || '');
                                 setPartyModalOpen(true);
                             }}
-                            className="h-12 w-12 rounded-2xl p-0 flex items-center justify-center bg-gray-100 hover:bg-gray-200 mr-2 text-gray-500 hover:text-primary transition-colors tooltip tooltip-bottom"
+                            className="h-12 w-12 rounded-2xl p-0 flex items-center justify-center bg-gray-100 hover:bg-gray-200 mr-2 text-gray-500 hover:text-primary transition-colors tooltip tooltip-bottom relative"
                             data-tip="Mobile Remote (ควบคุมด้วยมือถือ)"
                         >
                             <Smartphone className="w-6 h-6" />
+                            {/* Connection Status Dot */}
+                            {mounted && (
+                                <div className={clsx(
+                                    "absolute top-2 right-2 w-3 h-3 rounded-full border-2 border-white transition-colors duration-500",
+                                    connectionStatus === 'active' ? "bg-green-500 animate-pulse" :
+                                        connectionStatus === 'background' ? "bg-orange-500" : "bg-gray-400"
+                                )} />
+                            )}
                         </button>
 
 
@@ -538,21 +561,26 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     <div
                         id="global-video-player-container"
                         className={clsx(
-                            "fixed transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] z-[70] bg-black overflow-hidden lg:border-l lg:border-gray-200",
+                            "fixed transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] z-[101] bg-black overflow-hidden lg:border-l lg:border-gray-200",
 
-                            // Mobile Logic
-                            !isMobilePlayerExpanded
-                                ? "max-lg:opacity-0 max-lg:pointer-events-none max-lg:fixed max-lg:bottom-0 max-lg:right-0 max-lg:w-1 max-lg:h-1 lg:opacity-100" // Hidden but mounted
-                                : "max-lg:inset-0 max-lg:w-full max-lg:h-full max-lg:opacity-100 lg:opacity-100", // Expanded
+                            // Fullscreen Override (Remote Controlled)
+                            layoutMode === 'fullscreen'
+                                ? "fixed inset-0 w-full h-full z-[200] border-none"
+                                : [
+                                    // Mobile Logic
+                                    !isMobilePlayerExpanded
+                                        ? "max-lg:opacity-0 max-lg:pointer-events-none max-lg:fixed max-lg:bottom-0 max-lg:right-0 max-lg:w-1 max-lg:h-1 lg:opacity-100"
+                                        : "max-lg:inset-0 max-lg:w-full max-lg:h-full max-lg:opacity-100 lg:opacity-100",
 
-                            // Desktop Logic
-                            "lg:top-0 lg:w-[420px] lg:AspectRatio-[16/9] lg:h-[314px]",
-                            (isQueueOpen && queue.length > 0) ? "lg:right-0" : "lg:-right-[420px]"
+                                    // Desktop Logic
+                                    "lg:top-0 lg:w-[420px] lg:Aspect-video lg:h-auto",
+                                    (isQueueOpen && queue.length > 0) ? "lg:right-0" : "lg:-right-[420px]"
+                                ]
                         )}>
                         <div className="relative w-full h-full flex flex-col">
                             <SidebarPlayer />
-                            {/* Integrated Sidebar Controls directly under video */}
-                            <SidebarControls />
+                            {/* Integrated Sidebar Controls - Hidden if in fullscreen mode */}
+                            {layoutMode !== 'fullscreen' && <SidebarControls />}
                             <button onClick={() => setMobilePlayerExpanded(false)} className="absolute top-4 left-4 z-50 p-2 bg-black/50 text-white rounded-full lg:hidden"><ChevronDown className="w-6 h-6" /></button>
                         </div>
                     </div>
@@ -562,7 +590,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             {/* Right Sidebar (Queue Only - Collapsible) */}
             <aside className={clsx(
                 "hidden lg:flex w-[420px] border-l border-gray-200 flex-col z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
-                (isQueueOpen && queue.length > 0) ? "mr-0 w-[420px] opacity-100" : "-mr-[420px] w-0 opacity-0"
+                (isQueueOpen && queue.length > 0 && layoutMode !== 'fullscreen') ? "mr-0 w-[420px] opacity-100" : "-mr-[420px] w-0 opacity-0"
             )} style={{ backgroundColor: '#ffffff', background: '#ffffff' }}>
                 {/* 236px (Video) + 54px (SidebarControls) + 14px (Space) = 304px */}
                 <div className="flex-1 flex flex-col pt-[304px] h-full relative z-10" style={{ backgroundColor: '#ffffff' }}>
@@ -626,34 +654,32 @@ export default function MainLayout({ children }: MainLayoutProps) {
             <ReceiverInfoModal />
 
             {/* QR Code Modal for Remote Connect */}
-            {
-                showQRCode && roomCode && (
-                    <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setShowQRCode(false)}>
-                        <div className="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-center space-y-6 animate-in zoom-in-95 duration-200 border border-white/20" onClick={e => e.stopPropagation()}>
-                            <div className="flex justify-between items-center">
-                                <div className="flex items-center gap-2">
-                                    <Smartphone className="w-5 h-5 text-primary" />
-                                    <h3 className="text-lg font-bold text-gray-900">เชื่อมต่อรีโมท</h3>
-                                </div>
-                                <button onClick={() => setShowQRCode(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><X className="w-5 h-5 text-gray-500" /></button>
+            {showQRCode && roomCode && connectionStatus !== 'active' && (
+                <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setShowQRCode(false)}>
+                    <div className="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-center space-y-6 animate-in zoom-in-95 duration-200 border border-white/20" onClick={e => e.stopPropagation()}>
+                        <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                                <Smartphone className="w-5 h-5 text-primary" />
+                                <h3 className="text-lg font-bold text-gray-900">เชื่อมต่อรีโมท</h3>
                             </div>
+                            <button onClick={() => setShowQRCode(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><X className="w-5 h-5 text-gray-500" /></button>
+                        </div>
 
-                            <div className="bg-white p-3 rounded-2xl border-2 border-dashed border-primary/20 inline-block shadow-sm">
-                                <img src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`${typeof window !== 'undefined' ? window.location.origin : ''}/remote?room=${roomCode}`)}`} alt="QR Code" className="w-56 h-56 rounded-lg" />
-                            </div>
+                        <div className="bg-white p-3 rounded-2xl border-2 border-dashed border-primary/20 inline-block shadow-sm">
+                            <img src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`${typeof window !== 'undefined' ? window.location.origin : ''}/remote?room=${roomCode}`)}`} alt="QR Code" className="w-56 h-56 rounded-lg" />
+                        </div>
 
-                            <div className="space-y-2">
-                                <p className="text-sm font-medium text-gray-900">สแกนด้วยกล้องมือถือ</p>
-                                <p className="text-xs text-gray-500">เพื่อใช้มือถือเลือกเพลงและควบคุมการเล่น</p>
-                            </div>
+                        <div className="space-y-2">
+                            <p className="text-sm font-medium text-gray-900">สแกนด้วยกล้องมือถือ</p>
+                            <p className="text-xs text-gray-500">เพื่อใช้มือถือเลือกเพลงและควบคุมการเล่น</p>
+                        </div>
 
-                            <div className="pt-2 border-t border-gray-100">
-                                <p className="text-[10px] text-gray-400 font-mono">Room Code: {roomCode}</p>
-                            </div>
+                        <div className="pt-2 border-t border-gray-100">
+                            <p className="text-[10px] text-gray-400 font-mono">Room Code: {roomCode}</p>
                         </div>
                     </div>
-                )
-            }
+                </div>
+            )}
 
             {/* Cast Mode Selector Modal */}
             <CastModeSelector

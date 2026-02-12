@@ -117,6 +117,25 @@ export default function RemoteControlApp() {
         return () => { cleanup.then(unsub => unsub && unsub()); };
     }, [roomCode, showNameModal]);
 
+    // Wake Lock to prevent screen sleep
+    useEffect(() => {
+        let wakeLock: any = null;
+        const requestWakeLock = async () => {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await (navigator as any).wakeLock.request('screen');
+                    console.log('💡 Wake Lock active');
+                }
+            } catch (err) {
+                console.warn('💡 Wake Lock failed:', err);
+            }
+        };
+        requestWakeLock();
+        return () => {
+            if (wakeLock) wakeLock.release();
+        };
+    }, []);
+
     // Command Sender
     const sendCommand = async (type: string, payload: any = {}) => {
         if (!roomCode || !auth?.currentUser || !realtimeDb) return;
@@ -221,7 +240,7 @@ export default function RemoteControlApp() {
 
     // --- RENDER ---
     return (
-        <div className="min-h-screen bg-gray-50 font-sans text-gray-900 pb-24">
+        <div className="min-h-screen bg-gray-50 font-sans text-gray-900 pb-24 touch-pan-x touch-pan-y" style={{ overscrollBehaviorY: 'contain' }}>
 
             {/* Header */}
             <div className="bg-white px-5 py-4 sticky top-0 z-10 shadow-sm flex items-center justify-between">

@@ -151,6 +151,20 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false }: SidebarPl
         performSearch();
     }, [currentSource]);
 
+    // ⏯️ Sync Play/Pause state from store to player
+    useEffect(() => {
+        if (!playerRef.current || showDjOverlay) return;
+
+        const adapter = playerService.getAdapter();
+        if (isPlaying) {
+            console.log("▶️ SidebarPlayer: Syncing Play");
+            adapter?.play();
+        } else {
+            console.log("⏸️ SidebarPlayer: Syncing Pause");
+            adapter?.pause();
+        }
+    }, [isPlaying, showDjOverlay]);
+
     // 🎵 Sync Source (Video ID) MANUALLY
     useEffect(() => {
         if (!playerRef.current || !currentSource || showDjOverlay) {
