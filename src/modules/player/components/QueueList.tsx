@@ -60,7 +60,7 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
             </div>
 
             {/* Card Content - V1 Style with border and rounding */}
-            <div className="flex-1 flex items-center gap-4 rounded-xl border border-gray-200 transition-all overflow-hidden" style={{ backgroundColor: '#fafafa' }}>
+            <div className="flex-1 flex items-center gap-4 rounded-xl border border-gray-200 transition-all overflow-hidden hover:shadow-lg hover:shadow-gray-200/50 hover:-translate-y-0.5" style={{ backgroundColor: '#fafafa' }}>
                 {/* Thumbnail - Flush with the card's left side */}
                 <div
                     className="relative w-28 h-16 flex-shrink-0 bg-gray-200 cursor-pointer group/thumb"

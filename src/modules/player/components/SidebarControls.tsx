@@ -86,7 +86,7 @@ export const SidebarControls = () => {
             </div>
 
             {/* Horizontal Controls Row */}
-            <div className="flex items-center justify-between px-1 py-0.5" style={{ backgroundColor: '#ffffff' }}>
+            <div className="flex items-center justify-between px-1 py-1.5" style={{ backgroundColor: '#ffffff' }}>
                 {controlItems.map((item, index) => (
                     <button
                         key={index}
@@ -106,14 +106,14 @@ export const SidebarControls = () => {
                 ))}
             </div>
 
-            {/* Integrated Queue Info Row (Optimized for Beauty & Balance) */}
-            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100/80" style={{ backgroundColor: '#ffffff' }}>
+            {/* Integrated Queue Info Row (Ged-Symmetry & Unified Color) */}
+            <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100/80 mt-2" style={{ backgroundColor: '#ffffff' }}>
                 <div className="flex items-center gap-2">
                     <div className="w-5 h-5 rounded-full bg-gray-50 flex items-center justify-center">
                         <ListMusic size={12} className="text-gray-400" />
                     </div>
                     <span className="text-[13px] font-bold text-gray-600 tracking-tight">
-                        คิวเพลง <span className="text-primary/70 ml-0.5">({usePlayerStore.getState().queue.length - (usePlayerStore.getState().currentIndex + 1) > 0 ? usePlayerStore.getState().queue.length - (usePlayerStore.getState().currentIndex + 1) : 0})</span>
+                        คิวเพลง <span className="ml-0.5">({usePlayerStore.getState().queue.length - (usePlayerStore.getState().currentIndex + 1) > 0 ? usePlayerStore.getState().queue.length - (usePlayerStore.getState().currentIndex + 1) : 0})</span>
                     </span>
                 </div>
                 {usePlayerStore.getState().queue.length > 0 && (
@@ -123,7 +123,7 @@ export const SidebarControls = () => {
                                 usePlayerStore.getState().clearQueue();
                             }
                         }}
-                        className="group flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all duration-300"
+                        className="group flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all duration-300 active:scale-95"
                     >
                         <Trash2 size={11} className="transition-transform group-hover:scale-110" />
                         <span className="text-[10px] font-black uppercase tracking-wider">ล้างทั้งหมด</span>
