@@ -423,58 +423,56 @@ export default function RemoteControlApp() {
         >
             <div className="h-full overflow-y-auto pb-24" style={{ overscrollBehavior: 'none', touchAction: 'pan-y' }}>
 
-                {/* Header (Unified Style) */}
-                <div className={`px-5 py-4 sticky top-0 z-20 transition-colors ${theme === 'dark' ? 'bg-stone-900 border-white/5 shadow-2xl' : 'bg-white border-gray-50 shadow-sm'}`}>
-                    <div>
-                        <h1 className="text-lg font-black tracking-tight flex items-center gap-2">
-                            <span className={`w-3 h-3 rounded-full ${status === 'connected' ? 'bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.8)]' : 'bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.8)]'}`}></span>
+                {/* Header (Unified Style - Single Line Optimized) */}
+                <div className={`px-4 py-3 sticky top-0 z-30 transition-colors flex items-center justify-between gap-2 overflow-hidden ${theme === 'dark' ? 'bg-stone-900 border-white/5 shadow-2xl' : 'bg-white border-gray-50 shadow-sm'}`}>
+                    <div className="flex-shrink-0 min-w-0">
+                        <h1 className="text-base font-black tracking-tight flex items-center gap-1.5 truncate">
+                            <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${status === 'connected' ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.6)]' : 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.6)]'}`}></span>
                             ห้อง {roomCode}
                         </h1>
-                        <div className={`text-[10px] font-black uppercase tracking-widest mt-0.5 flex items-center gap-2 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
-                            <span className="flex items-center gap-1">
-                                {guestName}
-                            </span>
+                        <div className={`text-[9px] font-black uppercase tracking-widest mt-0.5 flex items-center gap-1.5 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                            <span className="truncate max-w-[60px]">{guestName}</span>
                             <span className="opacity-30">|</span>
-                            <span>คิว: {roomState.queue.length}</span>
+                            <span>Q: {roomState.queue.length}</span>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 flex-shrink-0">
                         {/* Theme Toggle Button */}
                         <button
                             onClick={toggleTheme}
-                            className={`p-2.5 rounded-full transition-all active:scale-90 ${theme === 'dark' ? 'bg-white/10 text-yellow-400 hover:bg-white/20' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 shadow-sm'}`}
+                            className={`p-2 rounded-full transition-all active:scale-90 ${theme === 'dark' ? 'bg-white/10 text-yellow-400' : 'bg-gray-100 text-gray-600 shadow-sm'}`}
                             title="สลับโหมด"
                         >
-                            {theme === 'dark' ? <Sun size={20} strokeWidth={2.5} /> : <Moon size={20} strokeWidth={2.5} />}
+                            {theme === 'dark' ? <Sun size={18} strokeWidth={3} /> : <Moon size={18} strokeWidth={3} />}
                         </button>
 
                         <button
                             onClick={() => window.location.reload()}
-                            className={`p-2.5 rounded-full transition-all active:scale-90 ${theme === 'dark' ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-gray-100 text-gray-500 hover:bg-gray-200 shadow-sm'}`}
+                            className={`p-2 rounded-full transition-all active:scale-90 ${theme === 'dark' ? 'bg-white/10 text-gray-300' : 'bg-gray-100 text-gray-500 shadow-sm'}`}
                             title="รีเฟรช"
                         >
-                            <RefreshCw size={20} strokeWidth={2.5} />
+                            <RefreshCw size={18} strokeWidth={3} />
                         </button>
 
                         <button
                             onClick={() => setShowLocalQr(true)}
-                            className={`p-2.5 rounded-full transition-all active:scale-90 ${theme === 'dark' ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-gray-100 text-gray-500 hover:bg-gray-200 shadow-sm'}`}
+                            className={`p-2 rounded-full transition-all active:scale-90 ${theme === 'dark' ? 'bg-white/10 text-gray-300' : 'bg-gray-100 text-gray-500 shadow-sm'}`}
                         >
-                            <Share2 size={20} strokeWidth={2.5} />
+                            <Share2 size={18} strokeWidth={3} />
                         </button>
 
                         <button
                             onClick={() => sendCommand('TOGGLE_FULLSCREEN')}
-                            className={`p-2.5 rounded-full transition-all active:scale-90 ${theme === 'dark' ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-gray-100 text-gray-500 hover:bg-gray-200 shadow-sm'}`}
+                            className={`p-2 rounded-full transition-all active:scale-90 ${theme === 'dark' ? 'bg-white/10 text-gray-300' : 'bg-gray-100 text-gray-500 shadow-sm'}`}
                         >
-                            <Maximize size={20} strokeWidth={2.5} />
+                            <Maximize size={18} strokeWidth={3} />
                         </button>
                     </div>
                 </div>
 
                 {/* V1 Integrated Search Section (Sticky-linked) */}
-                <div className={`px-4 pb-4 sticky top-[77px] z-20 transition-colors border-b ${theme === 'dark' ? 'bg-stone-900 border-white/5 shadow-2xl' : 'bg-white border-gray-100 shadow-lg'}`}>
+                <div className={`px-4 pb-4 sticky top-[68px] z-20 transition-colors border-b ${theme === 'dark' ? 'bg-stone-900 border-white/5 shadow-2xl' : 'bg-white border-gray-100 shadow-lg'}`}>
                     <div className="flex items-center gap-3">
                         {/* Search Bar (Thai + Dynamic Placeholder) */}
                         <div className="flex-1 relative">

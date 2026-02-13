@@ -41,11 +41,11 @@ export function DraggableQueueItem({ video, index, uniqueId, onRemove, theme = '
             ref={setNodeRef}
             style={style}
             className={`p-3.5 rounded-2xl border flex gap-3.5 items-center ${isDragging
-                    ? 'shadow-2xl scale-[1.02] border-primary z-10 bg-primary/5 transition-none'
-                    : 'transition-all duration-300'
+                    ? 'shadow-xl border-primary/40 z-10 transition-none'
+                    : 'transition-all duration-300 shadow-lg shadow-gray-200/50'
                 } ${theme === 'dark'
                     ? 'bg-stone-900 border-white/5 text-white'
-                    : 'bg-white border-gray-100 text-gray-900 shadow-lg shadow-gray-200/50'
+                    : 'bg-white border-gray-100 text-gray-900'
                 }`}
         >
             {/* Drag Handle (V1 Style) */}
