@@ -51,9 +51,9 @@ export const RemoteMiniPlayer: React.FC<RemoteMiniPlayerProps> = ({
                 }
             `}</style>
 
-            <div className="h-24 flex items-center px-5 gap-5">
-                {/* Artwork (Super Rounded) */}
-                <div className={`w-16 h-16 rounded-[1.5rem] overflow-hidden shrink-0 relative shadow-xl flex items-center justify-center ${theme === 'dark' ? 'bg-black border border-white/5' : 'bg-white border border-gray-100'}`}>
+            <div className="h-20 flex items-center px-4 gap-4">
+                {/* Artwork (Balanced Rounded) */}
+                <div className={`w-14 h-14 rounded-2xl overflow-hidden shrink-0 relative shadow-lg flex items-center justify-center ${theme === 'dark' ? 'bg-black border border-white/5' : 'bg-white border border-gray-100'}`}>
                     {currentVideo?.thumbnail ? (
                         <Image
                             unoptimized
@@ -63,12 +63,12 @@ export const RemoteMiniPlayer: React.FC<RemoteMiniPlayerProps> = ({
                             alt={currentVideo.title}
                         />
                     ) : (
-                        <ListMusic className={`w-6 h-6 ${theme === 'dark' ? 'text-gray-700' : 'text-gray-300'}`} />
+                        <ListMusic className={`w-5 h-5 ${theme === 'dark' ? 'text-gray-700' : 'text-gray-300'}`} />
                     )}
 
                     {isPlaying && (
                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-[1px]">
-                            <div className="music-bars playing">
+                            <div className="music-bars playing small">
                                 <div className="bar"></div>
                                 <div className="bar"></div>
                                 <div className="bar"></div>
@@ -80,27 +80,27 @@ export const RemoteMiniPlayer: React.FC<RemoteMiniPlayerProps> = ({
 
                 {/* Text (Thai Bold Typography) */}
                 <div className="flex-1 min-w-0 pr-1">
-                    <h4 className={`font-black truncate text-[16px] leading-tight tracking-tight ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
+                    <h4 className={`font-black truncate text-[15px] leading-tight tracking-tight ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
                         {currentVideo?.title}
                     </h4>
-                    <p className={`text-[12px] font-bold uppercase truncate mt-1 tracking-wider ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                    <p className={`text-[11px] font-bold uppercase truncate mt-0.5 tracking-wider ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
                         {currentVideo?.author}
                     </p>
                 </div>
 
-                {/* Controls (Super Rounded Play Button) */}
-                <div className="flex items-center gap-3">
+                {/* Controls (Compact Rounded Play Button) */}
+                <div className="flex items-center gap-2">
                     <button
                         onClick={onTogglePlay}
-                        className="w-14 h-14 rounded-full bg-primary text-white flex items-center justify-center shadow-[0_8px_20px_rgba(229,9,20,0.5)] active:scale-90 transition-all"
+                        className="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center shadow-[0_6px_16px_rgba(229,9,20,0.4)] active:scale-90 transition-all"
                     >
-                        {isPlaying ? <Pause size={28} fill="currentColor" /> : <Play size={28} fill="currentColor" className="ml-1" />}
+                        {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" className="ml-1" />}
                     </button>
                     <button
                         onClick={onNext}
                         className={`p-1.5 transition-all active:scale-75 ${theme === 'dark' ? 'text-gray-400 hover:text-white' : 'text-gray-400 hover:text-black'}`}
                     >
-                        <SkipForward size={28} strokeWidth={2.5} />
+                        <SkipForward size={24} strokeWidth={2.5} />
                     </button>
                 </div>
             </div>

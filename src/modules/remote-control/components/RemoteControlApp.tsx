@@ -423,8 +423,8 @@ export default function RemoteControlApp() {
         >
             <div className="h-full overflow-y-auto pb-24" style={{ overscrollBehavior: 'none', touchAction: 'pan-y' }}>
 
-                {/* Header (V1 Style) */}
-                <div className={`px-5 py-4 sticky top-0 z-10 border-b flex items-center justify-between transition-colors ${theme === 'dark' ? 'bg-stone-900 border-white/10 shadow-lg' : 'bg-white border-gray-100 shadow-sm'}`}>
+                {/* Header (Unified Style) */}
+                <div className={`px-5 py-4 sticky top-0 z-20 transition-colors ${theme === 'dark' ? 'bg-stone-900 border-white/5 shadow-2xl' : 'bg-white border-gray-50 shadow-sm'}`}>
                     <div>
                         <h1 className="text-lg font-black tracking-tight flex items-center gap-2">
                             <span className={`w-3 h-3 rounded-full ${status === 'connected' ? 'bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.8)]' : 'bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.8)]'}`}></span>
@@ -474,7 +474,7 @@ export default function RemoteControlApp() {
                 </div>
 
                 {/* V1 Integrated Search Section (Sticky-linked) */}
-                <div className={`px-4 pb-4 sticky top-[77px] z-10 transition-colors border-b ${theme === 'dark' ? 'bg-stone-900 border-white/5 shadow-2xl' : 'bg-white border-gray-100 shadow-lg'}`}>
+                <div className={`px-4 pb-4 sticky top-[77px] z-20 transition-colors border-b ${theme === 'dark' ? 'bg-stone-900 border-white/5 shadow-2xl' : 'bg-white border-gray-100 shadow-lg'}`}>
                     <div className="flex items-center gap-3">
                         {/* Search Bar (Thai + Dynamic Placeholder) */}
                         <div className="flex-1 relative">
@@ -600,8 +600,8 @@ export default function RemoteControlApp() {
                     <button
                         onClick={() => sendCommand('TOGGLE_QUEUE_OVERLAY')}
                         className={`w-full py-5 rounded-[2rem] font-black text-xs uppercase tracking-[0.25em] transition-all flex items-center justify-center gap-3 active:scale-[0.98] ${roomState.isQueueVisible
-                                ? 'bg-primary text-white shadow-[0_12px_32px_rgba(229,9,20,0.5)]'
-                                : (theme === 'dark' ? 'bg-stone-900 border border-white/5 text-gray-500' : 'bg-white shadow-lg border border-gray-100 text-gray-400')
+                            ? 'bg-primary text-white shadow-[0_12px_32px_rgba(229,9,20,0.5)]'
+                            : (theme === 'dark' ? 'bg-stone-900 border border-white/5 text-gray-500' : 'bg-white shadow-lg border border-gray-100 text-gray-400')
                             }`}
                     >
                         <ListMusic size={20} />

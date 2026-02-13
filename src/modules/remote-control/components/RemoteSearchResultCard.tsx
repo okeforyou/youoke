@@ -21,14 +21,14 @@ export const RemoteSearchResultCard: React.FC<RemoteSearchResultCardProps> = ({
 }) => {
     return (
         <div
-            className={`group flex items-center gap-3.5 p-1.5 rounded-[1.5rem] border transition-all active:scale-[0.98] ${theme === 'dark'
-                    ? 'bg-black border-white/5 hover:border-primary/50 text-white'
-                    : 'bg-white border-gray-100 hover:border-primary/30 text-gray-900 shadow-md'
+            className={`group flex items-center gap-3.5 p-1.5 rounded-2xl border transition-all active:scale-[0.98] ${theme === 'dark'
+                ? 'bg-black border-white/5 hover:border-primary/50 text-white'
+                : 'bg-white border-gray-50 hover:border-primary/30 text-gray-900 shadow-md'
                 }`}
             onClick={onClick}
         >
-            {/* Thumbnail - Left Side (Super Rounded) */}
-            <div className={`relative w-28 h-16 flex-shrink-0 rounded-2xl overflow-hidden ${theme === 'dark' ? 'bg-stone-900' : 'bg-gray-100'}`}>
+            {/* Thumbnail - Left Side (Balanced Rounded) */}
+            <div className={`relative w-24 h-14 flex-shrink-0 rounded-xl overflow-hidden ${theme === 'dark' ? 'bg-stone-900' : 'bg-gray-100'}`}>
                 <Image
                     unoptimized
                     src={
@@ -56,13 +56,13 @@ export const RemoteSearchResultCard: React.FC<RemoteSearchResultCardProps> = ({
                 </p>
             </div>
 
-            {/* Add Button - Right Side (Super Rounded Bubble) */}
+            {/* Add Button - Right Side (Rounded Bubble) */}
             <div className="pr-3">
-                <div className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${theme === 'dark'
-                        ? 'bg-white/5 text-gray-500 group-hover:bg-primary group-hover:text-white group-hover:shadow-[0_4px_12px_rgba(229,9,20,0.4)]'
-                        : 'bg-gray-100 text-gray-400 group-hover:bg-primary group-hover:text-white group-hover:shadow-[0_4px_12px_rgba(229,9,20,0.3)]'
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${theme === 'dark'
+                    ? 'bg-white/5 text-gray-500 group-hover:bg-primary group-hover:text-white group-hover:shadow-[0_4px_12px_rgba(229,9,20,0.4)]'
+                    : 'bg-gray-100 text-gray-400 group-hover:bg-primary group-hover:text-white group-hover:shadow-[0_4px_12px_rgba(229,9,20,0.3)]'
                     }`}>
-                    <Plus size={24} strokeWidth={3} />
+                    <Plus size={22} strokeWidth={3} />
                 </div>
             </div>
         </div>
