@@ -386,91 +386,93 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 </div>
 
                 {/* Desktop Header */}
-                <header className="hidden lg:flex h-20 items-center justify-between px-8 border-b border-gray-100 bg-white sticky top-0 z-20 transition-all w-full">
-                    {/* Left: Search Bar */}
-                    <div className="flex-1 max-w-xl relative group">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <Search className="h-5 w-5 text-gray-400 group-focus-within:text-primary transition-colors" />
+                <header className="hidden lg:flex h-20 items-center border-b border-gray-100 bg-white sticky top-0 z-20 transition-all w-full">
+                    <div className="max-w-[1400px] mx-auto w-full flex items-center justify-between px-8">
+                        {/* Left: Search Bar */}
+                        <div className="flex-1 max-w-xl relative group">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <Search className="h-5 w-5 text-gray-400 group-focus-within:text-primary transition-colors" />
+                            </div>
+                            <DebounceInput
+                                minLength={2}
+                                debounceTimeout={300}
+                                placeholder="ค้นหาเพลง, ศิลปิน, หรือวางลิงก์ YouTube..."
+                                className="block w-full pl-12 pr-12 h-12 bg-gray-100 border-none rounded-2xl leading-5 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all shadow-sm"
+                                value={searchTerm}
+                                onChange={(e) => {
+                                    router.replace({
+                                        pathname: '/',
+                                        query: { ...router.query, search: e.target.value }
+                                    }, undefined, { shallow: true });
+                                }}
+                            />
+                            {searchTerm && (
+                                <button
+                                    onClick={() => {
+                                        const { search, ...rest } = router.query;
+                                        router.replace({ pathname: '/', query: rest }, undefined, { shallow: true });
+                                    }}
+                                    className="absolute inset-y-0 right-4 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                                >
+                                    <X className="h-4 w-4" />
+                                </button>
+                            )}
                         </div>
-                        <DebounceInput
-                            minLength={2}
-                            debounceTimeout={300}
-                            placeholder="ค้นหาเพลง, ศิลปิน, หรือวางลิงก์ YouTube..."
-                            className="block w-full pl-12 pr-12 h-12 bg-gray-100 border-none rounded-2xl leading-5 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all shadow-sm"
-                            value={searchTerm}
-                            onChange={(e) => {
-                                router.replace({
-                                    pathname: '/',
-                                    query: { ...router.query, search: e.target.value }
-                                }, undefined, { shallow: true });
-                            }}
-                        />
-                        {searchTerm && (
+
+                        {/* Right: Toggles & Remote */}
+                        <div className="flex items-center gap-4 ml-8 shrink-0">
+                            {/* Search Toggle (Karaoke/Song) - Animated Switch */}
+                            <div className="relative flex items-center bg-gray-100 rounded-2xl p-1 h-12 w-[210px] shrink-0">
+                                {/* Sliding Active Background */}
+                                <div
+                                    className={clsx(
+                                        "absolute top-1.5 bottom-1.5 w-[calc(50%-8px)] bg-white rounded-xl shadow-sm transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
+                                        isKaraoke ? "left-[calc(50%+2px)]" : "left-1.5"
+                                    )}
+                                />
+
+                                <button
+                                    onClick={() => setIsKaraoke(false)}
+                                    className={clsx(
+                                        "relative flex-1 flex items-center justify-center gap-1.5 h-full rounded-xl text-xs font-bold transition-colors z-10",
+                                        !isKaraoke ? "text-gray-900" : "text-gray-400 hover:text-gray-600"
+                                    )}
+                                >
+                                    <Music className="w-3.5 h-3.5" />
+                                    <span>เพลง</span>
+                                </button>
+
+                                <button
+                                    onClick={() => setIsKaraoke(true)}
+                                    className={clsx(
+                                        "relative flex-1 flex items-center justify-center gap-1.5 h-full rounded-xl text-xs font-bold transition-colors z-10",
+                                        isKaraoke ? "text-primary" : "text-gray-400 hover:text-gray-600"
+                                    )}
+                                >
+                                    <Mic className="w-3.5 h-3.5" />
+                                    <span>คาราโอเกะ</span>
+                                </button>
+                            </div>
+
+                            {/* Remote Button */}
                             <button
                                 onClick={() => {
-                                    const { search, ...rest } = router.query;
-                                    router.replace({ pathname: '/', query: rest }, undefined, { shallow: true });
+                                    setPartyRoomCode(roomCode || '');
+                                    setPartyModalOpen(true);
                                 }}
-                                className="absolute inset-y-0 right-4 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                                className="h-12 w-12 rounded-2xl flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-primary transition-colors relative"
+                                title="Mobile Remote"
                             >
-                                <X className="h-4 w-4" />
-                            </button>
-                        )}
-                    </div>
-
-                    {/* Right: Toggles & Remote */}
-                    <div className="flex items-center gap-4 ml-8 shrink-0">
-                        {/* Search Toggle (Karaoke/Song) - Animated Switch */}
-                        <div className="relative flex items-center bg-gray-100 rounded-2xl p-1 h-12 w-[210px] shrink-0">
-                            {/* Sliding Active Background */}
-                            <div
-                                className={clsx(
-                                    "absolute top-1.5 bottom-1.5 w-[calc(50%-8px)] bg-white rounded-xl shadow-sm transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
-                                    isKaraoke ? "left-[calc(50%+2px)]" : "left-1.5"
+                                <Smartphone className="w-6 h-6" />
+                                {mounted && (
+                                    <div className={clsx(
+                                        "absolute top-2 right-2 w-3 h-3 rounded-full border-2 border-white transition-colors duration-500",
+                                        connectionStatus === 'active' ? "bg-green-500 animate-pulse" :
+                                            connectionStatus === 'background' ? "bg-orange-500" : "bg-gray-400"
+                                    )} />
                                 )}
-                            />
-
-                            <button
-                                onClick={() => setIsKaraoke(false)}
-                                className={clsx(
-                                    "relative flex-1 flex items-center justify-center gap-1.5 h-full rounded-xl text-xs font-bold transition-colors z-10",
-                                    !isKaraoke ? "text-gray-900" : "text-gray-400 hover:text-gray-600"
-                                )}
-                            >
-                                <Music className="w-3.5 h-3.5" />
-                                <span>เพลง</span>
-                            </button>
-
-                            <button
-                                onClick={() => setIsKaraoke(true)}
-                                className={clsx(
-                                    "relative flex-1 flex items-center justify-center gap-1.5 h-full rounded-xl text-xs font-bold transition-colors z-10",
-                                    isKaraoke ? "text-primary" : "text-gray-400 hover:text-gray-600"
-                                )}
-                            >
-                                <Mic className="w-3.5 h-3.5" />
-                                <span>คาราโอเกะ</span>
                             </button>
                         </div>
-
-                        {/* Remote Button */}
-                        <button
-                            onClick={() => {
-                                setPartyRoomCode(roomCode || '');
-                                setPartyModalOpen(true);
-                            }}
-                            className="h-12 w-12 rounded-2xl flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-primary transition-colors relative"
-                            title="Mobile Remote"
-                        >
-                            <Smartphone className="w-6 h-6" />
-                            {mounted && (
-                                <div className={clsx(
-                                    "absolute top-2 right-2 w-3 h-3 rounded-full border-2 border-white transition-colors duration-500",
-                                    connectionStatus === 'active' ? "bg-green-500 animate-pulse" :
-                                        connectionStatus === 'background' ? "bg-orange-500" : "bg-gray-400"
-                                )} />
-                            )}
-                        </button>
                     </div>
                 </header>
 
