@@ -112,10 +112,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
     // Stable callback to close QR modals on connection
     const handleRemoteConnected = useCallback(() => {
-        console.log('📱 [Main] Remote detected join event! Closing modals.');
-        setShowQRCode(false);
-        setPartyModalOpen(false);
-    }, []);
+        if (showQRCode || partyModalOpen) {
+            console.log('📱 [Main] Remote detected join event! Closing modals.');
+            addToast('📱 รีโมทเชื่อมต่อแล้ว');
+            setShowQRCode(false);
+            setPartyModalOpen(false);
+        }
+    }, [showQRCode, partyModalOpen, addToast]);
 
     // Remote Control Integration - Main Screen acts as a Host
     const { connectionStatus, connectedClients } = useRemoteHost(

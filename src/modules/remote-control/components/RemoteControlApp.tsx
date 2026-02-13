@@ -114,6 +114,13 @@ export default function RemoteControlApp() {
                     setStatus('error');
                 });
 
+                // Signal to Host that we've joined (Direct Trigger for closing QR)
+                const statusRef = ref(realtimeDb, `rooms/${roomCode}/status`);
+                set(statusRef, {
+                    lastJoin: serverTimestamp(),
+                    lastJoinBy: auth.currentUser?.uid || 'anonymous'
+                });
+
                 return () => off(stateRef, 'value', unsubscribe);
 
             } catch (e) {

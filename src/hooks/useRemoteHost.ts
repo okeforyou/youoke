@@ -145,19 +145,27 @@ export const useRemoteHost = (
 
         const unsubscribe = onValue(connectedRef, handleSnapshot);
 
-        // Detect new connections via child_added (V1 reliable logic)
+        // EXTRA: Listen for new connections specifically to trigger callback (V1 logic)
         const unsubscribeChild = onChildAdded(connectedRef, (snapshot) => {
             if (snapshot.exists()) {
-                console.log('📱 [Host] New client connected to room:', sessionId, snapshot.key);
-                if (onRemoteConnectRef.current) {
-                    onRemoteConnectRef.current();
-                }
+                console.log('📱 [Host] New client connected via presence:', snapshot.key);
+                if (onRemoteConnectRef.current) onRemoteConnectRef.current();
+            }
+        });
+
+        // NEW: Direct Join Signal (User's suggested simple logic)
+        const lastJoinRef = ref(realtimeDb, `rooms/${sessionId}/status/lastJoin`);
+        const unsubscribeJoin = onValue(lastJoinRef, (snapshot) => {
+            if (snapshot.exists()) {
+                console.log('📱 [Host] Remote join signal received! Closing modal.');
+                if (onRemoteConnectRef.current) onRemoteConnectRef.current();
             }
         });
 
         return () => {
             unsubscribe();
             unsubscribeChild();
+            unsubscribeJoin();
         };
     }, [sessionId]);
 
