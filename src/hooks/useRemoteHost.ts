@@ -80,14 +80,24 @@ export const useRemoteHost = (
         if (!sessionId || !realtimeDb) return;
 
         try {
-            const safeQueue = Array.isArray(queue) ? queue : [];
+            // Ensure we only sync serializable data
+            const safeQueue = (Array.isArray(queue) ? queue : []).map(v => ({
+                id: v.id || v.videoId,
+                videoId: v.videoId || v.id,
+                title: v.title || "Unknown",
+                author: v.author || "Unknown",
+                thumbnail: v.thumbnail || "",
+                sourceType: v.sourceType || 'youtube',
+                addedBy: v.addedBy || null,
+                uuid: v.uuid
+            }));
+
             const currentVideo = safeQueue.find(v => (v.id || v.videoId) === currentVideoId);
-            const title = currentVideo?.title || "Unknown Title";
             const currentIndex = safeQueue.findIndex(v => (v.id || v.videoId) === currentVideoId);
 
             const statePayload = {
                 queue: safeQueue,
-                currentIndex: currentIndex,
+                currentIndex: currentIndex >= 0 ? currentIndex : 0,
                 currentVideo: currentVideo || null,
                 controls: {
                     isPlaying: !!isPlaying,
@@ -96,21 +106,22 @@ export const useRemoteHost = (
                     duration: 0
                 },
                 videoId: currentVideoId || null,
-                title: title || "Unknown Title",
+                title: currentVideo?.title || "Unknown Title",
                 isPlaying: !!isPlaying,
                 isFullscreen: !!isFullscreen,
                 roomCode: sessionId,
                 timestamp: Date.now()
             };
 
+            // console.log('📤 [Host] Syncing queue to Firebase:', safeQueue.length);
             set(ref(realtimeDb, `rooms/${sessionId}/state`), statePayload);
-            set(ref(realtimeDb, `rooms/${sessionId}/lastActive`), Date.now());
+            set(ref(realtimeDb, `rooms/${sessionId}/lastActive`), serverTimestamp());
         } catch (e) {
             console.error('Remote Sync Error:', e);
         }
     }, [queue, currentVideoId, isPlaying, isFullscreen, sessionId]);
 
-    // Track Connection Status
+    // Track Connection Status (Presence Monitoring)
     useEffect(() => {
         if (!sessionId || !realtimeDb) return;
 
@@ -130,14 +141,14 @@ export const useRemoteHost = (
             setConnectedClients(count);
 
             const hasActive = clientValues.some(c => c.state === 'active');
-            const hasBackground = clientValues.some(c => c.state === 'background' || !c.state);
+            const hasBackground = clientValues.some(c => c.state === 'background');
 
             if (hasActive) {
                 setConnectionStatus('active');
             } else if (hasBackground) {
                 setConnectionStatus('background');
             } else if (count > 0) {
-                setConnectionStatus('active');
+                setConnectionStatus('active'); // Fallback if state is missing
             } else {
                 setConnectionStatus('disconnected');
             }

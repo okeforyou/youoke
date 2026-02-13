@@ -81,7 +81,17 @@ export default function RemoteControlApp() {
             }
 
             try {
-                if (!auth.currentUser) await signInAnonymously(auth);
+                if (!auth.currentUser) {
+                    console.log('🔐 [Remote] Signing in anonymously...');
+                    await signInAnonymously(auth);
+                }
+
+                // Signal to Host that we've joined (Direct Trigger for closing QR)
+                const statusRef = ref(realtimeDb, `rooms/${roomCode}/status`);
+                set(statusRef, {
+                    lastJoin: serverTimestamp(),
+                    lastJoinBy: auth.currentUser?.uid || 'anonymous'
+                });
 
                 // Listen to State
                 const stateRef = ref(realtimeDb, `rooms/${roomCode}/state`);
@@ -114,13 +124,6 @@ export default function RemoteControlApp() {
                     setStatus('error');
                 });
 
-                // Signal to Host that we've joined (Direct Trigger for closing QR)
-                const statusRef = ref(realtimeDb, `rooms/${roomCode}/status`);
-                set(statusRef, {
-                    lastJoin: serverTimestamp(),
-                    lastJoinBy: auth.currentUser?.uid || 'anonymous'
-                });
-
                 return () => off(stateRef, 'value', unsubscribe);
 
             } catch (e) {
@@ -132,6 +135,13 @@ export default function RemoteControlApp() {
         const cleanup = connect();
         return () => { cleanup.then(unsub => unsub && unsub()); };
     }, [roomCode, showNameModal]);
+
+    // Track Current User state for presence
+    const [currentUser, setCurrentUser] = useState(auth?.currentUser);
+    useEffect(() => {
+        if (!auth) return;
+        return auth.onAuthStateChanged((user) => setCurrentUser(user));
+    }, []);
 
     // Wake Lock to prevent screen sleep
     useEffect(() => {
@@ -154,9 +164,7 @@ export default function RemoteControlApp() {
 
     // Presence / Connection Status Heartbeat (V1-Inspired Reliability)
     useEffect(() => {
-        if (!roomCode || !realtimeDb) return;
-        const currentUser = auth?.currentUser;
-        if (!currentUser) return;
+        if (!roomCode || !realtimeDb || !currentUser) return;
 
         // Use a consistent clientId for this device to prevent duplicate entries
         let clientId = localStorage.getItem('youoke_remote_client_id');
@@ -210,7 +218,7 @@ export default function RemoteControlApp() {
             const { remove } = require('firebase/database');
             remove(myPresenceRef).catch(() => { });
         };
-    }, [roomCode, guestName]);
+    }, [roomCode, guestName, currentUser]);
 
     // Command Sender
     const sendCommand = async (type: string, payload: any = {}) => {
