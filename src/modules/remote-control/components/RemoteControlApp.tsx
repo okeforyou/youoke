@@ -339,9 +339,14 @@ export default function RemoteControlApp() {
         );
     }
 
-    // --- RENDER ---
     return (
-        <div className="min-h-screen bg-gray-50 font-sans text-gray-900 pb-24 touch-pan-x touch-pan-y" style={{ overscrollBehaviorY: 'contain' }}>
+        <div
+            className="min-h-screen bg-gray-50 font-sans text-gray-900 pb-24"
+            style={{
+                overscrollBehaviorY: 'contain',
+                touchAction: 'pan-x pan-y'
+            }}
+        >
 
             {/* Header */}
             <div className="bg-white px-5 py-4 sticky top-0 z-10 shadow-sm flex items-center justify-between">
@@ -357,17 +362,19 @@ export default function RemoteControlApp() {
                         <span className="opacity-50">
                             | Q: {roomState.queue.length}
                         </span>
-                        <button
-                            onClick={() => window.location.reload()}
-                            className="flex items-center gap-1 text-primary font-bold active:scale-95 transition-transform"
-                        >
-                            <RefreshCw size={10} /> รีเฟรช
-                        </button>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                    {/* Share Button */}
+                    {/* Refresh Button */}
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="p-2 rounded-full bg-gray-100 text-gray-500 hover:text-primary transition-all active:scale-90"
+                        title="รีเฟรช"
+                    >
+                        <RefreshCw size={20} />
+                    </button>
+                    {/* Share Button -- same as before --- */}
                     <button
                         onClick={() => setShowLocalQr(true)}
                         className="p-2 rounded-full bg-gray-100 text-gray-500 hover:text-primary transition-colors"
