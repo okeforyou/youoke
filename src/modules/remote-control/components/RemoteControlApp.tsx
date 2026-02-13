@@ -427,109 +427,109 @@ export default function RemoteControlApp() {
                 <div className={`px-5 py-4 sticky top-0 z-10 border-b flex items-center justify-between transition-colors ${theme === 'dark' ? 'bg-stone-900 border-white/10 shadow-lg' : 'bg-white border-gray-100 shadow-sm'}`}>
                     <div>
                         <h1 className="text-lg font-black tracking-tight flex items-center gap-2">
-                            <span className={`w-2.5 h-2.5 rounded-full ${status === 'connected' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]'}`}></span>
-                            ROOM {roomCode}
+                            <span className={`w-3 h-3 rounded-full ${status === 'connected' ? 'bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.8)]' : 'bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.8)]'}`}></span>
+                            ห้อง {roomCode}
                         </h1>
-                        <div className={`text-[10px] font-bold uppercase tracking-widest mt-0.5 flex items-center gap-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                        <div className={`text-[10px] font-black uppercase tracking-widest mt-0.5 flex items-center gap-2 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
                             <span className="flex items-center gap-1">
                                 {guestName}
                             </span>
                             <span className="opacity-30">|</span>
-                            <span>QUEUE: {roomState.queue.length}</span>
+                            <span>คิว: {roomState.queue.length}</span>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                         {/* Theme Toggle Button */}
                         <button
                             onClick={toggleTheme}
-                            className={`p-2 rounded-2xl transition-all active:scale-95 ${theme === 'dark' ? 'bg-white/10 text-yellow-400 hover:bg-white/20' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
+                            className={`p-2.5 rounded-full transition-all active:scale-90 ${theme === 'dark' ? 'bg-white/10 text-yellow-400 hover:bg-white/20' : 'bg-gray-100 text-gray-600 hover:bg-gray-200 shadow-sm'}`}
                             title="สลับโหมด"
                         >
-                            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+                            {theme === 'dark' ? <Sun size={20} strokeWidth={2.5} /> : <Moon size={20} strokeWidth={2.5} />}
                         </button>
 
                         <button
                             onClick={() => window.location.reload()}
-                            className={`p-2 rounded-2xl transition-all active:scale-95 ${theme === 'dark' ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-gray-200 text-gray-500 hover:bg-gray-300'}`}
+                            className={`p-2.5 rounded-full transition-all active:scale-90 ${theme === 'dark' ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-gray-100 text-gray-500 hover:bg-gray-200 shadow-sm'}`}
                             title="รีเฟรช"
                         >
-                            <RefreshCw size={20} />
+                            <RefreshCw size={20} strokeWidth={2.5} />
                         </button>
 
                         <button
                             onClick={() => setShowLocalQr(true)}
-                            className={`p-2 rounded-2xl transition-all active:scale-95 ${theme === 'dark' ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-gray-200 text-gray-500 hover:bg-gray-300'}`}
+                            className={`p-2.5 rounded-full transition-all active:scale-90 ${theme === 'dark' ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-gray-100 text-gray-500 hover:bg-gray-200 shadow-sm'}`}
                         >
-                            <Share2 size={20} />
+                            <Share2 size={20} strokeWidth={2.5} />
                         </button>
 
                         <button
                             onClick={() => sendCommand('TOGGLE_FULLSCREEN')}
-                            className={`p-2 rounded-2xl transition-all active:scale-95 ${theme === 'dark' ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-gray-200 text-gray-500 hover:bg-gray-300'}`}
+                            className={`p-2.5 rounded-full transition-all active:scale-90 ${theme === 'dark' ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-gray-100 text-gray-500 hover:bg-gray-200 shadow-sm'}`}
                         >
-                            <Maximize size={20} />
-                        </button>
-                        <button
-                            onClick={() => sendCommand('TOGGLE_QUEUE_OVERLAY')}
-                            className={`p-2 rounded-lg transition-all active:scale-95 ${roomState.isQueueVisible ? 'bg-primary text-white shadow-lg' : (theme === 'dark' ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-gray-100 text-gray-500 hover:bg-gray-200')}`}
-                        >
-                            <ListMusic size={20} />
+                            <Maximize size={20} strokeWidth={2.5} />
                         </button>
                     </div>
                 </div>
 
-                {/* V1 Integrated Search Section */}
-                <div className={`p-4 transition-colors ${theme === 'dark' ? 'bg-stone-900/50' : 'bg-white'}`}>
-                    <div className="flex items-center gap-2">
-                        {/* Search Bar */}
+                {/* V1 Integrated Search Section (Sticky-linked) */}
+                <div className={`px-4 pb-4 sticky top-[77px] z-10 transition-colors border-b ${theme === 'dark' ? 'bg-stone-900 border-white/5 shadow-2xl' : 'bg-white border-gray-100 shadow-lg'}`}>
+                    <div className="flex items-center gap-3">
+                        {/* Search Bar (Thai + Dynamic Placeholder) */}
                         <div className="flex-1 relative">
                             <DebounceInput
                                 minLength={1}
                                 debounceTimeout={500}
                                 value={searchTerm}
                                 onChange={(e) => handleSearchInput(e.target.value)}
-                                placeholder="ค้นหาเพลง, ศิลปิน... (V1)"
-                                className={`w-full border-none rounded-2xl px-10 py-3.5 text-sm font-black outline-none transition-all placeholder:font-bold tracking-tight ${theme === 'dark'
-                                    ? 'bg-black text-white focus:ring-1 focus:ring-primary/50 placeholder:text-gray-700'
-                                    : 'bg-gray-100 text-gray-900 focus:ring-1 focus:ring-primary/20 placeholder:text-gray-400'
+                                placeholder={searchType === 'video' ? 'ค้นหาเพลงหรือศิลปิน...' : 'ค้นหาเพลงคาราโอเกะ...'}
+                                className={`w-full border-none rounded-[1.5rem] px-11 py-3.5 text-sm font-black outline-none transition-all placeholder:font-bold tracking-tight ${theme === 'dark'
+                                    ? 'bg-black text-white focus:ring-2 focus:ring-primary/40 placeholder:text-gray-700'
+                                    : 'bg-gray-100 text-gray-900 focus:ring-2 focus:ring-primary/20 placeholder:text-gray-400'
                                     }`}
                             />
-                            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                                <Search size={18} strokeWidth={3} />
+                            <div className={`absolute left-4 top-1/2 -translate-y-1/2 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'}`}>
+                                <Search size={20} strokeWidth={3} />
                             </div>
                             {isSearching && (
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                                    <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                                    <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                                 </div>
                             )}
                         </div>
 
-                        {/* V1 Segmented Toggle */}
-                        <div className={`flex p-1 rounded-2xl gap-1 shrink-0 ${theme === 'dark' ? 'bg-black' : 'bg-gray-100'}`}>
+                        {/* V1 SLIDING Toggle */}
+                        <div className={`relative flex p-1 rounded-full gap-1 shrink-0 ${theme === 'dark' ? 'bg-black' : 'bg-gray-100'}`}>
+                            {/* Sliding Background */}
+                            <div
+                                className={`absolute inset-1 w-[46px] h-[46px] bg-primary rounded-full transition-all duration-300 ease-out shadow-lg ${searchType === 'karaoke' ? 'translate-x-[50px]' : 'translate-x-0'
+                                    }`}
+                            />
+
                             <button
-                                onClick={() => searchType !== 'video' && handleTypeToggle('video')}
-                                className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all ${searchType === 'video' ? 'bg-primary text-white shadow-lg' : 'text-gray-400 hover:opacity-70'}`}
+                                onClick={() => handleTypeToggle('video')}
+                                className={`relative z-10 w-[46px] h-[46px] rounded-full flex items-center justify-center transition-colors duration-300 ${searchType === 'video' ? 'text-white' : 'text-gray-500 hover:text-gray-700'}`}
                             >
-                                <Music size={18} strokeWidth={3} />
+                                <Music size={20} strokeWidth={3} />
                             </button>
                             <button
-                                onClick={() => searchType !== 'karaoke' && handleTypeToggle('karaoke')}
-                                className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all ${searchType === 'karaoke' ? 'bg-primary text-white shadow-lg' : 'text-gray-400 hover:opacity-70'}`}
+                                onClick={() => handleTypeToggle('karaoke')}
+                                className={`relative z-10 w-[46px] h-[46px] rounded-full flex items-center justify-center transition-colors duration-300 ${searchType === 'karaoke' ? 'text-white' : 'text-gray-500 hover:text-gray-700'}`}
                             >
-                                <Mic size={18} strokeWidth={3} />
+                                <Mic size={20} strokeWidth={3} />
                             </button>
                         </div>
                     </div>
 
-                    {/* Inline Search Results (V1 Style) */}
+                    {/* Inline Search Results (V1 Style - Super Rounded) */}
                     {searchResults.length > 0 && (
-                        <div className={`mt-4 grid grid-cols-1 gap-2 p-1 rounded-3xl ${theme === 'dark' ? 'bg-black/20' : 'bg-gray-50'}`}>
-                            <div className="flex items-center justify-between px-3 py-2">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-primary">Search Results</span>
-                                <button onClick={() => { setSearchTerm(''); setSearchResults([]); }} className="text-[10px] font-black text-gray-500 uppercase">Clear</button>
+                        <div className={`mt-4 grid grid-cols-1 gap-2 p-1.5 rounded-[2rem] overflow-hidden border ${theme === 'dark' ? 'bg-black/40 border-white/5' : 'bg-gray-50/80 border-gray-100'}`}>
+                            <div className="flex items-center justify-between px-4 py-2">
+                                <span className="text-[10px] font-black uppercase tracking-[0.15em] text-primary">ผลการค้นหา</span>
+                                <button onClick={() => { setSearchTerm(''); setSearchResults([]); }} className={`text-[10px] font-black uppercase tracking-widest ${theme === 'dark' ? 'text-gray-600 hover:text-white' : 'text-gray-400 hover:text-black'}`}>ล้างข้อมูล</button>
                             </div>
-                            <div className="space-y-2 max-h-[300px] overflow-y-auto px-1 pb-2 custom-scrollbar">
+                            <div className="space-y-2 max-h-[350px] overflow-y-auto px-1.5 pb-2 custom-scrollbar">
                                 {searchResults.map((video, idx) => (
                                     <RemoteSearchResultCard
                                         key={`${video.videoId}-${idx}`}
@@ -543,22 +543,22 @@ export default function RemoteControlApp() {
                     )}
                 </div>
 
-                {/* Queue List (V1 Aesthetic - Rounded) */}
-                <div className="p-4 space-y-4">
-                    <div className="flex items-center justify-between px-1">
-                        <h2 className={`text-[11px] font-black uppercase tracking-widest flex items-center gap-2 ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
-                            <div className="w-1 h-3 bg-primary rounded-full"></div>
-                            UP NEXT
+                {/* Queue List (V1 Aesthetic - Super Rounded) */}
+                <div className="p-4 space-y-5">
+                    <div className="flex items-center justify-between px-2">
+                        <h2 className={`text-[12px] font-black uppercase tracking-[0.2em] flex items-center gap-3 ${theme === 'dark' ? 'text-white/90' : 'text-black/80'}`}>
+                            <div className="w-1.5 h-4 bg-primary rounded-full shadow-[0_0_8px_rgba(229,9,20,0.4)]"></div>
+                            คิวต่อไป
                         </h2>
-                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border ${theme === 'dark' ? 'bg-white/5 border-white/10 text-gray-500' : 'bg-gray-100 border-gray-200 text-gray-400'}`}>
-                            {Math.max(0, roomState.queue.length - (roomState.currentIndex + 1))} SONGS
+                        <span className={`text-[9px] font-black px-3 py-1 rounded-full border tracking-widest ${theme === 'dark' ? 'bg-white/5 border-white/10 text-gray-500' : 'bg-white border-gray-200 text-gray-400 shadow-sm'}`}>
+                            {Math.max(0, roomState.queue.length - (roomState.currentIndex + 1))} เพลง
                         </span>
                     </div>
 
                     {roomState.queue.length <= 1 ? (
-                        <div className={`text-center py-20 border-2 border-dashed rounded-3xl transition-colors ${theme === 'dark' ? 'border-white/5 bg-white/[0.01]' : 'border-gray-100 bg-gray-50'}`}>
-                            <h3 className={`font-black text-lg mb-1 ${theme === 'dark' ? 'text-white/80' : 'text-gray-400'}`}>EMPTY QUEUE</h3>
-                            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600">Search above to add songs</p>
+                        <div className={`text-center py-24 border-2 border-dashed rounded-[2.5rem] transition-colors ${theme === 'dark' ? 'border-white/5 bg-white/[0.01]' : 'border-gray-100 bg-gray-50'}`}>
+                            <h3 className={`font-black text-xl mb-2 tracking-tight ${theme === 'dark' ? 'text-white/40' : 'text-gray-300'}`}>ยังไม่มีเพลงในคิว</h3>
+                            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gray-600">ค้นหาเพื่อเพิ่มเพลงที่ด้านบน</p>
                         </div>
                     ) : (
                         <DndContext
@@ -595,17 +595,17 @@ export default function RemoteControlApp() {
                     )}
                 </div>
 
-                {/* Action Buttons Toggle (V1 Look) */}
-                <div className="px-4 pb-4">
+                {/* Action Buttons Toggle (Ultimate Rounded Thai) */}
+                <div className="px-4 pb-6">
                     <button
                         onClick={() => sendCommand('TOGGLE_QUEUE_OVERLAY')}
-                        className={`w-full py-4 rounded-3xl font-black text-xs uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 active:scale-[0.98] ${roomState.isQueueVisible
-                            ? 'bg-primary text-white shadow-[0_8px_24px_rgba(229,9,20,0.4)]'
-                            : (theme === 'dark' ? 'bg-stone-900 border border-white/5 text-gray-500' : 'bg-white shadow-sm border border-gray-100 text-gray-400')
+                        className={`w-full py-5 rounded-[2rem] font-black text-xs uppercase tracking-[0.25em] transition-all flex items-center justify-center gap-3 active:scale-[0.98] ${roomState.isQueueVisible
+                                ? 'bg-primary text-white shadow-[0_12px_32px_rgba(229,9,20,0.5)]'
+                                : (theme === 'dark' ? 'bg-stone-900 border border-white/5 text-gray-500' : 'bg-white shadow-lg border border-gray-100 text-gray-400')
                             }`}
                     >
-                        <ListMusic size={18} />
-                        {roomState.isQueueVisible ? 'HIDE OVERLAY' : 'SHOW OVERLAY'}
+                        <ListMusic size={20} />
+                        {roomState.isQueueVisible ? 'ซ่อนแผงควบคุม' : 'แสดงแผงควบคุม'}
                     </button>
                 </div>
 

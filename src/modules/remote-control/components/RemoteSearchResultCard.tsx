@@ -21,14 +21,14 @@ export const RemoteSearchResultCard: React.FC<RemoteSearchResultCardProps> = ({
 }) => {
     return (
         <div
-            className={`group flex items-center gap-3 p-1 rounded-2xl border transition-all active:scale-[0.98] ${theme === 'dark'
+            className={`group flex items-center gap-3.5 p-1.5 rounded-[1.5rem] border transition-all active:scale-[0.98] ${theme === 'dark'
                     ? 'bg-black border-white/5 hover:border-primary/50 text-white'
-                    : 'bg-white border-gray-100 hover:border-primary/30 text-gray-900 shadow-sm'
+                    : 'bg-white border-gray-100 hover:border-primary/30 text-gray-900 shadow-md'
                 }`}
             onClick={onClick}
         >
-            {/* Thumbnail - Left Side */}
-            <div className={`relative w-24 h-14 flex-shrink-0 rounded-xl overflow-hidden ${theme === 'dark' ? 'bg-stone-900' : 'bg-gray-100'}`}>
+            {/* Thumbnail - Left Side (Super Rounded) */}
+            <div className={`relative w-28 h-16 flex-shrink-0 rounded-2xl overflow-hidden ${theme === 'dark' ? 'bg-stone-900' : 'bg-gray-100'}`}>
                 <Image
                     unoptimized
                     src={
@@ -48,21 +48,21 @@ export const RemoteSearchResultCard: React.FC<RemoteSearchResultCardProps> = ({
 
             {/* Info - Middle */}
             <div className="flex-1 min-w-0 pr-2">
-                <h4 className={`text-[13px] font-black line-clamp-2 leading-tight mb-0.5 uppercase tracking-tight ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
+                <h4 className={`text-[13px] font-black line-clamp-2 leading-tight mb-1 uppercase tracking-tight ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
                     {video.title}
                 </h4>
-                <p className={`text-[10px] font-bold truncate tracking-wide ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                <p className={`text-[10px] font-bold truncate tracking-widest ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
                     {video.author}
                 </p>
             </div>
 
-            {/* Add Button - Right Side (V1 Signature) */}
+            {/* Add Button - Right Side (Super Rounded Bubble) */}
             <div className="pr-3">
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${theme === 'dark'
-                        ? 'bg-white/5 text-gray-500 group-hover:bg-primary group-hover:text-white'
-                        : 'bg-gray-100 text-gray-400 group-hover:bg-primary group-hover:text-white'
+                <div className={`w-11 h-11 rounded-full flex items-center justify-center transition-all ${theme === 'dark'
+                        ? 'bg-white/5 text-gray-500 group-hover:bg-primary group-hover:text-white group-hover:shadow-[0_4px_12px_rgba(229,9,20,0.4)]'
+                        : 'bg-gray-100 text-gray-400 group-hover:bg-primary group-hover:text-white group-hover:shadow-[0_4px_12px_rgba(229,9,20,0.3)]'
                     }`}>
-                    <Plus size={22} strokeWidth={3} />
+                    <Plus size={24} strokeWidth={3} />
                 </div>
             </div>
         </div>
