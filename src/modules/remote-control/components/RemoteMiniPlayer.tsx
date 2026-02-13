@@ -53,7 +53,7 @@ export const RemoteMiniPlayer: React.FC<RemoteMiniPlayerProps> = ({
 
             <div className="h-20 flex items-center px-4 gap-4">
                 {/* Artwork (V1 Sharp Look) */}
-                <div className={`w-14 h-14 rounded-lg overflow-hidden shrink-0 relative shadow-lg flex items-center justify-center ${theme === 'dark' ? 'bg-black border border-white/5' : 'bg-gray-100 border border-gray-200'}`}>
+                <div className={`w-14 h-14 rounded-2xl overflow-hidden shrink-0 relative shadow-lg flex items-center justify-center ${theme === 'dark' ? 'bg-black border border-white/5' : 'bg-gray-100 border border-gray-200'}`}>
                     {currentVideo?.thumbnail ? (
                         <Image
                             unoptimized
@@ -92,7 +92,7 @@ export const RemoteMiniPlayer: React.FC<RemoteMiniPlayerProps> = ({
                 <div className="flex items-center gap-2">
                     <button
                         onClick={onTogglePlay}
-                        className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center shadow-[0_4px_12px_rgba(229,9,20,0.4)] active:scale-95 transition-all"
+                        className="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center shadow-[0_4px_12px_rgba(229,9,20,0.4)] active:scale-95 transition-all"
                     >
                         {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" className="ml-1" />}
                     </button>

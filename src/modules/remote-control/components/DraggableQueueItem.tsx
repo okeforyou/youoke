@@ -40,7 +40,7 @@ export function DraggableQueueItem({ video, index, uniqueId, onRemove, theme = '
         <div
             ref={setNodeRef}
             style={style}
-            className={`p-3 rounded-xl border flex gap-3 items-center transition-colors duration-200 ${isDragging ? 'shadow-2xl scale-[1.02] border-primary z-10' : ''
+            className={`p-3 rounded-2xl border flex gap-3 items-center transition-colors duration-200 ${isDragging ? 'shadow-2xl scale-[1.02] border-primary z-10' : ''
                 } ${theme === 'dark'
                     ? 'bg-stone-900 border-white/5 text-white'
                     : 'bg-white border-gray-100 text-gray-900 shadow-sm'
@@ -57,7 +57,7 @@ export function DraggableQueueItem({ video, index, uniqueId, onRemove, theme = '
             </div>
 
             {/* Queue Number (Bold V1) */}
-            <span className={`font-black text-xs w-6 text-center ${theme === 'dark' ? 'text-gray-600' : 'text-gray-300'}`}>
+            <span className={`font-black text-xs w-6 text-center ${theme === 'dark' ? 'text-gray-700' : 'text-gray-300'}`}>
                 {(index + 1).toString().padStart(2, '0')}
             </span>
 

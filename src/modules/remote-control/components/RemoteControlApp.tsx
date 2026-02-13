@@ -6,7 +6,7 @@ import { ref, onValue, off, set, serverTimestamp } from 'firebase/database';
 import { auth, realtimeDb } from '../../../firebase';
 import { QueueItem } from '../../../modules/player/types';
 import {
-    ListMusic, Plus, User, Share2, Maximize, RefreshCw, Volume2, VolumeX, SkipForward, SkipBack, Play, Pause, Trash2, GripVertical, Search, Sun, Moon
+    ListMusic, User, Share2, Maximize, RefreshCw, Volume2, VolumeX, SkipForward, SkipBack, Play, Pause, Trash2, GripVertical, Search, Sun, Moon, Music, Mic
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import {
@@ -27,8 +27,9 @@ import {
 
 // Components
 import { RemoteMiniPlayer } from './RemoteMiniPlayer';
-import { SearchOverlay } from './SearchOverlay';
 import { DraggableQueueItem } from './DraggableQueueItem';
+import { RemoteSearchResultCard } from './RemoteSearchResultCard';
+import { DebounceInput } from 'react-debounce-input';
 
 // Types
 type RemoteStatus = 'connecting' | 'connected' | 'error';
@@ -61,6 +62,13 @@ export default function RemoteControlApp() {
     const [showLocalQr, setShowLocalQr] = useState(false);
     const [theme, setTheme] = useState<'light' | 'dark'>('dark'); // Default to Dark (V1 Classic)
 
+    // Search Logic (V1 Integrated)
+    const [searchTerm, setSearchTerm] = useState('');
+    const [searchResults, setSearchResults] = useState<any[]>([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [searchType, setSearchType] = useState<'video' | 'karaoke'>('video');
+    const debounceRef = React.useRef<NodeJS.Timeout>();
+
     // Load theme preference
     useEffect(() => {
         const savedTheme = localStorage.getItem('remote_theme') as 'light' | 'dark';
@@ -71,6 +79,44 @@ export default function RemoteControlApp() {
         const newTheme = theme === 'light' ? 'dark' : 'light';
         setTheme(newTheme);
         localStorage.setItem('remote_theme', newTheme);
+    };
+
+    // Search Handlers
+    const performSearch = async (value: string, type: 'video' | 'karaoke' = searchType) => {
+        if (!value.trim()) {
+            setSearchResults([]);
+            setIsSearching(false);
+            return;
+        }
+
+        setIsSearching(true);
+        try {
+            const { getSearchResult } = await import('../../../utils/api');
+            const effectiveQuery = type === 'karaoke' ? `${value} karaoke` : value;
+            const data = await getSearchResult({ q: effectiveQuery, type: 'video' });
+            setSearchResults(data);
+        } catch (e) {
+            console.error('Search Error:', e);
+            setSearchResults([]);
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
+    const handleSearchInput = (value: string) => {
+        setSearchTerm(value);
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        if (!value.trim()) {
+            setSearchResults([]);
+            return;
+        }
+        setIsSearching(true);
+        debounceRef.current = setTimeout(() => performSearch(value, searchType), 600);
+    };
+
+    const handleTypeToggle = (type: 'video' | 'karaoke') => {
+        setSearchType(type);
+        if (searchTerm) performSearch(searchTerm, type);
     };
 
     // Initial Setup
@@ -303,7 +349,8 @@ export default function RemoteControlApp() {
     const handleAddVideo = (video: any) => {
         console.log('➕ Adding video to queue:', video.title);
         sendCommand('ADD_TO_QUEUE', { video });
-        setSearchOpen(false);
+        setSearchTerm('');
+        setSearchResults([]);
     };
 
     // Drag & Drop
@@ -368,7 +415,7 @@ export default function RemoteControlApp() {
 
     return (
         <div
-            className={`fixed inset-0 font-sans transition-colors duration-300 overflow-hidden ${theme === 'dark' ? 'bg-stone-950 text-white' : 'bg-white text-gray-900'}`}
+            className={`fixed inset-0 font-sans transition-colors duration-300 overflow-hidden ${theme === 'dark' ? 'bg-stone-950 text-white' : 'bg-stone-50 text-gray-900'}`}
             style={{
                 overscrollBehavior: 'none',
                 touchAction: 'none'
@@ -396,7 +443,7 @@ export default function RemoteControlApp() {
                         {/* Theme Toggle Button */}
                         <button
                             onClick={toggleTheme}
-                            className={`p-2 rounded-lg transition-all active:scale-95 ${theme === 'dark' ? 'bg-white/10 text-yellow-400 hover:bg-white/20' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                            className={`p-2 rounded-2xl transition-all active:scale-95 ${theme === 'dark' ? 'bg-white/10 text-yellow-400 hover:bg-white/20' : 'bg-gray-200 text-gray-600 hover:bg-gray-300'}`}
                             title="สลับโหมด"
                         >
                             {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
@@ -404,7 +451,7 @@ export default function RemoteControlApp() {
 
                         <button
                             onClick={() => window.location.reload()}
-                            className={`p-2 rounded-lg transition-all active:scale-95 ${theme === 'dark' ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                            className={`p-2 rounded-2xl transition-all active:scale-95 ${theme === 'dark' ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-gray-200 text-gray-500 hover:bg-gray-300'}`}
                             title="รีเฟรช"
                         >
                             <RefreshCw size={20} />
@@ -412,14 +459,14 @@ export default function RemoteControlApp() {
 
                         <button
                             onClick={() => setShowLocalQr(true)}
-                            className={`p-2 rounded-lg transition-all active:scale-95 ${theme === 'dark' ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                            className={`p-2 rounded-2xl transition-all active:scale-95 ${theme === 'dark' ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-gray-200 text-gray-500 hover:bg-gray-300'}`}
                         >
                             <Share2 size={20} />
                         </button>
 
                         <button
                             onClick={() => sendCommand('TOGGLE_FULLSCREEN')}
-                            className={`p-2 rounded-lg transition-all active:scale-95 ${theme === 'dark' ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                            className={`p-2 rounded-2xl transition-all active:scale-95 ${theme === 'dark' ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-gray-200 text-gray-500 hover:bg-gray-300'}`}
                         >
                             <Maximize size={20} />
                         </button>
@@ -432,28 +479,86 @@ export default function RemoteControlApp() {
                     </div>
                 </div>
 
-                {/* Queue List (V1 Aesthetic) */}
+                {/* V1 Integrated Search Section */}
+                <div className={`p-4 transition-colors ${theme === 'dark' ? 'bg-stone-900/50' : 'bg-white'}`}>
+                    <div className="flex items-center gap-2">
+                        {/* Search Bar */}
+                        <div className="flex-1 relative">
+                            <DebounceInput
+                                minLength={1}
+                                debounceTimeout={500}
+                                value={searchTerm}
+                                onChange={(e) => handleSearchInput(e.target.value)}
+                                placeholder="ค้นหาเพลง, ศิลปิน... (V1)"
+                                className={`w-full border-none rounded-2xl px-10 py-3.5 text-sm font-black outline-none transition-all placeholder:font-bold tracking-tight ${theme === 'dark'
+                                    ? 'bg-black text-white focus:ring-1 focus:ring-primary/50 placeholder:text-gray-700'
+                                    : 'bg-gray-100 text-gray-900 focus:ring-1 focus:ring-primary/20 placeholder:text-gray-400'
+                                    }`}
+                            />
+                            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                                <Search size={18} strokeWidth={3} />
+                            </div>
+                            {isSearching && (
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                    <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                </div>
+                            )}
+                        </div>
+
+                        {/* V1 Segmented Toggle */}
+                        <div className={`flex p-1 rounded-2xl gap-1 shrink-0 ${theme === 'dark' ? 'bg-black' : 'bg-gray-100'}`}>
+                            <button
+                                onClick={() => searchType !== 'video' && handleTypeToggle('video')}
+                                className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all ${searchType === 'video' ? 'bg-primary text-white shadow-lg' : 'text-gray-400 hover:opacity-70'}`}
+                            >
+                                <Music size={18} strokeWidth={3} />
+                            </button>
+                            <button
+                                onClick={() => searchType !== 'karaoke' && handleTypeToggle('karaoke')}
+                                className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all ${searchType === 'karaoke' ? 'bg-primary text-white shadow-lg' : 'text-gray-400 hover:opacity-70'}`}
+                            >
+                                <Mic size={18} strokeWidth={3} />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Inline Search Results (V1 Style) */}
+                    {searchResults.length > 0 && (
+                        <div className={`mt-4 grid grid-cols-1 gap-2 p-1 rounded-3xl ${theme === 'dark' ? 'bg-black/20' : 'bg-gray-50'}`}>
+                            <div className="flex items-center justify-between px-3 py-2">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-primary">Search Results</span>
+                                <button onClick={() => { setSearchTerm(''); setSearchResults([]); }} className="text-[10px] font-black text-gray-500 uppercase">Clear</button>
+                            </div>
+                            <div className="space-y-2 max-h-[300px] overflow-y-auto px-1 pb-2 custom-scrollbar">
+                                {searchResults.map((video, idx) => (
+                                    <RemoteSearchResultCard
+                                        key={`${video.videoId}-${idx}`}
+                                        video={video}
+                                        onClick={() => handleAddVideo(video)}
+                                        theme={theme}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Queue List (V1 Aesthetic - Rounded) */}
                 <div className="p-4 space-y-4">
                     <div className="flex items-center justify-between px-1">
-                        <h2 className={`text-sm font-black uppercase tracking-widest flex items-center gap-2 ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
-                            <div className="w-1 h-4 bg-primary rounded-full"></div>
+                        <h2 className={`text-[11px] font-black uppercase tracking-widest flex items-center gap-2 ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
+                            <div className="w-1 h-3 bg-primary rounded-full"></div>
                             UP NEXT
                         </h2>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${theme === 'dark' ? 'bg-white/5 border-white/10 text-gray-400' : 'bg-gray-100 border-gray-200 text-gray-500'}`}>
+                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border ${theme === 'dark' ? 'bg-white/5 border-white/10 text-gray-500' : 'bg-gray-100 border-gray-200 text-gray-400'}`}>
                             {Math.max(0, roomState.queue.length - (roomState.currentIndex + 1))} SONGS
                         </span>
                     </div>
 
                     {roomState.queue.length <= 1 ? (
-                        <div className={`text-center py-20 border-2 border-dashed rounded-2xl transition-colors ${theme === 'dark' ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50'}`}>
-                            <h3 className={`font-black text-xl mb-1 ${theme === 'dark' ? 'text-white' : 'text-black'}`}>EMPTY QUEUE</h3>
-                            <p className={`text-xs font-medium uppercase tracking-wider ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>Add songs to start the party</p>
-                            <button
-                                onClick={() => setSearchOpen(true)}
-                                className="mt-6 px-8 py-3 bg-primary text-white rounded-lg font-black text-sm uppercase tracking-widest shadow-[0_4px_12px_rgba(229,9,20,0.4)] active:scale-95 transition-all"
-                            >
-                                Add Songs
-                            </button>
+                        <div className={`text-center py-20 border-2 border-dashed rounded-3xl transition-colors ${theme === 'dark' ? 'border-white/5 bg-white/[0.01]' : 'border-gray-100 bg-gray-50'}`}>
+                            <h3 className={`font-black text-lg mb-1 ${theme === 'dark' ? 'text-white/80' : 'text-gray-400'}`}>EMPTY QUEUE</h3>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600">Search above to add songs</p>
                         </div>
                     ) : (
                         <DndContext
@@ -490,13 +595,19 @@ export default function RemoteControlApp() {
                     )}
                 </div>
 
-                {/* FAB (Add Button) - High Contrast V1 Style */}
-                <button
-                    onClick={() => setSearchOpen(true)}
-                    className="fixed bottom-24 right-5 w-16 h-16 bg-primary text-white rounded-2xl shadow-[0_8px_24px_rgba(229,9,20,0.5)] flex items-center justify-center z-40 hover:scale-105 active:scale-95 transition-all"
-                >
-                    <Plus size={36} strokeWidth={3} />
-                </button>
+                {/* Action Buttons Toggle (V1 Look) */}
+                <div className="px-4 pb-4">
+                    <button
+                        onClick={() => sendCommand('TOGGLE_QUEUE_OVERLAY')}
+                        className={`w-full py-4 rounded-3xl font-black text-xs uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 active:scale-[0.98] ${roomState.isQueueVisible
+                            ? 'bg-primary text-white shadow-[0_8px_24px_rgba(229,9,20,0.4)]'
+                            : (theme === 'dark' ? 'bg-stone-900 border border-white/5 text-gray-500' : 'bg-white shadow-sm border border-gray-100 text-gray-400')
+                            }`}
+                    >
+                        <ListMusic size={18} />
+                        {roomState.isQueueVisible ? 'HIDE OVERLAY' : 'SHOW OVERLAY'}
+                    </button>
+                </div>
 
                 {/* Bottom Player (V1 Control Bar) */}
                 <RemoteMiniPlayer
@@ -505,15 +616,6 @@ export default function RemoteControlApp() {
                     onTogglePlay={() => sendCommand(roomState.controls.isPlaying ? 'PAUSE' : 'PLAY')}
                     onNext={() => sendCommand('NEXT')}
                     onToggleQueue={() => sendCommand('TOGGLE_QUEUE_OVERLAY')}
-                    theme={theme}
-                />
-
-                {/* Search Overlay (V1 Clean Mode) */}
-                <SearchOverlay
-                    isOpen={isSearchOpen}
-                    onClose={() => setSearchOpen(false)}
-                    onAdd={handleAddVideo}
-                    guestName={guestName}
                     theme={theme}
                 />
 
