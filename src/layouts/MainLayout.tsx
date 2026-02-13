@@ -116,13 +116,19 @@ export default function MainLayout({ children }: MainLayoutProps) {
         layoutMode === 'fullscreen',
         reorderQueue,
         user,
-        roomCode || undefined,
-        () => {
+        roomCode || undefined
+    );
+
+    // Auto-close QR Modal when someone joins (V1 Logic)
+    const prevConnected = useRef(0);
+    useEffect(() => {
+        if (connectedClients > prevConnected.current) {
             setShowQRCode(false);
             setPartyModalOpen(false);
-            console.log('📱 Remote connected, closing QR modals');
+            console.log('📱 Guest connected, auto-closing QR modal');
         }
-    );
+        prevConnected.current = connectedClients;
+    }, [connectedClients]);
 
     // Sync Fullscreen with Remote Command (layoutMode)
     useEffect(() => {

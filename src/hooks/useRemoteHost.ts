@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { realtimeDb } from '../firebase';
-import { ref, set, remove, onValue, onDisconnect, serverTimestamp, off, onChildAdded } from 'firebase/database';
+import { ref, set, remove, onValue, onDisconnect, serverTimestamp, off } from 'firebase/database';
 import { usePlayerStore } from '../modules/player/stores/usePlayerStore';
 import { useUIStore } from '../stores/useUIStore';
 import { useToast } from '../context/ToastContext';
@@ -37,8 +37,7 @@ export const useRemoteHost = (
     isFullscreen: boolean,
     reorderQueue: (queue: any[]) => void,
     user: any,
-    roomCode?: string,
-    onRemoteConnect?: () => void
+    roomCode?: string
 ) => {
     const [sessionId, setSessionId] = useState<string | null>(roomCode || null);
     const [connectedClients, setConnectedClients] = useState(0);
@@ -141,19 +140,10 @@ export const useRemoteHost = (
 
         const unsubscribe = onValue(connectedRef, handleSnapshot);
 
-        // EXTRA: Listen for new connections specifically to trigger callback (V1 logic)
-        const unsubscribeChild = onChildAdded(connectedRef, (snapshot) => {
-            if (snapshot.exists() && onRemoteConnect) {
-                console.log('📱 New remote connection detected via child_added');
-                onRemoteConnect();
-            }
-        });
-
         return () => {
             unsubscribe();
-            unsubscribeChild();
         };
-    }, [sessionId, onRemoteConnect]);
+    }, [sessionId]);
 
     const handleCommand = (cmd: RemoteCommand) => {
         console.log('[RemoteHost] Executing:', cmd.type);
