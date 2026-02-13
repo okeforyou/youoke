@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { realtimeDb } from '../firebase';
-import { ref, set, remove, onValue, onDisconnect, serverTimestamp, off } from 'firebase/database';
+import { ref, set, remove, onValue, onDisconnect, serverTimestamp, off, onChildAdded } from 'firebase/database';
 import { usePlayerStore } from '../modules/player/stores/usePlayerStore';
 import { useUIStore } from '../stores/useUIStore';
 import { useToast } from '../context/ToastContext';
@@ -37,7 +37,8 @@ export const useRemoteHost = (
     isFullscreen: boolean,
     reorderQueue: (queue: any[]) => void,
     user: any,
-    roomCode?: string
+    roomCode?: string,
+    onRemoteConnect?: () => void
 ) => {
     const [sessionId, setSessionId] = useState<string | null>(roomCode || null);
     const [connectedClients, setConnectedClients] = useState(0);
@@ -51,6 +52,10 @@ export const useRemoteHost = (
     useEffect(() => { addToQueueRef.current = addToQueue; }, [addToQueue]);
     useEffect(() => { setPlaylistRef.current = reorderQueue; }, [reorderQueue]);
     useEffect(() => { queueRef.current = queue; }, [queue]);
+
+    // Use a ref for the connection callback to avoid dependency loops
+    const onRemoteConnectRef = useRef(onRemoteConnect);
+    useEffect(() => { onRemoteConnectRef.current = onRemoteConnect; }, [onRemoteConnect]);
 
     // Generate Session ID on mount or use provided roomCode
     useEffect(() => {
@@ -140,14 +145,30 @@ export const useRemoteHost = (
 
         const unsubscribe = onValue(connectedRef, handleSnapshot);
 
+        // Detect new connections via child_added (V1 reliable logic)
+        const unsubscribeChild = onChildAdded(connectedRef, (snapshot) => {
+            if (snapshot.exists()) {
+                console.log('📱 [Host] New client connected to room:', sessionId, snapshot.key);
+                if (onRemoteConnectRef.current) {
+                    onRemoteConnectRef.current();
+                }
+            }
+        });
+
         return () => {
             unsubscribe();
+            unsubscribeChild();
         };
     }, [sessionId]);
 
     const handleCommand = (cmd: RemoteCommand) => {
         console.log('[RemoteHost] Executing:', cmd.type);
         const store = usePlayerStore.getState();
+
+        // Any command received is proof of connection - Auto-trigger join callback
+        if (onRemoteConnectRef.current) {
+            onRemoteConnectRef.current();
+        }
 
         switch (cmd.type) {
             case 'PLAY':

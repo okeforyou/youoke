@@ -93,17 +93,29 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const allowRemote = config?.membership?.[isPremium ? 'premium' : 'free']?.allow_remote;
 
     // Unified Party Room Code (Always numeric PIN)
-    const [partyPIN, setPartyPIN] = useState<string | null>(null);
-    useEffect(() => {
-        let pin = localStorage.getItem('youoke_party_pin');
-        if (!pin) {
-            pin = Math.floor(1000 + Math.random() * 9000).toString();
-            localStorage.setItem('youoke_party_pin', pin);
+    const [partyPIN, setPartyPIN] = useState<string | null>(() => {
+        if (typeof window !== 'undefined') {
+            return localStorage.getItem('youoke_party_pin');
         }
-        setPartyPIN(pin);
-    }, []);
+        return null;
+    });
+
+    useEffect(() => {
+        if (!partyPIN) {
+            const pin = Math.floor(1000 + Math.random() * 9000).toString();
+            localStorage.setItem('youoke_party_pin', pin);
+            setPartyPIN(pin);
+        }
+    }, [partyPIN]);
 
     const roomCode = partyPIN;
+
+    // Stable callback to close QR modals on connection
+    const handleRemoteConnected = useCallback(() => {
+        console.log('📱 [Main] Remote detected join event! Closing modals.');
+        setShowQRCode(false);
+        setPartyModalOpen(false);
+    }, []);
 
     // Remote Control Integration - Main Screen acts as a Host
     const { connectionStatus, connectedClients } = useRemoteHost(
@@ -116,19 +128,19 @@ export default function MainLayout({ children }: MainLayoutProps) {
         layoutMode === 'fullscreen',
         reorderQueue,
         user,
-        roomCode || undefined
+        roomCode || undefined,
+        handleRemoteConnected
     );
 
-    // Auto-close QR Modal when someone joins (V1 Logic)
+    // Auto-close QR Modal when someone joins (Count-based Backup)
     const prevConnected = useRef(0);
     useEffect(() => {
         if (connectedClients > prevConnected.current) {
-            setShowQRCode(false);
-            setPartyModalOpen(false);
-            console.log('📱 Guest connected, auto-closing QR modal');
+            console.log('📱 [Main] Connection count increased! Auto-closing modals.');
+            handleRemoteConnected();
         }
         prevConnected.current = connectedClients;
-    }, [connectedClients]);
+    }, [connectedClients, handleRemoteConnected]);
 
     // Sync Fullscreen with Remote Command (layoutMode)
     useEffect(() => {
