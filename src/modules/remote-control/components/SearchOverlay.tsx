@@ -186,21 +186,6 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({
                                 </button>
                             </div>
 
-                            {/* Topics Row (Chips) */}
-                            <div className="flex gap-2 overflow-x-auto pb-4 -mx-1 scrollbar-hide px-1">
-                                {topics.map((topic) => (
-                                    <button
-                                        key={topic}
-                                        onClick={() => {
-                                            setTerm(topic);
-                                            performSearch(topic);
-                                        }}
-                                        className={`whitespace-nowrap px-4 py-2 rounded-xl text-sm font-bold transition-all border ${currentTopic === topic ? 'bg-primary text-white border-primary shadow-md' : 'bg-white text-gray-600 border-gray-200'}`}
-                                    >
-                                        {topic}
-                                    </button>
-                                ))}
-                            </div>
 
                             {/* Playlists Row (Cards) */}
                             <div className="space-y-4">
