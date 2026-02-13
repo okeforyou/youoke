@@ -24,7 +24,7 @@ export const RemoteMiniPlayer: React.FC<RemoteMiniPlayerProps> = ({
     if (!currentVideo) return null;
 
     return (
-        <div className={`fixed bottom-0 left-0 right-0 border-t pb-safe-area z-50 transition-colors duration-300 ${theme === 'dark' ? 'bg-stone-900 border-white/10 shadow-[0_-8px_30px_rgba(0,0,0,0.5)]' : 'bg-white border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]'}`}>
+        <div className={`fixed bottom-0 left-0 right-0 border-t pb-safe-area z-50 transition-colors duration-300 ${theme === 'dark' ? 'bg-stone-900/95 backdrop-blur-xl border-white/10 shadow-[0_-8px_30px_rgba(0,0,0,0.5)]' : 'bg-gray-100 border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]'}`}>
             {/* Visualizer Style */}
             <style jsx>{`
                 .music-bars {

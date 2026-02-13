@@ -394,7 +394,13 @@ export default function RemoteControlApp() {
             ...reorderedQueue
         ];
 
-        console.log('🔄 Reordering queue:', { oldIndex, newIndex, newQueueLength: fullQueue.length });
+        // OPTIMISTIC UPDATE: Update local state immediately to prevent "bounce"
+        setRoomState(prev => ({
+            ...prev,
+            queue: fullQueue
+        }));
+
+        console.log('🔄 Reordering queue (Optimistic):', { oldIndex, newIndex, newQueueLength: fullQueue.length });
 
         // Send REORDER_QUEUE command with full queue
         sendCommand('REORDER_QUEUE', { queue: fullQueue });

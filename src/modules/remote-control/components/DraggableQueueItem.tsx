@@ -1,7 +1,8 @@
 import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Menu, Trash2 } from 'lucide-react';
+import { Menu, Trash2, Music } from 'lucide-react';
+import Image from 'next/image';
 import { QueueItem } from '../../../modules/player/types';
 
 interface DraggableQueueItemProps {
@@ -57,10 +58,22 @@ export const DraggableQueueItem: React.FC<DraggableQueueItemProps> = ({
                 <Menu size={20} strokeWidth={2.5} className="opacity-60" />
             </div>
 
-            {/* Queue Number (Bold V1) */}
-            <span className={`font-black text-xs w-6 text-center ${theme === 'dark' ? 'text-gray-700' : 'text-gray-300'}`}>
-                {(index + 1).toString().padStart(2, '0')}
-            </span>
+            {/* Song Thumbnail (Instead of Numbers - V1 Style) */}
+            <div className={`w-12 h-8 rounded-lg overflow-hidden shrink-0 relative bg-black/20 border ${theme === 'dark' ? 'border-white/5' : 'border-gray-100 shadow-sm'}`}>
+                {video.thumbnail ? (
+                    <Image
+                        unoptimized
+                        src={video.thumbnail}
+                        fill
+                        className="object-cover"
+                        alt={video.title}
+                    />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                        <Music size={12} className={theme === 'dark' ? 'text-gray-700' : 'text-gray-300'} />
+                    </div>
+                )}
+            </div>
 
             {/* Song Info (High Contrast) */}
             <div className="flex-1 min-w-0">
