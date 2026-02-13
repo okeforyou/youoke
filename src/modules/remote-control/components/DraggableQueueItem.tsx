@@ -30,7 +30,7 @@ export const DraggableQueueItem: React.FC<DraggableQueueItemProps> = ({
 
     const style = {
         transform: CSS.Transform.toString(transform),
-        transition,
+        transition: isDragging ? undefined : transition, // CRITICAL: No transition during drag = zero lag
         opacity: isDragging ? 0.9 : 1,
         zIndex: isDragging ? 50 : 'auto',
     };
@@ -40,8 +40,8 @@ export const DraggableQueueItem: React.FC<DraggableQueueItemProps> = ({
             ref={setNodeRef}
             style={style}
             className={`p-3.5 rounded-2xl border flex gap-3.5 items-center ${isDragging
-                    ? 'shadow-2xl border-primary bg-stone-900/40 text-white'
-                    : 'shadow-xl shadow-black/[0.03]'
+                ? 'shadow-2xl border-primary bg-stone-900/40 text-white'
+                : 'shadow-xl shadow-black/[0.03]'
                 } ${theme === 'dark'
                     ? 'bg-stone-900 border-white/5 text-white shadow-black/40'
                     : 'bg-white border-gray-100 text-gray-900'
@@ -51,7 +51,7 @@ export const DraggableQueueItem: React.FC<DraggableQueueItemProps> = ({
             <div
                 {...attributes}
                 {...listeners}
-                className={`p-2 rounded-xl active:scale-95 transition-all cursor-grab active:cursor-grabbing touch-none ${theme === 'dark' ? 'bg-white/5 text-gray-500 hover:text-white' : 'bg-gray-50 text-gray-400 hover:text-black'}`}
+                className={`p-2 rounded-xl cursor-grab active:cursor-grabbing touch-none ${theme === 'dark' ? 'bg-white/5 text-gray-500 hover:text-white' : 'bg-gray-50 text-gray-400 hover:text-black'}`}
                 aria-label="Drag to reorder"
             >
                 <GripVertical size={20} strokeWidth={3} />
