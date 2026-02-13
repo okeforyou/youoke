@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, X } from 'lucide-react';
+import { Search, X, RefreshCw, Sparkles, Music } from 'lucide-react';
 import { DebounceInput } from 'react-debounce-input';
+import Image from 'next/image';
 import { RemoteSearchResultCard } from './RemoteSearchResultCard';
-import { CATEGORIES } from '../../../data/categories';
-import { CategoryChips } from '../../../components/CategoryChips';
+import { useRemoteRecommendations } from '../hooks/useRemoteRecommendations';
 
 interface SearchOverlayProps {
     isOpen: boolean;
@@ -22,10 +22,19 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({
     const [term, setTerm] = useState('');
     const [results, setResults] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
-    const [activeCategory, setActiveCategory] = useState('All');
     const [searchType, setSearchType] = useState<'video' | 'karaoke'>('video');
     const inputRef = useRef<HTMLInputElement>(null);
     const debounceRef = useRef<NodeJS.Timeout>();
+
+    // 🌟 Dynamic Recommendations Hook
+    const {
+        currentTopic,
+        playlists,
+        isLoading: recsLoading,
+        shuffle,
+        topics,
+        setCurrentTopic
+    } = useRemoteRecommendations();
 
     useEffect(() => {
         if (isOpen) {
@@ -60,7 +69,6 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({
 
     const handleSearchInput = (value: string) => {
         setTerm(value);
-        setActiveCategory('All'); // Reset category on manual type
 
         if (debounceRef.current) clearTimeout(debounceRef.current);
 
@@ -78,14 +86,6 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({
         if (term) performSearch(term, type);
     };
 
-    const handleCategorySelect = (catName: string) => {
-        setActiveCategory(catName);
-        const category = CATEGORIES.find(c => c.name === catName);
-        if (category) {
-            setTerm(category.query);
-            performSearch(category.query);
-        }
-    };
 
     if (!isOpen) return null;
 
@@ -150,14 +150,6 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({
                     </div>
                 </div>
 
-                {/* Category Chips */}
-                <div className="pb-2">
-                    <CategoryChips
-                        categories={CATEGORIES.map(c => c.name)}
-                        activeCategory={activeCategory}
-                        onSelect={handleCategorySelect}
-                    />
-                </div>
             </div>
 
             {/* Results List */}
@@ -173,14 +165,89 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({
                         ))}
                     </div>
                 ) : (
-                    /* Empty State */
+                    /* 🌟 Enhanced Empty State: Recommendations */
                     !loading && (
-                        <div className="flex flex-col items-center justify-center h-full text-gray-400 pb-20">
-                            <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-4 opacity-50">
-                                <Search className="w-8 h-8 text-gray-400" />
+                        <div className="flex flex-col h-full animate-in fade-in duration-500">
+                            {/* Section Header */}
+                            <div className="flex items-center justify-between mb-4 px-1">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+                                        <Sparkles size={16} className="text-primary" />
+                                    </div>
+                                    <h3 className="text-lg font-black text-gray-900">แนะนำสำหรับคุณ</h3>
+                                </div>
+                                <button
+                                    onClick={shuffle}
+                                    className={`p-2 rounded-full hover:bg-gray-100 text-gray-400 transition-all active:rotate-180 ${recsLoading ? 'animate-spin text-primary' : ''}`}
+                                >
+                                    <RefreshCw size={20} />
+                                </button>
                             </div>
-                            <p className="text-lg font-medium text-gray-500">พิมพ์ชื่อเพลงเพื่อค้นหา</p>
-                            <p className="text-sm text-gray-400 mt-1">หรือเลือกหมวดหมู่ด้านบน</p>
+
+                            {/* Topics Row (Chips) */}
+                            <div className="flex gap-2 overflow-x-auto pb-4 -mx-1 scrollbar-hide px-1">
+                                {topics.map((topic) => (
+                                    <button
+                                        key={topic}
+                                        onClick={() => {
+                                            setTerm(topic);
+                                            performSearch(topic);
+                                        }}
+                                        className={`whitespace-nowrap px-4 py-2 rounded-xl text-sm font-bold transition-all border ${currentTopic === topic ? 'bg-primary text-white border-primary shadow-md' : 'bg-white text-gray-600 border-gray-200'}`}
+                                    >
+                                        {topic}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Playlists Row (Cards) */}
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                                        จากหัวข้อ: <span className="text-primary">{currentTopic}</span>
+                                    </p>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    {recsLoading ? (
+                                        [...Array(4)].map((_, i) => (
+                                            <div key={i} className="aspect-[4/3] bg-gray-100 rounded-2xl animate-pulse" />
+                                        ))
+                                    ) : (
+                                        playlists.slice(0, 6).map((playlist: any) => (
+                                            <button
+                                                key={playlist.tag_id}
+                                                onClick={() => {
+                                                    setTerm(playlist.tag_name);
+                                                    performSearch(playlist.tag_name);
+                                                }}
+                                                className="group relative aspect-[4/3] bg-gray-200 rounded-2xl overflow-hidden shadow-sm active:scale-95 transition-all text-left"
+                                            >
+                                                <Image
+                                                    unoptimized
+                                                    src={playlist.imageUrl || '/icon-cover.png'}
+                                                    fill
+                                                    className="object-cover group-hover:scale-110 transition-transform duration-500"
+                                                    alt={playlist.tag_name}
+                                                />
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-3 flex flex-col justify-end">
+                                                    <h4 className="text-white font-black text-sm leading-tight line-clamp-2">
+                                                        {playlist.tag_name}
+                                                    </h4>
+                                                </div>
+                                            </button>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Tip at bottom */}
+                            <div className="mt-8 p-4 bg-gray-100 rounded-2xl flex items-center gap-3 opacity-60">
+                                <Music size={16} className="text-gray-400" />
+                                <p className="text-[11px] font-bold text-gray-500 italic">
+                                    เคล็ดลับ: กดที่เพลย์ลิสต์เพื่อค้นหาเพลงแนวที่ต้องการได้ทันที
+                                </p>
+                            </div>
                         </div>
                     )
                 )}
