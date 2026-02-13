@@ -138,9 +138,9 @@ export const useRemoteHost = (
             }
         };
 
-        onValue(connectedRef, handleSnapshot);
+        const unsubscribe = onValue(connectedRef, handleSnapshot);
 
-        return () => off(connectedRef);
+        return () => unsubscribe();
     }, [sessionId]);
 
     const handleCommand = (cmd: RemoteCommand) => {

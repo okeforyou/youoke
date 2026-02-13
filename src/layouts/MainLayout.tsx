@@ -145,8 +145,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
     // Auto-close QR Modal when someone joins
     const prevConnected = useRef(0);
     useEffect(() => {
-        if (prevConnected.current === 0 && connectedClients > 0) {
+        if (connectedClients > prevConnected.current) {
             setPartyModalOpen(false);
+            setShowQRCode(false); // Also close the standalone QR modal
             console.log('📱 Guest connected, auto-closing QR modal');
         }
         prevConnected.current = connectedClients;
@@ -456,11 +457,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         {/* Mobile Remote Button */}
                         <button
                             onClick={() => {
-                                setPartyRoomCode(roomCode || '');
-                                setPartyModalOpen(true);
+                                setShowQRCode(true);
                             }}
-                            className="h-12 w-12 rounded-2xl p-0 flex items-center justify-center bg-gray-100 hover:bg-gray-200 mr-2 text-gray-500 hover:text-primary transition-colors tooltip tooltip-bottom relative"
-                            data-tip="Mobile Remote (ควบคุมด้วยมือถือ)"
+                            className="h-12 w-12 rounded-2xl p-0 flex items-center justify-center bg-gray-100 hover:bg-gray-200 mr-2 text-gray-500 hover:text-primary transition-colors relative"
+                            title="เชื่อมต่อรีโมท (Mobile Remote)"
                         >
                             <Smartphone className="w-6 h-6" />
                             {/* Connection Status Dot */}
@@ -677,7 +677,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             <ReceiverInfoModal />
 
             {/* QR Code Modal for Remote Connect */}
-            {showQRCode && roomCode && connectionStatus !== 'active' && (
+            {showQRCode && roomCode && (
                 <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setShowQRCode(false)}>
                     <div className="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-center space-y-6 animate-in zoom-in-95 duration-200 border border-white/20" onClick={e => e.stopPropagation()}>
                         <div className="flex justify-between items-center">
@@ -720,13 +720,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             {/* Global Limit Reached Modal */}
             <LimitReachedModal />
 
-            {/* Party Share Modal */}
-            <ShareRoomModal
-                isOpen={partyModalOpen}
-                onClose={() => setPartyModalOpen(false)}
-                roomCode={partyRoomCode}
-                shareUrl={typeof window !== 'undefined' ? `${window.location.origin}/remote?room=${partyRoomCode}` : ''}
-            />
+
 
             {/* Mobile Bottom Navigation (Always Visible) */}
             <MobileBottomNav />
