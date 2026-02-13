@@ -41,10 +41,10 @@ export function DraggableQueueItem({ video, index, uniqueId, onRemove, theme = '
             ref={setNodeRef}
             style={style}
             className={`p-3.5 rounded-2xl border flex gap-3.5 items-center ${isDragging
-                    ? 'shadow-xl border-primary/40 z-10 transition-none'
-                    : 'transition-all duration-300 shadow-lg shadow-gray-200/50'
+                    ? 'shadow-2xl border-primary/40 z-10 transition-none'
+                    : 'transition-all duration-300 shadow-xl shadow-black/[0.03]'
                 } ${theme === 'dark'
-                    ? 'bg-stone-900 border-white/5 text-white'
+                    ? 'bg-stone-900 border-white/5 text-white shadow-black/40'
                     : 'bg-white border-gray-100 text-gray-900'
                 }`}
         >

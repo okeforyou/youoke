@@ -426,7 +426,7 @@ export default function RemoteControlApp() {
                 {/* Header (Unified Style - Single Line Optimized) */}
                 <div className={`px-4 py-3 sticky top-0 z-30 transition-colors flex items-center justify-between gap-2 overflow-hidden ${theme === 'dark' ? 'bg-stone-900 border-white/5 shadow-2xl' : 'bg-white border-gray-50 shadow-sm'}`}>
                     <div className="flex-shrink-0 min-w-0">
-                        <h1 className="text-base font-black tracking-tight flex items-center gap-1.5 truncate">
+                        <h1 className={`text-base font-black tracking-tight flex items-center gap-1.5 truncate ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
                             <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${status === 'connected' ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.6)]' : 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.6)]'}`}></span>
                             ห้อง {roomCode}
                         </h1>
@@ -472,7 +472,7 @@ export default function RemoteControlApp() {
                 </div>
 
                 {/* V1 Integrated Search Section (Sticky-linked) */}
-                <div className={`px-4 pb-4 sticky top-[68px] z-20 transition-colors border-b ${theme === 'dark' ? 'bg-stone-900 border-white/5 shadow-2xl' : 'bg-white border-gray-100 shadow-lg'}`}>
+                <div className={`px-4 pb-3.5 sticky top-[68px] z-20 transition-colors border-b ${theme === 'dark' ? 'bg-stone-900 border-white/5 shadow-2xl' : 'bg-white border-gray-100 shadow-md shadow-black/5'}`}>
                     <div className="flex items-center gap-3">
                         {/* Search Bar (Thai + Dynamic Placeholder) */}
                         <div className="flex-1 relative">
