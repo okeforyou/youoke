@@ -165,11 +165,20 @@ export const useRemoteHost = (
         });
 
         // NEW: Direct Join Signal (User's suggested simple logic)
+        const hostStartTime = Date.now();
         const lastJoinRef = ref(realtimeDb, `rooms/${sessionId}/status/lastJoin`);
         const unsubscribeJoin = onValue(lastJoinRef, (snapshot) => {
             if (snapshot.exists()) {
-                console.log('📱 [Host] Remote join signal received! Closing modal.');
-                if (onRemoteConnectRef.current) onRemoteConnectRef.current();
+                const joinTime = snapshot.val();
+                // Only trigger if the join event is newer than when this host started (with 10s buffer)
+                if (typeof joinTime === 'number' && joinTime > hostStartTime - 10000) {
+                    console.log('📱 [Host] Direct Join Signal! Closing modal.');
+                    if (onRemoteConnectRef.current) onRemoteConnectRef.current();
+                    // Also force status to active immediately
+                    setConnectionStatus('active');
+                } else {
+                    console.log('📱 [Host] Ignoring old join signal:', joinTime);
+                }
             }
         });
 

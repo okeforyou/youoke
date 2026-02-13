@@ -120,7 +120,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     // Stable callback to close QR modals on connection
     const handleRemoteConnected = useCallback(() => {
         if (showQRCode || partyModalOpen) {
-            console.log('📱 [Main] Remote detected join event! Closing modals.');
+            console.log('📱 [Main] Connection detected! Closing modals.');
             addToast('📱 รีโมทเชื่อมต่อแล้ว');
             setShowQRCode(false);
             setPartyModalOpen(false);
@@ -141,6 +141,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
         roomCode || undefined,
         handleRemoteConnected
     );
+
+    // Auto-close QR Modal based on connection status transition
+    useEffect(() => {
+        if (connectionStatus === 'active') {
+            handleRemoteConnected();
+        }
+    }, [connectionStatus, handleRemoteConnected]);
 
     // Auto-close QR Modal when someone joins (Count-based Backup)
     const prevConnected = useRef(0);
