@@ -386,8 +386,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 </div>
 
                 {/* Desktop Header */}
-                <header className="hidden lg:flex h-20 items-center justify-between px-8 border-b border-gray-100 bg-white sticky top-0 z-20 transition-all">
-                    <div className="flex-1 max-w-2xl relative group">
+                <header className="hidden lg:flex h-20 items-center justify-between px-8 border-b border-gray-100 bg-white sticky top-0 z-20 transition-all w-full">
+                    {/* Left: Search Bar */}
+                    <div className="flex-1 max-w-xl relative group">
                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                             <Search className="h-5 w-5 text-gray-400 group-focus-within:text-primary transition-colors" />
                         </div>
@@ -410,18 +411,17 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                     const { search, ...rest } = router.query;
                                     router.replace({ pathname: '/', query: rest }, undefined, { shallow: true });
                                 }}
-                                className="absolute inset-y-0 right-12 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                                className="absolute inset-y-0 right-4 pr-3 flex items-center text-gray-400 hover:text-gray-600"
                             >
                                 <X className="h-4 w-4" />
                             </button>
                         )}
-
                     </div>
 
-                    <div className="flex items-center gap-4 ml-4">
-                        {/* Search Toggle (Karaoke/Song) */}
+                    {/* Right: Toggles & Remote */}
+                    <div className="flex items-center gap-4 ml-8 shrink-0">
                         {/* Search Toggle (Karaoke/Song) - Animated Switch */}
-                        <div className="relative flex items-center bg-gray-100 rounded-2xl p-1 h-12 w-[200px]">
+                        <div className="relative flex items-center bg-gray-100 rounded-2xl p-1 h-12 w-[210px] shrink-0">
                             {/* Sliding Active Background */}
                             <div
                                 className={clsx(
@@ -430,7 +430,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 )}
                             />
 
-                            {/* Song Option */}
                             <button
                                 onClick={() => setIsKaraoke(false)}
                                 className={clsx(
@@ -442,7 +441,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 <span>เพลง</span>
                             </button>
 
-                            {/* Karaoke Option */}
                             <button
                                 onClick={() => setIsKaraoke(true)}
                                 className={clsx(
@@ -455,17 +453,16 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             </button>
                         </div>
 
-                        {/* Mobile Remote Button */}
+                        {/* Remote Button */}
                         <button
                             onClick={() => {
                                 setPartyRoomCode(roomCode || '');
                                 setPartyModalOpen(true);
                             }}
-                            className="h-12 w-12 rounded-2xl p-0 flex items-center justify-center bg-gray-100 hover:bg-gray-200 mr-2 text-gray-500 hover:text-primary transition-colors tooltip tooltip-bottom relative"
-                            data-tip="Mobile Remote (ควบคุมด้วยมือถือ)"
+                            className="h-12 w-12 rounded-2xl flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-primary transition-colors relative"
+                            title="Mobile Remote"
                         >
                             <Smartphone className="w-6 h-6" />
-                            {/* Connection Status Dot */}
                             {mounted && (
                                 <div className={clsx(
                                     "absolute top-2 right-2 w-3 h-3 rounded-full border-2 border-white transition-colors duration-500",
@@ -474,9 +471,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 )} />
                             )}
                         </button>
-
-
-
                     </div>
                 </header>
 
@@ -548,12 +542,18 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     {/* Desktop Right Sidebar */}
                     <aside
                         className={clsx(
-                            "hidden lg:flex border-l border-gray-200 flex-col z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+                            "hidden lg:flex border-l border-gray-200 flex-col z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] bg-white",
                             (isQueueOpen && queue.length > 0 && layoutMode !== 'fullscreen') ? "w-[420px] opacity-100" : "w-0 opacity-0"
                         )}
                     >
-                        <div className="flex-1 flex flex-col pt-[236px] h-full relative z-10 bg-white">
-                            <div className="shrink-0 bg-white relative z-20">
+                        {/* Video Player Area (Not fixed, but stays at top of sidebar) */}
+                        <div className="w-full aspect-video bg-black shrink-0 relative overflow-hidden shadow-lg">
+                            <SidebarPlayer />
+                        </div>
+
+                        {/* Controls & Queue Section */}
+                        <div className="flex-1 flex flex-col h-full relative z-10 bg-white">
+                            <div className="shrink-0 bg-white border-b border-gray-100 shadow-sm relative z-20">
                                 <SidebarControls />
                             </div>
                             <div className="flex-1 flex flex-col min-h-0 bg-white relative z-10">
@@ -563,23 +563,24 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     </aside>
                 </div>
 
-                {/* Global Player (Detached & Persistent) */}
+                {/* Global Player (Mobile View Overlay / Fullscreen) */}
                 {mounted && (
                     <div
                         id="global-video-player-container"
                         className={clsx(
-                            "fixed transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] z-30 overflow-hidden lg:border-l lg:border-gray-200",
+                            "fixed transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] z-30 overflow-hidden",
                             layoutMode === 'fullscreen'
                                 ? "fixed inset-0 w-full h-full z-40 border-none bg-black origin-top-right animate-in zoom-in-95 duration-500"
                                 : [
+                                    // On Desktop, we now rely on the aspect-video div INSIDE <aside> for non-fullscreen
+                                    // This fixed container is mostly for Mobile or Fullscreen transitions
+                                    "lg:hidden",
                                     !isMobilePlayerExpanded
-                                        ? "max-lg:opacity-0 max-lg:pointer-events-none max-lg:fixed max-lg:bottom-0 max-lg:right-0 max-lg:w-1 max-lg:h-1 lg:opacity-100 bg-black"
-                                        : "max-lg:inset-0 max-lg:w-full max-lg:h-full max-lg:opacity-100 lg:opacity-100 bg-black",
-                                    "lg:top-0 lg:w-[420px] lg:h-[236px] bg-transparent transition-all duration-500",
-                                    (isQueueOpen && queue.length > 0) ? "lg:right-0" : "lg:-right-[420px]"
+                                        ? "max-lg:opacity-0 max-lg:pointer-events-none max-lg:fixed max-lg:bottom-0 max-lg:right-0 max-lg:w-1 max-lg:h-1"
+                                        : "max-lg:inset-0 max-lg:w-full max-lg:h-full max-lg:opacity-100 bg-black"
                                 ]
                         )}>
-                        <div className="relative w-full h-full flex flex-col">
+                        <div className="relative w-full h-full flex flex-col bg-black">
                             <div className="w-full aspect-video bg-black shrink-0 relative overflow-hidden">
                                 <SidebarPlayer />
                             </div>
