@@ -111,6 +111,8 @@ export default function LoginPage() {
                 msg = 'อีเมลนี้ถูกใช้งานแล้ว';
             } else if (err.code === 'auth/weak-password') {
                 msg = 'รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร';
+            } else if (err.code === 'auth/network-request-failed') {
+                msg = 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาตรวจสอบอินเทอร์เน็ต หรือปิด VPN/AdBlocker แล้วลองใหม่';
             }
             setLocalError(msg);
         }

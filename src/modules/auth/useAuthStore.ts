@@ -86,10 +86,10 @@ export const useAuthStore = create<UserState & AuthActions>()(
                 // 🛡️ SAFETY TIMEOUT: Force UI unlock if Firebase is slow/stuck
                 const safetyTimeout = setTimeout(() => {
                     if (get().isLoading) {
-                        console.warn('⚠️ Auth Init Timeout (5s). Forcing UI unlock.');
+                        console.warn('⚠️ Auth Init Timeout (10s). Forcing UI unlock.');
                         set({ isLoading: false });
                     }
-                }, 5000);
+                }, 10000);
 
                 const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
                     // clearTimeout(safetyTimeout); // MOVED: Let the safety window cover the full async verify
@@ -191,14 +191,24 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                     }
                                 }
 
+                                let role = userData.role || 'user';
+                                let isAdmin = userData.role === 'admin';
+
+                                // 👑 HARDCODE OWNER ROLE
+                                if (firebaseUser.email === 'boonyanone@gmail.com') {
+                                    role = 'owner';
+                                    isAdmin = true;
+                                    console.log('👑 [AuthStore] Owner Identified: Access Granted');
+                                }
+
                                 set({
                                     user: {
                                         uid: firebaseUser.uid,
                                         email: firebaseUser.email,
                                         displayName: userData.displayName || firebaseUser.displayName,
                                         photoURL: userData.photoURL || firebaseUser.photoURL,
-                                        role: userData.role || 'user',
-                                        isAdmin: userData.role === 'admin',
+                                        role: role,
+                                        isAdmin: isAdmin,
                                         membership: membership,
                                         installed_modules: userData.installed_modules || [],
                                         quota: userData.quota || undefined
