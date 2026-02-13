@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, X } from 'lucide-react';
 import { DebounceInput } from 'react-debounce-input';
-import SearchResultHorizontalCard from '../../../components/SearchResultHorizontalCard';
+import { RemoteSearchResultCard } from './RemoteSearchResultCard';
 import { CATEGORIES } from '../../../data/categories';
 import { CategoryChips } from '../../../components/CategoryChips';
 
@@ -165,7 +165,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({
                 {results.length > 0 ? (
                     <div className="grid grid-cols-1 gap-3 pb-20">
                         {results.map((video, idx) => (
-                            <SearchResultHorizontalCard
+                            <RemoteSearchResultCard
                                 key={`${video.videoId}-${idx}`}
                                 video={video}
                                 onClick={() => onAdd(video)}

@@ -33,7 +33,7 @@ export const RemoteMiniPlayer: React.FC<RemoteMiniPlayerProps> = ({
                 }
                 .bar {
                     width: 3px;
-                    background-color: #ec4899; /* System Primary Pink */
+                    background-color: #E50914; /* System Primary Red (V1 Parity) */
                     border-radius: 1px;
                 }
                 .playing .bar {
