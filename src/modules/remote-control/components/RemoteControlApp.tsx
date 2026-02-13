@@ -6,7 +6,7 @@ import { ref, onValue, off, set, serverTimestamp } from 'firebase/database';
 import { auth, realtimeDb } from '../../../firebase';
 import { QueueItem } from '../../../modules/player/types';
 import {
-    ListMusic, Plus, User, Share2, Maximize
+    ListMusic, Plus, User, Share2, Maximize, RefreshCw, Volume2, VolumeX, SkipForward, SkipBack, Play, Pause, Trash2, GripVertical, Search
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import {
@@ -156,8 +156,20 @@ export default function RemoteControlApp() {
                 console.warn('💡 Wake Lock failed:', err);
             }
         };
+
         requestWakeLock();
+
+        // Re-request on visibility change (V1 logic: Tab switch/Minimize might kill it)
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                requestWakeLock();
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
         return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
             if (wakeLock) wakeLock.release();
         };
     }, []);
@@ -338,13 +350,19 @@ export default function RemoteControlApp() {
                         <span className={`w-2 h-2 rounded-full animate-pulse ${status === 'connected' ? 'bg-green-500' : 'bg-red-500'}`}></span>
                         ห้อง {roomCode}
                     </h1>
-                    <div className="text-xs text-gray-400 mt-1">
+                    <div className="text-xs text-gray-400 mt-1 flex items-center gap-2">
                         <span className="flex items-center gap-1">
                             <User size={10} /> {guestName}
                         </span>
-                        <span className="block text-[10px] opacity-50 mt-0.5">
-                            Q: {roomState.queue.length} | Status: {status}
+                        <span className="opacity-50">
+                            | Q: {roomState.queue.length}
                         </span>
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="flex items-center gap-1 text-primary font-bold active:scale-95 transition-transform"
+                        >
+                            <RefreshCw size={10} /> รีเฟรช
+                        </button>
                     </div>
                 </div>
 
