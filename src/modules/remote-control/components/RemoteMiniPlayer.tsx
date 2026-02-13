@@ -29,12 +29,12 @@ export const RemoteMiniPlayer: React.FC<RemoteMiniPlayerProps> = ({
                     display: flex;
                     align-items: flex-end;
                     gap: 2px;
-                    height: 16px;
+                    height: 14px;
                 }
                 .bar {
                     width: 3px;
-                    background-color: #ec4899; /* primary color */
-                    border-radius: 2px;
+                    background-color: #ec4899; /* System Primary Pink */
+                    border-radius: 1px;
                 }
                 .playing .bar {
                     animation: music-bounce 1s ease-in-out infinite;
@@ -51,36 +51,35 @@ export const RemoteMiniPlayer: React.FC<RemoteMiniPlayerProps> = ({
 
             <div className="h-20 flex items-center px-4 gap-4">
                 {/* Artwork with Animation Overlay */}
-                <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden shrink-0 relative shadow-sm border border-gray-100">
+                <div className="w-12 h-12 bg-gray-50 rounded-lg overflow-hidden shrink-0 relative shadow-sm border border-gray-100 flex items-center justify-center">
                     {currentVideo?.thumbnail ? (
                         <Image
                             unoptimized
                             src={currentVideo.thumbnail}
                             fill
-                            className={`object-cover transition-opacity duration-300 ${isPlaying ? 'opacity-40' : 'opacity-100'}`}
+                            className="object-cover"
                             alt={currentVideo.title}
                         />
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gray-50">
-                            <ListMusic className="w-5 h-5 text-gray-400" />
-                        </div>
+                        <ListMusic className="w-5 h-5 text-gray-300" />
                     )}
 
-                    {/* Music Bars Animation */}
-                    <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${isPlaying ? 'opacity-100' : 'opacity-0'}`}>
-                        <div className={`music-bars ${isPlaying ? 'playing' : ''}`}>
-                            <div className="bar h-[40%]"></div>
-                            <div className="bar h-[70%]"></div>
-                            <div className="bar h-[90%]"></div>
-                            <div className="bar h-[50%]"></div>
+                    {/* Music Bars Animation Overlay */}
+                    {isPlaying && (
+                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center backdrop-blur-[1px]">
+                            <div className="music-bars playing">
+                                <div className="bar"></div>
+                                <div className="bar"></div>
+                                <div className="bar"></div>
+                                <div className="bar"></div>
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
 
                 {/* Text */}
                 <div className="flex-1 min-w-0">
                     <h4 className="font-bold text-gray-900 truncate text-sm leading-tight">
-                        {isPlaying && <span className="inline-block w-2 h-2 bg-pink-500 rounded-full animate-ping mr-2"></span>}
                         {currentVideo?.title}
                     </h4>
                     <p className="text-xs text-gray-500 truncate mt-0.5">{currentVideo?.author}</p>

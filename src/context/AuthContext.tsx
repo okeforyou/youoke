@@ -60,10 +60,10 @@ export const AuthContextProvider = ({
     // 🛡️ SAFETY TIMEOUT: Force UI unlock if Firebase is slow/stuck
     const safetyTimeout = setTimeout(() => {
       if (loading) {
-        console.warn('⚠️ [AuthContext] Init Timeout (5s). Forcing unlock.');
+        console.warn('⚠️ [AuthContext] Init Timeout (3s). Forcing unlock.');
         setLoading(false);
       }
-    }, 5000);
+    }, 3000);
 
     return auth.onIdTokenChanged(async (userData) => {
       clearTimeout(safetyTimeout);
