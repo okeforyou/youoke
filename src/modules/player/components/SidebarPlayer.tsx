@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Maximize2 } from 'lucide-react';
+import { Maximize2, Minimize2, X } from 'lucide-react';
 // import YouTube from "react-youtube"; // Removing direct dependency
 import { UniversalPlayer } from "./UniversalPlayer";
 import { usePlayerStore } from "../stores/usePlayerStore";
@@ -21,13 +21,14 @@ interface SidebarPlayerProps {
 }
 
 export const SidebarPlayer = ({ isPassive = false, isDjMode = false }: SidebarPlayerProps) => {
-    const { currentSource, isPlaying, currentVideo, setCurrentTime, currentTime } = usePlayerStore(
+    const { currentSource, isPlaying, currentVideo, setCurrentTime, currentTime, layoutMode } = usePlayerStore(
         useShallow(state => ({
             currentSource: state.currentSource,
             isPlaying: state.isPlaying,
             currentVideo: state.currentVideo,
             setCurrentTime: state.setCurrentTime,
             currentTime: state.currentTime,
+            layoutMode: state.layoutMode,
         }))
     );
     const playerRef = useRef<any>(null);
@@ -51,16 +52,25 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false }: SidebarPl
     const [mounted, setMounted] = useState(false);
     useEffect(() => { setMounted(true); }, []);
 
-    // Sync Fullscreen State with Global Store
+    // Sync Fullscreen State with Global Store (Native ESC Support)
     useEffect(() => {
         const handleFullscreenChange = () => {
             const isFs = !!document.fullscreenElement;
+            const currentLayout = usePlayerStore.getState().layoutMode;
+
+            // Sync UI Store
             import('../../../stores/useUIStore').then(({ useUIStore }) => {
                 useUIStore.getState().setFullscreen(isFs);
             });
+
+            // CRITICAL SYNC: If user pressed ESC, update PlayerStore
+            if (!isFs && currentLayout === 'fullscreen') {
+                console.log("🖥️ Fullscreen exited natively (ESC), syncing store...");
+                usePlayerStore.getState().setLayoutMode('split');
+            }
         };
         document.addEventListener('fullscreenchange', handleFullscreenChange);
-        document.addEventListener('webkitfullscreenchange', handleFullscreenChange); // Safari
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
         return () => {
             document.removeEventListener('fullscreenchange', handleFullscreenChange);
             document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
@@ -68,14 +78,9 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false }: SidebarPl
     }, []);
 
     const toggleFullscreen = () => {
-        const playerEl = document.getElementById('global-video-player-container');
-        if (playerEl) {
-            if (!document.fullscreenElement) {
-                playerEl.requestFullscreen().catch(err => console.error(err));
-            } else {
-                document.exitFullscreen();
-            }
-        }
+        // Use Global Store Trigger instead of local DOM manipulation
+        // This ensures the remote control and main screen stay perfectly in sync.
+        usePlayerStore.getState().triggerFullscreen();
     };
 
     const onReady = (target: any) => {
@@ -291,10 +296,21 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false }: SidebarPl
             <button
                 onClick={toggleFullscreen}
                 className="absolute top-2 left-2 z-30 p-2 bg-black/40 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60 backdrop-blur-sm"
-                title="ขยายเต็มจอ"
+                title={layoutMode === 'fullscreen' ? "ย่อหน้าจอ" : "ขยายเต็มจอ"}
             >
-                <Maximize2 size={20} />
+                {layoutMode === 'fullscreen' ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
             </button>
+
+            {/* 🔴 High-Visibility Close Button (Fullscreen Only - Senior Friendly) */}
+            {layoutMode === 'fullscreen' && (
+                <button
+                    onClick={() => usePlayerStore.getState().setLayoutMode('split')}
+                    className="absolute top-6 right-6 z-[100] w-14 h-14 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center shadow-2xl transition-all active:scale-90 border-4 border-white/20"
+                    title="ออกจากหน้าจอเต็มจอ"
+                >
+                    <X size={32} strokeWidth={3} />
+                </button>
+            )}
 
             {/* Daily Limit Badge (OLD) -> Quota Indicator (NEW) */}
             {maxDailySongs > 0 && currentSource && !showDjOverlay && (
