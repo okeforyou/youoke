@@ -29,9 +29,10 @@ export const DraggableQueueItem: React.FC<DraggableQueueItemProps> = ({
     } = useSortable({ id: uniqueId });
 
     const style = {
-        transform: CSS.Translate.toString(transform),
+        transform: CSS.Transform.toString(transform),
         transition,
-        opacity: isDragging ? 0.3 : 1,
+        opacity: isDragging ? 0.9 : 1,
+        zIndex: isDragging ? 50 : 'auto',
     };
 
     return (
@@ -39,18 +40,18 @@ export const DraggableQueueItem: React.FC<DraggableQueueItemProps> = ({
             ref={setNodeRef}
             style={style}
             className={`p-3.5 rounded-2xl border flex gap-3.5 items-center ${isDragging
-                    ? 'shadow-2xl border-primary bg-stone-900/40'
+                    ? 'shadow-2xl border-primary bg-stone-900/40 text-white'
                     : 'shadow-xl shadow-black/[0.03]'
                 } ${theme === 'dark'
                     ? 'bg-stone-900 border-white/5 text-white shadow-black/40'
                     : 'bg-white border-gray-100 text-gray-900'
                 } transition-colors duration-200`}
         >
-            {/* Drag Handle (V1 Style) */}
+            {/* Drag Handle (V1 Style - touch-none is CRITICAL for mobile) */}
             <div
                 {...attributes}
                 {...listeners}
-                className={`p-2 rounded-xl active:scale-95 transition-all cursor-grab active:cursor-grabbing ${theme === 'dark' ? 'bg-white/5 text-gray-500 hover:text-white' : 'bg-gray-50 text-gray-400 hover:text-black'}`}
+                className={`p-2 rounded-xl active:scale-95 transition-all cursor-grab active:cursor-grabbing touch-none ${theme === 'dark' ? 'bg-white/5 text-gray-500 hover:text-white' : 'bg-gray-50 text-gray-400 hover:text-black'}`}
                 aria-label="Drag to reorder"
             >
                 <GripVertical size={20} strokeWidth={3} />

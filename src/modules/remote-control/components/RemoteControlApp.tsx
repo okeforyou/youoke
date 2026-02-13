@@ -12,7 +12,6 @@ import { QRCodeSVG } from 'qrcode.react';
 import {
     DndContext,
     closestCenter,
-    KeyboardSensor,
     PointerSensor,
     useSensor,
     useSensors,
@@ -21,7 +20,6 @@ import {
 import {
     arrayMove,
     SortableContext,
-    sortableKeyboardCoordinates,
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 
@@ -359,11 +357,8 @@ export default function RemoteControlApp() {
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 8, // Require 8px movement before drag starts
+                distance: 5, // Match Main App (responsive but prevents accidental clicks)
             },
-        }),
-        useSensor(KeyboardSensor, {
-            coordinateGetter: sortableKeyboardCoordinates,
         })
     );
 
