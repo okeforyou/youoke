@@ -10,6 +10,14 @@ export default function LoginPage() {
     const router = useRouter();
     const { user, signInWithGoogle, signInWithLine, signInWithCustomToken, signIn, signUp, error, isLoading } = useAuthStore();
 
+    useEffect(() => {
+        console.log('⚡ [LoginPage] State Update:', {
+            hasUser: !!user,
+            isLoading,
+            routerReady: router.isReady
+        });
+    }, [user, isLoading, router.isReady]);
+
     const [isLogin, setIsLogin] = useState(true);
     const [lineLoading, setLineLoading] = useState(false);
     const [email, setEmail] = useState('');

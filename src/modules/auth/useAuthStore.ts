@@ -92,7 +92,7 @@ export const useAuthStore = create<UserState & AuthActions>()(
                 }, 5000);
 
                 const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
-                    clearTimeout(safetyTimeout); // ✅ Clear timeout on response
+                    // clearTimeout(safetyTimeout); // MOVED: Let the safety window cover the full async verify
                     console.log('⚡ [Debug] AuthStateChanged:', firebaseUser ? 'User Found' : 'No User', firebaseUser?.uid);
                     console.log('⚡ [Debug] isAnonymous:', firebaseUser?.isAnonymous);
                     if (!firebaseUser) {

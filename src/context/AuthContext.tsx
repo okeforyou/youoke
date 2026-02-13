@@ -55,10 +55,21 @@ export const AuthContextProvider = ({
       return;
     }
 
-    return auth.onIdTokenChanged(async (user) => {
-      console.log('⚡ [Debug] AuthContext Token Changed:', user ? 'User Found' : 'No User', user?.uid);
-      if (!user) {
-        // ... (existing cleanup logic)
+    console.log('🔐 [AuthContext] Initializing...');
+
+    // 🛡️ SAFETY TIMEOUT: Force UI unlock if Firebase is slow/stuck
+    const safetyTimeout = setTimeout(() => {
+      if (loading) {
+        console.warn('⚠️ [AuthContext] Init Timeout (5s). Forcing unlock.');
+        setLoading(false);
+      }
+    }, 5000);
+
+    return auth.onIdTokenChanged(async (userData) => {
+      clearTimeout(safetyTimeout);
+      console.log('⚡ [AuthContext] Token Changed:', userData ? 'User Found' : 'No User', userData?.uid);
+
+      if (!userData) {
         setUser({
           email: null,
           uid: null,
@@ -66,55 +77,51 @@ export const AuthContextProvider = ({
           tier: null,
           displayName: null,
         });
-        // ... (existing cookie cleanup)
-        // ...
         setLoading(false);
       } else {
-        const token = await user.getIdToken();
-        const idTokenResult = await user.getIdTokenResult();
-        const customClaims = idTokenResult.claims;
+        try {
+          const token = await userData.getIdToken();
+          const idTokenResult = await userData.getIdTokenResult();
+          const customClaims = idTokenResult.claims;
 
-        let role = customClaims.role || null;
-        let tier = customClaims.tier || null;
+          let role = (customClaims.role as string) || null;
+          let tier = (customClaims.tier as string) || null;
 
-        // FALLBACK: If role is missing in claims, check Firestore (Hybrid Mode Support)
-        if (!role && database) {
-          try {
-            const userDocRef = doc(database, 'users', user.uid);
-            const userDocSnap = await getDoc(userDocRef);
-            if (userDocSnap.exists()) {
-              const userData = userDocSnap.data();
-              if (userData?.role) {
-                console.log('✅ Found role in Firestore:', userData.role);
-                role = userData.role;
+          // FALLBACK: If role is missing in claims, check Firestore (Hybrid Mode Support)
+          if (!role && database) {
+            try {
+              const userDocRef = doc(database, 'users', userData.uid);
+              const userDocSnap = await getDoc(userDocRef);
+              if (userDocSnap.exists()) {
+                const data = userDocSnap.data();
+                if (data?.role) {
+                  console.log('✅ [AuthContext] Found role in Firestore:', data.role);
+                  role = data.role as string;
+                }
               }
-              if (userData?.tier || userData?.subscription?.plan) {
-                tier = userData.tier || userData.subscription?.plan;
-              }
+            } catch (err) {
+              console.warn('⚠️ [AuthContext] Firestore check failed:', err);
             }
-          } catch (err) {
-            console.warn('⚠️ Failed to fetch user role from Firestore:', err);
           }
+
+          // HARDCODE OWNER ROLE
+          if (userData.email === 'boonyanone@gmail.com') {
+            role = 'owner';
+            console.log('👑 [AuthContext] Owner Identified: Access Granted');
+          }
+
+          setUser({
+            email: userData.email,
+            uid: userData.uid,
+            role: role,
+            tier: tier,
+            displayName: userData.displayName,
+          });
+        } catch (e) {
+          console.error('❌ [AuthContext] Processing error:', e);
+        } finally {
+          setLoading(false);
         }
-
-        // HARDCODE OWNER ROLE
-        if (user.email === 'boonyanone@gmail.com') {
-          role = 'owner';
-          console.log('👑 Owner Identified: Access Granted');
-        }
-
-        setUser({
-          email: user.email,
-          uid: user.uid,
-          role: role,
-          tier: tier,
-          displayName: user.displayName,
-        });
-
-        // ... (existing cookie setting logic)
-        // ...
-
-        setLoading(false);
       }
     });
   }, []);
