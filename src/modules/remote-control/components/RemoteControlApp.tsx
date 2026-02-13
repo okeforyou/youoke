@@ -17,14 +17,12 @@ import {
     useSensor,
     useSensors,
     DragEndEvent,
-    DragOverlay,
 } from '@dnd-kit/core';
 import {
     arrayMove,
     SortableContext,
     sortableKeyboardCoordinates,
     verticalListSortingStrategy,
-    defaultDropAnimationSideEffects,
 } from '@dnd-kit/sortable';
 
 // Components
@@ -69,7 +67,6 @@ export default function RemoteControlApp() {
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState<any[]>([]);
     const [isSearching, setIsSearching] = useState(false);
-    const [activeId, setActiveId] = useState<string | null>(null);
     const [searchType, setSearchType] = useState<'video' | 'karaoke'>('video');
     const debounceRef = React.useRef<NodeJS.Timeout>();
 
@@ -370,13 +367,8 @@ export default function RemoteControlApp() {
         })
     );
 
-    const handleDragStart = (event: any) => {
-        setActiveId(event.active.id);
-    };
-
-    const handleDragEnd = (event: any) => {
+    const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
-        setActiveId(null);
 
         if (active.id === over?.id) return;
 
@@ -570,7 +562,6 @@ export default function RemoteControlApp() {
                         <DndContext
                             sensors={sensors}
                             collisionDetection={closestCenter}
-                            onDragStart={handleDragStart}
                             onDragEnd={handleDragEnd}
                         >
                             <SortableContext
@@ -597,35 +588,6 @@ export default function RemoteControlApp() {
                                     })}
                                 </div>
                             </SortableContext>
-
-                            <DragOverlay adjustScale={false} dropAnimation={{
-                                duration: 250,
-                                easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
-                                sideEffects: defaultDropAnimationSideEffects({
-                                    styles: {
-                                        active: {
-                                            opacity: '0.4',
-                                        },
-                                    },
-                                }),
-                            }}>
-                                {activeId ? (() => {
-                                    const activeVideo = roomState.queue.find(v => (v.uuid || v.videoId || `${v.title}-${v.author}`) === activeId);
-                                    if (!activeVideo) return null;
-                                    return (
-                                        <div className="scale-105 shadow-2xl">
-                                            <DraggableQueueItem
-                                                video={activeVideo}
-                                                index={0}
-                                                uniqueId={activeId}
-                                                onRemove={() => { }}
-                                                theme={theme}
-                                                isOverlay
-                                            />
-                                        </div>
-                                    );
-                                })() : null}
-                            </DragOverlay>
                         </DndContext>
                     )}
                 </div>

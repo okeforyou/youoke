@@ -10,7 +10,6 @@ interface DraggableQueueItemProps {
     uniqueId: string;
     onRemove: (uuid: string) => void;
     theme?: 'light' | 'dark';
-    isOverlay?: boolean;
 }
 
 export const DraggableQueueItem: React.FC<DraggableQueueItemProps> = ({
@@ -18,12 +17,8 @@ export const DraggableQueueItem: React.FC<DraggableQueueItemProps> = ({
     index,
     uniqueId,
     onRemove,
-    theme = 'dark',
-    isOverlay = false
+    theme = 'dark'
 }) => {
-    // CRITICAL: only call useSortable if NOT an overlay. 
-    // hook conflicts with duplicate IDs are a major cause of crashes.
-    const sortable = useSortable({ id: uniqueId, disabled: isOverlay });
     const {
         attributes,
         listeners,
@@ -31,34 +26,25 @@ export const DraggableQueueItem: React.FC<DraggableQueueItemProps> = ({
         transform,
         transition,
         isDragging
-    } = sortable;
+    } = useSortable({ id: uniqueId });
 
     const style = {
         transform: CSS.Translate.toString(transform),
         transition,
-        opacity: isDragging ? 0.3 : 1, // High transparency for placeholder
+        opacity: isDragging ? 0.3 : 1,
     };
-
-    // Overlay styles (when being dragged)
-    const overlayStyle = isOverlay ? {
-        opacity: 1,
-        cursor: 'grabbing',
-        touchAction: 'none'
-    } : style;
 
     return (
         <div
             ref={setNodeRef}
-            style={overlayStyle}
-            className={`p-3.5 rounded-2xl border flex gap-3.5 items-center ${isOverlay
-                ? 'shadow-2xl border-primary bg-stone-900 z-50'
-                : isDragging
-                    ? 'border-primary/20 bg-transparent'
+            style={style}
+            className={`p-3.5 rounded-2xl border flex gap-3.5 items-center ${isDragging
+                    ? 'shadow-2xl border-primary bg-stone-900/40'
                     : 'shadow-xl shadow-black/[0.03]'
                 } ${theme === 'dark'
                     ? 'bg-stone-900 border-white/5 text-white shadow-black/40'
                     : 'bg-white border-gray-100 text-gray-900'
-                } transition-all duration-300`}
+                } transition-colors duration-200`}
         >
             {/* Drag Handle (V1 Style) */}
             <div
