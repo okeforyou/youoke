@@ -144,11 +144,12 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
     // Auto-close QR Modal when someone joins (PROACTIVE)
     useEffect(() => {
-        if (connectionStatus === 'active') {
+        // Hide as soon as we are NOT disconnected (matches V1 "hide when anyone joins")
+        if (connectionStatus !== 'disconnected') {
             if (partyModalOpen || showQRCode) {
                 setPartyModalOpen(false); // Close ShareRoomModal
                 setShowQRCode(false);    // Close QR Overlay
-                console.log('📱 Remote active, hiding all QR overlays/modals');
+                console.log('📱 Remote connected, hiding all QR overlays/modals');
             }
         }
     }, [connectionStatus, partyModalOpen, showQRCode]);
@@ -480,14 +481,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 </header>
 
                 <main className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent pt-4 pb-[64px] lg:pb-0 relative flex flex-col items-center">
-
-                    {/* Floating Player (Moved to Main Column for correct centering) */}
-
-
                     <div className="w-full">
                         {children}
                     </div>
-                    {/* Floating Player (Moved to Bottom of Main) */}
+
+                    {/* BOTTOM FLOATING PLAYER (Apple Music Style - Unified for Mobile/Desktop) */}
                     {(() => {
                         const HEADER_HEIGHT = 48;
                         const PLAYER_HEIGHT = 86;
@@ -502,54 +500,46 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             <div
                                 className={clsx(
                                     "fixed lg:sticky z-[80] transition-all duration-350 ease-[cubic-bezier(0.32,0.72,0,1)] flex flex-col shrink-0 mt-auto mb-0 will-change-transform transform-gpu",
-                                    // Mobile: Full width, docked above nav (71px for 1px overlap to prevent gaps)
+                                    // Mobile: Full width, docked above nav
                                     "bottom-[calc(71px+env(safe-area-inset-bottom))] w-full left-0 right-0",
-                                    // Desktop: Floating, centered, reset positioning
+                                    // Desktop: Floating, centered
                                     "lg:hidden lg:!bottom-6 lg:w-[95%] lg:max-w-2xl lg:mx-auto lg:!h-[86px] lg:left-auto lg:right-auto",
                                     showPlayer ? "translate-y-0 opacity-100 scale-100" : "translate-y-[120%] opacity-0 scale-95 pointer-events-none",
-                                    "isolate" // Remove overflow-hidden and bg/border from here to allow tab protrusion
+                                    "isolate"
                                 )}
                                 style={{
                                     height: isQueueOpen ? finalExpandedHeight : '86px'
                                 }}
                             >
-                                {/* Inner Content Wrapper (Handles BG/Blur/Overflow) */}
                                 <div className={clsx(
                                     "flex-1 flex flex-col overflow-hidden relative z-10 w-full h-full shadow-[0_-4px_24px_rgba(0,0,0,0.08)] border-t border-l border-r border-gray-200/50 lg:border lg:shadow-[0_8px_48px_-12px_rgba(0,0,0,0.6)]",
                                     "bg-white",
-                                    isQueueOpen ? "rounded-t-[32px] rounded-b-none lg:rounded-[40px] lg:rounded-b-[40px] lg:!rounded-tr-[40px]" : "rounded-t-[24px] rounded-b-none lg:rounded-[32px] lg:rounded-b-[32px]"
+                                    isQueueOpen ? "rounded-t-[32px] rounded-b-none lg:rounded-[40px]" : "rounded-t-[24px] rounded-b-none lg:rounded-[32px]"
                                 )}>
-
                                     {mounted && (
                                         <>
                                             {/* Queue Section */}
                                             <div className={clsx(
-                                                "flex-1 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] flex flex-col border-b border-white/10 lg:hidden",
+                                                "flex-1 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] flex flex-col",
                                                 isQueueOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
                                             )}>
                                                 <div className="px-4 py-3 flex items-center justify-between shrink-0 bg-white h-[48px]">
-                                                    <div className="flex items-center gap-3">
-                                                        <span className="font-bold text-gray-800/90 text-sm flex items-center gap-2 drop-shadow-sm">
-                                                            <ListMusic className="w-4 h-4 text-primary" />
-                                                            คิวเพลง ({queue.length})
-                                                        </span>
-
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <button onClick={() => { if (confirm('ต้องการลบคิวทั้งหมดใช่หรือไม่?')) usePlayerStore.getState().clearQueue(); }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-600 text-[11px] font-bold transition-all border border-red-500/10 backdrop-blur-sm shadow-sm">
-                                                            <Trash2 className="w-3 h-3" />
-                                                            <span>ลบทั้งหมด</span>
-                                                        </button>
-                                                    </div>
+                                                    <span className="font-bold text-gray-800/90 text-sm flex items-center gap-2">
+                                                        <ListMusic className="w-4 h-4 text-primary" />
+                                                        คิวเพลง ({queue.length})
+                                                    </span>
+                                                    <button onClick={() => { if (confirm('ต้องการลบคิวทั้งหมดใช่หรือไม่?')) usePlayerStore.getState().clearQueue(); }} className="px-3 py-1.5 rounded-full bg-red-500/10 text-red-600 text-[11px] font-bold">
+                                                        ลบทั้งหมด
+                                                    </button>
                                                 </div>
                                                 <div className="flex-1 overflow-y-auto bg-white">
                                                     <QueueList />
                                                 </div>
                                             </div>
 
-                                            {/* Player Controls - Hidden on lg (desktop) if using Sidebar controls */}
+                                            {/* Player Controls */}
                                             {!isMobile && (
-                                                <div className="shrink-0 p-2 sm:p-3 relative z-10 bg-white h-[86px] flex lg:hidden items-center">
+                                                <div className="shrink-0 p-3 bg-white h-[86px] flex lg:hidden items-center">
                                                     <div className="w-full">
                                                         <PlayerControls />
                                                     </div>
@@ -563,28 +553,19 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     })()}
                 </main>
 
-                {/* MobileMiniPlayer moved to Root Level */}
-            </div >
-
-            {/* Global Player (Detached & Persistent) */}
-            {
-                mounted && (
+                {/* Global Player (Detached & Persistent) */}
+                {mounted && (
                     <div
                         id="global-video-player-container"
                         className={clsx(
                             "fixed transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] z-30 overflow-hidden lg:border-l lg:border-gray-200",
-
-                            // Fullscreen Override (Remote Controlled)
                             layoutMode === 'fullscreen'
-                                ? "fixed inset-0 w-full h-full z-40 border-none bg-black"
+                                ? "fixed inset-0 w-full h-full z-40 border-none bg-black origin-top-right animate-in zoom-in-95 duration-500"
                                 : [
-                                    // Mobile Logic
                                     !isMobilePlayerExpanded
                                         ? "max-lg:opacity-0 max-lg:pointer-events-none max-lg:fixed max-lg:bottom-0 max-lg:right-0 max-lg:w-1 max-lg:h-1 lg:opacity-100 bg-black"
                                         : "max-lg:inset-0 max-lg:w-full max-lg:h-full max-lg:opacity-100 lg:opacity-100 bg-black",
-
-                                    // Desktop Logic
-                                    "lg:top-0 lg:w-[420px] lg:h-[236px] bg-transparent",
+                                    "lg:top-0 lg:w-[420px] lg:h-[236px] bg-transparent transition-all duration-500",
                                     (isQueueOpen && queue.length > 0) ? "lg:right-0" : "lg:-right-[420px]"
                                 ]
                         )}>
@@ -592,7 +573,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             <div className="w-full aspect-video bg-black shrink-0 relative overflow-hidden">
                                 <SidebarPlayer />
                             </div>
-                            {/* Mobile Only Controls (Desktop controls moved to Aside for better interaction) */}
                             {layoutMode !== 'fullscreen' && (
                                 <div className="lg:hidden">
                                     <SidebarControls />
@@ -601,140 +581,103 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             <button onClick={() => setMobilePlayerExpanded(false)} className="absolute top-4 left-4 z-50 p-2 bg-black/50 text-white rounded-full lg:hidden"><ChevronDown className="w-6 h-6" /></button>
                         </div>
                     </div>
-                )
-            }
-
-            {/* Right Sidebar (Queue Only - Collapsible) */}
-            <aside
-                className={clsx(
-                    "hidden lg:flex w-[420px] border-l border-gray-200 flex-col z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
-                    (isQueueOpen && queue.length > 0 && layoutMode !== 'fullscreen') ? "mr-0 w-[420px] opacity-100" : "-mr-[420px] w-0 opacity-0"
                 )}
-                style={{ backgroundColor: '#ffffff', background: '#ffffff' }}
-            >
-                {/* 236px corresponds to the fixed SidebarPlayer height (16:9 for 420px) */}
-                <div className="flex-1 flex flex-col pt-[236px] h-full relative z-10 bg-white" style={{ backgroundColor: '#ffffff' }}>
-                    {/* Desktop Sidebar Controls (Moved here to prevent blocking QueueList) */}
-                    <div className="shrink-0 bg-white relative z-20">
-                        <SidebarControls />
-                    </div>
-                    {/* Main Content Area */}
-                    <div className="flex-1 flex flex-col min-h-0 bg-white relative z-10" style={{ backgroundColor: '#ffffff' }}>
-                        <QueueList />
-                    </div>
-                </div>
-            </aside>
 
-            {/* Mobile Nav Drawer */}
-            <div className={clsx("fixed inset-0 bg-black/60 z-40 transition-opacity lg:hidden backdrop-blur-sm", isNavOpen ? "opacity-100" : "opacity-0 pointer-events-none")} onClick={() => setNavOpen(false)} />
-            <div className={clsx("fixed inset-y-0 left-0 z-50 bg-white w-[280px] shadow-2xl transition-transform duration-300 lg:hidden flex flex-col", isNavOpen ? "translate-x-0" : "-translate-x-full")}>
-                <div className="h-16 flex items-center px-6 shrink-0 border-b border-gray-100 bg-white">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold shadow-sm">Y</div>
-                        <div>
-                            <div className="flex items-center gap-2">
-                                <h1 className="text-lg font-bold tracking-tight leading-none text-gray-900">YouOke</h1>
-                                <span className="text-[10px] font-bold bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-md">v2.14.0</span>
-                            </div>
-                            <p className="text-[10px] text-gray-500 font-medium tracking-wide">Karaoke Online</p>
+                {/* Desktop Right Sidebar */}
+                <aside
+                    className={clsx(
+                        "hidden lg:flex border-l border-gray-200 flex-col z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+                        (isQueueOpen && queue.length > 0 && layoutMode !== 'fullscreen') ? "w-[420px] opacity-100" : "w-0 opacity-0"
+                    )}
+                >
+                    <div className="flex-1 flex flex-col pt-[236px] h-full relative z-10 bg-white">
+                        <div className="shrink-0 bg-white relative z-20">
+                            <SidebarControls />
+                        </div>
+                        <div className="flex-1 flex flex-col min-h-0 bg-white relative z-10">
+                            <QueueList />
                         </div>
                     </div>
-                </div>
-                <div className="flex-1 overflow-y-auto py-6 px-3 space-y-1">
-                    <div className="px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">เมนูหลัก</div>
-                    <Link href="/" onClick={() => { handleNav(1); setNavOpen(false); }} className={clsx("flex items-center gap-3 px-3 py-3 rounded-lg transition-all font-medium", (router.pathname === '/' && activeIndex === 1) ? "bg-primary/10 text-primary" : "text-gray-600 active:bg-gray-100")}> <Home className="w-5 h-5" /> <span>หน้าหลัก</span> </Link>
-                    <Link href="/" onClick={() => { handleNav(2); setNavOpen(false); }} className={clsx("flex items-center gap-3 px-3 py-3 rounded-lg transition-all font-medium", (router.pathname === '/' && activeIndex === 2) ? "bg-primary/10 text-primary" : "text-gray-600 active:bg-gray-100")}> <Star className="w-5 h-5" /> <span>แนะนำ</span> </Link>
-                    <Link href="/" onClick={() => { handleNav(3); setNavOpen(false); }} className={clsx("flex items-center gap-3 px-3 py-3 rounded-lg transition-all font-medium", (router.pathname === '/' && activeIndex === 3) ? "bg-primary/10 text-primary" : "text-gray-600 active:bg-gray-100")}> <Flame className="w-5 h-5" /> <span>มาแรง</span> </Link>
-                    <Link href="/" onClick={() => { handleNav(4); setNavOpen(false); }} className={clsx("flex items-center gap-3 px-3 py-3 rounded-lg transition-all font-medium", (router.pathname === '/' && activeIndex === 4) ? "bg-primary/10 text-primary" : "text-gray-600 active:bg-gray-100")}> <Library className="w-5 h-5" /> <span>เพลย์ลิสต์</span> </Link>
-                    <div className="mt-6 px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">ระบบ</div>
-                    <Link href="/monitor" className="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-600 active:bg-gray-100 font-medium"> <Cast className="w-5 h-5" /> <span>จอแยก (Caster)</span> </Link>
-                    {user?.role === 'admin' && (<><div className="mt-6 px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Admin</div><Link href="/admin" onClick={() => setNavOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-600 active:bg-gray-100 font-medium"> <Shield className="w-5 h-5" /> <span>Admin Panel</span> </Link></>)}
-                </div>
-                <div className="p-4 border-t border-gray-100 bg-white">
-                    <div className="px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">บัญชี</div>
-                    {mounted && user ? (
-                        <div className="flex items-center justify-between gap-2 px-2 py-2">
-                            <div onClick={() => { setNavOpen(false); useUIStore.getState().setProfileOpen(true); }} className="flex items-center gap-3 overflow-hidden flex-1 active:bg-gray-100 p-1 rounded-lg transition-colors">
-                                {user.photoURL ? <img src={user.photoURL} className="w-10 h-10 rounded-full" /> : <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center text-primary font-bold">{user.email?.[0]}</div>}
-                                <div><p className="text-sm font-bold truncate text-gray-900">{user.displayName}</p><p className="text-[10px] text-gray-500 uppercase font-semibold">{isPremium ? 'สมาชิก Pro' : 'สมาชิกทั่วไป'}</p></div>
-                            </div>
-                            <button onClick={() => signOut()} className="p-2 text-gray-400 hover:text-red-500"><LogOut className="w-5 h-5" /></button>
+                </aside>
+
+                {/* Modals & Overlays */}
+                <div className={clsx("fixed inset-0 bg-black/60 z-40 transition-opacity lg:hidden backdrop-blur-sm", isNavOpen ? "opacity-100" : "opacity-0 pointer-events-none")} onClick={() => setNavOpen(false)} />
+                <div className={clsx("fixed inset-y-0 left-0 z-50 bg-white w-[280px] shadow-2xl transition-transform duration-300 lg:hidden flex flex-col", isNavOpen ? "translate-x-0" : "-translate-x-full")}>
+                    <div className="h-16 flex items-center px-6 shrink-0 border-b border-gray-100 bg-white">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold">Y</div>
+                            <span className="font-bold text-lg text-gray-900">YouOke</span>
                         </div>
-                    ) : (<Link href="/login" className="flex items-center gap-3 px-3 py-3 rounded-lg bg-white border border-gray-200 text-gray-700 font-medium shadow-sm justify-center"> <Key className="w-5 h-5" /> <span>เข้าสู่ระบบ</span> </Link>)}
+                    </div>
+                    <div className="flex-1 overflow-y-auto py-6 px-3 space-y-1">
+                        <Link href="/" onClick={() => { handleNav(1); setNavOpen(false); }} className={clsx("flex items-center gap-3 px-3 py-3 rounded-lg transition-all font-medium", (router.pathname === '/' && activeIndex === 1) ? "bg-primary/10 text-primary" : "text-gray-600 active:bg-gray-100")}> <Home className="w-5 h-5" /> <span>หน้าหลัก</span> </Link>
+                        <Link href="/" onClick={() => { handleNav(2); setNavOpen(false); }} className={clsx("flex items-center gap-3 px-3 py-3 rounded-lg transition-all font-medium", (router.pathname === '/' && activeIndex === 2) ? "bg-primary/10 text-primary" : "text-gray-600 active:bg-gray-100")}> <Star className="w-5 h-5" /> <span>แนะนำ</span> </Link>
+                        <Link href="/" onClick={() => { handleNav(3); setNavOpen(false); }} className={clsx("flex items-center gap-3 px-3 py-3 rounded-lg transition-all font-medium", (router.pathname === '/' && activeIndex === 3) ? "bg-primary/10 text-primary" : "text-gray-600 active:bg-gray-100")}> <Flame className="w-5 h-5" /> <span>มาแรง</span> </Link>
+                        <Link href="/" onClick={() => { handleNav(4); setNavOpen(false); }} className={clsx("flex items-center gap-3 px-3 py-3 rounded-lg transition-all font-medium", (router.pathname === '/' && activeIndex === 4) ? "bg-primary/10 text-primary" : "text-gray-600 active:bg-gray-100")}> <Library className="w-5 h-5" /> <span>เพลย์ลิสต์</span> </Link>
+                        <div className="mt-6 px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">ระบบ</div>
+                        <Link href="/monitor" className="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-600 active:bg-gray-100 font-medium"> <Cast className="w-5 h-5" /> <span>จอแยก (Caster)</span> </Link>
+                    </div>
+                    <div className="p-4 border-t border-gray-100 bg-white">
+                        {mounted && user ? (
+                            <div className="flex items-center justify-between gap-2 px-2 py-2">
+                                <div onClick={() => { setNavOpen(false); setProfileOpen(true); }} className="flex items-center gap-3 overflow-hidden flex-1 active:bg-gray-100 p-1 rounded-lg transition-colors">
+                                    {user.photoURL ? <img src={user.photoURL} className="w-10 h-10 rounded-full" /> : <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center text-primary font-bold">{user.email?.[0]}</div>}
+                                    <p className="text-sm font-bold truncate text-gray-900">{user.displayName}</p>
+                                </div>
+                                <button onClick={() => signOut()} className="p-2 text-gray-400 hover:text-red-500"><LogOut className="w-5 h-5" /></button>
+                            </div>
+                        ) : (<Link href="/login" className="flex items-center gap-3 px-3 py-3 rounded-lg bg-white border border-gray-200 text-gray-700 font-medium shadow-sm justify-center"> <Key className="w-5 h-5" /> <span>เข้าสู่ระบบ</span> </Link>)}
+                    </div>
                 </div>
+
+                <ProfileDrawer isOpen={isProfileOpen} onClose={() => setProfileOpen(false)} />
+                <ReceiverInfoModal />
+
+                {/* QR Code Modal */}
+                {showQRCode && roomCode && connectionStatus === 'disconnected' && (
+                    <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setShowQRCode(false)}>
+                        <div className="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-center space-y-6 animate-in zoom-in-95 duration-200 border border-white/20" onClick={e => e.stopPropagation()}>
+                            <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-2">
+                                    <Smartphone className="w-5 h-5 text-primary" />
+                                    <h3 className="text-lg font-bold text-gray-900">เชื่อมต่อรีโมท</h3>
+                                </div>
+                                <button onClick={() => setShowQRCode(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><X className="w-5 h-5 text-gray-500" /></button>
+                            </div>
+                            <div className="bg-white p-3 rounded-2xl border-2 border-dashed border-primary/20 inline-block shadow-sm">
+                                <img src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`${typeof window !== 'undefined' ? window.location.origin : ''}/remote?room=${roomCode}`)}`} alt="QR Code" className="w-56 h-56 rounded-lg" />
+                            </div>
+                            <div className="space-y-2">
+                                <p className="text-sm font-medium text-gray-900">สแกนด้วยกล้องมือถือ</p>
+                                <p className="text-xs text-gray-500">เพื่อใช้มือถือเลือกเพลงและควบคุมการเล่น</p>
+                            </div>
+                            <div className="pt-2 border-t border-gray-100">
+                                <p className="text-[10px] text-gray-400 font-mono">Room Code: {roomCode}</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <CastModeSelector
+                    isOpen={isCastModalOpen}
+                    onClose={() => setCastModalOpen(false)}
+                    isCastAvailable={isCastAvailable}
+                    isMobile={isMobile}
+                    onSelectWebMonitor={handleCastSelectWebMonitor}
+                    onSelectDual={() => window.open('/dual?mode=mirror', 'YouOkeMirror', 'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no')}
+                    onSelectDj={() => window.open('/dual?mode=dj', 'YouOkeDJ', 'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no')}
+                    onSelectGoogleCast={handleCastSelectGoogle}
+                    onSelectYouTube={handleCastSelectYouTube}
+                />
+                <LimitReachedModal />
+                <ShareRoomModal
+                    isOpen={partyModalOpen}
+                    onClose={() => setPartyModalOpen(false)}
+                    roomCode={partyRoomCode}
+                    shareUrl={typeof window !== 'undefined' ? `${window.location.origin}/remote?room=${partyRoomCode}` : ''}
+                />
+                <MobileBottomNav />
             </div>
-
-
-
-
-
-            {/* Profile Drawer (Overlay) */}
-            <ProfileDrawer
-                isOpen={isProfileOpen}
-                onClose={() => setProfileOpen(false)}
-            />
-
-            {/* Receiver Info Modal */}
-            <ReceiverInfoModal />
-
-            {/* QR Code Modal for Remote Connect */}
-            {showQRCode && roomCode && connectionStatus !== 'active' && (
-                <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setShowQRCode(false)}>
-                    <div className="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-center space-y-6 animate-in zoom-in-95 duration-200 border border-white/20" onClick={e => e.stopPropagation()}>
-                        <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-2">
-                                <Smartphone className="w-5 h-5 text-primary" />
-                                <h3 className="text-lg font-bold text-gray-900">เชื่อมต่อรีโมท</h3>
-                            </div>
-                            <button onClick={() => setShowQRCode(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><X className="w-5 h-5 text-gray-500" /></button>
-                        </div>
-
-                        <div className="bg-white p-3 rounded-2xl border-2 border-dashed border-primary/20 inline-block shadow-sm">
-                            <img src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`${typeof window !== 'undefined' ? window.location.origin : ''}/remote?room=${roomCode}`)}`} alt="QR Code" className="w-56 h-56 rounded-lg" />
-                        </div>
-
-                        <div className="space-y-2">
-                            <p className="text-sm font-medium text-gray-900">สแกนด้วยกล้องมือถือ</p>
-                            <p className="text-xs text-gray-500">เพื่อใช้มือถือเลือกเพลงและควบคุมการเล่น</p>
-                        </div>
-
-                        <div className="pt-2 border-t border-gray-100">
-                            <p className="text-[10px] text-gray-400 font-mono">Room Code: {roomCode}</p>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Cast Mode Selector Modal */}
-            <CastModeSelector
-                isOpen={isCastModalOpen}
-                onClose={() => setCastModalOpen(false)}
-                isCastAvailable={isCastAvailable}
-                isMobile={isMobile}
-                onSelectWebMonitor={handleCastSelectWebMonitor}
-                onSelectDual={() => window.open('/dual?mode=mirror', 'YouOkeMirror', 'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no')}
-                onSelectDj={() => window.open('/dual?mode=dj', 'YouOkeDJ', 'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no')}
-                onSelectGoogleCast={handleCastSelectGoogle}
-                onSelectYouTube={handleCastSelectYouTube}
-            />
-
-            {/* Global Limit Reached Modal */}
-            <LimitReachedModal />
-
-            {/* Party Share Modal */}
-            <ShareRoomModal
-                isOpen={partyModalOpen}
-                onClose={() => setPartyModalOpen(false)}
-                roomCode={partyRoomCode}
-                shareUrl={typeof window !== 'undefined' ? `${window.location.origin}/remote?room=${partyRoomCode}` : ''}
-            />
-
-            {/* Mobile Bottom Navigation (Always Visible) */}
-            <MobileBottomNav />
-
-            {/* BOTTOM FLOATING PLAYER (Apple Music Style - Unified for Mobile/Desktop) */}
-
-
-        </div >
+        </div>
     );
 }

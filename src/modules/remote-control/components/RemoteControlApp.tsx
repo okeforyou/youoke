@@ -404,6 +404,11 @@ export default function RemoteControlApp() {
                                             video={video}
                                             index={idx}
                                             uniqueId={uniqueId}
+                                            onRemove={(id) => {
+                                                if (confirm('ลบเพลงนี้ออกจากคิว?')) {
+                                                    sendCommand('REMOVE_AT', { uuid: id });
+                                                }
+                                            }}
                                         />
                                     );
                                 })}

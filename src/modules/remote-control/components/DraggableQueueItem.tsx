@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical } from 'lucide-react';
+import { GripVertical, Trash2 } from 'lucide-react';
 import { QueueItem } from '../../../modules/player/types';
 
 interface DraggableQueueItemProps {
@@ -16,9 +16,10 @@ interface DraggableQueueItemProps {
     };
     index: number;
     uniqueId: string; // Stable ID for drag & drop
+    onRemove?: (id: string) => void;
 }
 
-export function DraggableQueueItem({ video, index, uniqueId }: DraggableQueueItemProps) {
+export function DraggableQueueItem({ video, index, uniqueId, onRemove }: DraggableQueueItemProps) {
     const {
         attributes,
         listeners,
@@ -69,6 +70,16 @@ export function DraggableQueueItem({ video, index, uniqueId }: DraggableQueueIte
                     )}
                 </div>
             </div>
+
+            {/* Remove Button */}
+            {onRemove && (
+                <button
+                    onClick={() => onRemove(uniqueId)}
+                    className="p-2 text-gray-300 hover:text-red-500 transition-colors"
+                >
+                    <Trash2 size={18} />
+                </button>
+            )}
         </div>
     );
 }
