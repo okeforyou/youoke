@@ -17,13 +17,13 @@ import {
     useSensor,
     useSensors,
     DragEndEvent,
+    DragOverlay,
 } from '@dnd-kit/core';
 import {
     arrayMove,
     SortableContext,
     sortableKeyboardCoordinates,
     verticalListSortingStrategy,
-    DragOverlay,
     defaultDropAnimationSideEffects,
 } from '@dnd-kit/sortable';
 
@@ -601,18 +601,22 @@ export default function RemoteControlApp() {
                                     },
                                 }),
                             }}>
-                                {activeId ? (
-                                    <div className="scale-105 shadow-2xl">
-                                        <DraggableQueueItem
-                                            video={roomState.queue.find(v => (v.uuid || v.videoId || `${v.title}-${v.author}`) === activeId)!}
-                                            index={0}
-                                            uniqueId={activeId}
-                                            onRemove={() => { }}
-                                            theme={theme}
-                                            isOverlay
-                                        />
-                                    </div>
-                                ) : null}
+                                {activeId ? (() => {
+                                    const activeVideo = roomState.queue.find(v => (v.uuid || v.videoId || `${v.title}-${v.author}`) === activeId);
+                                    if (!activeVideo) return null;
+                                    return (
+                                        <div className="scale-105 shadow-2xl">
+                                            <DraggableQueueItem
+                                                video={activeVideo}
+                                                index={0}
+                                                uniqueId={activeId}
+                                                onRemove={() => { }}
+                                                theme={theme}
+                                                isOverlay
+                                            />
+                                        </div>
+                                    );
+                                })() : null}
                             </DragOverlay>
                         </DndContext>
                     )}
