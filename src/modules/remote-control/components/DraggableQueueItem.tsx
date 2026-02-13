@@ -5,57 +5,66 @@ import { GripVertical, Trash2 } from 'lucide-react';
 import { QueueItem } from '../../../modules/player/types';
 
 interface DraggableQueueItemProps {
-    video: {
-        videoId?: string;
-        title: string;
-        author: string;
-        addedBy?: {
-            name?: string;
-            displayName?: string;
-        };
-    };
+    video: any;
     index: number;
     uniqueId: string;
-    onRemove?: (id: string) => void;
+    onRemove: (uuid: string) => void;
     theme?: 'light' | 'dark';
+    isOverlay?: boolean;
 }
 
-export function DraggableQueueItem({ video, index, uniqueId, onRemove, theme = 'dark' }: DraggableQueueItemProps) {
+export const DraggableQueueItem: React.FC<DraggableQueueItemProps> = ({
+    video,
+    index,
+    uniqueId,
+    onRemove,
+    theme = 'dark',
+    isOverlay = false
+}) => {
     const {
         attributes,
         listeners,
         setNodeRef,
         transform,
         transition,
-        isDragging,
+        isDragging
     } = useSortable({ id: uniqueId });
 
     const style = {
-        transform: CSS.Transform.toString(transform),
-        zIndex: isDragging ? 50 : 'auto',
-        opacity: isDragging ? 0.6 : 1,
+        transform: CSS.Translate.toString(transform),
+        transition,
+        opacity: isDragging ? 0.3 : 1, // High transparency for placeholder
     };
+
+    // Overlay styles (when being dragged)
+    const overlayStyle = isOverlay ? {
+        opacity: 1,
+        cursor: 'grabbing',
+        touchAction: 'none'
+    } : style;
 
     return (
         <div
             ref={setNodeRef}
-            style={style}
-            className={`p-3.5 rounded-2xl border flex gap-3.5 items-center ${isDragging
-                    ? 'shadow-2xl border-primary/40 z-10 transition-none'
-                    : 'transition-all duration-300 shadow-xl shadow-black/[0.03]'
+            style={overlayStyle}
+            className={`p-3.5 rounded-2xl border flex gap-3.5 items-center ${isOverlay
+                    ? 'shadow-2xl border-primary bg-stone-900 z-50'
+                    : isDragging
+                        ? 'border-primary/20 bg-transparent'
+                        : 'shadow-xl shadow-black/[0.03]'
                 } ${theme === 'dark'
                     ? 'bg-stone-900 border-white/5 text-white shadow-black/40'
                     : 'bg-white border-gray-100 text-gray-900'
-                }`}
+                } transition-all duration-300`}
         >
             {/* Drag Handle (V1 Style) */}
             <div
                 {...attributes}
                 {...listeners}
-                className={`flex items-center transition-colors ${theme === 'dark' ? 'text-gray-600 hover:text-primary' : 'text-gray-300 hover:text-primary'} cursor-grab active:cursor-grabbing touch-none`}
+                className={`p-2 rounded-xl active:scale-95 transition-all cursor-grab active:cursor-grabbing ${theme === 'dark' ? 'bg-white/5 text-gray-500 hover:text-white' : 'bg-gray-50 text-gray-400 hover:text-black'}`}
                 aria-label="Drag to reorder"
             >
-                <GripVertical size={22} strokeWidth={2.5} />
+                <GripVertical size={20} strokeWidth={3} />
             </div>
 
             {/* Queue Number (Bold V1) */}
