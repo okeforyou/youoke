@@ -54,17 +54,22 @@ export const RemoteMiniPlayer: React.FC<RemoteMiniPlayerProps> = ({
             <div className="h-20 flex items-center px-4 gap-4">
                 {/* Artwork (Balanced Rounded) */}
                 <div className={`w-14 h-14 rounded-2xl overflow-hidden shrink-0 relative shadow-lg flex items-center justify-center ${theme === 'dark' ? 'bg-black border border-white/5' : 'bg-white border border-gray-100'}`}>
-                    {currentVideo?.thumbnail ? (
-                        <Image
-                            unoptimized
-                            src={currentVideo.thumbnail}
-                            fill
-                            className="object-cover"
-                            alt={currentVideo.title}
-                        />
-                    ) : (
-                        <ListMusic className={`w-5 h-5 ${theme === 'dark' ? 'text-gray-700' : 'text-gray-300'}`} />
-                    )}
+                    <Image
+                        unoptimized
+                        src={
+                            (currentVideo as any).videoThumbnails?.find((t: any) => t.quality === "medium")?.url ||
+                            (currentVideo as any).videoThumbnails?.[0]?.url ||
+                            currentVideo.thumbnail ||
+                            `https://i.ytimg.com/vi/${currentVideo.videoId || currentVideo.id}/mqdefault.jpg`
+                        }
+                        fill
+                        className="object-cover"
+                        alt={currentVideo.title}
+                        onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '/icon-cover.png';
+                        }}
+                    />
 
                     {isPlaying && (
                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-[1px]">

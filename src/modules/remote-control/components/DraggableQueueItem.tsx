@@ -60,19 +60,22 @@ export const DraggableQueueItem: React.FC<DraggableQueueItemProps> = ({
 
             {/* Song Thumbnail (Instead of Numbers - V1 Style) */}
             <div className={`w-12 h-8 rounded-lg overflow-hidden shrink-0 relative bg-black/20 border ${theme === 'dark' ? 'border-white/5' : 'border-gray-100 shadow-sm'}`}>
-                {video.thumbnail ? (
-                    <Image
-                        unoptimized
-                        src={video.thumbnail}
-                        fill
-                        className="object-cover"
-                        alt={video.title}
-                    />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                        <Music size={12} className={theme === 'dark' ? 'text-gray-700' : 'text-gray-300'} />
-                    </div>
-                )}
+                <Image
+                    unoptimized
+                    src={
+                        (video as any).videoThumbnails?.find((t: any) => t.quality === "medium")?.url ||
+                        (video as any).videoThumbnails?.[0]?.url ||
+                        video.thumbnail ||
+                        `https://i.ytimg.com/vi/${video.videoId || video.id}/mqdefault.jpg`
+                    }
+                    fill
+                    className="object-cover"
+                    alt={video.title}
+                    onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/icon-cover.png';
+                    }}
+                />
             </div>
 
             {/* Song Info (High Contrast) */}
