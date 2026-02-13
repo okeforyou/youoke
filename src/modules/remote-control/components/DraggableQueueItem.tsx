@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Trash2 } from 'lucide-react';
+import { Menu, Trash2 } from 'lucide-react';
 import { QueueItem } from '../../../modules/player/types';
 
 interface DraggableQueueItemProps {
@@ -31,7 +31,7 @@ export const DraggableQueueItem: React.FC<DraggableQueueItemProps> = ({
     const style = {
         transform: CSS.Transform.toString(transform),
         transition: isDragging ? undefined : transition, // CRITICAL: No transition during drag = zero lag
-        opacity: isDragging ? 0.9 : 1,
+        opacity: isDragging ? 0.95 : 1, // Match Main App (more solid feel)
         zIndex: isDragging ? 50 : 'auto',
     };
 
@@ -47,14 +47,14 @@ export const DraggableQueueItem: React.FC<DraggableQueueItemProps> = ({
                     : 'bg-white border-gray-100 text-gray-900'
                 } transition-colors duration-200`}
         >
-            {/* Drag Handle (V1 Style - touch-none is CRITICAL for mobile) */}
+            {/* Drag Handle (V1 Style - Menu icon matches Main App) */}
             <div
                 {...attributes}
                 {...listeners}
                 className={`p-2 rounded-xl cursor-grab active:cursor-grabbing touch-none ${theme === 'dark' ? 'bg-white/5 text-gray-500 hover:text-white' : 'bg-gray-50 text-gray-400 hover:text-black'}`}
                 aria-label="Drag to reorder"
             >
-                <GripVertical size={20} strokeWidth={3} />
+                <Menu size={20} strokeWidth={2.5} className="opacity-60" />
             </div>
 
             {/* Queue Number (Bold V1) */}
