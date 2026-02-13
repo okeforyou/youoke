@@ -1,4 +1,4 @@
-import React, { ReactNode, useState, useEffect, useRef } from 'react';
+import React, { ReactNode, useState, useEffect, useRef, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import clsx from 'clsx';
 import { Menu, Search, ListMusic, Home, X, Monitor, MessageCircle, Shield, Key, Smartphone, Flame, Library, Mic, Music, ChevronDown, ChevronRight, ChevronLeft, Cast, Disc, LogOut, UserCheck, Settings, Info, PartyPopper, Star, Trash2, EyeOff, User } from 'lucide-react';
@@ -110,6 +110,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
     const roomCode = partyPIN;
 
+    // Cast & UI Store
+    const { isCastModalOpen, setCastModalOpen } = useUIStore();
+    const { connect: connectGoogleCast, isAvailable: isCastAvailable } = useCast();
+    const { addToast } = useToast() || { addToast: () => { } };
+    const isMobile = useIsMobile();
+    const { queue } = usePlayerStore();
+
     // Stable callback to close QR modals on connection
     const handleRemoteConnected = useCallback(() => {
         if (showQRCode || partyModalOpen) {
@@ -160,13 +167,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
     }, [layoutMode, mounted]);
 
 
-
-    // Cast & UI Store
-    const { isCastModalOpen, setCastModalOpen } = useUIStore();
-    const { connect: connectGoogleCast, isAvailable: isCastAvailable } = useCast();
-    const { addToast } = useToast() || { addToast: () => { } };
-    const isMobile = useIsMobile();
-    const { queue } = usePlayerStore();
 
     // Cast Handlers
     const handleCastSelectWebMonitor = () => {
