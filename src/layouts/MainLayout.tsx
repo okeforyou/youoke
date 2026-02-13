@@ -480,77 +480,68 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     </div>
                 </header>
 
-                <main className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent pt-4 pb-[64px] lg:pb-0 relative flex flex-col items-center">
-                    <div className="w-full">
+                <main className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent pt-4 pb-[64px] lg:pb-0 relative flex flex-col">
+                    <div className="w-full h-full">
                         {children}
                     </div>
 
-                    {/* BOTTOM FLOATING PLAYER (Apple Music Style - Unified for Mobile/Desktop) */}
-                    {(() => {
-                        const HEADER_HEIGHT = 48;
-                        const PLAYER_HEIGHT = 86;
-                        const MAX_ITEMS = 5;
-                        const queueContentHeight = Math.min(queue.length, MAX_ITEMS) * 60;
-                        const effectiveQueueHeight = queue.length === 0 ? 100 : queueContentHeight;
-                        const expandedHeight = PLAYER_HEIGHT + HEADER_HEIGHT + effectiveQueueHeight;
-                        const finalExpandedHeight = `min(${expandedHeight}px, 70vh)`;
-                        const showPlayer = mounted && (queue.length > 0 || isMobilePlayerExpanded || isQueueOpen) && !isPlayerHidden;
+                    {/* MOBILE ONLY: BOTTOM FLOATING PLAYER (Apple Music Style) */}
+                    {mounted && isMobile && (queue.length > 0 || isMobilePlayerExpanded || isQueueOpen) && !isPlayerHidden && (
+                        (() => {
+                            const HEADER_HEIGHT = 48;
+                            const PLAYER_HEIGHT = 86;
+                            const MAX_ITEMS = 5;
+                            const queueContentHeight = Math.min(queue.length, MAX_ITEMS) * 60;
+                            const effectiveQueueHeight = queue.length === 0 ? 100 : queueContentHeight;
+                            const expandedHeight = PLAYER_HEIGHT + HEADER_HEIGHT + effectiveQueueHeight;
+                            const finalExpandedHeight = `min(${expandedHeight}px, 70vh)`;
 
-                        return (
-                            <div
-                                className={clsx(
-                                    "fixed lg:sticky z-[80] transition-all duration-350 ease-[cubic-bezier(0.32,0.72,0,1)] flex flex-col shrink-0 mt-auto mb-0 will-change-transform transform-gpu",
-                                    // Mobile: Full width, docked above nav
-                                    "bottom-[calc(71px+env(safe-area-inset-bottom))] w-full left-0 right-0",
-                                    // Desktop: Floating, centered
-                                    "lg:hidden lg:!bottom-6 lg:w-[95%] lg:max-w-2xl lg:mx-auto lg:!h-[86px] lg:left-auto lg:right-auto",
-                                    showPlayer ? "translate-y-0 opacity-100 scale-100" : "translate-y-[120%] opacity-0 scale-95 pointer-events-none",
-                                    "isolate"
-                                )}
-                                style={{
-                                    height: isQueueOpen ? finalExpandedHeight : '86px'
-                                }}
-                            >
-                                <div className={clsx(
-                                    "flex-1 flex flex-col overflow-hidden relative z-10 w-full h-full shadow-[0_-4px_24px_rgba(0,0,0,0.08)] border-t border-l border-r border-gray-200/50 lg:border lg:shadow-[0_8px_48px_-12px_rgba(0,0,0,0.6)]",
-                                    "bg-white",
-                                    isQueueOpen ? "rounded-t-[32px] rounded-b-none lg:rounded-[40px]" : "rounded-t-[24px] rounded-b-none lg:rounded-[32px]"
-                                )}>
-                                    {mounted && (
-                                        <>
-                                            {/* Queue Section */}
-                                            <div className={clsx(
-                                                "flex-1 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] flex flex-col",
-                                                isQueueOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
-                                            )}>
-                                                <div className="px-4 py-3 flex items-center justify-between shrink-0 bg-white h-[48px]">
-                                                    <span className="font-bold text-gray-800/90 text-sm flex items-center gap-2">
-                                                        <ListMusic className="w-4 h-4 text-primary" />
-                                                        คิวเพลง ({queue.length})
-                                                    </span>
-                                                    <button onClick={() => { if (confirm('ต้องการลบคิวทั้งหมดใช่หรือไม่?')) usePlayerStore.getState().clearQueue(); }} className="px-3 py-1.5 rounded-full bg-red-500/10 text-red-600 text-[11px] font-bold">
-                                                        ลบทั้งหมด
-                                                    </button>
-                                                </div>
-                                                <div className="flex-1 overflow-y-auto bg-white">
-                                                    <QueueList />
-                                                </div>
-                                            </div>
-
-                                            {/* Player Controls */}
-                                            {!isMobile && (
-                                                <div className="shrink-0 p-3 bg-white h-[86px] flex lg:hidden items-center">
-                                                    <div className="w-full">
-                                                        <PlayerControls />
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </>
+                            return (
+                                <div
+                                    className={clsx(
+                                        "fixed z-[80] transition-all duration-350 ease-[cubic-bezier(0.32,0.72,0,1)] flex flex-col shrink-0 mt-auto mb-0 will-change-transform transform-gpu",
+                                        "bottom-[calc(71px+env(safe-area-inset-bottom))] w-full left-0 right-0",
+                                        "lg:hidden",
+                                        "translate-y-0 opacity-100 scale-100"
                                     )}
+                                    style={{
+                                        height: isQueueOpen ? finalExpandedHeight : '86px'
+                                    }}
+                                >
+                                    <div className={clsx(
+                                        "flex-1 flex flex-col overflow-hidden relative z-10 w-full h-full shadow-[0_-4px_24px_rgba(0,0,0,0.08)] border-t border-gray-200/50 bg-white",
+                                        isQueueOpen ? "rounded-t-[32px]" : "rounded-t-[24px]"
+                                    )}>
+                                        {/* Queue Section */}
+                                        <div className={clsx(
+                                            "flex-1 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] flex flex-col",
+                                            isQueueOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
+                                        )}>
+                                            <div className="px-4 py-3 flex items-center justify-between shrink-0 bg-white h-[48px]">
+                                                <span className="font-bold text-gray-800/90 text-sm flex items-center gap-2">
+                                                    <ListMusic className="w-4 h-4 text-primary" />
+                                                    คิวเพลง ({queue.length})
+                                                </span>
+                                                <button onClick={() => { if (confirm('ต้องการลบคิวทั้งหมดใช่หรือไม่?')) usePlayerStore.getState().clearQueue(); }} className="px-3 py-1.5 rounded-full bg-red-500/10 text-red-600 text-[11px] font-bold">
+                                                    ลบทั้งหมด
+                                                </button>
+                                            </div>
+                                            <div className="flex-1 overflow-y-auto bg-white">
+                                                <QueueList />
+                                            </div>
+                                        </div>
+
+                                        {/* Player Controls (Mini Player) */}
+                                        <div className="shrink-0 p-3 bg-white h-[86px] flex items-center">
+                                            <div className="w-full">
+                                                <PlayerControls />
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        );
-                    })()}
+                            );
+                        })()
+                    )}
                 </main>
 
                 {/* Global Player (Detached & Persistent) */}
