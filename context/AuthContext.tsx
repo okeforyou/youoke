@@ -55,9 +55,19 @@ export const AuthContextProvider = ({
       return;
     }
 
+    // 🛡️ SAFETY TIMEOUT: Force UI unlock if Firebase is slow/stuck
+    const safetyTimeout = setTimeout(() => {
+      if (loading) {
+        console.warn('⚠️ [AuthContext] Init Timeout (5s). Forcing unlock.');
+        setLoading(false);
+      }
+    }, 5000);
+
     return auth.onIdTokenChanged(async (user) => {
+      clearTimeout(safetyTimeout);
+      console.log('⚡ [AuthContext] Token Changed:', user ? 'User Found' : 'No User', user?.uid);
+
       if (!user) {
-        // ... (existing cleanup logic)
         setUser({
           email: null,
           uid: null,
@@ -65,49 +75,45 @@ export const AuthContextProvider = ({
           tier: null,
           displayName: null,
         });
-        // ... (existing cookie cleanup)
-        // ...
         setLoading(false);
       } else {
-        const token = await user.getIdToken();
-        const idTokenResult = await user.getIdTokenResult();
-        const customClaims = idTokenResult.claims;
+        try {
+          const token = await user.getIdToken();
+          const idTokenResult = await user.getIdTokenResult();
+          const customClaims = idTokenResult.claims;
 
-        let role = customClaims.role || null;
-        let tier = customClaims.tier || null;
+          let role = customClaims.role || null;
+          let tier = customClaims.tier || null;
 
-        // FALLBACK: If role is missing in claims, check Firestore (Hybrid Mode Support)
-        if (!role && database) {
-          try {
-            const userDocRef = doc(database, 'users', user.uid);
-            const userDocSnap = await getDoc(userDocRef);
-            if (userDocSnap.exists()) {
-              const userData = userDocSnap.data();
-              if (userData?.role) {
-                console.log('✅ Found role in Firestore:', userData.role);
-                role = userData.role;
+          // FALLBACK: If role is missing in claims, check Firestore (Hybrid Mode Support)
+          if (!role && database) {
+            try {
+              const userDocRef = doc(database, 'users', user.uid);
+              const userDocSnap = await getDoc(userDocRef);
+              if (userDocSnap.exists()) {
+                const userData = userDocSnap.data();
+                if (userData?.role) {
+                  console.log('✅ [AuthContext] Found role in Firestore:', userData.role);
+                  role = userData.role;
+                }
               }
-              if (userData?.tier || userData?.subscription?.plan) {
-                tier = userData.tier || userData.subscription?.plan;
-              }
+            } catch (err) {
+              console.warn('⚠️ [AuthContext] Firestore check failed:', err);
             }
-          } catch (err) {
-            console.warn('⚠️ Failed to fetch user role from Firestore:', err);
           }
+
+          setUser({
+            email: user.email,
+            uid: user.uid,
+            role: role,
+            tier: tier,
+            displayName: user.displayName,
+          });
+        } catch (e) {
+          console.error('❌ [AuthContext] Token processing error:', e);
+        } finally {
+          setLoading(false);
         }
-
-        setUser({
-          email: user.email,
-          uid: user.uid,
-          role: role,
-          tier: tier,
-          displayName: user.displayName,
-        });
-
-        // ... (existing cookie setting logic)
-        // ...
-
-        setLoading(false);
       }
     });
   }, []);

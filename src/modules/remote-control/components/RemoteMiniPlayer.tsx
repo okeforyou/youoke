@@ -10,6 +10,7 @@ interface RemoteMiniPlayerProps {
     onTogglePlay: () => void;
     onNext: () => void;
     onToggleQueue: () => void;
+    theme?: 'light' | 'dark';
 }
 
 export const RemoteMiniPlayer: React.FC<RemoteMiniPlayerProps> = ({
@@ -17,12 +18,13 @@ export const RemoteMiniPlayer: React.FC<RemoteMiniPlayerProps> = ({
     isPlaying,
     onTogglePlay,
     onNext,
-    onToggleQueue
+    onToggleQueue,
+    theme = 'dark'
 }) => {
-    if (!currentVideo) return null; // Only hide if NO video is selected at all
+    if (!currentVideo) return null;
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] pb-safe-area z-50">
+        <div className={`fixed bottom-0 left-0 right-0 border-t pb-safe-area z-50 transition-colors duration-300 ${theme === 'dark' ? 'bg-stone-900 border-white/10 shadow-[0_-8px_30px_rgba(0,0,0,0.5)]' : 'bg-white border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]'}`}>
             {/* Visualizer Style */}
             <style jsx>{`
                 .music-bars {
@@ -33,7 +35,7 @@ export const RemoteMiniPlayer: React.FC<RemoteMiniPlayerProps> = ({
                 }
                 .bar {
                     width: 3px;
-                    background-color: #E50914; /* System Primary Red (V1 Parity) */
+                    background-color: #E50914;
                     border-radius: 1px;
                 }
                 .playing .bar {
@@ -50,8 +52,8 @@ export const RemoteMiniPlayer: React.FC<RemoteMiniPlayerProps> = ({
             `}</style>
 
             <div className="h-20 flex items-center px-4 gap-4">
-                {/* Artwork with Animation Overlay */}
-                <div className="w-12 h-12 bg-gray-50 rounded-lg overflow-hidden shrink-0 relative shadow-sm border border-gray-100 flex items-center justify-center">
+                {/* Artwork (V1 Sharp Look) */}
+                <div className={`w-14 h-14 rounded-lg overflow-hidden shrink-0 relative shadow-lg flex items-center justify-center ${theme === 'dark' ? 'bg-black border border-white/5' : 'bg-gray-100 border border-gray-200'}`}>
                     {currentVideo?.thumbnail ? (
                         <Image
                             unoptimized
@@ -61,12 +63,11 @@ export const RemoteMiniPlayer: React.FC<RemoteMiniPlayerProps> = ({
                             alt={currentVideo.title}
                         />
                     ) : (
-                        <ListMusic className="w-5 h-5 text-gray-300" />
+                        <ListMusic className={`w-5 h-5 ${theme === 'dark' ? 'text-gray-700' : 'text-gray-300'}`} />
                     )}
 
-                    {/* Music Bars Animation Overlay */}
                     {isPlaying && (
-                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center backdrop-blur-[1px]">
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-[1px]">
                             <div className="music-bars playing">
                                 <div className="bar"></div>
                                 <div className="bar"></div>
@@ -77,24 +78,29 @@ export const RemoteMiniPlayer: React.FC<RemoteMiniPlayerProps> = ({
                     )}
                 </div>
 
-                {/* Text */}
+                {/* Text (V1 Bold Typography) */}
                 <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-gray-900 truncate text-sm leading-tight">
+                    <h4 className={`font-black truncate text-[15px] leading-tight tracking-tight ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
                         {currentVideo?.title}
                     </h4>
-                    <p className="text-xs text-gray-500 truncate mt-0.5">{currentVideo?.author}</p>
+                    <p className={`text-[11px] font-bold uppercase truncate mt-0.5 tracking-wider ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                        {currentVideo?.author}
+                    </p>
                 </div>
 
-                {/* Controls */}
-                <div className="flex items-center gap-3">
+                {/* Controls (V1 High Contrast) */}
+                <div className="flex items-center gap-2">
                     <button
                         onClick={onTogglePlay}
-                        className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center shadow-lg active:scale-95 transition-transform"
+                        className="w-12 h-12 rounded-xl bg-primary text-white flex items-center justify-center shadow-[0_4px_12px_rgba(229,9,20,0.4)] active:scale-95 transition-all"
                     >
-                        {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-0.5" />}
+                        {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" className="ml-1" />}
                     </button>
-                    <button onClick={onNext} className="p-2 text-gray-400 hover:text-gray-900 active:scale-95">
-                        <SkipForward size={24} />
+                    <button
+                        onClick={onNext}
+                        className={`p-2 transition-colors active:scale-90 ${theme === 'dark' ? 'text-gray-400 hover:text-white' : 'text-gray-400 hover:text-black'}`}
+                    >
+                        <SkipForward size={24} strokeWidth={2.5} />
                     </button>
                 </div>
             </div>

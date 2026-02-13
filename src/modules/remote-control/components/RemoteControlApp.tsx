@@ -6,7 +6,7 @@ import { ref, onValue, off, set, serverTimestamp } from 'firebase/database';
 import { auth, realtimeDb } from '../../../firebase';
 import { QueueItem } from '../../../modules/player/types';
 import {
-    ListMusic, Plus, User, Share2, Maximize, RefreshCw, Volume2, VolumeX, SkipForward, SkipBack, Play, Pause, Trash2, GripVertical, Search
+    ListMusic, Plus, User, Share2, Maximize, RefreshCw, Volume2, VolumeX, SkipForward, SkipBack, Play, Pause, Trash2, GripVertical, Search, Sun, Moon
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import {
@@ -59,6 +59,19 @@ export default function RemoteControlApp() {
 
     const [isSearchOpen, setSearchOpen] = useState(false);
     const [showLocalQr, setShowLocalQr] = useState(false);
+    const [theme, setTheme] = useState<'light' | 'dark'>('dark'); // Default to Dark (V1 Classic)
+
+    // Load theme preference
+    useEffect(() => {
+        const savedTheme = localStorage.getItem('remote_theme') as 'light' | 'dark';
+        if (savedTheme) setTheme(savedTheme);
+    }, []);
+
+    const toggleTheme = () => {
+        const newTheme = theme === 'light' ? 'dark' : 'light';
+        setTheme(newTheme);
+        localStorage.setItem('remote_theme', newTheme);
+    };
 
     // Initial Setup
     useEffect(() => {
@@ -355,7 +368,7 @@ export default function RemoteControlApp() {
 
     return (
         <div
-            className="fixed inset-0 bg-gray-50 font-sans text-gray-900 overflow-hidden"
+            className={`fixed inset-0 font-sans transition-colors duration-300 overflow-hidden ${theme === 'dark' ? 'bg-stone-950 text-white' : 'bg-white text-gray-900'}`}
             style={{
                 overscrollBehavior: 'none',
                 touchAction: 'none'
@@ -363,80 +376,83 @@ export default function RemoteControlApp() {
         >
             <div className="h-full overflow-y-auto pb-24" style={{ overscrollBehavior: 'none', touchAction: 'pan-y' }}>
 
-                {/* Header */}
-                <div className="bg-white px-5 py-4 sticky top-0 z-10 shadow-sm flex items-center justify-between">
+                {/* Header (V1 Style) */}
+                <div className={`px-5 py-4 sticky top-0 z-10 border-b flex items-center justify-between transition-colors ${theme === 'dark' ? 'bg-stone-900 border-white/10 shadow-lg' : 'bg-white border-gray-100 shadow-sm'}`}>
                     <div>
-                        <h1 className="text-lg font-bold flex items-center gap-2">
-                            <span className={`w-2 h-2 rounded-full animate-pulse ${status === 'connected' ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                            ห้อง {roomCode}
+                        <h1 className="text-lg font-black tracking-tight flex items-center gap-2">
+                            <span className={`w-2.5 h-2.5 rounded-full ${status === 'connected' ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]'}`}></span>
+                            ROOM {roomCode}
                         </h1>
-                        <div className="text-xs text-gray-400 mt-1 flex items-center gap-2">
+                        <div className={`text-[10px] font-bold uppercase tracking-widest mt-0.5 flex items-center gap-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                             <span className="flex items-center gap-1">
-                                <User size={10} /> {guestName}
+                                {guestName}
                             </span>
-                            <span className="opacity-50">
-                                | Q: {roomState.queue.length}
-                            </span>
+                            <span className="opacity-30">|</span>
+                            <span>QUEUE: {roomState.queue.length}</span>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        {/* Refresh Button */}
+                    <div className="flex items-center gap-1.5">
+                        {/* Theme Toggle Button */}
+                        <button
+                            onClick={toggleTheme}
+                            className={`p-2 rounded-lg transition-all active:scale-95 ${theme === 'dark' ? 'bg-white/10 text-yellow-400 hover:bg-white/20' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                            title="สลับโหมด"
+                        >
+                            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+                        </button>
+
                         <button
                             onClick={() => window.location.reload()}
-                            className="p-2 rounded-full bg-gray-100 text-gray-500 hover:text-primary transition-all active:scale-90"
+                            className={`p-2 rounded-lg transition-all active:scale-95 ${theme === 'dark' ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
                             title="รีเฟรช"
                         >
                             <RefreshCw size={20} />
                         </button>
-                        {/* Share Button -- same as before --- */}
+
                         <button
                             onClick={() => setShowLocalQr(true)}
-                            className="p-2 rounded-full bg-gray-100 text-gray-500 hover:text-primary transition-colors"
+                            className={`p-2 rounded-lg transition-all active:scale-95 ${theme === 'dark' ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
                         >
                             <Share2 size={20} />
                         </button>
-                        {/* Monitor Fullscreen Toggle */}
+
                         <button
                             onClick={() => sendCommand('TOGGLE_FULLSCREEN')}
-                            className="p-2 rounded-full bg-gray-100 text-gray-500 hover:text-primary transition-colors"
+                            className={`p-2 rounded-lg transition-all active:scale-95 ${theme === 'dark' ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
                         >
                             <Maximize size={20} />
                         </button>
-                        {/* Monitor Controls Toggle */}
                         <button
                             onClick={() => sendCommand('TOGGLE_QUEUE_OVERLAY')}
-                            className={`p-2 rounded-full transition-colors ${roomState.isQueueVisible ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-500'}`}
+                            className={`p-2 rounded-lg transition-all active:scale-95 ${roomState.isQueueVisible ? 'bg-primary text-white shadow-lg' : (theme === 'dark' ? 'bg-white/10 text-gray-300 hover:bg-white/20' : 'bg-gray-100 text-gray-500 hover:bg-gray-200')}`}
                         >
                             <ListMusic size={20} />
                         </button>
                     </div>
                 </div>
 
-                {/* Queue List */}
+                {/* Queue List (V1 Aesthetic) */}
                 <div className="p-4 space-y-4">
                     <div className="flex items-center justify-between px-1">
-                        <h2 className="font-bold text-gray-900 flex items-center gap-2">
-                            <ListMusic className="text-primary" size={20} />
-                            Up Next (คิวเพลง)
+                        <h2 className={`text-sm font-black uppercase tracking-widest flex items-center gap-2 ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
+                            <div className="w-1 h-4 bg-primary rounded-full"></div>
+                            UP NEXT
                         </h2>
-                        <span className="text-xs font-bold bg-gray-200 text-gray-600 px-2 py-1 rounded-full">
-                            {Math.max(0, roomState.queue.length - (roomState.currentIndex + 1))}
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${theme === 'dark' ? 'bg-white/5 border-white/10 text-gray-400' : 'bg-gray-100 border-gray-200 text-gray-500'}`}>
+                            {Math.max(0, roomState.queue.length - (roomState.currentIndex + 1))} SONGS
                         </span>
                     </div>
 
                     {roomState.queue.length <= 1 ? (
-                        <div className="text-center py-16 border-2 border-dashed border-gray-200 rounded-3xl">
-                            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Plus className="text-primary w-8 h-8" />
-                            </div>
-                            <h3 className="font-bold text-gray-900">ยังไม่มีคิวเพลง</h3>
-                            <p className="text-gray-500 text-sm mt-1">เพิ่มเพลงเพื่อเริ่มปาร์ตี้กันเลย!</p>
+                        <div className={`text-center py-20 border-2 border-dashed rounded-2xl transition-colors ${theme === 'dark' ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50'}`}>
+                            <h3 className={`font-black text-xl mb-1 ${theme === 'dark' ? 'text-white' : 'text-black'}`}>EMPTY QUEUE</h3>
+                            <p className={`text-xs font-medium uppercase tracking-wider ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>Add songs to start the party</p>
                             <button
                                 onClick={() => setSearchOpen(true)}
-                                className="mt-4 px-6 py-2 bg-primary text-white rounded-full font-bold shadow-lg active:scale-95 transition-transform"
+                                className="mt-6 px-8 py-3 bg-primary text-white rounded-lg font-black text-sm uppercase tracking-widest shadow-[0_4px_12px_rgba(229,9,20,0.4)] active:scale-95 transition-all"
                             >
-                                เพิ่มเพลง
+                                Add Songs
                             </button>
                         </div>
                     ) : (
@@ -464,6 +480,7 @@ export default function RemoteControlApp() {
                                                         sendCommand('REMOVE_AT', { uuid: id });
                                                     }
                                                 }}
+                                                theme={theme}
                                             />
                                         );
                                     })}
@@ -473,29 +490,31 @@ export default function RemoteControlApp() {
                     )}
                 </div>
 
-                {/* FAB (Add Button) */}
+                {/* FAB (Add Button) - High Contrast V1 Style */}
                 <button
                     onClick={() => setSearchOpen(true)}
-                    className="fixed bottom-24 right-5 w-14 h-14 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center z-40 hover:scale-105 active:scale-95 transition-all"
+                    className="fixed bottom-24 right-5 w-16 h-16 bg-primary text-white rounded-2xl shadow-[0_8px_24px_rgba(229,9,20,0.5)] flex items-center justify-center z-40 hover:scale-105 active:scale-95 transition-all"
                 >
-                    <Plus size={32} strokeWidth={2.5} />
+                    <Plus size={36} strokeWidth={3} />
                 </button>
 
-                {/* Bottom Player */}
+                {/* Bottom Player (V1 Control Bar) */}
                 <RemoteMiniPlayer
                     currentVideo={roomState.currentVideo || roomState.queue[roomState.currentIndex] || (roomState.queue.length > 0 ? roomState.queue[0] : null)}
                     isPlaying={roomState.controls.isPlaying}
                     onTogglePlay={() => sendCommand(roomState.controls.isPlaying ? 'PAUSE' : 'PLAY')}
                     onNext={() => sendCommand('NEXT')}
                     onToggleQueue={() => sendCommand('TOGGLE_QUEUE_OVERLAY')}
+                    theme={theme}
                 />
 
-                {/* Search Overlay */}
+                {/* Search Overlay (V1 Clean Mode) */}
                 <SearchOverlay
                     isOpen={isSearchOpen}
                     onClose={() => setSearchOpen(false)}
                     onAdd={handleAddVideo}
                     guestName={guestName}
+                    theme={theme}
                 />
 
                 {/* Name Modal */}

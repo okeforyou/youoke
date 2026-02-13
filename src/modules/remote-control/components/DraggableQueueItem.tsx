@@ -15,11 +15,12 @@ interface DraggableQueueItemProps {
         };
     };
     index: number;
-    uniqueId: string; // Stable ID for drag & drop
+    uniqueId: string;
     onRemove?: (id: string) => void;
+    theme?: 'light' | 'dark';
 }
 
-export function DraggableQueueItem({ video, index, uniqueId, onRemove }: DraggableQueueItemProps) {
+export function DraggableQueueItem({ video, index, uniqueId, onRemove, theme = 'dark' }: DraggableQueueItemProps) {
     const {
         attributes,
         listeners,
@@ -31,53 +32,57 @@ export function DraggableQueueItem({ video, index, uniqueId, onRemove }: Draggab
 
     const style = {
         transform: CSS.Transform.toString(transform),
-        // Removed transition for smooth, direct movement (no bounce)
         zIndex: isDragging ? 50 : 'auto',
-        opacity: isDragging ? 0.5 : 1,
+        opacity: isDragging ? 0.6 : 1,
     };
 
     return (
         <div
             ref={setNodeRef}
             style={style}
-            className={`bg-white p-3 rounded-2xl shadow-sm border border-gray-100 flex gap-3 items-center ${isDragging ? 'shadow-lg' : ''
+            className={`p-3 rounded-xl border flex gap-3 items-center transition-colors duration-200 ${isDragging ? 'shadow-2xl scale-[1.02] border-primary z-10' : ''
+                } ${theme === 'dark'
+                    ? 'bg-stone-900 border-white/5 text-white'
+                    : 'bg-white border-gray-100 text-gray-900 shadow-sm'
                 }`}
         >
-            {/* Drag Handle */}
+            {/* Drag Handle (V1 Style) */}
             <div
                 {...attributes}
                 {...listeners}
-                className="flex items-center text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing touch-none"
+                className={`flex items-center transition-colors ${theme === 'dark' ? 'text-gray-600 hover:text-primary' : 'text-gray-300 hover:text-primary'} cursor-grab active:cursor-grabbing touch-none`}
                 aria-label="Drag to reorder"
             >
-                <GripVertical size={20} />
+                <GripVertical size={22} strokeWidth={2.5} />
             </div>
 
-            {/* Queue Number */}
-            <span className="font-bold text-gray-300 w-6 text-center text-sm">
-                {index + 1}
+            {/* Queue Number (Bold V1) */}
+            <span className={`font-black text-xs w-6 text-center ${theme === 'dark' ? 'text-gray-600' : 'text-gray-300'}`}>
+                {(index + 1).toString().padStart(2, '0')}
             </span>
 
-            {/* Song Info */}
+            {/* Song Info (High Contrast) */}
             <div className="flex-1 min-w-0">
-                <h4 className="font-bold text-sm truncate">{video.title}</h4>
+                <h4 className="font-black text-[14px] truncate leading-tight tracking-tight uppercase">{video.title}</h4>
                 <div className="flex items-center gap-2 mt-0.5">
-                    <p className="text-xs text-gray-500 truncate">{video.author}</p>
+                    <p className={`text-[10px] font-bold truncate tracking-wide ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
+                        {video.author}
+                    </p>
                     {video.addedBy && (
-                        <span className="text-[10px] bg-gray-100 px-1.5 rounded text-gray-500 border border-gray-200">
+                        <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${theme === 'dark' ? 'bg-white/5 text-gray-500' : 'bg-gray-100 text-gray-400 border border-gray-100'}`}>
                             {(video.addedBy as any).name || video.addedBy.displayName || 'Guest'}
                         </span>
                     )}
                 </div>
             </div>
 
-            {/* Remove Button */}
+            {/* Remove Button (V1 Minimalist) */}
             {onRemove && (
                 <button
                     onClick={() => onRemove(uniqueId)}
-                    className="p-2 text-gray-300 hover:text-red-500 transition-colors"
+                    className={`p-2 rounded-lg transition-all active:scale-90 ${theme === 'dark' ? 'text-gray-600 hover:text-red-500 hover:bg-red-500/10' : 'text-gray-300 hover:text-red-500 hover:bg-red-50'}`}
                 >
-                    <Trash2 size={18} />
+                    <Trash2 size={18} strokeWidth={2.5} />
                 </button>
             )}
         </div>
