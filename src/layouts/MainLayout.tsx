@@ -595,9 +595,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         className={clsx(
                             "fixed transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] z-30 overflow-hidden lg:border-l lg:border-gray-200",
 
-                            // Fullscreen Override (Remote Controlled)
+                            // Optimized Fullscreen Transition (Senior-Friendly)
                             layoutMode === 'fullscreen'
-                                ? "fixed inset-0 w-full h-full z-40 border-none bg-black"
+                                ? "fixed top-0 right-0 w-full h-full z-[100] border-none bg-black shadow-none ring-0 origin-top-right transition-all duration-300"
                                 : [
                                     // Mobile Logic
                                     !isMobilePlayerExpanded
@@ -605,7 +605,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                         : "max-lg:inset-0 max-lg:w-full max-lg:h-full max-lg:opacity-100 lg:opacity-100 bg-black",
 
                                     // Desktop Logic
-                                    "lg:top-0 lg:w-[420px] lg:h-[236px] bg-transparent",
+                                    "lg:top-0 lg:w-[420px] lg:h-[236px] bg-transparent origin-top-right transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
                                     (isQueueOpen && queue.length > 0) ? "lg:right-0" : "lg:-right-[420px]"
                                 ]
                         )}>
