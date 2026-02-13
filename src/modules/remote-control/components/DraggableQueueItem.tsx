@@ -21,6 +21,9 @@ export const DraggableQueueItem: React.FC<DraggableQueueItemProps> = ({
     theme = 'dark',
     isOverlay = false
 }) => {
+    // CRITICAL: only call useSortable if NOT an overlay. 
+    // hook conflicts with duplicate IDs are a major cause of crashes.
+    const sortable = useSortable({ id: uniqueId, disabled: isOverlay });
     const {
         attributes,
         listeners,
@@ -28,7 +31,7 @@ export const DraggableQueueItem: React.FC<DraggableQueueItemProps> = ({
         transform,
         transition,
         isDragging
-    } = useSortable({ id: uniqueId });
+    } = sortable;
 
     const style = {
         transform: CSS.Translate.toString(transform),
@@ -48,10 +51,10 @@ export const DraggableQueueItem: React.FC<DraggableQueueItemProps> = ({
             ref={setNodeRef}
             style={overlayStyle}
             className={`p-3.5 rounded-2xl border flex gap-3.5 items-center ${isOverlay
-                    ? 'shadow-2xl border-primary bg-stone-900 z-50'
-                    : isDragging
-                        ? 'border-primary/20 bg-transparent'
-                        : 'shadow-xl shadow-black/[0.03]'
+                ? 'shadow-2xl border-primary bg-stone-900 z-50'
+                : isDragging
+                    ? 'border-primary/20 bg-transparent'
+                    : 'shadow-xl shadow-black/[0.03]'
                 } ${theme === 'dark'
                     ? 'bg-stone-900 border-white/5 text-white shadow-black/40'
                     : 'bg-white border-gray-100 text-gray-900'

@@ -58,7 +58,8 @@ export default function RemoteControlApp() {
     });
     const [guestName, setGuestName] = useState('');
     const [showNameModal, setShowNameModal] = useState(false);
-    const [loading, setLoading] = useState(true); // Added loading state
+    const [loading, setLoading] = useState(true);
+    const [hasMounted, setHasMounted] = useState(false);
 
     const [isSearchOpen, setSearchOpen] = useState(false);
     const [showLocalQr, setShowLocalQr] = useState(false);
@@ -72,8 +73,9 @@ export default function RemoteControlApp() {
     const [searchType, setSearchType] = useState<'video' | 'karaoke'>('video');
     const debounceRef = React.useRef<NodeJS.Timeout>();
 
-    // Load theme preference
+    // Load theme preference and set mounted
     useEffect(() => {
+        setHasMounted(true);
         const savedTheme = localStorage.getItem('remote_theme') as 'light' | 'dark';
         if (savedTheme) setTheme(savedTheme);
     }, []);
@@ -411,6 +413,12 @@ export default function RemoteControlApp() {
         sendCommand('REORDER_QUEUE', { queue: fullQueue });
     };
 
+    if (!hasMounted) {
+        return <div className="h-screen bg-stone-950 flex items-center justify-center">
+            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>;
+    }
+
     if (!roomCode) {
         return (
             <div className="h-screen flex flex-col items-center justify-center text-gray-500 p-6">
@@ -680,7 +688,7 @@ export default function RemoteControlApp() {
                             <h3 className="font-bold text-lg">สแกนเพื่อเข้าร่วม</h3>
                             <div className="bg-gray-100 p-2 rounded-xl inline-block">
                                 {/* @ts-ignore */}
-                                {roomCode && <QRCodeSVG value={`${window.location.origin}/remote?room=${roomCode}`} size={200} />}
+                                {roomCode && typeof window !== 'undefined' && <QRCodeSVG value={`${window.location.origin}/remote?room=${roomCode}`} size={200} />}
                             </div>
                             <p className="text-sm text-gray-500">ให้เพื่อนสแกนเพื่อช่วยกันเพิ่มเพลง</p>
                         </div>
