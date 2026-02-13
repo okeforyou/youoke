@@ -128,23 +128,26 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({
                             )}
                         </div>
 
-                        {/* 🎤 Mode Toggle (Compact) */}
-                        <button
-                            onClick={() => handleTypeToggle(searchType === 'video' ? 'karaoke' : 'video')}
-                            className={`flex flex-col items-center justify-center min-w-[56px] h-12 rounded-2xl transition-all border-2 active:scale-90 ${searchType === 'karaoke' ? 'bg-primary border-primary text-white shadow-md' : 'bg-white border-gray-100 text-gray-400'}`}
-                        >
-                            {searchType === 'karaoke' ? (
-                                <>
-                                    <Mic size={18} strokeWidth={3} />
-                                    <span className="text-[9px] font-black mt-0.5">KARA</span>
-                                </>
-                            ) : (
-                                <>
-                                    <Music size={18} strokeWidth={2.5} />
-                                    <span className="text-[9px] font-black mt-0.5">SONG</span>
-                                </>
-                            )}
-                        </button>
+                        {/* 🎤 Senior-Friendly Mode Toggle (Always Visible Dual Switch) */}
+                        <div className="flex bg-gray-100 p-1 rounded-2xl gap-1 shrink-0">
+                            {/* Music Mode Button */}
+                            <button
+                                onClick={() => searchType !== 'video' && handleTypeToggle('video')}
+                                className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all ${searchType === 'video' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:bg-gray-200'}`}
+                                title="โหมดเพลงปกติ"
+                            >
+                                <Music size={20} strokeWidth={searchType === 'video' ? 3 : 2} />
+                            </button>
+
+                            {/* Karaoke Mode Button */}
+                            <button
+                                onClick={() => searchType !== 'karaoke' && handleTypeToggle('karaoke')}
+                                className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all ${searchType === 'karaoke' ? 'bg-primary text-white shadow-md' : 'text-gray-400 hover:bg-gray-200'}`}
+                                title="โหมดคาราโอเกะ"
+                            >
+                                <Mic size={20} strokeWidth={searchType === 'karaoke' ? 3 : 2} />
+                            </button>
+                        </div>
                     </div>
                 </div>
 
