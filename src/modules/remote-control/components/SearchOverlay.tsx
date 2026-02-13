@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, X, RefreshCw, Sparkles, Music } from 'lucide-react';
+import { Search, X, RefreshCw, Sparkles, Music, Mic } from 'lucide-react';
 import { DebounceInput } from 'react-debounce-input';
 import Image from 'next/image';
 import { RemoteSearchResultCard } from './RemoteSearchResultCard';
@@ -98,57 +98,56 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({
                     <button onClick={onClose} className="p-2 -ml-2 text-gray-500 hover:bg-gray-100 rounded-full">
                         <X size={24} />
                     </button>
-                    <div className="flex-1 relative">
-                        <DebounceInput
-                            // @ts-ignore
-                            inputRef={inputRef}
-                            minLength={1}
-                            debounceTimeout={500}
-                            value={term}
-                            onChange={(e) => handleSearchInput(e.target.value)}
-                            placeholder="ค้นหาเพลง, ศิลปิน..."
-                            className="w-full bg-gray-100 border-none rounded-2xl px-10 py-3 text-base text-gray-900 focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-gray-400"
-                        />
-                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                            <Search size={20} />
-                        </div>
-                        {loading && (
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                                <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    <div className="flex-1 flex items-center gap-2">
+                        <div className="flex-1 relative">
+                            <DebounceInput
+                                // @ts-ignore
+                                inputRef={inputRef}
+                                minLength={1}
+                                debounceTimeout={500}
+                                value={term}
+                                onChange={(e) => handleSearchInput(e.target.value)}
+                                placeholder="ค้นหาเพลง, ศิลปิน..."
+                                className="w-full bg-gray-100 border-none rounded-2xl px-10 py-3 text-base text-gray-900 focus:ring-2 focus:ring-primary/20 outline-none transition-all placeholder:text-gray-400"
+                            />
+                            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                                <Search size={20} />
                             </div>
-                        )}
-                        {term && !loading && (
-                            <button
-                                onClick={() => { setTerm(''); setResults([]); inputRef.current?.focus(); }}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 p-1 rounded-full hover:bg-gray-200"
-                            >
-                                <X size={16} />
-                            </button>
-                        )}
+                            {loading && (
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                    <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                </div>
+                            )}
+                            {term && !loading && (
+                                <button
+                                    onClick={() => { setTerm(''); setResults([]); inputRef.current?.focus(); }}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 p-1 rounded-full hover:bg-gray-200"
+                                >
+                                    <X size={16} />
+                                </button>
+                            )}
+                        </div>
+
+                        {/* 🎤 Mode Toggle (Compact) */}
+                        <button
+                            onClick={() => handleTypeToggle(searchType === 'video' ? 'karaoke' : 'video')}
+                            className={`flex flex-col items-center justify-center min-w-[56px] h-12 rounded-2xl transition-all border-2 active:scale-90 ${searchType === 'karaoke' ? 'bg-primary border-primary text-white shadow-md' : 'bg-white border-gray-100 text-gray-400'}`}
+                        >
+                            {searchType === 'karaoke' ? (
+                                <>
+                                    <Mic size={18} strokeWidth={3} />
+                                    <span className="text-[9px] font-black mt-0.5">KARA</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Music size={18} strokeWidth={2.5} />
+                                    <span className="text-[9px] font-black mt-0.5">SONG</span>
+                                </>
+                            )}
+                        </button>
                     </div>
                 </div>
 
-                {/* Type Toggle Switch */}
-                <div className="px-4 pb-2 flex justify-center">
-                    <div className="bg-gray-100 p-1 rounded-xl flex w-full max-w-[200px] relative">
-                        {/* Sliding Background */}
-                        <div
-                            className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-lg shadow-sm transition-all duration-300 ease-out ${searchType === 'karaoke' ? 'left-[calc(50%+2px)]' : 'left-1'}`}
-                        />
-                        <button
-                            onClick={() => handleTypeToggle('video')}
-                            className={`flex-1 relative z-10 text-xs font-bold py-1.5 text-center transition-colors ${searchType === 'video' ? 'text-primary' : 'text-gray-500'}`}
-                        >
-                            เพลง
-                        </button>
-                        <button
-                            onClick={() => handleTypeToggle('karaoke')}
-                            className={`flex-1 relative z-10 text-xs font-bold py-1.5 text-center transition-colors ${searchType === 'karaoke' ? 'text-primary' : 'text-gray-500'}`}
-                        >
-                            คาราโอเกะ
-                        </button>
-                    </div>
-                </div>
 
             </div>
 
