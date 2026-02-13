@@ -72,10 +72,10 @@ export default function RemoteControlApp() {
         // 🛡️ SAFETY TIMEOUT: Force UI unlock if Firebase is slow/stuck
         const safetyTimeout = setTimeout(() => {
             if (loading) {
-                console.warn('⚠️ [AuthContext] Init Timeout (3s). Forcing unlock.');
+                console.warn('⚠️ [RemoteApp] Init Timeout (10s). Forcing unlock.');
                 setLoading(false);
             }
-        }, 3000);
+        }, 10000);
 
         return () => clearTimeout(safetyTimeout);
     }, []);
@@ -355,13 +355,13 @@ export default function RemoteControlApp() {
 
     return (
         <div
-            className="min-h-screen bg-gray-50 font-sans text-gray-900 pb-24 overflow-hidden"
+            className="fixed inset-0 bg-gray-50 font-sans text-gray-900 overflow-hidden"
             style={{
                 overscrollBehavior: 'none',
                 touchAction: 'none'
             }}
         >
-            <div className="h-full overflow-y-auto" style={{ overscrollBehavior: 'none' }}>
+            <div className="h-full overflow-y-auto pb-24" style={{ overscrollBehavior: 'none', touchAction: 'pan-y' }}>
 
                 {/* Header */}
                 <div className="bg-white px-5 py-4 sticky top-0 z-10 shadow-sm flex items-center justify-between">
