@@ -28,28 +28,29 @@ export type HostState = {
 };
 
 export const useRemoteHost = (
-    playerRef: any,
-    controlRef: any,
+    playerRef: React.RefObject<any>,
+    controlRef: React.RefObject<any>,
     addToQueue: (video: any) => void,
     queue: any[],
-    currentVideoId: string,
+    currentVideoId: string | null,
     isPlaying: boolean,
     isFullscreen: boolean,
-    setPlaylist: (newQueue: any[]) => void,
+    reorderQueue: (queue: any[]) => void,
     user: any,
-    roomCode?: string
+    roomCode?: string,
+    onRemoteConnect?: () => void
 ) => {
-    const [sessionId, setSessionId] = useState<string | null>(null);
-    const [connectedClients, setConnectedClients] = useState<number>(0);
+    const [sessionId, setSessionId] = useState<string | null>(roomCode || null);
+    const [connectedClients, setConnectedClients] = useState(0);
     const [connectionStatus, setConnectionStatus] = useState<'disconnected' | 'active' | 'background'>('disconnected');
 
     // Keep strict refs for callbacks to avoid effect churn
     const addToQueueRef = useRef(addToQueue);
-    const setPlaylistRef = useRef(setPlaylist);
+    const setPlaylistRef = useRef(reorderQueue);
     const queueRef = useRef(queue);
 
     useEffect(() => { addToQueueRef.current = addToQueue; }, [addToQueue]);
-    useEffect(() => { setPlaylistRef.current = setPlaylist; }, [setPlaylist]);
+    useEffect(() => { setPlaylistRef.current = reorderQueue; }, [reorderQueue]);
     useEffect(() => { queueRef.current = queue; }, [queue]);
 
     // Generate Session ID on mount or use provided roomCode
@@ -76,9 +77,9 @@ export const useRemoteHost = (
 
         try {
             const safeQueue = Array.isArray(queue) ? queue : [];
-            const currentVideo = safeQueue.find(v => v.videoId === currentVideoId);
+            const currentVideo = safeQueue.find(v => (v.id || v.videoId) === currentVideoId);
             const title = currentVideo?.title || "Unknown Title";
-            const currentIndex = safeQueue.findIndex(v => v.videoId === currentVideoId);
+            const currentIndex = safeQueue.findIndex(v => (v.id || v.videoId) === currentVideoId);
 
             const statePayload = {
                 queue: safeQueue,
@@ -98,14 +99,14 @@ export const useRemoteHost = (
                 timestamp: Date.now()
             };
 
-            set(ref(realtimeDb, `rooms/${sessionId}/state`), statePayload)
-                .catch(e => console.error('❌ Host: State sync failed', e));
+            set(ref(realtimeDb, `rooms/${sessionId}/state`), statePayload);
+            set(ref(realtimeDb, `rooms/${sessionId}/lastActive`), Date.now());
+        } catch (e) {
+            console.error('Remote Sync Error:', e);
+        }
+    }, [queue, currentVideoId, isPlaying, isFullscreen, sessionId]);
 
-        } catch (e) { console.error('❌ Host: Sync Logic Error', e); }
-
-    }, [sessionId, currentVideoId, queue, isPlaying, isFullscreen, user]);
-
-    // Sync Connected Clients & Calculate Status
+    // Track Connection Status
     useEffect(() => {
         if (!sessionId || !realtimeDb) return;
 
@@ -140,8 +141,19 @@ export const useRemoteHost = (
 
         const unsubscribe = onValue(connectedRef, handleSnapshot);
 
-        return () => unsubscribe();
-    }, [sessionId]);
+        // EXTRA: Listen for new connections specifically to trigger callback (V1 logic)
+        const unsubscribeChild = onChildAdded(connectedRef, (snapshot) => {
+            if (snapshot.exists() && onRemoteConnect) {
+                console.log('📱 New remote connection detected via child_added');
+                onRemoteConnect();
+            }
+        });
+
+        return () => {
+            unsubscribe();
+            unsubscribeChild();
+        };
+    }, [sessionId, onRemoteConnect]);
 
     const handleCommand = (cmd: RemoteCommand) => {
         console.log('[RemoteHost] Executing:', cmd.type);
@@ -194,6 +206,7 @@ export const useRemoteHost = (
                     const cleanQueue = incomingQueue.map((item: any) => ({
                         ...item,
                         id: item.id || item.videoId,
+                        videoId: item.videoId || item.id,
                         uuid: item.uuid
                     }));
                     if (setPlaylistRef.current) setPlaylistRef.current(cleanQueue);
@@ -250,7 +263,7 @@ export const useRemoteHost = (
             });
         });
 
-        return () => off(commandsRef);
+        return () => unsubscribe();
     }, [sessionId]);
 
     return {

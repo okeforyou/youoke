@@ -116,7 +116,12 @@ export default function MainLayout({ children }: MainLayoutProps) {
         layoutMode === 'fullscreen',
         reorderQueue,
         user,
-        roomCode || undefined
+        roomCode || undefined,
+        () => {
+            setShowQRCode(false);
+            setPartyModalOpen(false);
+            console.log('📱 Remote connected, closing QR modals');
+        }
     );
 
     // Sync Fullscreen with Remote Command (layoutMode)
@@ -141,17 +146,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const { addToast } = useToast() || { addToast: () => { } };
     const isMobile = useIsMobile();
     const { queue } = usePlayerStore();
-
-    // Auto-close QR Modal when someone joins
-    const prevConnected = useRef(0);
-    useEffect(() => {
-        if (connectedClients > prevConnected.current) {
-            setPartyModalOpen(false);
-            setShowQRCode(false); // Also close the standalone QR modal
-            console.log('📱 Guest connected, auto-closing QR modal');
-        }
-        prevConnected.current = connectedClients;
-    }, [connectedClients]);
 
     // Cast Handlers
     const handleCastSelectWebMonitor = () => {
