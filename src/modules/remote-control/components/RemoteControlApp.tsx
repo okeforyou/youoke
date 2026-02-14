@@ -37,6 +37,7 @@ interface RoomState {
     currentVideo: QueueItem | null;
     controls: { isPlaying: boolean; isMuted: boolean; volume: number };
     isQueueVisible: boolean;
+    notification?: { type: 'added' | 'upnext', video: any, timestamp: number } | null;
 }
 
 export default function RemoteControlApp() {
@@ -59,7 +60,11 @@ export default function RemoteControlApp() {
 
     const [isSearchOpen, setSearchOpen] = useState(false);
     const [showLocalQr, setShowLocalQr] = useState(false);
-    const [theme, setTheme] = useState<'light' | 'dark'>('dark'); // Default to Dark (V1 Classic)
+    const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+
+    // Toast State
+    const [remoteToast, setRemoteToast] = useState<{ message: string, sub: string, type: 'added' | 'upnext' } | null>(null);
+    const lastToastTs = React.useRef(0);
 
     // Search Logic (V1 Integrated)
     const [searchTerm, setSearchTerm] = useState('');
@@ -183,8 +188,25 @@ export default function RemoteControlApp() {
                             currentIndex: data.currentIndex ?? 0,
                             currentVideo: data.currentVideo,
                             controls: data.controls || { isPlaying: false, isMuted: false, volume: 100 },
-                            isQueueVisible: data.isQueueVisible
+                            isQueueVisible: data.isQueueVisible,
+                            notification: data.notification
                         });
+
+                        // Show Notification Toast if new
+                        if (data.notification && data.notification.timestamp > lastToastTs.current) {
+                            lastToastTs.current = data.notification.timestamp;
+                            const type = data.notification.type;
+                            const video = data.notification.video;
+
+                            setRemoteToast({
+                                message: type === 'upnext' ? 'เพลงถัดไปกำลังจะเริ่ม' : 'กำลังเล่นเพลงใหม่',
+                                sub: video.title,
+                                type
+                            });
+
+                            setTimeout(() => setRemoteToast(null), 5000);
+                        }
+
                         setStatus('connected');
                         setLoading(false); // Set loading to false once connected
                     } else {
@@ -654,6 +676,20 @@ export default function RemoteControlApp() {
                                 {roomCode && typeof window !== 'undefined' && <QRCodeSVG value={`${window.location.origin}/remote?room=${roomCode}`} size={200} />}
                             </div>
                             <p className="text-sm text-gray-500">ให้เพื่อนสแกนเพื่อช่วยกันเพิ่มเพลง</p>
+                        </div>
+                    </div>
+                )}
+                {/* Remote Toast Overlay */}
+                {remoteToast && (
+                    <div className="fixed top-20 left-4 right-4 z-[100] animate-in fade-in slide-in-from-top-4 duration-500">
+                        <div className={`p-4 rounded-2xl border shadow-2xl backdrop-blur-xl flex items-center gap-4 ${theme === 'dark' ? 'bg-stone-900/95 border-white/10 text-white' : 'bg-white/95 border-gray-100 text-gray-900'}`}>
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${remoteToast.type === 'upnext' ? 'bg-amber-500 text-black' : 'bg-primary text-white shadow-lg shadow-primary/20'}`}>
+                                {remoteToast.type === 'upnext' ? <RefreshCw className="animate-spin-slow" /> : <Music />}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-[10px] font-black uppercase tracking-widest opacity-50">{remoteToast.message}</p>
+                                <p className="text-sm font-black truncate">{remoteToast.sub}</p>
+                            </div>
                         </div>
                     </div>
                 )}

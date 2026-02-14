@@ -26,6 +26,8 @@ export const usePlayerStore = create<PlayerStore>()(
             currentVideo: null,
             layoutMode: 'split',
             isQueueVisible: false, // Default hidden in fullscreen
+            notification: null as { type: 'added' | 'upnext', video: any, timestamp: number } | null,
+            setNotification: (notif: any) => set({ notification: notif }),
 
             // Sync Locks
             seekTarget: null,

@@ -60,6 +60,7 @@ export interface PlayerStore extends PlayerState {
     isQueueVisible: boolean; // New state
     isQrVisible: boolean; // New state for large QR overlay
     fullscreenTrigger: number; // Timestamp or Counter for signal
+    notification: { type: 'added' | 'upnext', video: any, timestamp: number } | null;
 
     // UI State (Unification)
 
@@ -116,6 +117,7 @@ export interface PlayerStore extends PlayerState {
 
     // Sync Action
     syncState: (state: Partial<PlayerStore>) => void;
+    setNotification: (notif: any) => void;
 
     setDuration: (duration: number) => void;
     shuffleQueue: () => void;

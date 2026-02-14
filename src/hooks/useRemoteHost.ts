@@ -109,6 +109,7 @@ export const useRemoteHost = (
                 title: currentVideo?.title || "Unknown Title",
                 isPlaying: !!isPlaying,
                 isFullscreen: !!isFullscreen,
+                notification: usePlayerStore.getState().notification || null,
                 roomCode: sessionId,
                 timestamp: Date.now()
             };

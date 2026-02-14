@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Maximize2, Minimize2, X, Play, Pause } from 'lucide-react';
+import { Maximize2, Minimize2, X, Play, Pause, Music, User } from 'lucide-react';
+import Image from "next/image";
 // import YouTube from "react-youtube"; // Removing direct dependency
 import { UniversalPlayer } from "./UniversalPlayer";
 import { usePlayerStore } from "../stores/usePlayerStore";
@@ -21,7 +22,7 @@ interface SidebarPlayerProps {
 }
 
 export const SidebarPlayer = ({ isPassive = false, isDjMode = false }: SidebarPlayerProps) => {
-    const { currentSource, isPlaying, currentVideo, setCurrentTime, currentTime, layoutMode } = usePlayerStore(
+    const { currentSource, isPlaying, currentVideo, setCurrentTime, currentTime, layoutMode, queue, currentIndex, duration } = usePlayerStore(
         useShallow(state => ({
             currentSource: state.currentSource,
             isPlaying: state.isPlaying,
@@ -29,6 +30,9 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false }: SidebarPl
             setCurrentTime: state.setCurrentTime,
             currentTime: state.currentTime,
             layoutMode: state.layoutMode,
+            queue: state.queue,
+            currentIndex: state.currentIndex,
+            duration: state.duration
         }))
     );
     const playerRef = useRef<any>(null);
@@ -185,17 +189,55 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false }: SidebarPl
     }, [currentSource, showDjOverlay]);
 
     // 🍞 Toast Logic
-    const [showToast, setShowToast] = React.useState(false);
+    const [showToast, setShowToast] = useState(false);
+    const [toastType, setToastType] = useState<'added' | 'upnext'>('added');
+    const [upNextVideo, setUpNextVideo] = useState<any>(null);
+    const hasShownUpNext = useRef<string | null>(null);
 
+    // Track "Up Next" logic
     useEffect(() => {
-        if (currentSource && currentVideo?.addedBy) {
-            setShowToast(true);
-            const timer = setTimeout(() => setShowToast(false), 8000); // Hide after 8s
-            return () => clearTimeout(timer);
-        } else {
-            setShowToast(false);
+        if (!isPlaying || duration <= 0) return;
+
+        // Show Up Next toast 20 seconds before end
+        const timeLeft = duration - currentTime;
+        if (timeLeft > 5 && timeLeft < 20 && queue.length > currentIndex + 1) {
+            const nextVideo = queue[currentIndex + 1];
+            if (hasShownUpNext.current !== nextVideo.uuid) {
+                setUpNextVideo(nextVideo);
+                setToastType('upnext');
+                setShowToast(true);
+                hasShownUpNext.current = nextVideo.uuid;
+
+                // Broadcast to Store & Firebase
+                usePlayerStore.getState().setNotification({
+                    type: 'upnext',
+                    video: nextVideo,
+                    timestamp: Date.now()
+                });
+
+                // Hide after 10 seconds
+                setTimeout(() => setShowToast(false), 10000);
+            }
         }
-    }, [currentSource, currentVideo]);
+    }, [currentTime, duration, isPlaying, queue, currentIndex]);
+
+    // Clear notification when starting new video
+    useEffect(() => {
+        if (currentVideo) {
+            setToastType('added');
+            setShowToast(true);
+
+            // Broadcast added notification
+            usePlayerStore.getState().setNotification({
+                type: 'added',
+                video: currentVideo,
+                timestamp: Date.now()
+            });
+
+            const timer = setTimeout(() => setShowToast(false), 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [currentVideo?.uuid]);
 
     // --- RENDER LOGIC ---
 
@@ -292,8 +334,11 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false }: SidebarPl
                 </div>
             )}
 
-            {/* 🎯 SHARP V1 MINI CONTROLS (Consolidated - Bottom Center) */}
-            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 p-1.5 bg-stone-900/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-xl shadow-black/40 transition-all duration-300">
+            {/* 🎯 SHARP V1 MINI CONTROLS (Responsive - Bottom Center) */}
+            <div
+                className={`absolute left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 p-1.5 bg-stone-900/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-xl shadow-black/40 transition-all duration-500 ease-out 
+                    ${layoutMode === 'fullscreen' ? 'bottom-10 scale-100' : 'bottom-6 scale-[0.85] opacity-90 hover:opacity-100 hover:scale-90'}`}
+            >
                 {/* Play/Pause */}
                 <button
                     onClick={() => usePlayerStore.getState().togglePlay()}
@@ -324,22 +369,40 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false }: SidebarPl
                 )}
             </div>
 
-            {/* Added By Toast (Repositioned to Top-Right - Sharp Style) */}
-            {showToast && currentVideo?.addedBy && (
-                <div className={`absolute top-6 right-6 z-[60] transition-all duration-700 ${showToast ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'}`}>
-                    <div className="flex items-center gap-4 bg-stone-900/95 backdrop-blur-2xl border border-white/10 rounded-2xl pl-2 pr-6 py-2.5 shadow-2xl ring-1 ring-white/5">
-                        <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-primary to-rose-600 flex items-center justify-center text-lg shadow-inner text-white font-black ring-2 ring-black/50 overflow-hidden">
-                            {currentVideo.addedBy.photoURL ? (
-                                <img src={currentVideo.addedBy.photoURL} className="w-full h-full object-cover" />
-                            ) : (
-                                <span>{((currentVideo.addedBy as any).name || currentVideo.addedBy.displayName || '?').charAt(0).toUpperCase()}</span>
-                            )}
+            {/* Added By / Up Next Toast (Top-Right - Sharp V2 Metadata-Rich) */}
+            {showToast && (toastType === 'added' ? currentVideo : upNextVideo) && (
+                <div className={`absolute top-6 right-6 z-[60] transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] ${showToast ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4 pointer-events-none'}`}>
+                    <div className="flex items-center gap-4 bg-stone-900/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-2.5 pr-6 shadow-2xl ring-1 ring-white/5 min-w-[320px] max-w-md">
+                        {/* Thumbnail */}
+                        <div className="w-16 h-16 rounded-xl overflow-hidden border border-white/5 shadow-inner shrink-0 relative bg-black/40">
+                            <Image
+                                unoptimized
+                                src={(toastType === 'added' ? currentVideo : upNextVideo).thumbnail || `https://i.ytimg.com/vi/${(toastType === 'added' ? currentVideo : upNextVideo).videoId}/mqdefault.jpg`}
+                                fill
+                                className="object-cover"
+                                alt="Cover"
+                            />
                         </div>
-                        <div className="flex flex-col">
-                            <span className="text-[10px] text-primary font-black uppercase tracking-widest leading-none mb-1 shadow-sm">ขอเพลงโดย</span>
-                            <span className="text-[15px] font-black text-white leading-none truncate max-w-[180px]">
-                                {(currentVideo.addedBy as any).name || currentVideo.addedBy.displayName}
-                            </span>
+
+                        {/* Info */}
+                        <div className="flex flex-col min-w-0 flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                                <span className={`text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${toastType === 'upnext' ? 'bg-amber-500 text-black' : 'bg-primary text-white'}`}>
+                                    {toastType === 'upnext' ? 'ลำดับถัดไป' : 'กำลังเล่น'}
+                                </span>
+                                {(toastType === 'added' ? currentVideo : upNextVideo).addedBy && (
+                                    <span className="text-[10px] text-white/40 font-bold flex items-center gap-1">
+                                        <User size={10} className="text-primary" />
+                                        {((toastType === 'added' ? currentVideo : upNextVideo).addedBy as any).name || (toastType === 'added' ? currentVideo : upNextVideo).addedBy.displayName}
+                                    </span>
+                                )}
+                            </div>
+                            <h3 className="text-[15px] font-black text-white leading-tight truncate">
+                                {(toastType === 'added' ? currentVideo : upNextVideo).title}
+                            </h3>
+                            <p className="text-[12px] font-bold text-white/50 truncate mt-0.5">
+                                {(toastType === 'added' ? currentVideo : upNextVideo).author}
+                            </p>
                         </div>
                     </div>
                 </div>
