@@ -1,3 +1,4 @@
+import React, { useEffect, useRef, useState } from "react";
 import { Maximize2, Minimize2, X, Play, Pause } from 'lucide-react';
 // import YouTube from "react-youtube"; // Removing direct dependency
 import { UniversalPlayer } from "./UniversalPlayer";
@@ -291,8 +292,8 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false }: SidebarPl
                 </div>
             )}
 
-            {/* 🎯 SHARP V1 MINI CONTROLS (Consolidated) */}
-            <div className="absolute bottom-6 right-6 z-50 flex items-center gap-2 p-1.5 bg-stone-900/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-xl shadow-black/40 transition-all duration-300">
+            {/* 🎯 SHARP V1 MINI CONTROLS (Consolidated - Bottom Center) */}
+            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 p-1.5 bg-stone-900/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-xl shadow-black/40 transition-all duration-300">
                 {/* Play/Pause */}
                 <button
                     onClick={() => usePlayerStore.getState().togglePlay()}
