@@ -70,7 +70,7 @@ export const DigitalSignage: React.FC<DigitalSignageProps> = ({
                     <span className="text-2xl font-black tracking-tighter text-white">YouOke <span className="text-primary">TV</span></span>
                 </div>
                 <div className="flex items-center gap-6 text-white/40 text-sm font-medium uppercase tracking-widest">
-                    <span className="flex items-center gap-2"><WifiIcon className="w-4 h-4" /> Ready to Connect</span>
+                    <span className="flex items-center gap-2"><WifiIcon className="w-4 h-4" /> พร้อมเชื่อมต่อ</span>
                 </div>
             </div>
 
@@ -83,22 +83,22 @@ export const DigitalSignage: React.FC<DigitalSignageProps> = ({
                         <div>
                             <p className="text-primary font-bold uppercase tracking-[0.2em] mb-4 flex items-center gap-3">
                                 <span className="w-8 h-[2px] bg-primary"></span>
-                                Sing Together
+                                ร้องเพลงไปด้วยกัน
                             </p>
                             <h1 className="text-7xl font-black text-white leading-[1.1] mb-6 drop-shadow-2xl">
-                                Join the Party<br />
-                                <span className="text-white/30">From Your Phone</span>
+                                เข้าร่วมปาร์ตี้<br />
+                                <span className="text-white/30">ผ่านมือถือของคุณ</span>
                             </h1>
                             <p className="text-xl text-white/60 font-light max-w-xl leading-relaxed">
-                                Scan the QR Code or visit <span className="text-white font-medium">youoke.com/remote</span> to queue songs, control volume, and unleash your inner star.
+                                สแกน QR Code หรือเข้าที่ <span className="text-white font-medium">youoke.okeforyou.com/remote</span> เพื่อเลือกเพลง คลุมระดับเสียง และแสดงความสามารถของคุณ
                             </p>
                         </div>
 
                         {/* Room Code Box */}
                         <div className="inline-flex items-center gap-8 bg-white/5 backdrop-blur-md border border-white/10 pr-12 rounded-3xl overflow-hidden mt-8">
                             <div className="px-8 py-6 bg-primary text-white font-black text-xl uppercase tracking-widest flex flex-col items-center justify-center leading-tight">
-                                <span>Room</span>
-                                <span>Code</span>
+                                <span>รหัส</span>
+                                <span>ห้อง</span>
                             </div>
                             <div className="text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 tracking-tighter">
                                 {roomCode}
@@ -116,7 +116,7 @@ export const DigitalSignage: React.FC<DigitalSignageProps> = ({
                                 <QRCodeSVG value={qrUrl} size={380} level="H" className="rounded-2xl" />
                                 <div className="absolute -bottom-6 -right-6 bg-stone-900 text-white px-6 py-3 rounded-2xl font-bold shadow-xl border border-white/10 flex items-center gap-2">
                                     <SignalIcon className="w-5 h-5 text-green-400 animate-pulse" />
-                                    Scan Me
+                                    สแกนเลย
                                 </div>
                             </div>
                         </div>
@@ -140,15 +140,15 @@ export const DigitalSignage: React.FC<DigitalSignageProps> = ({
                             <>
                                 <div className="mx-12 text-2xl font-medium text-white/80 flex items-center gap-4">
                                     <span className="w-2 h-2 rounded-full bg-primary" />
-                                    Scan QR code to start requesting songs 🎵
+                                    สแกน QR code เพื่อเริ่มเลือกเพลง 🎵
                                 </div>
                                 <div className="mx-12 text-2xl font-medium text-white/80 flex items-center gap-4">
                                     <span className="w-2 h-2 rounded-full bg-green-500" />
-                                    Order food & drinks directly from your phone 🍟🍺
+                                    สั่งอาหารและเครื่องดื่มได้ทันทีจากมือถือของคุณ 🍟🍺
                                 </div>
                                 <div className="mx-12 text-2xl font-medium text-white/80 flex items-center gap-4">
                                     <span className="w-2 h-2 rounded-full bg-yellow-500" />
-                                    Promotion: Happy Hour 50% Off 17:00 - 20:00! 🎉
+                                    โปรโมชั่น: Happy Hour ลด 50% ช่วงเวลา 17:00 - 20:00! 🎉
                                 </div>
                             </>
                         )}

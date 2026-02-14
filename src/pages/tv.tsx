@@ -4,7 +4,7 @@ import { useRouter } from 'next/router';
 import { ref, onValue, off, set, update } from 'firebase/database';
 import { signInAnonymously } from 'firebase/auth';
 import { realtimeDb, auth } from '@/firebase';
-import { useCommandExecutor } from '../modules/tv/hooks/useCommandExecutor'; // Note: Reusing hook
+// import { useCommandExecutor } from '../modules/tv/hooks/useCommandExecutor'; 
 import { SmartTVPlayer } from '../modules/tv/components/SmartTVPlayer';
 import { DigitalSignage } from '../modules/tv/components/DigitalSignage';
 import { CastState } from '../types/castCommands';
@@ -27,6 +27,7 @@ const TVPage = () => {
     const [isAuthReady, setIsAuthReady] = useState(false);
     const [player, setPlayer] = useState<any>(null);
     const [isPlayerReady, setIsPlayerReady] = useState(false);
+    const [connectedCount, setConnectedCount] = useState(0);
 
     // 1. Auth & Room Setup
     useEffect(() => {
@@ -67,16 +68,28 @@ const TVPage = () => {
             updatedAt: Date.now(),
         }).catch(err => console.error("Room init failed:", err));
 
-        // Listen for Updates
+        // Listen for Updates (State)
         const stateRef = ref(realtimeDb, `rooms/${roomCode}/state`);
-        const unsubscribe = onValue(stateRef, (snapshot) => {
+        const unsubscribeState = onValue(stateRef, (snapshot) => {
             const data = snapshot.val();
             if (data) setState(data);
         });
 
+        // Listen for Connections (Remotes)
+        const connectedRef = ref(realtimeDb, `rooms/${roomCode}/connected`);
+        const unsubscribeConnected = onValue(connectedRef, (snapshot) => {
+            if (snapshot.exists()) {
+                setConnectedCount(Object.keys(snapshot.val()).length);
+            } else {
+                setConnectedCount(0);
+            }
+        });
+
         return () => {
             off(stateRef);
-            unsubscribe();
+            off(connectedRef);
+            unsubscribeState();
+            unsubscribeConnected();
             // Optional: Delete room on disconnect? No, keep it for persistence.
         };
     }, [roomCode, isAuthReady]);
@@ -124,10 +137,10 @@ const TVPage = () => {
     };
 
     // Derived State
-    const isIdle = !state.currentVideo && (state.queue || []).length === 0;
+    const isIdle = !state.currentVideo && (state.queue || []).length === 0 && connectedCount === 0;
     const nextVideo = (state.queue || [])[state.currentIndex + 1] || null;
 
-    if (!roomCode) return <div className="bg-black text-white h-screen flex items-center justify-center">Loading TV...</div>;
+    if (!roomCode) return <div className="bg-black text-white h-screen flex items-center justify-center">กำลังโหลด TV...</div>;
 
     return (
         <div className="relative h-screen w-screen bg-black overflow-hidden font-sans select-none cursor-none">
@@ -149,7 +162,7 @@ const TVPage = () => {
                     messages={[
                         "ยินดีต้อนรับสู่ YouOke Karaoke! 🎤",
                         "โปรโมชั่น: สั่งอาหารครบ 500 บาท รับฟรีเฟรนช์ฟรายส์ 🍟",
-                        "สแกนเพื่อเริ่มร้องเพลงได้เลย ->"
+                        "สแกนรหัสเพื่อเชื่อมต่อรีโมท ->"
                     ]}
                 />
             </div>
@@ -163,7 +176,7 @@ const TVPage = () => {
                     isMuted={state.controls.isMuted}
                     onStateChange={handlePlayerStateChange}
                     onError={handlePlayerError}
-                    onReady={(p) => {
+                    onReady={(p: any) => {
                         setPlayer(p);
                         setIsPlayerReady(true);
                     }}

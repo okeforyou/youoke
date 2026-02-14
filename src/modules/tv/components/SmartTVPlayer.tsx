@@ -7,7 +7,7 @@ import { MusicalNoteIcon, UserIcon } from '@heroicons/react/24/outline';
 export interface VideoItem {
     videoId: string;
     title: string;
-    author: string;
+    author?: string | null; // Changed type to allow null
     addedBy?: {
         name?: string;
         displayName?: string;
@@ -134,51 +134,53 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
                                 e.currentTarget.srcset = "https://placehold.co/400x400/101010/FFF?text=Music";
                             }}
                         />
-                    </div>
+                    </div >
                     <div className="pb-1 min-w-0 flex-1">
                         <div className="flex items-center gap-3 mb-3">
-                            <span className="bg-primary px-3 py-1 rounded text-[10px] font-black uppercase tracking-wider text-white shadow-lg shadow-primary/40 animate-pulse">Now Playing</span>
+                            <span className="bg-primary px-3 py-1 rounded text-[10px] font-black uppercase tracking-wider text-white shadow-lg shadow-primary/40 animate-pulse">กำลังเล่น</span>
                             {currentVideo.addedBy && (
                                 <span className="flex items-center gap-1.5 text-xs font-bold text-white/70 bg-black/40 px-3 py-1 rounded-full border border-white/10 backdrop-blur-md">
                                     <UserIcon className="w-3 h-3 text-white/50" />
-                                    {currentVideo.addedBy.displayName || currentVideo.addedBy.name || 'Guest'}
+                                    {currentVideo.addedBy.displayName || currentVideo.addedBy.name || 'แขก'}
                                 </span>
                             )}
                         </div>
                         <h2 className="text-5xl font-black text-white leading-tight drop-shadow-2xl truncate pr-10 tracking-tighter">{currentVideo.title}</h2>
-                        <p className="text-2xl text-white/60 mt-2 font-medium truncate drop-shadow-md">{currentVideo.author}</p>
+                        <p className="text-2xl text-white/60 mt-2 font-medium truncate drop-shadow-md">{currentVideo.author || ''}</p>
                     </div>
-                </div>
-            </div>
+                </div >
+            </div >
 
             {/* 4. Next Up (Dynamic) */}
-            {nextVideo && showInfoToast && (
-                <div
-                    className="absolute bottom-12 right-12 bg-black/40 backdrop-blur-md border border-white/10 p-4 rounded-xl max-w-sm opacity-0 translate-x-10 transition-all duration-1000 delay-500"
-                    ref={(el) => {
-                        if (el) setTimeout(() => {
-                            el.classList.remove('opacity-0', 'translate-x-10');
-                        }, 100);
-                    }}
-                >
-                    <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold mb-2">Up Next</p>
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded bg-zinc-800 relative overflow-hidden shrink-0">
-                            <Image
-                                unoptimized
-                                src={`https://i.ytimg.com/vi/${nextVideo.videoId}/mqdefault.jpg`}
-                                fill
-                                className="object-cover opacity-80"
-                                alt="Next"
-                            />
-                        </div>
-                        <div className="min-w-0">
-                            <p className="text-white font-medium text-sm truncate">{nextVideo.title}</p>
-                            <p className="text-white/40 text-xs truncate">{nextVideo.addedBy?.displayName || 'Guest'}</p>
+            {
+                nextVideo && showInfoToast && (
+                    <div
+                        className="absolute bottom-12 right-12 bg-black/40 backdrop-blur-md border border-white/10 p-4 rounded-xl max-w-sm opacity-0 translate-x-10 transition-all duration-1000 delay-500"
+                        ref={(el) => {
+                            if (el) setTimeout(() => {
+                                el.classList.remove('opacity-0', 'translate-x-10');
+                            }, 100);
+                        }}
+                    >
+                        <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold mb-2">คิวถัดไป</p>
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded bg-zinc-800 relative overflow-hidden shrink-0">
+                                <Image
+                                    unoptimized
+                                    src={`https://i.ytimg.com/vi/${nextVideo.videoId}/mqdefault.jpg`}
+                                    fill
+                                    className="object-cover opacity-80"
+                                    alt="Next"
+                                />
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-white font-medium text-sm truncate">{nextVideo.title}</p>
+                                <p className="text-white/40 text-xs truncate">{nextVideo.addedBy?.displayName || 'แขก'}</p>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 };
