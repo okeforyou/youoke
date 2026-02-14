@@ -28,8 +28,8 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
     }
 
     // Logged in but not admin - redirect to home
-    if (user.role !== 'admin') {
-      console.warn(`⛔ [AdminRoute] Role '${user.role}' is not 'admin' -> Redirecting to Home`);
+    if (user?.role !== 'admin') {
+      console.warn(`⛔ [AdminRoute] Role '${user?.role}' is not 'admin' -> Redirecting to Home`);
       router.push("/");
       return;
     }

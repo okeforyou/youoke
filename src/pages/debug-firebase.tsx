@@ -41,7 +41,7 @@ export default function DebugFirebase() {
       await set(testRef, {
         message: 'Test write',
         timestamp: Date.now(),
-        userId: user.uid,
+        userId: user?.uid,
       });
       setTestResult('✅ Write successful!');
     } catch (error: any) {

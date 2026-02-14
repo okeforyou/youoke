@@ -1,10 +1,3 @@
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  GoogleAuthProvider,
-  signInWithPopup,
-} from 'firebase/auth'
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { auth } from '@/firebase'
 import { useAuthStore } from '@/modules/auth/useAuthStore';
@@ -18,11 +11,33 @@ interface UserType {
   displayName?: string | null;
 }
 
+interface AuthContextProps {
+  user: UserType | null;
+  loading: boolean;
+  signUp: any;
+  signup: any;
+  logIn: any;
+  login: any;
+  logOut: any;
+  logout: any;
+  signInWithGoogle: any;
+}
+
 // Create auth context
-const AuthContext = createContext({});
+const AuthContext = createContext<AuthContextProps>({
+  user: null,
+  loading: true,
+  signUp: () => { },
+  signup: () => { },
+  logIn: () => { },
+  login: () => { },
+  logOut: () => { },
+  logout: () => { },
+  signInWithGoogle: () => { },
+});
 
 // Make auth context available across the app by exporting it
-export const useAuth = () => useContext<any>(AuthContext);
+export const useAuth = () => useContext(AuthContext);
 
 // Create the auth context provider
 export const AuthContextProvider = ({
@@ -39,13 +54,7 @@ export const AuthContextProvider = ({
     isLoading
   } = useAuthStore();
 
-  const [user, setUser] = useState<UserType>({
-    email: null,
-    uid: null,
-    role: null,
-    tier: null,
-    displayName: null,
-  });
+  const [user, setUser] = useState<UserType | null>(null);
 
   useEffect(() => {
     if (storeUser) {
@@ -57,13 +66,7 @@ export const AuthContextProvider = ({
         displayName: storeUser.displayName,
       });
     } else {
-      setUser({
-        email: null,
-        uid: null,
-        role: null,
-        tier: null,
-        displayName: null,
-      });
+      setUser(null);
     }
   }, [storeUser]);
 
@@ -76,7 +79,7 @@ export const AuthContextProvider = ({
 
   // force refresh the token every 10 minutes
   useEffect(() => {
-    if (!auth) return;
+    if (typeof window === 'undefined' || !auth) return;
 
     const handle = setInterval(async () => {
       if (auth) {
@@ -92,8 +95,18 @@ export const AuthContextProvider = ({
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, signUp, logIn, logOut, signInWithGoogle }}>
-      {isLoading ? null : children}
+    <AuthContext.Provider value={{
+      user,
+      loading,
+      signUp,
+      signup: signUp,
+      logIn,
+      login: logIn,
+      logOut,
+      logout: logOut,
+      signInWithGoogle
+    }}>
+      {children}
     </AuthContext.Provider>
   );
 };
