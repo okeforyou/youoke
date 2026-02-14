@@ -5,11 +5,8 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth'
-import { doc, getDoc } from 'firebase/firestore';
-import nookies from 'nookies'
 import React, { createContext, useContext, useEffect, useState } from 'react'
-
-import { auth, database } from '@/firebase'
+import { auth } from '@/firebase'
 import { useAuthStore } from '@/modules/auth/useAuthStore';
 
 // User data type interface
@@ -33,50 +30,70 @@ export const AuthContextProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  // 🔄 BRIDGE: Unified Auth State from Store
   const {
     user: storeUser,
-    isLoading: storeLoading,
-    signIn,
+    signIn: storeSignIn,
     signUp: storeSignUp,
     signOut: storeSignOut,
-    signInWithGoogle: storeGoogleSignIn
+    signInWithGoogle: storeGoogleSignIn,
+    isLoading
   } = useAuthStore();
 
-  // Map store user to legacy return type if necessary, 
-  // but useAuthStore's user is already more complete.
-  const user = storeUser as any;
-  const loading = storeLoading;
+  const [user, setUser] = useState<UserType>({
+    email: null,
+    uid: null,
+    role: null,
+    tier: null,
+    displayName: null,
+  });
 
-  // force refresh the token every 10 minutes (Parity with legacy behavior)
   useEffect(() => {
-    // Skip if Firebase auth is not configured
-    if (!auth) {
-      return;
+    if (storeUser) {
+      setUser({
+        email: storeUser.email,
+        uid: storeUser.uid,
+        role: storeUser.role,
+        tier: storeUser.membership?.type,
+        displayName: storeUser.displayName,
+      });
+    } else {
+      setUser({
+        email: null,
+        uid: null,
+        role: null,
+        tier: null,
+        displayName: null,
+      });
     }
+  }, [storeUser]);
+
+  // Compatibility actions
+  const signUp = storeSignUp;
+  const logIn = storeSignIn;
+  const logOut = storeSignOut;
+  const signInWithGoogle = storeGoogleSignIn;
+  const loading = isLoading;
+
+  // force refresh the token every 10 minutes
+  useEffect(() => {
+    if (!auth) return;
 
     const handle = setInterval(async () => {
-      if (!auth) return;
-      const user = auth.currentUser;
-      if (user) {
-        console.log('🔄 [AuthContext] Periodic ID Token Refresh...');
-        await user.getIdToken(true);
+      if (auth) {
+        const currentUser = auth.currentUser;
+        if (currentUser) {
+          console.log('🔄 [AuthContext] Periodic ID Token Refresh...');
+          await currentUser.getIdToken(true);
+        }
       }
     }, 10 * 60 * 1000);
 
-    // clean up setInterval
     return () => clearInterval(handle);
   }, []);
 
-  // Wrappers for backward compatibility
-  const signUp = (email: string, password: string) => storeSignUp(email, password);
-  const logIn = (email: string, password: string) => signIn(email, password);
-  const logOut = async () => storeSignOut();
-  const signInWithGoogle = async () => storeGoogleSignIn();
-
   return (
     <AuthContext.Provider value={{ user, loading, signUp, logIn, logOut, signInWithGoogle }}>
-      {children}
+      {isLoading ? null : children}
     </AuthContext.Provider>
   );
 };
