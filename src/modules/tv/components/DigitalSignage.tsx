@@ -63,7 +63,14 @@ export const DigitalSignage: React.FC<DigitalSignageProps> = ({
             {/* 2. Main Content (QR & Room Code) */}
             <div className="relative z-10 flex-1 flex items-center justify-center p-12 gap-16">
                 {/* Left: Call to Action */}
-                <div className="flex flex-col items-center space-y-8 animate-in slide-in-from-left duration-1000">
+                <div
+                    className="flex flex-col items-center space-y-8 opacity-0 -translate-x-10 transition-all duration-1000"
+                    ref={(el) => {
+                        if (el) setTimeout(() => {
+                            el.classList.remove('opacity-0', '-translate-x-10');
+                        }, 100);
+                    }}
+                >
                     <div className="bg-white p-4 rounded-[40px] shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-500">
                         <QRCodeSVG value={qrUrl} size={320} level="H" className="rounded-2xl" />
                     </div>
@@ -76,7 +83,14 @@ export const DigitalSignage: React.FC<DigitalSignageProps> = ({
                 </div>
 
                 {/* Right: Messages / Instructions */}
-                <div className="max-w-xl space-y-6 text-white text-left animate-in slide-in-from-right duration-1000 delay-300">
+                <div
+                    className="max-w-xl space-y-6 text-white text-left opacity-0 translate-x-10 transition-all duration-1000 delay-300"
+                    ref={(el) => {
+                        if (el) setTimeout(() => {
+                            el.classList.remove('opacity-0', 'translate-x-10');
+                        }, 100);
+                    }}
+                >
                     <h1 className="text-6xl font-bold leading-tight">
                         ร้องเพลงง่ายๆ<br />
                         <span className="text-primary">ผ่านมือถือคุณ</span>

@@ -153,7 +153,14 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
 
             {/* 4. Next Up (Dynamic) */}
             {nextVideo && showInfoToast && (
-                <div className="absolute bottom-12 right-12 bg-black/40 backdrop-blur-md border border-white/10 p-4 rounded-xl max-w-sm animate-in fade-in slide-in-from-right-10 duration-1000 delay-500">
+                <div
+                    className="absolute bottom-12 right-12 bg-black/40 backdrop-blur-md border border-white/10 p-4 rounded-xl max-w-sm opacity-0 translate-x-10 transition-all duration-1000 delay-500"
+                    ref={(el) => {
+                        if (el) setTimeout(() => {
+                            el.classList.remove('opacity-0', 'translate-x-10');
+                        }, 100);
+                    }}
+                >
                     <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold mb-2">Up Next</p>
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded bg-zinc-800 relative overflow-hidden shrink-0">
