@@ -1,7 +1,7 @@
 import React, { ReactNode, useState, useEffect, useRef, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import clsx from 'clsx';
-import { Menu, Search, ListMusic, Home, X, Monitor, MessageCircle, Shield, Key, Smartphone, Flame, Library, Mic, Music, ChevronDown, ChevronRight, ChevronLeft, Cast, Disc, LogOut, UserCheck, Settings, Info, PartyPopper, Star, Trash2, EyeOff, User, Maximize } from 'lucide-react'; // V2.22.0-FINAL
+import { Menu, Search, ListMusic, Home, X, Monitor, MessageCircle, Shield, Key, Smartphone, Flame, Library, Mic, Music, ChevronDown, ChevronRight, ChevronLeft, Cast, Disc, LogOut, UserCheck, Settings, Info, PartyPopper, Star, Trash2, EyeOff, User, Maximize } from 'lucide-react'; // V2.24.0-ULTRASHARP
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { DebounceInput } from 'react-debounce-input';
@@ -307,7 +307,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         <div className="flex items-center gap-2">
                             <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center text-primary font-bold">Y</div>
                             <span className="font-bold text-lg text-gray-900">YouOke</span>
-                            <span className="text-[10px] font-bold bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-md hidden sm:inline-block">v2.22.0-FINAL</span>
+                            <span className="text-[10px] font-bold bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-md hidden sm:inline-block">v2.24.0-ULTRASHARP</span>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -655,7 +655,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         <div>
                             <div className="flex items-center gap-2">
                                 <h1 className="text-lg font-bold tracking-tight leading-none text-gray-900">YouOke</h1>
-                                <span className="text-[10px] font-bold bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-md">v2.22.0-FINAL</span>
+                                <span className="text-[10px] font-bold bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-md">v2.24.0-ULTRASHARP</span>
                             </div>
                             <p className="text-[10px] text-gray-500 font-medium tracking-wide">Karaoke Online</p>
                         </div>

@@ -1,9 +1,8 @@
 import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Menu, Trash2, Music } from 'lucide-react';
+import { Menu, Trash2, Music } from 'lucide-react'; // V2.24.0-ULTRASHARP
 import Image from 'next/image';
-import { QueueItem } from '../../../modules/player/types';
 
 interface DraggableQueueItemProps {
     video: any;
@@ -31,8 +30,8 @@ export const DraggableQueueItem: React.FC<DraggableQueueItemProps> = ({
 
     const style = {
         transform: CSS.Transform.toString(transform),
-        transition: isDragging ? undefined : transition, // CRITICAL: No transition during drag = zero lag
-        opacity: isDragging ? 0.95 : 1, // Match Main App (more solid feel)
+        transition: isDragging ? undefined : transition,
+        opacity: isDragging ? 0.95 : 1,
         zIndex: isDragging ? 50 : 'auto',
     };
 
@@ -41,14 +40,14 @@ export const DraggableQueueItem: React.FC<DraggableQueueItemProps> = ({
             ref={setNodeRef}
             style={style}
             className={`p-3.5 rounded-2xl border flex gap-3.5 items-center ${isDragging
-                ? 'shadow-2xl border-primary bg-stone-900/40 text-white'
-                : 'shadow-xl shadow-black/[0.03]'
+                ? 'border-primary bg-stone-900/40 text-white'
+                : 'shadow-none'
                 } ${theme === 'dark'
-                    ? 'bg-stone-900 border-white/5 text-white shadow-black/40'
-                    : 'bg-white border-gray-100 text-gray-900'
+                    ? 'bg-stone-900 border-white/5 text-white'
+                    : 'bg-white border-gray-100 text-gray-900 border-gray-300'
                 } transition-colors duration-200`}
         >
-            {/* Drag Handle (V1 Style - Menu icon matches Main App) */}
+            {/* Drag Handle */}
             <div
                 {...attributes}
                 {...listeners}
@@ -58,8 +57,8 @@ export const DraggableQueueItem: React.FC<DraggableQueueItemProps> = ({
                 <Menu size={20} strokeWidth={2.5} className="opacity-60" />
             </div>
 
-            {/* Song Thumbnail (Instead of Numbers - V1 Style) */}
-            <div className={`w-12 h-8 rounded-lg overflow-hidden shrink-0 relative bg-black/20 border ${theme === 'dark' ? 'border-white/5' : 'border-gray-100 shadow-sm'}`}>
+            {/* Song Thumbnail */}
+            <div className={`w-12 h-8 rounded-lg overflow-hidden shrink-0 relative bg-black/20 border ${theme === 'dark' ? 'border-white/5' : 'border-gray-100'}`}>
                 <Image
                     unoptimized
                     src={
@@ -78,7 +77,7 @@ export const DraggableQueueItem: React.FC<DraggableQueueItemProps> = ({
                 />
             </div>
 
-            {/* Song Info (High Contrast) */}
+            {/* Song Info */}
             <div className="flex-1 min-w-0">
                 <h4 className="font-black text-[14px] truncate leading-tight tracking-tight uppercase">{video.title}</h4>
                 <div className="flex items-center gap-2 mt-0.5">
@@ -93,7 +92,7 @@ export const DraggableQueueItem: React.FC<DraggableQueueItemProps> = ({
                 </div>
             </div>
 
-            {/* Remove Button (V1 Minimalist) */}
+            {/* Remove Button */}
             {onRemove && (
                 <button
                     onClick={() => onRemove(uniqueId)}
@@ -104,4 +103,4 @@ export const DraggableQueueItem: React.FC<DraggableQueueItemProps> = ({
             )}
         </div>
     );
-}
+};
