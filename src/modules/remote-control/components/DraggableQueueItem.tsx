@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Menu, Trash2, Music } from 'lucide-react'; // V2.26.0-GHOST
+import { Menu, Trash2, Music } from 'lucide-react'; // V2.28.0-VANISH
 import Image from 'next/image';
 
 interface DraggableQueueItemProps {

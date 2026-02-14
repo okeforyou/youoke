@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Maximize2, Minimize2, X, Play, Pause, Music, User } from 'lucide-react'; // Player V2.6.0 Ghost
+import { Maximize2, Minimize2, X, Play, Pause, Music, User } from 'lucide-react'; // Player V2.8.0 Vanish
 import Image from "next/image";
 // import YouTube from "react-youtube"; // Removing direct dependency
 import { UniversalPlayer } from "./UniversalPlayer";
@@ -36,6 +36,37 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false }: SidebarPl
         }))
     );
     const playerRef = useRef<any>(null);
+    const controlsTimerRef = useRef<NodeJS.Timeout | null>(null);
+    const [showMiniControls, setShowMiniControls] = useState(false);
+
+    // 🕵️ ACTIVITY TRACKING (Auto-hide controls after 5s)
+    const handleActivity = () => {
+        if (layoutMode !== 'fullscreen') return;
+
+        setShowMiniControls(true);
+
+        if (controlsTimerRef.current) {
+            clearTimeout(controlsTimerRef.current);
+        }
+
+        controlsTimerRef.current = setTimeout(() => {
+            setShowMiniControls(false);
+        }, 5000); // 5 Seconds Vanish
+    };
+
+    // Reset when exiting fullscreen
+    useEffect(() => {
+        if (layoutMode !== 'fullscreen') {
+            setShowMiniControls(false);
+            if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
+        }
+    }, [layoutMode]);
+
+    useEffect(() => {
+        return () => {
+            if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
+        };
+    }, []);
 
     // System Config Check for Allowed Sources
     const { config } = useSystemConfig();
@@ -295,7 +326,12 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false }: SidebarPl
 
     // 2. Standard Video Mode
     return (
-        <div className="w-full h-full relative group">
+        <div
+            className="w-full h-full relative group"
+            onMouseMove={handleActivity}
+            onClick={handleActivity}
+            onTouchStart={handleActivity}
+        >
             {/* Universal Player Layer (Youtube / MIDI / VCD) */}
             {/* CRITICAL FIX: Unmount player if DJ Overlay is active to prevent "Seek failed" and state conflicts */}
             {!showDjOverlay && (
@@ -336,10 +372,10 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false }: SidebarPl
                 </div>
             )}
 
-            {/* 🎯 YOUTUBE-STYLE MINI CONTROLS (Fullscreen Only - Rounded Capsule - GHOST MODE) */}
+            {/* 🎯 YOUTUBE-STYLE MINI CONTROLS (Fullscreen Only - Rounded Capsule - VANISHING MODE) */}
             {layoutMode === 'fullscreen' && (
                 <div
-                    className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-50 flex items-center gap-1 p-1.5 bg-black/60 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl shadow-black/60 transition-all duration-500 ease-out opacity-0 group-hover:opacity-100 cursor-default"
+                    className={`absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-50 flex items-center gap-1 p-1.5 bg-black/60 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl shadow-black/60 transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] cursor-default ${showMiniControls ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}
                 >
                     {/* Play/Pause */}
                     <button
