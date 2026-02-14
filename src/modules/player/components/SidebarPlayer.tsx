@@ -334,40 +334,41 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false }: SidebarPl
                 </div>
             )}
 
-            {/* 🎯 SHARP V1 MINI CONTROLS (Responsive - Bottom Center) */}
-            <div
-                className={`absolute left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 p-1.5 bg-stone-900/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-xl shadow-black/40 transition-all duration-500 ease-out 
-                    ${layoutMode === 'fullscreen' ? 'bottom-10 scale-100' : 'bottom-6 scale-[0.85] opacity-90 hover:opacity-100 hover:scale-90'}`}
-            >
-                {/* Play/Pause */}
-                <button
-                    onClick={() => usePlayerStore.getState().togglePlay()}
-                    className={`w-12 h-12 flex items-center justify-center rounded-xl transition-all active:scale-95 ${isPlaying ? 'bg-white/5 text-white/50 hover:text-white' : 'bg-primary text-white shadow-lg shadow-primary/20'}`}
-                    title={isPlaying ? "Pause" : "Play"}
+            {/* 🎯 YOUTUBE-STYLE MINI CONTROLS (Fullscreen Only - Rounded Capsule) */}
+            {layoutMode === 'fullscreen' && (
+                <div
+                    className="absolute left-1/2 -translate-x-1/2 bottom-10 z-50 flex items-center gap-1 p-1.5 bg-black/60 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl shadow-black/60 transition-all duration-500 ease-out"
                 >
-                    {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" className="ml-1" />}
-                </button>
+                    {/* Play/Pause */}
+                    <button
+                        onClick={() => usePlayerStore.getState().togglePlay()}
+                        className={`w-11 h-11 flex items-center justify-center rounded-full transition-all active:scale-90 ${isPlaying ? 'text-white/70 hover:text-white hover:bg-white/10' : 'bg-primary text-white shadow-lg shadow-primary/20'}`}
+                        title={isPlaying ? "Pause" : "Play"}
+                    >
+                        {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-1" />}
+                    </button>
 
-                {/* Fullscreen Toggle */}
-                <button
-                    onClick={toggleFullscreen}
-                    className="w-12 h-12 flex items-center justify-center rounded-xl bg-white/5 text-white/50 hover:text-white hover:bg-white/10 transition-all active:scale-95"
-                    title={layoutMode === 'fullscreen' ? "ย่อหน้าจอ" : "ขยายเต็มจอ"}
-                >
-                    {layoutMode === 'fullscreen' ? <Minimize2 size={24} /> : <Maximize2 size={24} />}
-                </button>
+                    <div className="w-[1px] h-6 bg-white/10 mx-1" />
 
-                {/* Exit Button (Fullscreen Only) */}
-                {layoutMode === 'fullscreen' && (
+                    {/* Exit Fullscreen Toggle */}
+                    <button
+                        onClick={toggleFullscreen}
+                        className="w-11 h-11 flex items-center justify-center rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-all active:scale-90"
+                        title="ย่อหน้าจอ"
+                    >
+                        <Minimize2 size={20} />
+                    </button>
+
+                    {/* Exit to Split Mode */}
                     <button
                         onClick={() => usePlayerStore.getState().setLayoutMode('split')}
-                        className="w-12 h-12 flex items-center justify-center rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all active:scale-95 border border-red-500/20"
+                        className="w-11 h-11 flex items-center justify-center rounded-full text-red-400 hover:text-white hover:bg-red-500 transition-all active:scale-90"
                         title="ออกจากหน้าจอเต็มจอ"
                     >
-                        <X size={24} strokeWidth={3} />
+                        <X size={20} strokeWidth={3} />
                     </button>
-                )}
-            </div>
+                </div>
+            )}
 
             {/* Added By / Up Next Toast (Top-Right - Sharp V2 Metadata-Rich) */}
             {showToast && (toastType === 'added' ? currentVideo : upNextVideo) && (
