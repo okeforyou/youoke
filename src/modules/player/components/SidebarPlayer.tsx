@@ -194,6 +194,29 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false }: SidebarPl
     const [upNextVideo, setUpNextVideo] = useState<any>(null);
     const hasShownUpNext = useRef<string | null>(null);
 
+    // 🖥️ Fullscreen Security Fix: Detect if we are "fake fullscreen" and need a click
+    const [needsFullscreenClick, setNeedsFullscreenClick] = useState(false);
+
+    useEffect(() => {
+        if (layoutMode === 'fullscreen' && !document.fullscreenElement) {
+            setNeedsFullscreenClick(true);
+        } else {
+            setNeedsFullscreenClick(false);
+        }
+    }, [layoutMode]);
+
+    // Handle the "force fullscreen" click
+    const confirmFullscreen = () => {
+        if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen()
+                .then(() => setNeedsFullscreenClick(false))
+                .catch(e => console.warn("FS Error:", e));
+        } else if ((document.documentElement as any).webkitRequestFullscreen) {
+            (document.documentElement as any).webkitRequestFullscreen();
+            setNeedsFullscreenClick(false);
+        }
+    };
+
     // Track "Up Next" logic
     useEffect(() => {
         if (!isPlaying || duration <= 0) return;
@@ -336,79 +359,94 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false }: SidebarPl
 
             {/* 🎯 YOUTUBE-STYLE MINI CONTROLS (Fullscreen Only - Rounded Capsule) */}
             {layoutMode === 'fullscreen' && (
-                <div
-                    className="absolute left-1/2 -translate-x-1/2 bottom-10 z-50 flex items-center gap-1 p-1.5 bg-black/60 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl shadow-black/60 transition-all duration-500 ease-out"
-                >
-                    {/* Play/Pause */}
-                    <button
-                        onClick={() => usePlayerStore.getState().togglePlay()}
-                        className={`w-11 h-11 flex items-center justify-center rounded-full transition-all active:scale-90 ${isPlaying ? 'text-white/70 hover:text-white hover:bg-white/10' : 'bg-primary text-white shadow-lg shadow-primary/20'}`}
-                        title={isPlaying ? "Pause" : "Play"}
-                    >
-                        {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-1" />}
-                    </button>
-
-                    <div className="w-[1px] h-6 bg-white/10 mx-1" />
-
-                    {/* Exit Fullscreen Toggle */}
-                    <button
-                        onClick={toggleFullscreen}
-                        className="w-11 h-11 flex items-center justify-center rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-all active:scale-90"
-                        title="ย่อหน้าจอ"
-                    >
-                        <Minimize2 size={20} />
-                    </button>
-
-                    {/* Exit to Split Mode */}
-                    <button
-                        onClick={() => usePlayerStore.getState().setLayoutMode('split')}
-                        className="w-11 h-11 flex items-center justify-center rounded-full text-red-400 hover:text-white hover:bg-red-500 transition-all active:scale-90"
-                        title="ออกจากหน้าจอเต็มจอ"
-                    >
-                        <X size={20} strokeWidth={3} />
-                    </button>
-                </div>
-            )}
-
-            {/* Added By / Up Next Toast (Top-Right - Sharp V2 Metadata-Rich) */}
-            {showToast && (toastType === 'added' ? currentVideo : upNextVideo) && (
-                <div className={`absolute top-6 right-6 z-[60] transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] ${showToast ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4 pointer-events-none'}`}>
-                    <div className="flex items-center gap-4 bg-stone-900/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-2.5 pr-6 shadow-2xl ring-1 ring-white/5 min-w-[320px] max-w-md">
-                        {/* Thumbnail */}
-                        <div className="w-16 h-16 rounded-xl overflow-hidden border border-white/5 shadow-inner shrink-0 relative bg-black/40">
-                            <Image
-                                unoptimized
-                                src={(toastType === 'added' ? currentVideo : upNextVideo).thumbnail || `https://i.ytimg.com/vi/${(toastType === 'added' ? currentVideo : upNextVideo).videoId}/mqdefault.jpg`}
-                                fill
-                                className="object-cover"
-                                alt="Cover"
-                            />
-                        </div>
-
-                        {/* Info */}
-                        <div className="flex flex-col min-w-0 flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                                <span className={`text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${toastType === 'upnext' ? 'bg-amber-500 text-black' : 'bg-primary text-white'}`}>
-                                    {toastType === 'upnext' ? 'ลำดับถัดไป' : 'กำลังเล่น'}
-                                </span>
-                                {(toastType === 'added' ? currentVideo : upNextVideo).addedBy && (
-                                    <span className="text-[10px] text-white/40 font-bold flex items-center gap-1">
-                                        <User size={10} className="text-primary" />
-                                        {((toastType === 'added' ? currentVideo : upNextVideo).addedBy as any).name || (toastType === 'added' ? currentVideo : upNextVideo).addedBy.displayName}
-                                    </span>
-                                )}
+                <>
+                    {/* Fullscreen Confirmation Overlay (If triggered by Remote) */}
+                    {needsFullscreenClick && (
+                        <div
+                            onClick={confirmFullscreen}
+                            className="absolute inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm cursor-pointer animate-pulse"
+                        >
+                            <div className="bg-white/10 p-6 rounded-3xl border border-white/20 text-center transform hover:scale-105 transition-transform">
+                                <Maximize2 size={48} className="mx-auto text-white mb-4" />
+                                <h3 className="text-xl font-bold text-white">แตะเพื่อขยายเต็มจอ</h3>
+                                <p className="text-white/60 text-sm mt-2">Remote สั่งงานมาแล้ว กรุณายืนยัน</p>
                             </div>
-                            <h3 className="text-[15px] font-black text-white leading-tight truncate">
-                                {(toastType === 'added' ? currentVideo : upNextVideo).title}
-                            </h3>
-                            <p className="text-[12px] font-bold text-white/50 truncate mt-0.5">
-                                {(toastType === 'added' ? currentVideo : upNextVideo).author}
-                            </p>
                         </div>
+                    )}
+
+                    <div
+                        className="absolute left-1/2 -translate-x-1/2 bottom-10 z-50 flex items-center gap-1 p-1.5 bg-black/60 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl shadow-black/60 transition-all duration-500 ease-out"
+                    >
+                        {/* Play/Pause */}
+                        <button
+                            onClick={() => usePlayerStore.getState().togglePlay()}
+                            className={`w-11 h-11 flex items-center justify-center rounded-full transition-all active:scale-90 ${isPlaying ? 'text-white/70 hover:text-white hover:bg-white/10' : 'bg-primary text-white shadow-lg shadow-primary/20'}`}
+                            title={isPlaying ? "Pause" : "Play"}
+                        >
+                            {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-1" />}
+                        </button>
+
+                        <div className="w-[1px] h-6 bg-white/10 mx-1" />
+
+                        {/* Exit Fullscreen Toggle */}
+                        <button
+                            onClick={toggleFullscreen}
+                            className="w-11 h-11 flex items-center justify-center rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-all active:scale-90"
+                            title="ย่อหน้าจอ"
+                        >
+                            <Minimize2 size={20} />
+                        </button>
+
+                        {/* Exit to Split Mode */}
+                        <button
+                            onClick={() => usePlayerStore.getState().setLayoutMode('split')}
+                            className="w-11 h-11 flex items-center justify-center rounded-full text-red-400 hover:text-white hover:bg-red-500 transition-all active:scale-90"
+                            title="ออกจากหน้าจอเต็มจอ"
+                        >
+                            <X size={20} strokeWidth={3} />
+                        </button>
                     </div>
-                </div>
             )}
 
-        </div>
-    );
+                    {/* Added By / Up Next Toast (Top-Right - Sharp V2 Metadata-Rich) */}
+                    {showToast && (toastType === 'added' ? currentVideo : upNextVideo) && (
+                        <div className={`absolute top-6 right-6 z-[60] transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] ${showToast ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4 pointer-events-none'}`}>
+                            <div className="flex items-center gap-4 bg-stone-900/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-2.5 pr-6 shadow-2xl ring-1 ring-white/5 min-w-[320px] max-w-md">
+                                {/* Thumbnail */}
+                                <div className="w-16 h-16 rounded-xl overflow-hidden border border-white/5 shadow-inner shrink-0 relative bg-black/40">
+                                    <Image
+                                        unoptimized
+                                        src={(toastType === 'added' ? currentVideo : upNextVideo).thumbnail || `https://i.ytimg.com/vi/${(toastType === 'added' ? currentVideo : upNextVideo).videoId}/mqdefault.jpg`}
+                                        fill
+                                        className="object-cover"
+                                        alt="Cover"
+                                    />
+                                </div>
+
+                                {/* Info */}
+                                <div className="flex flex-col min-w-0 flex-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className={`text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${toastType === 'upnext' ? 'bg-amber-500 text-black' : 'bg-primary text-white'}`}>
+                                            {toastType === 'upnext' ? 'ลำดับถัดไป' : 'กำลังเล่น'}
+                                        </span>
+                                        {(toastType === 'added' ? currentVideo : upNextVideo).addedBy && (
+                                            <span className="text-[10px] text-white/40 font-bold flex items-center gap-1">
+                                                <User size={10} className="text-primary" />
+                                                {((toastType === 'added' ? currentVideo : upNextVideo).addedBy as any).name || (toastType === 'added' ? currentVideo : upNextVideo).addedBy.displayName}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <h3 className="text-[15px] font-black text-white leading-tight truncate">
+                                        {(toastType === 'added' ? currentVideo : upNextVideo).title}
+                                    </h3>
+                                    <p className="text-[12px] font-bold text-white/50 truncate mt-0.5">
+                                        {(toastType === 'added' ? currentVideo : upNextVideo).author}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                </div>
+            );
 };
