@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 interface DigitalSignageProps {
     roomCode: string;
@@ -37,23 +36,29 @@ export const DigitalSignage: React.FC<DigitalSignageProps> = ({
 
     return (
         <div className="absolute inset-0 bg-black overflow-hidden flex flex-col">
-            {/* 1. Background Slideshow */}
-            <AnimatePresence mode='wait'>
-                <motion.div
-                    key={currentImageIndex}
-                    initial={{ opacity: 0, scale: 1.05 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 1.5 }}
-                    className="absolute inset-0 z-0"
-                >
+            {/* 1. Background Slideshow (CSS Transition) */}
+            <div className="absolute inset-0 z-0 transition-opacity duration-1000">
+                {/* We render all images but control opacity. Better for preloading. */}
+                {images.length > 0 ? (
+                    images.map((img, index) => (
+                        <div
+                            key={index}
+                            className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ${index === currentImageIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
+                                }`}
+                            style={{
+                                backgroundImage: `url(${img})`,
+                                transition: 'opacity 1.5s ease-in-out, transform 10s ease-out'
+                            }}
+                        />
+                    ))
+                ) : (
                     <div
                         className="absolute inset-0 bg-cover bg-center"
                         style={{ backgroundImage: `url(${activeImage})` }}
                     />
-                    <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" />
-                </motion.div>
-            </AnimatePresence>
+                )}
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" />
+            </div>
 
             {/* 2. Main Content (QR & Room Code) */}
             <div className="relative z-10 flex-1 flex items-center justify-center p-12 gap-16">
