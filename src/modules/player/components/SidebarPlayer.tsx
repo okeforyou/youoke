@@ -1,5 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Maximize2, Minimize2, X } from 'lucide-react';
+import { Maximize2, Minimize2, X, Play, Pause } from 'lucide-react';
 // import YouTube from "react-youtube"; // Removing direct dependency
 import { UniversalPlayer } from "./UniversalPlayer";
 import { usePlayerStore } from "../stores/usePlayerStore";
@@ -292,48 +291,52 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false }: SidebarPl
                 </div>
             )}
 
-            {/* Desktop Fullscreen Toggle (Top Left - Hover Only) */}
-            <button
-                onClick={toggleFullscreen}
-                className="absolute top-2 left-2 z-30 p-2 bg-black/40 text-white rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60 backdrop-blur-sm"
-                title={layoutMode === 'fullscreen' ? "ย่อหน้าจอ" : "ขยายเต็มจอ"}
-            >
-                {layoutMode === 'fullscreen' ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
-            </button>
-
-            {/* 🔴 High-Visibility Close Button (Fullscreen Only - Senior Friendly) */}
-            {layoutMode === 'fullscreen' && (
+            {/* 🎯 SHARP V1 MINI CONTROLS (Consolidated) */}
+            <div className="absolute bottom-6 right-6 z-50 flex items-center gap-2 p-1.5 bg-stone-900/95 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-xl shadow-black/40 transition-all duration-300">
+                {/* Play/Pause */}
                 <button
-                    onClick={() => usePlayerStore.getState().setLayoutMode('split')}
-                    className="absolute top-6 right-6 z-[100] w-14 h-14 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center shadow-2xl transition-all active:scale-90 border-4 border-white/20"
-                    title="ออกจากหน้าจอเต็มจอ"
+                    onClick={() => usePlayerStore.getState().togglePlay()}
+                    className={`w-12 h-12 flex items-center justify-center rounded-xl transition-all active:scale-95 ${isPlaying ? 'bg-white/5 text-white/50 hover:text-white' : 'bg-primary text-white shadow-lg shadow-primary/20'}`}
+                    title={isPlaying ? "Pause" : "Play"}
                 >
-                    <X size={32} strokeWidth={3} />
+                    {isPlaying ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" className="ml-1" />}
                 </button>
-            )}
 
-            {/* Daily Limit Badge (OLD) -> Quota Indicator (NEW) */}
-            {maxDailySongs > 0 && currentSource && !showDjOverlay && (
-                <div className="absolute top-4 right-4 z-20">
-                    <QuotaIndicator current={dailyCount} max={maxDailySongs} />
-                </div>
-            )}
+                {/* Fullscreen Toggle */}
+                <button
+                    onClick={toggleFullscreen}
+                    className="w-12 h-12 flex items-center justify-center rounded-xl bg-white/5 text-white/50 hover:text-white hover:bg-white/10 transition-all active:scale-95"
+                    title={layoutMode === 'fullscreen' ? "ย่อหน้าจอ" : "ขยายเต็มจอ"}
+                >
+                    {layoutMode === 'fullscreen' ? <Minimize2 size={24} /> : <Maximize2 size={24} />}
+                </button>
 
-            {/* Added By Toast (Animated) */}
+                {/* Exit Button (Fullscreen Only) */}
+                {layoutMode === 'fullscreen' && (
+                    <button
+                        onClick={() => usePlayerStore.getState().setLayoutMode('split')}
+                        className="w-12 h-12 flex items-center justify-center rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all active:scale-95 border border-red-500/20"
+                        title="ออกจากหน้าจอเต็มจอ"
+                    >
+                        <X size={24} strokeWidth={3} />
+                    </button>
+                )}
+            </div>
+
+            {/* Added By Toast (Repositioned to Top-Right - Sharp Style) */}
             {showToast && currentVideo?.addedBy && (
-                <div className={`absolute bottom-8 left-6 z-30 transition-all duration-700 ${showToast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                    <div className="flex items-center gap-4 bg-black/70 backdrop-blur-xl border border-white/10 rounded-full pl-2 pr-6 py-2 shadow-2xl ring-1 ring-white/5">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-xl shadow-inner text-white font-bold ring-2 ring-black/50">
-                            {/* Avatar or Initial */}
+                <div className={`absolute top-6 right-6 z-[60] transition-all duration-700 ${showToast ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'}`}>
+                    <div className="flex items-center gap-4 bg-stone-900/95 backdrop-blur-2xl border border-white/10 rounded-2xl pl-2 pr-6 py-2.5 shadow-2xl ring-1 ring-white/5">
+                        <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-primary to-rose-600 flex items-center justify-center text-lg shadow-inner text-white font-black ring-2 ring-black/50 overflow-hidden">
                             {currentVideo.addedBy.photoURL ? (
-                                <img src={currentVideo.addedBy.photoURL} className="w-full h-full rounded-full object-cover" />
+                                <img src={currentVideo.addedBy.photoURL} className="w-full h-full object-cover" />
                             ) : (
                                 <span>{((currentVideo.addedBy as any).name || currentVideo.addedBy.displayName || '?').charAt(0).toUpperCase()}</span>
                             )}
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-[10px] text-indigo-300 font-bold uppercase tracking-wider leading-none mb-1">ขอเพลงโดย</span>
-                            <span className="text-base font-bold text-white leading-none truncate max-w-[200px] drop-shadow-md">
+                            <span className="text-[10px] text-primary font-black uppercase tracking-widest leading-none mb-1 shadow-sm">ขอเพลงโดย</span>
+                            <span className="text-[15px] font-black text-white leading-none truncate max-w-[180px]">
                                 {(currentVideo.addedBy as any).name || currentVideo.addedBy.displayName}
                             </span>
                         </div>
