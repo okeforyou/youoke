@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { PlaylistService, CommunityPlaylist } from "../services/playlistService";
 import PlaylistCard from "./CardV2";
 import { getSkeletonItems } from "../utils/api";
-import { useToast } from "../context/ToastContext";
+import { useToast } from "@/context/ToastContext";
 import { useAuthStore } from "@/modules/auth/useAuthStore";
 import { TrophyIcon, FireIcon } from "@heroicons/react/24/solid";
 

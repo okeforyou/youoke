@@ -21,8 +21,9 @@ import {
   ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 import AdminLayout from "../layouts/AdminLayout";
-import { db } from "../../../../firebase";
-import { useToast } from "../../../../context/ToastContext";
+import { db } from "@/firebase";
+import { useAuth } from "@/context/AuthContext";
+import { useToast } from "@/context/ToastContext";
 
 interface Plan {
   id: string;

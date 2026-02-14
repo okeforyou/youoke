@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 
 import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
 
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { LoginType } from "../types/AuthTypes";
 import Alert, { AlertHandler } from "./Alert";
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import { useAds } from "../../../../context/AdsContext";
+import { useAds } from "@/context/AdsContext";
 import { Ad } from "../../../../services/adsServices";
 
 const MINUTES = 1;

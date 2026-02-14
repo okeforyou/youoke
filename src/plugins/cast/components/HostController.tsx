@@ -1,5 +1,5 @@
 import React from 'react';
-import { useFirebaseCast } from '../../../../context/FirebaseCastContext';
+import { useFirebaseCast } from '@/context/FirebaseCastContext';
 
 interface HostControllerProps {
     isCasting: boolean;

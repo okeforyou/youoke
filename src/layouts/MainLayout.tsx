@@ -18,7 +18,7 @@ import { useUIStore } from '../stores/useUIStore';
 import { MobileBottomNav } from '../components/navigation/MobileBottomNav';
 import { Sidebar } from '../components/navigation/Sidebar';
 import { useCast } from '../plugins/cast/context/CastContext';
-import { useToast } from '../context/ToastContext';
+import { useToast } from '@/context/ToastContext';
 import useIsMobile from '../hooks/isMobile';
 import { useShallow } from 'zustand/react/shallow';
 import { useRemoteHost } from '../hooks/useRemoteHost';

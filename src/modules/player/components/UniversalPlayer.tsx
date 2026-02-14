@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import YouTube from 'react-youtube';
 import { usePlayerStore } from '../stores/usePlayerStore';
 import { MidiCanvasRenderer } from './MidiCanvasRenderer';
-import { useMidiEngine } from '../../../context/MidiEngineContext';
+import { useMidiEngine } from '@/context/MidiEngineContext';
 import { playerService } from '../services/playerService';
 import { YouTubeAdapter } from '../adapters/YouTubeAdapter';
 

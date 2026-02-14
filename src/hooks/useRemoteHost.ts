@@ -3,7 +3,7 @@ import { realtimeDb } from '../firebase';
 import { ref, set, remove, onValue, onDisconnect, serverTimestamp, off, onChildAdded } from 'firebase/database';
 import { usePlayerStore } from '../modules/player/stores/usePlayerStore';
 import { useUIStore } from '../stores/useUIStore';
-import { useToast } from '../context/ToastContext';
+import { useToast } from '@/context/ToastContext';
 
 export type RemoteCommand = {
     type: 'PLAY' | 'PAUSE' | 'NEXT' | 'ADD_QUEUE' | 'ADD_TO_QUEUE' | 'SEEK' | 'TOGGLE_FULLSCREEN' | 'SET_FULLSCREEN' | 'REORDER_QUEUE' | 'REMOVE_AT' | 'TOGGLE_QUEUE_OVERLAY';

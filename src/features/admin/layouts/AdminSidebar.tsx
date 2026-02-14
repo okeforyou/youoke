@@ -14,7 +14,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from "../../../../firebase";
-import { useAuth } from "../../../../context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { cn } from "../../../utils/cn";
 
 interface AdminSidebarProps {

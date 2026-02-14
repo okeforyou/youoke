@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { useMidiEngine } from '../../../context/MidiEngineContext';
+import { useMidiEngine } from '@/context/MidiEngineContext';
 
 // Simple visualizer for now, will enhance later
 export const MidiCanvasRenderer = () => {

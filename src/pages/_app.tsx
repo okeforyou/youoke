@@ -12,14 +12,14 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Analytics } from '@vercel/analytics/react'
 
 import GoogleAnalytics from '../components/GoogleAnalytics'
-import { AdsProvider } from '../context/AdsContext'
-import { AuthContextProvider } from '../context/AuthContext' // Re-enabled
+import { AdsProvider } from '@/context/AdsContext'
+import { AuthContextProvider } from '@/context/AuthContext' // Re-enabled
 import { useAuthStore } from '@/modules/auth/useAuthStore';
 import { CastProvider } from '../plugins/cast/context/CastContext'
-import { FirebaseCastProvider } from '../context/FirebaseCastContext'
-import { YouTubeCastProvider } from '../context/YouTubeCastContext'
-import { ToastProvider } from '../context/ToastContext'
-import { MidiEngineProvider } from '../context/MidiEngineContext'
+import { FirebaseCastProvider } from '@/context/FirebaseCastContext'
+import { YouTubeCastProvider } from '@/context/YouTubeCastContext'
+import { ToastProvider } from '@/context/ToastContext'
+import { MidiEngineProvider } from '@/context/MidiEngineContext'
 import { FontLoader } from '../components/FontLoader';
 // import { ErrorBoundary } from '../components/ErrorBoundary';
 

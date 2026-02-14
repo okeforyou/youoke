@@ -1,7 +1,7 @@
 import React from 'react';
 import { Cast } from 'lucide-react';
 import { useUIStore } from '../../../stores/useUIStore';
-import { useCast } from '../context/CastContext';
+import { useCast } from '@/plugins/cast/context/CastContext';
 
 interface UnifiedCastButtonProps {
     className?: string;
