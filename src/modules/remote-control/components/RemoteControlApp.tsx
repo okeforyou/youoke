@@ -365,6 +365,21 @@ export default function RemoteControlApp() {
             localStorage.setItem('youoke_guest_name', input.trim());
             setGuestName(input.trim());
             setShowNameModal(false);
+
+            // 📱 AUTO-FULLSCREEN TRIGGER (Piggyback on Join Gesture)
+            // Mobile browsers require a user gesture to enter fullscreen.
+            // By calling this here, we use the "Join" tap to hide the address bar.
+            try {
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        console.log('📱 Auto-Fullscreen blocked (expected on iOS Safari without PWA):', err);
+                    });
+                } else if ((document.documentElement as any).webkitRequestFullscreen) {
+                    (document.documentElement as any).webkitRequestFullscreen(); // Safari Fallback
+                }
+            } catch (err) {
+                console.warn('📱 Auto-Fullscreen failed:', err);
+            }
         }
     };
 
