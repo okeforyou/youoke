@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Maximize2, Minimize2, X, Play, Pause, Music, User } from 'lucide-react'; // Player V2.4.0 UltraSharp
+import { Maximize2, Minimize2, X, Play, Pause, Music, User } from 'lucide-react'; // Player V2.6.0 Ghost
 import Image from "next/image";
 // import YouTube from "react-youtube"; // Removing direct dependency
 import { UniversalPlayer } from "./UniversalPlayer";
@@ -336,10 +336,10 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false }: SidebarPl
                 </div>
             )}
 
-            {/* 🎯 YOUTUBE-STYLE MINI CONTROLS (Fullscreen Only - Rounded Capsule) */}
+            {/* 🎯 YOUTUBE-STYLE MINI CONTROLS (Fullscreen Only - Rounded Capsule - GHOST MODE) */}
             {layoutMode === 'fullscreen' && (
                 <div
-                    className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-50 flex items-center gap-1 p-1.5 bg-black/60 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl shadow-black/60 transition-all duration-500 ease-out"
+                    className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-50 flex items-center gap-1 p-1.5 bg-black/60 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl shadow-black/60 transition-all duration-500 ease-out opacity-0 group-hover:opacity-100 cursor-default"
                 >
                     {/* Play/Pause */}
                     <button
