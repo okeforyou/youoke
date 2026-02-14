@@ -20,7 +20,8 @@ import {
     TvIcon,
     PhotoIcon,
     PlusIcon,
-    TrashIcon
+    TrashIcon,
+    PlayCircleIcon
 } from '@heroicons/react/24/outline';
 import { cn } from '../../../utils/cn';
 
@@ -357,6 +358,36 @@ export default function ConfigPage() {
 
                     {activeTab === 'tv' && (
                         <div className="space-y-6">
+                            {/* TV Template Selection */}
+                            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                                <h3 className="font-bold flex items-center gap-2">
+                                    <ComputerDesktopIcon className="w-5 h-5 text-primary" />
+                                    รูปแบบหน้าจอ (TV Template)
+                                </h3>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    {[
+                                        { id: 'classic', label: 'Classic (เน้นใช้งาน)', desc: 'เน้น QR Code และวิธีเชื่อมต่อ' },
+                                        { id: 'ads', label: 'Advertising (เน้นโฆษณา)', desc: 'แสดงรูป Ads เต็มจอ หมุนเวียนไป' },
+                                        { id: 'split', label: 'Split Screen', desc: 'แบ่งหน้าจอ โฆษณา + วิธีเชื่อมต่อ' },
+                                        { id: 'video', label: 'Full Video', desc: 'เล่นวิดีโอโฆษณาเต็มหน้าจอ' },
+                                    ].map((t) => (
+                                        <button
+                                            key={t.id}
+                                            onClick={() => setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, template: t.id as any } })}
+                                            className={cn(
+                                                "p-4 rounded-xl border text-left transition-all",
+                                                localConfig.tv?.template === t.id
+                                                    ? "border-primary bg-primary/5 ring-2 ring-primary/20"
+                                                    : "border-gray-100 hover:border-gray-200"
+                                            )}
+                                        >
+                                            <div className={cn("font-bold text-sm mb-1", localConfig.tv?.template === t.id ? "text-primary" : "text-gray-700")}>{t.label}</div>
+                                            <div className="text-[10px] text-gray-400 leading-tight">{t.desc}</div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
                             {/* Guest Limits */}
                             <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
                                 <h3 className="font-bold flex items-center gap-2">
@@ -413,6 +444,84 @@ export default function ConfigPage() {
                                         }}
                                     >
                                         <PlusIcon className="w-4 h-4" /> เพิ่มข้อความ
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* ADS Management */}
+                            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                                <h3 className="font-bold flex items-center gap-2">
+                                    <PlayCircleIcon className="w-5 h-5 text-primary" />
+                                    จัดการตารางโฆษณา (Manage Ads)
+                                </h3>
+                                <div className="space-y-4">
+                                    {(localConfig.tv?.ads || []).map((ad: any, index: number) => (
+                                        <div key={index} className="p-4 border border-gray-100 rounded-xl space-y-3 bg-gray-50/50">
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-xs font-bold text-gray-400">ลำดับที่ {index + 1}</span>
+                                                <button
+                                                    className="btn btn-ghost btn-xs text-red-500"
+                                                    onClick={() => {
+                                                        const newAds = (localConfig.tv?.ads || []).filter((_: any, i: number) => i !== index);
+                                                        setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, ads: newAds } });
+                                                    }}
+                                                >
+                                                    <TrashIcon className="w-4 h-4" /> ลบออก
+                                                </button>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <label className="label text-[10px] uppercase font-bold text-gray-400">ประเภทเนื้อหา</label>
+                                                    <select
+                                                        className="select select-bordered select-sm w-full"
+                                                        value={ad.type}
+                                                        onChange={(e) => {
+                                                            const newAds = [...(localConfig.tv?.ads || [])];
+                                                            newAds[index] = { ...ad, type: e.target.value as any };
+                                                            setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, ads: newAds } });
+                                                        }}
+                                                    >
+                                                        <option value="image">รูปภาพ (Image)</option>
+                                                        <option value="video">วิดีโอ (Video)</option>
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label className="label text-[10px] uppercase font-bold text-gray-400">หัวข้อ (Title)</label>
+                                                    <input
+                                                        className="input input-bordered input-sm w-full"
+                                                        value={ad.title || ''}
+                                                        placeholder="โปรโมชั่น..."
+                                                        onChange={(e) => {
+                                                            const newAds = [...(localConfig.tv?.ads || [])];
+                                                            newAds[index] = { ...ad, title: e.target.value };
+                                                            setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, ads: newAds } });
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="label text-[10px] uppercase font-bold text-gray-400">ลิงก์ไฟล์ (URL)</label>
+                                                <input
+                                                    className="input input-bordered input-sm w-full font-mono"
+                                                    value={ad.url}
+                                                    placeholder="https://..."
+                                                    onChange={(e) => {
+                                                        const newAds = [...(localConfig.tv?.ads || [])];
+                                                        newAds[index] = { ...ad, url: e.target.value };
+                                                        setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, ads: newAds } });
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                    ))}
+                                    <button
+                                        className="btn btn-primary btn-outline btn-sm w-full gap-2 border-dashed"
+                                        onClick={() => {
+                                            const newAds = [...(localConfig.tv?.ads || []), { type: 'image', url: '', title: '' }];
+                                            setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, ads: newAds } });
+                                        }}
+                                    >
+                                        <PlusIcon className="w-4 h-4" /> เพิ่มโฆษณาใหม่
                                     </button>
                                 </div>
                             </div>

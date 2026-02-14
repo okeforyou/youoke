@@ -157,6 +157,8 @@ const TVPage = () => {
                     roomCode={roomCode}
                     images={config.tv?.signageImages}
                     messages={config.tv?.signageMessages}
+                    template={config.tv?.template}
+                    ads={config.tv?.ads}
                 />
             </div>
 

@@ -129,8 +129,10 @@ export interface SystemConfig {
         }
     };
     tv: {
+        template: 'classic' | 'ads' | 'split' | 'video';
         signageMessages: string[];
         signageImages: string[];
+        ads: { type: 'image' | 'video', url: string, title?: string }[];
         guestSongLimit: number;
     };
 }
@@ -260,6 +262,7 @@ export const DEFAULT_CONFIG: SystemConfig = {
         button_text: "สมัครเลย (ทดลองฟรี 1 เดือน)"
     },
     tv: {
+        template: 'classic',
         signageMessages: [
             "ยินดีต้อนรับสู่ YouOke Karaoke! 🎤",
             "โปรโมชั่น: สั่งอาหารครบ 500 บาท รับฟรีเฟรนช์ฟรายส์ 🍟",
@@ -270,6 +273,7 @@ export const DEFAULT_CONFIG: SystemConfig = {
             'https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?q=80&w=2070',
             'https://images.unsplash.com/photo-1514525253440-b393452e8d03?q=80&w=2070'
         ],
+        ads: [],
         guestSongLimit: 5
     }
 };
