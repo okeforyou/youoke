@@ -6,8 +6,10 @@ import { ref, onValue, off, set, serverTimestamp } from 'firebase/database';
 import { auth, realtimeDb } from '../../../firebase';
 import { QueueItem } from '../../../modules/player/types';
 import {
-    ListMusic, User, Share2, Maximize, RefreshCw, Volume2, VolumeX, SkipForward, SkipBack, Play, Pause, Trash2, GripVertical, Search, Sun, Moon, Music, Mic
+    ListMusic, User, Share2, Maximize, RefreshCw, Volume2, VolumeX, SkipForward, SkipBack, Play, Pause, Trash2, GripVertical, Search, Sun, Moon, Music, Mic,
+    Lock, Chrome, LogIn, AlertCircle
 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 import { QRCodeSVG } from 'qrcode.react';
 import {
     DndContext,
@@ -57,6 +59,13 @@ export default function RemoteControlApp() {
     const [showNameModal, setShowNameModal] = useState(false);
     const [loading, setLoading] = useState(true);
     const [hasMounted, setHasMounted] = useState(false);
+
+    // Auth & Limit State
+    const { user, signInWithGoogle, logIn } = useAuth();
+    const [guestSongCount, setGuestSongCount] = useState(0);
+    const [showLimitModal, setShowLimitModal] = useState(false);
+    const [isLoggingIn, setIsLoggingIn] = useState(false);
+    const SONG_LIMIT = 5;
 
     const [isSearchOpen, setSearchOpen] = useState(false);
     const [showLocalQr, setShowLocalQr] = useState(false);
@@ -149,6 +158,28 @@ export default function RemoteControlApp() {
             setGuestName(storedName);
         } else {
             setShowNameModal(true);
+        }
+
+        // Load Guest Song Count
+        if (typeof window !== 'undefined') {
+            const count = parseInt(localStorage.getItem('youoke_guest_song_count') || '0');
+            const lastReset = localStorage.getItem('youoke_guest_last_reset');
+            const now = new Date();
+
+            // Reset every 24 hours
+            if (lastReset) {
+                const lastDate = new Date(lastReset);
+                const diffHours = (now.getTime() - lastDate.getTime()) / (1000 * 60 * 60);
+                if (diffHours >= 24) {
+                    localStorage.setItem('youoke_guest_song_count', '0');
+                    localStorage.setItem('youoke_guest_last_reset', now.toISOString());
+                    setGuestSongCount(0);
+                } else {
+                    setGuestSongCount(count);
+                }
+            } else {
+                localStorage.setItem('youoke_guest_last_reset', now.toISOString());
+            }
         }
 
         // 🛡️ SAFETY TIMEOUT: Force UI unlock if Firebase is slow/stuck
@@ -402,10 +433,38 @@ export default function RemoteControlApp() {
     };
 
     const handleAddVideo = (video: any) => {
+        // Check Limit for Anonymous Users (Guest)
+        const isAnonymous = !user || !user.email || user.displayName === 'Guest';
+
+        if (isAnonymous && guestSongCount >= SONG_LIMIT) {
+            setShowLimitModal(true);
+            return;
+        }
+
         console.log('➕ Adding video to queue:', video.title);
         sendCommand('ADD_TO_QUEUE', { video });
+
+        // Increment guest count
+        if (isAnonymous) {
+            const newCount = guestSongCount + 1;
+            setGuestSongCount(newCount);
+            localStorage.setItem('youoke_guest_song_count', newCount.toString());
+        }
+
         setSearchTerm('');
         setSearchResults([]);
+    };
+
+    const handleGoogleLogin = async () => {
+        setIsLoggingIn(true);
+        try {
+            await signInWithGoogle();
+            setShowLimitModal(false);
+        } catch (error) {
+            console.error('Google Login Error:', error);
+        } finally {
+            setIsLoggingIn(false);
+        }
     };
 
     // Drag & Drop
@@ -499,6 +558,14 @@ export default function RemoteControlApp() {
                                 <span className="truncate max-w-[60px]">{guestName}</span>
                                 <span className="opacity-30">|</span>
                                 <span>Q: {roomState.queue.length}</span>
+                                {(!user || !user.email) && (
+                                    <>
+                                        <span className="opacity-30">|</span>
+                                        <span className={guestSongCount >= SONG_LIMIT ? 'text-primary' : ''}>
+                                            Limit: {guestSongCount}/{SONG_LIMIT}
+                                        </span>
+                                    </>
+                                )}
                             </div>
                         </div>
 
@@ -726,6 +793,65 @@ export default function RemoteControlApp() {
                             <div className="flex-1 min-w-0">
                                 <p className="text-[10px] font-black uppercase tracking-widest opacity-50">{remoteToast.message}</p>
                                 <p className="text-sm font-black truncate">{remoteToast.sub}</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                {/* Song Limit Modal */}
+                {showLimitModal && (
+                    <div className="fixed inset-0 bg-black/90 z-[110] flex items-center justify-center p-6 backdrop-blur-md">
+                        <div className={`w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl transition-all scale-in-center ${theme === 'dark' ? 'bg-stone-900 border border-white/10' : 'bg-white'}`}>
+                            <div className="text-center mb-8">
+                                <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 relative">
+                                    <Music className="w-12 h-12 text-primary" />
+                                    <div className="absolute -top-1 -right-1 bg-primary text-white p-2 rounded-full shadow-lg">
+                                        <Lock size={16} strokeWidth={3} />
+                                    </div>
+                                </div>
+                                <h2 className="text-3xl font-black mb-3 tracking-tighter">ขีดจำกัดเพลงฟรี</h2>
+                                <p className={`text-base leading-relaxed ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                                    คุณร้องครบ {SONG_LIMIT} เพลงสำหรับวันนี้แล้ว <br />
+                                    เข้าสู่ระบบเพื่อร้องต่อได้ไม่จำกัด! 🎤✨
+                                </p>
+                            </div>
+
+                            <div className="space-y-4">
+                                <button
+                                    onClick={handleGoogleLogin}
+                                    disabled={isLoggingIn}
+                                    className="w-full bg-white text-black py-4 rounded-2xl font-black text-lg shadow-xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all hover:bg-gray-100 border border-gray-200"
+                                >
+                                    {isLoggingIn ? (
+                                        <div className="w-6 h-6 border-4 border-black border-t-transparent rounded-full animate-spin" />
+                                    ) : (
+                                        <>
+                                            <Chrome size={22} strokeWidth={3} />
+                                            เข้าสู่ระบบด้วย Google
+                                        </>
+                                    )}
+                                </button>
+
+                                <button
+                                    onClick={() => router.push('/login')}
+                                    className={`w-full py-4 rounded-2xl font-black text-lg active:scale-[0.98] transition-all flex items-center justify-center gap-3 ${theme === 'dark' ? 'bg-white/5 text-white hover:bg-white/10' : 'bg-gray-100 text-gray-900 hover:bg-gray-200'}`}
+                                >
+                                    <LogIn size={22} strokeWidth={3} />
+                                    เข้าสู่ระบบด้วย Email
+                                </button>
+
+                                <button
+                                    onClick={() => setShowLimitModal(false)}
+                                    className="w-full py-2 text-sm font-bold text-gray-500 hover:text-primary transition-colors mt-2"
+                                >
+                                    ไว้ทีหลัง
+                                </button>
+                            </div>
+
+                            <div className="mt-8 p-4 rounded-2xl bg-primary/5 border border-primary/10 flex items-start gap-3">
+                                <AlertCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                                <p className="text-[11px] text-primary/80 leading-relaxed font-bold uppercase tracking-wider">
+                                    สิทธิพิเศษสมาชิก: ไม่มีโฆษณา, คิวเพลงไม่จำกัด, และรองรับการควบคุมจากทุกที่
+                                </p>
                             </div>
                         </div>
                     </div>

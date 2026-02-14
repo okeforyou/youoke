@@ -25,8 +25,8 @@ const TVPage = () => {
     });
 
     const [isAuthReady, setIsAuthReady] = useState(false);
+    const [player, setPlayer] = useState<any>(null);
     const [isPlayerReady, setIsPlayerReady] = useState(false);
-    const playerRef = useRef<any>(null);
 
     // 1. Auth & Room Setup
     useEffect(() => {
@@ -82,13 +82,9 @@ const TVPage = () => {
     }, [roomCode, isAuthReady]);
 
     // 3. Command Executor (Sync with Remote)
-    /* 
-       Note: We reuse the existing hook logic but might need to adjust imports.
-       For now, we import the existing one from hooks/useCommandExecutor
-    */
     useCmdExec({
         roomCode,
-        playerRef: { current: playerRef.current }, // Adapt ref structure
+        playerRef: player, // Pass player directly
         currentState: state,
         onStateChange: (newState) => setState(prev => ({ ...prev, ...newState })),
     });
@@ -168,7 +164,7 @@ const TVPage = () => {
                     onStateChange={handlePlayerStateChange}
                     onError={handlePlayerError}
                     onReady={(p) => {
-                        playerRef.current = p;
+                        setPlayer(p);
                         setIsPlayerReady(true);
                     }}
                 />
