@@ -81,20 +81,29 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     return () => { };
                 }
 
-                console.log('🔐 Auth Store: Initializing...');
+                if (typeof window !== 'undefined') {
+                    console.log('🔐 Auth Store: Initializing...', {
+                        path: window.location.pathname,
+                        apps: getApps().length
+                    });
+                }
 
                 // 🛡️ SAFETY TIMEOUT: Force UI unlock if Firebase is slow/stuck
                 const safetyTimeout = setTimeout(() => {
                     if (get().isLoading) {
-                        console.warn('⚠️ Auth Init Timeout (10s). Forcing UI unlock.');
+                        console.warn('⚠️ Auth Init Timeout (5s). Forcing UI unlock.');
                         set({ isLoading: false });
                     }
-                }, 10000);
+                }, 5000);
 
+                console.log('🔐 Auth Store: Registering onIdTokenChanged listener...');
                 const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
-                    // clearTimeout(safetyTimeout); // MOVED: Let the safety window cover the full async verify
-                    console.log('⚡ [Debug] AuthStateChanged:', firebaseUser ? 'User Found' : 'No User', firebaseUser?.uid);
-                    console.log('⚡ [Debug] isAnonymous:', firebaseUser?.isAnonymous);
+                    console.time('AuthLifecycle');
+                    console.log('⚡ [AuthStore] onIdTokenChanged Fired!', {
+                        uid: firebaseUser?.uid,
+                        isAnonymous: firebaseUser?.isAnonymous,
+                        email: firebaseUser?.email
+                    });
                     if (!firebaseUser) {
                         // 🛑 SYSTEM FIX: Don't kill Dev Admin session
                         const currentUser = get().user;
@@ -215,6 +224,7 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                     },
                                     isLoading: false
                                 });
+                                console.timeEnd('AuthLifecycle');
                             } else {
                                 set({ user: null, isLoading: false }); // Should never happen due to self-healing
                             }

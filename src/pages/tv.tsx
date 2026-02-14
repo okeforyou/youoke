@@ -33,21 +33,30 @@ const TVPage = () => {
 
     // 1. Auth & Room Setup
     useEffect(() => {
-        const init = async () => {
+        // Room Code Logic (Immediate/Sync)
+        if (roomCodeParam && typeof roomCodeParam === 'string') {
+            setRoomCode(roomCodeParam);
+        } else if (!roomCode) {
+            // Generate simple 4-digit code for TV ease of use
+            const newCode = Math.floor(1000 + Math.random() * 9000).toString();
+            setRoomCode(newCode);
+        }
+
+        const initAuth = async () => {
             if (auth) {
-                await signInAnonymously(auth);
-                setIsAuthReady(true);
-            }
-            // Room Code Logic
-            if (roomCodeParam && typeof roomCodeParam === 'string') {
-                setRoomCode(roomCodeParam);
-            } else {
-                // Generate simple 4-digit code for TV ease of use
-                const newCode = Math.floor(1000 + Math.random() * 9000).toString();
-                setRoomCode(newCode);
+                try {
+                    console.log('📺 TV: Signing in anonymously...');
+                    await signInAnonymously(auth);
+                    setIsAuthReady(true);
+                    console.log('📺 TV: Auth Ready');
+                } catch (err) {
+                    console.error('📺 TV: Anonymous Auth Failed:', err);
+                    // Fallback: Proceed anyway if we want to show signage at least
+                    setIsAuthReady(true);
+                }
             }
         };
-        init();
+        initAuth();
     }, [roomCodeParam]);
 
     // 2. Firebase Connection (Listeners)

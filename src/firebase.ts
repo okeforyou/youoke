@@ -56,8 +56,18 @@ let realtimeDb: Database | null = null;
 let storage: FirebaseStorage | null = null;
 
 try {
+  if (typeof window !== 'undefined') {
+    console.log('🔥 [Firebase] Config Info:', {
+      projectId: firebaseConfig.projectId,
+      authDomain: firebaseConfig.authDomain,
+      hasKey: !!firebaseConfig.apiKey,
+      keySuffix: firebaseConfig.apiKey?.slice(-4)
+    });
+  }
+
   // Check if Firebase is already initialized
   if (!getApps().length && firebaseConfig.apiKey !== 'dummy-api-key') {
+    console.log('🔥 [Firebase] Initializing new app...');
     app = initializeApp(firebaseConfig);
     auth = getAuth(app);
     database = getFirestore(app);
@@ -67,9 +77,12 @@ try {
     // Enable auth persistence for instant auth checks
     // Force LocalStorage to avoid IndexedDB latency/errors (Dec 29, 2025)
     if (typeof window !== 'undefined' && auth) {
-      setPersistence(auth, browserLocalPersistence).catch((err) => {
-        console.warn('Auth persistence failed:', err);
-      });
+      console.log('🔥 [Firebase] Setting browserLocalPersistence...');
+      setPersistence(auth, browserLocalPersistence)
+        .then(() => console.log('🔥 [Firebase] Persistence Set: Success'))
+        .catch((err) => {
+          console.warn('🔥 [Firebase] Auth persistence failed:', err);
+        });
     }
 
     // Enable offline persistence for faster loads

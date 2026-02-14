@@ -1,23 +1,14 @@
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  GoogleAuthProvider,
-  signInWithPopup,
-} from 'firebase/auth'
-import { doc, getDoc } from 'firebase/firestore';
-import nookies from 'nookies'
 import React, { createContext, useContext, useEffect, useState } from 'react'
-
-import { auth, database } from '../firebase'
+import { auth } from '../src/firebase'
+import { useAuthStore } from '../src/modules/auth/useAuthStore';
 
 // User data type interface
 interface UserType {
-  email: string | null;
-  uid: string | null;
-  role?: string | null;
-  tier?: string | null;
-  displayName?: string | null;
+    email: string | null;
+    uid: string | null;
+    role?: string | null;
+    tier?: string | null;
+    displayName?: string | null;
 }
 
 // Create auth context
@@ -28,157 +19,67 @@ export const useAuth = () => useContext<any>(AuthContext);
 
 // Create the auth context provider
 export const AuthContextProvider = ({
-  children,
+    children,
 }: {
-  children: React.ReactNode;
+    children: React.ReactNode;
 }) => {
-  // Define the constants for the user and loading state
-  const [user, setUser] = useState<UserType>({
-    email: null,
-    uid: null,
-    role: null,
-    tier: null,
-    displayName: null,
-  });
-  const [loading, setLoading] = useState<Boolean>(true);
+    const { user: storeUser, signIn: storeSignIn, signUp: storeSignUp, signOut: storeSignOut, signInWithGoogle: storeGoogleSignIn, isLoading } = useAuthStore();
 
-  // (imports will be moved to top level in the next replacement chunk or handled here if possible) 
-  // Intent: Remove these lines as they are invalid here.
+    const [user, setUser] = useState<UserType>({
+        email: null,
+        uid: null,
+        role: null,
+        tier: null,
+        displayName: null,
+    });
 
-  // listen for token changes
-  // call setUser and write new token as a cookie
-  useEffect(() => {
-    // Skip if Firebase auth is not configured
-    if (!auth) {
-      console.warn('Firebase Auth not configured');
-      setLoading(false);
-      return;
-    }
-
-    // 🛡️ SAFETY TIMEOUT: Force UI unlock if Firebase is slow/stuck
-    const safetyTimeout = setTimeout(() => {
-      if (loading) {
-        console.warn('⚠️ [AuthContext] Init Timeout (5s). Forcing unlock.');
-        setLoading(false);
-      }
-    }, 5000);
-
-    return auth.onIdTokenChanged(async (user) => {
-      clearTimeout(safetyTimeout);
-      console.log('⚡ [AuthContext] Token Changed:', user ? 'User Found' : 'No User', user?.uid);
-
-      if (!user) {
-        setUser({
-          email: null,
-          uid: null,
-          role: null,
-          tier: null,
-          displayName: null,
-        });
-        setLoading(false);
-      } else {
-        try {
-          const token = await user.getIdToken();
-          const idTokenResult = await user.getIdTokenResult();
-          const customClaims = idTokenResult.claims;
-
-          let role = customClaims.role || null;
-          let tier = customClaims.tier || null;
-
-          // FALLBACK: If role is missing in claims, check Firestore (Hybrid Mode Support)
-          if (!role && database) {
-            try {
-              const userDocRef = doc(database, 'users', user.uid);
-              const userDocSnap = await getDoc(userDocRef);
-              if (userDocSnap.exists()) {
-                const userData = userDocSnap.data();
-                if (userData?.role) {
-                  console.log('✅ [AuthContext] Found role in Firestore:', userData.role);
-                  role = userData.role;
-                }
-              }
-            } catch (err) {
-              console.warn('⚠️ [AuthContext] Firestore check failed:', err);
-            }
-          }
-
-          setUser({
-            email: user.email,
-            uid: user.uid,
-            role: role,
-            tier: tier,
-            displayName: user.displayName,
-          });
-        } catch (e) {
-          console.error('❌ [AuthContext] Token processing error:', e);
-        } finally {
-          setLoading(false);
+    useEffect(() => {
+        if (storeUser) {
+            setUser({
+                email: storeUser.email,
+                uid: storeUser.uid,
+                role: storeUser.role,
+                tier: storeUser.membership?.type,
+                displayName: storeUser.displayName,
+            });
+        } else {
+            setUser({
+                email: null,
+                uid: null,
+                role: null,
+                tier: null,
+                displayName: null,
+            });
         }
-      }
-    });
-  }, []);
+    }, [storeUser]);
 
-  // force refresh the token every 10 minutes
-  useEffect(() => {
-    // Skip if Firebase auth is not configured
-    if (!auth) {
-      return;
-    }
+    // Compatibility actions
+    const signUp = storeSignUp;
+    const logIn = storeSignIn;
+    const logOut = storeSignOut;
+    const signInWithGoogle = storeGoogleSignIn;
 
-    const handle = setInterval(async () => {
-      const user = auth.currentUser;
-      if (user) await user.getIdToken(true);
-    }, 10 * 60 * 1000);
+    // force refresh the token every 10 minutes
+    useEffect(() => {
+        // Skip if Firebase auth is not configured
+        if (!auth) {
+            return;
+        }
 
-    // clean up setInterval
-    return () => clearInterval(handle);
-  }, []);
+        const handle = setInterval(async () => {
+            if (auth) {
+                const currentUser = auth.currentUser;
+                if (currentUser) await currentUser.getIdToken(true);
+            }
+        }, 10 * 60 * 1000);
 
-  // Sign up the user
-  const signUp = (email: string, password: string) => {
-    if (!auth) {
-      return Promise.reject(new Error('Firebase Auth not configured'));
-    }
-    return createUserWithEmailAndPassword(auth, email, password);
-  };
+        // clean up setInterval
+        return () => clearInterval(handle);
+    }, []);
 
-  // Login the user
-  const logIn = (email: string, password: string) => {
-    if (!auth) {
-      return Promise.reject(new Error('Firebase Auth not configured'));
-    }
-    return signInWithEmailAndPassword(auth, email, password);
-  };
-
-  // Logout the user
-  const logOut = async () => {
-    if (!auth) {
-      return Promise.reject(new Error('Firebase Auth not configured'));
-    }
-    setUser({
-      email: null,
-      uid: null,
-      role: null,
-      tier: null,
-      displayName: null,
-    });
-    return await signOut(auth);
-  };
-
-  // Sign in with Google
-  const signInWithGoogle = async () => {
-    if (!auth) {
-      return Promise.reject(new Error('Firebase Auth not configured'));
-    }
-    const provider = new GoogleAuthProvider();
-    return signInWithPopup(auth, provider);
-  };
-
-  // Wrap the children with the context provider
-
-  return (
-    <AuthContext.Provider value={{ user, signUp, logIn, logOut, signInWithGoogle }}>
-      {loading ? null : children}
-    </AuthContext.Provider>
-  );
+    return (
+        <AuthContext.Provider value={{ user, signUp, logIn, logOut, signInWithGoogle }}>
+            {isLoading ? null : children}
+        </AuthContext.Provider>
+    );
 };

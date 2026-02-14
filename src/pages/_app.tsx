@@ -58,7 +58,10 @@ function App({ Component, pageProps }: AppProps) {
   const initializeAuth = useAuthStore((state) => state.initialize);
   useEffect(() => {
     const unsub = initializeAuth();
+    return () => unsub();
+  }, [initializeAuth]);
 
+  useEffect(() => {
     // Unregister Service Workers to fix IndexedDB errors
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(function (registrations) {
@@ -68,9 +71,7 @@ function App({ Component, pageProps }: AppProps) {
         }
       });
     }
-
-    return () => unsub();
-  }, [initializeAuth]);
+  }, []);
 
   return (
     <ToastProvider>
