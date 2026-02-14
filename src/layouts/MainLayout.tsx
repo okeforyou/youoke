@@ -307,7 +307,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         <div className="flex items-center gap-2">
                             <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center text-primary font-bold">Y</div>
                             <span className="font-bold text-lg text-gray-900">YouOke</span>
-                            <span className="text-[10px] font-bold bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-md hidden sm:inline-block">v2.18.0</span>
+                            <span className="text-[10px] font-bold bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-md hidden sm:inline-block">v2.20.0-SYNC</span>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -655,7 +655,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         <div>
                             <div className="flex items-center gap-2">
                                 <h1 className="text-lg font-bold tracking-tight leading-none text-gray-900">YouOke</h1>
-                                <span className="text-[10px] font-bold bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-md">v2.14.0</span>
+                                <span className="text-[10px] font-bold bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-md">v2.20.0-SYNC</span>
                             </div>
                             <p className="text-[10px] text-gray-500 font-medium tracking-wide">Karaoke Online</p>
                         </div>
