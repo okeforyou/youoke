@@ -3,8 +3,21 @@ import AdminLayout from '@/features/admin/layouts/AdminLayout';
 import { useSystemConfig } from '../../hooks/useSystemConfig';
 import { updateSystemConfig, DEFAULT_CONFIG } from '../../services/systemConfigService';
 import ConfigToggle from '@/features/admin/components/ConfigToggle';
-import { Cog6ToothIcon, ComputerDesktopIcon, MusicalNoteIcon, AdjustmentsHorizontalIcon, WrenchScrewdriverIcon, BanknotesIcon, PuzzlePieceIcon } from '@heroicons/react/24/solid';
-import { Save, AlertCircle, PartyPopper, Trash2, Plus, CheckCircle, Smartphone, Youtube, Disc } from 'lucide-react';
+import {
+    Cog6ToothIcon,
+    ComputerDesktopIcon,
+    MusicalNoteIcon,
+    AdjustmentsHorizontalIcon,
+    WrenchScrewdriverIcon,
+    BanknotesIcon,
+    PuzzlePieceIcon,
+    TvIcon,
+    PhotoIcon,
+    PlusIcon,
+    TrashIcon,
+    MegaphoneIcon
+} from '@heroicons/react/24/outline';
+import { Save, AlertCircle, PartyPopper, Trash2, Plus, CheckCircle, Smartphone, Youtube, Disc, PlayCircle } from 'lucide-react';
 import { useRouter } from 'next/router';
 import { cn } from '@/lib/utils';
 import { THAI_FONTS, FONT_SIZES } from '../../data/fonts';
@@ -17,7 +30,7 @@ export default function AdminConfigPage() {
     const [localConfig, setLocalConfig] = useState(config);
     const [saving, setSaving] = useState(false);
     const [initializing, setInitializing] = useState(false);
-    const [activeTab, setActiveTab] = useState<'system' | 'features' | 'player' | 'ui' | 'login' | 'integrations' | 'payment' | 'marketing'>('system');
+    const [activeTab, setActiveTab] = useState<'system' | 'features' | 'player' | 'ui' | 'login' | 'integrations' | 'payment' | 'marketing' | 'tv'>('system');
     const [toast, setToast] = useState('');
     const router = useRouter();
 
@@ -125,6 +138,7 @@ export default function AdminConfigPage() {
         { id: 'ui', label: 'หน้าตา & ธีม', icon: AdjustmentsHorizontalIcon, desc: 'ฟอนต์, แบนเนอร์' },
         { id: 'integrations', label: 'เชื่อมต่อ API', icon: WrenchScrewdriverIcon, desc: 'YouTube, Spotify' },
         { id: 'payment', label: 'การชำระเงิน', icon: BanknotesIcon, desc: 'เลขบัญชี, PromptPay' },
+        { id: 'tv', label: 'Smart TV', icon: TvIcon, desc: 'ข้อความประกาศ, พื้นหลัง, โควต้า' },
     ];
 
     return (
@@ -622,73 +636,291 @@ export default function AdminConfigPage() {
                             </div>
                         )}
 
-                        {/* ==================== PAYMENT TAB ==================== */}
-                        {activeTab === 'payment' && (
+                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+                                <h3 className="font-bold text-gray-900 border-b pb-2">ข้อมูลบัญชีธนาคาร (โอนเงิน)</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="form-control">
+                                        <label className="label"><span className="label-text font-bold">ชื่อธนาคาร</span></label>
+                                        <input
+                                            type="text"
+                                            className="input input-bordered w-full"
+                                            placeholder="เช่น กสิกรไทย"
+                                            value={localConfig.payment?.bankAccount?.bankName ?? ''}
+                                            onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, bankAccount: { ...localConfig.payment?.bankAccount!, bankName: e.target.value } } })}
+                                        />
+                                    </div>
+                                    <div className="form-control">
+                                        <label className="label"><span className="label-text font-bold">ชื่อบัญชี</span></label>
+                                        <input
+                                            type="text"
+                                            className="input input-bordered w-full"
+                                            value={localConfig.payment?.bankAccount?.accountName ?? ''}
+                                            onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, bankAccount: { ...localConfig.payment?.bankAccount!, accountName: e.target.value } } })}
+                                        />
+                                    </div>
+                                    <div className="form-control">
+                                        <label className="label"><span className="label-text font-bold">เลขที่บัญชี</span></label>
+                                        <input
+                                            type="text"
+                                            className="input input-bordered w-full font-mono"
+                                            value={localConfig.payment?.bankAccount?.accountNumber ?? ''}
+                                            onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, bankAccount: { ...localConfig.payment?.bankAccount!, accountNumber: e.target.value } } })}
+                                        />
+                                    </div>
+                                    <div className="form-control">
+                                        <label className="label"><span className="label-text font-bold">สาขา (ถ้ามี)</span></label>
+                                        <input
+                                            type="text"
+                                            className="input input-bordered w-full"
+                                            value={localConfig.payment?.bankAccount?.branch ?? ''}
+                                            onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, bankAccount: { ...localConfig.payment?.bankAccount!, branch: e.target.value } } })}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+                                <h3 className="font-bold text-gray-900 border-b pb-2">PromptPay (ทางเลือก)</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="form-control">
+                                        <label className="label"><span className="label-text font-bold">เบอร์โทร / เลขบัตร</span></label>
+                                        <input
+                                            type="text"
+                                            className="input input-bordered w-full font-mono"
+                                            value={localConfig.payment?.promptPay?.id ?? ''}
+                                            onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, promptPay: { ...localConfig.payment?.promptPay!, id: e.target.value, name: localConfig.payment?.promptPay?.name || '' } } })}
+                                        />
+                                    </div>
+                                    <div className="form-control">
+                                        <label className="label"><span className="label-text font-bold">ชื่อที่ลงทะเบียน</span></label>
+                                        <input
+                                            type="text"
+                                            className="input input-bordered w-full"
+                                            value={localConfig.payment?.promptPay?.name ?? ''}
+                                            onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, promptPay: { ...localConfig.payment?.promptPay!, name: e.target.value, id: localConfig.payment?.promptPay?.id || '' } } })}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        )}
+
+                        {/* ==================== TV TAB ==================== */}
+                        {activeTab === 'tv' && (
                             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
-                                    <h3 className="font-bold text-gray-900 border-b pb-2">ข้อมูลบัญชีธนาคาร (โอนเงิน)</h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="form-control">
-                                            <label className="label"><span className="label-text font-bold">ชื่อธนาคาร</span></label>
-                                            <input
-                                                type="text"
-                                                className="input input-bordered w-full"
-                                                placeholder="เช่น กสิกรไทย"
-                                                value={localConfig.payment?.bankAccount?.bankName ?? ''}
-                                                onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, bankAccount: { ...localConfig.payment?.bankAccount!, bankName: e.target.value } } })}
-                                            />
-                                        </div>
-                                        <div className="form-control">
-                                            <label className="label"><span className="label-text font-bold">ชื่อบัญชี</span></label>
-                                            <input
-                                                type="text"
-                                                className="input input-bordered w-full"
-                                                value={localConfig.payment?.bankAccount?.accountName ?? ''}
-                                                onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, bankAccount: { ...localConfig.payment?.bankAccount!, accountName: e.target.value } } })}
-                                            />
-                                        </div>
-                                        <div className="form-control">
-                                            <label className="label"><span className="label-text font-bold">เลขที่บัญชี</span></label>
-                                            <input
-                                                type="text"
-                                                className="input input-bordered w-full font-mono"
-                                                value={localConfig.payment?.bankAccount?.accountNumber ?? ''}
-                                                onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, bankAccount: { ...localConfig.payment?.bankAccount!, accountNumber: e.target.value } } })}
-                                            />
-                                        </div>
-                                        <div className="form-control">
-                                            <label className="label"><span className="label-text font-bold">สาขา (ถ้ามี)</span></label>
-                                            <input
-                                                type="text"
-                                                className="input input-bordered w-full"
-                                                value={localConfig.payment?.bankAccount?.branch ?? ''}
-                                                onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, bankAccount: { ...localConfig.payment?.bankAccount!, branch: e.target.value } } })}
-                                            />
-                                        </div>
+                                {/* TV Template Selection */}
+                                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                                    <h3 className="font-bold flex items-center gap-2">
+                                        <ComputerDesktopIcon className="w-5 h-5 text-primary" />
+                                        รูปแบบหน้าจอ (TV Template)
+                                    </h3>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                        {[
+                                            { id: 'classic', label: 'Classic (เน้นใช้งาน)', desc: 'เน้น QR Code และวิธีเชื่อมต่อ' },
+                                            { id: 'ads', label: 'Advertising (เน้นโฆษณา)', desc: 'แสดงรูป Ads เต็มจอ หมุนเวียนไป' },
+                                            { id: 'split', label: 'Split Screen', desc: 'แบ่งหน้าจอ โฆษณา + วิธีเชื่อมต่อ' },
+                                            { id: 'video', label: 'Full Video', desc: 'เล่นวิดีโอโฆษณาเต็มหน้าจอ' },
+                                        ].map((t) => (
+                                            <button
+                                                key={t.id}
+                                                onClick={() => setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, template: t.id as any } })}
+                                                className={cn(
+                                                    "p-4 rounded-xl border text-left transition-all",
+                                                    localConfig.tv?.template === t.id
+                                                        ? "border-primary bg-primary/5 ring-2 ring-primary/20"
+                                                        : "border-gray-100 hover:border-gray-200"
+                                                )}
+                                            >
+                                                <div className={cn("font-bold text-sm mb-1", localConfig.tv?.template === t.id ? "text-primary" : "text-gray-700")}>{t.label}</div>
+                                                <div className="text-[10px] text-gray-400 leading-tight">{t.desc}</div>
+                                            </button>
+                                        ))}
                                     </div>
                                 </div>
 
-                                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
-                                    <h3 className="font-bold text-gray-900 border-b pb-2">PromptPay (ทางเลือก)</h3>
+                                {/* Guest Limits */}
+                                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                                    <h3 className="font-bold flex items-center gap-2">
+                                        <MusicalNoteIcon className="w-5 h-5 text-primary" />
+                                        จำกัดจำนวนเพลง (Guest Limits)
+                                    </h3>
+                                    <div>
+                                        <label className="label"><span className="label-text font-bold">จำนวนเพลงฟรีสำหรับแขก (ต่อ 24 ชม.)</span></label>
+                                        <input
+                                            type="number"
+                                            className="input input-bordered w-full"
+                                            value={localConfig.tv?.guestSongLimit || 5}
+                                            onChange={(e) => setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, guestSongLimit: parseInt(e.target.value) } })}
+                                        />
+                                        <p className="text-xs text-gray-400 mt-2 italic">* สำหรับผู้ใช้ที่ไม่ได้เข้าสู่ระบบ (Anonymous Users)</p>
+                                    </div>
+                                </div>
+
+                                {/* Signage Messages */}
+                                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                                    <h3 className="font-bold flex items-center gap-2">
+                                        <MegaphoneIcon className="w-5 h-5 text-primary" />
+                                        ข้อความประกาศ (Signage Marquee)
+                                    </h3>
+                                    <div className="space-y-3">
+                                        {(localConfig.tv?.signageMessages || []).map((msg, index) => (
+                                            <div key={index} className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    className="input input-bordered flex-1"
+                                                    value={msg}
+                                                    onChange={(e) => {
+                                                        const newMsgs = [...(localConfig.tv?.signageMessages || [])];
+                                                        newMsgs[index] = e.target.value;
+                                                        setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, signageMessages: newMsgs } });
+                                                    }}
+                                                />
+                                                <button
+                                                    className="btn btn-ghost text-red-500 p-2"
+                                                    onClick={() => {
+                                                        const newMsgs = (localConfig.tv?.signageMessages || []).filter((_, i) => i !== index);
+                                                        setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, signageMessages: newMsgs } });
+                                                    }}
+                                                >
+                                                    <TrashIcon className="w-5 h-5" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                        <button
+                                            className="btn btn-ghost btn-outline btn-sm w-full gap-2 border-dashed"
+                                            onClick={() => {
+                                                const newMsgs = [...(localConfig.tv?.signageMessages || []), ""];
+                                                setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, signageMessages: newMsgs } });
+                                            }}
+                                        >
+                                            <PlusIcon className="w-4 h-4" /> เพิ่มข้อความ
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* ADS Management */}
+                                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                                    <h3 className="font-bold flex items-center gap-2">
+                                        <PlayCircle className="w-5 h-5 text-primary" />
+                                        จัดการตารางโฆษณา (Manage Ads)
+                                    </h3>
+                                    <div className="space-y-4">
+                                        {(localConfig.tv?.ads || []).map((ad: any, index: number) => (
+                                            <div key={index} className="p-4 border border-gray-100 rounded-xl space-y-3 bg-gray-50/50">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-xs font-bold text-gray-400">ลำดับที่ {index + 1}</span>
+                                                    <button
+                                                        className="btn btn-ghost btn-xs text-red-500"
+                                                        onClick={() => {
+                                                            const newAds = (localConfig.tv?.ads || []).filter((_: any, i: number) => i !== index);
+                                                            setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, ads: newAds } });
+                                                        }}
+                                                    >
+                                                        <TrashIcon className="w-4 h-4" /> ลบออก
+                                                    </button>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="label text-[10px] uppercase font-bold text-gray-400">ประเภทเนื้อหา</label>
+                                                        <select
+                                                            className="select select-bordered select-sm w-full"
+                                                            value={ad.type}
+                                                            onChange={(e) => {
+                                                                const newAds = [...(localConfig.tv?.ads || [])];
+                                                                newAds[index] = { ...ad, type: e.target.value as any };
+                                                                setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, ads: newAds } });
+                                                            }}
+                                                        >
+                                                            <option value="image">รูปภาพ (Image)</option>
+                                                            <option value="video">วิดีโอ (Video)</option>
+                                                        </select>
+                                                    </div>
+                                                    <div>
+                                                        <label className="label text-[10px] uppercase font-bold text-gray-400">หัวข้อ (Title)</label>
+                                                        <input
+                                                            className="input input-bordered input-sm w-full"
+                                                            value={ad.title || ''}
+                                                            placeholder="โปรโมชั่น..."
+                                                            onChange={(e) => {
+                                                                const newAds = [...(localConfig.tv?.ads || [])];
+                                                                newAds[index] = { ...ad, title: e.target.value };
+                                                                setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, ads: newAds } });
+                                                            }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label className="label text-[10px] uppercase font-bold text-gray-400">ลิงก์ไฟล์ (URL)</label>
+                                                    <input
+                                                        className="input input-bordered input-sm w-full font-mono"
+                                                        value={ad.url}
+                                                        placeholder="https://..."
+                                                        onChange={(e) => {
+                                                            const newAds = [...(localConfig.tv?.ads || [])];
+                                                            newAds[index] = { ...ad, url: e.target.value };
+                                                            setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, ads: newAds } });
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        ))}
+                                        <button
+                                            className="btn btn-primary btn-outline btn-sm w-full gap-2 border-dashed"
+                                            onClick={() => {
+                                                const newAds = [...(localConfig.tv?.ads || []), { type: 'image', url: '', title: '' }];
+                                                setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, ads: newAds } });
+                                            }}
+                                        >
+                                            <PlusIcon className="w-4 h-4" /> เพิ่มโฆษณาใหม่
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Signage Images */}
+                                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                                    <h3 className="font-bold flex items-center gap-2">
+                                        <PhotoIcon className="w-5 h-5 text-primary" />
+                                        รูปภาพพื้นหลัง (Signage Backgrounds)
+                                    </h3>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="form-control">
-                                            <label className="label"><span className="label-text font-bold">เบอร์โทร / เลขบัตร</span></label>
-                                            <input
-                                                type="text"
-                                                className="input input-bordered w-full font-mono"
-                                                value={localConfig.payment?.promptPay?.id ?? ''}
-                                                onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, promptPay: { ...localConfig.payment?.promptPay!, id: e.target.value, name: localConfig.payment?.promptPay?.name || '' } } })}
-                                            />
-                                        </div>
-                                        <div className="form-control">
-                                            <label className="label"><span className="label-text font-bold">ชื่อที่ลงทะเบียน</span></label>
-                                            <input
-                                                type="text"
-                                                className="input input-bordered w-full"
-                                                value={localConfig.payment?.promptPay?.name ?? ''}
-                                                onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, promptPay: { ...localConfig.payment?.promptPay!, name: e.target.value, id: localConfig.payment?.promptPay?.id || '' } } })}
-                                            />
-                                        </div>
+                                        {(localConfig.tv?.signageImages || []).map((img, index) => (
+                                            <div key={index} className="space-y-2">
+                                                <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden relative border border-gray-100">
+                                                    {img ? <img src={img} className="w-full h-full object-cover" /> : <div className="flex items-center justify-center h-full text-gray-300"><PhotoIcon className="w-10 h-10" /></div>}
+                                                    <button
+                                                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 shadow-lg"
+                                                        onClick={() => {
+                                                            const newImgs = (localConfig.tv?.signageImages || []).filter((_, i) => i !== index);
+                                                            setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, signageImages: newImgs } });
+                                                        }}
+                                                    >
+                                                        <TrashIcon className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    placeholder="Image URL..."
+                                                    className="input input-bordered input-xs w-full"
+                                                    value={img}
+                                                    onChange={(e) => {
+                                                        const newImgs = [...(localConfig.tv?.signageImages || [])];
+                                                        newImgs[index] = e.target.value;
+                                                        setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, signageImages: newImgs } });
+                                                    }}
+                                                />
+                                            </div>
+                                        ))}
+                                        <button
+                                            className="aspect-video border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center gap-2 text-gray-400 hover:bg-gray-50 transition-colors"
+                                            onClick={() => {
+                                                const newImgs = [...(localConfig.tv?.signageImages || []), ""];
+                                                setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, signageImages: newImgs } });
+                                            }}
+                                        >
+                                            <PlusIcon className="w-8 h-8" />
+                                            <span className="text-sm font-bold">เพิ่มรูปภาพ</span>
+                                        </button>
                                     </div>
                                 </div>
                             </div>

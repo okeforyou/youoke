@@ -7,10 +7,11 @@ interface MembershipCardProps {
         status: string;
         expiresAt: any;
     };
+    role?: string;
     onUpgrade: () => void;
 }
 
-export const MembershipCard = ({ membership, onUpgrade }: MembershipCardProps) => {
+export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardProps) => {
     const safeMembership = membership || { type: 'free', status: 'active', expiresAt: null };
 
     const formatDate = (date: any) => {
@@ -34,21 +35,24 @@ export const MembershipCard = ({ membership, onUpgrade }: MembershipCardProps) =
     const isLifetime = safeMembership.type === 'lifetime';
     const isPremium = safeMembership.type !== 'free';
     const isExpired = !isLifetime && daysRemaining !== null && daysRemaining < 0;
+    const isAdmin = role === 'admin' || role === 'owner';
 
     return (
         <div className="relative group cursor-pointer w-full" onClick={onUpgrade}>
             {/* Glow Effect */}
             <div className={cn(
                 "absolute -inset-1 rounded-2xl blur opacity-25 transition duration-500 group-hover:opacity-75",
-                isPremium ? "bg-gradient-to-r from-yellow-600 to-red-600" : "bg-gradient-to-r from-gray-600 to-gray-400"
+                isAdmin ? "bg-gradient-to-r from-red-600 to-black" : (isPremium ? "bg-gradient-to-r from-yellow-600 to-red-600" : "bg-gradient-to-r from-gray-600 to-gray-400")
             )}></div>
 
             {/* Card Content */}
             <div className={cn(
                 "relative rounded-xl overflow-hidden shadow-xl border border-white/10 p-5 flex flex-col justify-between min-h-[160px] transition-transform duration-300 group-hover:-translate-y-1",
-                isPremium
-                    ? "bg-gradient-to-br from-neutral-900 via-neutral-950 to-black text-white"
-                    : "bg-gradient-to-br from-gray-100 via-white to-gray-50 border-gray-200 text-gray-900"
+                isAdmin
+                    ? "bg-gradient-to-br from-red-900 via-neutral-950 to-black text-white"
+                    : (isPremium
+                        ? "bg-gradient-to-br from-neutral-900 via-neutral-950 to-black text-white"
+                        : "bg-gradient-to-br from-gray-100 via-white to-gray-50 border-gray-200 text-gray-900")
             )}>
                 {/* Background Pattern */}
                 <div className="absolute inset-0 opacity-10 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-repeat"></div>
@@ -58,32 +62,46 @@ export const MembershipCard = ({ membership, onUpgrade }: MembershipCardProps) =
                     <div className="flex items-center gap-3">
                         <div className={cn(
                             "w-10 h-10 rounded-lg flex items-center justify-center shadow-md",
-                            isPremium ? "bg-gradient-to-br from-yellow-400 to-orange-600 text-white" : "bg-gray-200 text-gray-500"
+                            isAdmin
+                                ? "bg-gradient-to-br from-red-500 to-red-800 text-white"
+                                : (isPremium ? "bg-gradient-to-br from-yellow-400 to-orange-600 text-white" : "bg-gray-200 text-gray-500")
                         )}>
-                            {isLifetime ? <Crown className="w-5 h-5" /> : (isPremium ? <Zap className="w-5 h-5" /> : <Clock className="w-5 h-5" />)}
+                            {isAdmin ? <Crown className="w-5 h-5" /> : (isLifetime ? <Crown className="w-5 h-5" /> : (isPremium ? <Zap className="w-5 h-5" /> : <Clock className="w-5 h-5" />))}
                         </div>
                         <div>
-                            <div className={cn("text-[10px] font-bold uppercase tracking-widest opacity-60", isPremium ? "text-yellow-500" : "text-gray-500")}>MEMBERSHIP</div>
-                            <h3 className="text-lg font-bold tracking-tight leading-none mt-0.5">{isPremium ? "YOUOKE PRO" : "Standard Plan"}</h3>
+                            <div className={cn("text-[10px] font-bold uppercase tracking-widest opacity-60", isAdmin ? "text-red-500" : (isPremium ? "text-yellow-500" : "text-gray-500"))}>
+                                {isAdmin ? "SYSTEM ACCESS" : "MEMBERSHIP"}
+                            </div>
+                            <h3 className="text-lg font-bold tracking-tight leading-none mt-0.5">
+                                {isAdmin ? "ADMINISTRATOR" : (isPremium ? "YOUOKE PRO" : "Standard Plan")}
+                            </h3>
                         </div>
                     </div>
-                    {isPremium && <Sparkles className="w-5 h-5 text-yellow-400/80" />}
+                    {isPremium && !isAdmin && <Sparkles className="w-5 h-5 text-yellow-400/80" />}
+                    {isAdmin && <Crown className="w-5 h-5 text-red-500" />}
                 </div>
 
                 {/* Footer */}
                 <div className="relative z-10 flex justify-between items-end mt-4">
                     <div>
                         <div className="text-[10px] uppercase tracking-wider font-semibold opacity-50 mb-0.5">Valid Until</div>
-                        <div className="text-sm font-mono font-bold tracking-tight">{isLifetime ? "LIFETIME" : formatDate(safeMembership.expiresAt)}</div>
+                        <div className="text-sm font-mono font-bold tracking-tight">{isAdmin ? "SYSTEM OWNER" : (isLifetime ? "LIFETIME" : formatDate(safeMembership.expiresAt))}</div>
                     </div>
-                    <div className={cn(
-                        "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wide transition-all shadow-sm",
-                        isPremium
-                            ? "bg-white text-black hover:bg-white/90"
-                            : "bg-black text-white hover:bg-black/80"
-                    )}>
-                        {isExpired ? "ต่ออายุ" : "อัพเกรด"} <ChevronRight className="w-3 h-3" />
-                    </div>
+                    {!isAdmin && (
+                        <div className={cn(
+                            "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wide transition-all shadow-sm",
+                            isPremium
+                                ? "bg-white text-black hover:bg-white/90"
+                                : "bg-black text-white hover:bg-black/80"
+                        )}>
+                            {isExpired ? "ต่ออายุ" : "อัพเกรด"} <ChevronRight className="w-3 h-3" />
+                        </div>
+                    )}
+                    {isAdmin && (
+                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wide transition-all shadow-sm bg-red-600 text-white">
+                            FULL CONTROL
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

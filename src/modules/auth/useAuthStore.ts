@@ -25,7 +25,7 @@ interface UserData {
     email: string | null;
     displayName: string | null;
     photoURL: string | null;
-    role: 'admin' | 'user';
+    role: 'admin' | 'user' | 'owner';
     membership: MembershipState;
     isAdmin: boolean;
     // Marketplace & Apps

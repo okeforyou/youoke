@@ -69,8 +69,9 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
         }
     };
 
-    const isPremium = profile?.subscription?.plan && profile.subscription.plan !== 'free' && profile.subscription.status === 'active';
-    const isLifetime = profile?.subscription?.plan === 'lifetime';
+    const isAdmin = user?.role === 'admin' || profile?.role === 'admin';
+    const isPremium = isAdmin || (profile?.subscription?.plan && profile.subscription.plan !== 'free' && profile.subscription.status === 'active');
+    const isLifetime = !isAdmin && profile?.subscription?.plan === 'lifetime';
 
     const menuItems = [
         // Admin Item (Conditional)
@@ -197,7 +198,7 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
 
                                                     <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                                                         {profile?.displayName || user.displayName || user.email?.split('@')[0] || "YouOke User"}
-                                                        {(profile?.role === 'admin' || user.role === 'admin') &&
+                                                        {isAdmin &&
                                                             <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold uppercase">Admin</span>
                                                         }
                                                     </h2>
@@ -266,17 +267,17 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                                                 <p className="text-xs font-medium text-gray-300 tracking-widest uppercase">Membership</p>
                                                             </div>
                                                             <h3 className="text-xl font-bold text-white mb-3">
-                                                                {isPremium ? `YOUOKE ${getPackageDisplayName(profile?.subscription?.plan)}`.toUpperCase() : 'YOUOKE FREE'}
+                                                                {isAdmin ? "ADMINISTRATOR" : (isPremium ? `YOUOKE ${getPackageDisplayName(profile?.subscription?.plan)}`.toUpperCase() : 'YOUOKE FREE')}
                                                             </h3>
 
                                                             <div className="flex items-end justify-between">
                                                                 <div>
                                                                     <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-0.5">Valid Until</p>
                                                                     <p className="text-sm font-bold text-white">
-                                                                        {isLifetime ? "LIFETIME" :
+                                                                        {isAdmin ? "SYSTEM OWNER" : (isLifetime ? "LIFETIME" :
                                                                             profile?.subscription?.endDate ?
                                                                                 new Date(profile.subscription.endDate).toLocaleDateString('th-TH') :
-                                                                                "-"}
+                                                                                "-")}
                                                                     </p>
                                                                 </div>
                                                                 <Link href="/pricing" onClick={onClose} className="bg-white text-black text-xs font-bold px-4 py-2 rounded-full hover:bg-gray-100 transition-colors flex items-center gap-1">

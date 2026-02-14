@@ -62,8 +62,18 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              <h2 className="text-xl font-bold text-foreground">{user.displayName}</h2>
-              <p className="text-sm text-muted-foreground">{user.email}</p>
+              <div className="flex flex-col items-center gap-1">
+                <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
+                  {user.displayName}
+                  {(user.role === 'admin' || user.role === 'owner') && (
+                    <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold uppercase ring-1 ring-red-200">Admin</span>
+                  )}
+                </h2>
+                <p className="text-sm text-muted-foreground">{user.email}</p>
+                {(user.role === 'admin' || user.role === 'owner') && (
+                  <p className="text-[10px] text-red-500 font-bold uppercase tracking-widest mt-1 opacity-80">Full System Control</p>
+                )}
+              </div>
 
               <div className="my-6 border-t border-border"></div>
 
@@ -100,6 +110,7 @@ export default function ProfilePage() {
               </h3>
               <MembershipCard
                 membership={user.membership || { type: 'free', status: 'active', expiresAt: null }}
+                role={user.role}
                 onUpgrade={handleScrollToPackages}
               />
             </section>

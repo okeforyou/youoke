@@ -4,10 +4,12 @@ import { cn } from "@/lib/utils";
 interface ProfileHeroProps {
     user: any;
     isPremium: boolean;
+    role?: string;
     onEdit?: () => void;
 }
 
-export const ProfileHero = ({ user, isPremium, onEdit }: ProfileHeroProps) => {
+export const ProfileHero = ({ user, isPremium, role, onEdit }: ProfileHeroProps) => {
+    const isAdmin = role === 'admin' || role === 'owner';
     return (
         <div className="relative w-full rounded-3xl overflow-hidden bg-card border border-border/50 shadow-2xl">
             {/* Background Gradient / Cover - Apple Music Style */}
@@ -19,7 +21,7 @@ export const ProfileHero = ({ user, isPremium, onEdit }: ProfileHeroProps) => {
                 <div className="relative mb-4 group cursor-pointer">
                     <div className={cn(
                         "absolute inset-0 rounded-full blur-xl opacity-50 transition-opacity duration-500",
-                        isPremium ? "bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500" : "bg-gray-400"
+                        isAdmin ? "bg-gradient-to-r from-red-500 via-red-600 to-black" : (isPremium ? "bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500" : "bg-gray-400")
                     )}></div>
                     <div className="relative w-24 h-24 rounded-full ring-4 ring-background overflow-hidden bg-muted flex items-center justify-center">
                         {user.photoURL ? (
@@ -33,7 +35,12 @@ export const ProfileHero = ({ user, isPremium, onEdit }: ProfileHeroProps) => {
                             <Camera className="w-6 h-6 text-white/90" />
                         </div>
                     </div>
-                    {isPremium && (
+                    {isAdmin && (
+                        <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-red-600 to-black text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg border-2 border-background flex items-center gap-1">
+                            ADMIN
+                        </div>
+                    )}
+                    {!isAdmin && isPremium && (
                         <div className="absolute -bottom-1 -right-1 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg border-2 border-background flex items-center gap-1">
                             PRO
                         </div>

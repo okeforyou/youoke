@@ -58,7 +58,7 @@ export const ProfileContent = () => {
 
                     {/* Left Column: Identity & Settings (Sticky on Desktop) */}
                     <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-24">
-                        <ProfileHero user={user} isPremium={isPremium} />
+                        <ProfileHero user={user} isPremium={isPremium} role={user.role} />
 
                         <div className="space-y-4">
                             <h3 className="text-sm font-bold text-muted-foreground px-1 flex items-center gap-2 uppercase tracking-wider">
@@ -88,6 +88,7 @@ export const ProfileContent = () => {
                             </h3>
                             <MembershipCard
                                 membership={user.membership || { type: 'free', status: 'active', expiresAt: null }}
+                                role={user.role}
                                 onUpgrade={handleScrollToPackages}
                             />
                         </div>
