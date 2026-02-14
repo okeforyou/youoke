@@ -80,12 +80,13 @@ export const Sidebar = memo(() => {
 
                 {user?.role === 'admin' && (
                     <div className="mt-8">
-                        <div className="px-4 mb-2 text-xs font-black text-black uppercase tracking-wider">Admin</div>
-                        <Link href="/admin" className={clsx("flex items-center gap-3 px-4 py-2.5 rounded-2xl mb-1 transition-all", router.pathname === '/admin' ? "bg-primary/10 text-primary" : "text-gray-900 hover:bg-gray-100/50")}>
-                            <Shield size={20} /> <span className="text-sm">ภาพรวมระบบ</span>
+                        <div className="px-4 mb-2 text-xs font-black text-black uppercase tracking-wider">ส่วนผู้ดูแล</div>
+                        <Link href="/admin" className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-medium duration-300 text-sm", router.pathname.startsWith('/admin') ? "bg-red-50 text-red-600 shadow-sm translate-x-1" : "text-gray-900 hover:bg-gray-100/50 hover:text-gray-900")}>
+                            <Shield className={clsx("w-[22px] h-[22px]", router.pathname.startsWith('/admin') ? "text-red-600" : "text-gray-700")} /> <span>ระบบจัดการ</span>
                         </Link>
                     </div>
                 )}
+
             </nav>
 
             <div className="p-4 border-t border-gray-50 bg-white">

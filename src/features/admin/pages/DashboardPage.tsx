@@ -12,6 +12,8 @@ import ChartOne from "../components/ChartOne";
 import { ServiceHealth } from "../components/ServiceHealth";
 import { RecentUsersTable, RecentUser } from "../components/RecentUsersTable";
 import { AdminService } from "../services/adminService";
+import { DatabaseHealth } from "../components/DatabaseHealth";
+
 
 interface Stats {
   totalUsers: number;
@@ -299,8 +301,14 @@ const AdminDashboard: React.FC = () => {
           </div>
         </div>
 
+        {/* System Health & Maintenance */}
+        <div className="grid grid-cols-1 gap-6">
+          <DatabaseHealth />
+        </div>
+
         {/* Chart & Service Health Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
           {/* Revenue Chart */}
           <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
             <h3 className="font-bold text-red-600 mb-1">ภาพรวมรายได้</h3>
