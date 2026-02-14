@@ -9,16 +9,20 @@ import { YouTubeAdapter } from '../adapters/YouTubeAdapter';
 interface UniversalPlayerProps {
     onEnded?: () => void;
     onReady?: (target: any) => void;
+    onStateChange?: (event: any) => void;
     className?: string;
+
     showControls?: boolean;
 }
 
 export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     onEnded,
     onReady,
+    onStateChange,
     className,
     showControls = false
 }) => {
+
     const currentVideo = usePlayerStore(state => state.currentVideo);
     const isPlaying = usePlayerStore(state => state.isPlaying);
     const currentSource = usePlayerStore(state => state.currentSource);
@@ -137,7 +141,9 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
         if (event.data === 0 && onEnded) {
             onEnded();
         }
+        if (onStateChange) onStateChange(event);
     };
+
 
     return (
         <div className={`relative w-full h-full ${className} youtube-player-wrapper`}>

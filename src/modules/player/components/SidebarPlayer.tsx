@@ -81,7 +81,8 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false }: SidebarPl
     }, [isSourceAllowed, currentSource]);
 
     // --- HOOKS INTEGRATION ---
-    const { showDjOverlay } = usePlayerSync(isPassive, isDjMode, currentTime, setCurrentTime, playerRef);
+    const { showDjOverlay, onPlayerReady, onPlayerStateChange } = usePlayerSync(isPassive, isDjMode, currentTime, setCurrentTime, playerRef);
+
     const { dailyCount, maxDailySongs, maxDuration, showAds, userRole } = usePlayerLifecycle(currentSource, showDjOverlay);
 
     const [mounted, setMounted] = useState(false);
@@ -337,7 +338,13 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false }: SidebarPl
             {!showDjOverlay && (
                 <div className={`absolute inset-0 max-h-full max-w-full z-0 youtube-player-wrapper`}>
                     <UniversalPlayer
-                        onReady={onReady} // Pass ref up for legacy control (Youtube)
+                        onReady={(target) => {
+                            onReady(target);
+                            if (onPlayerReady) onPlayerReady({ target });
+                        }}
+                        onStateChange={(event) => {
+                            if (onPlayerStateChange) onPlayerStateChange(event);
+                        }}
                         onEnded={() => {
                             console.log("🎬 Media ended, playing next...");
                             if (!isPassive && !showDjOverlay) {
@@ -348,6 +355,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false }: SidebarPl
                         className="w-full h-full pointer-events-auto"
                     />
                 </div>
+
             )}
 
             {/* AD OVERLAY (If show_ads is TRUE) */}

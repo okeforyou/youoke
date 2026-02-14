@@ -11,6 +11,8 @@ export const usePlayerSync = (
     setCurrentTime: (time: number) => void,
     playerRef: React.MutableRefObject<any>
 ) => {
+    const { play, pause } = usePlayerStore.getState();
+
     // Check local storage for Dual Mode state
     useEffect(() => {
         if (isPassive) return;
@@ -124,11 +126,35 @@ export const usePlayerSync = (
         }
     }, [isPlaying, isDualActive]);
 
+    // 🎮 Event Handlers to keep Store in sync with Player
+    const onPlayerReady = (event: any) => {
+        console.log("✅ Player Ready");
+        playerRef.current = event.target;
+    };
+
+    const onPlayerStateChange = (event: any) => {
+        // 1 = Playing, 2 = Paused
+        if (event.data === 1) {
+            if (!usePlayerStore.getState().isPlaying) {
+                console.log("🟢 Local Sync: Playing detected");
+                play();
+            }
+        } else if (event.data === 2) {
+            if (usePlayerStore.getState().isPlaying) {
+                console.log("🟠 Local Sync: Pause detected");
+                pause();
+            }
+        }
+    };
+
     return {
         showDjOverlay: isDualActive,
-        isDjConnected
+        isDjConnected,
+        onPlayerReady,
+        onPlayerStateChange
     };
 };
+
 
 function useRefVal<T>(initial: T): [T, (val: T) => void] {
     const [val, setVal] = require('react').useState(initial);
