@@ -406,47 +406,48 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false }: SidebarPl
                             <X size={20} strokeWidth={3} />
                         </button>
                     </div>
+                </>
             )}
 
-                    {/* Added By / Up Next Toast (Top-Right - Sharp V2 Metadata-Rich) */}
-                    {showToast && (toastType === 'added' ? currentVideo : upNextVideo) && (
-                        <div className={`absolute top-6 right-6 z-[60] transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] ${showToast ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4 pointer-events-none'}`}>
-                            <div className="flex items-center gap-4 bg-stone-900/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-2.5 pr-6 shadow-2xl ring-1 ring-white/5 min-w-[320px] max-w-md">
-                                {/* Thumbnail */}
-                                <div className="w-16 h-16 rounded-xl overflow-hidden border border-white/5 shadow-inner shrink-0 relative bg-black/40">
-                                    <Image
-                                        unoptimized
-                                        src={(toastType === 'added' ? currentVideo : upNextVideo).thumbnail || `https://i.ytimg.com/vi/${(toastType === 'added' ? currentVideo : upNextVideo).videoId}/mqdefault.jpg`}
-                                        fill
-                                        className="object-cover"
-                                        alt="Cover"
-                                    />
-                                </div>
-
-                                {/* Info */}
-                                <div className="flex flex-col min-w-0 flex-1">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <span className={`text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${toastType === 'upnext' ? 'bg-amber-500 text-black' : 'bg-primary text-white'}`}>
-                                            {toastType === 'upnext' ? 'ลำดับถัดไป' : 'กำลังเล่น'}
-                                        </span>
-                                        {(toastType === 'added' ? currentVideo : upNextVideo).addedBy && (
-                                            <span className="text-[10px] text-white/40 font-bold flex items-center gap-1">
-                                                <User size={10} className="text-primary" />
-                                                {((toastType === 'added' ? currentVideo : upNextVideo).addedBy as any).name || (toastType === 'added' ? currentVideo : upNextVideo).addedBy.displayName}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <h3 className="text-[15px] font-black text-white leading-tight truncate">
-                                        {(toastType === 'added' ? currentVideo : upNextVideo).title}
-                                    </h3>
-                                    <p className="text-[12px] font-bold text-white/50 truncate mt-0.5">
-                                        {(toastType === 'added' ? currentVideo : upNextVideo).author}
-                                    </p>
-                                </div>
-                            </div>
+            {/* Added By / Up Next Toast (Top-Right - Sharp V2 Metadata-Rich) */}
+            {showToast && (toastType === 'added' ? currentVideo : upNextVideo) && (
+                <div className={`absolute top-6 right-6 z-[60] transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] ${showToast ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4 pointer-events-none'}`}>
+                    <div className="flex items-center gap-4 bg-stone-900/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-2.5 pr-6 shadow-2xl ring-1 ring-white/5 min-w-[320px] max-w-md">
+                        {/* Thumbnail */}
+                        <div className="w-16 h-16 rounded-xl overflow-hidden border border-white/5 shadow-inner shrink-0 relative bg-black/40">
+                            <Image
+                                unoptimized
+                                src={(toastType === 'added' ? currentVideo : upNextVideo).thumbnail || `https://i.ytimg.com/vi/${(toastType === 'added' ? currentVideo : upNextVideo).videoId}/mqdefault.jpg`}
+                                fill
+                                className="object-cover"
+                                alt="Cover"
+                            />
                         </div>
-                    )}
 
+                        {/* Info */}
+                        <div className="flex flex-col min-w-0 flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                                <span className={`text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${toastType === 'upnext' ? 'bg-amber-500 text-black' : 'bg-primary text-white'}`}>
+                                    {toastType === 'upnext' ? 'ลำดับถัดไป' : 'กำลังเล่น'}
+                                </span>
+                                {(toastType === 'added' ? currentVideo : upNextVideo).addedBy && (
+                                    <span className="text-[10px] text-white/40 font-bold flex items-center gap-1">
+                                        <User size={10} className="text-primary" />
+                                        {((toastType === 'added' ? currentVideo : upNextVideo).addedBy as any).name || (toastType === 'added' ? currentVideo : upNextVideo).addedBy.displayName}
+                                    </span>
+                                )}
+                            </div>
+                            <h3 className="text-[15px] font-black text-white leading-tight truncate">
+                                {(toastType === 'added' ? currentVideo : upNextVideo).title}
+                            </h3>
+                            <p className="text-[12px] font-bold text-white/50 truncate mt-0.5">
+                                {(toastType === 'added' ? currentVideo : upNextVideo).author}
+                            </p>
+                        </div>
+                    </div>
                 </div>
-            );
+            )}
+
+        </div>
+    );
 };
