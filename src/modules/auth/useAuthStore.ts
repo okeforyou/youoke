@@ -10,6 +10,7 @@ import {
     signInWithPopup,
     updateProfile
 } from 'firebase/auth';
+import { getApps } from 'firebase/app';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import nookies from 'nookies';
 
