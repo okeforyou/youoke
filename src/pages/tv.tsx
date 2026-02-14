@@ -11,10 +11,12 @@ import { CastState } from '../types/castCommands';
 
 // Reuse hook types or move to shared
 import { useCommandExecutor as useCmdExec } from '../hooks/useCommandExecutor';
+import { useSystemConfig } from '@/hooks/useSystemConfig';
 
 const TVPage = () => {
     const router = useRouter();
     const { room: roomCodeParam } = router.query;
+    const { config } = useSystemConfig();
 
     const [roomCode, setRoomCode] = useState<string>('');
     const [state, setState] = useState<CastState>({
@@ -153,17 +155,8 @@ const TVPage = () => {
             <div className={`absolute inset-0 transition-opacity duration-1000 ${isIdle ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
                 <DigitalSignage
                     roomCode={roomCode}
-                    // Future: Fetch these from Admin Config
-                    images={[
-                        'https://images.unsplash.com/photo-1516280440614-6697288d5d38?q=80&w=2070',
-                        'https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?q=80&w=2070',
-                        'https://images.unsplash.com/photo-1514525253440-b393452e8d03?q=80&w=2070'
-                    ]}
-                    messages={[
-                        "ยินดีต้อนรับสู่ YouOke Karaoke! 🎤",
-                        "โปรโมชั่น: สั่งอาหารครบ 500 บาท รับฟรีเฟรนช์ฟรายส์ 🍟",
-                        "สแกนรหัสเพื่อเชื่อมต่อรีโมท ->"
-                    ]}
+                    images={config.tv?.signageImages}
+                    messages={config.tv?.signageMessages}
                 />
             </div>
 

@@ -128,6 +128,11 @@ export interface SystemConfig {
             features: { title: string; desc: string; link?: string }[]
         }
     };
+    tv: {
+        signageMessages: string[];
+        signageImages: string[];
+        guestSongLimit: number;
+    };
 }
 
 // Firestore Collection: settings, Document: default
@@ -253,6 +258,19 @@ export const DEFAULT_CONFIG: SystemConfig = {
         offer_text: "ทดลองใช้ Premium ฟรี 1 เดือน!",
         offer_subtext: "ฟังเพลงไม่อั้น • ไม่มีโฆษณา • คิวเพลงไม่จำกัด",
         button_text: "สมัครเลย (ทดลองฟรี 1 เดือน)"
+    },
+    tv: {
+        signageMessages: [
+            "ยินดีต้อนรับสู่ YouOke Karaoke! 🎤",
+            "โปรโมชั่น: สั่งอาหารครบ 500 บาท รับฟรีเฟรนช์ฟรายส์ 🍟",
+            "สแกนรหัสเพื่อเชื่อมต่อรีโมท ->"
+        ],
+        signageImages: [
+            'https://images.unsplash.com/photo-1516280440614-6697288d5d38?q=80&w=2070',
+            'https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?q=80&w=2070',
+            'https://images.unsplash.com/photo-1514525253440-b393452e8d03?q=80&w=2070'
+        ],
+        guestSongLimit: 5
     }
 };
 
@@ -272,6 +290,7 @@ export const getSystemConfig = async (): Promise<SystemConfig> => {
             ...data,
             features: { ...DEFAULT_CONFIG.features, ...data.features },
             player: { ...DEFAULT_CONFIG.player, ...data.player },
+            tv: { ...DEFAULT_CONFIG.tv, ...data.tv },
             ui: {
                 ...DEFAULT_CONFIG.ui,
                 ...data.ui,
@@ -329,6 +348,7 @@ export const subscribeToSystemConfig = (callback: (config: SystemConfig) => void
                 ...data,
                 features: { ...DEFAULT_CONFIG.features, ...data.features },
                 player: { ...DEFAULT_CONFIG.player, ...data.player },
+                tv: { ...DEFAULT_CONFIG.tv, ...data.tv },
                 ui: {
                     ...DEFAULT_CONFIG.ui,
                     ...data.ui,

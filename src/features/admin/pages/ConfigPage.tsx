@@ -16,7 +16,11 @@ import {
     PuzzlePieceIcon,
     MegaphoneIcon,
     ExclamationTriangleIcon,
-    CheckCircleIcon
+    CheckCircleIcon,
+    TvIcon,
+    PhotoIcon,
+    PlusIcon,
+    TrashIcon
 } from '@heroicons/react/24/outline';
 import { cn } from '../../../utils/cn';
 
@@ -61,6 +65,7 @@ export default function ConfigPage() {
         { id: 'player', label: 'เครื่องเล่น', icon: MusicalNoteIcon, desc: 'ตั้งค่าเสียง' },
         { id: 'ui', label: 'รูปลักษณ์', icon: AdjustmentsHorizontalIcon, desc: 'ธีมและฟอนต์' },
         { id: 'integrations', label: 'เชื่อมต่อระบบ', icon: WrenchScrewdriverIcon, desc: 'Youtube, Spotify' },
+        { id: 'tv', label: 'Smart TV', icon: TvIcon, desc: 'ข้อความประกาศ, พื้นหลัง, โควต้า' },
         { id: 'payment', label: 'การชำระเงิน', icon: BanknotesIcon, desc: 'บัญชีธนาคาร' },
     ];
 
@@ -346,6 +351,117 @@ export default function ConfigPage() {
                                         <div className="text-xl" style={{ fontFamily: f.family }}>กขคง Thai</div>
                                     </div>
                                 ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'tv' && (
+                        <div className="space-y-6">
+                            {/* Guest Limits */}
+                            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                                <h3 className="font-bold flex items-center gap-2">
+                                    <MusicalNoteIcon className="w-5 h-5 text-primary" />
+                                    จำกัดจำนวนเพลง (Guest Limits)
+                                </h3>
+                                <div>
+                                    <label className="label">จำนวนเพลงฟรีสำหรับแขก (ต่อ 24 ชม.)</label>
+                                    <input
+                                        type="number"
+                                        className="input input-bordered w-full"
+                                        value={localConfig.tv?.guestSongLimit || 5}
+                                        onChange={(e) => setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, guestSongLimit: parseInt(e.target.value) } })}
+                                    />
+                                    <p className="text-xs text-gray-400 mt-2 italic">* สำหรับผู้ใช้ที่ไม่ได้เข้าสู่ระบบ (Anonymous Users)</p>
+                                </div>
+                            </div>
+
+                            {/* Signage Messages */}
+                            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                                <h3 className="font-bold flex items-center gap-2">
+                                    <MegaphoneIcon className="w-5 h-5 text-primary" />
+                                    ข้อความประกาศ (Signage Marquee)
+                                </h3>
+                                <div className="space-y-3">
+                                    {(localConfig.tv?.signageMessages || []).map((msg, index) => (
+                                        <div key={index} className="flex gap-2">
+                                            <input
+                                                type="text"
+                                                className="input input-bordered flex-1"
+                                                value={msg}
+                                                onChange={(e) => {
+                                                    const newMsgs = [...(localConfig.tv?.signageMessages || [])];
+                                                    newMsgs[index] = e.target.value;
+                                                    setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, signageMessages: newMsgs } });
+                                                }}
+                                            />
+                                            <button
+                                                className="btn btn-ghost text-red-500 p-2"
+                                                onClick={() => {
+                                                    const newMsgs = (localConfig.tv?.signageMessages || []).filter((_, i) => i !== index);
+                                                    setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, signageMessages: newMsgs } });
+                                                }}
+                                            >
+                                                <TrashIcon className="w-5 h-5" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                    <button
+                                        className="btn btn-ghost btn-outline btn-sm w-full gap-2 border-dashed"
+                                        onClick={() => {
+                                            const newMsgs = [...(localConfig.tv?.signageMessages || []), ""];
+                                            setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, signageMessages: newMsgs } });
+                                        }}
+                                    >
+                                        <PlusIcon className="w-4 h-4" /> เพิ่มข้อความ
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Signage Images */}
+                            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
+                                <h3 className="font-bold flex items-center gap-2">
+                                    <PhotoIcon className="w-5 h-5 text-primary" />
+                                    รูปภาพพื้นหลัง (Signage Backgrounds)
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {(localConfig.tv?.signageImages || []).map((img, index) => (
+                                        <div key={index} className="space-y-2">
+                                            <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden relative border border-gray-100">
+                                                {img ? <img src={img} className="w-full h-full object-cover" /> : <div className="flex items-center justify-center h-full text-gray-300"><PhotoIcon className="w-10 h-10" /></div>}
+                                                <button
+                                                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 shadow-lg"
+                                                    onClick={() => {
+                                                        const newImgs = (localConfig.tv?.signageImages || []).filter((_, i) => i !== index);
+                                                        setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, signageImages: newImgs } });
+                                                    }}
+                                                >
+                                                    <TrashIcon className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                            <input
+                                                type="text"
+                                                placeholder="Image URL..."
+                                                className="input input-bordered input-xs w-full"
+                                                value={img}
+                                                onChange={(e) => {
+                                                    const newImgs = [...(localConfig.tv?.signageImages || [])];
+                                                    newImgs[index] = e.target.value;
+                                                    setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, signageImages: newImgs } });
+                                                }}
+                                            />
+                                        </div>
+                                    ))}
+                                    <button
+                                        className="aspect-video border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center gap-2 text-gray-400 hover:bg-gray-50 transition-colors"
+                                        onClick={() => {
+                                            const newImgs = [...(localConfig.tv?.signageImages || []), ""];
+                                            setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, signageImages: newImgs } });
+                                        }}
+                                    >
+                                        <PlusIcon className="w-8 h-8" />
+                                        <span className="text-sm font-bold">เพิ่มรูปภาพ</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     )}

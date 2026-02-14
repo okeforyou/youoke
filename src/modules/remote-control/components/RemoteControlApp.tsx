@@ -10,6 +10,7 @@ import {
     Lock, Chrome, LogIn, AlertCircle
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { useSystemConfig } from '@/hooks/useSystemConfig';
 import { QRCodeSVG } from 'qrcode.react';
 import {
     DndContext,
@@ -62,10 +63,11 @@ export default function RemoteControlApp() {
 
     // Auth & Limit State
     const { user, signInWithGoogle, logIn } = useAuth();
+    const { config } = useSystemConfig();
     const [guestSongCount, setGuestSongCount] = useState(0);
     const [showLimitModal, setShowLimitModal] = useState(false);
     const [isLoggingIn, setIsLoggingIn] = useState(false);
-    const SONG_LIMIT = 5;
+    const SONG_LIMIT = config.tv?.guestSongLimit || 5;
 
     const [isSearchOpen, setSearchOpen] = useState(false);
     const [showLocalQr, setShowLocalQr] = useState(false);
