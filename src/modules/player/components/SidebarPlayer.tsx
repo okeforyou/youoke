@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Maximize2, Minimize2, X, Play, Pause, Music, User } from 'lucide-react';
+import { Maximize2, Minimize2, X, Play, Pause, Music, User } from 'lucide-react'; // Player V2.1.0 Sharp
 import Image from "next/image";
 // import YouTube from "react-youtube"; // Removing direct dependency
 import { UniversalPlayer } from "./UniversalPlayer";
@@ -196,24 +196,43 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false }: SidebarPl
 
     // 🖥️ Fullscreen Security Fix: Detect if we are "fake fullscreen" and need a click
     const [needsFullscreenClick, setNeedsFullscreenClick] = useState(false);
+    const [isActuallyFullscreen, setIsActuallyFullscreen] = useState(false);
 
     useEffect(() => {
-        if (layoutMode === 'fullscreen' && !document.fullscreenElement) {
-            setNeedsFullscreenClick(true);
-        } else {
-            setNeedsFullscreenClick(false);
-        }
+        const checkFs = () => {
+            const isFs = !!(document.fullscreenElement || (document as any).webkitFullscreenElement);
+            setIsActuallyFullscreen(isFs);
+
+            if (layoutMode === 'fullscreen' && !isFs) {
+                setNeedsFullscreenClick(true);
+            } else {
+                setNeedsFullscreenClick(false);
+            }
+        };
+
+        checkFs();
+        document.addEventListener('fullscreenchange', checkFs);
+        document.addEventListener('webkitfullscreenchange', checkFs);
+        return () => {
+            document.removeEventListener('fullscreenchange', checkFs);
+            document.removeEventListener('webkitfullscreenchange', checkFs);
+        };
     }, [layoutMode]);
 
     // Handle the "force fullscreen" click
     const confirmFullscreen = () => {
-        if (document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen()
-                .then(() => setNeedsFullscreenClick(false))
+        const element = document.documentElement;
+        if (element.requestFullscreen) {
+            element.requestFullscreen()
+                .then(() => {
+                    setNeedsFullscreenClick(false);
+                    setIsActuallyFullscreen(true);
+                })
                 .catch(e => console.warn("FS Error:", e));
-        } else if ((document.documentElement as any).webkitRequestFullscreen) {
-            (document.documentElement as any).webkitRequestFullscreen();
+        } else if ((element as any).webkitRequestFullscreen) {
+            (element as any).webkitRequestFullscreen();
             setNeedsFullscreenClick(false);
+            setIsActuallyFullscreen(true);
         }
     };
 
@@ -358,7 +377,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false }: SidebarPl
             )}
 
             {/* 🎯 YOUTUBE-STYLE MINI CONTROLS (Fullscreen Only - Rounded Capsule) */}
-            {layoutMode === 'fullscreen' && (
+            {layoutMode === 'fullscreen' && isActuallyFullscreen && (
                 <>
                     {/* Fullscreen Confirmation Overlay (If triggered by Remote) */}
                     {needsFullscreenClick && (
