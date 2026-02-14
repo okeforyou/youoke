@@ -59,11 +59,11 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
                 <Menu className="w-5 h-5 opacity-50" />
             </div>
 
-            {/* Card Content - V1 Style with red border on hover (No Gray, No Lift) */}
-            <div className="flex-1 flex items-center gap-4 rounded-xl border border-gray-200 transition-all overflow-hidden hover:border-primary hover:shadow-sm bg-white">
-                {/* Thumbnail - Flush with the card's left side */}
+            {/* Card Content - V1 Style with red border on hover (No Gray, No Shadow) */}
+            <div className="flex-1 flex items-center gap-4 rounded-xl border border-gray-300 transition-all overflow-hidden hover:border-primary bg-white">
+                {/* Thumbnail - Flush with the card's left side (Enlarged) */}
                 <div
-                    className="relative w-28 h-16 flex-shrink-0 bg-black cursor-pointer group/thumb"
+                    className="relative w-36 h-20 flex-shrink-0 bg-black cursor-pointer group/thumb"
                     onClick={() => onPlay(actualIndex)}
                 >
                     <Image
@@ -80,7 +80,7 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
                 </div>
 
                 {/* Info */}
-                <div className="flex-1 min-w-0 py-2 cursor-pointer" onClick={() => onPlay(actualIndex)}>
+                <div className="flex-1 min-w-0 py-3 cursor-pointer" onClick={() => onPlay(actualIndex)}>
                     <h4 className="text-[14px] font-black text-black line-clamp-1 leading-snug mb-0.5">
                         {video.title}
                     </h4>

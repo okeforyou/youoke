@@ -84,7 +84,15 @@ export default function RemoteControlApp() {
         const newTheme = theme === 'light' ? 'dark' : 'light';
         setTheme(newTheme);
         localStorage.setItem('remote_theme', newTheme);
+        // Sync body background to prevent white line on notch/overscroll
+        document.body.style.backgroundColor = newTheme === 'dark' ? '#0c0a09' : '#fafaf9';
     };
+
+    useEffect(() => {
+        if (hasMounted) {
+            document.body.style.backgroundColor = theme === 'dark' ? '#0c0a09' : '#fafaf9';
+        }
+    }, [theme, hasMounted]);
 
     // Search Handlers
     const performSearch = async (value: string, type: 'video' | 'karaoke' = searchType) => {
@@ -401,8 +409,7 @@ export default function RemoteControlApp() {
 
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
-
-        if (active.id === over?.id) return;
+        if (!over || active.id === over.id) return;
 
         // Up Next songs are those after currentIndex
         const queueWithoutFirst = roomState.queue.slice(roomState.currentIndex + 1);
@@ -414,7 +421,7 @@ export default function RemoteControlApp() {
 
         const newIndex = queueWithoutFirst.findIndex((item) => {
             const itemId = item.uuid || item.videoId || `${item.title}-${item.author}`;
-            return itemId === over.id;
+            return itemId === over?.id;
         });
 
         if (oldIndex === -1 || newIndex === -1) {
@@ -470,7 +477,7 @@ export default function RemoteControlApp() {
             <div className="h-full overflow-y-auto pb-24" style={{ overscrollBehavior: 'none', touchAction: 'pan-y' }}>
 
                 {/* UNIFIED Sticky Header & Search Block (No Internal Borders) */}
-                <div className={`sticky top-0 z-30 transition-colors border-b shadow-xl ${theme === 'dark' ? 'bg-stone-900 border-white/5' : 'bg-white border-gray-100'}`}>
+                <div className={`sticky top-0 z-30 transition-colors border-b shadow-xl pt-[env(safe-area-inset-top)] ${theme === 'dark' ? 'bg-stone-900 border-white/5' : 'bg-white border-gray-100'}`}>
                     {/* Room Info Section */}
                     <div className="px-4 py-3 flex items-center justify-between gap-2 overflow-hidden">
                         <div className="flex-shrink-0 min-w-0">
@@ -685,7 +692,10 @@ export default function RemoteControlApp() {
                 {showLocalQr && (
                     <div className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-6" onClick={() => setShowLocalQr(false)}>
                         <div className="bg-white p-6 rounded-3xl text-center space-y-4" onClick={e => e.stopPropagation()}>
-                            <h3 className="font-bold text-lg">สแกนเพื่อเข้าร่วม</h3>
+                            <div className="flex items-center justify-center gap-2">
+                                <span className="font-bold text-lg text-gray-900">YouOke</span>
+                                <span className="text-[10px] font-bold bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-md hidden sm:inline-block">v2.22.0-FINAL</span>
+                            </div>
                             <div className="bg-gray-100 p-2 rounded-xl inline-block">
                                 {/* @ts-ignore */}
                                 {roomCode && typeof window !== 'undefined' && <QRCodeSVG value={`${window.location.origin}/remote?room=${roomCode}`} size={200} />}

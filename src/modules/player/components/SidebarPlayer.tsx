@@ -377,7 +377,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false }: SidebarPl
             )}
 
             {/* 🎯 YOUTUBE-STYLE MINI CONTROLS (Fullscreen Only - Rounded Capsule) */}
-            {layoutMode === 'fullscreen' && isActuallyFullscreen && (
+            {layoutMode === 'fullscreen' && (
                 <>
                     {/* Fullscreen Confirmation Overlay (If triggered by Remote) */}
                     {needsFullscreenClick && (
