@@ -161,33 +161,57 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) 
         </nav>
 
         {/* Bottom User Section */}
-        <div className="border-t border-sidebar-border p-4 bg-sidebar-accent/10">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sidebar-border text-sidebar-foreground text-sm font-medium shrink-0 shadow-sm ring-2 ring-sidebar-border">
-              {user?.displayName?.charAt(0) || 'A'}
+        <div className="mt-auto border-t border-sidebar-border bg-sidebar/50 backdrop-blur-xl relative overflow-hidden group">
+          {/* Cover Photo / Premium Gradient Background */}
+          <div className="absolute inset-0 h-16 bg-gradient-to-br from-primary/20 via-primary/5 to-transparent z-0 opacity-50" />
+          <div className="absolute top-0 right-0 w-24 h-24 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 z-0" />
+
+          <div className="relative z-10 p-4 pt-8">
+            <div className="flex items-center gap-3">
+              {/* Avatar with Glow */}
+              <div className="relative shrink-0">
+                <div className="absolute inset-0 rounded-full bg-primary/20 blur-md group-hover:bg-primary/30 transition-all" />
+                {user?.photoURL ? (
+                  <img src={user.photoURL} className="relative h-10 w-10 rounded-full object-cover ring-2 ring-sidebar-border shadow-sm" alt="" />
+                ) : (
+                  <div className="relative h-10 w-10 flex items-center justify-center rounded-full bg-sidebar-accent text-primary text-sm font-bold ring-2 ring-sidebar-border shadow-sm">
+                    {(user?.displayName || user?.email || 'A').charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
+
+              {/* User Info with Fallback */}
+              <div className="flex-1 min-w-0">
+                <p className="truncate text-sm font-bold text-sidebar-foreground group-hover:text-primary transition-colors">
+                  {user?.displayName || (user?.email ? user.email.split('@')[0] : 'ผู้ใช้งาน')}
+                </p>
+                <div className="flex items-center gap-1.5 overflow-hidden">
+                  <p className="truncate text-[10px] text-sidebar-muted font-bold uppercase tracking-wider">
+                    {(user?.role === 'admin' || user?.role === 'owner') ? 'ผู้ดูแลระบบ' : 'สมาชิกทั่วไป'}
+                  </p>
+                  <span className="h-1 w-1 rounded-full bg-primary/40 shrink-0" />
+                  <p className="truncate text-[9px] text-sidebar-muted/70 font-mono">
+                    {user?.uid?.substring(0, 6)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Button */}
+              <button
+                onClick={async () => {
+                  try {
+                    await logout();
+                    router.push('/login');
+                  } catch (e) {
+                    console.error("Logout failed", e);
+                  }
+                }}
+                className="shrink-0 rounded-xl p-2.5 text-sidebar-muted hover:bg-destructive/10 hover:text-destructive transition-all cursor-pointer group/btn active:scale-95"
+                title="ออกจากระบบ"
+              >
+                <ArrowRightOnRectangleIcon className="h-5 w-5 group-hover/btn:scale-110 transition-transform" />
+              </button>
             </div>
-            <div className="flex-1 min-w-0 overflow-hidden">
-              <p className="truncate text-sm font-medium text-sidebar-foreground">
-                {user?.displayName || 'ผู้ควบคุม'}
-              </p>
-              <p className="truncate text-xs text-sidebar-muted">
-                {user?.email || 'admin@youoke.com'}
-              </p>
-            </div>
-            <button
-              onClick={async () => {
-                try {
-                  await logout();
-                  router.push('/login');
-                } catch (e) {
-                  console.error("Logout failed", e);
-                }
-              }}
-              className="shrink-0 rounded-lg p-2 text-sidebar-muted hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer group"
-              title="ออกจากระบบ"
-            >
-              <ArrowRightOnRectangleIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
-            </button>
           </div>
         </div>
       </aside>

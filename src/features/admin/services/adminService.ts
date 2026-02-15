@@ -9,6 +9,7 @@ import {
     updateDoc,
     getDoc,
     limit,
+    getCountFromServer, // Import getCountFromServer
 } from "firebase/firestore";
 import {
     ref,
@@ -27,46 +28,40 @@ export interface AdminStats {
 
 export const AdminService = {
     /**
-     * Get Dashboard Stats (Users from RTDB, Revenue from Firestore)
-     */
-    /**
      * Get Dashboard Stats (Users from Firestore, Revenue from Firestore)
      */
     getDashboardStats: async (): Promise<AdminStats> => {
         try {
-            console.log("📊 AdminService.getDashboardStats: Starting...");
+            console.log("📊 AdminService.getDashboardStats: Starting (Optimized)...");
             if (!db) {
                 console.error("❌ Firestore DB not initialized");
                 return { totalUsers: 0, activeSubs: 0, revenue: 0, loading: false };
             }
 
-            const currentUser = auth?.currentUser;
-            console.log(`👤 Current Auth User: ${currentUser ? currentUser.uid : 'NULL'}`);
+            // 1. Total Registered Users (Efficient counting)
+            // Filter: users with email != null (excludes guests)
+            const usersColl = collection(db, "users");
+            let totalUsers = 0;
 
-            if (!currentUser) {
-                console.warn("⚠️ No authenticated user found during AdminService call. This might cause permission errors.");
+            try {
+                const regUsersQuery = query(usersColl, where("email", "!=", null));
+                const countSnap = await getCountFromServer(regUsersQuery);
+                totalUsers = countSnap.data().count;
+            } catch (e) {
+                console.warn("⚠️ Missing index for email!=null count, falling back to total count.");
+                const countSnap = await getCountFromServer(usersColl);
+                totalUsers = countSnap.data().count;
             }
 
-            // 1. Total Users (From Firestore)
-            // Using getCount for efficiency if available, or fallback to size
-            // const usersColl = collection(db, "users");
-            // const snapshot = await getCountFromServer(usersColl); // Need to import getCountFromServer? Let's check imports.
-            // Simplified: Query Active Users
-            const usersQuery = query(collection(db, "users"));
-            const usersSnapshot = await getDocs(usersQuery);
-            const totalUsers = usersSnapshot.size;
+            // 2. Active Subscriptions
+            // We still need to find premium users. For accuracy, we query active membership
+            const activeSubsQuery = query(usersColl, where("membership.status", "==", "active"));
+            const activeSubsSnap = await getCountFromServer(activeSubsQuery);
+            const activeSubs = activeSubsSnap.data().count;
 
-            let activeSubs = 0;
-            usersSnapshot.forEach(doc => {
-                const user = doc.data();
-                if (user.membership?.status === 'active' || user.isPremium === true) {
-                    activeSubs++;
-                }
-            });
-
-            // 2. Revenue (From Firestore 'payments' collection)
+            // 3. Revenue (From Firestore 'payment_proofs' collection)
             const paymentsQuery = query(
-                collection(db, "payment_proofs"), // Note: Ensure consistent collection name
+                collection(db, "payment_proofs"),
                 where("status", "==", "approved")
             );
             const paymentsSnapshot = await getDocs(paymentsQuery);

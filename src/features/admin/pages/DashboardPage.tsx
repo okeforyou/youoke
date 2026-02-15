@@ -54,83 +54,51 @@ const AdminDashboard: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        // Parallel fetching
-        const [
-          totalUsersSnap,
-          recentUsersSnap,
-          paymentsSnap,
-          revenueHistoryData
-        ] = await Promise.all([
-          getCountFromServer(collection(db, "users")),
-          getDocs(query(collection(db, "users"), orderBy("createdAt", "desc"), limit(10))),
-          getDocs(query(collection(db, "payment_proofs"), orderBy("createdAt", "desc"), limit(100))), // Limit for performance? Or fetch all if needed
-          AdminService.getRevenueHistory().catch(() => [])
-        ]);
-
-        // Process Users (Count only registered users with email)
-        const totalUsers = totalUsersSnap.docs.filter(doc => doc.data().email).length;
-
-        // Process Recent Users for Activity
-        const recentUsers = recentUsersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-        // Process Payments for Stats
-        let pendingPayments = 0;
-        let approvedPayments = 0;
-        let rejectedPayments = 0;
-        let totalRevenue = 0;
-        const recentPayments: any[] = [];
-
-        paymentsSnap.docs.forEach(doc => {
-          const data = doc.data();
-          if (data.status === 'pending') pendingPayments++;
-          else if (data.status === 'approved') {
-            approvedPayments++;
-            totalRevenue += Number(data.amount) || 0;
-            recentPayments.push({ id: doc.id, ...data });
-          } else if (data.status === 'rejected') rejectedPayments++;
-        });
-
-        // Combine Activities
-        const activities: SerializedActivity[] = [];
-        recentPayments.slice(0, 10).forEach((p: any) => activities.push({
-          id: p.id, type: "payment", action: "Payment Approved",
-          timestamp: p.approvedAt?.toDate?.()?.toISOString() || null,
-          details: `${p.amount} THB - Plan: ${p.planId}`,
-        }));
-        recentUsers.forEach((u: any) => activities.push({
-          id: u.id, type: "user", action: "New User Registered",
-          timestamp: u.createdAt ? new Date(u.createdAt.seconds * 1000).toISOString() : null,
-          details: `${u.displayName || u.email} - ${u.tier || 'free'}`,
-        }));
-        activities.sort((a, b) => (b.timestamp ? new Date(b.timestamp).getTime() : 0) - (a.timestamp ? new Date(a.timestamp).getTime() : 0));
-
-        // Update State
-        setStats(prev => ({
-          ...prev,
-          totalUsers,
-          pendingPayments,
-          approvedPayments,
-          rejectedPayments,
-          totalRevenue,
-          // Rough estimates or placeholders for now to avoid fetching ALL users
+        // 1. Fetch Stats (Optimized via Service)
+        const dashboardStats = await AdminService.getDashboardStats();
+        setStats({
+          ...dashboardStats,
+          // Fallback fields for the existing UI components
           adminUsers: 0,
-          freeUsers: totalUsers,
-          premiumUsers: 0,
+          freeUsers: dashboardStats.totalUsers,
+          premiumUsers: dashboardStats.activeSubs,
           monthlySubscribers: 0,
           yearlySubscribers: 0,
-          lifetimeSubscribers: 0
-        }));
-        setRecentActivities(activities.slice(0, 10));
-        setRevenueHistory(revenueHistoryData);
+          lifetimeSubscribers: 0,
+          pendingPayments: 0,
+          approvedPayments: 0,
+          rejectedPayments: 0,
+          totalRevenue: dashboardStats.revenue,
+        });
 
+        // 2. Fetch Recent Activities (Firestore)
+        if (db) {
+          const activitiesQuery = query(
+            collection(db, "activities"),
+            orderBy("timestamp", "desc"),
+            limit(10)
+          );
+          const activitiesSnapshot = await getDocs(activitiesQuery);
+          const activitiesList: SerializedActivity[] = activitiesSnapshot.docs.map(doc => ({
+            id: doc.id,
+            type: doc.data().type || 'system',
+            action: doc.data().action || 'Activity',
+            timestamp: doc.data().timestamp?.toDate()?.toISOString() || new Date().toISOString(),
+            details: doc.data().details || ''
+          }));
+          setRecentActivities(activitiesList);
+        }
       } catch (err: any) {
-        console.error("Dashboard data fetch failed:", err);
+        console.error("Dashboard fetch error:", err);
         setError("Failed to load dashboard data.");
       } finally {
         setLoading(false);
       }
     };
+
     fetchData();
   }, []);
 

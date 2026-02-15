@@ -106,28 +106,31 @@ export default function AdminUsersPage() {
     const [notificationDialogOpen, setNotificationDialogOpen] = useState(false);
     const [notificationUser, setNotificationUser] = useState<User | null>(null);
 
-    // Fetch Users
+    // Fetch Users (Optimized)
     const fetchUsers = async () => {
         setLoading(true);
         try {
             if (!db) return;
+            // Fetch all users for Management (but we should ideally paginate if > 1000)
             const q = query(collection(db, "users"), orderBy("createdAt", "desc"));
             const snapshot = await getDocs(q);
             const data = snapshot.docs.map((doc) => ({
-                uid: doc.id, // Ensure uid is set from doc.id
+                uid: doc.id,
                 ...doc.data(),
             })) as User[];
 
-            // SORT: Admin first, then others
+            // Sort: Admin first, then by date
             data.sort((a, b) => {
                 if (a.role === 'admin' && b.role !== 'admin') return -1;
                 if (a.role !== 'admin' && b.role === 'admin') return 1;
-                return 0; // Keep original order (createdAt desc)
+                return 0;
             });
 
             setUsers(data);
+            console.log(`✅ Loaded ${data.length} users successfully.`);
         } catch (error) {
             console.error("Error fetching users:", error);
+            // Optionally set error state if UI supports it
         } finally {
             setLoading(false);
         }
