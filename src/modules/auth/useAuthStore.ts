@@ -13,10 +13,12 @@ import {
 import { getApps } from 'firebase/app';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import nookies from 'nookies';
+import { ref, get, update as rtdbUpdate } from 'firebase/database';
+import { realtimeDb } from '../../firebase';
 
 interface MembershipState {
     type: 'free' | 'day_pass' | 'monthly' | 'yearly' | 'lifetime';
-    status: 'active' | 'expired';
+    status: 'active' | 'expired' | 'pending';
     startedAt: any;
     expiresAt: any | null;
 }
@@ -162,15 +164,23 @@ export const useAuthStore = create<UserState & AuthActions>()(
                             const token = await firebaseUser.getIdToken();
                             if (!db) throw new Error("Firestore not initialized");
                             const userRef = doc(db, 'users', firebaseUser.uid);
-                            let userSnap = await getDoc(userRef);
 
-                            // Self-healing: If profile missing
+                            // 🚀 DEEP SYNC: Fetch from both Databases in Parallel
+                            const [userSnap, rtdbSnap] = await Promise.all([
+                                getDoc(userRef),
+                                realtimeDb ? get(ref(realtimeDb, `users/${firebaseUser.uid}`)) : Promise.resolve(null)
+                            ]);
+
+                            const rtdbData = rtdbSnap?.exists() ? rtdbSnap.val() : null;
+
+                            // Self-healing: If profile missing in BOTH or just Firestore
                             if (!userSnap.exists()) {
+                                console.log('🩹 [AuthStore] Initializing missing Firestore profile...');
                                 const newProfile = {
                                     uid: firebaseUser.uid,
                                     email: firebaseUser.email,
-                                    displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
-                                    photoURL: firebaseUser.photoURL || null,
+                                    displayName: rtdbData?.displayName || firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
+                                    photoURL: rtdbData?.photoURL || firebaseUser.photoURL || null,
                                     role: 'user',
                                     membership: { ...DEFAULT_MEMBERSHIP, startedAt: serverTimestamp() },
                                     createdAt: serverTimestamp(),
@@ -187,7 +197,7 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                 // 🛡️ SERVER-SIDE VALIDATION: CHECK EXPIRY
                                 if (membership.expiresAt) {
                                     const expiry = membership.expiresAt.toDate ? membership.expiresAt.toDate() : new Date(membership.expiresAt);
-                                    if (new Date() > expiry) {
+                                    if (new Date() > expiry && membership.status !== 'expired') {
                                         console.warn('⚠️ Membership Expired! Downgrading to Free...');
                                         membership = {
                                             ...DEFAULT_MEMBERSHIP,
@@ -195,9 +205,16 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                             type: 'free'
                                         };
                                         // Update Firestore to reflect expiry immediately
-                                        // Dynamic import or check if updateDoc is imported
                                         const { updateDoc } = await import('firebase/firestore');
-                                        await updateDoc(userRef, { membership });
+                                        updateDoc(userRef, { membership }).catch(e => console.error('Firestore expiry sync failed', e));
+
+                                        // Sync to Realtime DB too (Simple & Fast)
+                                        if (realtimeDb) {
+                                            rtdbUpdate(ref(realtimeDb, `users/${firebaseUser.uid}/subscription`), {
+                                                status: 'expired',
+                                                plan: 'free'
+                                            }).catch(e => console.error('RTDB expiry sync failed', e));
+                                        }
                                     }
                                 }
 
@@ -222,8 +239,8 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                     user: {
                                         uid: firebaseUser.uid,
                                         email: firebaseUser.email,
-                                        displayName: userData.displayName || firebaseUser.displayName,
-                                        photoURL: userData.photoURL || firebaseUser.photoURL,
+                                        displayName: userData.displayName || rtdbData?.displayName || firebaseUser.displayName,
+                                        photoURL: userData.photoURL || rtdbData?.photoURL || firebaseUser.photoURL,
                                         role: role,
                                         isAdmin: isAdmin,
                                         membership: membership,
@@ -312,6 +329,11 @@ export const useAuthStore = create<UserState & AuthActions>()(
                         displayName: user.displayName || displayName,
                         photoURL: user.photoURL || null,
                         role: 'user',
+                        membership: {
+                            ...DEFAULT_MEMBERSHIP,
+                            status: 'pending',
+                            startedAt: serverTimestamp()
+                        },
                         tier: 'free',
                         credits: 0,
                         isPremium: false,
@@ -328,7 +350,10 @@ export const useAuthStore = create<UserState & AuthActions>()(
                             photoURL: user.photoURL,
                             role: 'user',
                             isAdmin: false,
-                            membership: DEFAULT_MEMBERSHIP,
+                            membership: {
+                                ...DEFAULT_MEMBERSHIP,
+                                status: 'pending'
+                            },
                             installed_modules: [],
                             quota: undefined
                         },

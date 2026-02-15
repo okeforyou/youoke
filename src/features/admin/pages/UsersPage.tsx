@@ -17,8 +17,9 @@ import AdminLayout from '../layouts/AdminLayout';
 import { AdminService } from '../services/adminService';
 import { EditUserModal } from '../components/EditUserModal';
 import { collection, query, orderBy, getDocs, doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../../../../firebase';
+import { db } from '../../../firebase';
 import { cn } from '../../../utils/cn';
+import { DatabaseHealth } from '../components/DatabaseHealth';
 
 // Mock Modules Config (since we don't have the file physically yet or it's in config)
 const AVAILABLE_MODULES = [
@@ -157,7 +158,11 @@ export default function UsersPage() {
   });
 
   const getMembershipStyle = (user: any) => {
+    const status = user.membership?.status || 'active';
     const type = user.membership?.type || 'free';
+
+    if (status === 'pending') return 'bg-orange-50 text-orange-600 border-orange-200';
+    if (status === 'expired') return 'bg-red-50 text-red-600 border-red-200';
     if (type === 'lifetime') return 'bg-purple-100 text-purple-700 border-purple-200';
     if (type === 'monthly' || type === 'yearly') return 'bg-green-100 text-green-700 border-green-200';
     return 'bg-gray-100 text-gray-600 border-gray-200';
@@ -247,9 +252,11 @@ export default function UsersPage() {
                       </td>
                       <td>
                         <div className={cn("badge badge-sm border font-medium", getMembershipStyle(user))}>
-                          {user.membership?.type === 'monthly' ? 'รายเดือน' :
-                            user.membership?.type === 'yearly' ? 'รายปี' :
-                              user.membership?.type === 'lifetime' ? 'ตลอดชีพ' : 'ฟรี'}
+                          {user.membership?.status === 'pending' ? 'รอการอนุมัติ' :
+                            user.membership?.status === 'expired' ? 'หมดอายุ' :
+                              user.membership?.type === 'monthly' ? 'รายเดือน' :
+                                user.membership?.type === 'yearly' ? 'รายปี' :
+                                  user.membership?.type === 'lifetime' ? 'ตลอดชีพ' : 'ฟรี'}
                         </div>
                         {user.membership?.expiresAt && (
                           <div className="text-[10px] text-gray-400 mt-1">
@@ -259,6 +266,12 @@ export default function UsersPage() {
                       </td>
                       <td className="text-right pr-6">
                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {user.membership?.status === 'pending' && (
+                            <div className="flex gap-1">
+                              <button onClick={() => AdminService.approveUserWithTier(user.uid, 'monthly', 'admin').then(fetchUsers)} className="btn btn-xs btn-outline btn-success" title="อนุมัติรายเดือน">Approve Mo</button>
+                              <button onClick={() => AdminService.approveUserWithTier(user.uid, 'yearly', 'admin').then(fetchUsers)} className="btn btn-xs btn-outline btn-success" title="อนุมัติรายปี">Approve Yr</button>
+                            </div>
+                          )}
                           <button onClick={() => setSelectedUser(user)} className="btn btn-ghost btn-xs btn-square hover:bg-blue-50 hover:text-blue-600" title="แก้ไข">
                             <PencilSquareIcon className="w-4 h-4" />
                           </button>

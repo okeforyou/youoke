@@ -106,13 +106,34 @@ export const Sidebar = memo(() => {
                                         <span className="text-sm font-bold text-gray-900 truncate max-w-[140px]">
                                             {user?.displayName || user?.email?.split('@')[0] || 'Guest User'}
                                         </span>
-                                        <span className="text-[10px] text-gray-500 font-medium">
-                                            {(user?.role === 'admin' || user?.role === 'owner') ? 'ผู้ดูแลระบบ (Admin)' : 'สมาชิกทั่วไป'}
+                                        <span className={clsx(
+                                            "text-[10px] font-black uppercase tracking-tight",
+                                            user?.membership?.status === 'pending' ? "text-orange-500" :
+                                                user?.membership?.status === 'expired' ? "text-red-500" :
+                                                    (user?.role === 'admin' || user?.role === 'owner') ? "text-primary" : "text-gray-500"
+                                        )}>
+                                            {(() => {
+                                                if (user?.role === 'owner') return 'เจ้าของระบบ (Owner)';
+                                                if (user?.role === 'admin') return 'ผู้ดูแลระบบ (Admin)';
+
+                                                const status = user?.membership?.status;
+                                                const type = user?.membership?.type;
+
+                                                if (status === 'pending') return 'รอการอนุมัติ';
+                                                if (status === 'expired') return 'สมาชิกหมดอายุ';
+
+                                                if (type === 'lifetime') return 'สมาชิกตลอดชีพ (PRO)';
+                                                if (type === 'yearly') return 'สมาชิกรายปี (PRO)';
+                                                if (type === 'monthly') return 'สมาชิกรายเดือน';
+                                                if (type === 'day_pass') return 'สมาชิกรายวัน';
+
+                                                return 'สมาชิกทั่วไป';
+                                            })()}
                                         </span>
                                     </div>
                                 </div>
                             </div>
-                            <button onClick={() => { if (confirm('ยืนยันออกจากระบบ?')) { logOut().then(() => router.push('/login')); } }} className="p-2.5 text-gray-700 hover:bg-red-50 hover:text-red-500 rounded-xl transition-colors shrink-0" title="ออกจากระบบ"><LogOut className="w-5 h-5" /></button>
+                            <button onClick={() => { if (confirm('ยืนยันออกจากระบบ?')) { logOut().then(() => router.push('/login')); } }} className="p-2 text-gray-400 hover:bg-red-50 hover:text-red-500 rounded-xl transition-all shrink-0 hover:scale-110" title="ออกจากระบบ"><LogOut className="w-4.5 h-4.5" /></button>
                         </div>
                     ) : (
                         <Link href="/login" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white border border-gray-200 text-gray-700 font-bold shadow-sm hover:shadow-md hover:border-primary/20 hover:text-primary transition-all justify-center group">

@@ -452,5 +452,78 @@ export const AdminService = {
             processedBy: adminUid,
             rejectionReason: reason
         });
+    },
+
+    /**
+     * Get Pending Users (Firestore)
+     */
+    getPendingUsers: async () => {
+        if (!db) return [];
+        const q = query(
+            collection(db, "users"),
+            where("membership.status", "==", "pending"),
+            orderBy("createdAt", "desc")
+        );
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+    },
+
+    /**
+     * Approve User with Tier (Firestore + RTDB)
+     */
+    approveUserWithTier: async (uid: string, tier: 'monthly' | 'yearly' | 'lifetime', adminUid: string) => {
+        if (!db) throw new Error("Firebase not initialized");
+
+        const now = new Date();
+        let expiresAt: Date | null = new Date();
+
+        switch (tier) {
+            case 'monthly':
+                expiresAt.setDate(now.getDate() + 30);
+                break;
+            case 'yearly':
+                expiresAt.setDate(now.getDate() + 365);
+                break;
+            case 'lifetime':
+                expiresAt = null;
+                break;
+        }
+
+        const updates = {
+            membership: {
+                type: tier,
+                status: 'active',
+                startedAt: now,
+                expiresAt: expiresAt,
+                assignedBy: adminUid
+            },
+            role: 'premium',
+            isPremium: true,
+            tier: tier,
+            updatedAt: now
+        };
+
+        // 1. Update Firestore
+        const userRef = doc(db, "users", uid);
+        await updateDoc(userRef, updates);
+
+        // 2. Update Realtime Database
+        if (realtimeDb) {
+            const rtdbUserRef = ref(realtimeDb, `users/${uid}`);
+            await update(rtdbUserRef, {
+                role: 'premium',
+                tier: tier,
+                subscription: {
+                    plan: tier,
+                    status: 'active',
+                    startDate: now.toISOString(),
+                    endDate: expiresAt ? expiresAt.toISOString() : null
+                },
+                updatedAt: rtdbServerTimestamp()
+            });
+        }
     }
 };
