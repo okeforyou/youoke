@@ -67,9 +67,10 @@ export default function LoginPage() {
             setLineLoading(true);
             const verifyLineLogin = async () => {
                 try {
-                    let redirectUri = 'https://playyouoke.vercel.app/login/';
-                    if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-                        redirectUri = 'http://localhost:3000/login/';
+                    let redirectUri = 'https://play.okeforyou.com/login/';
+
+                    if (typeof window !== 'undefined') {
+                        redirectUri = `${window.location.origin}/login/`;
                     }
                     const res = await fetch('/api/auth/line-token', {
                         method: 'POST',

@@ -92,10 +92,10 @@ export const useAuthStore = create<UserState & AuthActions>()(
                 // 🛡️ SAFETY TIMEOUT: Force UI unlock if Firebase is slow/stuck
                 const safetyTimeout = setTimeout(() => {
                     if (get().isLoading) {
-                        console.warn('⚠️ Auth Init Timeout (5s). Forcing UI unlock.');
+                        console.warn('⚠️ Auth Init Timeout (15s). Forcing UI unlock.');
                         set({ isLoading: false });
                     }
-                }, 5000);
+                }, 15000);
 
                 console.log('🔐 Auth Store: Registering onIdTokenChanged listener...');
                 const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
@@ -375,10 +375,10 @@ export const useAuthStore = create<UserState & AuthActions>()(
                 // 1. https://playyouoke.vercel.app/login/
                 // 2. http://localhost:3000/login/ (For testing)
 
-                let redirectUri = 'https://playyouoke.vercel.app/login/';
+                let redirectUri = 'https://play.okeforyou.com/login/';
 
-                if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-                    redirectUri = 'http://localhost:3000/login/';
+                if (typeof window !== 'undefined') {
+                    redirectUri = `${window.location.origin}/login/`;
                 }
 
                 console.log('🔗 LINE Redirect URI:', redirectUri);

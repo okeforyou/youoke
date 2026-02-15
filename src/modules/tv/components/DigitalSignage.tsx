@@ -186,7 +186,9 @@ export const DigitalSignage: React.FC<DigitalSignageProps> = ({
                             <span className="text-5xl font-black text-white tracking-tighter">{roomCode}</span>
                             <div className="w-px h-10 bg-white/20" />
                             <div className="flex flex-col">
-                                <span className="text-primary font-bold text-sm">youoke.okeforyou.com</span>
+                                <span className="text-primary font-bold text-sm">
+                                    {typeof window !== 'undefined' ? window.location.host : 'play.okeforyou.com'}
+                                </span>
                                 <span className="text-white/40 text-[10px] uppercase font-bold tracking-widest">Connect Remote</span>
                             </div>
                         </div>
