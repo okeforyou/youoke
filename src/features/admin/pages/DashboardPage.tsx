@@ -54,44 +54,67 @@ const AdminDashboard: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      console.log("🚀 DashboardPage.fetchData: Starting...");
       setLoading(true);
       setError(null);
+
       try {
-        // 1. Fetch Stats via Service
-        const dashboardStats = await AdminService.getDashboardStats();
-        setStats({
-          ...dashboardStats,
-          adminUsers: 0,
-          freeUsers: dashboardStats.totalUsers,
-          premiumUsers: dashboardStats.activeSubs,
-          monthlySubscribers: 0,
-          yearlySubscribers: 0,
-          lifetimeSubscribers: 0,
-          pendingPayments: 0,
-          approvedPayments: 0,
-          rejectedPayments: 0,
-          totalRevenue: dashboardStats.revenue,
-        });
+        // Run fetches in parallel so one hang doesn't block the others
+        const results = await Promise.allSettled([
+          // 1. Stats
+          (async () => {
+            console.log("🚀 Fetching Dashboard Stats...");
+            const stats = await AdminService.getDashboardStats();
+            setStats({
+              ...stats,
+              adminUsers: 0,
+              freeUsers: stats.totalUsers,
+              premiumUsers: stats.activeSubs,
+              monthlySubscribers: 0,
+              yearlySubscribers: 0,
+              lifetimeSubscribers: 0,
+              pendingPayments: 0,
+              approvedPayments: 0,
+              rejectedPayments: 0,
+              totalRevenue: stats.revenue,
+            });
+            console.log("🚀 Stats Load Complete");
+          })(),
 
-        // 2. Fetch Revenue History
-        const revHistory = await AdminService.getRevenueHistory();
-        setRevenueHistory(revHistory);
+          // 2. Revenue History
+          (async () => {
+            console.log("🚀 Fetching Revenue History...");
+            const history = await AdminService.getRevenueHistory();
+            setRevenueHistory(history);
+            console.log("🚀 History Load Complete");
+          })(),
 
-        // 3. Fetch Recent Users (Directly from Firestore like play.youoke)
-        if (db) {
-          const usersRef = collection(db, "users");
-          const q = query(usersRef, orderBy("createdAt", "desc"), limit(5));
-          const snapshot = await getDocs(q);
-          const users = snapshot.docs.map(doc => ({
-            uid: doc.id,
-            ...doc.data()
-          }));
-          setRecentUsers(users);
-        }
+          // 3. Recent Users
+          (async () => {
+            if (!db) {
+              console.warn("🚀 db is null, skipping users fetch");
+              return;
+            }
+            console.log("🚀 Fetching Recent Users...");
+            const usersRef = collection(db, "users");
+            const q = query(usersRef, orderBy("createdAt", "desc"), limit(5));
+            const snapshot = await getDocs(q);
+            const users = snapshot.docs.map(doc => ({
+              uid: doc.id,
+              ...doc.data()
+            }));
+            setRecentUsers(users);
+            console.log("🚀 Users Load Complete");
+          })()
+        ]);
+
+        console.log("🚀 Dashboard Fetch Results:", results);
+
       } catch (err: any) {
-        console.error("Dashboard fetch error:", err);
-        setError("Failed to load dashboard data. Please check your connection.");
+        console.error("❌ Dashboard general fetch error:", err);
+        setError("Failed to load some dashboard data. Please refresh.");
       } finally {
+        console.log("🚀 Dashboard Loading Finished (Setting loading to false)");
         setLoading(false);
       }
     };

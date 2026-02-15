@@ -31,23 +31,32 @@ export const AdminService = {
      * Get Dashboard Stats (Users from Firestore, Revenue from Firestore)
      */
     getDashboardStats: async (): Promise<AdminStats> => {
+        console.log("📊 AdminService.getDashboardStats: Starting...");
         try {
-            if (!db) return { totalUsers: 0, activeSubs: 0, revenue: 0, loading: false };
+            if (!db) {
+                console.warn("⚠️ AdminService: db is null");
+                return { totalUsers: 0, activeSubs: 0, revenue: 0, loading: false };
+            }
 
             // 1. Total Users
+            console.log("📊 AdminService: Fetching Total Users Count...");
             const usersColl = collection(db, "users");
             const snapshot = await getCountFromServer(usersColl);
             const totalUsers = snapshot.data().count;
+            console.log("📊 AdminService: Got Total Users:", totalUsers);
 
             // 2. Active Subscriptions
+            console.log("📊 AdminService: Fetching Active Subscriptions...");
             const activeSubsQuery = query(
                 collection(db, "users"),
                 where("membership.status", "==", "active")
             );
             const activeSnapshot = await getDocs(activeSubsQuery);
             const activeSubs = activeSnapshot.size;
+            console.log("📊 AdminService: Got Active Subs:", activeSubs);
 
             // 3. Revenue
+            console.log("📊 AdminService: Fetching Revenue Stats...");
             const paymentsQuery = query(
                 collection(db, "payment_proofs"),
                 where("status", "==", "approved")
@@ -58,6 +67,7 @@ export const AdminService = {
                 const data = doc.data();
                 if (data.amount) revenue += Number(data.amount);
             });
+            console.log("📊 AdminService: Got Revenue:", revenue);
 
             return {
                 totalUsers,
@@ -66,7 +76,7 @@ export const AdminService = {
                 loading: false
             };
         } catch (error) {
-            console.error("AdminService.getDashboardStats error:", error);
+            console.error("❌ AdminService.getDashboardStats error:", error);
             return { totalUsers: 0, activeSubs: 0, revenue: 0, loading: false };
         }
     },
