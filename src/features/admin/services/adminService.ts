@@ -26,6 +26,13 @@ export interface AdminStats {
     loading: boolean;
 }
 
+const withTimeout = <T>(promise: Promise<T>, ms: number = 8000): Promise<T> => {
+    const timeout = new Promise<T>((_, reject) =>
+        setTimeout(() => reject(new Error(`Timeout after ${ms}ms`)), ms)
+    );
+    return Promise.race([promise, timeout]);
+};
+
 export const AdminService = {
     /**
      * Get Dashboard Stats (Users from Firestore, Revenue from Firestore)
@@ -41,7 +48,7 @@ export const AdminService = {
             // 1. Total Users
             console.log("📊 AdminService: Fetching Total Users Count...");
             const usersColl = collection(db, "users");
-            const snapshot = await getCountFromServer(usersColl);
+            const snapshot = await withTimeout(getCountFromServer(usersColl));
             const totalUsers = snapshot.data().count;
             console.log("📊 AdminService: Got Total Users:", totalUsers);
 
@@ -51,7 +58,7 @@ export const AdminService = {
                 collection(db, "users"),
                 where("membership.status", "==", "active")
             );
-            const activeSnapshot = await getDocs(activeSubsQuery);
+            const activeSnapshot = await withTimeout(getDocs(activeSubsQuery));
             const activeSubs = activeSnapshot.size;
             console.log("📊 AdminService: Got Active Subs:", activeSubs);
 
@@ -61,7 +68,7 @@ export const AdminService = {
                 collection(db, "payment_proofs"),
                 where("status", "==", "approved")
             );
-            const paymentsSnapshot = await getDocs(paymentsQuery);
+            const paymentsSnapshot = await withTimeout(getDocs(paymentsQuery));
             let revenue = 0;
             paymentsSnapshot.forEach(doc => {
                 const data = doc.data();
@@ -227,8 +234,8 @@ export const AdminService = {
                 orderBy("createdAt", "desc"),
                 limit(100)
             );
-
-            const snapshot = await getDocs(q);
+            console.log("📊 AdminService: Executing Revenue History Query...");
+            const snapshot = await withTimeout(getDocs(q));
             const monthlyData: Record<string, number> = {};
 
             // Init 6 months
@@ -288,8 +295,8 @@ export const AdminService = {
                 where("createdAt", ">=", sevenDaysAgo),
                 orderBy("createdAt", "asc")
             );
-
-            const snapshot = await getDocs(q);
+            console.log("📊 AdminService: Executing User Growth Query...");
+            const snapshot = await withTimeout(getDocs(q));
 
             const dailyStats: Record<string, number> = {};
 
