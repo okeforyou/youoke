@@ -115,7 +115,7 @@ const TVPage = () => {
 
     // 4. Auto-Next Logic
     const handlePlayerStateChange = async (playerState: number) => {
-        // 0 = Ended
+        // 0 = Ended, 1 = Playing, 2 = Paused
         if (playerState === 0 && state.currentVideo) {
             const nextIndex = state.currentIndex + 1;
             const queue = state.queue || [];
@@ -137,6 +137,20 @@ const TVPage = () => {
                         'state/controls/isPlaying': false
                     });
                 }
+            }
+        } else if (playerState === 1) {
+            // Playing -> Sync State
+            if (!state.controls.isPlaying && realtimeDb) {
+                await update(ref(realtimeDb, `rooms/${roomCode}/state/controls`), {
+                    isPlaying: true
+                });
+            }
+        } else if (playerState === 2) {
+            // Paused -> Sync State
+            if (state.controls.isPlaying && realtimeDb) {
+                await update(ref(realtimeDb, `rooms/${roomCode}/state/controls`), {
+                    isPlaying: false
+                });
             }
         }
     };
