@@ -48,6 +48,7 @@ const AdminDashboard: React.FC = () => {
     totalRevenue: 0,
   });
   const [recentUsers, setRecentUsers] = useState<any[]>([]);
+  const [revenueHistory, setRevenueHistory] = useState<{ name: string; revenue: number }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -72,7 +73,11 @@ const AdminDashboard: React.FC = () => {
           totalRevenue: dashboardStats.revenue,
         });
 
-        // 2. Fetch Recent Users (Directly from Firestore like play.youoke)
+        // 2. Fetch Revenue History
+        const revHistory = await AdminService.getRevenueHistory();
+        setRevenueHistory(revHistory);
+
+        // 3. Fetch Recent Users (Directly from Firestore like play.youoke)
         if (db) {
           const usersRef = collection(db, "users");
           const q = query(usersRef, orderBy("createdAt", "desc"), limit(5));
