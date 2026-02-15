@@ -40,6 +40,7 @@ export async function createUserProfile(data: {
   email: string;
   fullName?: string;
   phone?: string;
+  photoURL?: string;
   plan: SubscriptionPlan;
 }): Promise<ServiceResult<UserProfile>> {
   return withRealtimeDBWrapper(async () => {
@@ -58,6 +59,7 @@ export async function createUserProfile(data: {
       uid: data.uid,
       email: data.email,
       displayName,
+      photoURL: data.photoURL || null,
       role: data.plan === "free" ? "free" : "premium",
       subscription,
       createdAt: serverTimestamp(),
@@ -78,6 +80,7 @@ export async function createUserProfile(data: {
       email: data.email,
       displayName,
       phone: data.phone,
+      photoURL: data.photoURL,
       role: data.plan === "free" ? "free" : "premium",
       subscription,
       createdAt: new Date(),

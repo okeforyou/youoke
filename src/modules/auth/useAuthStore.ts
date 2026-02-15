@@ -211,6 +211,13 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                     console.log('👑 [AuthStore] Owner Identified: Access Granted');
                                 }
 
+                                // 🛡️ SELF-HEALING: SYNC MISSING photoURL FROM AUTH PROVIDER
+                                if (!userData.photoURL && firebaseUser.photoURL) {
+                                    console.log('🩹 [AuthStore] Healing missing photoURL in Firestore...');
+                                    const { updateDoc } = await import('firebase/firestore');
+                                    updateDoc(userRef, { photoURL: firebaseUser.photoURL }).catch(e => console.warn('Self-healing failed', e));
+                                }
+
                                 set({
                                     user: {
                                         uid: firebaseUser.uid,

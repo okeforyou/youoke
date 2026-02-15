@@ -21,11 +21,31 @@ export const EditProfileForm = () => {
         try {
             if (!db) return;
             const userRef = doc(db, 'users', user.uid);
+
+            // 1. Update Firestore Profile (For Main Sidebar/Admin)
             await updateDoc(userRef, {
                 displayName: formData.displayName,
                 photoURL: formData.photoURL,
                 updatedAt: new Date()
             });
+
+            // 2. Update Realtime Database Profile (For Profile Drawer/Music Player)
+            const { updateUserProfile } = await import('@/services/userService');
+            await updateUserProfile(user.uid, {
+                displayName: formData.displayName,
+                photoURL: formData.photoURL
+            });
+
+            // 3. Update Firebase Auth Identity (Core)
+            const { getAuth, updateProfile } = await import('firebase/auth');
+            const auth = getAuth();
+            if (auth.currentUser) {
+                await updateProfile(auth.currentUser, {
+                    displayName: formData.displayName,
+                    photoURL: formData.photoURL
+                });
+            }
+
             // Ideally update local state or trigger re-fetch, 
             // but for now Firebase auth listener might catch it if we also updateProfile on Auth (optional but recommended)
             alert('บันทึกข้อมูลเรียบร้อยแล้ว');

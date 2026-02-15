@@ -10,7 +10,7 @@ export default async function handler(
   }
 
   try {
-    const { uid, email, displayName } = req.body;
+    const { uid, email, displayName, photoURL } = req.body;
     const authHeader = req.headers.authorization;
 
     if (!uid || !email) {
@@ -52,7 +52,7 @@ export default async function handler(
       email: email,
       displayName: displayName || email.split('@')[0],
       phone: null,
-      photoURL: null,
+      photoURL: photoURL || null,
       role: 'user',
       subscription: {
         plan: 'free',
