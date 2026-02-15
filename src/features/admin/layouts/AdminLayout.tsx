@@ -58,7 +58,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background font-sans text-foreground selection:bg-primary selection:text-white">
+    <div className="min-h-screen bg-gray-50/50 font-sans text-foreground selection:bg-primary selection:text-white">
       {/* Sidebar (Desktop: Fixed 72px) - Wait, sidebar width is 72 (18rem) or 64 (16rem)? In Sidebar component I used w-72 (18rem/288px) */}
       <AdminSidebar isOpen={isMobileMenuOpen} onToggle={() => setIsMobileMenuOpen(false)} />
 
