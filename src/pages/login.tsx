@@ -280,8 +280,29 @@ export default function LoginPage() {
 
                         <form className="space-y-4" onSubmit={handleSubmit}>
                             {(error || localError) && (
-                                <div className="bg-red-50 border border-red-200 text-red-600 text-sm p-3 rounded-xl flex gap-2 items-center animate-shake">
-                                    <span className="font-bold">!</span> {localError || error}
+                                <div className="space-y-3">
+                                    <div className="bg-red-50 border border-red-200 text-red-600 text-sm p-3 rounded-xl flex gap-2 items-center animate-shake">
+                                        <span className="font-bold">!</span> {localError || error}
+                                    </div>
+                                    {(error?.includes('network-request-failed') || localError?.includes('ไม่สามารถเชื่อมต่อ')) && (
+                                        <button
+                                            type="button"
+                                            onClick={async () => {
+                                                if ('serviceWorker' in navigator) {
+                                                    const registrations = await navigator.serviceWorker.getRegistrations();
+                                                    for (const registration of registrations) await registration.unregister();
+                                                }
+                                                if ('caches' in window) {
+                                                    const keys = await caches.keys();
+                                                    for (const key of keys) await caches.delete(key);
+                                                }
+                                                window.location.reload();
+                                            }}
+                                            className="w-full py-2 bg-red-100 text-red-700 text-xs font-bold rounded-lg hover:bg-red-200 transition-colors"
+                                        >
+                                            🔧 แก้ไขปัญหาการเชื่อมต่อ (ล้าง Cache)
+                                        </button>
+                                    )}
                                 </div>
                             )}
 

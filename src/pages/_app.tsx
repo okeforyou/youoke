@@ -62,15 +62,27 @@ function App({ Component, pageProps }: AppProps) {
   }, [initializeAuth]);
 
   useEffect(() => {
-    // Unregister Service Workers to fix IndexedDB errors
-    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(function (registrations) {
-        for (let registration of registrations) {
-          registration.unregister();
-          console.log('🧹 Service Worker Unregistered');
+    const clearServices = async () => {
+      try {
+        if ('serviceWorker' in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          for (const registration of registrations) {
+            await registration.unregister();
+            console.log('🧹 Service Worker Unregistered');
+          }
         }
-      });
-    }
+        if ('caches' in window) {
+          const keys = await caches.keys();
+          for (const key of keys) {
+            await caches.delete(key);
+            console.log('🧹 Cache Deleted:', key);
+          }
+        }
+      } catch (e) {
+        console.warn('Cleanup failed', e);
+      }
+    };
+    clearServices();
   }, []);
 
   return (
