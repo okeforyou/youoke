@@ -12,7 +12,7 @@ import ChartOne from "../components/ChartOne";
 import { ServiceHealth } from "../components/ServiceHealth";
 import { RecentUsersTable, RecentUser } from "../components/RecentUsersTable";
 import { AdminService } from "../services/adminService";
-import { DatabaseHealth } from "../components/DatabaseHealth";
+// DatabaseHealth component moved to UsersPage
 
 
 interface Stats {
@@ -68,8 +68,8 @@ const AdminDashboard: React.FC = () => {
           AdminService.getRevenueHistory().catch(() => [])
         ]);
 
-        // Process Users
-        const totalUsers = totalUsersSnap.data().count;
+        // Process Users (Count only registered users with email)
+        const totalUsers = totalUsersSnap.docs.filter(doc => doc.data().email).length;
 
         // Process Recent Users for Activity
         const recentUsers = recentUsersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -301,10 +301,7 @@ const AdminDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* System Health & Maintenance */}
-        <div className="grid grid-cols-1 gap-6">
-          <DatabaseHealth />
-        </div>
+        {/* System Health & Maintenance (Moved to Users Page) */}
 
         {/* Chart & Service Health Row */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

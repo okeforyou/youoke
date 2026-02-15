@@ -275,6 +275,9 @@ export default function UsersPage() {
           </div>
         </div>
       </div>
+      <div className="mt-8 mb-8">
+        <DatabaseHealth />
+      </div>
 
       {selectedUser && (
         <EditUserModal

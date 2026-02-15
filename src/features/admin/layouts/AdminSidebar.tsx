@@ -30,7 +30,6 @@ const mainMenuItems = [
   { title: "รายการสั่งซื้อ", icon: CreditCardIcon, path: "/admin/payments", id: 'orders', badgeColor: "warning" },
   { title: "ตั้งค่าระบบ", icon: Cog6ToothIcon, path: "/admin/config" },
   { title: "สิทธิ์การใช้งาน", icon: BanknotesIcon, path: "/admin/plans" },
-  { title: "เนื้อหาโปรไฟล์", icon: DocumentTextIcon, path: "/admin/content/profile-pages" },
 ];
 
 export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) => {
@@ -138,6 +137,27 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) 
               );
             })}
           </ul>
+
+          {/* Profile Content Section (Moved to Bottom) */}
+          <div className="mt-6 px-3">
+            <Link
+              href="/admin/content/profile-pages"
+              className={cn(
+                "group flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 border border-sidebar-border/50",
+                router.pathname === "/admin/content/profile-pages"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground"
+              )}
+              onClick={() => {
+                if (window.innerWidth < 1024 && onToggle) {
+                  onToggle();
+                }
+              }}
+            >
+              <DocumentTextIcon className={cn("h-5 w-5 flex-shrink-0 transition-colors", router.pathname === "/admin/content/profile-pages" ? "text-primary" : "text-sidebar-muted group-hover:text-sidebar-foreground")} />
+              <span className="flex-1 truncate">เนื้อหาโปรไฟล์</span>
+            </Link>
+          </div>
         </nav>
 
         {/* Bottom User Section */}

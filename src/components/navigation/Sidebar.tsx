@@ -102,10 +102,12 @@ export const Sidebar = memo(() => {
                             <div onClick={() => setIsProfileDrawerOpen(true)} className="flex items-center gap-3 overflow-hidden flex-1 group cursor-pointer hover:bg-gray-100/50 p-2 rounded-2xl transition-all duration-300">
                                 {user.photoURL ? <img src={user.photoURL} className="w-10 h-10 rounded-full border border-gray-100 group-hover:ring-2 ring-primary/20 transition-all shadow-sm" alt="" /> : <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">{user.email?.[0]?.toUpperCase() || 'G'}</div>}
                                 <div className="overflow-hidden">
-                                    <p className="text-sm font-bold truncate text-black group-hover:text-primary transition-colors">{user.displayName || user.email?.split('@')[0] || 'ผู้ใช้งานทั่วไป'}</p>
-                                    <p className="text-[10px] text-gray-900 truncate uppercase tracking-wider font-black">
-                                        {user.role === 'admin' ? 'ผู้ดูแลระบบ' : (isPremium ? 'สมาชิก Pro' : 'สมาชิกทั่วไป')}
-                                    </p>
+                                    <div className="flex flex-col">
+                                        <span className="text-sm font-bold text-gray-900 truncate max-w-[140px]">{user?.displayName || 'Guest User'}</span>
+                                        <span className="text-[10px] text-gray-500 font-medium">
+                                            {(user?.role === 'admin' || user?.role === 'owner') ? 'ผู้ดูแลระบบ (Admin)' : 'สมาชิกทั่วไป'}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                             <button onClick={() => { if (confirm('ยืนยันออกจากระบบ?')) { logOut().then(() => router.push('/login')); } }} className="p-2.5 text-gray-700 hover:bg-red-50 hover:text-red-500 rounded-xl transition-colors shrink-0" title="ออกจากระบบ"><LogOut className="w-5 h-5" /></button>
