@@ -166,7 +166,7 @@ export const useAuthStore = create<UserState & AuthActions>()(
                             const userRef = doc(db, 'users', firebaseUser.uid);
 
                             // 🚀 DEEP SYNC: Fetch from both Databases in Parallel
-                            const [userSnap, rtdbSnap] = await Promise.all([
+                            let [userSnap, rtdbSnap] = await Promise.all([
                                 getDoc(userRef),
                                 realtimeDb ? get(ref(realtimeDb, `users/${firebaseUser.uid}`)) : Promise.resolve(null)
                             ]);
