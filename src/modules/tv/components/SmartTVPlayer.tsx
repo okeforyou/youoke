@@ -193,8 +193,8 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
                                 </span>
                             )}
                         </div>
-                        <h2 className="text-4xl font-black text-white leading-tight drop-shadow-2xl truncate pr-10 tracking-tighter">{currentVideo.title}</h2>
-                        <p className="text-xl text-white/60 mt-2 font-medium truncate drop-shadow-md">{currentVideo.author || ''}</p>
+                        <h2 className="text-3xl font-black text-white leading-tight drop-shadow-2xl truncate pr-10 tracking-tighter">{currentVideo.title}</h2>
+                        <p className="text-lg text-white/60 mt-2 font-medium truncate drop-shadow-md">{currentVideo.author || ''}</p>
                     </div>
                 </div >
             </div >
@@ -274,12 +274,12 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
                                 </div>
                             </div>
                             <div className="min-w-0 flex-1">
-                                <p className="text-white font-black text-xl truncate leading-tight group-hover:text-primary transition-colors tracking-tight">{video.title}</p>
-                                <div className="flex items-center gap-2 mt-2">
-                                    <div className="w-5 h-5 rounded-full bg-white/5 flex items-center justify-center">
-                                        <UserIcon className="w-3 h-3 text-white/30" />
+                                <p className="text-white font-black text-lg truncate leading-tight group-hover:text-primary transition-colors tracking-tight">{video.title}</p>
+                                <div className="flex items-center gap-2 mt-1.5">
+                                    <div className="w-4 h-4 rounded-full bg-white/5 flex items-center justify-center">
+                                        <UserIcon className="w-2.5 h-2.5 text-white/30" />
                                     </div>
-                                    <p className="text-white/40 text-xs font-bold truncate">{video.addedBy?.displayName || 'แขก'}</p>
+                                    <p className="text-white/30 text-[10px] font-bold truncate tracking-wide">{video.addedBy?.displayName || 'แขก'}</p>
                                 </div>
                             </div>
                         </div>
@@ -326,12 +326,12 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
                             <MusicalNoteIcon className="w-5 h-5 text-white" />
                             <span className="text-sm font-black uppercase tracking-[0.3em] text-white">กำลังเตรียมพร้อม</span>
                         </div>
-                        <h1 className="text-7xl font-black text-white leading-tight tracking-tighter drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)]">{currentVideo.title}</h1>
-                        <div className="flex items-center justify-center gap-4 text-2xl text-white/60 font-medium">
+                        <h1 className="text-5xl font-black text-white leading-tight tracking-tighter drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)]">{currentVideo.title}</h1>
+                        <div className="flex items-center justify-center gap-4 text-xl text-white/60 font-medium">
                             <p>{currentVideo.author}</p>
-                            <span className="w-2 h-2 rounded-full bg-white/20" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
                             <p className="flex items-center gap-2">
-                                <span className="text-white/30 text-lg">โดย</span>
+                                <span className="text-white/30 text-base">โดย</span>
                                 <span className="text-primary font-bold italic">{currentVideo.addedBy?.displayName || 'แขก'}</span>
                             </p>
                         </div>
