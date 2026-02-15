@@ -103,7 +103,9 @@ export const Sidebar = memo(() => {
                                 {user.photoURL ? <img src={user.photoURL} className="w-10 h-10 rounded-full border border-gray-100 group-hover:ring-2 ring-primary/20 transition-all shadow-sm" alt="" /> : <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">{user.email?.[0]?.toUpperCase() || 'G'}</div>}
                                 <div className="overflow-hidden">
                                     <div className="flex flex-col">
-                                        <span className="text-sm font-bold text-gray-900 truncate max-w-[140px]">{user?.displayName || 'Guest User'}</span>
+                                        <span className="text-sm font-bold text-gray-900 truncate max-w-[140px]">
+                                            {user?.displayName || user?.email?.split('@')[0] || 'Guest User'}
+                                        </span>
                                         <span className="text-[10px] text-gray-500 font-medium">
                                             {(user?.role === 'admin' || user?.role === 'owner') ? 'ผู้ดูแลระบบ (Admin)' : 'สมาชิกทั่วไป'}
                                         </span>

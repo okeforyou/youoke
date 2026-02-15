@@ -47,8 +47,7 @@ const AdminDashboard: React.FC = () => {
     pendingPayments: 0, approvedPayments: 0, rejectedPayments: 0,
     totalRevenue: 0,
   });
-  const [recentActivities, setRecentActivities] = useState<SerializedActivity[]>([]);
-  const [revenueHistory, setRevenueHistory] = useState<{ name: string; revenue: number }[]>([]);
+  const [recentUsers, setRecentUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,11 +56,10 @@ const AdminDashboard: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        // 1. Fetch Stats (Optimized via Service)
+        // 1. Fetch Stats via Service
         const dashboardStats = await AdminService.getDashboardStats();
         setStats({
           ...dashboardStats,
-          // Fallback fields for the existing UI components
           adminUsers: 0,
           freeUsers: dashboardStats.totalUsers,
           premiumUsers: dashboardStats.activeSubs,
@@ -74,26 +72,20 @@ const AdminDashboard: React.FC = () => {
           totalRevenue: dashboardStats.revenue,
         });
 
-        // 2. Fetch Recent Activities (Firestore)
+        // 2. Fetch Recent Users (Directly from Firestore like play.youoke)
         if (db) {
-          const activitiesQuery = query(
-            collection(db, "activities"),
-            orderBy("timestamp", "desc"),
-            limit(10)
-          );
-          const activitiesSnapshot = await getDocs(activitiesQuery);
-          const activitiesList: SerializedActivity[] = activitiesSnapshot.docs.map(doc => ({
-            id: doc.id,
-            type: doc.data().type || 'system',
-            action: doc.data().action || 'Activity',
-            timestamp: doc.data().timestamp?.toDate()?.toISOString() || new Date().toISOString(),
-            details: doc.data().details || ''
+          const usersRef = collection(db, "users");
+          const q = query(usersRef, orderBy("createdAt", "desc"), limit(5));
+          const snapshot = await getDocs(q);
+          const users = snapshot.docs.map(doc => ({
+            uid: doc.id,
+            ...doc.data()
           }));
-          setRecentActivities(activitiesList);
+          setRecentUsers(users);
         }
       } catch (err: any) {
         console.error("Dashboard fetch error:", err);
-        setError("Failed to load dashboard data.");
+        setError("Failed to load dashboard data. Please check your connection.");
       } finally {
         setLoading(false);
       }
@@ -102,17 +94,22 @@ const AdminDashboard: React.FC = () => {
     fetchData();
   }, []);
 
-  // Map SerializedActivities to RecentUser for the table (Partial mapping)
-  // Note: ideally we fetch real recent users with avatar etc from AdminService
-  const tableUsers: RecentUser[] = recentActivities
-    .filter(a => a.type === 'user')
-    .map(a => ({
-      id: a.id,
-      name: a.details.split(' - ')[0] || 'User',
-      email: 'hidden@email.com', // Info not passed in simple activity prop
-      membershipType: a.details.includes('monthly') ? 'monthly' : a.details.includes('yearly') ? 'yearly' : 'free',
-      registeredAt: a.timestamp ? new Date(a.timestamp).toLocaleDateString('th-TH') : '-'
-    }));
+  const mapMembershipType = (type: string): "free" | "pro" | "vip" => {
+    if (type === 'monthly' || type === 'yearly' || type === 'lifetime') return 'vip';
+    if (type === 'day_pass') return 'pro';
+    return 'free';
+  };
+
+  const tableUsers: RecentUser[] = recentUsers.map(u => ({
+    id: u.uid,
+    name: u.displayName || u.email?.split('@')[0] || 'Guest User',
+    email: u.email || 'No Email',
+    avatar: u.photoURL,
+    membershipType: mapMembershipType(u.membership?.type),
+    registeredAt: u.createdAt?.seconds
+      ? new Date(u.createdAt.seconds * 1000).toLocaleDateString('th-TH')
+      : 'Unknown'
+  }));
 
   // Loading state
   if (loading) {

@@ -32,34 +32,22 @@ export const AdminService = {
      */
     getDashboardStats: async (): Promise<AdminStats> => {
         try {
-            console.log("📊 AdminService.getDashboardStats: Starting (Optimized)...");
-            if (!db) {
-                console.error("❌ Firestore DB not initialized");
-                return { totalUsers: 0, activeSubs: 0, revenue: 0, loading: false };
-            }
+            if (!db) return { totalUsers: 0, activeSubs: 0, revenue: 0, loading: false };
 
-            // 1. Total Registered Users (Efficient counting)
-            // Filter: users with email != null (excludes guests)
+            // 1. Total Users
             const usersColl = collection(db, "users");
-            let totalUsers = 0;
-
-            try {
-                const regUsersQuery = query(usersColl, where("email", "!=", null));
-                const countSnap = await getCountFromServer(regUsersQuery);
-                totalUsers = countSnap.data().count;
-            } catch (e) {
-                console.warn("⚠️ Missing index for email!=null count, falling back to total count.");
-                const countSnap = await getCountFromServer(usersColl);
-                totalUsers = countSnap.data().count;
-            }
+            const snapshot = await getCountFromServer(usersColl);
+            const totalUsers = snapshot.data().count;
 
             // 2. Active Subscriptions
-            // We still need to find premium users. For accuracy, we query active membership
-            const activeSubsQuery = query(usersColl, where("membership.status", "==", "active"));
-            const activeSubsSnap = await getCountFromServer(activeSubsQuery);
-            const activeSubs = activeSubsSnap.data().count;
+            const activeSubsQuery = query(
+                collection(db, "users"),
+                where("membership.status", "==", "active")
+            );
+            const activeSnapshot = await getDocs(activeSubsQuery);
+            const activeSubs = activeSnapshot.size;
 
-            // 3. Revenue (From Firestore 'payment_proofs' collection)
+            // 3. Revenue
             const paymentsQuery = query(
                 collection(db, "payment_proofs"),
                 where("status", "==", "approved")
