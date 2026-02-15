@@ -134,16 +134,22 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
             )}>
                 <div className="flex items-end gap-6 max-w-5xl">
                     <div className="w-24 h-24 rounded-2xl shadow-2xl overflow-hidden border border-white/10 relative shrink-0 bg-zinc-900">
-                        <Image
-                            unoptimized
-                            src={`https://i.ytimg.com/vi/${currentVideo.videoId}/mqdefault.jpg`}
-                            fill
-                            className="object-cover"
-                            alt="Album Art"
-                            onError={(e) => {
-                                e.currentTarget.srcset = "https://placehold.co/400x400/101010/FFF?text=Music";
-                            }}
-                        />
+                        {currentVideo.videoId ? (
+                            <Image
+                                unoptimized
+                                src={`https://i.ytimg.com/vi/${currentVideo.videoId}/mqdefault.jpg`}
+                                fill
+                                className="object-cover"
+                                alt="Album Art"
+                                onError={(e) => {
+                                    e.currentTarget.src = "https://placehold.co/400x400/101010/FFF?text=Music";
+                                }}
+                            />
+                        ) : (
+                            <div className="w-full h-full bg-zinc-800 flex items-center justify-center">
+                                <MusicalNoteIcon className="w-8 h-8 text-white/20" />
+                            </div>
+                        )}
                     </div >
                     <div className="pb-1 min-w-0 flex-1">
                         <div className="flex items-center gap-3 mb-3">
@@ -175,13 +181,22 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
                         <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold mb-2">คิวถัดไป</p>
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded bg-zinc-800 relative overflow-hidden shrink-0">
-                                <Image
-                                    unoptimized
-                                    src={`https://i.ytimg.com/vi/${nextVideo.videoId}/mqdefault.jpg`}
-                                    fill
-                                    className="object-cover opacity-80"
-                                    alt="Next"
-                                />
+                                {nextVideo.videoId ? (
+                                    <Image
+                                        unoptimized
+                                        src={`https://i.ytimg.com/vi/${nextVideo.videoId}/mqdefault.jpg`}
+                                        fill
+                                        className="object-cover opacity-80"
+                                        alt="Next"
+                                        onError={(e) => {
+                                            e.currentTarget.src = "https://placehold.co/100x100/101010/FFF?text=Next";
+                                        }}
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                        <MusicalNoteIcon className="w-4 h-4 text-white/20" />
+                                    </div>
+                                )}
                             </div>
                             <div className="min-w-0">
                                 <p className="text-white font-medium text-sm truncate">{nextVideo.title}</p>
