@@ -70,6 +70,11 @@ export interface CastState {
   isQueueVisible?: boolean; // New state for overlay
   participants?: { [uid: string]: boolean };
   lastConnected?: number;
+  notification?: {
+    type: 'added' | 'upnext';
+    video: QueueVideo;
+    timestamp: number;
+  } | null;
 }
 
 // Room Data Structure

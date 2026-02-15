@@ -190,6 +190,9 @@ const TVPage = () => {
                 <SmartTVPlayer
                     currentVideo={state.currentVideo}
                     nextVideo={nextVideo}
+                    queue={state.queue || []}
+                    isQueueVisible={state.isQueueVisible || false}
+                    notification={state.notification}
                     isPlaying={state.controls.isPlaying}
                     isMuted={state.controls.isMuted}
                     onStateChange={handlePlayerStateChange}

@@ -726,7 +726,7 @@ export default function RemoteControlApp() {
                             }`}
                     >
                         <ListMusic size={20} />
-                        {roomState.isQueueVisible ? 'ซ่อนแผงควบคุม' : 'แสดงแผงควบคุม'}
+                        {roomState.isQueueVisible ? 'ซ่อนรายการเพลง' : 'แสดงรายการเพลง ใน TV'}
                     </button>
                 </div>
 

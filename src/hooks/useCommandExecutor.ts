@@ -74,6 +74,7 @@ export function useCommandExecutor({
             newState = {
               queue: newQueue,
               currentVideo: queue.length === 0 ? video : currentState.currentVideo,
+              notification: { type: 'added', video, timestamp: Date.now() }
             };
             break;
           }
@@ -264,6 +265,11 @@ export function useCommandExecutor({
             };
             break;
           }
+          case 'TOGGLE_QUEUE_OVERLAY':
+            newState = {
+              isQueueVisible: !currentState.isQueueVisible,
+            };
+            break;
         }
 
         // Update state in Firebase
