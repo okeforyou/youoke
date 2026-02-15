@@ -13,7 +13,7 @@ import {
 import { getApps } from 'firebase/app';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import nookies from 'nookies';
-import { ref, get, update as rtdbUpdate } from 'firebase/database';
+import { ref, get as rtdbGet, update as rtdbUpdate } from 'firebase/database';
 import { realtimeDb } from '../../firebase';
 
 interface MembershipState {
@@ -168,10 +168,10 @@ export const useAuthStore = create<UserState & AuthActions>()(
                             // 🚀 DEEP SYNC: Fetch from both Databases in Parallel
                             let [userSnap, rtdbSnap] = await Promise.all([
                                 getDoc(userRef),
-                                realtimeDb ? get(ref(realtimeDb, `users/${firebaseUser.uid}`)) : Promise.resolve(null)
+                                realtimeDb ? rtdbGet(ref(realtimeDb, `users/${firebaseUser.uid}`)) : Promise.resolve(null)
                             ]);
 
-                            const rtdbData = rtdbSnap?.exists() ? rtdbSnap.val() : null;
+                            const rtdbData = (rtdbSnap && typeof rtdbSnap.exists === 'function' && rtdbSnap.exists()) ? rtdbSnap.val() : null;
 
                             // Self-healing: If profile missing in BOTH or just Firestore
                             if (!userSnap.exists()) {
