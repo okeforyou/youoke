@@ -3,18 +3,10 @@ import YouTube, { YouTubePlayer } from 'react-youtube';
 import Image from 'next/image';
 import clsx from 'clsx';
 import { MusicalNoteIcon, UserIcon } from '@heroicons/react/24/outline';
-
-export interface VideoItem {
-    videoId: string;
-    title: string;
-    author?: string | null; // Changed type to allow null
-    addedBy?: {
-        name?: string;
-        displayName?: string;
-        photoURL?: string;
-    };
-    uuid?: string;
-}
+import { VideoItem } from '../types';
+import { QueueList } from './QueueList';
+import { SongSplash } from './SongSplash';
+import { NotificationToast } from './NotificationToast';
 
 export interface SmartTVPlayerProps {
     currentVideo: VideoItem | null;
@@ -153,7 +145,6 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
             </div>
 
             {/* 2. Gradients for Readability */}
-            {/* 2. Gradients for Readability */}
             <div className={clsx(
                 "absolute inset-x-0 bottom-0 h-96 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none transition-opacity duration-1000",
                 showInfoToast ? "opacity-100" : "opacity-0"
@@ -240,120 +231,17 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
             }
 
             {/* 5. Queue Overlay (Beautiful List with Glassmorphism) */}
-            <div className={clsx(
-                "absolute top-0 right-0 bottom-0 w-[450px] bg-black/80 backdrop-blur-[40px] border-l border-white/5 p-10 transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] z-40 flex flex-col shadow-[-40px_0_80px_rgba(0,0,0,0.5)]",
-                isQueueVisible ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
-            )}>
-                <div className="flex items-center gap-4 mb-10">
-                    <div className="w-2 h-8 bg-primary rounded-full shadow-[0_0_20px_rgba(229,9,20,0.8)]"></div>
-                    <h2 className="text-3xl font-black uppercase tracking-[0.2em] text-white">คิวเพลง</h2>
-                    <div className="ml-auto bg-white/10 px-3 py-1.5 rounded-full border border-white/10">
-                        <span className="text-[10px] font-black tracking-widest text-white/40 uppercase">Total: </span>
-                        <span className="text-xs font-black text-primary">{queue.length > 0 ? queue.length - 1 : 0}</span>
-                    </div>
-                </div>
-
-                <div className="flex-1 overflow-y-auto space-y-6 pr-4 custom-scrollbar -mr-4">
-                    {queue.slice(1).map((video, idx) => (
-                        <div key={idx} className="flex gap-6 items-center group animate-in slide-in-from-right-10 duration-500" style={{ animationDelay: `${idx * 100}ms` }}>
-                            <div className="relative">
-                                <span className="absolute -left-6 top-1/2 -translate-y-1/2 text-4xl font-black text-white/5 italic">{idx + 1}</span>
-                                <div className="w-20 h-20 rounded-2xl bg-zinc-900 relative overflow-hidden shrink-0 border border-white/10 group-hover:border-primary/50 transition-all duration-300 group-hover:scale-105 shadow-xl">
-                                    {video.videoId ? (
-                                        <Image
-                                            unoptimized
-                                            src={`https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`}
-                                            fill
-                                            className="object-cover opacity-60 group-hover:opacity-100 transition-all duration-500"
-                                            alt="Thumbnail"
-                                            onError={(e) => { e.currentTarget.src = "https://placehold.co/200x200/101010/FFF?text=Queue"; }}
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center"><MusicalNoteIcon className="w-8 h-8 text-white/10" /></div>
-                                    )}
-                                </div>
-                            </div>
-                            <div className="min-w-0 flex-1">
-                                <p className="text-white font-black text-lg truncate leading-tight group-hover:text-primary transition-colors tracking-tight">{video.title}</p>
-                                <div className="flex items-center gap-2 mt-1.5">
-                                    <div className="w-4 h-4 rounded-full bg-white/5 flex items-center justify-center">
-                                        <UserIcon className="w-2.5 h-2.5 text-white/30" />
-                                    </div>
-                                    <p className="text-white/30 text-[10px] font-bold truncate tracking-wide">{video.addedBy?.displayName || 'แขก'}</p>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                    {queue.length <= 1 && (
-                        <div className="text-center py-24 bg-white/[0.02] rounded-[3rem] border border-white/5">
-                            <MusicalNoteIcon className="w-16 h-16 mx-auto mb-6 text-white/10 animate-bounce" />
-                            <p className="text-lg font-black text-white/20 uppercase tracking-[0.2em]">ไม่มีเพลงในคิว</p>
-                        </div>
-                    )}
-                </div>
-            </div>
+            <QueueList queue={queue} isVisible={isQueueVisible} />
 
             {/* 6. Song Splash Screen (Beautiful Transition) */}
-            <div className={clsx(
-                "fixed inset-0 z-50 flex items-center justify-center transition-all duration-1000",
-                showSplash ? "opacity-100 scale-100" : "opacity-0 scale-110 pointer-events-none"
-            )}>
-                {/* Background Artwork (Blurred) */}
-                <div className="absolute inset-0 bg-black">
-                    {currentVideo.videoId && (
-                        <div className="absolute inset-0 opacity-40 blur-[80px] scale-125">
-                            <Image unoptimized src={`https://i.ytimg.com/vi/${currentVideo.videoId}/mqdefault.jpg`} fill className="object-cover" alt="BG" />
-                        </div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black" />
-                </div>
-
-                <div className="relative text-center max-w-4xl px-12 animate-in zoom-in-95 fade-in duration-1000">
-                    <div className="w-64 h-64 mx-auto mb-12 rounded-[3.5rem] overflow-hidden shadow-[0_40px_100px_rgba(0,0,0,0.8)] border-4 border-white/10 relative transform -rotate-3 hover:rotate-0 transition-transform duration-700">
-                        <Image
-                            unoptimized
-                            src={`https://i.ytimg.com/vi/${currentVideo.videoId}/maxresdefault.jpg`}
-                            fill
-                            className="object-cover"
-                            alt="Splash"
-                            onError={(e) => { e.currentTarget.src = `https://i.ytimg.com/vi/${currentVideo.videoId}/mqdefault.jpg`; }}
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    </div>
-
-                    <div className="space-y-6">
-                        <div className="inline-flex items-center gap-3 bg-primary px-6 py-2 rounded-full shadow-2xl shadow-primary/40 animate-pulse">
-                            <MusicalNoteIcon className="w-5 h-5 text-white" />
-                            <span className="text-sm font-black uppercase tracking-[0.3em] text-white">กำลังเตรียมพร้อม</span>
-                        </div>
-                        <h1 className="text-5xl font-black text-white leading-tight tracking-tighter drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)]">{currentVideo.title}</h1>
-                        <div className="flex items-center justify-center gap-4 text-xl text-white/60 font-medium">
-                            <p>{currentVideo.author}</p>
-                            <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
-                            <p className="flex items-center gap-2">
-                                <span className="text-white/30 text-base">โดย</span>
-                                <span className="text-primary font-bold italic">{currentVideo.addedBy?.displayName || 'แขก'}</span>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <SongSplash video={currentVideo} isVisible={showSplash} />
 
             {/* 7. Notification Toast (New Song Added) */}
-            <div className={clsx(
-                "absolute top-8 right-8 z-50 transition-all duration-500 ease-out",
-                activeNotification ? "translate-y-0 opacity-100" : "-translate-y-8 opacity-0 pointer-events-none"
-            )}>
-                <div className="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl shadow-2xl flex items-center gap-4 min-w-[300px]">
-                    <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center shrink-0 shadow-lg shadow-primary/30 animate-bounce">
-                        <MusicalNoteIcon className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                        <p className="text-xs font-black uppercase tracking-widest text-primary mb-0.5">{activeNotification?.message}</p>
-                        <p className="text-white font-bold text-lg leading-none truncate max-w-[200px]">{activeNotification?.sub}</p>
-                    </div>
-                </div>
-            </div>
+            <NotificationToast
+                isVisible={!!activeNotification}
+                message={activeNotification?.message}
+                sub={activeNotification?.sub}
+            />
         </div>
     );
 };

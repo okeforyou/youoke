@@ -177,19 +177,21 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
 
 
-    // Cast Handlers
     const handleCastSelectWebMonitor = () => {
         setCastModalOpen(false);
-        // Toggle QR Code/Instructions for Remote
         setShowQRCode(true);
-        // Optionally scroll to top or show a modal?
-        // For now, MainLayout header shows QR when showQRCode is true.
+    };
+
+    const handleCastSelectSmartTV = () => {
+        setCastModalOpen(false);
+        const win = window.open(`/tv?room=${roomCode}`, 'YouOkePremiumTV', 'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no');
+        if (win) win.focus();
     };
 
     const handleCastSelectDual = () => {
         setCastModalOpen(false);
         localStorage.setItem('youoke-dual-active', 'true');
-        window.open('/dual', '_blank');
+        window.open('/dual?mode=mirror', 'YouOkeMirror', 'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no');
     };
 
     const handleCastSelectGoogle = () => {
@@ -675,7 +677,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     <Link href="/" onClick={() => { handleNav(3); setNavOpen(false); }} className={clsx("flex items-center gap-3 px-3 py-3 rounded-lg transition-all font-medium", (router.pathname === '/' && activeIndex === 3) ? "bg-primary/10 text-primary" : "text-gray-600 active:bg-gray-100")}> <Flame className="w-5 h-5" /> <span>มาแรง</span> </Link>
                     <Link href="/" onClick={() => { handleNav(4); setNavOpen(false); }} className={clsx("flex items-center gap-3 px-3 py-3 rounded-lg transition-all font-medium", (router.pathname === '/' && activeIndex === 4) ? "bg-primary/10 text-primary" : "text-gray-600 active:bg-gray-100")}> <Library className="w-5 h-5" /> <span>เพลย์ลิสต์</span> </Link>
                     <div className="mt-6 px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">ระบบ</div>
-                    <Link href="/monitor" className="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-600 active:bg-gray-100 font-medium"> <Cast className="w-5 h-5" /> <span>จอแยก (Caster)</span> </Link>
+                    <Link href="/tv" className="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-600 active:bg-gray-100 font-medium"> <Cast className="w-5 h-5" /> <span>หน้าจอ TV (Premium)</span> </Link>
                     {user?.role === 'admin' && (<><div className="mt-6 px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Admin</div><Link href="/admin" onClick={() => setNavOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-600 active:bg-gray-100 font-medium"> <Shield className="w-5 h-5" /> <span>Admin Panel</span> </Link></>)}
                 </div>
                 <div className="p-4 border-t border-gray-100 bg-white">
@@ -733,14 +735,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 </div>
             )}
 
-            {/* Cast Mode Selector Modal */}
             <CastModeSelector
                 isOpen={isCastModalOpen}
                 onClose={() => setCastModalOpen(false)}
                 isCastAvailable={isCastAvailable}
                 isMobile={isMobile}
                 onSelectWebMonitor={handleCastSelectWebMonitor}
-                onSelectDual={() => window.open('/dual?mode=mirror', 'YouOkeMirror', 'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no')}
+                onSelectSmartTV={handleCastSelectSmartTV}
+                onSelectDual={handleCastSelectDual}
                 onSelectDj={() => window.open('/dual?mode=dj', 'YouOkeDJ', 'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no')}
                 onSelectGoogleCast={handleCastSelectGoogle}
                 onSelectYouTube={handleCastSelectYouTube}

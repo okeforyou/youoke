@@ -1,12 +1,3 @@
-/**
- * Cast Mode Selector
- *
- * Allows user to choose between:
- * 1. Web Monitor Cast (Firebase) - Full control with room code
- * 2. Dual Screen (2 หน้าจอ) - Instant second screen (no code needed)
- * 3. YouTube Cast - Direct to YouTube app
- */
-
 import React from 'react';
 import {
   X,
@@ -14,8 +5,10 @@ import {
   Monitor,
   Cast,
   Youtube,
-  Loader2
+  Loader2,
+  Tv
 } from 'lucide-react';
+import clsx from 'clsx';
 
 interface CastModeSelectorProps {
   isOpen: boolean;
@@ -23,6 +16,7 @@ interface CastModeSelectorProps {
   isCastAvailable: boolean;
   isMobile?: boolean; // Mobile detection
   onSelectWebMonitor: () => void;
+  onSelectSmartTV: () => void;
   onSelectDual: () => void;
   onSelectDj: () => void;
   onSelectGoogleCast: () => void;
@@ -35,6 +29,7 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
   isCastAvailable,
   isMobile = false,
   onSelectWebMonitor,
+  onSelectSmartTV,
   onSelectDual,
   onSelectDj,
   onSelectGoogleCast,
@@ -43,57 +38,62 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[200] p-4 overflow-y-auto">
-      <div className="bg-base-100 rounded-2xl shadow-2xl max-w-md w-full p-5 relative my-auto max-h-[90vh] overflow-y-auto border border-white/10">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-[200] p-4 overflow-y-auto animate-in fade-in duration-300">
+      <div className="bg-white dark:bg-zinc-900 rounded-[32px] shadow-[0_24px_80px_-12px_rgba(0,0,0,0.4)] max-w-sm w-full p-6 relative my-auto max-h-[90vh] overflow-y-auto border border-white/20">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+          className="absolute top-4 right-4 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors z-10"
         >
-          <X className="w-5 h-5 text-gray-500" />
+          <X className="w-5 h-5 text-gray-400" />
         </button>
 
         {/* Title */}
-        <div className="text-center mb-6">
-          <h2 className="text-xl font-bold flex items-center justify-center gap-2">
-            <Cast className="w-6 h-6 text-primary" />
-            <span>{isMobile ? 'Cast / Remote' : 'เลือกวิธีเชื่อมต่อ'}</span>
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/10 text-primary mb-3">
+            <Cast className="w-6 h-6" />
+          </div>
+          <h2 className="text-2xl font-black text-gray-900 dark:text-gray-100 tracking-tight">
+            {isMobile ? 'Cast / Remote' : 'เลือกวิธีเชื่อมต่อ'}
           </h2>
+          <p className="text-gray-500 text-sm mt-1 font-medium">สัมผัสประสบการณ์ร้องเพลงที่เหนือกว่า</p>
         </div>
 
         {/* Options */}
         <div className="space-y-3">
-          {/* Option 1: Mobile Remote - All Devices */}
+          {/* Option 1: Mobile Remote */}
           <button
             onClick={onSelectWebMonitor}
-            className="w-full text-left bg-base-200/50 hover:bg-base-200 rounded-xl p-4 border border-base-300 hover:border-primary transition-all group relative overflow-hidden"
+            className="w-full text-left bg-gray-50 dark:bg-white/5 hover:bg-primary/5 rounded-2xl p-4 border border-gray-100 dark:border-white/5 hover:border-primary/30 transition-all group relative overflow-hidden shadow-sm"
           >
-            <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-primary/10 to-transparent -mr-4 -mt-4 rounded-bl-full" />
             <div className="flex items-center gap-4">
-              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition-transform text-blue-600">
+              <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition-transform text-blue-600 shadow-inner">
                 <Smartphone className="w-6 h-6" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-lg font-bold mb-1 text-gray-900 dark:text-gray-100">ควบคุมด้วยมือถือ</h3>
-                <p className="text-xs text-gray-500 font-medium">ใช้มือถือเลือกเพลง / เป็นรีโมท</p>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">รีโมทมือถือ</h3>
+                <p className="text-[11px] text-gray-500 font-bold uppercase tracking-wider">Mobile Remote</p>
               </div>
             </div>
           </button>
 
-          {/* Option 2.5: Dual Screen - Formerly DJ Player */}
+          {/* Option 2: Smart TV Player */}
           {!isMobile && (
             <button
-              onClick={onSelectDj}
-              className="w-full text-left bg-base-200/50 hover:bg-base-200 rounded-xl p-4 border border-base-300 hover:border-primary transition-all group"
+              onClick={onSelectSmartTV}
+              className="w-full text-left bg-gray-50 dark:bg-white/5 hover:bg-primary/5 rounded-2xl p-4 border border-gray-100 dark:border-white/5 hover:border-primary/30 transition-all group relative overflow-hidden shadow-sm"
             >
               <div className="flex items-center gap-4">
-                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center group-hover:scale-110 transition-transform text-purple-600">
-                  <Monitor className="w-6 h-6" />
+                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform text-primary shadow-inner">
+                  <Tv className="w-6 h-6" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-bold mb-1 text-gray-900 dark:text-gray-100">จอแยก (Dual Screen)</h3>
-                  <p className="text-xs text-gray-500 font-medium">เปิดอีกหน้าต่างสำหรับร้องเพลง</p>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">หน้าจอทีวี (Smart TV)</h3>
+                  <p className="text-[11px] text-primary font-bold uppercase tracking-wider">Premium Interface</p>
                 </div>
+              </div>
+              <div className="absolute top-2 right-2">
+                <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse" />
               </div>
             </button>
           )}
@@ -102,14 +102,18 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
           <button
             onClick={onSelectGoogleCast}
             disabled={!isCastAvailable}
-            className={`w-full text-left rounded-xl p-4 border transition-all group ${isCastAvailable
-              ? 'bg-base-200/50 hover:bg-base-200 border-base-300 hover:border-primary cursor-pointer'
-              : 'bg-base-200/30 border-base-300 cursor-not-allowed opacity-60 grayscale'
-              }`}
+            className={clsx(
+              "w-full text-left rounded-2xl p-4 border transition-all group shadow-sm",
+              isCastAvailable
+                ? "bg-gray-50 dark:bg-white/5 hover:bg-primary/5 border-gray-100 dark:border-white/5 hover:border-primary/30 cursor-pointer"
+                : "bg-gray-100 dark:bg-white/5 border-transparent cursor-not-allowed opacity-40"
+            )}
           >
             <div className="flex items-center gap-4">
-              <div className={`flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 ${isCastAvailable ? 'bg-orange-500/10 text-orange-600' : 'bg-gray-200 text-gray-400'
-                }`}>
+              <div className={clsx(
+                "flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 shadow-inner",
+                isCastAvailable ? "bg-orange-500/10 text-orange-600" : "bg-gray-200 text-gray-400"
+              )}>
                 {isCastAvailable ? (
                   <Cast className="w-6 h-6" />
                 ) : (
@@ -117,35 +121,48 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-lg font-bold mb-1 text-gray-900 dark:text-gray-100">
-                  Google Cast
-                </h3>
-                <p className="text-xs text-gray-500 font-medium">
-                  {isCastAvailable ? 'ส่งภาพขึ้น TV (Chromecast/Android TV)' : 'กำลังค้นหาอุปกรณ์... (เฉพาะ Chrome Check)'}
-                </p>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">Google Cast</h3>
+                <p className="text-[11px] text-gray-500 font-bold uppercase tracking-wider">Chromecast / Android TV</p>
               </div>
             </div>
           </button>
 
-          {/* Option 4: YouTube Cast - PC Only */}
+          {/* Option 4: Dual Screen */}
+          {!isMobile && (
+            <button
+              onClick={onSelectDj}
+              className="w-full text-left bg-gray-50 dark:bg-white/5 hover:bg-primary/5 rounded-2xl p-4 border border-gray-100 dark:border-white/5 hover:border-primary/30 transition-all group shadow-sm"
+            >
+              <div className="flex items-center gap-4">
+                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center group-hover:scale-110 transition-transform text-purple-600 shadow-inner">
+                  <Monitor className="w-6 h-6" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">จอแยก (Dual Screen)</h3>
+                  <p className="text-[11px] text-gray-500 font-bold uppercase tracking-wider">Extend to Second Screen</p>
+                </div>
+              </div>
+            </button>
+          )}
+
+          {/* Option 5: YouTube Cast */}
           {!isMobile && (
             <button
               onClick={onSelectYouTube}
-              className="w-full text-left bg-base-200/50 hover:bg-base-200 rounded-xl p-4 border border-base-300 hover:border-primary transition-all group"
+              className="w-full text-left bg-gray-50 dark:bg-white/5 hover:bg-primary/5 rounded-2xl p-4 border border-gray-100 dark:border-white/5 hover:border-primary/30 transition-all group shadow-sm"
             >
               <div className="flex items-center gap-4">
-                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center group-hover:scale-110 transition-transform text-red-600">
+                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center group-hover:scale-110 transition-transform text-red-600 shadow-inner">
                   <Youtube className="w-6 h-6" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-bold mb-1 text-gray-900 dark:text-gray-100">YouTube Cast</h3>
-                  <p className="text-xs text-gray-500 font-medium">เปิดผ่านแอป YouTube</p>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">YouTube Cast</h3>
+                  <p className="text-[11px] text-gray-500 font-bold uppercase tracking-wider">Open in YouTube App</p>
                 </div>
               </div>
             </button>
           )}
         </div>
-
       </div>
     </div>
   );
