@@ -153,9 +153,10 @@ export default function AdminUsersPage() {
     };
 
     useEffect(() => {
+        if (!db) return;
         fetchUsers();
         fetchPackages();
-    }, []);
+    }, [db]);
 
     const handleAssignPackage = async (pkgId: string) => {
         if (!selectedUser || !pkgId) return;

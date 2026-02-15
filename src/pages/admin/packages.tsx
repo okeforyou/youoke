@@ -63,7 +63,10 @@ export default function PackagesPage() {
     const [featuresJson, setFeaturesJson] = useState('{}');
 
     useEffect(() => {
-        if (!db) return;
+        if (!db) {
+            console.log("📊 PackagesPage: db is null, waiting...");
+            return;
+        }
         console.log("🔥 Connected to Firebase Project:", db.app.options.projectId);
         const unsubscribe = onSnapshot(collection(db, 'packages'), (snapshot) => {
             const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as PackageData));
@@ -72,7 +75,7 @@ export default function PackagesPage() {
             setLoading(false);
         });
         return () => unsubscribe();
-    }, []);
+    }, [db]);
 
     const toggleFeature = (feature: string) => {
         try {

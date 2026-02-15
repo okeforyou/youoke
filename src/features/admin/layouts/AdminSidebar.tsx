@@ -39,9 +39,15 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) 
 
   useEffect(() => {
     // Real-time listener for Users
-    if (!db) return;
+    if (!db) {
+      console.log("📊 AdminSidebar: db is null, waiting...");
+      return;
+    }
+
+    console.log("📊 AdminSidebar: Starting real-time listeners...");
     const usersQuery = query(collection(db, 'users'));
     const unsubscribeUsers = onSnapshot(usersQuery, (snapshot) => {
+      console.log("📊 AdminSidebar: Users Count Update:", snapshot.size);
       setStats(prev => ({ ...prev, users: snapshot.size }));
     }, (error) => {
       console.error("Error watching users:", error);
@@ -50,16 +56,18 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) 
     // Real-time listener for Pending Orders
     const ordersQuery = query(collection(db, 'payment_proofs'), where('status', '==', 'pending'));
     const unsubscribeOrders = onSnapshot(ordersQuery, (snapshot) => {
+      console.log("📊 AdminSidebar: Pending Orders Update:", snapshot.size);
       setStats(prev => ({ ...prev, pendingOrders: snapshot.size }));
     }, (error) => {
-      // console.warn("Orders collection might be missing or permission denied.");
+      console.error("Error watching orders:", error);
     });
 
     return () => {
+      console.log("📊 AdminSidebar: Cleaning up listeners...");
       unsubscribeUsers();
       unsubscribeOrders();
     };
-  }, []);
+  }, [db, user?.uid]);
 
   return (
     <>
