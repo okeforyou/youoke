@@ -82,14 +82,20 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
         else player.unMute();
     }, [isMuted]);
 
-    // Effect: Show Info Toast on Video Change
+    // Effect: Show Info Toast on Video Change or Pause
     useEffect(() => {
         if (currentVideo) {
-            setShowInfoToast(true);
-            const timer = setTimeout(() => setShowInfoToast(false), 8000); // Show for 8s
-            return () => clearTimeout(timer);
+            if (!isPlaying) {
+                // Paused: Always show info
+                setShowInfoToast(true);
+            } else {
+                // Playing: Show for 8s then hide
+                setShowInfoToast(true);
+                const timer = setTimeout(() => setShowInfoToast(false), 8000);
+                return () => clearTimeout(timer);
+            }
         }
-    }, [currentVideo?.videoId]);
+    }, [currentVideo?.videoId, isPlaying]);
 
     if (!currentVideo) {
         return (
@@ -115,7 +121,11 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
             </div>
 
             {/* 2. Gradients for Readability */}
-            <div className="absolute inset-x-0 bottom-0 h-96 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none" />
+            {/* 2. Gradients for Readability */}
+            <div className={clsx(
+                "absolute inset-x-0 bottom-0 h-96 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none transition-opacity duration-1000",
+                showInfoToast ? "opacity-100" : "opacity-0"
+            )} />
 
             {/* 3. Info Toast (Now Playing) */}
             <div className={clsx(
