@@ -83,11 +83,11 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) 
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 w-64 bg-sidebar border-r border-sidebar-border transform transition-transform duration-300 ease-in-out lg:translate-x-0 bg-white shadow-xl lg:shadow-none",
+        "fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-100 transform transition-transform duration-300 ease-in-out lg:translate-x-0 shadow-xl lg:shadow-none",
         isOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         {/* Logo */}
-        <div className="flex h-16 items-center gap-3 border-b border-sidebar-border px-6">
+        <div className="flex h-16 items-center gap-3 border-b border-gray-100 px-6">
           <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/20">
             <Shield className="h-5 w-5" />
           </div>

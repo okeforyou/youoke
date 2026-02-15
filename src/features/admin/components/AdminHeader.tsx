@@ -30,7 +30,7 @@ export const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
     };
 
     return (
-        <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-sidebar-border bg-white/80 backdrop-blur-xl px-6 shadow-sm transition-all duration-300">
+        <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-gray-100 bg-white/80 backdrop-blur-xl px-6 shadow-sm transition-all duration-300">
             {/* Left side - Search */}
             <div className="flex items-center gap-4">
                 <button
