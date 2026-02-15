@@ -29,6 +29,8 @@ const ShareRoomModal = dynamic(() => import('../modules/party-system/components/
 const CastModeSelector = dynamic(() => import('../plugins/cast/components/CastModeSelector').then(mod => mod.CastModeSelector), { ssr: false });
 const LimitReachedModal = dynamic(() => import('../modules/player/components/LimitReachedModal').then(mod => mod.LimitReachedModal), { ssr: false });
 const ReceiverInfoModal = dynamic(() => import('../modules/party-system/components/ReceiverInfoModal').then(mod => mod.ReceiverInfoModal), { ssr: false });
+// Add UnifiedCastButton dynamic import if needed or import directly
+import { UnifiedCastButton } from '../plugins/cast/components/UnifiedCastButton';
 
 interface MainLayoutProps {
     children: ReactNode;
@@ -476,7 +478,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             </button>
                         </div>
 
-                        {/* Mobile Remote Button */}
+
+                        {/* Mobile Connect Button (Smartphone) */}
                         <button
                             onClick={() => {
                                 setShowQRCode(true);
@@ -484,18 +487,22 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             className="h-12 w-12 rounded-2xl p-0 flex items-center justify-center bg-gray-100 hover:bg-gray-200 mr-2 text-gray-500 hover:text-primary transition-colors relative"
                             title="เชื่อมต่อรีโมท (Mobile Remote)"
                         >
-                            <Smartphone className="w-6 h-6" />
+                            <Smartphone className="w-5 h-5" />
                             {/* Connection Status Dot */}
                             {mounted && (
                                 <div className={clsx(
-                                    "absolute top-2 right-2 w-3 h-3 rounded-full border-2 border-white transition-colors duration-500",
+                                    "absolute top-3 right-3 w-2.5 h-2.5 rounded-full border-2 border-white transition-colors duration-500",
                                     connectionStatus === 'active' ? "bg-green-500 animate-pulse" :
                                         connectionStatus === 'background' ? "bg-orange-500" : "bg-gray-400"
                                 )} />
                             )}
                         </button>
 
+                        {/* Cast Button (New Unified Component) */}
+                        <UnifiedCastButton className="h-12 w-12 rounded-2xl bg-gray-100 hover:bg-gray-200 mr-2 border-none" isCircle={false} />
 
+                        {/* User Profile (If needed, or kept in sidebar) */}
+                        {/* Current layout keeps profile in sidebar, which is fine. */}
 
                     </div>
                 </header>
