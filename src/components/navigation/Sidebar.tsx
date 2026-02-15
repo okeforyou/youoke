@@ -78,7 +78,8 @@ export const Sidebar = memo(() => {
                     <MessageCircle className="w-[22px] h-[22px] text-gray-700" /> <span>ติดต่อ LINE</span>
                 </a>
 
-                {user?.role === 'admin' && (
+                {/* Admin Menu (Admin & Owner) */}
+                {(user?.role === 'admin' || user?.role === 'owner') && (
                     <div className="mt-8">
                         <div className="px-4 mb-2 text-xs font-black text-black uppercase tracking-wider">ส่วนผู้ดูแล</div>
                         <Link href="/admin" className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-medium duration-300 text-sm", router.pathname.startsWith('/admin') ? "bg-red-50 text-red-600 shadow-sm translate-x-1" : "text-gray-900 hover:bg-gray-100/50 hover:text-gray-900")}>

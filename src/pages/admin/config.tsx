@@ -636,74 +636,76 @@ export default function AdminConfigPage() {
                             </div>
                         )}
 
-                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
-                                <h3 className="font-bold text-gray-900 border-b pb-2">ข้อมูลบัญชีธนาคาร (โอนเงิน)</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="form-control">
-                                        <label className="label"><span className="label-text font-bold">ชื่อธนาคาร</span></label>
-                                        <input
-                                            type="text"
-                                            className="input input-bordered w-full"
-                                            placeholder="เช่น กสิกรไทย"
-                                            value={localConfig.payment?.bankAccount?.bankName ?? ''}
-                                            onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, bankAccount: { ...localConfig.payment?.bankAccount!, bankName: e.target.value } } })}
-                                        />
-                                    </div>
-                                    <div className="form-control">
-                                        <label className="label"><span className="label-text font-bold">ชื่อบัญชี</span></label>
-                                        <input
-                                            type="text"
-                                            className="input input-bordered w-full"
-                                            value={localConfig.payment?.bankAccount?.accountName ?? ''}
-                                            onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, bankAccount: { ...localConfig.payment?.bankAccount!, accountName: e.target.value } } })}
-                                        />
-                                    </div>
-                                    <div className="form-control">
-                                        <label className="label"><span className="label-text font-bold">เลขที่บัญชี</span></label>
-                                        <input
-                                            type="text"
-                                            className="input input-bordered w-full font-mono"
-                                            value={localConfig.payment?.bankAccount?.accountNumber ?? ''}
-                                            onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, bankAccount: { ...localConfig.payment?.bankAccount!, accountNumber: e.target.value } } })}
-                                        />
-                                    </div>
-                                    <div className="form-control">
-                                        <label className="label"><span className="label-text font-bold">สาขา (ถ้ามี)</span></label>
-                                        <input
-                                            type="text"
-                                            className="input input-bordered w-full"
-                                            value={localConfig.payment?.bankAccount?.branch ?? ''}
-                                            onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, bankAccount: { ...localConfig.payment?.bankAccount!, branch: e.target.value } } })}
-                                        />
+                        {/* ==================== PAYMENT TAB ==================== */}
+                        {activeTab === 'payment' && (
+                            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+                                    <h3 className="font-bold text-gray-900 border-b pb-2">ข้อมูลบัญชีธนาคาร (โอนเงิน)</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="form-control">
+                                            <label className="label"><span className="label-text font-bold">ชื่อธนาคาร</span></label>
+                                            <input
+                                                type="text"
+                                                className="input input-bordered w-full"
+                                                placeholder="เช่น กสิกรไทย"
+                                                value={localConfig.payment?.bankAccount?.bankName ?? ''}
+                                                onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, bankAccount: { ...localConfig.payment?.bankAccount!, bankName: e.target.value } } })}
+                                            />
+                                        </div>
+                                        <div className="form-control">
+                                            <label className="label"><span className="label-text font-bold">ชื่อบัญชี</span></label>
+                                            <input
+                                                type="text"
+                                                className="input input-bordered w-full"
+                                                value={localConfig.payment?.bankAccount?.accountName ?? ''}
+                                                onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, bankAccount: { ...localConfig.payment?.bankAccount!, accountName: e.target.value } } })}
+                                            />
+                                        </div>
+                                        <div className="form-control">
+                                            <label className="label"><span className="label-text font-bold">เลขที่บัญชี</span></label>
+                                            <input
+                                                type="text"
+                                                className="input input-bordered w-full font-mono"
+                                                value={localConfig.payment?.bankAccount?.accountNumber ?? ''}
+                                                onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, bankAccount: { ...localConfig.payment?.bankAccount!, accountNumber: e.target.value } } })}
+                                            />
+                                        </div>
+                                        <div className="form-control">
+                                            <label className="label"><span className="label-text font-bold">สาขา (ถ้ามี)</span></label>
+                                            <input
+                                                type="text"
+                                                className="input input-bordered w-full"
+                                                value={localConfig.payment?.bankAccount?.branch ?? ''}
+                                                onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, bankAccount: { ...localConfig.payment?.bankAccount!, branch: e.target.value } } })}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
-                                <h3 className="font-bold text-gray-900 border-b pb-2">PromptPay (ทางเลือก)</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="form-control">
-                                        <label className="label"><span className="label-text font-bold">เบอร์โทร / เลขบัตร</span></label>
-                                        <input
-                                            type="text"
-                                            className="input input-bordered w-full font-mono"
-                                            value={localConfig.payment?.promptPay?.id ?? ''}
-                                            onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, promptPay: { ...localConfig.payment?.promptPay!, id: e.target.value, name: localConfig.payment?.promptPay?.name || '' } } })}
-                                        />
-                                    </div>
-                                    <div className="form-control">
-                                        <label className="label"><span className="label-text font-bold">ชื่อที่ลงทะเบียน</span></label>
-                                        <input
-                                            type="text"
-                                            className="input input-bordered w-full"
-                                            value={localConfig.payment?.promptPay?.name ?? ''}
-                                            onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, promptPay: { ...localConfig.payment?.promptPay!, name: e.target.value, id: localConfig.payment?.promptPay?.id || '' } } })}
-                                        />
+                                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+                                    <h3 className="font-bold text-gray-900 border-b pb-2">PromptPay (ทางเลือก)</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="form-control">
+                                            <label className="label"><span className="label-text font-bold">เบอร์โทร / เลขบัตร</span></label>
+                                            <input
+                                                type="text"
+                                                className="input input-bordered w-full font-mono"
+                                                value={localConfig.payment?.promptPay?.id ?? ''}
+                                                onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, promptPay: { ...localConfig.payment?.promptPay!, id: e.target.value, name: localConfig.payment?.promptPay?.name || '' } } })}
+                                            />
+                                        </div>
+                                        <div className="form-control">
+                                            <label className="label"><span className="label-text font-bold">ชื่อที่ลงทะเบียน</span></label>
+                                            <input
+                                                type="text"
+                                                className="input input-bordered w-full"
+                                                value={localConfig.payment?.promptPay?.name ?? ''}
+                                                onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, promptPay: { ...localConfig.payment?.promptPay!, name: e.target.value, id: localConfig.payment?.promptPay?.id || '' } } })}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
                         )}
 
                         {/* ==================== TV TAB ==================== */}
@@ -911,16 +913,20 @@ export default function AdminConfigPage() {
                                                 />
                                             </div>
                                         ))}
-                                        <button
-                                            className="aspect-video border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center gap-2 text-gray-400 hover:bg-gray-50 transition-colors"
-                                            onClick={() => {
-                                                const newImgs = [...(localConfig.tv?.signageImages || []), ""];
-                                                setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, signageImages: newImgs } });
-                                            }}
-                                        >
-                                            <PlusIcon className="w-8 h-8" />
-                                            <span className="text-sm font-bold">เพิ่มรูปภาพ</span>
-                                        </button>
+                                        <div className="space-y-2">
+                                            <button
+                                                className="w-full aspect-video border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center gap-2 text-gray-400 hover:bg-gray-50 transition-colors"
+                                                onClick={() => {
+                                                    const newImgs = [...(localConfig.tv?.signageImages || []), ""];
+                                                    setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, signageImages: newImgs } });
+                                                }}
+                                            >
+                                                <PlusIcon className="w-8 h-8" />
+                                                <span className="text-sm font-bold">เพิ่มรูปภาพ</span>
+                                            </button>
+                                            {/* Spacer to align with input fields in other cards */}
+                                            <div className="h-[1.5rem]"></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
