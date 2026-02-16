@@ -1,16 +1,9 @@
-/**
- * Dual Screen (2 หน้าจอ) - DJ Mode
- *
- * Second screen that syncs with main screen using "Pure State Sync" (Store Replication)
- * - Directly listens to usePlayerStore updates
- * - No manual command parsing
- */
-
 import { useEffect, useState, useRef } from 'react';
 import Head from 'next/head';
 import YouTube, { YouTubePlayer } from 'react-youtube';
 import { usePlayerStore } from '../modules/player/stores/usePlayerStore';
 import { useShallow } from 'zustand/react/shallow';
+import { DigitalSignage } from '../modules/tv/components/DigitalSignage';
 import {
   SpeakerXMarkIcon,
   SpeakerWaveIcon,
@@ -21,6 +14,7 @@ import {
   BackwardIcon,
   ArrowsPointingOutIcon,
   ArrowsPointingInIcon,
+  SignalIcon,
 } from '@heroicons/react/24/outline';
 
 export default function DualScreen() {
@@ -60,6 +54,7 @@ export default function DualScreen() {
   const [forceShowQueue, setForceShowQueue] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showSplash, setShowSplash] = useState(false);
 
   const lastQueueLengthRef = useRef(0);
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -94,6 +89,11 @@ export default function DualScreen() {
       console.log(`🔀 Dual: Source changed to ${currentSource}. Loading...`);
       videoPlayerRef.current.loadVideoById(currentSource);
       currentVideoIdRef.current = currentSource;
+
+      // 🎬 Phase 3: Trigger Cinematic Splash
+      setShowSplash(true);
+      const timer = setTimeout(() => setShowSplash(false), 6000);
+      return () => clearTimeout(timer);
     }
   }, [currentSource]);
 
@@ -289,19 +289,18 @@ export default function DualScreen() {
         <title>YouOKE - 2 หน้าจอ (Dual Screen)</title>
       </Head>
 
-      {/* Waiting Screen */}
+      {/* Layer 1: Idle Screen (Digital Signage) */}
       {!currentSource ? (
-        <div className="h-screen w-screen bg-black text-white flex items-center justify-center">
-          <div className="text-center">
-            <div className="text-6xl mb-4">🖥️</div>
-            <h1 className="text-3xl font-bold mb-2">2 หน้าจอ (Dual Screen)</h1>
-            <p className="text-gray-400 mb-6">รอเพลงจากหน้าจอหลัก...</p>
-            <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span>Connected to Store</span>
-            </div>
-          </div>
-        </div>
+        <DigitalSignage
+          roomCode="HDMI"
+          template="classic"
+          messages={[
+            "ยินดีต้อนรับสู่ YouOke DJ Mode",
+            "เชื่อมต่อจอเสริมเพื่อประสบการณ์ที่เหนือกว่า",
+            "ควบคุมเพลงผ่านหน้าจอหลักของคุณเดี๋ยวนี้",
+            "ขอให้สนุกกับการร้องเพลง!"
+          ]}
+        />
       ) : (
         /* Player Screen */
         <div className="h-screen w-screen bg-black text-white flex flex-col">
@@ -313,6 +312,40 @@ export default function DualScreen() {
               onStateChange={onPlayerStateChange}
               className="w-full h-full"
             />
+
+            {/* Layer 3: Cinematic Song Splash (Phase 3) */}
+            {currentQVideo && showSplash && (
+              <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm animate-in fade-in zoom-in duration-700">
+                <div className="max-w-4xl text-center px-12 py-16 bg-black/60 backdrop-blur-3xl rounded-[4rem] border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.8)] transform -translate-y-12">
+                  <div className="flex flex-col items-center gap-6 animate-in slide-in-from-bottom-12 duration-1000 ease-out fill-mode-both">
+                    <div className="px-6 py-2 bg-primary/20 backdrop-blur-md rounded-full border border-primary/30 flex items-center gap-3">
+                      <div className="w-2 h-2 bg-primary rounded-full animate-ping" />
+                      <span className="text-xs font-black text-primary uppercase tracking-[0.4em]">กำลังเริ่มการแสดง</span>
+                    </div>
+
+                    <h1 className="text-7xl font-black text-white leading-tight tracking-tighter drop-shadow-2xl">
+                      {currentQVideo.title}
+                    </h1>
+
+                    {currentQVideo.author && (
+                      <div className="flex items-center gap-4">
+                        <div className="h-px w-12 bg-white/20" />
+                        <p className="text-2xl font-bold text-white/60 italic tracking-wide">
+                          {currentQVideo.author}
+                        </p>
+                        <div className="h-px w-12 bg-white/20" />
+                      </div>
+                    )}
+
+                    <div className="mt-8 flex items-center gap-8 text-white/20 font-black text-[10px] tracking-[0.5em] uppercase">
+                      <span>YouOke Professional</span>
+                      <div className="w-1.5 h-1.5 bg-white/10 rounded-full" />
+                      <span>Beyond the Stage</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Controls Overlay (Minimalist - Fullscreen Only) */}
             {currentSource && showControls && (
@@ -329,45 +362,76 @@ export default function DualScreen() {
               </div>
             )}
 
-            {/* Queue Display */}
+            {/* Layer 2: Queue HUD (Glassmorphism) */}
             {queue.length > 0 && showQueue && (
-              <div className="absolute top-0 right-0 h-full w-80 lg:w-96 z-50 bg-gradient-to-l from-black/90 via-black/80 to-transparent backdrop-blur-md p-6 overflow-y-auto transition-all duration-500">
-                <div className="space-y-6">
-                  {/* Now Playing */}
+              <div className="absolute inset-y-0 right-0 w-[420px] z-40 p-8 flex flex-col justify-center pointer-events-none">
+                <div className="w-full bg-black/40 backdrop-blur-3xl rounded-[2.5rem] border border-white/10 shadow-2xl p-8 space-y-8 animate-in slide-in-from-right-full duration-1000 ease-out pointer-events-auto">
+
+                  {/* Now Playing HUD */}
                   {currentQVideo && (
-                    <div>
-                      <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide">กำลังเล่น</p>
-                      <div className="bg-primary/20 border border-primary/30 rounded-xl p-4">
-                        <h2 className="text-lg font-bold mb-1 line-clamp-2">{currentQVideo.title}</h2>
-                        {currentQVideo.author && <p className="text-sm text-gray-300 truncate">{currentQVideo.author}</p>}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 bg-primary rounded-full animate-pulse shadow-[0_0_10px_rgba(234,88,12,0.8)]" />
+                        <p className="text-[10px] text-white/40 font-black uppercase tracking-[0.3em]">กำลังเล่น</p>
+                      </div>
+                      <div className="space-y-1">
+                        <h2 className="text-2xl font-black text-white leading-tight line-clamp-2 tracking-tighter">
+                          {currentQVideo.title}
+                        </h2>
+                        {currentQVideo.author && (
+                          <p className="text-sm text-primary/80 font-bold truncate">
+                            {currentQVideo.author}
+                          </p>
+                        )}
                       </div>
                     </div>
                   )}
-                  {/* Next in Queue */}
+
+                  <div className="h-px bg-white/10" />
+
+                  {/* Next in Queue HUD */}
                   {queue.length > currentIndex + 1 && (
-                    <div>
-                      <p className="text-xs text-gray-400 mb-3 uppercase tracking-wide flex items-center gap-2">
-                        <MusicalNoteIcon className="w-5 h-5" />
-                        <span>คิวถัดไป</span>
-                        <span className="ml-auto text-xs bg-white/10 px-2 py-0.5 rounded-full">{queue.length - currentIndex - 1} เพลง</span>
-                      </p>
-                      <div className="space-y-2">
-                        {queue.slice(currentIndex + 1, currentIndex + 8).map((video, index) => (
-                          <div key={video.uuid || index} className="bg-white/5 hover:bg-white/10 rounded-lg p-3 transition-all">
-                            <div className="flex items-start gap-3">
-                              <div className="flex-shrink-0 w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center">
-                                <span className="text-primary font-bold text-xs">{index + 1}</span>
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="font-semibold text-sm line-clamp-2 mb-0.5">{video.title}</p>
-                                {video.author && <p className="text-xs text-gray-400 truncate">{video.author}</p>}
-                              </div>
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[10px] text-white/40 font-black uppercase tracking-[0.3em] flex items-center gap-2">
+                          <MusicalNoteIcon className="w-4 h-4 text-primary" />
+                          <span>คิวถัดไป</span>
+                        </p>
+                        <span className="text-[10px] bg-white/10 text-white/60 px-2 py-1 rounded-lg font-bold">
+                          {queue.length - currentIndex - 1} SONGS
+                        </span>
+                      </div>
+
+                      <div className="space-y-3">
+                        {queue.slice(currentIndex + 1, currentIndex + 5).map((video, index) => (
+                          <div
+                            key={video.uuid || index}
+                            className="flex items-center gap-4 group transition-all duration-300 transform hover:translate-x-1"
+                          >
+                            <div className="flex-shrink-0 w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center border border-white/5 text-[10px] font-black text-white/30 group-hover:text-primary transition-colors">
+                              {index + 1}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-bold text-sm text-white/80 line-clamp-1 group-hover:text-white transition-colors">
+                                {video.title}
+                              </p>
+                              {video.author && (
+                                <p className="text-[10px] text-white/30 truncate mt-0.5 font-medium uppercase tracking-wider">
+                                  {video.author}
+                                </p>
+                              )}
                             </div>
                           </div>
                         ))}
                       </div>
                     </div>
                   )}
+
+                  {/* Status Indicator */}
+                  <div className="pt-4 flex items-center gap-2 text-[10px] font-black italic text-white/20 tracking-widest">
+                    <SignalIcon className="w-3 h-3 text-green-500/50" />
+                    BEYOND THE STAGE • YOUOKE PRO
+                  </div>
                 </div>
               </div>
             )}
