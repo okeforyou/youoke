@@ -27,7 +27,10 @@ export const usePlayerStore = create<PlayerStore>()(
             layoutMode: 'split',
             isQueueVisible: false, // Default hidden in fullscreen
             notification: null as { type: 'added' | 'upnext', video: any, timestamp: number } | null,
-            setNotification: (notif: any) => set({ notification: notif }),
+            setNotification: (notif: any) => {
+                set({ notification: notif });
+                broadcast({ notification: notif });
+            },
 
             // Sync Locks
             seekTarget: null,
@@ -169,7 +172,7 @@ export const usePlayerStore = create<PlayerStore>()(
                 });
 
                 // Broadcast seek immediately
-                const channel = new BroadcastChannel('player_sync');
+                const channel = new BroadcastChannel('youoke_player_sync');
                 channel.postMessage({ type: 'SEEK', time });
                 channel.close();
             },

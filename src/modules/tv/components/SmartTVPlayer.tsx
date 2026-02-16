@@ -16,6 +16,7 @@ export interface SmartTVPlayerProps {
     onStateChange: (state: number) => void;
     onError: (error: any) => void;
     onReady: (player: YouTubePlayer) => void;
+    onPlay?: (index: number) => void;
     // New Props for Queue & Notification
     queue?: VideoItem[];
     isQueueVisible?: boolean;
@@ -30,6 +31,7 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
     onStateChange,
     onError,
     onReady,
+    onPlay,
     // New Props
     queue = [],
     isQueueVisible = false,
@@ -231,7 +233,7 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
             }
 
             {/* 5. Queue Overlay (Beautiful List with Glassmorphism) */}
-            <QueueList queue={queue} isVisible={isQueueVisible} />
+            <QueueList queue={queue} isVisible={isQueueVisible} onPlay={onPlay} />
 
             {/* 6. Song Splash Screen (Beautiful Transition) */}
             <SongSplash video={currentVideo} isVisible={showSplash} />

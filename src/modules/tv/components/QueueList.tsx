@@ -7,9 +7,10 @@ import { VideoItem } from '../types';
 interface QueueListProps {
     queue: VideoItem[];
     isVisible: boolean;
+    onPlay?: (index: number) => void;
 }
 
-export const QueueList: React.FC<QueueListProps> = ({ queue, isVisible }) => {
+export const QueueList: React.FC<QueueListProps> = ({ queue, isVisible, onPlay }) => {
     return (
         <div className={clsx(
             "absolute top-0 right-0 bottom-0 w-[450px] bg-black/80 backdrop-blur-[40px] border-l border-white/5 p-10 transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] z-40 flex flex-col shadow-[-40px_0_80px_rgba(0,0,0,0.5)]",
@@ -26,7 +27,12 @@ export const QueueList: React.FC<QueueListProps> = ({ queue, isVisible }) => {
 
             <div className="flex-1 overflow-y-auto space-y-6 pr-4 custom-scrollbar -mr-4">
                 {queue.slice(1).map((video, idx) => (
-                    <div key={idx} className="flex gap-6 items-center group animate-in slide-in-from-right-10 duration-500" style={{ animationDelay: `${idx * 100}ms` }}>
+                    <div
+                        key={idx}
+                        onClick={() => onPlay?.(idx + 1)}
+                        className="flex gap-6 items-center group animate-in slide-in-from-right-10 duration-500 cursor-pointer"
+                        style={{ animationDelay: `${idx * 100}ms` }}
+                    >
                         <div className="relative">
                             <span className="absolute -left-6 top-1/2 -translate-y-1/2 text-4xl font-black text-white/5 italic">{idx + 1}</span>
                             <div className="w-20 h-20 rounded-2xl bg-zinc-900 relative overflow-hidden shrink-0 border border-white/10 group-hover:border-primary/50 transition-all duration-300 group-hover:scale-105 shadow-xl">

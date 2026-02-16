@@ -27,7 +27,8 @@ export default function DualScreen() {
     isMuted,
     notification,
     isQueueVisible,
-    playNext
+    playNext,
+    setCurrentIndex
   } = usePlayerStore(
     useShallow(state => ({
       currentVideo: state.currentVideo,
@@ -37,7 +38,8 @@ export default function DualScreen() {
       isMuted: state.isMuted,
       notification: state.notification,
       isQueueVisible: state.isQueueVisible,
-      playNext: state.playNext
+      playNext: state.playNext,
+      setCurrentIndex: state.setCurrentIndex
     }))
   );
 
@@ -101,15 +103,16 @@ export default function DualScreen() {
       {/* Layer 2: Smart Player (Active) */}
       <div className={`absolute inset-0 transition-opacity duration-1000 bg-black ${!isIdle ? 'opacity-100 z-20' : 'opacity-0 z-0 pointer-events-none'}`}>
         <SmartTVPlayer
-          currentVideo={currentVideo}
-          nextVideo={nextVideo}
-          queue={queue}
+          currentVideo={currentVideo as any}
+          nextVideo={nextVideo as any}
+          queue={queue as any}
           isQueueVisible={isQueueVisible}
           notification={notification}
           isPlaying={isPlaying}
           isMuted={isMuted}
           onStateChange={handlePlayerStateChange}
           onError={handlePlayerError}
+          onPlay={setCurrentIndex}
           onReady={(p) => {
             console.log("✅ Dual Unified Player Ready");
           }}
