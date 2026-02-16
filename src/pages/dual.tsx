@@ -4,17 +4,10 @@ import YouTube, { YouTubePlayer } from 'react-youtube';
 import { usePlayerStore } from '../modules/player/stores/usePlayerStore';
 import { useShallow } from 'zustand/react/shallow';
 import { DigitalSignage } from '../modules/tv/components/DigitalSignage';
+import { SmartTVPlayer } from '../modules/tv/components/SmartTVPlayer';
 import {
-  SpeakerXMarkIcon,
-  SpeakerWaveIcon,
-  MusicalNoteIcon,
-  PlayIcon,
-  PauseIcon,
-  ForwardIcon,
-  BackwardIcon,
   ArrowsPointingOutIcon,
   ArrowsPointingInIcon,
-  SignalIcon,
 } from '@heroicons/react/24/outline';
 
 export default function DualScreen() {
@@ -27,11 +20,14 @@ export default function DualScreen() {
     queue,
     currentIndex,
     currentTime,
+    isQueueVisible,
+    notification,
     setCurrentTime,
     playNext,
     playPrevious,
     togglePlay,
-    setMuted
+    setMuted,
+    setCurrentIndex
   } = usePlayerStore(
     useShallow(state => ({
       currentVideo: state.currentVideo,
@@ -41,11 +37,14 @@ export default function DualScreen() {
       queue: state.queue,
       currentIndex: state.currentIndex,
       currentTime: state.currentTime,
+      isQueueVisible: state.isQueueVisible,
+      notification: state.notification,
       setCurrentTime: state.setCurrentTime,
       playNext: state.playNext,
       playPrevious: state.playPrevious,
       togglePlay: state.togglePlay,
-      setMuted: state.setMuted
+      setMuted: state.setMuted,
+      setCurrentIndex: state.setCurrentIndex
     }))
   );
 
@@ -174,6 +173,23 @@ export default function DualScreen() {
     return () => clearInterval(interval);
   }, [player, isPlaying, setCurrentTime]);
 
+  // 🎬 Handlers for Player Logic
+  const handlePlayerStateChange = (playerState: number) => {
+    // 0 = Ended, 1 = Playing, 2 = Paused
+    if (playerState === 0) {
+      console.log('🎬 Dual: Video ended, playing next...');
+      playNext();
+    }
+    if (playerState === 1 && !isPlaying) togglePlay();
+    if (playerState === 2 && isPlaying) togglePlay();
+  };
+
+  const handlePlayerError = (e: any) => {
+    console.error('❌ Dual: Player Error:', e);
+    // Auto-skip on error to keep the party going
+    setTimeout(() => playNext(), 3000);
+  };
+
 
   // --- UI LOGIC (Queue, Controls) ---
 
@@ -192,7 +208,7 @@ export default function DualScreen() {
     lastQueueLengthRef.current = currentLength;
   }, [queue.length]);
 
-  // Check remaining time and show/hide queue
+  // 7. AUTOMATED QUEUE HUD: Show at start and end of songs
   useEffect(() => {
     if (!player || !isPlaying) {
       setShowQueue(true);
@@ -205,13 +221,15 @@ export default function DualScreen() {
         const remaining = d - t;
         const showAtStart = t < 15;
         const showAtEnd = remaining < 60;
-        setShowQueue(forceShowQueue || showAtStart || showAtEnd);
+
+        // Combine manual store signal with automatic logic
+        setShowQueue(isQueueVisible || forceShowQueue || showAtStart || showAtEnd);
       } catch (error) { }
     }, 1000);
     return () => clearInterval(checkTime);
-  }, [player, isPlaying, forceShowQueue]);
+  }, [player, isPlaying, forceShowQueue, isQueueVisible]);
 
-  // Mouse auto-hide
+  // Mouse auto-hide (for Clean Feed experience)
   useEffect(() => {
     const handleMouseMove = () => {
       setShowControls(true);
@@ -237,52 +255,6 @@ export default function DualScreen() {
     }
   };
 
-  const onPlayerReady = (event: { target: YouTubePlayer }) => {
-    console.log('✅ Dual: YouTube player ready (Pure Store Sync)');
-    setPlayer(event.target);
-    videoPlayerRef.current = event.target;
-    // Start muted ONLY if store is muted, or let effects sync it
-    const s = usePlayerStore.getState();
-    if (s.isMuted) event.target.mute();
-    else event.target.unMute();
-
-    // Initial Load if source exists
-    const state = usePlayerStore.getState();
-    if (state.currentSource) {
-      event.target.loadVideoById(state.currentSource);
-      currentVideoIdRef.current = state.currentSource;
-    }
-  };
-
-  const onPlayerStateChange = (event: { data: number }) => {
-    // 0=Ended, 1=Playing, 2=Paused
-    if (event.data === 0) {
-      console.log('🎬 Dual: Video ended');
-      // Store should handle auto-next via Master Logic?
-      // NO. We are the Master now (Active Player).
-      // Main Screen is Passive (Zombie).
-      // So WE must trigger Next.
-      playNext();
-    }
-    if (event.data === 1 && !isPlaying) togglePlay(); // Sync local play to store
-    if (event.data === 2 && isPlaying) togglePlay(); // Sync local pause to store
-  };
-
-  const opts = {
-    height: '100%',
-    width: '100%',
-    playerVars: {
-      autoplay: 1 as 1,
-      controls: 0 as 0,
-      modestbranding: 1 as 1,
-      rel: 0 as 0,
-      disablekb: 1 as 1,
-    },
-  };
-
-  // Safe Queue Access
-  const currentQVideo = queue[currentIndex];
-
   return (
     <>
       <Head>
@@ -292,146 +264,54 @@ export default function DualScreen() {
       {/* Layer 1: Idle Screen (Digital Signage) */}
       {!currentSource ? (
         <DigitalSignage
-          roomCode="HDMI"
+          roomCode="DJ-MODE"
           template="classic"
           messages={[
-            "ยินดีต้อนรับสู่ YouOke DJ Mode",
-            "เชื่อมต่อจอเสริมเพื่อประสบการณ์ที่เหนือกว่า",
-            "ควบคุมเพลงผ่านหน้าจอหลักของคุณเดี๋ยวนี้",
-            "ขอให้สนุกกับการร้องเพลง!"
+            "ยินดีต้อนรับสู่ YouOke DJ Professional",
+            "ควบคุมการแสดงผ่านหน้าจอแยกของคุณ",
+            "มอบประสบการณ์การร้องเพลงที่เหนือระดับ",
+            "ขอให้สนุกกับการรังสรรค์เสียงดนตรี!"
           ]}
         />
       ) : (
         /* Player Screen */
         <div className="h-screen w-screen bg-black text-white flex flex-col">
-          <div ref={playerContainerRef} className="flex-1 relative">
-            <YouTube
-              videoId={currentSource}
-              opts={opts}
-              onReady={onPlayerReady}
-              onStateChange={onPlayerStateChange}
-              className="w-full h-full"
+          <div
+            ref={playerContainerRef}
+            className={`flex-1 relative ${!showControls ? 'cursor-none' : ''}`}
+          >
+            <SmartTVPlayer
+              currentVideo={currentVideo as any}
+              nextVideo={queue[currentIndex + 1] as any}
+              queue={queue as any}
+              isQueueVisible={showQueue}
+              notification={notification as any}
+              isPlaying={isPlaying}
+              isMuted={isMuted}
+              onStateChange={handlePlayerStateChange}
+              onError={handlePlayerError}
+              onPlay={setCurrentIndex}
+              onReady={(p) => {
+                console.log("✅ Dual: SmartTVPlayer Ready (Master Sync Active)");
+                setPlayer(p);
+                videoPlayerRef.current = p;
+
+                // Initial Sync
+                if (isMuted) p.mute();
+                else p.unMute();
+              }}
             />
 
-            {/* Layer 3: Cinematic Song Splash (Phase 3) */}
-            {currentQVideo && showSplash && (
-              <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm animate-in fade-in zoom-in duration-700">
-                <div className="max-w-4xl text-center px-12 py-16 bg-black/60 backdrop-blur-3xl rounded-[4rem] border border-white/10 shadow-[0_0_100px_rgba(0,0,0,0.8)] transform -translate-y-12">
-                  <div className="flex flex-col items-center gap-6 animate-in slide-in-from-bottom-12 duration-1000 ease-out fill-mode-both">
-                    <div className="px-6 py-2 bg-primary/20 backdrop-blur-md rounded-full border border-primary/30 flex items-center gap-3">
-                      <div className="w-2 h-2 bg-primary rounded-full animate-ping" />
-                      <span className="text-xs font-black text-primary uppercase tracking-[0.4em]">กำลังเริ่มการแสดง</span>
-                    </div>
-
-                    <h1 className="text-7xl font-black text-white leading-tight tracking-tighter drop-shadow-2xl">
-                      {currentQVideo.title}
-                    </h1>
-
-                    {currentQVideo.author && (
-                      <div className="flex items-center gap-4">
-                        <div className="h-px w-12 bg-white/20" />
-                        <p className="text-2xl font-bold text-white/60 italic tracking-wide">
-                          {currentQVideo.author}
-                        </p>
-                        <div className="h-px w-12 bg-white/20" />
-                      </div>
-                    )}
-
-                    <div className="mt-8 flex items-center gap-8 text-white/20 font-black text-[10px] tracking-[0.5em] uppercase">
-                      <span>YouOke Professional</span>
-                      <div className="w-1.5 h-1.5 bg-white/10 rounded-full" />
-                      <span>Beyond the Stage</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Controls Overlay (Minimalist - Fullscreen Only) */}
-            {currentSource && showControls && (
+            {/* Minor Utility Overlay (Fullscreen Toggle) */}
+            {showControls && (
               <div className="absolute top-4 right-4 z-50 transition-opacity duration-300">
-                <div className="bg-black/60 backdrop-blur-md rounded-xl p-1 flex items-center gap-1 shadow-2xl border border-white/10 group">
+                <div className="bg-black/60 backdrop-blur-md rounded-xl p-1 shadow-2xl border border-white/10 group">
                   <button
                     onClick={handleToggleFullscreen}
                     className="p-3 rounded-lg hover:bg-white/20 transition-all active:scale-90"
-                    title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
                   >
-                    {isFullscreen ? <ArrowsPointingInIcon className="w-5 h-5 text-white/70 group-hover:text-white" /> : <ArrowsPointingOutIcon className="w-5 h-5 text-white/70 group-hover:text-white" />}
+                    {isFullscreen ? <ArrowsPointingInIcon className="w-5 h-5 text-white/70" /> : <ArrowsPointingOutIcon className="w-5 h-5 text-white/70" />}
                   </button>
-                </div>
-              </div>
-            )}
-
-            {/* Layer 2: Queue HUD (Glassmorphism) */}
-            {queue.length > 0 && showQueue && (
-              <div className="absolute inset-y-0 right-0 w-[420px] z-40 p-8 flex flex-col justify-center pointer-events-none">
-                <div className="w-full bg-black/40 backdrop-blur-3xl rounded-[2.5rem] border border-white/10 shadow-2xl p-8 space-y-8 animate-in slide-in-from-right-full duration-1000 ease-out pointer-events-auto">
-
-                  {/* Now Playing HUD */}
-                  {currentQVideo && (
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-2 h-2 bg-primary rounded-full animate-pulse shadow-[0_0_10px_rgba(234,88,12,0.8)]" />
-                        <p className="text-[10px] text-white/40 font-black uppercase tracking-[0.3em]">กำลังเล่น</p>
-                      </div>
-                      <div className="space-y-1">
-                        <h2 className="text-2xl font-black text-white leading-tight line-clamp-2 tracking-tighter">
-                          {currentQVideo.title}
-                        </h2>
-                        {currentQVideo.author && (
-                          <p className="text-sm text-primary/80 font-bold truncate">
-                            {currentQVideo.author}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="h-px bg-white/10" />
-
-                  {/* Next in Queue HUD */}
-                  {queue.length > currentIndex + 1 && (
-                    <div className="space-y-6">
-                      <div className="flex items-center justify-between">
-                        <p className="text-[10px] text-white/40 font-black uppercase tracking-[0.3em] flex items-center gap-2">
-                          <MusicalNoteIcon className="w-4 h-4 text-primary" />
-                          <span>คิวถัดไป</span>
-                        </p>
-                        <span className="text-[10px] bg-white/10 text-white/60 px-2 py-1 rounded-lg font-bold">
-                          {queue.length - currentIndex - 1} SONGS
-                        </span>
-                      </div>
-
-                      <div className="space-y-3">
-                        {queue.slice(currentIndex + 1, currentIndex + 5).map((video, index) => (
-                          <div
-                            key={video.uuid || index}
-                            className="flex items-center gap-4 group transition-all duration-300 transform hover:translate-x-1"
-                          >
-                            <div className="flex-shrink-0 w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center border border-white/5 text-[10px] font-black text-white/30 group-hover:text-primary transition-colors">
-                              {index + 1}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-bold text-sm text-white/80 line-clamp-1 group-hover:text-white transition-colors">
-                                {video.title}
-                              </p>
-                              {video.author && (
-                                <p className="text-[10px] text-white/30 truncate mt-0.5 font-medium uppercase tracking-wider">
-                                  {video.author}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Status Indicator */}
-                  <div className="pt-4 flex items-center gap-2 text-[10px] font-black italic text-white/20 tracking-widest">
-                    <SignalIcon className="w-3 h-3 text-green-500/50" />
-                    BEYOND THE STAGE • YOUOKE PRO
-                  </div>
                 </div>
               </div>
             )}
