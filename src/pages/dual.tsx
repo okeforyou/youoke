@@ -28,7 +28,10 @@ export default function DualScreen() {
     notification,
     isQueueVisible,
     playNext,
-    setCurrentIndex
+    setCurrentTime,
+    currentTime,
+    setCurrentIndex,
+    togglePlay
   } = usePlayerStore(
     useShallow(state => ({
       currentVideo: state.currentVideo,
@@ -39,11 +42,15 @@ export default function DualScreen() {
       notification: state.notification,
       isQueueVisible: state.isQueueVisible,
       playNext: state.playNext,
-      setCurrentIndex: state.setCurrentIndex
+      setCurrentTime: state.setCurrentTime,
+      currentTime: state.currentTime,
+      setCurrentIndex: state.setCurrentIndex,
+      togglePlay: state.togglePlay
     }))
   );
 
   const [mounted, setMounted] = useState(false);
+  const videoPlayerRef = useRef<any>(null);
 
   // 1. Initial Setup
   useEffect(() => {
@@ -62,13 +69,61 @@ export default function DualScreen() {
     };
   }, []);
 
+  // 2. HEARTBEAT: Update Store Time (Master Mode)
+  // Since this IS the active player, it must report time to the store
+  useEffect(() => {
+    if (!isPlaying) return;
+
+    const interval = setInterval(async () => {
+      try {
+        if (!videoPlayerRef.current) return;
+
+        // Check Player State: Only broadcast if PLAYING (1)
+        const pState = await videoPlayerRef.current.getPlayerState();
+        if (pState !== 1) return;
+
+        const time = await videoPlayerRef.current.getCurrentTime();
+        if (time && time > 0) {
+          // We broadcast to Main Screen so Progress bar updates.
+          usePlayerStore.getState().setCurrentTime(time);
+        }
+      } catch (e) { }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isPlaying]);
+
+  // 3. TIME SYNC: Watch `currentTime` (for Seeking)
+  useEffect(() => {
+    const syncTime = async () => {
+      if (!videoPlayerRef.current || !isPlaying) return;
+
+      try {
+        const playerTime = await videoPlayerRef.current.getCurrentTime();
+        const diff = Math.abs(playerTime - currentTime);
+
+        // SEEK if difference is significant (> 1s)
+        // AND ignore jumps to 0 (Circuit Breaker logic)
+        if (diff > 1 && currentTime > 0.1) {
+          console.log(`⏩ Dual: Sync Seek ${playerTime.toFixed(1)} -> ${currentTime.toFixed(1)}`);
+          videoPlayerRef.current.seekTo(currentTime, true);
+        }
+      } catch (e) {
+        // Ignore errors during loading
+      }
+    };
+    syncTime();
+  }, [currentTime, isPlaying]);
+
   // Handler for Player State (Auto-Next logic)
   const handlePlayerStateChange = (playerState: number) => {
-    // 0 = Ended
+    // 0 = Ended, 1 = Playing, 2 = Paused
     if (playerState === 0) {
       console.log('🎬 Dual: Video ended, playing next...');
       playNext();
     }
+    if (playerState === 1 && !isPlaying) togglePlay();
+    if (playerState === 2 && isPlaying) togglePlay();
   };
 
   const handlePlayerError = (e: any) => {
@@ -115,6 +170,7 @@ export default function DualScreen() {
           onPlay={setCurrentIndex}
           onReady={(p) => {
             console.log("✅ Dual Unified Player Ready");
+            videoPlayerRef.current = p;
           }}
         />
       </div>
