@@ -164,7 +164,7 @@ export function QueueList() {
                         <ListMusic size={12} className="text-gray-900" />
                     </div>
                     <span className="text-[14px] font-black text-black tracking-tight">
-                        คิวเพลง <span className="ml-0.5 text-primary">({remainingCount})</span>
+                        คิวเพลง <span className="ml-0.5 text-black">({remainingCount})</span>
                     </span>
                 </div>
                 {queue.length > 0 && (
