@@ -191,7 +191,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const handleCastSelectDual = () => {
         setCastModalOpen(false);
         localStorage.setItem('youoke-dual-active', 'true');
-        window.open('/dual?mode=mirror', 'YouOkeMirror', 'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no');
+        window.open('/dual?mode=dj', 'YouOkeDual', 'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no');
     };
 
     const handleCastSelectGoogle = () => {
@@ -740,7 +740,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 onSelectWebMonitor={handleCastSelectWebMonitor}
                 onSelectSmartTV={handleCastSelectSmartTV}
                 onSelectDual={handleCastSelectDual}
-                onSelectDj={() => window.open('/dual?mode=dj', 'YouOkeDJ', 'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no')}
+                onSelectDj={handleCastSelectDual}
                 onSelectGoogleCast={handleCastSelectGoogle}
                 onSelectYouTube={handleCastSelectYouTube}
             />
