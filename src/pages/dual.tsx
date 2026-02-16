@@ -314,25 +314,16 @@ export default function DualScreen() {
               className="w-full h-full"
             />
 
-            {/* Controls Overlay */}
+            {/* Controls Overlay (Minimalist - Fullscreen Only) */}
             {currentSource && showControls && (
-              <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-50 transition-opacity duration-300">
-                <div className="bg-black/80 backdrop-blur-md rounded-full px-6 py-3 flex items-center gap-3 shadow-2xl border border-white/10">
-                  <button onClick={playPrevious} disabled={currentIndex === 0} className="p-3 rounded-full hover:bg-white/20 disabled:opacity-30">
-                    <BackwardIcon className="w-6 h-6 text-white" />
-                  </button>
-                  <button onClick={togglePlay} className="p-4 rounded-full bg-primary hover:bg-primary/80">
-                    {isPlaying ? <PauseIcon className="w-7 h-7 text-white" /> : <PlayIcon className="w-7 h-7 text-white" />}
-                  </button>
-                  <button onClick={playNext} disabled={currentIndex >= queue.length - 1} className="p-3 rounded-full hover:bg-white/20 disabled:opacity-30">
-                    <ForwardIcon className="w-6 h-6 text-white" />
-                  </button>
-                  <div className="ml-2 pl-2 border-l border-white/20"></div>
-                  <button onClick={() => setMuted(!isMuted)} className="p-3 rounded-full hover:bg-white/20">
-                    {isMuted ? <SpeakerXMarkIcon className="w-6 h-6 text-white" /> : <SpeakerWaveIcon className="w-6 h-6 text-white" />}
-                  </button>
-                  <button onClick={handleToggleFullscreen} className="p-3 rounded-full hover:bg-white/20">
-                    {isFullscreen ? <ArrowsPointingInIcon className="w-6 h-6 text-white" /> : <ArrowsPointingOutIcon className="w-6 h-6 text-white" />}
+              <div className="absolute top-4 right-4 z-50 transition-opacity duration-300">
+                <div className="bg-black/60 backdrop-blur-md rounded-xl p-1 flex items-center gap-1 shadow-2xl border border-white/10 group">
+                  <button
+                    onClick={handleToggleFullscreen}
+                    className="p-3 rounded-lg hover:bg-white/20 transition-all active:scale-90"
+                    title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+                  >
+                    {isFullscreen ? <ArrowsPointingInIcon className="w-5 h-5 text-white/70 group-hover:text-white" /> : <ArrowsPointingOutIcon className="w-5 h-5 text-white/70 group-hover:text-white" />}
                   </button>
                 </div>
               </div>
