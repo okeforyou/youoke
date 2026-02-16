@@ -70,6 +70,10 @@ export const usePlayerSync = (
             // LOCK: If seeking, do not overwrite store time (prevents rubber-banding)
             if (isSeekingRef.current) return;
 
+            // CRITICAL: If Dual Screen is active, DO NOT report time from Main Screen.
+            // Dual Screen is the Master/Speaker, Main Screen is the Controller/Mirror.
+            if (isDualActive) return;
+
             const currentTime = playerRef.current.getCurrentTime();
             const currentDuration = playerRef.current.getDuration();
 

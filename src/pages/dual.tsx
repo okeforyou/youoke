@@ -127,9 +127,10 @@ export default function DualScreen() {
         const playerTime = await videoPlayerRef.current.getCurrentTime();
         const diff = Math.abs(playerTime - currentTime);
 
-        // SEEK if difference is significant (> 1s)
-        // AND ignore jumps to 0 (Circuit Breaker logic)
-        if (diff > 1 && currentTime > 0.1) {
+        // SEEK if difference is significant (> 3s)
+        // We increased threshold to 3s to prevent small jitter from triggering loops
+        // since Dual Screen is now the Master time reporter.
+        if (diff > 3 && currentTime > 0.1) {
           console.log(`⏩ Dual: Sync Seek ${playerTime.toFixed(1)} -> ${currentTime.toFixed(1)}`);
 
           videoPlayerRef.current.seekTo(currentTime, true);
