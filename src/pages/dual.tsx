@@ -1,11 +1,24 @@
+/**
+ * Dual Screen (2 หน้าจอ) - DJ Mode
+ *
+ * Second screen that syncs with main screen using "Pure State Sync" (Store Replication)
+ * - Directly listens to usePlayerStore updates
+ * - No manual command parsing
+ */
+
 import { useEffect, useState, useRef } from 'react';
 import Head from 'next/head';
 import YouTube, { YouTubePlayer } from 'react-youtube';
 import { usePlayerStore } from '../modules/player/stores/usePlayerStore';
 import { useShallow } from 'zustand/react/shallow';
-import { DigitalSignage } from '../modules/tv/components/DigitalSignage';
-import { SmartTVPlayer } from '../modules/tv/components/SmartTVPlayer';
 import {
+  SpeakerXMarkIcon,
+  SpeakerWaveIcon,
+  MusicalNoteIcon,
+  PlayIcon,
+  PauseIcon,
+  ForwardIcon,
+  BackwardIcon,
   ArrowsPointingOutIcon,
   ArrowsPointingInIcon,
 } from '@heroicons/react/24/outline';
@@ -20,14 +33,11 @@ export default function DualScreen() {
     queue,
     currentIndex,
     currentTime,
-    isQueueVisible,
-    notification,
     setCurrentTime,
     playNext,
     playPrevious,
     togglePlay,
-    setMuted,
-    setCurrentIndex
+    setMuted
   } = usePlayerStore(
     useShallow(state => ({
       currentVideo: state.currentVideo,
@@ -37,14 +47,11 @@ export default function DualScreen() {
       queue: state.queue,
       currentIndex: state.currentIndex,
       currentTime: state.currentTime,
-      isQueueVisible: state.isQueueVisible,
-      notification: state.notification,
       setCurrentTime: state.setCurrentTime,
       playNext: state.playNext,
       playPrevious: state.playPrevious,
       togglePlay: state.togglePlay,
-      setMuted: state.setMuted,
-      setCurrentIndex: state.setCurrentIndex
+      setMuted: state.setMuted
     }))
   );
 
@@ -53,7 +60,6 @@ export default function DualScreen() {
   const [forceShowQueue, setForceShowQueue] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showSplash, setShowSplash] = useState(false);
 
   const lastQueueLengthRef = useRef(0);
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -88,11 +94,6 @@ export default function DualScreen() {
       console.log(`🔀 Dual: Source changed to ${currentSource}. Loading...`);
       videoPlayerRef.current.loadVideoById(currentSource);
       currentVideoIdRef.current = currentSource;
-
-      // 🎬 Phase 3: Trigger Cinematic Splash
-      setShowSplash(true);
-      const timer = setTimeout(() => setShowSplash(false), 6000);
-      return () => clearTimeout(timer);
     }
   }, [currentSource]);
 
@@ -127,11 +128,9 @@ export default function DualScreen() {
         const diff = Math.abs(playerTime - currentTime);
 
         // SEEK if difference is significant (> 3s)
-        // We increased threshold to 3s to prevent small jitter from triggering loops
-        // since Dual Screen is now the Master time reporter.
+        // AND ignore jumps to 0 (Circuit Breaker logic)
         if (diff > 3 && currentTime > 0.1) {
           console.log(`⏩ Dual: Sync Seek ${playerTime.toFixed(1)} -> ${currentTime.toFixed(1)}`);
-
           videoPlayerRef.current.seekTo(currentTime, true);
         }
       } catch (e) {
@@ -173,23 +172,6 @@ export default function DualScreen() {
     return () => clearInterval(interval);
   }, [player, isPlaying, setCurrentTime]);
 
-  // 🎬 Handlers for Player Logic
-  const handlePlayerStateChange = (playerState: number) => {
-    // 0 = Ended, 1 = Playing, 2 = Paused
-    if (playerState === 0) {
-      console.log('🎬 Dual: Video ended, playing next...');
-      playNext();
-    }
-    if (playerState === 1 && !isPlaying) togglePlay();
-    if (playerState === 2 && isPlaying) togglePlay();
-  };
-
-  const handlePlayerError = (e: any) => {
-    console.error('❌ Dual: Player Error:', e);
-    // Auto-skip on error to keep the party going
-    setTimeout(() => playNext(), 3000);
-  };
-
 
   // --- UI LOGIC (Queue, Controls) ---
 
@@ -208,7 +190,7 @@ export default function DualScreen() {
     lastQueueLengthRef.current = currentLength;
   }, [queue.length]);
 
-  // 7. AUTOMATED QUEUE HUD: Show at start and end of songs
+  // Check remaining time and show/hide queue
   useEffect(() => {
     if (!player || !isPlaying) {
       setShowQueue(true);
@@ -221,15 +203,13 @@ export default function DualScreen() {
         const remaining = d - t;
         const showAtStart = t < 15;
         const showAtEnd = remaining < 60;
-
-        // Combine manual store signal with automatic logic
-        setShowQueue(isQueueVisible || forceShowQueue || showAtStart || showAtEnd);
+        setShowQueue(forceShowQueue || showAtStart || showAtEnd);
       } catch (error) { }
     }, 1000);
     return () => clearInterval(checkTime);
-  }, [player, isPlaying, forceShowQueue, isQueueVisible]);
+  }, [player, isPlaying, forceShowQueue]);
 
-  // Mouse auto-hide (for Clean Feed experience)
+  // Mouse auto-hide
   useEffect(() => {
     const handleMouseMove = () => {
       setShowControls(true);
@@ -255,63 +235,146 @@ export default function DualScreen() {
     }
   };
 
+  const onPlayerReady = (event: { target: YouTubePlayer }) => {
+    console.log('✅ Dual: YouTube player ready (Pure Store Sync)');
+    setPlayer(event.target);
+    videoPlayerRef.current = event.target;
+    // Start muted ONLY if store is muted, or let effects sync it
+    const s = usePlayerStore.getState();
+    if (s.isMuted) event.target.mute();
+    else event.target.unMute();
+
+    // Initial Load if source exists
+    const state = usePlayerStore.getState();
+    if (state.currentSource) {
+      event.target.loadVideoById(state.currentSource);
+      currentVideoIdRef.current = state.currentSource;
+    }
+  };
+
+  const onPlayerStateChange = (event: { data: number }) => {
+    // 0=Ended, 1=Playing, 2=Paused
+    if (event.data === 0) {
+      console.log('🎬 Dual: Video ended');
+      // Store should handle auto-next via Master Logic?
+      // NO. We are the Master now (Active Player).
+      // Main Screen is Passive (Zombie).
+      // So WE must trigger Next.
+      playNext();
+    }
+    if (event.data === 1 && !isPlaying) togglePlay(); // Sync local play to store
+    if (event.data === 2 && isPlaying) togglePlay(); // Sync local pause to store
+  };
+
+  const opts = {
+    height: '100%',
+    width: '100%',
+    playerVars: {
+      autoplay: 1 as 1,
+      controls: 0 as 0,
+      modestbranding: 1 as 1,
+      rel: 0 as 0,
+      disablekb: 1 as 1,
+    },
+  };
+
+  // Safe Queue Access
+  const currentQVideo = queue[currentIndex];
+
   return (
     <>
       <Head>
         <title>YouOKE - 2 หน้าจอ (Dual Screen)</title>
       </Head>
 
-      {/* Layer 1: Idle Screen (Digital Signage) */}
+      {/* Waiting Screen */}
       {!currentSource ? (
-        <DigitalSignage
-          roomCode="DJ-MODE"
-          template="classic"
-          messages={[
-            "ยินดีต้อนรับสู่ YouOke DJ Professional",
-            "ควบคุมการแสดงผ่านหน้าจอแยกของคุณ",
-            "มอบประสบการณ์การร้องเพลงที่เหนือระดับ",
-            "ขอให้สนุกกับการรังสรรค์เสียงดนตรี!"
-          ]}
-        />
+        <div className="h-screen w-screen bg-black text-white flex items-center justify-center">
+          <div className="text-center">
+            <div className="text-6xl mb-4">🖥️</div>
+            <h1 className="text-3xl font-bold mb-2">2 หน้าจอ (Dual Screen)</h1>
+            <p className="text-gray-400 mb-6">รอเพลงจากหน้าจอหลัก...</p>
+            <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <span>Connected to Store</span>
+            </div>
+          </div>
+        </div>
       ) : (
         /* Player Screen */
         <div className="h-screen w-screen bg-black text-white flex flex-col">
-          <div
-            ref={playerContainerRef}
-            className={`flex-1 relative ${!showControls ? 'cursor-none' : ''}`}
-          >
-            <SmartTVPlayer
-              currentVideo={currentVideo as any}
-              nextVideo={queue[currentIndex + 1] as any}
-              queue={queue as any}
-              isQueueVisible={showQueue}
-              notification={notification as any}
-              isPlaying={isPlaying}
-              isMuted={isMuted}
-              onStateChange={handlePlayerStateChange}
-              onError={handlePlayerError}
-              onPlay={setCurrentIndex}
-              onReady={(p) => {
-                console.log("✅ Dual: SmartTVPlayer Ready (Master Sync Active)");
-                setPlayer(p);
-                videoPlayerRef.current = p;
-
-                // Initial Sync
-                if (isMuted) p.mute();
-                else p.unMute();
-              }}
+          <div ref={playerContainerRef} className="flex-1 relative">
+            <YouTube
+              videoId={currentSource}
+              opts={opts}
+              onReady={onPlayerReady}
+              onStateChange={onPlayerStateChange}
+              className="w-full h-full"
             />
 
-            {/* Minor Utility Overlay (Fullscreen Toggle) */}
-            {showControls && (
-              <div className="absolute top-4 right-4 z-50 transition-opacity duration-300">
-                <div className="bg-black/60 backdrop-blur-md rounded-xl p-1 shadow-2xl border border-white/10 group">
-                  <button
-                    onClick={handleToggleFullscreen}
-                    className="p-3 rounded-lg hover:bg-white/20 transition-all active:scale-90"
-                  >
-                    {isFullscreen ? <ArrowsPointingInIcon className="w-5 h-5 text-white/70" /> : <ArrowsPointingOutIcon className="w-5 h-5 text-white/70" />}
+            {/* Controls Overlay */}
+            {currentSource && showControls && (
+              <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-50 transition-opacity duration-300">
+                <div className="bg-black/80 backdrop-blur-md rounded-full px-6 py-3 flex items-center gap-3 shadow-2xl border border-white/10">
+                  <button onClick={playPrevious} disabled={currentIndex === 0} className="p-3 rounded-full hover:bg-white/20 disabled:opacity-30">
+                    <BackwardIcon className="w-6 h-6 text-white" />
                   </button>
+                  <button onClick={togglePlay} className="p-4 rounded-full bg-primary hover:bg-primary/80">
+                    {isPlaying ? <PauseIcon className="w-7 h-7 text-white" /> : <PlayIcon className="w-7 h-7 text-white" />}
+                  </button>
+                  <button onClick={playNext} disabled={currentIndex >= queue.length - 1} className="p-3 rounded-full hover:bg-white/20 disabled:opacity-30">
+                    <ForwardIcon className="w-6 h-6 text-white" />
+                  </button>
+                  <div className="ml-2 pl-2 border-l border-white/20"></div>
+                  <button onClick={() => setMuted(!isMuted)} className="p-3 rounded-full hover:bg-white/20">
+                    {isMuted ? <SpeakerXMarkIcon className="w-6 h-6 text-white" /> : <SpeakerWaveIcon className="w-6 h-6 text-white" />}
+                  </button>
+                  <button onClick={handleToggleFullscreen} className="p-3 rounded-full hover:bg-white/20">
+                    {isFullscreen ? <ArrowsPointingInIcon className="w-6 h-6 text-white" /> : <ArrowsPointingOutIcon className="w-6 h-6 text-white" />}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Queue Display */}
+            {queue.length > 0 && showQueue && (
+              <div className="absolute top-0 right-0 h-full w-80 lg:w-96 z-50 bg-gradient-to-l from-black/90 via-black/80 to-transparent backdrop-blur-md p-6 overflow-y-auto transition-all duration-500">
+                <div className="space-y-6">
+                  {/* Now Playing */}
+                  {currentQVideo && (
+                    <div>
+                      <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide">กำลังเล่น</p>
+                      <div className="bg-primary/20 border border-primary/30 rounded-xl p-4">
+                        <h2 className="text-lg font-bold mb-1 line-clamp-2">{currentQVideo.title}</h2>
+                        {currentQVideo.author && <p className="text-sm text-gray-300 truncate">{currentQVideo.author}</p>}
+                      </div>
+                    </div>
+                  )}
+                  {/* Next in Queue */}
+                  {queue.length > currentIndex + 1 && (
+                    <div>
+                      <p className="text-xs text-gray-400 mb-3 uppercase tracking-wide flex items-center gap-2">
+                        <MusicalNoteIcon className="w-5 h-5" />
+                        <span>คิวถัดไป</span>
+                        <span className="ml-auto text-xs bg-white/10 px-2 py-0.5 rounded-full">{queue.length - currentIndex - 1} เพลง</span>
+                      </p>
+                      <div className="space-y-2">
+                        {queue.slice(currentIndex + 1, currentIndex + 8).map((video, index) => (
+                          <div key={video.uuid || index} className="bg-white/5 hover:bg-white/10 rounded-lg p-3 transition-all">
+                            <div className="flex items-start gap-3">
+                              <div className="flex-shrink-0 w-6 h-6 bg-primary/20 rounded-full flex items-center justify-center">
+                                <span className="text-primary font-bold text-xs">{index + 1}</span>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-semibold text-sm line-clamp-2 mb-0.5">{video.title}</p>
+                                {video.author && <p className="text-xs text-gray-400 truncate">{video.author}</p>}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
