@@ -500,9 +500,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             )}
                         </button>
 
-                        {/* Cast Button (New Unified Component) */}
-                        <UnifiedCastButton className="h-12 w-12 rounded-2xl bg-gray-100 hover:bg-gray-200 mr-2 border-none" isCircle={false} />
-
                         {/* User Profile (If needed, or kept in sidebar) */}
                         {/* Current layout keeps profile in sidebar, which is fine. */}
 
