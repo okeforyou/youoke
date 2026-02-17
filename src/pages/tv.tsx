@@ -36,11 +36,11 @@ const TVPage = () => {
         if (!router.isReady) return;
 
         const ua = window.navigator.userAgent.toLowerCase();
-        const isMobileDevice = /iphone|ipod|android|blackberry|mini|windows\\sce|palm/i.test(ua);
+        const isMobileDevice = /iphone|ipod|android|blackberry|mini|windows\sce|palm/i.test(ua);
         const isSmartTV = /smart-tv|smarttv|googletv|appletv|hbbtv|pizazz|tizen|webos|viera|magelink/.test(ua);
         const hasRoomParam = !!router.query.room;
 
-        // Mobile devices → redirect to Remote Control app
+        // Mobile → redirect to Remote Control app
         if (isMobileDevice && !isSmartTV) {
             console.log('📱 Smart Routing: Mobile -> /remote');
             const target = hasRoomParam ? `/remote?room=${router.query.room}` : '/remote';
@@ -48,12 +48,9 @@ const TVPage = () => {
             return;
         }
 
-        // PC or Tablet entering /tv manually (no room code) → redirect to Dashboard
-        if (!isSmartTV && !hasRoomParam) {
-            console.log('💻 Smart Routing: PC/Tablet -> /dashboard');
-            router.replace('/');
-            return;
-        }
+        // PC, Tablet, Smart TV → Stay on /tv
+        // No room param → shows Digital Signage + QR Code (for mobile remote flow)
+        // Has room param → connects to room directly (Web Caster from Dashboard)
     }, [router.isReady, router.query.room]);
 
     // 1. Auth & Room Setup
