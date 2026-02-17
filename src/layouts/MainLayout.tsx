@@ -262,35 +262,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
         window.open(youtubeURL, '_blank');
     };
 
-    // Initialize Wireless Cast Service (Receiver/Host)
+    // Wireless Remote Host (Room Logic) - Main Screen acts as a Host
+    // Redundant CastService listener removed to prevent command loops.
+    // roomCode and useRemoteHost handle the connection state already.
     useEffect(() => {
-        if (!roomCode || !mounted) return;
-
-        const isReceiverPage = router.pathname.includes('/tv') ||
-            router.pathname.includes('/dual') ||
-            router.pathname.includes('/monitor');
-
-        let activeService: any = null;
-
-        const initCast = async () => {
-            const { castService } = await import('../plugins/cast/services/CastService');
-            activeService = castService;
-            console.log('🔗 MainLayout: Starting Web Caster Host', roomCode);
-            await castService.initialize(roomCode);
-        };
-
-        // We activate the host service if we are allowed and NOT in receiver-only pages
-        if (allowRemote && !isReceiverPage) {
-            initCast();
+        if (roomCode && mounted) {
+            console.log('🔗 MainLayout: Web Caster Host Active (Room:', roomCode, ')');
         }
-
-        return () => {
-            if (activeService) {
-                console.log('🛑 MainLayout: Stopping Web Caster Host');
-                activeService.cleanup();
-            }
-        };
-    }, [roomCode, allowRemote, mounted]);
+    }, [roomCode, mounted]);
 
     // 📡 Dashboard → TV Command Bridge
     // When castMode is 'smarttv', forward player store changes as Firebase commands

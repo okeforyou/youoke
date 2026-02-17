@@ -82,14 +82,14 @@ export const useRemoteHost = (
         try {
             // Ensure we only sync serializable data
             const safeQueue = (Array.isArray(queue) ? queue : []).map(v => ({
-                id: v.id || v.videoId,
-                videoId: v.videoId || v.id,
+                id: v.id || v.videoId || "",
+                videoId: v.videoId || v.id || "",
                 title: v.title || "Unknown",
                 author: v.author || "Unknown",
                 thumbnail: v.thumbnail || "",
                 sourceType: v.sourceType || 'youtube',
                 addedBy: v.addedBy || null,
-                uuid: v.uuid
+                uuid: v.uuid || ""
             }));
 
             const currentVideo = safeQueue.find(v => (v.id || v.videoId) === currentVideoId);
@@ -109,7 +109,19 @@ export const useRemoteHost = (
                 title: currentVideo?.title || "Unknown Title",
                 isPlaying: !!isPlaying,
                 isFullscreen: !!isFullscreen,
-                notification: usePlayerStore.getState().notification || null,
+                notification: (() => {
+                    const n = usePlayerStore.getState().notification;
+                    if (!n) return null;
+                    return {
+                        ...n,
+                        video: n.video ? {
+                            id: n.video.id || n.video.videoId || "",
+                            videoId: n.video.videoId || n.video.id || "",
+                            title: n.video.title || "Unknown",
+                            thumbnail: n.video.thumbnail || ""
+                        } : null
+                    };
+                })(),
                 roomCode: sessionId,
                 timestamp: Date.now()
             };

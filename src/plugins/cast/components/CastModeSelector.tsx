@@ -83,42 +83,67 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
           )}
 
           {/* 2. หน้าจอทีวี (Smart TV) */}
-          <div className="bg-white dark:bg-zinc-800/50 rounded-2xl border border-gray-100 dark:border-white/10 shadow-sm overflow-hidden p-3.5 space-y-3.5 animate-in slide-in-from-bottom-2 duration-300">
-            <div className="flex items-center gap-3">
-              <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
-                <Tv className="w-4 h-4" />
+          <div className="bg-white dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden">
+            <button
+              onClick={onSelectSmartTV}
+              className="w-full text-left p-3 hover:bg-gray-50 dark:hover:bg-white/5 transition-all group relative"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center group-hover:scale-110 transition-transform text-primary border border-primary/10">
+                  <Tv className="w-4 h-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-[14px] font-bold text-gray-900 dark:text-gray-100">หน้าจอทีวี (Smart TV)</h3>
+                  <p className="text-[10px] text-gray-500 font-medium leading-tight">สแกน/กรอกรหัส เพื่อส่งภาพ</p>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-[14px] font-bold text-gray-900 dark:text-gray-100 uppercase tracking-wide">หน้าจอทีวี (Smart TV)</h3>
-                <p className="text-[10px] text-gray-500 font-medium leading-tight mt-0.5">เปิด play.youoke.com/tv บนทีวีแล้วกรอกรหัส</p>
+            </button>
+            <button
+              onClick={() => setShowTvSteps(!showTvSteps)}
+              className="w-full py-1.5 px-3 border-t border-gray-50 dark:border-white/5 flex items-center justify-between text-[8px] font-bold text-gray-400 hover:text-primary transition-colors uppercase tracking-wider"
+            >
+              <span>วิธีใช้งาน / กรอกรหัส</span>
+              {showTvSteps ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
+            </button>
+
+            {showTvSteps && (
+              <div className="p-3 pt-0 space-y-3 animate-in slide-in-from-top-1 duration-200">
+                <div className="bg-gray-50 dark:bg-black/20 rounded-xl p-2.5 text-[10px] font-medium text-gray-600 dark:text-gray-400 leading-relaxed border border-gray-100 dark:border-white/5">
+                  <div className="flex gap-2">
+                    <span className="w-3 h-3 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 font-bold text-[8px]">1</span>
+                    <p>เปิด <span className="font-bold text-primary">play.youoke.com/tv</span> บนทีวี</p>
+                  </div>
+                  <div className="flex gap-2 mt-1.5">
+                    <span className="w-3 h-3 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 font-bold text-[8px]">2</span>
+                    <p>สแกน QR หรือกรอกรหัสที่ปรากฏ</p>
+                  </div>
+                </div>
+
+                {/* Pairing Code Input */}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    maxLength={4}
+                    placeholder="กรอกเลข 4 หลัก"
+                    value={pairingCode}
+                    onChange={(e) => setPairingCode(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                    className="flex-1 min-w-0 bg-gray-100 dark:bg-white/5 border-none rounded-xl px-3 py-2 text-xs font-bold text-center placeholder:text-gray-400 focus:ring-1 focus:ring-primary/40 focus:bg-white dark:focus:bg-white/10 transition-all outline-none"
+                  />
+                  <button
+                    onClick={() => {
+                      if (pairingCode.length === 4) {
+                        onJoinRoom(pairingCode);
+                        setPairingCode('');
+                      }
+                    }}
+                    disabled={pairingCode.length !== 4}
+                    className="btn btn-primary btn-sm rounded-xl px-4 disabled:opacity-50 min-h-[36px] h-[36px]"
+                  >
+                    เชื่อมต่อ
+                  </button>
+                </div>
               </div>
-            </div>
-
-            {/* Pairing Code Input - Always Visible */}
-            <div className="flex gap-2">
-              <input
-                type="text"
-                maxLength={4}
-                placeholder="กรอกรหัส 4 หลัก"
-                value={pairingCode}
-                onChange={(e) => setPairingCode(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                className="flex-1 min-w-0 bg-gray-50 dark:bg-black/40 border border-gray-100 dark:border-white/10 rounded-xl px-4 py-2 text-sm font-bold text-center placeholder:text-gray-400 focus:ring-2 focus:ring-primary/40 focus:bg-white dark:focus:bg-zinc-800 transition-all outline-none"
-              />
-              <button
-                onClick={() => {
-                  if (pairingCode.length === 4) {
-                    onJoinRoom(pairingCode);
-                    setPairingCode('');
-                  }
-                }}
-                disabled={pairingCode.length !== 4}
-                className="btn btn-primary btn-sm rounded-xl px-5 disabled:opacity-50 min-h-[40px] h-[40px] font-bold"
-              >
-                เชื่อมต่อ
-              </button>
-            </div>
-
-            <p className="text-[9px] text-gray-400 text-center font-medium opacity-60">หรือสแกน QR Code ที่หน้าจอทีวี</p>
+            )}
           </div>
 
           {/* 3. Google Cast (Chromecast) */}
