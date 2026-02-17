@@ -278,44 +278,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const prevVideoRef = useRef<string | null>(null);
     const prevPlayingRef = useRef<boolean>(false);
 
-    useEffect(() => {
-        const isWireless = castMode === 'smarttv' || castMode === 'webmonitor';
-        if (!isWireless || !roomCode) return;
+    // Atomic Bridge REMOVED (Phase 6: Complexity Reduction)
+    // The Dashboard no longer pushes its local state to the TV.
+    // The TV is now controlled exclusively via its own QR code/remote.
 
-        console.log(`📡 Atomic Bridge Activated: ${castMode} (Room: ${roomCode})`);
-
-        let syncTimeout: NodeJS.Timeout | null = null;
-
-        const unsubscribe = usePlayerStore.subscribe((state, prevState) => {
-            // [Loop Prevention] If this change came from a remote, do NOT send it back to TV
-            if (isProcessingRemote.current) return;
-
-            // [Change Detection] Only sync if relevant fields changed (Ignore currentTime spam)
-            const hasQueueChanged = state.queue !== prevState.queue;
-            const hasIndexChanged = state.currentIndex !== prevState.currentIndex;
-            const hasPlayingChanged = state.isPlaying !== prevState.isPlaying;
-
-            if (!hasQueueChanged && !hasIndexChanged && !hasPlayingChanged) return;
-
-            // Debounce Sync to avoid hammering Firebase
-            if (syncTimeout) clearTimeout(syncTimeout);
-
-            syncTimeout = setTimeout(() => {
-                console.log('📡 Bridge: Pushing Atomic Sync State');
-                castCommands.syncState({
-                    queue: state.queue,
-                    currentIndex: state.currentIndex,
-                    isPlaying: state.isPlaying
-                });
-            }, 200); // 200ms debounce
-        });
-
-        return () => {
-            console.log('📡 Bridge Deactivated');
-            if (syncTimeout) clearTimeout(syncTimeout);
-            unsubscribe();
-        };
-    }, [castMode, roomCode, castCommands]);
 
     useEffect(() => {
         setMounted(true);

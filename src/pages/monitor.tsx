@@ -105,15 +105,9 @@ export default function MonitorPage() {
   useEffect(() => {
     setMounted(true);
 
-    // 0. Fresh Start: Clear stale local state to ensure instructions are visible
-    if (typeof window !== 'undefined') {
-        const store = usePlayerStore.getState();
-        if (store.queue.length > 0 || store.currentVideo) {
-            console.log('🧹 Monitor: Cleaning up stale state for fresh pairing...');
-            store.clearQueue();
-            // Also clear some session storage if needed, but keeping room code
-        }
-    }
+    // 0. Persistence restored (Phase 6)
+    // We no longer clear the queue on load to allow for stable standalone operation.
+
 
     // 1. Get Room Code: Priority is Query -> Session -> New Random
     const roomFromQuery = router.query.room as string;

@@ -288,38 +288,9 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
 
     // --- RENDER LOGIC ---
 
-    // 1. DJ Overlay Mode (Controller View)
-    if (showDjOverlay) {
-        return (
-            <div className="w-full h-full relative group bg-black flex flex-col items-center justify-center text-center p-6 space-y-6 overflow-hidden">
-                {/* Background Art (Blurred) */}
-                {currentVideo?.thumbnail && (
-                    <div className="absolute inset-0 opacity-20 blur-xl pointer-events-none">
-                        <img src={currentVideo.thumbnail} className="w-full h-full object-cover" />
-                    </div>
-                )}
+    // DJ Overlay Mode REMOVED (Phase 6)
+    // We now always show the local player on Dashboard.
 
-                <div className="relative z-10 w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center ring-4 ring-primary/20 animate-pulse shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-10 h-10 text-primary">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
-                    </svg>
-                </div>
-
-                <div className="relative z-10 w-full px-4">
-                    <h3 className="text-xl font-bold text-white tracking-tight">โหมด DJ 2 หน้าจอ ทำงานอยู่</h3>
-                    <p className="text-white/50 text-xs mt-2">วิดีโอกำลังเล่นบนจอแยก (Clean Feed)</p>
-                </div>
-
-                {/* Mini Controls for Controller */}
-                {currentVideo && (
-                    <div className="relative z-10 bg-white/5 backdrop-blur-md rounded-xl p-4 w-full border border-white/10 shrink-0">
-                        <p className="text-sm font-bold truncate text-white mb-1">{currentVideo.title}</p>
-                        <p className="text-xs text-white/40 truncate">{currentVideo.author}</p>
-                    </div>
-                )}
-            </div>
-        );
-    }
 
     // 1.5. Disabled Source Mode
     if (!isSourceAllowed) {
@@ -347,103 +318,29 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
             onTouchStart={handleActivity}
         >
             {/* Universal Player Layer (Youtube / MIDI / VCD) */}
-            {/* CRITICAL: Hide player when casting to TV — video & sound play on TV only */}
-            {!showDjOverlay && castMode !== 'smarttv' && (
-                <div className={`absolute inset-0 max-h-full max-w-full z-0 youtube-player-wrapper`}>
-                    <UniversalPlayer
-                        onReady={(target) => {
-                            onReady(target);
-                            if (onPlayerReady) onPlayerReady({ target });
-                        }}
-                        onStateChange={(event) => {
-                            if (onPlayerStateChange) onPlayerStateChange(event);
-                        }}
-                        onEnded={() => {
-                            console.log("🎬 Media ended, playing next...");
-                            if (!isPassive && !showDjOverlay) {
-                                usePlayerStore.getState().playNext();
-                            }
-                        }}
-                        showControls={false}
-                        className="w-full h-full pointer-events-auto"
-                    />
-                </div>
+            <div className={`absolute inset-0 max-h-full max-w-full z-0 youtube-player-wrapper`}>
+                <UniversalPlayer
+                    onReady={(target) => {
+                        onReady(target);
+                        if (onPlayerReady) onPlayerReady({ target });
+                    }}
+                    onStateChange={(event) => {
+                        if (onPlayerStateChange) onPlayerStateChange(event);
+                    }}
+                    onEnded={() => {
+                        console.log("🎬 Media ended, playing next...");
+                        if (!isPassive) {
+                            usePlayerStore.getState().playNext();
+                        }
+                    }}
+                    showControls={false}
+                    className="w-full h-full pointer-events-auto"
+                />
+            </div>
 
-            )}
 
-            {/* Cast Mode Overlay — replaces video when casting to TV */}
-            {castMode === 'smarttv' && (
-                <div className="absolute inset-0 z-10 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col items-center justify-center text-white">
-                    <div className="animate-pulse mb-3">
-                        <Tv size={48} className="text-emerald-400" />
-                    </div>
-                    <p className="text-emerald-400 font-semibold text-lg">📡 กำลัง Cast ไปที่ TV</p>
-                    {currentVideo && (
-                        <p className="text-white/60 text-sm mt-2 text-center px-4 truncate max-w-full">
-                            🎵 {currentVideo.title}
-                        </p>
-                    )}
-                    <p className="text-white/30 text-xs mt-3">เสียงและวิดีโอเล่นที่หน้าจอ TV</p>
-                </div>
-            )}
+            {/* Casting Overlays REMOVED (Phase 6) */}
 
-            {/* AD OVERLAY (If show_ads is TRUE) */}
-            {mounted && showAds && isPlaying && (
-                <div className="absolute inset-x-0 bottom-0 h-16 bg-red-600 text-white z-40 flex items-center justify-between px-4 animate-bounce">
-                    <span className="font-bold text-sm">📢 พื้นที่โฆษณาประชาสัมพันธ์</span>
-                    <button className="btn btn-xs btn-white text-red-600">อัปเกรดเพื่อปิดโฆษณา</button>
-                </div>
-            )}
-
-            {/* Wireless Casting Overlay (Premium Glassmorphism) */}
-            {mounted && castMode !== 'none' && castMode !== 'dual' && (
-                <div className="absolute inset-0 z-40 bg-black/60 backdrop-blur-md flex flex-col items-center justify-center text-center p-6 animate-in fade-in duration-500">
-                    <div className="w-20 h-20 rounded-3xl bg-primary/20 flex items-center justify-center mb-4 border border-primary/30 shadow-2xl shadow-primary/20 animate-pulse">
-                        <Radio className="w-10 h-10 text-primary" />
-                    </div>
-                    <h3 className="text-xl font-black text-white mb-2 tracking-tight">กำลังส่งภาพไร้สาย</h3>
-                    <p className="text-sm font-bold text-white/50 max-w-[240px] leading-relaxed mb-6">
-                        วิดีโอถูกส่งไปแสดงผลที่อุปกรณ์อื่นแล้ว คุณสามารถควบคุมได้จากหน้าเสนอนี้
-                    </p>
-
-                    {/* Instruction Step for Connection */}
-                    <div className="bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-sm max-w-[280px] w-full mb-6">
-                        <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-3">วิธีแสดงผลบนหน้าจออื่น</p>
-                        <div className="space-y-3 text-left">
-                            <div className="flex items-center gap-3">
-                                <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-black text-primary">1</div>
-                                <p className="text-[11px] text-white/80 font-bold leading-tight">
-                                    เปิด <span className="text-primary">/monitor</span> หรือ <span className="text-primary">/tv</span> บนอีกเครื่อง
-                                </p>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-black text-primary">2</div>
-                                <p className="text-[11px] text-white/80 font-bold leading-tight">
-                                    ใส่รหัสห้อง: <span className="text-xl text-primary font-black ml-1 tracking-wider">{roomCode || '----'}</span>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {currentVideo && (
-                        <div className="mt-6 flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl p-2 pr-4 backdrop-blur-sm">
-                            <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 relative">
-                                <Image
-                                    unoptimized
-                                    src={currentVideo.thumbnail || `https://i.ytimg.com/vi/${currentVideo.videoId}/mqdefault.jpg`}
-                                    fill
-                                    className="object-cover"
-                                    alt="Casting"
-                                />
-                            </div>
-                            <div className="text-left min-w-0">
-                                <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-0.5">Now Casting</p>
-                                <p className="text-xs font-bold text-white truncate max-w-[120px]">{currentVideo.title}</p>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            )}
 
             {/* Overlay (Waiting) */}
             {!currentSource && castMode === 'none' && (
