@@ -135,12 +135,8 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
         const currentSrc = usePlayerStore.getState().currentSource;
         const isStorePlaying = usePlayerStore.getState().isPlaying;
 
-        // BLOCK: If DJ Overlay is active, do NOT load video locally
-        // This prevents the "Video load error" and double playing
-        if (showDjOverlay) {
-            console.log("🚫 onReady: DJ Overlay active, skipping local load.");
-            return;
-        }
+        // Local player always loads (Phase 6)
+
 
         if (currentSrc) {
             if (isStorePlaying) {
@@ -197,7 +193,8 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
     }, [currentSource]);
 
     useEffect(() => {
-        if (!playerRef.current || showDjOverlay) return;
+        if (!playerRef.current) return;
+
 
         try {
             const adapter = playerService.getAdapter();
@@ -216,8 +213,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
     }, [isPlaying, showDjOverlay]);
 
     useEffect(() => {
-        if (!playerRef.current || !currentSource || showDjOverlay) {
-            if (showDjOverlay) console.log("🚫 Manual Load Blocked: DJ Overlay Active");
+        if (!playerRef.current || !currentSource) {
             return;
         }
         try {
@@ -343,7 +339,8 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
 
 
             {/* Overlay (Waiting) */}
-            {!currentSource && castMode === 'none' && (
+            {!currentSource && (
+
                 <div className="absolute inset-0 bg-black/80 z-10 flex items-center justify-center text-white/50">
                     <p>รอเลือกเพลง...</p>
                 </div>
