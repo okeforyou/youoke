@@ -201,7 +201,7 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
                             {currentVideo.addedBy && (
                                 <span className="flex items-center gap-1.5 text-xs font-bold text-white/70 bg-black/40 px-3 py-1 rounded-full border border-white/10 backdrop-blur-md">
                                     <UserIcon className="w-3 h-3 text-white/50" />
-                                    {currentVideo.addedBy.displayName || currentVideo.addedBy.name || 'แขก'}
+                                    {currentVideo.addedBy.name || currentVideo.addedBy.displayName || 'แขก'}
                                 </span>
                             )}
                         </div>
@@ -211,10 +211,7 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
                 </div >
             </div >
 
-            {/* 3.1 Connection Badge */}
-            <div className="absolute top-8 right-8 z-50">
-                <ConnectionBadge mode={syncMode} />
-            </div>
+            {/* 3.1 Connection Badge Removed for UI Cleanup */}
 
             {/* 4. Next Up (Dynamic) */}
             {
@@ -249,7 +246,7 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
                             </div>
                             <div className="min-w-0">
                                 <p className="text-white font-medium text-sm truncate">{nextVideo.title}</p>
-                                <p className="text-white/40 text-xs truncate">{nextVideo.addedBy?.displayName || 'แขก'}</p>
+                                <p className="text-white/40 text-xs truncate">{nextVideo.addedBy?.name || nextVideo.addedBy?.displayName || 'แขก'}</p>
                             </div>
                         </div>
                     </div>

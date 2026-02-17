@@ -49,7 +49,7 @@ export const SongSplash: React.FC<SongSplashProps> = ({ video, isVisible }) => {
                         <span className="w-1.5 h-1.5 rounded-full bg-white/20" />
                         <p className="flex items-center gap-2">
                             <span className="text-white/30 text-base">โดย</span>
-                            <span className="text-primary font-bold italic">{video.addedBy?.displayName || 'แขก'}</span>
+                            <span className="text-primary font-bold italic">{video.addedBy?.name || video.addedBy?.displayName || 'แขก'}</span>
                         </p>
                     </div>
                 </div>

@@ -60,7 +60,7 @@ export const QueueList: React.FC<QueueListProps> = ({ queue, isVisible, onPlay, 
                                 <div className="w-4 h-4 rounded-full bg-white/5 flex items-center justify-center">
                                     <UserIcon className="w-2.5 h-2.5 text-white/30" />
                                 </div>
-                                <p className="text-white/30 text-[10px] font-bold truncate tracking-wide">{video.addedBy?.displayName || 'แขก'}</p>
+                                <p className="text-white/30 text-[10px] font-bold truncate tracking-wide">{video.addedBy?.name || video.addedBy?.displayName || 'แขก'}</p>
                             </div>
                         </div>
                     </div>
