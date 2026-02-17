@@ -71,11 +71,23 @@ export function useCommandExecutor({
             const { video } = command.payload;
             const queue = currentState.queue || [];
             const newQueue = [...queue, video];
-            newState = {
-              queue: newQueue,
-              currentVideo: queue.length === 0 ? video : currentState.currentVideo,
-              notification: { type: 'added', video, timestamp: Date.now() }
-            };
+
+            // If queue was empty, auto-play the first song
+            if (queue.length === 0) {
+              newState = {
+                queue: newQueue,
+                currentIndex: 0,
+                currentVideo: video,
+                controls: { ...currentState.controls, isPlaying: true },
+                notification: { type: 'added', video, timestamp: Date.now() }
+              };
+            } else {
+              newState = {
+                queue: newQueue,
+                currentVideo: currentState.currentVideo,
+                notification: { type: 'added', video, timestamp: Date.now() }
+              };
+            }
             break;
           }
 
