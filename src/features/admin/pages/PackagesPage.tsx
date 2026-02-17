@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Head from 'next/head';
 import AdminLayout from '../layouts/AdminLayout';
-import { db } from '../../../../firebase';
+import { db } from '../../../firebase';
 import { collection, onSnapshot, doc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import {
     ArchiveBoxIcon,
