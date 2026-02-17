@@ -48,9 +48,12 @@ const TVPage = () => {
             return;
         }
 
-        // PC, Tablet, Smart TV → STAY on /tv
-        // If no room code, they'll see Digital Signage with room code displayed
-        // If has room code, they connect immediately
+        // PC or Tablet entering /tv manually (no room code) → redirect to Dashboard
+        if (!isSmartTV && !hasRoomParam) {
+            console.log('💻 Smart Routing: PC/Tablet -> /dashboard');
+            router.replace('/');
+            return;
+        }
     }, [router.isReady, router.query.room]);
 
     // 1. Auth & Room Setup
