@@ -107,6 +107,7 @@ export class CastService {
     private async syncLocalStateToFirebase() {
         if (!this.roomCode || !realtimeDb) return;
 
+        const store = usePlayerStore.getState();
 
         const minimalState = {
             queue: store.queue,
