@@ -15,6 +15,7 @@ import { QueueItem } from '../../../modules/player/types';
 
 export function useCastCommands(roomCode: string | null) {
     const lastSentRef = useRef<string>('');
+    const lastSentTimeRef = useRef<number>(0);
 
     const sendCommand = useCallback(async (type: string, payload: any = {}) => {
         if (!roomCode || !realtimeDb) {
@@ -22,10 +23,15 @@ export function useCastCommands(roomCode: string | null) {
             return;
         }
 
-        // Deduplicate rapid-fire sends (same type within 200ms)
-        const dedupeKey = `${type}-${Date.now()}`;
-        if (lastSentRef.current === dedupeKey) return;
-        lastSentRef.current = dedupeKey;
+        const now = Date.now();
+        // Deduplicate rapid-fire matching commands (same type within 500ms)
+        if (lastSentRef.current === type && (now - lastSentTimeRef.current < 500)) {
+            // console.log('🛡️ Cast: Deduplicated rapid command →', type);
+            return;
+        }
+
+        lastSentRef.current = type;
+        lastSentTimeRef.current = now;
 
         const cmdId = `dash_${Date.now()}`;
         const currentUser = auth?.currentUser;

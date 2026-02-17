@@ -179,6 +179,11 @@ export class CastService {
                 case 'PAUSE': store.pause(); break;
                 case 'NEXT': store.playNext(); break;
                 case 'PREVIOUS': store.playPrevious(); break;
+                case 'PLAY_NOW':
+                    if (command.payload?.video) {
+                        store.playVideo(command.payload.video.videoId || command.payload.video.id);
+                    }
+                    break;
                 case 'ADD_TO_QUEUE':
                     console.log('📥 Processing ADD_TO_QUEUE:', command.payload);
                     if (command.payload?.video) {

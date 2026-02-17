@@ -6,7 +6,7 @@ import { useUIStore } from '../stores/useUIStore';
 import { useToast } from '@/context/ToastContext';
 
 export type RemoteCommand = {
-    type: 'PLAY' | 'PAUSE' | 'NEXT' | 'ADD_QUEUE' | 'ADD_TO_QUEUE' | 'SEEK' | 'TOGGLE_FULLSCREEN' | 'SET_FULLSCREEN' | 'REORDER_QUEUE' | 'REMOVE_AT' | 'TOGGLE_QUEUE_OVERLAY';
+    type: 'PLAY' | 'PAUSE' | 'NEXT' | 'ADD_QUEUE' | 'ADD_TO_QUEUE' | 'SEEK' | 'TOGGLE_FULLSCREEN' | 'SET_FULLSCREEN' | 'REORDER_QUEUE' | 'REMOVE_AT' | 'TOGGLE_QUEUE_OVERLAY' | 'PLAY_NOW' | 'SKIP_TO';
     payload?: any;
     timestamp: number;
 };
@@ -226,6 +226,17 @@ export const useRemoteHost = (
                 break;
             case 'NEXT':
                 store.playNext();
+                break;
+            case 'PLAY_NOW':
+                const videoToPlay = cmd.payload?.video || cmd.payload;
+                if (videoToPlay) {
+                    store.playVideo(videoToPlay.videoId || videoToPlay.id);
+                }
+                break;
+            case 'SKIP_TO':
+                if (typeof cmd.payload?.index === 'number') {
+                    store.setCurrentIndex(cmd.payload.index);
+                }
                 break;
             case 'TOGGLE_QUEUE_OVERLAY':
                 useUIStore.getState().toggleQueue();

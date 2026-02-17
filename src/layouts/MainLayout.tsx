@@ -279,38 +279,55 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const prevPlayingRef = useRef<boolean>(false);
 
     useEffect(() => {
-        if (castMode !== 'smarttv') return;
+        const isWireless = castMode === 'smarttv' || castMode === 'webmonitor';
+        if (!isWireless || !roomCode) return;
+
+        console.log(`📡 Bridge Activated: ${castMode} (Room: ${roomCode})`);
 
         // Initialize refs to current state
         const state = usePlayerStore.getState();
         prevQueueRef.current = state.queue;
-        prevVideoRef.current = state.currentVideo?.videoId || null;
+        prevVideoRef.current = state.currentVideo?.videoId || state.currentVideo?.id || null;
         prevPlayingRef.current = state.isPlaying;
+        const prevIndexRef = { current: state.currentIndex };
 
         const unsubscribe = usePlayerStore.subscribe((state, prevState) => {
             // [Loop Prevention] If this change came from a remote, do NOT send it back to TV
             if (isProcessingRemote.current) {
-                // console.log('🛡️ Bridge: Skipping outgoing command (Remote Originated)');
                 return;
             }
 
-            // 1. Queue changed (new song added)
-            if (state.queue.length > prevQueueRef.current.length) {
-                const newItem = state.queue[state.queue.length - 1];
-                if (newItem) {
-                    console.log('📡 Bridge: New song added →', newItem.title);
-                    castCommands.addToQueue(newItem);
+            // 1. Queue Length changed
+            if (state.queue.length !== prevQueueRef.current.length) {
+                // Song Added
+                if (state.queue.length > prevQueueRef.current.length) {
+                    const newItem = state.queue[state.queue.length - 1];
+                    if (newItem) {
+                        console.log('📡 Bridge: New song added →', newItem.title);
+                        castCommands.addToQueue(newItem);
+                    }
+                }
+                // Song Removed or playNext (Queue shrunk)
+                else {
+                    console.log('📡 Bridge: Queue mutated, syncing new order');
+                    castCommands.reorderQueue(state.queue);
                 }
             }
 
-            // 2. Current video changed (song switch)
-            const currentVideoId = state.currentVideo?.videoId || null;
+            // 2. Current Index changed (Explicit NEXT or SKIP_TO)
+            if (state.currentIndex !== prevIndexRef.current) {
+                console.log('📡 Bridge: Index changed →', state.currentIndex);
+                castCommands.skipTo(state.currentIndex);
+            }
+
+            // 3. Current video changed (Fallback for direct plays)
+            const currentVideoId = state.currentVideo?.videoId || state.currentVideo?.id || null;
             if (currentVideoId && currentVideoId !== prevVideoRef.current) {
                 console.log('📡 Bridge: Video changed →', state.currentVideo?.title);
                 castCommands.playNow(state.currentVideo!);
             }
 
-            // 3. Play/Pause changed
+            // 4. Play/Pause changed
             if (state.isPlaying !== prevPlayingRef.current) {
                 if (state.isPlaying) {
                     console.log('📡 Bridge: Play');
@@ -325,10 +342,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
             prevQueueRef.current = state.queue;
             prevVideoRef.current = currentVideoId;
             prevPlayingRef.current = state.isPlaying;
+            prevIndexRef.current = state.currentIndex;
         });
 
-        return () => unsubscribe();
-    }, [castMode, castCommands]);
+        return () => {
+            console.log('📡 Bridge Deactivated');
+            unsubscribe();
+        };
+    }, [castMode, roomCode, castCommands]);
 
     useEffect(() => {
         setMounted(true);
