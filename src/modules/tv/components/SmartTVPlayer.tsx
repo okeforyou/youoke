@@ -53,16 +53,21 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
 
     // Effect: Handle Notification
     useEffect(() => {
-        if (notification && notification.timestamp > (Date.now() - 5000)) {
+        // Only show if notification is fresh (within last 5 seconds)
+        const isFresh = notification && notification.timestamp > (Date.now() - 5000);
+
+        if (isFresh) {
             setActiveNotification({
                 message: notification.type === 'added' ? 'เพิ่มเพลงใหม่แล้ว' : 'เพลงถัดไป',
                 sub: notification.video.title,
                 type: notification.type
             });
-            const timer = setTimeout(() => setActiveNotification(null), 5000);
+            const timer = setTimeout(() => setActiveNotification(null), 4000); // Hide after 4s
             return () => clearTimeout(timer);
+        } else {
+            setActiveNotification(null);
         }
-    }, [notification]);
+    }, [notification?.timestamp]); // Depend only on timestamp for stability
 
     // YouTube Options
     const opts = {
@@ -137,8 +142,8 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
 
     if (!currentVideo) {
         return (
-            <div className="w-full h-full bg-black flex items-center justify-center text-white/20">
-                <MusicalNoteIcon className="w-20 h-20 animate-pulse" />
+            <div className="w-full h-full bg-black flex items-center justify-center text-white/10">
+                <MusicalNoteIcon className="w-16 h-16 animate-pulse" />
             </div>
         );
     }
@@ -167,10 +172,10 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
 
             {/* 3. Info Toast (Now Playing) */}
             <div className={clsx(
-                "absolute bottom-0 left-0 right-0 z-30 transition-all duration-700 ease-out p-12",
+                "absolute bottom-0 left-0 right-0 z-30 transition-all duration-700 ease-out p-10",
                 showInfoToast ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
             )}>
-                <div className="flex items-end gap-6 max-w-5xl">
+                <div className="flex items-end gap-5 max-w-4xl">
                     <div className="w-24 h-24 rounded-2xl shadow-2xl overflow-hidden border border-white/10 relative shrink-0 bg-zinc-900">
                         {currentVideo.videoId ? (
                             <Image
@@ -190,17 +195,17 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
                         )}
                     </div >
                     <div className="pb-1 min-w-0 flex-1">
-                        <div className="flex items-center gap-3 mb-3">
-                            <span className="bg-primary px-3 py-1 rounded text-[10px] font-black uppercase tracking-wider text-white shadow-lg shadow-primary/40 animate-pulse">กำลังเล่น</span>
+                        <div className="flex items-center gap-2.5 mb-2.5">
+                            <span className="bg-primary px-2.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider text-white shadow-lg shadow-primary/40 animate-pulse">กำลังเล่น</span>
                             {currentVideo.addedBy && (
-                                <span className="flex items-center gap-1.5 text-xs font-bold text-white/70 bg-black/40 px-3 py-1 rounded-full border border-white/10 backdrop-blur-md">
-                                    <UserIcon className="w-3 h-3 text-white/50" />
+                                <span className="flex items-center gap-1.5 text-[11px] font-bold text-white/60 bg-black/40 px-2.5 py-0.5 rounded-full border border-white/5 backdrop-blur-md">
+                                    <UserIcon className="w-2.5 h-2.5 text-white/40" />
                                     {currentVideo.addedBy.name || currentVideo.addedBy.displayName || 'แขก'}
                                 </span>
                             )}
                         </div>
-                        <h2 className="text-3xl font-black text-white leading-tight drop-shadow-2xl truncate pr-10 tracking-tighter">{currentVideo.title}</h2>
-                        <p className="text-lg text-white/60 mt-2 font-medium truncate drop-shadow-md">{currentVideo.author || ''}</p>
+                        <h2 className="text-2xl font-black text-white leading-tight drop-shadow-2xl truncate pr-10 tracking-tighter">{currentVideo.title}</h2>
+                        <p className="text-base text-white/60 mt-1.5 font-medium truncate drop-shadow-md">{currentVideo.author || ''}</p>
                     </div>
                 </div >
             </div >
