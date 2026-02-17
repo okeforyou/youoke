@@ -266,7 +266,74 @@ export default function ConfigPage() {
                         </div>
                     )}
 
-                    {activeTab === 'marketing' && <UpsellConfigPanel />}
+                    {activeTab === 'marketing' && (
+                        <div className="space-y-6">
+                            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+                                <h3 className="font-bold text-gray-900 pb-2 flex items-center gap-2 border-b">
+                                    <MegaphoneIcon className="w-5 h-5 text-primary" />
+                                    จัดการโฆษณา (Ad Settings)
+                                </h3>
+                                <div className="p-4 bg-red-50 border border-red-100 rounded-xl">
+                                    <ConfigToggle
+                                        label="แสดงโฆษณา (พื้นที่ประชาสัมพันธ์)"
+                                        description="แสดงแถบสีแดง '📢 พื้นที่โฆษณาประชาสัมพันธ์' ในหน้าเครื่องเล่นสำหรับสมาชิกฟรี"
+                                        color="toggle-error"
+                                        checked={localConfig.membership?.free?.show_ads ?? true}
+                                        onChange={(val) => setLocalConfig({
+                                            ...localConfig,
+                                            membership: {
+                                                ...localConfig.membership,
+                                                free: { ...localConfig.membership?.free, show_ads: val }
+                                            }
+                                        })}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+                                <h3 className="font-bold text-gray-900 pb-2 flex items-center gap-2 border-b">
+                                    <MusicalNoteIcon className="w-5 h-5 text-primary" />
+                                    จำกัดการใช้งานหน้าเว็บ (Dashboard Limits)
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold text-gray-600">โควต้าเพลงฟรี (ต่อวัน)</label>
+                                        <input
+                                            type="number"
+                                            className="input input-bordered w-full"
+                                            value={localConfig.membership?.free?.max_daily_songs ?? 20}
+                                            onChange={(e) => setLocalConfig({
+                                                ...localConfig,
+                                                membership: {
+                                                    ...localConfig.membership,
+                                                    free: { ...localConfig.membership?.free, max_daily_songs: parseInt(e.target.value) }
+                                                }
+                                            })}
+                                        />
+                                        <p className="text-[10px] text-gray-400">ระบุจำนวนเพลงที่สมาชิก Free ร้องได้ต่อวัน</p>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold text-gray-600">จำกัดความยาววิดีโอ (วินาที)</label>
+                                        <input
+                                            type="number"
+                                            className="input input-bordered w-full"
+                                            value={localConfig.membership?.free?.max_duration_sec ?? 0}
+                                            onChange={(e) => setLocalConfig({
+                                                ...localConfig,
+                                                membership: {
+                                                    ...localConfig.membership,
+                                                    free: { ...localConfig.membership?.free, max_duration_sec: parseInt(e.target.value) }
+                                                }
+                                            })}
+                                        />
+                                        <p className="text-[10px] text-gray-400">0 = ไม่จำกัดความยาว</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <UpsellConfigPanel />
+                        </div>
+                    )}
 
                     {activeTab === 'login' && (
                         <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">

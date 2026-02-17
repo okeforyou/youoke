@@ -55,6 +55,22 @@ export const DEFAULT_CONFIG = {
         youtube: { useApi: false, apiKeys: [] },
         spotify: { enabled: true, clientId: "", clientSecret: "", refreshToken: "" }
     },
+    membership: {
+        free: {
+            max_daily_songs: 20,
+            max_duration_sec: 0,
+            allow_cast: false,
+            allow_remote: true,
+            show_ads: true,
+        },
+        premium: {
+            max_daily_songs: 9999,
+            max_duration_sec: 0,
+            allow_cast: true,
+            allow_remote: true,
+            show_ads: false,
+        },
+    },
     payment: {
         bankAccount: { bankName: "", accountName: "", accountNumber: "", branch: "" },
         promptPay: { id: "", name: "" }
