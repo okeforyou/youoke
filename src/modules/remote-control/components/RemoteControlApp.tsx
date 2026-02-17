@@ -550,10 +550,10 @@ export default function RemoteControlApp() {
         >
             <div className="h-full overflow-y-auto pb-24" style={{ overscrollBehavior: 'none', touchAction: 'pan-y' }}>
 
-                {/* UNIFIED Sticky Header & Search Block (No Internal Borders) */}
-                <div className={`sticky top-0 z-30 transition-colors shadow-xl pt-[env(safe-area-inset-top)] ${theme === 'dark' ? 'bg-stone-900 border-none' : 'bg-white border-b border-gray-100'}`}>
+                {/* UNIFIED Sticky Header & Search Block */}
+                <div className={`sticky top-0 z-30 transition-colors shadow-xl ${theme === 'dark' ? 'bg-stone-900 border-none' : 'bg-white border-b border-gray-100'}`} style={{ paddingTop: 'env(safe-area-inset-top, 12px)' }}>
                     {/* Room Info Section */}
-                    <div className="px-4 py-3 flex items-center justify-between gap-2 overflow-hidden">
+                    <div className="px-4 py-3 flex items-center justify-between gap-2">
                         <div className="flex-shrink-0 min-w-0">
                             <h1 className={`text-base font-black tracking-tight flex items-center gap-1.5 truncate ${theme === 'dark' ? 'text-white' : 'text-black'}`}>
                                 <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${status === 'connected' ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.6)]' : 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.6)]'}`}></span>
