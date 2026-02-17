@@ -9,6 +9,10 @@
 import { useEffect, useState, useRef } from 'react';
 import Head from 'next/head';
 import YouTube, { YouTubePlayer } from 'react-youtube';
+import { useRouter } from 'next/router';
+import { ref, onValue, off } from 'firebase/database';
+import { realtimeDb } from '@/firebase';
+import clsx from 'clsx';
 import { usePlayerStore } from '../modules/player/stores/usePlayerStore';
 import { useShallow } from 'zustand/react/shallow';
 import {
@@ -22,8 +26,13 @@ import {
   ArrowsPointingOutIcon,
   ArrowsPointingInIcon,
 } from '@heroicons/react/24/outline';
+import { ConnectionBadge } from '../modules/tv/components/ConnectionBadge';
 
 export default function DualScreen() {
+  const router = useRouter();
+  const { room: roomCode } = router.query;
+  const [syncMode, setSyncMode] = useState<'local' | 'remote'>('local');
+
   // Bind to PlayerStore (Single Source of Truth)
   const {
     currentVideo,
@@ -60,6 +69,7 @@ export default function DualScreen() {
   const [forceShowQueue, setForceShowQueue] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isPassive, setIsPassive] = useState(false);
 
   const lastQueueLengthRef = useRef(0);
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -71,9 +81,13 @@ export default function DualScreen() {
 
   // 1. Initial Setup
   useEffect(() => {
-    // Mark dual mode as active
     localStorage.setItem('youoke-dual-active', 'true');
-    console.log('📺 Dual Screen: Connected to PlayerStore (State Sync Mode)');
+    console.log('📺 Dual Screen: Initializing...');
+
+    if (roomCode) {
+      setSyncMode('remote');
+      console.log(`🌐 Dual Screen: Switching to REMOTE mode (Room: ${roomCode})`);
+    }
 
     const handleBeforeUnload = () => {
       localStorage.removeItem('youoke-dual-active');
@@ -83,7 +97,28 @@ export default function DualScreen() {
       localStorage.removeItem('youoke-dual-active');
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, []);
+  }, [roomCode]);
+
+  // 1.1 Remote Sync (Firebase)
+  useEffect(() => {
+    if (!roomCode || !realtimeDb) return;
+
+    const stateRef = ref(realtimeDb, `rooms/${roomCode}/state`);
+    const unsubscribe = onValue(stateRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data && data.timestamp) {
+        console.log('📥 Dual (Remote): Received State Update', data.currentVideo?.title);
+        // Sync to local store so other effects can handle video/time sync
+        usePlayerStore.getState().syncState(data);
+      }
+    });
+
+    return () => {
+      off(stateRef);
+      unsubscribe();
+    };
+  }, [roomCode]);
+
 
   // 2. VIDEO SYNC: Watch `currentSource`
   useEffect(() => {
@@ -150,7 +185,9 @@ export default function DualScreen() {
   // 6. HEARTBEAT: Update Store Time (Master Mode)
   // Since this IS the active player, it must report time to the store
   useEffect(() => {
-    if (!player || !isPlaying) return;
+    // Only broadcast heartbeat if in LOCAL mode. 
+    // In REMOTE mode, the Host is authoritative.
+    if (!player || !isPlaying || syncMode === 'remote') return;
 
     const interval = setInterval(async () => {
       try {
@@ -170,7 +207,7 @@ export default function DualScreen() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [player, isPlaying, setCurrentTime]);
+  }, [player, isPlaying, setCurrentTime, syncMode]);
 
 
   // --- UI LOGIC (Queue, Controls) ---
@@ -233,6 +270,10 @@ export default function DualScreen() {
       await document.exitFullscreen();
       setIsFullscreen(false);
     }
+  };
+
+  const togglePassive = () => {
+    setIsPassive(!isPassive);
   };
 
   const onPlayerReady = (event: { target: YouTubePlayer }) => {
@@ -303,6 +344,10 @@ export default function DualScreen() {
       ) : (
         /* Player Screen */
         <div className="h-screen w-screen bg-black text-white flex flex-col">
+          {/* Connection Status Badge */}
+          <div className="absolute top-6 right-6 z-[60]">
+            <ConnectionBadge mode={syncMode} />
+          </div>
           <div ref={playerContainerRef} className="flex-1 relative">
             <YouTube
               videoId={currentSource}
@@ -332,12 +377,24 @@ export default function DualScreen() {
                   <button onClick={handleToggleFullscreen} className="p-3 rounded-full hover:bg-white/20">
                     {isFullscreen ? <ArrowsPointingInIcon className="w-6 h-6 text-white" /> : <ArrowsPointingOutIcon className="w-6 h-6 text-white" />}
                   </button>
+                  <button
+                    onClick={togglePassive}
+                    className={clsx(
+                      "p-3 rounded-full transition-colors",
+                      isPassive ? "bg-primary text-white" : "hover:bg-white/20 text-white/60"
+                    )}
+                    title={isPassive ? "ปิดโหมด Passive" : "เปิดโหมด Passive (ซ่อน UI ทั้งหมด)"}
+                  >
+                    <div className="flex flex-col items-center">
+                      <span className="text-[8px] font-black uppercase">Passive</span>
+                    </div>
+                  </button>
                 </div>
               </div>
             )}
 
             {/* Queue Display */}
-            {queue.length > 0 && showQueue && (
+            {queue.length > 0 && showQueue && !isPassive && (
               <div className="absolute top-0 right-0 h-full w-80 lg:w-96 z-50 bg-gradient-to-l from-black/90 via-black/80 to-transparent backdrop-blur-md p-6 overflow-y-auto transition-all duration-500">
                 <div className="space-y-6">
                   {/* Now Playing */}

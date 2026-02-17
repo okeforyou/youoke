@@ -7,6 +7,7 @@ import { VideoItem } from '../types';
 import { QueueList } from './QueueList';
 import { SongSplash } from './SongSplash';
 import { NotificationToast } from './NotificationToast';
+import { ConnectionBadge } from './ConnectionBadge';
 
 export interface SmartTVPlayerProps {
     currentVideo: VideoItem | null;
@@ -21,6 +22,8 @@ export interface SmartTVPlayerProps {
     queue?: VideoItem[];
     isQueueVisible?: boolean;
     notification?: { type: 'added' | 'upnext', video: VideoItem, timestamp: number } | null;
+    syncMode?: 'local' | 'remote';
+    isPassive?: boolean;
 }
 
 export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
@@ -35,7 +38,9 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
     // New Props
     queue = [],
     isQueueVisible = false,
-    notification = null
+    notification = null,
+    syncMode = 'remote',
+    isPassive = false
 }) => {
     const playerRef = useRef<YouTubePlayer | null>(null);
     const [showInfoToast, setShowInfoToast] = useState(false);
@@ -192,6 +197,11 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
                 </div >
             </div >
 
+            {/* 3.1 Connection Badge */}
+            <div className="absolute top-8 right-8 z-50">
+                <ConnectionBadge mode={syncMode} />
+            </div>
+
             {/* 4. Next Up (Dynamic) */}
             {
                 nextVideo && showInfoToast && (
@@ -233,7 +243,7 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
             }
 
             {/* 5. Queue Overlay (Beautiful List with Glassmorphism) */}
-            <QueueList queue={queue} isVisible={isQueueVisible} onPlay={onPlay} />
+            <QueueList queue={queue} isVisible={isQueueVisible} onPlay={onPlay} isPassive={isPassive} />
 
             {/* 6. Song Splash Screen (Beautiful Transition) */}
             <SongSplash video={currentVideo} isVisible={showSplash} />

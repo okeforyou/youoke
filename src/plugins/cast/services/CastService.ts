@@ -47,7 +47,7 @@ export class CastService {
         if (this.commandListenerOff) this.commandListenerOff();
 
         if (this.roomCode && realtimeDb) {
-            const commandsRef = ref(realtimeDb, `antigravity_rooms/${this.roomCode}/commands`);
+            const commandsRef = ref(realtimeDb, `rooms/${this.roomCode}/commands`);
             off(commandsRef);
         }
 
@@ -65,7 +65,7 @@ export class CastService {
 
         try {
             // Use SDK for initial check to avoid REST latency
-            const roomRef = ref(realtimeDb, `antigravity_rooms/${roomCode}`);
+            const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
             const snapshot = await get(roomRef);
 
             if (!snapshot.exists()) {
@@ -107,8 +107,6 @@ export class CastService {
     private async syncLocalStateToFirebase() {
         if (!this.roomCode || !realtimeDb) return;
 
-        const store = usePlayerStore.getState();
-
 
         const minimalState = {
             queue: store.queue,
@@ -121,11 +119,12 @@ export class CastService {
             },
             layoutMode: store.layoutMode,
             isQueueVisible: store.isQueueVisible,
+            notification: store.notification, // Sync toasts
             timestamp: Date.now()
         };
 
         // Use SDK set/update for reliability
-        const stateRef = ref(realtimeDb, `antigravity_rooms/${this.roomCode}/state`);
+        const stateRef = ref(realtimeDb, `rooms/${this.roomCode}/state`);
         // update() is safer than set() to merge keys if structure changes slightly, but we want authoritative override here.
         set(stateRef, minimalState).catch(e => console.warn('Sync failed', e));
     }
@@ -134,7 +133,7 @@ export class CastService {
         if (!realtimeDb || !this.roomCode) return;
 
         console.log("👂 Listening for remote commands...");
-        const commandsRef = ref(realtimeDb, `antigravity_rooms/${this.roomCode}/commands`);
+        const commandsRef = ref(realtimeDb, `rooms/${this.roomCode}/commands`);
 
         // Listen to last 20 commands and filter locally for robustness
         const pendingQuery = query(commandsRef, limitToLast(20));
@@ -163,7 +162,7 @@ export class CastService {
 
     private async markCommandComplete(cmdId: string) {
         if (!realtimeDb || !this.roomCode) return;
-        const statusRef = ref(realtimeDb, `antigravity_rooms/${this.roomCode}/commands/${cmdId}/status`);
+        const statusRef = ref(realtimeDb, `rooms/${this.roomCode}/commands/${cmdId}/status`);
         set(statusRef, 'completed').catch(e => console.error('Failed to mark command complete', e));
     }
 

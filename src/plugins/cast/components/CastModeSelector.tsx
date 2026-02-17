@@ -15,13 +15,14 @@ interface CastModeSelectorProps {
   isOpen: boolean;
   onClose: () => void;
   isCastAvailable: boolean;
-  isMobile?: boolean; // Mobile detection
+  isMobile?: boolean;
   onSelectWebMonitor: () => void;
   onSelectSmartTV: () => void;
   onSelectDual: () => void;
   onSelectDj: () => void;
   onSelectGoogleCast: () => void;
   onSelectYouTube: () => void;
+  onJoinRoom: (code: string) => void;
 }
 
 export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
@@ -29,12 +30,16 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
   onClose,
   isCastAvailable,
   isMobile = false,
+  onSelectWebMonitor,
   onSelectSmartTV,
+  onSelectDual,
   onSelectDj,
   onSelectGoogleCast,
   onSelectYouTube,
+  onJoinRoom
 }) => {
   const [showTvSteps, setShowTvSteps] = useState(false);
+  const [pairingCode, setPairingCode] = useState('');
 
   if (!isOpen) return null;
 
@@ -102,7 +107,7 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
             </button>
 
             {showTvSteps && (
-              <div className="p-3 pt-0 space-y-2 animate-in slide-in-from-top-1 duration-200">
+              <div className="p-3 pt-0 space-y-3 animate-in slide-in-from-top-1 duration-200">
                 <div className="bg-gray-50 dark:bg-black/20 rounded-xl p-2.5 text-[10px] font-medium text-gray-600 dark:text-gray-400 leading-relaxed border border-gray-100 dark:border-white/5">
                   <div className="flex gap-2">
                     <span className="w-3 h-3 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 font-bold text-[8px]">1</span>
@@ -112,6 +117,30 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
                     <span className="w-3 h-3 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 font-bold text-[8px]">2</span>
                     <p>สแกน QR หรือกรอกรหัสที่ปรากฏ</p>
                   </div>
+                </div>
+
+                {/* Pairing Code Input */}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    maxLength={4}
+                    placeholder="กรอกเลข 4 หลัก"
+                    value={pairingCode}
+                    onChange={(e) => setPairingCode(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                    className="flex-1 min-w-0 bg-gray-100 dark:bg-white/5 border-none rounded-xl px-3 py-2 text-xs font-bold text-center placeholder:text-gray-400 focus:ring-1 focus:ring-primary/40 focus:bg-white dark:focus:bg-white/10 transition-all outline-none"
+                  />
+                  <button
+                    onClick={() => {
+                      if (pairingCode.length === 4) {
+                        onJoinRoom(pairingCode);
+                        setPairingCode('');
+                      }
+                    }}
+                    disabled={pairingCode.length !== 4}
+                    className="btn btn-primary btn-sm rounded-xl px-4 disabled:opacity-50"
+                  >
+                    เชื่อมต่อ
+                  </button>
                 </div>
               </div>
             )}

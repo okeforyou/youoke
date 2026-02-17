@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/router';
-import { ref, onValue, off, set, update } from 'firebase/database';
+import { ref, onValue, off, set, update, onDisconnect } from 'firebase/database';
 import { signInAnonymously } from 'firebase/auth';
 import { realtimeDb, auth } from '@/firebase';
 // import { useCommandExecutor } from '../modules/tv/hooks/useCommandExecutor'; 
@@ -30,6 +30,32 @@ const TVPage = () => {
     const [player, setPlayer] = useState<any>(null);
     const [isPlayerReady, setIsPlayerReady] = useState(false);
     const [connectedCount, setConnectedCount] = useState(0);
+
+    // 0. Smart Entry Redirect Logic
+    useEffect(() => {
+        if (!router.isReady) return;
+
+        const ua = window.navigator.userAgent.toLowerCase();
+        const isMobileDevice = /iphone|ipod|android|blackberry|mini|windows\sce|palm/i.test(ua);
+        // iPad is tricky as it pretends to be Mac, but for our purpose, Tablet/iPad with NO room param -> Dashboard
+        const isTablet = /ipad/i.test(ua) || (navigator.maxTouchPoints > 1 && !/windows/i.test(ua));
+        const isSmartTV = /smart-tv|smarttv|googletv|appletv|hbbtv|pizazz|tizen|webos|viera|magelink/.test(ua);
+        const hasRoomParam = !!router.query.room;
+
+        if (isMobileDevice && !isSmartTV) {
+            console.log('📱 Smart Routing: Mobile -> /remote');
+            const target = hasRoomParam ? `/remote?room=${router.query.room}` : '/remote';
+            router.replace(target);
+            return;
+        }
+
+        // PC or Tablet entering /tv manually (no room code) likely wants to control
+        if (!isSmartTV && !hasRoomParam) {
+            console.log('💻 Smart Routing: PC/Tablet -> /dashboard');
+            router.replace('/');
+            return;
+        }
+    }, [router.isReady, router.query.room]);
 
     // 1. Auth & Room Setup
     useEffect(() => {
@@ -65,25 +91,29 @@ const TVPage = () => {
 
         const roomRef = ref(realtimeDb, `rooms/${roomCode}`);
 
-        // Ensure Room Exists
-        set(roomRef, {
-            hostId: 'smart-tv',
-            isHost: true,
-            type: 'tv',
-            state: {
-                queue: [],
-                currentIndex: 0,
-                currentVideo: null,
-                controls: { isPlaying: false, isMuted: true },
-            },
-            updatedAt: Date.now(),
-        }).catch(err => console.error("Room init failed:", err));
+        // Initialize Connection Record
+        const tvConnRef = ref(realtimeDb, `rooms/${roomCode}/connected/tv-${Math.random().toString(36).substr(2, 5)}`);
+        set(tvConnRef, true).then(() => {
+            // Remove on disconnect
+            onDisconnect(tvConnRef).remove();
+        });
 
-        // Listen for Updates (State)
+        // Listen for Updates (State) from Host
         const stateRef = ref(realtimeDb, `rooms/${roomCode}/state`);
         const unsubscribeState = onValue(stateRef, (snapshot) => {
             const data = snapshot.val();
-            if (data) setState(data);
+            if (data && data.timestamp) {
+                console.log('📥 TV: Received Host State Update', data.currentVideo?.title);
+                setState(prev => ({
+                    ...prev,
+                    ...data,
+                    // Keep local controls that might be UI specific, but sync core playback
+                    controls: {
+                        ...prev.controls,
+                        ...data.controls
+                    }
+                }));
+            }
         });
 
         // Listen for Connections (Remotes)
@@ -195,6 +225,8 @@ const TVPage = () => {
                     notification={state.notification}
                     isPlaying={state.controls.isPlaying}
                     isMuted={state.controls.isMuted}
+                    syncMode="remote"
+                    isPassive={true}
                     onStateChange={handlePlayerStateChange}
                     onError={handlePlayerError}
                     onReady={(p: any) => {

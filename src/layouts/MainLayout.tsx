@@ -184,12 +184,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
     const handleCastSelectSmartTV = () => {
         setCastModalOpen(false);
+        useUIStore.getState().setIsCastingLocal(false); // Hosting for remote
         const win = window.open(`/tv?room=${roomCode}`, 'YouOkePremiumTV', 'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no');
         if (win) win.focus();
     };
 
     const handleCastSelectDual = () => {
         setCastModalOpen(false);
+        useUIStore.getState().setIsCastingLocal(true);
         localStorage.setItem('youoke-dual-active', 'true');
         window.open('/dual?mode=dj', 'YouOkeDual', 'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no');
     };
@@ -216,6 +218,16 @@ export default function MainLayout({ children }: MainLayoutProps) {
         connectGoogleCast(castPlaylist);
     };
 
+    const handleJoinRoom = (code: string) => {
+        setPartyPIN(code);
+        localStorage.setItem('youoke_party_pin', code);
+        setCastModalOpen(false);
+        useUIStore.getState().setIsCastingLocal(false);
+
+        // Show success notification
+        addToast(`เชื่อมต่อห้อง ${code} สำเร็จ!`);
+    };
+
     const handleCastSelectYouTube = () => {
         setCastModalOpen(false);
         if (queue.length === 0) {
@@ -227,32 +239,32 @@ export default function MainLayout({ children }: MainLayoutProps) {
         window.open(youtubeURL, '_blank');
     };
 
-    // Initialize Wireless Cast Service (Receiver)
+    // Initialize Wireless Cast Service (Receiver/Host)
     useEffect(() => {
-        if (!roomCode) return;
+        if (!roomCode || !mounted) return;
+
+        let activeService: any = null;
 
         const initCast = async () => {
             const { castService } = await import('../plugins/cast/services/CastService');
-            // Check if service is already initialized with this room
-            // But initialize() handles cleanup internally, so it's safe to call.
-            console.log('🔗 MainLayout: Connecting to Remote Room', roomCode);
+            activeService = castService;
+            console.log('🔗 MainLayout: Starting Web Caster Host', roomCode);
             await castService.initialize(roomCode);
         };
 
+        // We activate the host service if we are allowed and NOT in dual (HDMI) mode
+        // Or actually, we can always host, but we only really need it for remote TVs.
         if (allowRemote) {
-            // initCast(); // DISABLE AUTO-INIT to prevent Guest Login Loop
+            initCast();
         }
 
         return () => {
-            // Optional: We might want to keep it alive if navigating within the app? 
-            // But MainLayout unmounts rarely (only on full refresh or page change if not in _app).
-            // Actually, MainLayout re-renders but doesn't unmount on page transitions in Next.js? 
-            // Better to cleanup to avoid memory leaks or double listeners.
-            import('../plugins/cast/services/CastService').then(({ castService }) => {
-                castService.cleanup();
-            });
+            if (activeService) {
+                console.log('🛑 MainLayout: Stopping Web Caster Host');
+                activeService.cleanup();
+            }
         };
-    }, [roomCode, allowRemote]);
+    }, [roomCode, allowRemote, mounted]);
 
     useEffect(() => {
         setMounted(true);
@@ -743,6 +755,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 onSelectDj={handleCastSelectDual}
                 onSelectGoogleCast={handleCastSelectGoogle}
                 onSelectYouTube={handleCastSelectYouTube}
+                onJoinRoom={handleJoinRoom}
             />
 
             {/* Global Limit Reached Modal */}

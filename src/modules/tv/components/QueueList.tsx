@@ -8,9 +8,10 @@ interface QueueListProps {
     queue: VideoItem[];
     isVisible: boolean;
     onPlay?: (index: number) => void;
+    isPassive?: boolean;
 }
 
-export const QueueList: React.FC<QueueListProps> = ({ queue, isVisible, onPlay }) => {
+export const QueueList: React.FC<QueueListProps> = ({ queue, isVisible, onPlay, isPassive = false }) => {
     return (
         <div className={clsx(
             "absolute top-0 right-0 bottom-0 w-[450px] bg-black/80 backdrop-blur-[40px] border-l border-white/5 p-10 transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] z-40 flex flex-col shadow-[-40px_0_80px_rgba(0,0,0,0.5)]",
@@ -29,8 +30,11 @@ export const QueueList: React.FC<QueueListProps> = ({ queue, isVisible, onPlay }
                 {queue.slice(1).map((video, idx) => (
                     <div
                         key={idx}
-                        onClick={() => onPlay?.(idx + 1)}
-                        className="flex gap-6 items-center group animate-in slide-in-from-right-10 duration-500 cursor-pointer"
+                        onClick={() => !isPassive && onPlay?.(idx + 1)}
+                        className={clsx(
+                            "flex gap-6 items-center group animate-in slide-in-from-right-10 duration-500",
+                            !isPassive ? "cursor-pointer" : "cursor-default"
+                        )}
                         style={{ animationDelay: `${idx * 100}ms` }}
                     >
                         <div className="relative">

@@ -37,6 +37,9 @@ interface UIState {
 
     musicTheme: 'spotify' | 'youtube';
     setMusicTheme: (theme: 'spotify' | 'youtube') => void;
+
+    isCastingLocal: boolean;
+    setIsCastingLocal: (isCasting: boolean) => void;
 }
 
 
@@ -78,4 +81,7 @@ export const useUIStore = create<UIState>((set) => ({
 
     musicTheme: 'spotify',
     setMusicTheme: (theme) => set({ musicTheme: theme }),
+
+    isCastingLocal: false,
+    setIsCastingLocal: (isCasting) => set({ isCastingLocal: isCasting }),
 }));
