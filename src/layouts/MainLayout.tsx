@@ -179,12 +179,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
     const handleCastSelectWebMonitor = () => {
         setCastModalOpen(false);
+        localStorage.setItem('youoke-dual-active', 'false');
         setShowQRCode(true);
     };
 
     const handleCastSelectSmartTV = () => {
         setCastModalOpen(false);
         useUIStore.getState().setIsCastingLocal(false); // Hosting for remote
+        localStorage.setItem('youoke-dual-active', 'false'); // Disable local DJ overlay
         const win = window.open(`/tv?room=${roomCode}`, 'YouOkePremiumTV', 'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no');
         if (win) win.focus();
     };
@@ -198,6 +200,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
     const handleCastSelectGoogle = () => {
         setCastModalOpen(false);
+        localStorage.setItem('youoke-dual-active', 'false');
         if (queue.length === 0) {
             addToast('กรุณาเพิ่มเพลงลงคิวก่อน');
             return;
@@ -243,6 +246,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
     useEffect(() => {
         if (!roomCode || !mounted) return;
 
+        const isReceiverPage = router.pathname.includes('/tv') ||
+            router.pathname.includes('/dual') ||
+            router.pathname.includes('/monitor');
+
         let activeService: any = null;
 
         const initCast = async () => {
@@ -252,9 +259,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
             await castService.initialize(roomCode);
         };
 
-        // We activate the host service if we are allowed and NOT in dual (HDMI) mode
-        // Or actually, we can always host, but we only really need it for remote TVs.
-        if (allowRemote) {
+        // We activate the host service if we are allowed and NOT in receiver-only pages
+        if (allowRemote && !isReceiverPage) {
             initCast();
         }
 
