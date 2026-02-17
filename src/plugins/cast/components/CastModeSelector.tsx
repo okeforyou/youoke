@@ -38,7 +38,7 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
   onSelectYouTube,
   onJoinRoom
 }) => {
-  const [showTvSteps, setShowTvSteps] = useState(false);
+  const [showTvSteps, setShowTvSteps] = useState(true);
   const [pairingCode, setPairingCode] = useState('');
 
   if (!isOpen) return null;

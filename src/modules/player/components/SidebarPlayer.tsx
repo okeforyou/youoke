@@ -22,9 +22,10 @@ interface SidebarPlayerProps {
     isPassive?: boolean;
     isDjMode?: boolean;
     castMode?: string;
+    roomCode?: string | null;
 }
 
-export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 'none' }: SidebarPlayerProps) => {
+export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 'none', roomCode = null }: SidebarPlayerProps) => {
     const { currentSource, isPlaying, currentVideo, setCurrentTime, currentTime, layoutMode, queue, currentIndex, duration } = usePlayerStore(
         useShallow(state => ({
             currentSource: state.currentSource,
@@ -392,9 +393,28 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                         <Radio className="w-10 h-10 text-primary" />
                     </div>
                     <h3 className="text-xl font-black text-white mb-2 tracking-tight">กำลังส่งภาพไร้สาย</h3>
-                    <p className="text-sm font-bold text-white/50 max-w-[200px] leading-relaxed">
+                    <p className="text-sm font-bold text-white/50 max-w-[240px] leading-relaxed mb-6">
                         วิดีโอถูกส่งไปแสดงผลที่อุปกรณ์อื่นแล้ว คุณสามารถควบคุมได้จากหน้าเสนอนี้
                     </p>
+
+                    {/* Instruction Step for Connection */}
+                    <div className="bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-sm max-w-[280px] w-full mb-6">
+                        <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-3">วิธีแสดงผลบนหน้าจออื่น</p>
+                        <div className="space-y-3 text-left">
+                            <div className="flex items-center gap-3">
+                                <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-black text-primary">1</div>
+                                <p className="text-[11px] text-white/80 font-bold leading-tight">
+                                    เปิด <span className="text-primary">/monitor</span> หรือ <span className="text-primary">/tv</span> บนอีกเครื่อง
+                                </p>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-black text-primary">2</div>
+                                <p className="text-[11px] text-white/80 font-bold leading-tight">
+                                    ใส่รหัสห้อง: <span className="text-xl text-primary font-black ml-1 tracking-wider">{roomCode || '----'}</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
 
                     {currentVideo && (
                         <div className="mt-6 flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl p-2 pr-4 backdrop-blur-sm">
