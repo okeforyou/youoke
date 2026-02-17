@@ -57,7 +57,7 @@ export default function RemoteControlApp() {
         isQueueVisible: false
     });
     const [guestName, setGuestName] = useState('');
-    const [showNameModal, setShowNameModal] = useState(false);
+
     const [loading, setLoading] = useState(true);
     const [hasMounted, setHasMounted] = useState(false);
 
@@ -285,7 +285,8 @@ export default function RemoteControlApp() {
 
         const cleanup = connect();
         return () => { cleanup.then(unsub => unsub && unsub()); };
-    }, [roomCode, showNameModal]);
+    }, [roomCode]);
+
 
     // Track Current User state for presence
     const [currentUser, setCurrentUser] = useState(auth?.currentUser);
@@ -414,30 +415,7 @@ export default function RemoteControlApp() {
     };
 
     // Handlers
-    const handleNameSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        const input = (e.target as any).name.value;
-        if (input.trim()) {
-            localStorage.setItem('youoke_guest_name', input.trim());
-            setGuestName(input.trim());
-            setShowNameModal(false);
 
-            // 📱 AUTO-FULLSCREEN TRIGGER (Piggyback on Join Gesture)
-            // Mobile browsers require a user gesture to enter fullscreen.
-            // By calling this here, we use the "Join" tap to hide the address bar.
-            try {
-                if (document.documentElement.requestFullscreen) {
-                    document.documentElement.requestFullscreen().catch(err => {
-                        console.log('📱 Auto-Fullscreen blocked (expected on iOS Safari without PWA):', err);
-                    });
-                } else if ((document.documentElement as any).webkitRequestFullscreen) {
-                    (document.documentElement as any).webkitRequestFullscreen(); // Safari Fallback
-                }
-            } catch (err) {
-                console.warn('📱 Auto-Fullscreen failed:', err);
-            }
-        }
-    };
 
     const handleAddVideo = (video: any) => {
         // Check Limit for Anonymous Users (Guest)
@@ -720,35 +698,7 @@ export default function RemoteControlApp() {
                     theme={theme}
                 />
 
-                {/* Name Modal */}
-                {showNameModal && (
-                    <div className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-6 backdrop-blur-sm">
-                        <div className={`w-full max-w-sm rounded-[2rem] p-8 shadow-2xl transition-colors ${theme === 'dark' ? 'bg-stone-900 text-white border border-white/10' : 'bg-white text-gray-900'}`}>
-                            <div className="text-center mb-8">
-                                <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl ${theme === 'dark' ? 'bg-white/5' : 'bg-primary/10'}`}>
-                                    <User className={`w-10 h-10 ${theme === 'dark' ? 'text-white' : 'text-primary'}`} />
-                                </div>
-                                <h2 className="text-3xl font-black mb-2 tracking-tight">เข้าร่วมปาร์ตี้</h2>
-                                <p className={`text-base ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>ใส่ชื่อเล่นของคุณเพื่อเริ่มขอเพลง</p>
-                            </div>
-                            <form onSubmit={handleNameSubmit} className="space-y-6">
-                                <input
-                                    name="name"
-                                    type="text"
-                                    placeholder="ชื่อเล่น (เช่น ตั้ม)"
-                                    className={`w-full rounded-2xl px-6 py-4 text-center font-bold text-lg outline-none transition-all placeholder:font-normal ${theme === 'dark'
-                                        ? 'bg-black border border-white/10 text-white placeholder:text-gray-600 focus:border-primary/50 focus:ring-1 focus:ring-primary/50'
-                                        : 'bg-gray-50 border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary/50 focus:ring-2 focus:ring-primary/20'}`}
-                                    maxLength={15}
-                                    autoFocus
-                                />
-                                <button type="submit" className="w-full bg-primary hover:bg-red-600 text-white py-4 rounded-2xl font-black text-lg shadow-lg shadow-primary/30 active:scale-[0.98] transition-all">
-                                    ไปลุยกันเลย! 🚀
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                )}
+
                 {/* QR Share Modal */}
                 {showLocalQr && (
                     <div className="fixed inset-0 bg-black/80 z-[100] flex items-center justify-center p-6" onClick={() => setShowLocalQr(false)}>
