@@ -32,7 +32,8 @@ const ReceiverInfoModal = dynamic(() => import('../modules/party-system/componen
 // Add UnifiedCastButton dynamic import if needed or import directly
 import { UnifiedCastButton } from '../plugins/cast/components/UnifiedCastButton';
 import { CastStatusBar, CastMode } from '../plugins/cast/components/CastStatusBar';
-import { useCastCommands } from '../plugins/cast/hooks/useCastCommands';
+// useCastCommands removed (Phase 6)
+
 
 interface MainLayoutProps {
     children: ReactNode;
@@ -273,7 +274,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
     // 📡 Dashboard → TV Command Bridge
     // When castMode is 'smarttv', forward player store changes as Firebase commands
-    const castCommands = useCastCommands(castMode === 'smarttv' ? roomCode : null);
+    // const castCommands removed (Phase 6)
+
     const prevQueueRef = useRef<any[]>([]);
     const prevVideoRef = useRef<string | null>(null);
     const prevPlayingRef = useRef<boolean>(false);
