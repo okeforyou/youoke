@@ -696,7 +696,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         )}>
                         <div className="relative w-full h-full flex flex-col">
                             <div className="w-full aspect-video bg-black shrink-0 relative overflow-hidden">
-                                <SidebarPlayer />
+                                <SidebarPlayer castMode={castMode} />
                                 {/* Cast Status Indicator */}
                                 {castMode !== 'none' && (
                                     <div className="absolute bottom-2 left-2 right-2 z-50">

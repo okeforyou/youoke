@@ -16,12 +16,15 @@ import { QuotaIndicator } from "./QuotaIndicator";
 import { usePlayerLifecycle } from "../hooks/usePlayerLifecycle";
 import { usePlayerSync } from "../hooks/usePlayerSync";
 
+import { Tv } from 'lucide-react';
+
 interface SidebarPlayerProps {
     isPassive?: boolean;
     isDjMode?: boolean;
+    castMode?: string;
 }
 
-export const SidebarPlayer = ({ isPassive = false, isDjMode = false }: SidebarPlayerProps) => {
+export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 'none' }: SidebarPlayerProps) => {
     const { currentSource, isPlaying, currentVideo, setCurrentTime, currentTime, layoutMode, queue, currentIndex, duration } = usePlayerStore(
         useShallow(state => ({
             currentSource: state.currentSource,
@@ -334,8 +337,8 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false }: SidebarPl
             onTouchStart={handleActivity}
         >
             {/* Universal Player Layer (Youtube / MIDI / VCD) */}
-            {/* CRITICAL FIX: Unmount player if DJ Overlay is active to prevent "Seek failed" and state conflicts */}
-            {!showDjOverlay && (
+            {/* CRITICAL: Hide player when casting to TV — video & sound play on TV only */}
+            {!showDjOverlay && castMode !== 'smarttv' && (
                 <div className={`absolute inset-0 max-h-full max-w-full z-0 youtube-player-wrapper`}>
                     <UniversalPlayer
                         onReady={(target) => {
@@ -356,6 +359,22 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false }: SidebarPl
                     />
                 </div>
 
+            )}
+
+            {/* Cast Mode Overlay — replaces video when casting to TV */}
+            {castMode === 'smarttv' && (
+                <div className="absolute inset-0 z-10 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex flex-col items-center justify-center text-white">
+                    <div className="animate-pulse mb-3">
+                        <Tv size={48} className="text-emerald-400" />
+                    </div>
+                    <p className="text-emerald-400 font-semibold text-lg">📡 กำลัง Cast ไปที่ TV</p>
+                    {currentVideo && (
+                        <p className="text-white/60 text-sm mt-2 text-center px-4 truncate max-w-full">
+                            🎵 {currentVideo.title}
+                        </p>
+                    )}
+                    <p className="text-white/30 text-xs mt-3">เสียงและวิดีโอเล่นที่หน้าจอ TV</p>
+                </div>
             )}
 
             {/* AD OVERLAY (If show_ads is TRUE) */}
