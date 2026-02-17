@@ -57,6 +57,7 @@ export default function RemoteControlApp() {
         isQueueVisible: false
     });
     const [guestName, setGuestName] = useState('');
+    const [showNameModal, setShowNameModal] = useState(false);
 
     const [loading, setLoading] = useState(true);
     const [hasMounted, setHasMounted] = useState(false);
@@ -159,12 +160,7 @@ export default function RemoteControlApp() {
         if (storedName) {
             setGuestName(storedName);
         } else {
-            // Auto-Join (Phase 8): Don't show modal, just set a default and let user change later if wanted
-            const randomId = Math.floor(1000 + Math.random() * 9000);
-            const defaultName = `Guest ${randomId}`;
-            localStorage.setItem('youoke_guest_name', defaultName);
-            setGuestName(defaultName);
-            setShowNameModal(false);
+            setShowNameModal(true);
         }
 
         // Load Guest Song Count
@@ -285,7 +281,7 @@ export default function RemoteControlApp() {
 
         const cleanup = connect();
         return () => { cleanup.then(unsub => unsub && unsub()); };
-    }, [roomCode]);
+    }, [roomCode, showNameModal]);
 
 
     // Track Current User state for presence
@@ -415,6 +411,30 @@ export default function RemoteControlApp() {
     };
 
     // Handlers
+    const handleNameSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        const input = (e.target as any).name.value;
+        if (input.trim()) {
+            localStorage.setItem('youoke_guest_name', input.trim());
+            setGuestName(input.trim());
+            setShowNameModal(false);
+
+            // 📱 AUTO-FULLSCREEN TRIGGER (Piggyback on Join Gesture)
+            // Mobile browsers require a user gesture to enter fullscreen.
+            // By calling this here, we use the "Join" tap to hide the address bar.
+            try {
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        console.log('📱 Auto-Fullscreen blocked (expected on iOS Safari without PWA):', err);
+                    });
+                } else if ((document.documentElement as any).webkitRequestFullscreen) {
+                    (document.documentElement as any).webkitRequestFullscreen(); // Safari Fallback
+                }
+            } catch (err) {
+                console.warn('📱 Auto-Fullscreen failed:', err);
+            }
+        }
+    };
 
 
     const handleAddVideo = (video: any) => {
