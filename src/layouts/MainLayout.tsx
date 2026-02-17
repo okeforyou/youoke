@@ -132,16 +132,27 @@ export default function MainLayout({ children }: MainLayoutProps) {
         }
     }, [showQRCode, partyModalOpen, addToast]);
 
+    // [Loop Prevention] Ref to track if current store change is from a remote
+    const isProcessingRemote = useRef(false);
+
     // Remote Control Integration - Main Screen acts as a Host
     const { connectionStatus, connectedClients } = useRemoteHost(
         { current: null } as any,
         { current: { toggleFullscreen: triggerFullscreen } } as any,
-        addToQueue,
+        (video) => {
+            isProcessingRemote.current = true;
+            addToQueue(video);
+            setTimeout(() => { isProcessingRemote.current = false; }, 500);
+        },
         playerQueue,
         currentVideo?.videoId || '',
         isPlaying,
         layoutMode === 'fullscreen',
-        reorderQueue,
+        (newQueue) => {
+            isProcessingRemote.current = true;
+            reorderQueue(newQueue);
+            setTimeout(() => { isProcessingRemote.current = false; }, 500);
+        },
         user,
         roomCode || undefined,
         handleRemoteConnected
@@ -232,10 +243,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
         setPartyPIN(code);
         localStorage.setItem('youoke_party_pin', code);
         setCastModalOpen(false);
+        setCastMode('smarttv'); // AUTO-ACTIVATE Web Caster mode
         useUIStore.getState().setIsCastingLocal(false);
 
         // Show success notification
-        addToast(`เชื่อมต่อห้อง ${code} สำเร็จ!`);
+        addToast(`เชื่อมต่อหน้าจอทีวี (ห้อง ${code}) สำเร็จ!`);
     };
 
     const handleCastSelectYouTube = () => {
@@ -297,6 +309,12 @@ export default function MainLayout({ children }: MainLayoutProps) {
         prevPlayingRef.current = state.isPlaying;
 
         const unsubscribe = usePlayerStore.subscribe((state, prevState) => {
+            // [Loop Prevention] If this change came from a remote, do NOT send it back to TV
+            if (isProcessingRemote.current) {
+                // console.log('🛡️ Bridge: Skipping outgoing command (Remote Originated)');
+                return;
+            }
+
             // 1. Queue changed (new song added)
             if (state.queue.length > prevQueueRef.current.length) {
                 const newItem = state.queue[state.queue.length - 1];

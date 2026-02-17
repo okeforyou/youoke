@@ -190,7 +190,13 @@ export const useRemoteHost = (
         };
     }, [sessionId]);
 
-    const handleCommand = (cmd: RemoteCommand) => {
+    const handleCommand = (cmd: RemoteCommand, from?: string) => {
+        // [Loop Prevention] Dashboard should NOT process commands sent by itself
+        if (from === 'dashboard') {
+            // console.log('🚫 [Host] Ignoring command from self (dashboard)');
+            return;
+        }
+
         console.log('[RemoteHost] Executing:', cmd.type);
         const store = usePlayerStore.getState();
 
@@ -296,7 +302,7 @@ export const useRemoteHost = (
                     addToast('รีโมท: เพิ่มเพลงเข้าคิวแล้ว');
                 }
 
-                handleCommand(envelope.command);
+                handleCommand(envelope.command, envelope.from);
                 if (realtimeDb) {
                     remove(ref(realtimeDb, `rooms/${sessionId}/commands/${cmdId}`));
                 }
