@@ -10,12 +10,16 @@ import { MusicalNoteIcon, UserIcon, ClockIcon, ListBulletIcon, ArrowsPointingOut
 import { useShallow } from 'zustand/react/shallow';
 import clsx from 'clsx';
 
-// Define a stable wrapper for the player to prevent unnecessary re-renders
 const MemoSiderbarPlayer = React.memo(SidebarPlayer);
+import { DigitalSignage } from '../modules/tv/components/DigitalSignage';
+import { useSystemConfig } from '../hooks/useSystemConfig';
+
 
 export default function MonitorPage() {
   const router = useRouter();
+  const { config } = useSystemConfig();
   const [roomCode, setRoomCode] = useState<string | null>(null);
+
   const [mounted, setMounted] = useState(false);
 
   const { queue, currentVideo, currentSource, isQueueVisible, fullscreenTrigger } = usePlayerStore(
@@ -132,13 +136,26 @@ export default function MonitorPage() {
       }
     };
 
+    const timer = setInterval(() => setTime(new Date()), 60000);
+
+    // 2. Smart Entry Redirect Logic (Phase 7)
     if (router.isReady) {
-      initCast();
+      const ua = window.navigator.userAgent.toLowerCase();
+      const isMobileDevice = /iphone|ipod|android|blackberry|mini|windows\sce|palm/i.test(ua);
+      const isSmartTV = /smart-tv|smarttv|googletv|appletv|hbbtv|pizazz|tizen|webos|viera|magelink/.test(ua);
+      const hasRoomParam = !!router.query.room;
+
+      // Mobile → redirect to Remote Control app
+      if (isMobileDevice && !isSmartTV) {
+        console.log('📱 Smart Routing: Mobile -> /remote');
+        const target = hasRoomParam ? `/remote?room=${router.query.room}` : '/remote';
+        router.replace(target);
+      }
     }
 
-    const timer = setInterval(() => setTime(new Date()), 60000);
     return () => clearInterval(timer);
   }, [router.isReady, router.query.room]);
+
 
   const isIdle = !currentSource && queue.length === 0;
 
@@ -177,75 +194,20 @@ export default function MonitorPage() {
         </div>
       </div>
 
-      {/* 2. Idle Layer (Ambient/Instructions) */}
+      {/* 2. Idle Layer (Ambient with Digital Signage - Restore Phase 7) */}
       <div className={clsx(
-        "absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#050505] transition-opacity duration-1000",
+        "absolute inset-0 z-10 transition-opacity duration-1000",
         !isIdle && "opacity-0 pointer-events-none"
       )}>
-        {/* Ambient Background Bubbles */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[150px]" />
-
-        <div className="relative z-20 text-center space-y-12 animate-in zoom-in-50 duration-700 max-w-4xl px-8">
-          <div className="space-y-4">
-            <h1 className="text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white to-white/40 drop-shadow-2xl">
-              YouOke <span className="text-primary">Monitor</span>
-            </h1>
-            <p className="text-2xl text-white/40 font-bold uppercase tracking-[0.3em]">พร้อมเชื่อมต่อจอภาพไร้สาย</p>
-          </div>
-
-          <div className="grid grid-cols-12 gap-12 items-center">
-            {/* Left: Code & Instructions */}
-            <div className="col-span-12 lg:col-span-7 text-left space-y-8">
-              <div className="space-y-4">
-                <p className="text-lg text-white/60 font-medium">เชื่อมต่อกับเครื่องคอมพิวเตอร์หลัก (Main Dashboard):</p>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-4 text-white/90">
-                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center font-black italic text-xs">DJ</div>
-                    <p className="text-xl font-bold">เปิด <span className="text-blue-400 font-mono">{host}</span> บนเครื่องหลัก</p>
-                  </div>
-                  <div className="flex items-center gap-4 text-white/90">
-                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center font-black">2</div>
-                    <p className="text-xl font-bold">กดปุ่ม <span className="text-primary italic">CAST</span> แล้วเลือก Wireless Display</p>
-                  </div>
-                  <div className="flex items-center gap-4 text-white/90">
-                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center font-black">3</div>
-                    <p className="text-xl font-bold">ใส่รหัสห้องนี้เพื่อส่งภาพมายังจอนี้:</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Room Code Sticker */}
-              <div className="inline-flex items-center gap-8 bg-white/5 backdrop-blur-md border border-white/10 pr-12 rounded-3xl overflow-hidden shadow-2xl">
-                <div className="px-8 py-6 bg-primary text-white font-black text-xl uppercase tracking-widest flex flex-col items-center justify-center leading-tight shadow-lg">
-                  <span>รหัส</span>
-                  <span>ห้อง</span>
-                </div>
-                <div className="text-8xl font-black text-white tracking-tighter drop-shadow-lg">
-                  {roomCode}
-                </div>
-              </div>
-            </div>
-
-            {/* Right: QR Code for Quick Entry */}
-            <div className="col-span-12 lg:col-span-5 flex justify-center">
-              <div className="relative group">
-                <div className="absolute -inset-4 bg-primary/30 rounded-[3rem] blur-2xl opacity-50 group-hover:opacity-100 transition-opacity duration-1000 animate-pulse"></div>
-                <div className="relative bg-white p-6 rounded-[2.5rem] shadow-2xl hover:scale-105 transition-transform duration-500">
-                  {roomCode && <QRCodeSVG value={qrUrl} size={300} level="H" />}
-                  <div className="absolute -bottom-4 -right-4 bg-stone-900 border border-white/10 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 shadow-2xl">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-                    Dashboard Link
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="absolute bottom-10 text-white/30 text-sm font-medium tracking-widest uppercase">
-          รอนักร้อง... เพิ่มเพลงเลย!
-        </div>
+        <DigitalSignage
+          roomCode={roomCode || '----'}
+          images={config.tv?.signageImages}
+          messages={config.tv?.signageMessages}
+          template={config.tv?.template || 'classic'}
+          ads={config.tv?.ads}
+        />
       </div>
+
 
       {/* 3. Info Toast (Now Playing) */}
       <div className={clsx(
