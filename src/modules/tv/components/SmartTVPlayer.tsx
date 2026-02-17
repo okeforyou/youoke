@@ -6,7 +6,7 @@ import { MusicalNoteIcon, UserIcon } from '@heroicons/react/24/outline';
 import { PlayCircleIcon } from '@heroicons/react/24/solid';
 import { VideoItem } from '../types';
 import { QueueList } from './QueueList';
-import { SongSplash } from './SongSplash';
+// import { SongSplash } from './SongSplash';
 import { NotificationToast } from './NotificationToast';
 import { ConnectionBadge } from './ConnectionBadge';
 
@@ -45,18 +45,11 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
 }) => {
     const playerRef = useRef<YouTubePlayer | null>(null);
     const [showInfoToast, setShowInfoToast] = useState(false);
-    const [showSplash, setShowSplash] = useState(false);
+    // const [showSplash, setShowSplash] = useState(false);
     const [activeNotification, setActiveNotification] = useState<{ message: string, sub: string, type: 'added' | 'upnext' } | null>(null);
     const [hasInteracted, setHasInteracted] = useState(false);
 
-    // Effect: Handle Song Splash on Video Change
-    useEffect(() => {
-        if (currentVideo) {
-            setShowSplash(true);
-            const timer = setTimeout(() => setShowSplash(false), 5000); // Splash for 5s
-            return () => clearTimeout(timer);
-        }
-    }, [currentVideo?.videoId]);
+    // Effect: Handle Song Splash on Video Change Removed
 
     // Effect: Handle Notification
     useEffect(() => {
@@ -155,6 +148,7 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
             {/* 1. YouTube Player */}
             <div className="absolute inset-0 pointer-events-none">
                 <YouTube
+                    key={currentVideo.videoId}
                     videoId={currentVideo.videoId}
                     opts={opts}
                     onReady={handleReady}
@@ -256,8 +250,8 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
             {/* 5. Queue Overlay (Beautiful List with Glassmorphism) */}
             <QueueList queue={queue} isVisible={isQueueVisible} onPlay={onPlay} isPassive={isPassive} />
 
-            {/* 6. Song Splash Screen (Beautiful Transition) */}
-            <SongSplash video={currentVideo} isVisible={showSplash} />
+            {/* 6. Song Splash Screen Removed as requested */}
+            {/* <SongSplash video={currentVideo} isVisible={showSplash} /> */}
 
             {/* 7. Notification Toast (New Song Added) */}
             <NotificationToast
