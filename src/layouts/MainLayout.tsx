@@ -32,6 +32,7 @@ const ReceiverInfoModal = dynamic(() => import('../modules/party-system/componen
 // Add UnifiedCastButton dynamic import if needed or import directly
 import { UnifiedCastButton } from '../plugins/cast/components/UnifiedCastButton';
 import { CastStatusBar, CastMode } from '../plugins/cast/components/CastStatusBar';
+import { useCastCommands } from '../plugins/cast/hooks/useCastCommands';
 
 interface MainLayoutProps {
     children: ReactNode;
@@ -278,6 +279,59 @@ export default function MainLayout({ children }: MainLayoutProps) {
             }
         };
     }, [roomCode, allowRemote, mounted]);
+
+    // 📡 Dashboard → TV Command Bridge
+    // When castMode is 'smarttv', forward player store changes as Firebase commands
+    const castCommands = useCastCommands(castMode === 'smarttv' ? roomCode : null);
+    const prevQueueRef = useRef<any[]>([]);
+    const prevVideoRef = useRef<string | null>(null);
+    const prevPlayingRef = useRef<boolean>(false);
+
+    useEffect(() => {
+        if (castMode !== 'smarttv') return;
+
+        // Initialize refs to current state
+        const state = usePlayerStore.getState();
+        prevQueueRef.current = state.queue;
+        prevVideoRef.current = state.currentVideo?.videoId || null;
+        prevPlayingRef.current = state.isPlaying;
+
+        const unsubscribe = usePlayerStore.subscribe((state, prevState) => {
+            // 1. Queue changed (new song added)
+            if (state.queue.length > prevQueueRef.current.length) {
+                const newItem = state.queue[state.queue.length - 1];
+                if (newItem) {
+                    console.log('📡 Bridge: New song added →', newItem.title);
+                    castCommands.addToQueue(newItem);
+                }
+            }
+
+            // 2. Current video changed (song switch)
+            const currentVideoId = state.currentVideo?.videoId || null;
+            if (currentVideoId && currentVideoId !== prevVideoRef.current) {
+                console.log('📡 Bridge: Video changed →', state.currentVideo?.title);
+                castCommands.playNow(state.currentVideo!);
+            }
+
+            // 3. Play/Pause changed
+            if (state.isPlaying !== prevPlayingRef.current) {
+                if (state.isPlaying) {
+                    console.log('📡 Bridge: Play');
+                    castCommands.play();
+                } else {
+                    console.log('📡 Bridge: Pause');
+                    castCommands.pause();
+                }
+            }
+
+            // Update refs
+            prevQueueRef.current = state.queue;
+            prevVideoRef.current = currentVideoId;
+            prevPlayingRef.current = state.isPlaying;
+        });
+
+        return () => unsubscribe();
+    }, [castMode, castCommands]);
 
     useEffect(() => {
         setMounted(true);
