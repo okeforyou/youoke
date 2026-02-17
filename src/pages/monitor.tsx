@@ -147,6 +147,10 @@ export default function MonitorPage() {
     typeof window !== 'undefined' ? `${window.location.origin}/remote?room=${roomCode}` : '',
     [roomCode]);
 
+  const host = useMemo(() =>
+    typeof window !== 'undefined' ? window.location.host : 'play.youoke.com',
+    []);
+
   if (!mounted) return <div className="bg-black h-screen w-screen" />;
 
   return (
@@ -194,7 +198,7 @@ export default function MonitorPage() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-4 text-white/90">
                     <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center font-black italic text-xs">DJ</div>
-                    <p className="text-xl font-bold">เปิด <span className="text-blue-400 font-mono">play.youoke.com</span> บนเครื่องหลัก</p>
+                    <p className="text-xl font-bold">เปิด <span className="text-blue-400 font-mono">{host}</span> บนเครื่องหลัก</p>
                   </div>
                   <div className="flex items-center gap-4 text-white/90">
                     <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center font-black">2</div>
