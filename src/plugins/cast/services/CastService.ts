@@ -116,7 +116,9 @@ export class CastService {
             controls: {
                 isPlaying: store.isPlaying,
                 isMuted: store.isMuted,
-                volume: store.volume
+                volume: store.volume,
+                currentTime: store.currentTime,
+                duration: store.duration
             },
             layoutMode: store.layoutMode,
             isQueueVisible: store.isQueueVisible,

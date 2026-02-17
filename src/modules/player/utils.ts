@@ -5,7 +5,14 @@ export const generateUUID = () => {
 };
 
 // Broadcast Channel for Cross-Tab Sync (DJ Mode)
-export const bc = typeof window !== 'undefined' ? new BroadcastChannel('youoke_player_sync') : null;
+// CRITICAL: Disable on receiver pages (/tv, /dual, /monitor) to prevent
+// BroadcastChannel interference with Firebase-based sync on those pages.
+const isReceiverPage = typeof window !== 'undefined' &&
+    /\/(tv|dual|monitor|receiver)/.test(window.location.pathname);
+
+export const bc = (typeof window !== 'undefined' && !isReceiverPage)
+    ? new BroadcastChannel('youoke_player_sync')
+    : null;
 
 // Helper to broadcast changes
 export const broadcast = (state: Partial<PlayerStore>) => {

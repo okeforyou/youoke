@@ -31,6 +31,7 @@ const LimitReachedModal = dynamic(() => import('../modules/player/components/Lim
 const ReceiverInfoModal = dynamic(() => import('../modules/party-system/components/ReceiverInfoModal').then(mod => mod.ReceiverInfoModal), { ssr: false });
 // Add UnifiedCastButton dynamic import if needed or import directly
 import { UnifiedCastButton } from '../plugins/cast/components/UnifiedCastButton';
+import { CastStatusBar, CastMode } from '../plugins/cast/components/CastStatusBar';
 
 interface MainLayoutProps {
     children: ReactNode;
@@ -55,6 +56,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const [partyRoomCode, setPartyRoomCode] = useState('');
     const [mounted, setMounted] = useState(false);
     const [showQRCode, setShowQRCode] = useState(false);
+    const [castMode, setCastMode] = useState<CastMode>('none');
 
     const {
         searchTerm, setSearchTerm, activeIndex, setActiveIndex, isKaraoke, setIsKaraoke,
@@ -180,13 +182,15 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const handleCastSelectWebMonitor = () => {
         setCastModalOpen(false);
         localStorage.setItem('youoke-dual-active', 'false');
+        setCastMode('webmonitor');
         setShowQRCode(true);
     };
 
     const handleCastSelectSmartTV = () => {
         setCastModalOpen(false);
-        useUIStore.getState().setIsCastingLocal(false); // Hosting for remote
-        localStorage.setItem('youoke-dual-active', 'false'); // Disable local DJ overlay
+        useUIStore.getState().setIsCastingLocal(false);
+        localStorage.setItem('youoke-dual-active', 'false');
+        setCastMode('smarttv');
         const win = window.open(`/tv?room=${roomCode}`, 'YouOkePremiumTV', 'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no');
         if (win) win.focus();
     };
@@ -195,6 +199,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         setCastModalOpen(false);
         useUIStore.getState().setIsCastingLocal(true);
         localStorage.setItem('youoke-dual-active', 'true');
+        setCastMode('dual');
         window.open('/dual?mode=dj', 'YouOkeDual', 'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no');
     };
 
@@ -219,6 +224,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         } as any)); // Force cast to avoid strict type checks on mock data
 
         connectGoogleCast(castPlaylist);
+        setCastMode('google');
     };
 
     const handleJoinRoom = (code: string) => {
@@ -233,6 +239,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
     const handleCastSelectYouTube = () => {
         setCastModalOpen(false);
+        setCastMode('youtube');
         if (queue.length === 0) {
             addToast('กรุณาเพิ่มเพลงลงคิวก่อน');
             return;
@@ -636,6 +643,21 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         <div className="relative w-full h-full flex flex-col">
                             <div className="w-full aspect-video bg-black shrink-0 relative overflow-hidden">
                                 <SidebarPlayer />
+                                {/* Cast Status Indicator */}
+                                {castMode !== 'none' && (
+                                    <div className="absolute bottom-2 left-2 right-2 z-50">
+                                        <CastStatusBar
+                                            mode={castMode}
+                                            roomCode={roomCode}
+                                            onDisconnect={() => {
+                                                setCastMode('none');
+                                                localStorage.setItem('youoke-dual-active', 'false');
+                                                useUIStore.getState().setIsCastingLocal(false);
+                                                addToast('ตัดการเชื่อมต่อแล้ว');
+                                            }}
+                                        />
+                                    </div>
+                                )}
                             </div>
                             {/* Mobile Only Controls (Desktop controls moved to Aside for better interaction) */}
                             {layoutMode !== 'fullscreen' && (
