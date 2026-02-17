@@ -111,9 +111,24 @@ export function useCastCommands(roomCode: string | null) {
         });
     }, [sendCommand]);
 
+    const syncState = useCallback((state: { queue: QueueItem[], currentIndex: number, isPlaying: boolean }) => {
+        sendCommand('SYNC_STATE', {
+            queue: state.queue.map(v => ({
+                id: v.id || v.videoId,
+                videoId: v.videoId,
+                title: v.title,
+                author: v.author,
+                thumbnail: v.thumbnail || "",
+                addedBy: v.addedBy || null
+            })),
+            currentIndex: state.currentIndex,
+            isPlaying: state.isPlaying
+        });
+    }, [sendCommand]);
+
     return {
         sendCommand,
         play, pause, next, previous, toggleMute,
-        addToQueue, playNow, skipTo, removeAt, reorderQueue
+        addToQueue, playNow, skipTo, removeAt, reorderQueue, syncState
     };
 }

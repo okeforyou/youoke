@@ -282,71 +282,30 @@ export default function MainLayout({ children }: MainLayoutProps) {
         const isWireless = castMode === 'smarttv' || castMode === 'webmonitor';
         if (!isWireless || !roomCode) return;
 
-        console.log(`📡 Bridge Activated: ${castMode} (Room: ${roomCode})`);
+        console.log(`📡 Atomic Bridge Activated: ${castMode} (Room: ${roomCode})`);
 
-        // Initialize refs to current state
-        const state = usePlayerStore.getState();
-        prevQueueRef.current = state.queue;
-        prevVideoRef.current = state.currentVideo?.videoId || state.currentVideo?.id || null;
-        prevPlayingRef.current = state.isPlaying;
-        const prevIndexRef = { current: state.currentIndex };
+        let syncTimeout: NodeJS.Timeout | null = null;
 
         const unsubscribe = usePlayerStore.subscribe((state, prevState) => {
             // [Loop Prevention] If this change came from a remote, do NOT send it back to TV
-            if (isProcessingRemote.current) {
-                return;
-            }
+            if (isProcessingRemote.current) return;
 
-            // 1. Queue Length changed
-            if (state.queue.length !== prevQueueRef.current.length) {
-                // Song Added
-                if (state.queue.length > prevQueueRef.current.length) {
-                    const newItem = state.queue[state.queue.length - 1];
-                    if (newItem) {
-                        console.log('📡 Bridge: New song added →', newItem.title);
-                        castCommands.addToQueue(newItem);
-                    }
-                }
-                // Song Removed or playNext (Queue shrunk)
-                else {
-                    console.log('📡 Bridge: Queue mutated, syncing new order');
-                    castCommands.reorderQueue(state.queue);
-                }
-            }
+            // Debounce Sync to avoid hammering Firebase
+            if (syncTimeout) clearTimeout(syncTimeout);
 
-            // 2. Current Index changed (Explicit NEXT or SKIP_TO)
-            if (state.currentIndex !== prevIndexRef.current) {
-                console.log('📡 Bridge: Index changed →', state.currentIndex);
-                castCommands.skipTo(state.currentIndex);
-            }
-
-            // 3. Current video changed (Fallback for direct plays)
-            const currentVideoId = state.currentVideo?.videoId || state.currentVideo?.id || null;
-            if (currentVideoId && currentVideoId !== prevVideoRef.current) {
-                console.log('📡 Bridge: Video changed →', state.currentVideo?.title);
-                castCommands.playNow(state.currentVideo!);
-            }
-
-            // 4. Play/Pause changed
-            if (state.isPlaying !== prevPlayingRef.current) {
-                if (state.isPlaying) {
-                    console.log('📡 Bridge: Play');
-                    castCommands.play();
-                } else {
-                    console.log('📡 Bridge: Pause');
-                    castCommands.pause();
-                }
-            }
-
-            // Update refs
-            prevQueueRef.current = state.queue;
-            prevVideoRef.current = currentVideoId;
-            prevPlayingRef.current = state.isPlaying;
-            prevIndexRef.current = state.currentIndex;
+            syncTimeout = setTimeout(() => {
+                console.log('📡 Bridge: Pushing Atomic Sync State');
+                castCommands.syncState({
+                    queue: state.queue,
+                    currentIndex: state.currentIndex,
+                    isPlaying: state.isPlaying
+                });
+            }, 200); // 200ms debounce
         });
 
         return () => {
             console.log('📡 Bridge Deactivated');
+            if (syncTimeout) clearTimeout(syncTimeout);
             unsubscribe();
         };
     }, [castMode, roomCode, castCommands]);

@@ -229,6 +229,21 @@ export class CastService {
                     store.setQrVisibility(command.payload?.show ?? true);
                     break;
 
+                case 'SYNC_STATE':
+                    console.log('🔄 Processing SYNC_STATE:', command.payload);
+                    if (command.payload?.queue) {
+                        // Atomic sync to avoid intermediate states
+                        store.reorderQueue(command.payload.queue);
+                        if (typeof command.payload.currentIndex === 'number') {
+                            store.setCurrentIndex(command.payload.currentIndex);
+                        }
+                        if (typeof command.payload.isPlaying === 'boolean') {
+                            if (command.payload.isPlaying) store.play();
+                            else store.pause();
+                        }
+                        this.syncLocalStateToFirebase();
+                    }
+                    break;
                 case 'CLEAR_QUEUE':
                     store.clearQueue();
                     break;
@@ -236,16 +251,6 @@ export class CastService {
                     if (Array.isArray(command.payload?.queue)) {
                         store.reorderQueue(command.payload.queue);
                     }
-                    break;
-                case 'SET_LAYOUT':
-                    if (command.payload?.mode) store.setLayoutMode(command.payload.mode);
-                    break;
-                case 'TOGGLE_QUEUE_OVERLAY':
-                    store.toggleQueueVisibility();
-                    break;
-                case 'TOGGLE_QR':
-                    console.log('📱 Toggle QR:', command.payload);
-                    store.toggleQr(command.payload?.visible);
                     break;
                 case 'TOGGLE_FULLSCREEN':
                     console.log('📺 Toggle Fullscreen Request');
