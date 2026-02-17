@@ -64,40 +64,55 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
         {/* Options */}
         <div className="space-y-2">
 
-          {/* 1. ระบบ 2 หน้าจอ (Dual Screen) - PRIORITY #1 */}
+          {/* 1. สาย HDMI (Local Dual Screen) */}
           {!isMobile && (
             <button
-              onClick={onSelectDj}
+              onClick={onSelectDual}
               className="w-full text-left bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/5 rounded-2xl p-3 border border-gray-100 dark:border-white/5 transition-all group relative overflow-hidden shadow-sm"
             >
               <div className="flex items-center gap-3">
-                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center group-hover:scale-110 transition-transform text-primary border border-primary/10">
+                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center group-hover:scale-110 transition-transform text-orange-500 border border-orange-500/20">
                   <Monitor className="w-4 h-4" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-[14px] font-bold text-gray-900 dark:text-gray-100">ระบบ 2 หน้าจอ (Dual Screen)</h3>
-                  <p className="text-[10px] text-gray-500 font-medium">คุมที่คอมพิวเตอร์ (เสียงออกที่คอมฯ)</p>
+                  <h3 className="text-[14px] font-bold text-gray-900 dark:text-gray-100">โหมดสายต่อ (HDMI Mode)</h3>
+                  <p className="text-[10px] text-gray-500 font-medium">สำหรับต่อสายแยก 2 จอ (Local Sync)</p>
                 </div>
               </div>
             </button>
           )}
 
-          {/* 2. หน้าจอทีวี (Smart TV) */}
-          <div className="bg-white dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden">
+          {/* 2. หน้าจอที่ 2 (Web Caster) */}
+          {!isMobile && (
             <button
               onClick={onSelectSmartTV}
-              className="w-full text-left p-3 hover:bg-gray-50 dark:hover:bg-white/5 transition-all group relative"
+              className="w-full text-left bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/5 rounded-2xl p-3 border border-gray-100 dark:border-white/5 transition-all group relative overflow-hidden shadow-sm"
             >
               <div className="flex items-center gap-3">
-                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center group-hover:scale-110 transition-transform text-primary border border-primary/10">
+                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition-transform text-blue-500 border border-blue-500/20">
+                  <Monitor className="w-4 h-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-[14px] font-bold text-gray-900 dark:text-gray-100">หน้าจอเสริม (Web Caster)</h3>
+                  <p className="text-[10px] text-gray-500 font-medium">เปิดจอใหม่บนคอมฯ (Dashboard คุม)</p>
+                </div>
+              </div>
+            </button>
+          )}
+
+          {/* 3. หน้าจอทีวี (Smart TV) */}
+          <div className="bg-white dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden">
+            <div className="w-full text-left p-3 opacity-60">
+              <div className="flex items-center gap-3">
+                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary border border-primary/10">
                   <Tv className="w-4 h-4" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-[14px] font-bold text-gray-900 dark:text-gray-100">หน้าจอทีวี (Smart TV)</h3>
-                  <p className="text-[10px] text-gray-500 font-medium leading-tight">สแกน/กรอกรหัส เพื่อส่งภาพ</p>
+                  <p className="text-[10px] text-gray-500 font-medium leading-tight">เชื่อมต่อไร้สายผ่าน Cloud</p>
                 </div>
               </div>
-            </button>
+            </div>
             <button
               onClick={() => setShowTvSteps(!showTvSteps)}
               className="w-full py-1.5 px-3 border-t border-gray-50 dark:border-white/5 flex items-center justify-between text-[8px] font-bold text-gray-400 hover:text-primary transition-colors uppercase tracking-wider"

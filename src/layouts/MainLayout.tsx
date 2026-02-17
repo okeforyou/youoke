@@ -203,7 +203,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         useUIStore.getState().setIsCastingLocal(false);
         localStorage.setItem('youoke-dual-active', 'false');
         setCastMode('smarttv');
-        const win = window.open(`/tv?room=${roomCode}`, 'YouOkePremiumTV', 'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no');
+        const win = window.open(`/monitor?room=${roomCode}`, 'YouOkePremiumMonitor', 'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no');
         if (win) win.focus();
     };
 

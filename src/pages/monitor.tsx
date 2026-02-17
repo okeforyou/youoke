@@ -104,29 +104,37 @@ export default function MonitorPage() {
 
   useEffect(() => {
     setMounted(true);
-    let localCode = sessionStorage.getItem('youoke_room_code');
+
+    // 1. Get Room Code: Priority is Query -> Session -> New Random
+    const roomFromQuery = router.query.room as string;
+    let localCode = roomFromQuery || sessionStorage.getItem('youoke_room_code');
+
     if (!localCode) {
       localCode = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-      sessionStorage.setItem('youoke_room_code', localCode);
     }
+
+    // Persist if it was generated or from query
+    sessionStorage.setItem('youoke_room_code', localCode);
     setRoomCode(localCode);
 
     const initCast = async () => {
       try {
         const { castService } = await import('../plugins/cast/services/CastService');
         if (!localCode) return;
+        console.log('🖥️ Monitor: Initializing with room', localCode);
         await castService.initialize(localCode);
-
-
       } catch (err) {
-        console.error(err);
+        console.error('🖥️ Monitor: Cast Init Failed', err);
       }
     };
-    initCast();
+
+    if (router.isReady) {
+      initCast();
+    }
 
     const timer = setInterval(() => setTime(new Date()), 60000);
     return () => clearInterval(timer);
-  }, []);
+  }, [router.isReady, router.query.room]);
 
   const isIdle = !currentSource && queue.length === 0;
 
