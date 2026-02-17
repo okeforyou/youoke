@@ -83,6 +83,13 @@ const Monitor = () => {
       setRoomCode(newCode);
       console.log('🎲 Generated room code:', newCode);
     }
+
+    // Cleanup URL
+    if (roomCodeParam && router.isReady) {
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.delete('room');
+      router.replace(currentUrl.pathname + currentUrl.search, undefined, { shallow: true });
+    }
   }, [roomCodeParam]);
 
   // Initialize room

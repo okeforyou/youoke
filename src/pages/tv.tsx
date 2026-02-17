@@ -64,6 +64,13 @@ const TVPage = () => {
             setRoomCode(newCode);
         }
 
+        // Cleanup URL: Remove ?room= parameter to prevent unintentional re-joins on refresh
+        if (roomCodeParam && router.isReady) {
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.delete('room');
+            router.replace(currentUrl.pathname + currentUrl.search, undefined, { shallow: true });
+        }
+
         const initAuth = async () => {
             if (auth) {
                 try {
@@ -188,7 +195,9 @@ const TVPage = () => {
     };
 
     // Derived State
-    const isIdle = !state.currentVideo && (state.queue || []).length === 0 && connectedCount === 0;
+    // counts all items in 'connected' node. TV itself is one.
+    // If count is <= 1, it means only the TV is connected -> show QR.
+    const isIdle = !state.currentVideo && (state.queue || []).length === 0 && connectedCount <= 1;
     const nextVideo = (state.queue || [])[state.currentIndex + 1] || null;
 
     if (!roomCode) return <div className="bg-black text-white h-screen flex items-center justify-center">กำลังโหลด TV...</div>;

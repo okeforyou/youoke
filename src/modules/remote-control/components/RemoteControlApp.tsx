@@ -261,6 +261,9 @@ export default function RemoteControlApp() {
 
                         setStatus('connected');
                         setLoading(false); // Set loading to false once connected
+
+                        // Persist Last Successful Room Code
+                        localStorage.setItem('youoke_last_room_code', roomCode);
                     } else {
                         setStatus('connecting'); // Room might not exist yet
                     }
@@ -531,11 +534,61 @@ export default function RemoteControlApp() {
     }
 
     if (!roomCode) {
+        const lastRoom = typeof window !== 'undefined' ? localStorage.getItem('youoke_last_room_code') : null;
+
         return (
-            <div className="h-screen flex flex-col items-center justify-center text-gray-500 p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-2">ไม่พบรหัสห้อง</h2>
-                <p className="text-sm text-center">กรุณาเข้าใช้งานผ่าน QR Code หรือลิงก์ที่มีรหัสห้อง</p>
-                <p className="text-xs text-gray-400 mt-4">URL ต้องมี: ?room=1234</p>
+            <div className={`h-screen flex flex-col items-center justify-center p-8 transition-colors ${theme === 'dark' ? 'bg-stone-950 text-white' : 'bg-stone-50 text-gray-900'}`}>
+                <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mb-8 rotate-12 shadow-2xl ${theme === 'dark' ? 'bg-white/5' : 'bg-primary/10'}`}>
+                    <AlertCircle className={`w-10 h-10 ${theme === 'dark' ? 'text-white/20' : 'text-primary'}`} />
+                </div>
+
+                <h2 className="text-3xl font-black mb-3 tracking-tight">ไม่พบรหัสห้อง</h2>
+                <p className="text-sm text-center opacity-60 mb-10 max-w-xs">กรุณาสแกน QR Code จากหน้าจอทีวี หรือพิมพ์รหัส 4 หลักที่ปรากฏบนหน้าจอครับ</p>
+
+                <div className="w-full max-w-xs space-y-4">
+                    {/* Manual Entry */}
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            const code = (e.target as any).code.value.trim();
+                            if (code.length >= 4) {
+                                router.push(`/remote?room=${code}`);
+                            }
+                        }}
+                        className="relative"
+                    >
+                        <input
+                            name="code"
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            placeholder="พิมพ์รหัส 4 หลัก..."
+                            className={`w-full py-4 px-6 rounded-2xl font-black text-center text-xl outline-none transition-all ${theme === 'dark'
+                                ? 'bg-white/5 border border-white/10 focus:border-primary/50'
+                                : 'bg-white border border-gray-200 shadow-sm focus:border-primary/50 ring-primary/20 focus:ring-4'
+                                }`}
+                            maxLength={6}
+                        />
+                        <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 bg-primary text-white p-2 rounded-xl shadow-lg active:scale-90 transition-transform">
+                            <LogIn size={18} strokeWidth={3} />
+                        </button>
+                    </form>
+
+                    {lastRoom && (
+                        <button
+                            onClick={() => router.push(`/remote?room=${lastRoom}`)}
+                            className={`w-full py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] flex items-center justify-center gap-3 active:scale-95 transition-all ${theme === 'dark' ? 'bg-white/10 text-white' : 'bg-gray-900 text-white shadow-xl'
+                                }`}
+                        >
+                            <RefreshCw size={16} />
+                            กลับเข้าห้องล่าสุด ({lastRoom})
+                        </button>
+                    )}
+
+                    <div className="pt-8 text-center">
+                        <p className="text-[10px] font-black uppercase tracking-widest opacity-20">YouOke v2.22.0-FINAL</p>
+                    </div>
+                </div>
             </div>
         );
     }
