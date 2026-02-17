@@ -7,7 +7,7 @@
  * Firebase path: rooms/{roomCode}/commands/{commandId}
  */
 
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useMemo } from 'react';
 import { ref, set, serverTimestamp } from 'firebase/database';
 import { realtimeDb } from '../../../firebase';
 import { auth } from '../../../firebase';
@@ -126,9 +126,9 @@ export function useCastCommands(roomCode: string | null) {
         });
     }, [sendCommand]);
 
-    return {
+    return useMemo(() => ({
         sendCommand,
         play, pause, next, previous, toggleMute,
         addToQueue, playNow, skipTo, removeAt, reorderQueue, syncState
-    };
+    }), [sendCommand, play, pause, next, previous, toggleMute, addToQueue, playNow, skipTo, removeAt, reorderQueue, syncState]);
 }
