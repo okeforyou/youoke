@@ -203,8 +203,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
         useUIStore.getState().setIsCastingLocal(false);
         localStorage.setItem('youoke-dual-active', 'false');
         setCastMode('smarttv');
-        const win = window.open(`/monitor?room=${roomCode}`, 'YouOkePremiumMonitor', 'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no');
-        if (win) win.focus();
+        // No window.open here. User should open /monitor or /tv on the target device.
+        addToast('โหมดจอภาพไร้สายเปิดใช้งานแล้ว กรุณาเปิดหน้าจอรับภาพบนอุปกรณ์อื่น');
     };
 
     const handleCastSelectDual = () => {

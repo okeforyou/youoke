@@ -82,42 +82,27 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
             </button>
           )}
 
-          {/* 2. หน้าจอที่ 2 (Web Caster) */}
-          {!isMobile && (
+          {/* 2. หน้าจอไร้สาย (Wireless Display / Smart TV) */}
+          <div className="bg-white dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden">
             <button
               onClick={onSelectSmartTV}
-              className="w-full text-left bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/5 rounded-2xl p-3 border border-gray-100 dark:border-white/5 transition-all group relative overflow-hidden shadow-sm"
+              className="w-full text-left p-3 hover:bg-gray-50 dark:hover:bg-white/5 transition-all group relative"
             >
               <div className="flex items-center gap-3">
-                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition-transform text-blue-500 border border-blue-500/20">
-                  <Monitor className="w-4 h-4" />
+                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center group-hover:scale-110 transition-transform text-primary border border-primary/10">
+                  <Radio className="w-4 h-4" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-[14px] font-bold text-gray-900 dark:text-gray-100">หน้าจอเสริม (Web Caster)</h3>
-                  <p className="text-[10px] text-gray-500 font-medium">เปิดจอใหม่บนคอมฯ (Dashboard คุม)</p>
+                  <h3 className="text-[14px] font-bold text-gray-900 dark:text-gray-100">จอภาพไร้สาย (Wireless Display)</h3>
+                  <p className="text-[10px] text-gray-500 font-medium leading-tight">ส่งภาพไปทีวี หรือคอมฯ เครื่องอื่น</p>
                 </div>
               </div>
             </button>
-          )}
-
-          {/* 3. หน้าจอทีวี (Smart TV) */}
-          <div className="bg-white dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden">
-            <div className="w-full text-left p-3 opacity-60">
-              <div className="flex items-center gap-3">
-                <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary border border-primary/10">
-                  <Tv className="w-4 h-4" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-[14px] font-bold text-gray-900 dark:text-gray-100">หน้าจอทีวี (Smart TV)</h3>
-                  <p className="text-[10px] text-gray-500 font-medium leading-tight">เชื่อมต่อไร้สายผ่าน Cloud</p>
-                </div>
-              </div>
-            </div>
             <button
               onClick={() => setShowTvSteps(!showTvSteps)}
               className="w-full py-1.5 px-3 border-t border-gray-50 dark:border-white/5 flex items-center justify-between text-[8px] font-bold text-gray-400 hover:text-primary transition-colors uppercase tracking-wider"
             >
-              <span>วิธีใช้งาน / กรอกรหัส</span>
+              <span>วิธีเชื่อมต่อ / กรอกรหัส</span>
               {showTvSteps ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
             </button>
 
@@ -126,11 +111,11 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
                 <div className="bg-gray-50 dark:bg-black/20 rounded-xl p-2.5 text-[10px] font-medium text-gray-600 dark:text-gray-400 leading-relaxed border border-gray-100 dark:border-white/5">
                   <div className="flex gap-2">
                     <span className="w-3 h-3 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 font-bold text-[8px]">1</span>
-                    <p>เปิด <span className="font-bold text-primary">play.youoke.com/tv</span> บนทีวี</p>
+                    <p>เปิด <span className="font-bold text-primary">play.youoke.com/monitor</span> หรือ <span className="font-bold text-primary">/tv</span> บนอีกเครื่อง</p>
                   </div>
                   <div className="flex gap-2 mt-1.5">
                     <span className="w-3 h-3 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 font-bold text-[8px]">2</span>
-                    <p>สแกน QR หรือกรอกรหัสที่ปรากฏ</p>
+                    <p>กรอกรหัส 4 หลักที่ปรากฏบนหน้าจอรับภาพ</p>
                   </div>
                 </div>
 

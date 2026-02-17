@@ -16,7 +16,7 @@ import { QuotaIndicator } from "./QuotaIndicator";
 import { usePlayerLifecycle } from "../hooks/usePlayerLifecycle";
 import { usePlayerSync } from "../hooks/usePlayerSync";
 
-import { Tv } from 'lucide-react';
+import { Tv, Radio } from 'lucide-react';
 
 interface SidebarPlayerProps {
     isPassive?: boolean;
@@ -385,8 +385,39 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                 </div>
             )}
 
+            {/* Wireless Casting Overlay (Premium Glassmorphism) */}
+            {mounted && castMode !== 'none' && castMode !== 'dual' && (
+                <div className="absolute inset-0 z-40 bg-black/60 backdrop-blur-md flex flex-col items-center justify-center text-center p-6 animate-in fade-in duration-500">
+                    <div className="w-20 h-20 rounded-3xl bg-primary/20 flex items-center justify-center mb-4 border border-primary/30 shadow-2xl shadow-primary/20 animate-pulse">
+                        <Radio className="w-10 h-10 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-black text-white mb-2 tracking-tight">กำลังส่งภาพไร้สาย</h3>
+                    <p className="text-sm font-bold text-white/50 max-w-[200px] leading-relaxed">
+                        วิดีโอถูกส่งไปแสดงผลที่อุปกรณ์อื่นแล้ว คุณสามารถควบคุมได้จากหน้าเสนอนี้
+                    </p>
+
+                    {currentVideo && (
+                        <div className="mt-6 flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl p-2 pr-4 backdrop-blur-sm">
+                            <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 relative">
+                                <Image
+                                    unoptimized
+                                    src={currentVideo.thumbnail || `https://i.ytimg.com/vi/${currentVideo.videoId}/mqdefault.jpg`}
+                                    fill
+                                    className="object-cover"
+                                    alt="Casting"
+                                />
+                            </div>
+                            <div className="text-left min-w-0">
+                                <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-0.5">Now Casting</p>
+                                <p className="text-xs font-bold text-white truncate max-w-[120px]">{currentVideo.title}</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* Overlay (Waiting) */}
-            {!currentSource && (
+            {!currentSource && castMode === 'none' && (
                 <div className="absolute inset-0 bg-black/80 z-10 flex items-center justify-center text-white/50">
                     <p>รอเลือกเพลง...</p>
                 </div>
