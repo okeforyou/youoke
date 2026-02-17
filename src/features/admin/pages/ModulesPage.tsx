@@ -3,7 +3,7 @@ import Head from 'next/head';
 import AdminLayout from '../layouts/AdminLayout';
 import { MODULES } from '../../../config/modules';
 import { UserGroupIcon, SignalIcon, PowerIcon } from '@heroicons/react/24/outline';
-import { db } from '../../../../firebase';
+import { db } from '../../../firebase';
 import { collection, getDocs, doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 
 interface UserSummary {
