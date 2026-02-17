@@ -159,7 +159,12 @@ export default function RemoteControlApp() {
         if (storedName) {
             setGuestName(storedName);
         } else {
-            setShowNameModal(true);
+            // Auto-Join (Phase 8): Don't show modal, just set a default and let user change later if wanted
+            const randomId = Math.floor(1000 + Math.random() * 9000);
+            const defaultName = `Guest ${randomId}`;
+            localStorage.setItem('youoke_guest_name', defaultName);
+            setGuestName(defaultName);
+            setShowNameModal(false);
         }
 
         // Load Guest Song Count
@@ -572,32 +577,7 @@ export default function RemoteControlApp() {
                         </div>
 
                         <div className="flex items-center gap-1 flex-shrink-0">
-                            <button
-                                onClick={toggleTheme}
-                                className={`p-2 rounded-full transition-all active:scale-90 ${theme === 'dark' ? 'bg-white/10 text-yellow-400' : 'bg-gray-100 text-gray-600 shadow-sm'}`}
-                                title="สลับโหมด"
-                            >
-                                {theme === 'dark' ? <Sun size={18} strokeWidth={3} /> : <Moon size={18} strokeWidth={3} />}
-                            </button>
-                            <button
-                                onClick={() => window.location.reload()}
-                                className={`p-2 rounded-full transition-all active:scale-90 ${theme === 'dark' ? 'bg-white/10 text-gray-300' : 'bg-gray-100 text-gray-500 shadow-sm'}`}
-                                title="รีเฟรช"
-                            >
-                                <RefreshCw size={18} strokeWidth={3} />
-                            </button>
-                            <button
-                                onClick={() => setShowLocalQr(true)}
-                                className={`p-2 rounded-full transition-all active:scale-90 ${theme === 'dark' ? 'bg-white/10 text-gray-300' : 'bg-gray-100 text-gray-500 shadow-sm'}`}
-                            >
-                                <Share2 size={18} strokeWidth={3} />
-                            </button>
-                            <button
-                                onClick={() => sendCommand('TOGGLE_FULLSCREEN')}
-                                className={`p-2 rounded-full transition-all active:scale-90 ${theme === 'dark' ? 'bg-white/10 text-gray-300' : 'bg-gray-100 text-gray-500 shadow-sm'}`}
-                            >
-                                <Maximize size={18} strokeWidth={3} />
-                            </button>
+                            {/* Simplified Header: Buttons removed for V1 feel (Phase 8) */}
                         </div>
                     </div>
 

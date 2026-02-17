@@ -269,19 +269,6 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
                 sub={activeNotification?.sub}
             />
 
-            {/* 8. Interaction Overlay (Autoplay Bypass) */}
-            {!hasInteracted && isPlaying && (
-                <div
-                    onClick={handleInteraction}
-                    className="absolute inset-0 z-[100] bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center cursor-pointer group"
-                >
-                    <div className="w-24 h-24 bg-primary rounded-full flex items-center justify-center shadow-[0_0_50px_rgba(229,9,20,0.5)] group-hover:scale-110 transition-transform duration-500">
-                        <PlayCircleIcon className="w-16 h-16 text-white" />
-                    </div>
-                    <h1 className="text-4xl font-black text-white mt-8 tracking-tighter uppercase italic">คลิกเพื่อเริ่มต้น</h1>
-                    <p className="text-white/40 mt-2 font-medium">Click anywhere to start playback</p>
-                </div>
-            )}
         </div>
     );
 };
