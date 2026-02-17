@@ -196,29 +196,38 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
         performSearch();
     }, [currentSource]);
 
-    // ⏯️ Sync Play/Pause state from store to player
     useEffect(() => {
         if (!playerRef.current || showDjOverlay) return;
 
-        const adapter = playerService.getAdapter();
-        if (isPlaying) {
-            console.log("▶️ SidebarPlayer: Syncing Play");
-            adapter?.play();
-        } else {
-            console.log("⏸️ SidebarPlayer: Syncing Pause");
-            adapter?.pause();
+        try {
+            const adapter = playerService.getAdapter();
+            if (!adapter) return;
+
+            if (isPlaying) {
+                console.log("▶️ SidebarPlayer: Syncing Play");
+                adapter.play();
+            } else {
+                console.log("⏸️ SidebarPlayer: Syncing Pause");
+                adapter.pause();
+            }
+        } catch (e) {
+            console.warn("Player control error:", e);
         }
     }, [isPlaying, showDjOverlay]);
 
-    // 🎵 Sync Source (Video ID) MANUALLY
     useEffect(() => {
         if (!playerRef.current || !currentSource || showDjOverlay) {
             if (showDjOverlay) console.log("🚫 Manual Load Blocked: DJ Overlay Active");
             return;
         }
         try {
-            console.log("🔄 Manual Load Code: Switching to", currentSource);
-            playerRef.current.loadVideoById(currentSource);
+            // Check if player is actually ready to receive commands
+            if (typeof playerRef.current.loadVideoById === 'function') {
+                console.log("🔄 Manual Load Code: Switching to", currentSource);
+                playerRef.current.loadVideoById(currentSource);
+            } else {
+                console.warn("⚠️ Player not ready for loadVideoById yet");
+            }
         } catch (e) {
             console.warn("Video load error:", e);
         }

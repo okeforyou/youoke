@@ -290,6 +290,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
             // [Loop Prevention] If this change came from a remote, do NOT send it back to TV
             if (isProcessingRemote.current) return;
 
+            // [Change Detection] Only sync if relevant fields changed (Ignore currentTime spam)
+            const hasQueueChanged = state.queue !== prevState.queue;
+            const hasIndexChanged = state.currentIndex !== prevState.currentIndex;
+            const hasPlayingChanged = state.isPlaying !== prevState.isPlaying;
+
+            if (!hasQueueChanged && !hasIndexChanged && !hasPlayingChanged) return;
+
             // Debounce Sync to avoid hammering Firebase
             if (syncTimeout) clearTimeout(syncTimeout);
 
