@@ -169,7 +169,7 @@ export default function MonitorPage() {
         </div>
       </div>
 
-      {/* 2. Idle Layer (Ambient) */}
+      {/* 2. Idle Layer (Ambient/Instructions) */}
       <div className={clsx(
         "absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#050505] transition-opacity duration-1000",
         !isIdle && "opacity-0 pointer-events-none"
@@ -178,23 +178,58 @@ export default function MonitorPage() {
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[120px] animate-pulse" />
         <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[150px]" />
 
-        <div className="relative z-20 text-center space-y-8 animate-in zoom-in-50 duration-700">
-          <h1 className="text-7xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white to-white/50 drop-shadow-lg">
-            YouOke Home
-          </h1>
-          <div className="bg-white/10 p-4 rounded-[48px] backdrop-blur-xl border border-white/10 shadow-2xl inline-block">
-            <div className="bg-white p-2 rounded-[36px]">
-              {roomCode && <QRCodeSVG value={qrUrl} size={280} level="H" />}
-            </div>
+        <div className="relative z-20 text-center space-y-12 animate-in zoom-in-50 duration-700 max-w-4xl px-8">
+          <div className="space-y-4">
+            <h1 className="text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-white to-white/40 drop-shadow-2xl">
+              YouOke <span className="text-primary">Monitor</span>
+            </h1>
+            <p className="text-2xl text-white/40 font-bold uppercase tracking-[0.3em]">พร้อมเชื่อมต่อจอภาพไร้สาย</p>
           </div>
-          <div className="space-y-2">
-            <p className="text-2xl text-white/60 font-medium">สแกนเพื่อเริ่มใช้งาน Party Mode</p>
-            <div className="flex items-center justify-center gap-3">
-              <span className="text-5xl font-mono font-bold text-white tracking-[0.2em]">{roomCode}</span>
+
+          <div className="grid grid-cols-12 gap-12 items-center">
+            {/* Left: Code & Instructions */}
+            <div className="col-span-12 lg:col-span-7 text-left space-y-8">
+              <div className="space-y-4">
+                <p className="text-lg text-white/60 font-medium">เริ่มต้นใช้งานใน 2 ขั้นตอน:</p>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-4 text-white/90">
+                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center font-black">1</div>
+                    <p className="text-xl font-bold">เปิด <span className="text-blue-400 font-mono">play.youoke.com</span> บนมือถือ</p>
+                  </div>
+                  <div className="flex items-center gap-4 text-white/90">
+                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center font-black">2</div>
+                    <p className="text-xl font-bold">ไปที่เมนู <span className="text-primary">เชื่อมต่อ</span> แล้วใส่รหัสห้อง:</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Room Code Sticker */}
+              <div className="inline-flex items-center gap-8 bg-white/5 backdrop-blur-md border border-white/10 pr-12 rounded-3xl overflow-hidden shadow-2xl">
+                <div className="px-8 py-6 bg-primary text-white font-black text-xl uppercase tracking-widest flex flex-col items-center justify-center leading-tight shadow-lg">
+                  <span>รหัส</span>
+                  <span>ห้อง</span>
+                </div>
+                <div className="text-8xl font-black text-white tracking-tighter drop-shadow-lg">
+                  {roomCode}
+                </div>
+              </div>
+            </div>
+
+            {/* Right: QR Code */}
+            <div className="col-span-12 lg:col-span-5 flex justify-center">
+              <div className="relative group">
+                <div className="absolute -inset-4 bg-primary/30 rounded-[3rem] blur-2xl opacity-50 group-hover:opacity-100 transition-opacity duration-1000 animate-pulse"></div>
+                <div className="relative bg-white p-6 rounded-[2.5rem] shadow-2xl hover:scale-105 transition-transform duration-500">
+                  {roomCode && <QRCodeSVG value={qrUrl} size={300} level="H" />}
+                  <div className="absolute -bottom-4 -right-4 bg-stone-900 border border-white/10 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 shadow-2xl">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-ping" />
+                    สแกนเพื่อเริ่มเลย
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-
         <div className="absolute bottom-10 text-white/30 text-sm font-medium tracking-widest uppercase">
           รอนักร้อง... เพิ่มเพลงเลย!
         </div>
