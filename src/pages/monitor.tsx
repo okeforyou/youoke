@@ -190,15 +190,19 @@ export default function MonitorPage() {
             {/* Left: Code & Instructions */}
             <div className="col-span-12 lg:col-span-7 text-left space-y-8">
               <div className="space-y-4">
-                <p className="text-lg text-white/60 font-medium">เริ่มต้นใช้งานใน 2 ขั้นตอน:</p>
+                <p className="text-lg text-white/60 font-medium">เชื่อมต่อกับเครื่องคอมพิวเตอร์หลัก (Main Dashboard):</p>
                 <div className="space-y-3">
                   <div className="flex items-center gap-4 text-white/90">
-                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center font-black">1</div>
-                    <p className="text-xl font-bold">เปิด <span className="text-blue-400 font-mono">play.youoke.com</span> บนมือถือ</p>
+                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center font-black italic text-xs">DJ</div>
+                    <p className="text-xl font-bold">เปิด <span className="text-blue-400 font-mono">play.youoke.com</span> บนเครื่องหลัก</p>
                   </div>
                   <div className="flex items-center gap-4 text-white/90">
                     <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center font-black">2</div>
-                    <p className="text-xl font-bold">ไปที่เมนู <span className="text-primary">เชื่อมต่อ</span> แล้วใส่รหัสห้อง:</p>
+                    <p className="text-xl font-bold">กดปุ่ม <span className="text-primary italic">CAST</span> แล้วเลือก Wireless Display</p>
+                  </div>
+                  <div className="flex items-center gap-4 text-white/90">
+                    <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center font-black">3</div>
+                    <p className="text-xl font-bold">ใส่รหัสห้องนี้เพื่อส่งภาพมายังจอนี้:</p>
                   </div>
                 </div>
               </div>
@@ -215,15 +219,15 @@ export default function MonitorPage() {
               </div>
             </div>
 
-            {/* Right: QR Code */}
+            {/* Right: QR Code for Quick Entry */}
             <div className="col-span-12 lg:col-span-5 flex justify-center">
               <div className="relative group">
                 <div className="absolute -inset-4 bg-primary/30 rounded-[3rem] blur-2xl opacity-50 group-hover:opacity-100 transition-opacity duration-1000 animate-pulse"></div>
                 <div className="relative bg-white p-6 rounded-[2.5rem] shadow-2xl hover:scale-105 transition-transform duration-500">
                   {roomCode && <QRCodeSVG value={qrUrl} size={300} level="H" />}
                   <div className="absolute -bottom-4 -right-4 bg-stone-900 border border-white/10 text-white px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest flex items-center gap-2 shadow-2xl">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-ping" />
-                    สแกนเพื่อเริ่มเลย
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                    Dashboard Link
                   </div>
                 </div>
               </div>
