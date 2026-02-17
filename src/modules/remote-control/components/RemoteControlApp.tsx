@@ -575,7 +575,32 @@ export default function RemoteControlApp() {
                         </div>
 
                         <div className="flex items-center gap-1 flex-shrink-0">
-                            {/* Simplified Header: Buttons removed for V1 feel (Phase 8) */}
+                            <button
+                                onClick={toggleTheme}
+                                className={`p-2 rounded-full transition-all active:scale-90 ${theme === 'dark' ? 'bg-white/10 text-yellow-400' : 'bg-gray-100 text-gray-600 shadow-sm'}`}
+                                title="สลับโหมด"
+                            >
+                                {theme === 'dark' ? <Sun size={18} strokeWidth={3} /> : <Moon size={18} strokeWidth={3} />}
+                            </button>
+                            <button
+                                onClick={() => window.location.reload()}
+                                className={`p-2 rounded-full transition-all active:scale-90 ${theme === 'dark' ? 'bg-white/10 text-gray-300' : 'bg-gray-100 text-gray-500 shadow-sm'}`}
+                                title="รีเฟรช"
+                            >
+                                <RefreshCw size={18} strokeWidth={3} />
+                            </button>
+                            <button
+                                onClick={() => setShowLocalQr(true)}
+                                className={`p-2 rounded-full transition-all active:scale-90 ${theme === 'dark' ? 'bg-white/10 text-gray-300' : 'bg-gray-100 text-gray-500 shadow-sm'}`}
+                            >
+                                <Share2 size={18} strokeWidth={3} />
+                            </button>
+                            <button
+                                onClick={() => sendCommand('TOGGLE_FULLSCREEN')}
+                                className={`p-2 rounded-full transition-all active:scale-90 ${theme === 'dark' ? 'bg-white/10 text-gray-300' : 'bg-gray-100 text-gray-500 shadow-sm'}`}
+                            >
+                                <Maximize size={18} strokeWidth={3} />
+                            </button>
                         </div>
                     </div>
 
