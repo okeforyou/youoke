@@ -94,12 +94,18 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
         else event.target.unMute();
 
         if (isPlaying && currentVideo) {
-            event.target.playVideo().then(() => {
-                setAutoplayBlocked(false);
-            }).catch(() => {
-                console.warn('📺 TV: Autoplay blocked. Waiting for interaction.');
+            try {
+                event.target.playVideo();
+                setTimeout(() => {
+                    const state = event.target.getPlayerState();
+                    if (state !== 1 && state !== 3) {
+                        console.warn('📺 TV: Autoplay blocked or stalling.');
+                        setAutoplayBlocked(true);
+                    }
+                }, 1500);
+            } catch (err) {
                 setAutoplayBlocked(true);
-            });
+            }
         }
     };
 
@@ -120,7 +126,19 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
         const player = playerRef.current;
 
         if (isPlaying) {
-            player.playVideo().then(() => setAutoplayBlocked(false)).catch(() => setAutoplayBlocked(true));
+            try {
+                player.playVideo();
+                setTimeout(() => {
+                    const state = player.getPlayerState();
+                    if (state !== 1 && state !== 3) {
+                        setAutoplayBlocked(true);
+                    } else {
+                        setAutoplayBlocked(false);
+                    }
+                }, 1500);
+            } catch (err) {
+                setAutoplayBlocked(true);
+            }
         } else {
             player.pauseVideo();
         }
