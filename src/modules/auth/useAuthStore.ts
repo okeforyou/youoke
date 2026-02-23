@@ -337,6 +337,11 @@ export const useAuthStore = create<UserState & AuthActions>()(
                         tier: 'free',
                         credits: 0,
                         isPremium: false,
+                        quota: {
+                            daily_limit: 5,
+                            used: 0,
+                            last_reset: new Date().toISOString()
+                        },
                         createdAt: serverTimestamp(),
                         updatedAt: serverTimestamp(),
                     });

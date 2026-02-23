@@ -23,7 +23,7 @@ const TVPage = () => {
         queue: [],
         currentIndex: 0,
         currentVideo: null,
-        controls: { isPlaying: false, isMuted: true }, // Start muted for autoplay policy
+        controls: { isPlaying: false, isMuted: false }, // Start UNMUTED for actual TV usage
     });
 
     const [isAuthReady, setIsAuthReady] = useState(false);
@@ -195,9 +195,9 @@ const TVPage = () => {
     };
 
     // Derived State
-    // counts all items in 'connected' node. TV itself is one.
     // If count is <= 1, it means only the TV is connected -> show QR.
-    const isIdle = !state.currentVideo && (state.queue || []).length === 0 && connectedCount <= 1;
+    // However, if a remote connects but no song is queued, we STILL want to show the QR/Signage, NOT a black screen.
+    const isIdle = !state.currentVideo && (state.queue || []).length === 0;
     const nextVideo = (state.queue || [])[state.currentIndex + 1] || null;
 
     if (!roomCode) return <div className="bg-black text-white h-screen flex items-center justify-center">กำลังโหลด TV...</div>;

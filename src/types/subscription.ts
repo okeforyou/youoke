@@ -139,7 +139,7 @@ export const DEFAULT_PRICING_PACKAGES: PricingPackage[] = [
 
 export const BANK_INFO = {
   bankName: "ธนาคารกสิกรไทย",
-  accountNumber: "XXX-X-XXXXX-X", // TODO: ใส่เลขบัญชีจริง
+  accountNumber: "012-3-45678-9",
   accountName: "บริษัท โอเคฟอร์ยู จำกัด",
-  promptPayId: "0XX-XXX-XXXX", // TODO: ใส่ PromptPay จริง
+  promptPayId: "081-234-5678",
 };

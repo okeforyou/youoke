@@ -181,7 +181,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
         if (!mounted) return;
         if (layoutMode === 'fullscreen') {
             if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(() => { });
+                document.documentElement.requestFullscreen().catch((err) => {
+                    console.warn("Fullscreen API failed (Expected on remote cast):", err);
+                    addToast('ขยายจอแล้ว (กด ⛶ ที่หน้าจอหลักเพื่อซ่อนแถบเบราว์เซอร์)');
+                });
             }
         } else if (layoutMode === 'split') {
             if (document.fullscreenElement) {
@@ -647,7 +650,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 ]
                         )}>
                         <div className="relative w-full h-full flex flex-col">
-                            <div className="w-full aspect-video bg-black shrink-0 relative overflow-hidden">
+                            <div className={clsx(
+                                "w-full bg-black shrink-0 relative overflow-hidden",
+                                layoutMode === 'fullscreen' ? "h-full" : "aspect-video"
+                            )}>
                                 <SidebarPlayer castMode={castMode} roomCode={roomCode} />
                                 {/* Cast Status Indicator */}
                                 {castMode !== 'none' && (

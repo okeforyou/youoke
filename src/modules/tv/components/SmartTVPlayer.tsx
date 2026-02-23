@@ -48,6 +48,7 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
     // const [showSplash, setShowSplash] = useState(false);
     const [activeNotification, setActiveNotification] = useState<{ message: string, sub: string, type: 'added' | 'upnext' } | null>(null);
     const [hasInteracted, setHasInteracted] = useState(false);
+    const [autoplayBlocked, setAutoplayBlocked] = useState(false);
 
     // Effect: Handle Song Splash on Video Change Removed
 
@@ -93,17 +94,23 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
         else event.target.unMute();
 
         if (isPlaying && currentVideo) {
-            event.target.playVideo().catch(() => {
+            event.target.playVideo().then(() => {
+                setAutoplayBlocked(false);
+            }).catch(() => {
                 console.warn('📺 TV: Autoplay blocked. Waiting for interaction.');
+                setAutoplayBlocked(true);
             });
         }
     };
 
     const handleInteraction = () => {
         setHasInteracted(true);
-        if (playerRef.current && isPlaying) {
+        setAutoplayBlocked(false);
+        if (playerRef.current) {
             playerRef.current.unMute();
-            playerRef.current.playVideo();
+            if (isPlaying) {
+                playerRef.current.playVideo();
+            }
         }
     };
 
@@ -112,9 +119,12 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
         if (!playerRef.current) return;
         const player = playerRef.current;
 
-        if (isPlaying) player.playVideo();
-        else player.pauseVideo();
-    }, [isPlaying]);
+        if (isPlaying) {
+            player.playVideo().then(() => setAutoplayBlocked(false)).catch(() => setAutoplayBlocked(true));
+        } else {
+            player.pauseVideo();
+        }
+    }, [isPlaying, currentVideo?.videoId]);
 
     // Effect: Sync Mute
     useEffect(() => {
@@ -169,6 +179,17 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
                 "absolute inset-x-0 bottom-0 h-96 bg-gradient-to-t from-black via-black/80 to-transparent pointer-events-none transition-opacity duration-1000",
                 showInfoToast ? "opacity-100" : "opacity-0"
             )} />
+
+            {/* TV Autoplay Block Prompt (Invisible overlay capturing first click) */}
+            {autoplayBlocked && !hasInteracted && (
+                <div onClick={handleInteraction} className="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm cursor-pointer animate-in fade-in">
+                    <div className="bg-primary/20 border border-primary text-white p-8 rounded-3xl text-center space-y-4 shadow-2xl animate-pulse">
+                        <PlayCircleIcon className="w-20 h-20 text-primary mx-auto" />
+                        <h2 className="text-3xl font-black">ระบบเสียงถูกระงับชั่วคราว</h2>
+                        <p className="text-lg opacity-80">โปรดกดปุ่ม <span className="font-bold text-primary px-2 py-1 bg-white/10 rounded">OK</span> บนรีโมททีวี<br />หรือคลิกที่หน้าจอนี้ 1 ครั้งเพื่อเปิดเสียง</p>
+                    </div>
+                </div>
+            )}
 
             {/* 3. Info Toast (Now Playing) */}
             <div className={clsx(

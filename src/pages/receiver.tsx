@@ -36,7 +36,7 @@ const Monitor = () => {
     queue: [],
     currentIndex: 0,
     currentVideo: null,
-    controls: { isPlaying: false, isMuted: true },
+    controls: { isPlaying: false, isMuted: false },
   });
   const [isConnected, setIsConnected] = useState(false);
   const [playerRef, setPlayerRef] = useState<YouTubePlayer | null>(null);
@@ -109,7 +109,7 @@ const Monitor = () => {
             queue: [],
             currentIndex: 0,
             currentVideo: null,
-            controls: { isPlaying: false, isMuted: true },
+            controls: { isPlaying: false, isMuted: false },
           },
           commands: {},
           createdAt: Date.now(),

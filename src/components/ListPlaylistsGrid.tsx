@@ -468,18 +468,10 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
       {activeIndex === 0 && (
         <div className="mb-8">
           <ListCommunityPlaylists onPlay={(pl) => {
-            // Handle Play Logic for Community Playlist
-            // If it has 'playlists' array (from Firestore), use it.
-            // But community_playlists doc usually doesn't store full tracks to save space?
-            // Wait, our 'community_playlists' schema didn't have 'items'.
-            // We might need to fetch them or assume they are external (Spotify).
-            // For now, let's just trigger a search or if we add 'items' later.
-            // Actually, 'ListRecommendedPlaylists' handles external ones by setting search term.
-            // Let's implement basic handling:
-            if (pl.source === 'spotify') {
-              // Trigger search for this playlist name
-              usePlayerStore.getState().setSearchTerm(pl.title);
-            }
+            const playerStore = usePlayerStore.getState();
+            playerStore.setSearchTerm(pl.title);
+            playerStore.setActiveIndex(0); // Switch to Search Tab
+            window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll up to see results
           }} />
         </div>
       )}
