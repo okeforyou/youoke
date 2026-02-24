@@ -182,10 +182,10 @@ export default function DualPlayer() {
         event.target.playVideo();
 
         // 2. Aggressive Retry (Double Tap)
-        setTimeout(() => {
+        setTimeout(async () => {
             try {
-                const state = event.target.getPlayerState();
-                if (state !== 1 && state !== 3) {
+                const state = await event.target.getPlayerState();
+                if ((state as any) !== 1 && (state as any) !== 3) {
                     console.log('🔄 [Dual] Force playing (retry)...');
                     event.target.playVideo();
                 }
