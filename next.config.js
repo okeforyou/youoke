@@ -15,7 +15,14 @@ const nextConfig = {
     ],
   },
   env: {
-    NEXT_PUBLIC_COMMIT_HASH: require('child_process').execSync('git rev-parse --short HEAD').toString().trim(),
+    NEXT_PUBLIC_COMMIT_HASH: (() => {
+      try {
+        return process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ||
+          require('child_process').execSync('git rev-parse --short HEAD').toString().trim();
+      } catch (e) {
+        return 'unknown';
+      }
+    })(),
   },
   async rewrites() {
     return [
