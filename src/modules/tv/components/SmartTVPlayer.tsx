@@ -96,9 +96,9 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
         if (isPlaying && currentVideo) {
             try {
                 event.target.playVideo();
-                setTimeout(() => {
-                    const state = event.target.getPlayerState();
-                    if (state !== 1 && state !== 3) {
+                setTimeout(async () => {
+                    const state = await event.target.getPlayerState();
+                    if ((state as any) !== 1 && (state as any) !== 3) {
                         console.warn('📺 TV: Autoplay blocked or stalling.');
                         setAutoplayBlocked(true);
                     }
@@ -128,9 +128,9 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
         if (isPlaying) {
             try {
                 player.playVideo();
-                setTimeout(() => {
-                    const state = player.getPlayerState();
-                    if (state !== 1 && state !== 3) {
+                setTimeout(async () => {
+                    const state = await player.getPlayerState();
+                    if ((state as any) !== 1 && (state as any) !== 3) {
                         setAutoplayBlocked(true);
                     } else {
                         setAutoplayBlocked(false);
