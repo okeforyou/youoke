@@ -223,11 +223,11 @@ const TVPage = () => {
             {/* Layer 2: Smart Player (Active) */}
             <div className={`absolute inset-0 transition-opacity duration-1000 bg-black ${!isIdle ? 'opacity-100 z-20' : 'opacity-0 z-0 pointer-events-none'}`}>
                 <SmartTVPlayer
-                    currentVideo={state.currentVideo}
-                    nextVideo={nextVideo}
-                    queue={state.queue || []}
+                    currentVideo={state.currentVideo as any}
+                    nextVideo={nextVideo as any}
+                    queue={(state.queue || []) as any}
                     isQueueVisible={state.isQueueVisible || false}
-                    notification={state.notification}
+                    notification={state.notification as any}
                     isPlaying={state.controls.isPlaying}
                     isMuted={state.controls.isMuted}
                     syncMode="remote"
