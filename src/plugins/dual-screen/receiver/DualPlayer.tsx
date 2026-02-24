@@ -2,7 +2,7 @@ import Head from 'next/head';
 import React, { useEffect, useState, useRef } from 'react';
 import YouTube from 'react-youtube';
 import { useFullscreen, useToggle } from 'react-use';
-import UnifiedPlayerInterface from '../../../../components/UnifiedPlayerInterface';
+// import UnifiedPlayerInterface from '../../../../components/UnifiedPlayerInterface';
 
 export default function DualPlayer() {
     // State
@@ -249,7 +249,7 @@ export default function DualPlayer() {
                 </div>
 
                 {/* Shared Unified Interface */}
-                <UnifiedPlayerInterface
+                {/* <UnifiedPlayerInterface
                     videoId={videoId}
                     queue={queue}
                     isPlaying={isPlaying}
@@ -259,7 +259,7 @@ export default function DualPlayer() {
                     onMuteToggle={toggleMute}
                     onToggleFullscreen={() => toggleFullscreen()}
                     isFullscreen={isFullscreen}
-                />
+                /> */}
 
             </div>
         </>
