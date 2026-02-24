@@ -649,10 +649,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                     (isQueueOpen && queue.length > 0) ? "lg:right-0" : "lg:-right-[420px]"
                                 ]
                         )}>
-                        <div className="relative w-full h-full flex flex-col">
+                        <div className={clsx(
+                            "relative w-full flex flex-col transition-all duration-500",
+                            layoutMode === 'fullscreen' ? "h-[100dvh] bg-black" : "h-full"
+                        )}>
                             <div className={clsx(
-                                "w-full bg-black shrink-0 relative overflow-hidden",
-                                layoutMode === 'fullscreen' ? "h-full" : "aspect-video"
+                                "w-full bg-black shrink-0 relative overflow-hidden transition-all duration-500",
+                                layoutMode === 'fullscreen' ? "h-full video-fit-contain" : "aspect-video"
                             )}>
                                 <SidebarPlayer castMode={castMode} roomCode={roomCode} />
                                 {/* Cast Status Indicator */}

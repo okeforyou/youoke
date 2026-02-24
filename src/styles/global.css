@@ -85,11 +85,32 @@
   @apply aspect-w-1 aspect-h-1;
 }
 
+html,
+body,
+#__next {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-bg-base, white);
+}
+
+/* Fix for PWA/Mobile background issues */
+@media (display-mode: standalone) {
+
+  html,
+  body,
+  #__next {
+    background-color: black;
+    /* Prevent gray bars in PWA */
+  }
+}
+
 html {
   font-family: var(--font-primary);
   /* Base Font Size Scale - Defaults to 16px if var not set */
   font-size: var(--base-font-size, 16px);
   font-weight: 300;
+  -webkit-text-size-adjust: 100%;
 }
 
 .toast {
@@ -218,6 +239,17 @@ html {
     position: absolute;
     top: 0;
     left: 0;
+    background: black;
+  }
+
+  /* Support for "See All" mode (Contain) */
+  .video-fit-contain iframe {
+    object-fit: contain !important;
+  }
+
+  /* Support for "Fill" mode (Cover) */
+  .video-fit-cover iframe {
+    object-fit: cover !important;
   }
 }
 
