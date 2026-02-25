@@ -346,9 +346,6 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                         </div>
                         <div className="space-y-2">
                             <h3 className="text-2xl font-black text-white tracking-tight">เชื่อมต่อหน้าจอที่ 2 แล้ว</h3>
-                            <p className="text-white/40 text-sm font-bold max-w-[240px] leading-relaxed">
-                                วิดีโอกำลังแสดงผลบนหน้าจอที่ 2
-                            </p>
                         </div>
                     </div>
                 )}

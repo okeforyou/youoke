@@ -26,7 +26,7 @@ import {
   ArrowsPointingOutIcon,
   ArrowsPointingInIcon,
 } from '@heroicons/react/24/outline';
-import { ConnectionBadge } from '../modules/tv/components/ConnectionBadge';
+
 
 export default function DualScreen() {
   const router = useRouter();
@@ -344,10 +344,7 @@ export default function DualScreen() {
       ) : (
         /* Player Screen */
         <div className="h-screen w-screen bg-black text-white flex flex-col">
-          {/* Connection Status Badge */}
-          <div className="absolute top-6 right-6 z-[60]">
-            <ConnectionBadge mode={syncMode} />
-          </div>
+
           <div ref={playerContainerRef} className="flex-1 relative">
             <YouTube
               videoId={currentSource}

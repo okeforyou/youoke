@@ -31,7 +31,7 @@ const LimitReachedModal = dynamic(() => import('../modules/player/components/Lim
 const ReceiverInfoModal = dynamic(() => import('../modules/party-system/components/ReceiverInfoModal').then(mod => mod.ReceiverInfoModal), { ssr: false });
 // Add UnifiedCastButton dynamic import if needed or import directly
 import { UnifiedCastButton } from '../plugins/cast/components/UnifiedCastButton';
-import { CastStatusBar, CastMode } from '../plugins/cast/components/CastStatusBar';
+import { type CastMode } from '../plugins/cast/components/CastStatusBar';
 // useCastCommands removed (Phase 6)
 
 
@@ -658,21 +658,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 layoutMode === 'fullscreen' ? "h-full video-fit-contain" : "aspect-video"
                             )}>
                                 <SidebarPlayer castMode={castMode} roomCode={roomCode} />
-                                {/* Cast Status Indicator */}
-                                {castMode !== 'none' && (
-                                    <div className="absolute bottom-2 left-2 right-2 z-50">
-                                        <CastStatusBar
-                                            mode={castMode}
-                                            roomCode={roomCode}
-                                            onDisconnect={() => {
-                                                setCastMode('none');
-                                                localStorage.setItem('youoke-dual-active', 'false');
-                                                useUIStore.getState().setIsCastingLocal(false);
-                                                addToast('ตัดการเชื่อมต่อแล้ว');
-                                            }}
-                                        />
-                                    </div>
-                                )}
+
                             </div>
                             {/* Mobile Only Controls (Desktop controls moved to Aside for better interaction) */}
                             {layoutMode !== 'fullscreen' && (
