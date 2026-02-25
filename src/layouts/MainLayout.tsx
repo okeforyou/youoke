@@ -256,6 +256,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
         addToast(`เชื่อมต่อหน้าจอทีวี (ห้อง ${code}) สำเร็จ!`);
     };
 
+    // 🛑 AUTO-PAUSE Local Player when Casting starts
+    useEffect(() => {
+        if (castMode !== 'none' && isPlaying) {
+            console.log('🔇 [Main] Casting active: Pausing local player to avoid echo.');
+            usePlayerStore.getState().pause();
+        }
+    }, [castMode]);
+
     const handleCastSelectYouTube = () => {
         setCastModalOpen(false);
         setCastMode('youtube');

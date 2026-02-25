@@ -111,11 +111,11 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
                 <div className="bg-gray-50 dark:bg-black/20 rounded-xl p-2.5 text-[10px] font-medium text-gray-600 dark:text-gray-400 leading-relaxed border border-gray-100 dark:border-white/5">
                   <div className="flex gap-2">
                     <span className="w-3 h-3 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 font-bold text-[8px]">1</span>
-                    <p>เปิด <span className="font-bold text-primary">{typeof window !== 'undefined' ? window.location.host : 'youoke.vercel.app'}/tv</span> บนหน้าจออื่น</p>
+                    <p>เปิด <span className="font-bold text-primary">{typeof window !== 'undefined' ? window.location.host : 'youoke.vercel.app'}/monitor</span> บนหน้าจออื่น</p>
                   </div>
                   <div className="flex gap-2 mt-1.5">
                     <span className="w-3 h-3 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 font-bold text-[8px]">2</span>
-                    <p>กรอกรหัส 4 หลักที่ปรากฏบนหน้าจอรับภาพ</p>
+                    <p>กรอกรหัส 4 หลักที่ปรากฏขึ้นบนจอนั้น</p>
                   </div>
                 </div>
 

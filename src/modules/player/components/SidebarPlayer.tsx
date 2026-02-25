@@ -317,7 +317,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
         >
             {/* Universal Player Layer (Youtube / MIDI / VCD) */}
             <div className={`absolute inset-0 max-h-full max-w-full z-0 youtube-player-wrapper`}>
-                {(castMode === 'none' || castMode === 'smarttv') ? (
+                {(castMode === 'none') ? (
                     <UniversalPlayer
                         onReady={(target) => {
                             if (onPlayerReady) onPlayerReady({ target });
@@ -335,15 +335,47 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                         className="w-full h-full pointer-events-auto"
                     />
                 ) : (
-                    /* 📺 Other Casting Overlays (Web Monitor / Dual) */
+                    /* 📺 Casting Overlay (Restored - Phase 10 logic with better UI) */
                     <div className="absolute inset-0 bg-[#0a0a0a] flex flex-col items-center justify-center p-8 text-center space-y-6 z-20">
                         <div className="relative h-24 w-32 flex items-center justify-center">
-                            <Monitor className="w-16 h-16 text-primary" />
+                            <div className="absolute -inset-8 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
+                            {/* Dual Screen Icon Composition */}
+                            <div className="relative">
+                                <Monitor className="w-16 h-16 text-primary/30 -translate-x-6" />
+                                <Monitor className="w-16 h-16 text-primary absolute top-0 left-0 translate-x-4 shadow-[0_0_30px_rgba(var(--primary-rgb),0.3)]" />
+                            </div>
                         </div>
-                        <h3 className="text-xl font-bold text-white">เชื่อมต่อหน้าจอที่ 2 แล้ว</h3>
-                        {onDisconnect && (
-                            <button onClick={onDisconnect} className="btn btn-error btn-sm">ยกเลิกการเชื่อมต่อ</button>
-                        )}
+                        <div className="space-y-4">
+                            <h3 className="text-2xl font-black text-white tracking-tight">
+                                {castMode === 'smarttv' ? 'เชื่อมต่อหน้าจอที่ 2 แล้ว' : 'กำลังเริ่มเชื่อมต่อ...'}
+                            </h3>
+
+                            <div className="flex flex-col gap-3">
+                                {castMode !== 'none' && !isPlaying && (
+                                    <button
+                                        onClick={onForcePlay || (() => usePlayerStore.getState().play())}
+                                        className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/80 text-white rounded-xl transition-all font-bold text-lg mx-auto shadow-lg shadow-primary/20 animate-bounce"
+                                    >
+                                        <PlayCircle className="w-6 h-6" />
+                                        <span>กดเพื่อเริ่มเล่นวิดีโอ</span>
+                                    </button>
+                                )}
+
+                                {onDisconnect && (
+                                    <button
+                                        onClick={onDisconnect}
+                                        className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-red-500/20 text-white/40 hover:text-red-500 rounded-xl transition-all font-bold text-xs mx-auto group border border-white/5 hover:border-red-500/20"
+                                    >
+                                        <Power className="w-3 h-3" />
+                                        <span>ยกเลิกการเชื่อมต่อ</span>
+                                    </button>
+                                )}
+                            </div>
+
+                            <p className="text-white/30 text-[10px] font-medium max-w-[200px] mx-auto leading-relaxed">
+                                วิดีโอและเสียงจะแสดงผลบนหน้าจอ {castMode === 'smarttv' ? 'TV / Monitor' : 'ที่เลือก'} เท่านั้น
+                            </p>
+                        </div>
                     </div>
                 )}
 
