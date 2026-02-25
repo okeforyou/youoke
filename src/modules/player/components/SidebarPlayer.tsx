@@ -317,13 +317,12 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
         >
             {/* Universal Player Layer (Youtube / MIDI / VCD) */}
             <div className={`absolute inset-0 max-h-full max-w-full z-0 youtube-player-wrapper`}>
-                {castMode === 'none' ? (
+                {(castMode === 'none' || castMode === 'smarttv') ? (
                     <UniversalPlayer
                         onReady={(target) => {
-                            onReady(target);
                             if (onPlayerReady) onPlayerReady({ target });
                         }}
-                        onStateChange={(event) => {
+                        onStateChange={(event: any) => {
                             if (onPlayerStateChange) onPlayerStateChange(event);
                         }}
                         onEnded={() => {
@@ -336,43 +335,32 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                         className="w-full h-full pointer-events-auto"
                     />
                 ) : (
-                    /* 📺 Casting Overlay (Restored - Phase 10) */
-                    <div className="absolute inset-0 bg-[#0a0a0a] flex flex-col items-center justify-center p-8 text-center space-y-6 z-20 transition-all duration-500">
+                    /* 📺 Other Casting Overlays (Web Monitor / Dual) */
+                    <div className="absolute inset-0 bg-[#0a0a0a] flex flex-col items-center justify-center p-8 text-center space-y-6 z-20">
                         <div className="relative h-24 w-32 flex items-center justify-center">
-                            <div className="absolute -inset-8 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
-                            {/* Dual Screen Icon Composition */}
-                            <div className="relative">
-                                <Monitor className="w-16 h-16 text-primary/30 -translate-x-6" />
-                                <Monitor className="w-16 h-16 text-primary absolute top-0 left-0 translate-x-4 shadow-[0_0_30px_rgba(var(--primary-rgb),0.3)]" />
-                            </div>
+                            <Monitor className="w-16 h-16 text-primary" />
                         </div>
-                        <div className="space-y-4">
-                            <h3 className="text-2xl font-black text-white tracking-tight">
-                                {castMode === 'smarttv' ? 'เชื่อมต่อแบบข้ามอุปกรณ์' : 'เชื่อมต่อหน้าจอที่ 2 แล้ว'}
-                            </h3>
+                        <h3 className="text-xl font-bold text-white">เชื่อมต่อหน้าจอที่ 2 แล้ว</h3>
+                        {onDisconnect && (
+                            <button onClick={onDisconnect} className="btn btn-error btn-sm">ยกเลิกการเชื่อมต่อ</button>
+                        )}
+                    </div>
+                )}
 
-                            <div className="flex flex-col gap-3">
-                                {castMode !== 'none' && !isPlaying && (
-                                    <button
-                                        onClick={onForcePlay || (() => usePlayerStore.getState().play())}
-                                        className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/80 text-white rounded-xl transition-all font-bold text-lg mx-auto shadow-lg shadow-primary/20 animate-bounce"
-                                    >
-                                        <PlayCircle className="w-6 h-6" />
-                                        <span>กดเพื่อเริ่มเล่นวิดีโอ</span>
-                                    </button>
-                                )}
-
-                                {onDisconnect && (
-                                    <button
-                                        onClick={onDisconnect}
-                                        className="flex items-center gap-2 px-4 py-2 bg-red-500/20 hover:bg-red-500 text-red-100 rounded-xl transition-all font-bold text-sm mx-auto group border border-red-500/20"
-                                    >
-                                        <Power className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                                        <span>ยกเลิกการเชื่อมต่อ</span>
-                                    </button>
-                                )}
-                            </div>
-                        </div>
+                {/* 📡 SmartTV Casting Indicator Over Player */}
+                {castMode === 'smarttv' && (
+                    <div className="absolute top-4 left-4 z-30 flex items-center gap-2 bg-primary/20 backdrop-blur-md border border-primary/30 px-3 py-1.5 rounded-full animate-in fade-in slide-in-from-left-2 transition-all">
+                        <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                        <span className="text-[10px] font-black text-white uppercase tracking-wider">Casting to TV {roomCode && `(Room ${roomCode})`}</span>
+                        {onDisconnect && (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); onDisconnect(); }}
+                                className="ml-2 p-1 hover:bg-white/10 rounded-full transition-colors"
+                                title="Disconnect"
+                            >
+                                <Power className="w-3 h-3 text-white/60 hover:text-white" />
+                            </button>
+                        )}
                     </div>
                 )}
             </div>
