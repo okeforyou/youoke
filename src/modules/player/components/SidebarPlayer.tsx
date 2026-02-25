@@ -16,7 +16,7 @@ import { QuotaIndicator } from "./QuotaIndicator";
 import { usePlayerLifecycle } from "../hooks/usePlayerLifecycle";
 import { usePlayerSync } from "../hooks/usePlayerSync";
 
-import { Tv, Radio } from 'lucide-react';
+import { Tv, Radio, Monitor } from 'lucide-react';
 
 interface SidebarPlayerProps {
     isPassive?: boolean;
@@ -315,23 +315,41 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
         >
             {/* Universal Player Layer (Youtube / MIDI / VCD) */}
             <div className={`absolute inset-0 max-h-full max-w-full z-0 youtube-player-wrapper`}>
-                <UniversalPlayer
-                    onReady={(target) => {
-                        onReady(target);
-                        if (onPlayerReady) onPlayerReady({ target });
-                    }}
-                    onStateChange={(event) => {
-                        if (onPlayerStateChange) onPlayerStateChange(event);
-                    }}
-                    onEnded={() => {
-                        console.log("🎬 Media ended, playing next...");
-                        if (!isPassive) {
-                            usePlayerStore.getState().playNext();
-                        }
-                    }}
-                    showControls={false}
-                    className="w-full h-full pointer-events-auto"
-                />
+                {castMode === 'none' ? (
+                    <UniversalPlayer
+                        onReady={(target) => {
+                            onReady(target);
+                            if (onPlayerReady) onPlayerReady({ target });
+                        }}
+                        onStateChange={(event) => {
+                            if (onPlayerStateChange) onPlayerStateChange(event);
+                        }}
+                        onEnded={() => {
+                            console.log("🎬 Media ended, playing next...");
+                            if (!isPassive) {
+                                usePlayerStore.getState().playNext();
+                            }
+                        }}
+                        showControls={false}
+                        className="w-full h-full pointer-events-auto"
+                    />
+                ) : (
+                    /* 📺 Casting Overlay (Restored - Phase 10) */
+                    <div className="absolute inset-0 bg-[#0a0a0a] flex flex-col items-center justify-center p-8 text-center space-y-6 z-20 transition-all duration-500">
+                        <div className="relative">
+                            <div className="absolute -inset-4 bg-primary/20 rounded-full blur-2xl animate-pulse"></div>
+                            <div className="relative w-24 h-24 rounded-3xl bg-gradient-to-br from-stone-800 to-stone-900 flex items-center justify-center border border-white/5 shadow-2xl">
+                                <Monitor className="w-12 h-12 text-primary" />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <h3 className="text-2xl font-black text-white tracking-tight">เชื่อมต่อหน้าจอแล้ว</h3>
+                            <p className="text-white/40 text-sm font-bold max-w-[200px] leading-relaxed">
+                                วิดีโอกำลังแสดงผลบน{(castMode === 'tv' || castMode === 'dual') ? 'หน้าจอทีวี' : 'อุปกรณ์อื่น'}
+                            </p>
+                        </div>
+                    </div>
+                )}
             </div>
 
 
