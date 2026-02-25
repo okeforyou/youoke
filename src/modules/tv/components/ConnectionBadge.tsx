@@ -19,15 +19,9 @@ export const ConnectionBadge: React.FC<ConnectionBadgeProps> = ({ mode, classNam
             className
         )}>
             {isLocal ? (
-                <>
-                    <BoltIcon className="w-3 h-3 animate-pulse" />
-                    <span>Local Link</span>
-                </>
+                <BoltIcon className="w-3 h-3 animate-pulse" />
             ) : (
-                <>
-                    <GlobeAltIcon className="w-3 h-3 animate-spin-slow" />
-                    <span>Cloud Link</span>
-                </>
+                <GlobeAltIcon className="w-3 h-3 animate-spin-slow" />
             )}
         </div>
     );

@@ -19,7 +19,7 @@ const CAST_CONFIG: Record<CastMode, { icon: React.ReactNode; label: string; colo
     },
     dual: {
         icon: <Monitor size={14} />,
-        label: '🖥️ Dual Screen (HDMI)',
+        label: '🖥️ หน้าจอแยก',
         color: 'text-blue-400',
         bg: 'bg-blue-500/10 border-blue-500/20'
     },

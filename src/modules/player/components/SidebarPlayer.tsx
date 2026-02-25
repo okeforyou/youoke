@@ -336,16 +336,18 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                 ) : (
                     /* 📺 Casting Overlay (Restored - Phase 10) */
                     <div className="absolute inset-0 bg-[#0a0a0a] flex flex-col items-center justify-center p-8 text-center space-y-6 z-20 transition-all duration-500">
-                        <div className="relative">
-                            <div className="absolute -inset-4 bg-primary/20 rounded-full blur-2xl animate-pulse"></div>
-                            <div className="relative w-24 h-24 rounded-3xl bg-gradient-to-br from-stone-800 to-stone-900 flex items-center justify-center border border-white/5 shadow-2xl">
-                                <Monitor className="w-12 h-12 text-primary" />
+                        <div className="relative h-24 w-32 flex items-center justify-center">
+                            <div className="absolute -inset-8 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
+                            {/* Dual Screen Icon Composition */}
+                            <div className="relative">
+                                <Monitor className="w-16 h-16 text-primary/30 -translate-x-6" />
+                                <Monitor className="w-16 h-16 text-primary absolute top-0 left-0 translate-x-4 shadow-[0_0_30px_rgba(var(--primary-rgb),0.3)]" />
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <h3 className="text-2xl font-black text-white tracking-tight">เชื่อมต่อหน้าจอแล้ว</h3>
-                            <p className="text-white/40 text-sm font-bold max-w-[200px] leading-relaxed">
-                                วิดีโอกำลังแสดงผลบน{(castMode === 'tv' || castMode === 'dual') ? 'หน้าจอทีวี' : 'อุปกรณ์อื่น'}
+                            <h3 className="text-2xl font-black text-white tracking-tight">เชื่อมต่อหน้าจอที่ 2 แล้ว</h3>
+                            <p className="text-white/40 text-sm font-bold max-w-[240px] leading-relaxed">
+                                วิดีโอกำลังแสดงผลบนหน้าจอที่ 2
                             </p>
                         </div>
                     </div>
