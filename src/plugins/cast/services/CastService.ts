@@ -101,7 +101,7 @@ export class CastService {
             } catch (e) {
                 console.error('State Sync Error:', e);
             }
-        }, 1000);
+        }, 500); // 500ms Poll for smoother Monitor sync
     }
 
     private async syncLocalStateToFirebase() {
@@ -113,6 +113,7 @@ export class CastService {
             queue: store.queue,
             currentIndex: store.currentIndex,
             currentVideo: store.currentVideo,
+            currentSource: store.currentSource,
             controls: {
                 isPlaying: store.isPlaying,
                 isMuted: store.isMuted,

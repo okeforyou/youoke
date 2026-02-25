@@ -112,17 +112,31 @@ export default function MonitorPage() {
   useEffect(() => {
     setMounted(true);
 
-    // 1. Get Room Code: Priority is Query -> Session -> New Random
-    const roomFromQuery = router.query.room as string;
-    let localCode = roomFromQuery || sessionStorage.getItem('youoke_room_code');
-
-    if (!localCode) {
-      localCode = Math.floor(1000 + Math.random() * 9000).toString();
+    // 🧹 Aggressive Cleanup: Reset local player to prevent "stale" songs
+    if (typeof window !== 'undefined') {
+      const store = usePlayerStore.getState();
+      store.pause();
+      usePlayerStore.setState({
+        queue: [],
+        currentVideo: null,
+        currentSource: null,
+        currentIndex: 0,
+        isPlaying: false,
+        currentTime: 0,
+        duration: 0
+      });
+      console.log('🧹 Monitor: Local State Cleared');
     }
 
-    // Persist if it was generated or from query
-    sessionStorage.setItem('youoke_room_code', localCode);
+    // 1. Get Room Code: ALWAYS generate new if not in Query (Fresh PIN)
+    const roomFromQuery = router.query.room as string;
+    const localCode = roomFromQuery || Math.floor(1000 + Math.random() * 8999).toString();
+
     setRoomCode(localCode);
+    sessionStorage.setItem('youoke_room_code', localCode);
+
+    // Ensure PIN is always visible by resetting idle state if needed
+    // (Actual reset happens via store clearing above)
 
     // 2. State Sync: Listen to Room State from Firebase (Receiver Mode)
     if (!realtimeDb) return;
@@ -130,17 +144,19 @@ export default function MonitorPage() {
     const unsubscribe = onValue(stateRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        console.log('🖥️ Monitor: Received State Update', data.currentVideo?.title);
+        console.log('🖥️ Monitor: Syncing State from Host ->', data.currentVideo?.title);
 
-        // Update Local Store (Sync All)
-        usePlayerStore.setState((prev) => ({
-          ...prev,
-          ...data,
-          // Merge controls safely
-          isPlaying: data.isPlaying ?? data.controls?.isPlaying ?? prev.isPlaying,
-          currentTime: data.currentTime ?? data.controls?.currentTime ?? prev.currentTime,
-          duration: data.duration ?? data.controls?.duration ?? prev.duration,
-        }));
+        // Authoritative Sync from Host (Complete Override)
+        usePlayerStore.setState({
+          queue: data.queue || [],
+          currentIndex: data.currentIndex || 0,
+          currentVideo: data.currentVideo || null,
+          currentSource: data.currentSource || (data.currentVideo?.videoId || data.currentVideo?.id) || null,
+          isPlaying: data.controls?.isPlaying ?? data.isPlaying ?? false,
+          currentTime: data.controls?.currentTime ?? data.currentTime ?? 0,
+          duration: data.controls?.duration ?? data.duration ?? 0,
+          layoutMode: data.layoutMode || 'fullscreen'
+        });
       }
     });
 

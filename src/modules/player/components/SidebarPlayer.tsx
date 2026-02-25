@@ -222,7 +222,18 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
         // For standard IDs, UniversalPlayer already updates via props.
         // We only use playerRef.current for play/pause/seek controls.
     }, [currentSource]);
+    // 🔇 LOCAL MUTE BRIDGE: Prevent sound on Dashboard when casting to Monitor
+    useEffect(() => {
+        if (!playerRef.current) return;
+        const target = playerRef.current;
 
+        if (castMode === 'smarttv' || castMode === 'webmonitor') {
+            console.log('🔇 SidebarPlayer: Local Mute active (Casting Mode)');
+            if (typeof target.mute === 'function') target.mute();
+        } else {
+            if (typeof target.unMute === 'function') target.unMute();
+        }
+    }, [castMode]);
     // 🍞 Toast Logic
     const [showToast, setShowToast] = useState(false);
     const [toastType, setToastType] = useState<'added' | 'upnext'>('added');

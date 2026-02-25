@@ -101,20 +101,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const allowRemote = config?.membership?.[isPremium ? 'premium' : 'free']?.allow_remote;
 
     // Unified Party Room Code (Always numeric PIN)
-    const [partyPIN, setPartyPIN] = useState<string | null>(() => {
-        if (typeof window !== 'undefined') {
-            return localStorage.getItem('youoke_party_pin');
-        }
-        return null;
-    });
-
-    useEffect(() => {
-        if (!partyPIN) {
-            const pin = Math.floor(1000 + Math.random() * 9000).toString();
-            localStorage.setItem('youoke_party_pin', pin);
-            setPartyPIN(pin);
-        }
-    }, [partyPIN]);
+    // For Monitor/Receiver model, we don't auto-generate on Dashboard. 
+    // We wait for the user to enter the PIN from the Monitor page.
+    const [partyPIN, setPartyPIN] = useState<string | null>(null);
 
     const roomCode = partyPIN;
 
@@ -256,13 +245,22 @@ export default function MainLayout({ children }: MainLayoutProps) {
         addToast(`เชื่อมต่อหน้าจอทีวี (ห้อง ${code}) สำเร็จ!`);
     };
 
-    // 🛑 AUTO-PAUSE Local Player when Casting starts
+    // 📡 Monitor Sync Bridge (Phase 12: Receiver Model Restoration)
     useEffect(() => {
-        if (castMode !== 'none' && isPlaying) {
-            console.log('🔇 [Main] Casting active: Pausing local player to avoid echo.');
-            usePlayerStore.getState().pause();
+        if (castMode === 'smarttv' && partyPIN) {
+            const initCastSync = async () => {
+                const { castService } = await import('../plugins/cast/services/CastService');
+                console.log('🔗 [Main] Initializing Monitor Bridge:', partyPIN);
+                await castService.initialize(partyPIN);
+            };
+            initCastSync();
+        } else if (castMode === 'none') {
+            // Cleanup cast service if disabled
+            import('../plugins/cast/services/CastService').then(({ castService }) => castService.cleanup());
         }
-    }, [castMode]);
+    }, [castMode, partyPIN]);
+
+    // 🛑 Audio Conflict Logic moved to SidebarPlayer (Local Mute)
 
     const handleCastSelectYouTube = () => {
         setCastModalOpen(false);

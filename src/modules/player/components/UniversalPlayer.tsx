@@ -152,6 +152,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     return (
         <div className={`relative w-full h-full ${className} youtube-player-wrapper`}>
             <YouTube
+                key={activeVideoId || 'idle'}
                 videoId={activeVideoId}
                 opts={opts}
                 className="w-full h-full"
