@@ -110,10 +110,12 @@ const TVPage = () => {
                 setState(prev => ({
                     ...prev,
                     ...data,
-                    // Keep local controls that might be UI specific, but sync core playback
+                    // Robustly merge controls
                     controls: {
-                        ...prev.controls,
-                        ...data.controls
+                        isPlaying: data.controls?.isPlaying ?? data.isPlaying ?? prev.controls.isPlaying,
+                        isMuted: data.controls?.isMuted ?? data.isMuted ?? prev.controls.isMuted,
+                        currentTime: data.controls?.currentTime ?? data.currentTime ?? 0,
+                        duration: data.controls?.duration ?? data.duration ?? 0
                     }
                 }));
             }
