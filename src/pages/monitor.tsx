@@ -138,57 +138,19 @@ export default function MonitorPage() {
     // Ensure PIN is always visible by resetting idle state if needed
     // (Actual reset happens via store clearing above)
 
-    // 2. State Sync: Listen to Room State from Firebase (Receiver Mode)
-    if (!realtimeDb) return;
-    const stateRef = ref(realtimeDb, `rooms/${localCode}/state`);
-    const unsubscribe = onValue(stateRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        console.log('🖥️ Monitor: Syncing State from Host ->', data.currentVideo?.title);
+    // 2. Wireless Sync Initialization (Receiver Model)
+    const initCast = async () => {
+      const { castService } = await import('../plugins/cast/services/CastService');
+      console.log('🖥️ Monitor: Initializing Receiver Mode (Room:', localCode, ')');
+      await castService.initialize(localCode, 'monitor');
+    };
 
-        // Authoritative Sync from Host (Complete Override)
-        usePlayerStore.setState({
-          queue: data.queue || [],
-          currentIndex: data.currentIndex || 0,
-          currentVideo: data.currentVideo || null,
-          currentSource: data.currentSource || (data.currentVideo?.videoId || data.currentVideo?.id) || null,
-          isPlaying: data.controls?.isPlaying ?? data.isPlaying ?? false,
-          currentTime: data.controls?.currentTime ?? data.currentTime ?? 0,
-          duration: data.controls?.duration ?? data.duration ?? 0,
-          layoutMode: data.layoutMode || 'fullscreen'
-        });
-      }
-    });
-
-    // 3. Command Listener: Listen for direct commands (PLAY, PAUSE, etc)
-    const commandsRef = ref(realtimeDb, `rooms/${localCode}/commands`);
-    const processedIds = new Set<string>();
-    const unsubscribeCmd = onChildAdded(commandsRef, (snapshot) => {
-      const cmdId = snapshot.key;
-      const data = snapshot.val();
-      if (!cmdId || !data || data.status !== 'pending' || processedIds.has(cmdId)) return;
-
-      processedIds.add(cmdId);
-      const cmd = data.command;
-      console.log('🖥️ Monitor: Received Command', cmd.type);
-
-      const store = usePlayerStore.getState();
-      if (cmd.type === 'PLAY') store.play();
-      if (cmd.type === 'PAUSE') store.pause();
-      if (cmd.type === 'NEXT') store.playNext();
-      if (cmd.type === 'SEEK') store.seekTo(cmd.payload?.time || 0);
-
-      // Mark as completed
-      if (realtimeDb) {
-        set(ref(realtimeDb, `rooms/${localCode}/commands/${cmdId}/status`), 'completed');
-      }
-    });
+    if (localCode) initCast();
 
     const timer = setInterval(() => setTime(new Date()), 60000);
 
     return () => {
-      unsubscribe();
-      unsubscribeCmd();
+      import('../plugins/cast/services/CastService').then(({ castService }) => castService.cleanup());
       clearInterval(timer);
     };
   }, [router.isReady, router.query.room]);

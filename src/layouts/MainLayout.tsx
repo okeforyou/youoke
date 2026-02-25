@@ -283,17 +283,44 @@ export default function MainLayout({ children }: MainLayoutProps) {
         }
     }, [roomCode, mounted]);
 
-    // 📡 Dashboard → TV Command Bridge
-    // When castMode is 'smarttv', forward player store changes as Firebase commands
-    // const castCommands removed (Phase 6)
+    // 📡 Wireless Dual Mode Bridge (Dashboard Controller → Monitor Display)
+    useEffect(() => {
+        if (castMode !== 'smarttv' || !partyPIN || !realtimeDb) return;
 
-    const prevQueueRef = useRef<any[]>([]);
-    const prevVideoRef = useRef<string | null>(null);
-    const prevPlayingRef = useRef<boolean>(false);
+        const commandsRef = ref(realtimeDb, `rooms/${partyPIN}/commands`);
 
-    // Atomic Bridge REMOVED (Phase 6: Complexity Reduction)
-    // The Dashboard no longer pushes its local state to the TV.
-    // The TV is now controlled exclusively via its own QR code/remote.
+        const sendCommand = (type: string, payload?: any) => {
+            console.log(`📤 Forwarding to Monitor: ${type}`);
+            push(commandsRef, {
+                command: { type, payload, timestamp: Date.now() },
+                status: 'pending',
+                timestamp: Date.now(),
+                from: 'dashboard'
+            });
+        };
+
+        // Watch for local store changes and forward as intent-based commands
+        const unsubscribe = usePlayerStore.subscribe((state, prevState) => {
+            // 1. Play/Pause
+            if (state.isPlaying !== prevState.isPlaying) {
+                sendCommand(state.isPlaying ? 'PLAY' : 'PAUSE');
+            }
+            // 2. Video Change
+            if (state.currentSource !== prevState.currentSource && state.currentSource) {
+                sendCommand('PLAY_NOW', { videoId: state.currentSource });
+            }
+            // 3. Queue Change (Basic Sync)
+            if (JSON.stringify(state.queue.map(v => v.uuid)) !== JSON.stringify(prevState.queue.map(v => v.uuid))) {
+                sendCommand('REORDER_QUEUE', { queue: state.queue });
+            }
+            // 4. Seeker Sync (Only if jump is significant, e.g. manual seek)
+            if (Math.abs(state.currentTime - prevState.currentTime) > 5) {
+                sendCommand('SEEK', { time: state.currentTime });
+            }
+        });
+
+        return () => unsubscribe();
+    }, [castMode, partyPIN, realtimeDb]);
 
 
     useEffect(() => {

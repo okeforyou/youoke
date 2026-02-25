@@ -1,4 +1,4 @@
-import { ref, off, get, set, update, push, child, remove, onChildAdded, query, orderByChild, equalTo, limitToLast } from 'firebase/database';
+import { ref, off, get, set, update, push, child, remove, onChildAdded, onValue, query, orderByChild, equalTo, limitToLast } from 'firebase/database';
 import { signInAnonymously } from 'firebase/auth';
 import { realtimeDb, auth } from '../../../firebase';
 import { usePlayerStore } from '../../../modules/player/stores/usePlayerStore';
@@ -9,35 +9,35 @@ export class CastService {
     private unsubscribe: (() => void) | null = null;
     private pollInterval: NodeJS.Timeout | null = null;
     private commandListenerOff: (() => void) | null = null;
+    private role: 'host' | 'monitor' = 'host';
+    private stateListenerOff: (() => void) | null = null;
     private processedCommandIds = new Set<string>();
 
     constructor() { }
 
-    public async initialize(roomCode?: string): Promise<string> {
+    public async initialize(roomCode: string, role: 'host' | 'monitor' = 'host'): Promise<string> {
         // Cleanup previous session if any
         this.cleanup();
+        this.role = role;
 
         if (!auth) {
-            console.warn("🔥 Firebase Auth not initialized. Casting disabled. Check .env.local file.");
+            console.warn("🔥 Firebase Auth not initialized. Casting disabled.");
             return "";
         }
 
-        if (!auth.currentUser) {
-            try {
-                await signInAnonymously(auth);
-            } catch (e) {
-                console.error("🔥 Anonymous Auth failed:", e);
-                return "";
-            }
-        }
+        if (!auth.currentUser) await signInAnonymously(auth).catch(e => console.error("🔥 Auth failed:", e));
 
-        this.roomCode = roomCode || this.generateRoomCode();
-        console.log('📡 Initializing CastService for Room:', this.roomCode);
+        this.roomCode = roomCode;
+        console.log(`📡 Initializing CastService (${role}) for Room:`, this.roomCode);
 
         await this.createRoomIfNotExists(this.roomCode);
 
-        this.startStatePolling();
-        this.startCommandListener();
+        if (role === 'monitor') {
+            this.startStatePolling();
+            this.startCommandListener();
+        } else {
+            this.startStateListener();
+        }
 
         return this.roomCode;
     }
@@ -45,10 +45,11 @@ export class CastService {
     public cleanup() {
         if (this.pollInterval) clearInterval(this.pollInterval);
         if (this.commandListenerOff) this.commandListenerOff();
+        if (this.stateListenerOff) this.stateListenerOff();
 
         if (this.roomCode && realtimeDb) {
-            const commandsRef = ref(realtimeDb, `rooms/${this.roomCode}/commands`);
-            off(commandsRef);
+            off(ref(realtimeDb, `rooms/${this.roomCode}/commands`));
+            off(ref(realtimeDb, `rooms/${this.roomCode}/state`));
         }
 
         this.roomCode = null;
@@ -102,6 +103,28 @@ export class CastService {
                 console.error('State Sync Error:', e);
             }
         }, 500); // 500ms Poll for smoother Monitor sync
+    }
+
+    private startStateListener() {
+        if (!realtimeDb || !this.roomCode) return;
+
+        console.log("👂 Host: Listening for Monitor state...");
+        const stateRef = ref(realtimeDb, `rooms/${this.roomCode}/state`);
+
+        const listener = onValue(stateRef, (snapshot) => {
+            const data = snapshot.val();
+            if (!data) return;
+
+            // Update Dashbaord store to match Monitor (Master)
+            usePlayerStore.setState((prev) => ({
+                ...prev,
+                currentTime: data.controls?.currentTime ?? data.currentTime ?? prev.currentTime,
+                duration: data.controls?.duration ?? data.duration ?? prev.duration,
+                isPlaying: data.controls?.isPlaying ?? data.isPlaying ?? prev.isPlaying,
+            }));
+        });
+
+        this.stateListenerOff = () => off(stateRef, 'value', listener);
     }
 
     private async syncLocalStateToFirebase() {

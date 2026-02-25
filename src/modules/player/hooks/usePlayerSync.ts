@@ -9,7 +9,8 @@ export const usePlayerSync = (
     isDjMode: boolean,
     currentTime: number,
     setCurrentTime: (time: number) => void,
-    playerRef: React.MutableRefObject<any>
+    playerRef: React.MutableRefObject<any>,
+    castMode?: string
 ) => {
     const { play, pause } = usePlayerStore.getState();
 
@@ -19,7 +20,9 @@ export const usePlayerSync = (
 
         const checkDualMode = () => {
             const dualActive = localStorage.getItem('youoke-dual-active') === 'true';
-            setIsDualActive(dualActive);
+            // Also consider active Wireless Casting as Dual Mode
+            const isCasting = castMode === 'smarttv' || castMode === 'webmonitor';
+            setIsDualActive(dualActive || isCasting);
         };
 
         checkDualMode();
@@ -27,7 +30,7 @@ export const usePlayerSync = (
         // Listen for storage changes (when dual screen closes/opens)
         const handleStorage = (e: StorageEvent) => {
             if (e.key === 'youoke-dual-active') {
-                setIsDualActive(e.newValue === 'true');
+                checkDualMode();
             }
         };
 
@@ -39,7 +42,7 @@ export const usePlayerSync = (
             window.removeEventListener('storage', handleStorage);
             clearInterval(interval);
         };
-    }, [isPassive]);
+    }, [isPassive, castMode]);
 
     const [isDualActive, setIsDualActive] = useRefVal(false);
 

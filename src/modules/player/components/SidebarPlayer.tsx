@@ -87,7 +87,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
     }, [isSourceAllowed, currentSource]);
 
     // --- HOOKS INTEGRATION ---
-    const { showDjOverlay, onPlayerReady, onPlayerStateChange } = usePlayerSync(isPassive, isDjMode, currentTime, setCurrentTime, playerRef);
+    const { showDjOverlay, onPlayerReady, onPlayerStateChange } = usePlayerSync(isPassive, isDjMode, currentTime, setCurrentTime, playerRef, castMode);
 
     const { dailyCount, maxDailySongs, maxDuration, showAds, userRole } = usePlayerLifecycle(currentSource, showDjOverlay);
 
