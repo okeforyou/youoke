@@ -40,7 +40,7 @@ export const Sidebar = memo(() => {
                         alt="Logo"
                         className="w-10 h-10 rounded-xl shadow-sm object-cover"
                     />
-                    <Link href="/changelog" className="text-[10px] font-bold bg-gray-100 hover:bg-gray-200 text-gray-900 hover:text-primary px-1.5 py-0.5 rounded-md transition-colors">v2.18.0</Link>
+                    <Link href="/changelog" className="text-[10px] font-bold bg-gray-100 hover:bg-gray-200 text-gray-900 hover:text-primary px-1.5 py-0.5 rounded-md transition-colors">v2.19.5</Link>
                 </div>
             </div>
 
