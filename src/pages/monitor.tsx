@@ -11,6 +11,9 @@ import { useShallow } from 'zustand/react/shallow';
 import clsx from 'clsx';
 
 const MemoSiderbarPlayer = React.memo(SidebarPlayer);
+import { TvIcon } from '@heroicons/react/24/solid';
+import { ref, onValue, onChildAdded, set } from 'firebase/database';
+import { realtimeDb } from '../firebase';
 import { DigitalSignage } from '../modules/tv/components/DigitalSignage';
 import { useSystemConfig } from '../hooks/useSystemConfig';
 
@@ -109,51 +112,69 @@ export default function MonitorPage() {
   useEffect(() => {
     setMounted(true);
 
-    // 0. Persistence restored (Phase 6)
-    // We no longer clear the queue on load to allow for stable standalone operation.
-
-
     // 1. Get Room Code: Priority is Query -> Session -> New Random
     const roomFromQuery = router.query.room as string;
     let localCode = roomFromQuery || sessionStorage.getItem('youoke_room_code');
 
     if (!localCode) {
-      localCode = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+      localCode = Math.floor(1000 + Math.random() * 9000).toString();
     }
 
     // Persist if it was generated or from query
     sessionStorage.setItem('youoke_room_code', localCode);
     setRoomCode(localCode);
 
-    const initCast = async () => {
-      try {
-        const { castService } = await import('../plugins/cast/services/CastService');
-        if (!localCode) return;
-        console.log('🖥️ Monitor: Initializing with room', localCode);
-        await castService.initialize(localCode);
-      } catch (err) {
-        console.error('🖥️ Monitor: Cast Init Failed', err);
+    // 2. State Sync: Listen to Room State from Firebase (Receiver Mode)
+    if (!realtimeDb) return;
+    const stateRef = ref(realtimeDb, `rooms/${localCode}/state`);
+    const unsubscribe = onValue(stateRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        console.log('🖥️ Monitor: Received State Update', data.currentVideo?.title);
+
+        // Update Local Store (Sync All)
+        usePlayerStore.setState((prev) => ({
+          ...prev,
+          ...data,
+          // Merge controls safely
+          isPlaying: data.isPlaying ?? data.controls?.isPlaying ?? prev.isPlaying,
+          currentTime: data.currentTime ?? data.controls?.currentTime ?? prev.currentTime,
+          duration: data.duration ?? data.controls?.duration ?? prev.duration,
+        }));
       }
-    };
+    });
+
+    // 3. Command Listener: Listen for direct commands (PLAY, PAUSE, etc)
+    const commandsRef = ref(realtimeDb, `rooms/${localCode}/commands`);
+    const processedIds = new Set<string>();
+    const unsubscribeCmd = onChildAdded(commandsRef, (snapshot) => {
+      const cmdId = snapshot.key;
+      const data = snapshot.val();
+      if (!cmdId || !data || data.status !== 'pending' || processedIds.has(cmdId)) return;
+
+      processedIds.add(cmdId);
+      const cmd = data.command;
+      console.log('🖥️ Monitor: Received Command', cmd.type);
+
+      const store = usePlayerStore.getState();
+      if (cmd.type === 'PLAY') store.play();
+      if (cmd.type === 'PAUSE') store.pause();
+      if (cmd.type === 'NEXT') store.playNext();
+      if (cmd.type === 'SEEK') store.seekTo(cmd.payload?.time || 0);
+
+      // Mark as completed
+      if (realtimeDb) {
+        set(ref(realtimeDb, `rooms/${localCode}/commands/${cmdId}/status`), 'completed');
+      }
+    });
 
     const timer = setInterval(() => setTime(new Date()), 60000);
 
-    // 2. Smart Entry Redirect Logic (Phase 7)
-    if (router.isReady) {
-      const ua = window.navigator.userAgent.toLowerCase();
-      const isMobileDevice = /iphone|ipod|android|blackberry|mini|windows\sce|palm/i.test(ua);
-      const isSmartTV = /smart-tv|smarttv|googletv|appletv|hbbtv|pizazz|tizen|webos|viera|magelink/.test(ua);
-      const hasRoomParam = !!router.query.room;
-
-      // Mobile → redirect to Remote Control app
-      if (isMobileDevice && !isSmartTV) {
-        console.log('📱 Smart Routing: Mobile -> /remote');
-        const target = hasRoomParam ? `/remote?room=${router.query.room}` : '/remote';
-        router.replace(target);
-      }
-    }
-
-    return () => clearInterval(timer);
+    return () => {
+      unsubscribe();
+      unsubscribeCmd();
+      clearInterval(timer);
+    };
   }, [router.isReady, router.query.room]);
 
 
@@ -169,7 +190,7 @@ export default function MonitorPage() {
     [roomCode]);
 
   const host = useMemo(() =>
-    typeof window !== 'undefined' ? window.location.host : 'play.youoke.com',
+    typeof window !== 'undefined' ? window.location.host : 'play.okeforyou.com',
     []);
 
   if (!mounted) return <div className="bg-black h-screen w-screen" />;
@@ -194,18 +215,44 @@ export default function MonitorPage() {
         </div>
       </div>
 
-      {/* 2. Idle Layer (Ambient with Digital Signage - Restore Phase 7) */}
+      {/* 2. Idle Layer (Clean Monitor UI) */}
       <div className={clsx(
-        "absolute inset-0 z-10 transition-opacity duration-1000",
-        !isIdle && "opacity-0 pointer-events-none"
+        "absolute inset-0 z-10 transition-all duration-1000 bg-[#0a0a0a]",
+        !isIdle && "opacity-0 pointer-events-none scale-110"
       )}>
-        <DigitalSignage
-          roomCode={roomCode || '----'}
-          images={config.tv?.signageImages}
-          messages={config.tv?.signageMessages}
-          template={config.tv?.template || 'classic'}
-          ads={config.tv?.ads}
-        />
+        {/* Animated Background Gradient */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent opacity-50" />
+
+        <div className="relative z-10 h-full flex flex-col items-center justify-center text-center p-12">
+          <div className="mb-12 flex flex-col items-center">
+            <div className="w-20 h-20 bg-primary/20 rounded-3xl flex items-center justify-center mb-6 border border-primary/20 shadow-[0_0_50px_rgba(var(--primary-rgb),0.1)]">
+              <TvIcon className="w-10 h-10 text-primary" />
+            </div>
+            <h1 className="text-4xl font-black text-white tracking-tight mb-2">Wireless <span className="text-primary">Monitor</span></h1>
+            <p className="text-white/40 font-medium">พร้อมรับภาพและเสียงจากหน้าจอหลักของคุณ</p>
+          </div>
+
+          <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[3rem] p-12 shadow-2xl flex flex-col items-center gap-8 group hover:border-primary/30 transition-all duration-500">
+            <div className="flex flex-col items-center">
+              <span className="text-xs font-black uppercase tracking-[0.3em] text-white/30 mb-4 bg-white/5 px-4 py-1.5 rounded-full">ยืนยันรหัสเชื่อมต่อ</span>
+              <div className="text-[12rem] font-black leading-none tracking-tighter text-white drop-shadow-[0_0_50px_rgba(255,255,255,0.1)] group-hover:text-primary transition-colors duration-500">
+                {roomCode}
+              </div>
+            </div>
+
+            <div className="max-w-xs space-y-4 pt-8 border-t border-white/5">
+              <p className="text-sm text-white/60 leading-relaxed">
+                เปิด Dashboard บนคอมพิวเตอร์ <br />เลือก <span className="text-white font-bold">"Wireless Cast"</span> และกรอกรหัสนี้
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-16 text-white/20 text-[10px] uppercase font-black tracking-[0.5em] flex items-center gap-4">
+            <span className="w-12 h-px bg-white/10"></span>
+            ready to connect
+            <span className="w-12 h-px bg-white/10"></span>
+          </div>
+        </div>
       </div>
 
 
