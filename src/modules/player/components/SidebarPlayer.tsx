@@ -16,16 +16,17 @@ import { QuotaIndicator } from "./QuotaIndicator";
 import { usePlayerLifecycle } from "../hooks/usePlayerLifecycle";
 import { usePlayerSync } from "../hooks/usePlayerSync";
 
-import { Tv, Radio, Monitor } from 'lucide-react';
+import { Tv, Radio, Monitor, Power } from 'lucide-react';
 
 interface SidebarPlayerProps {
     isPassive?: boolean;
     isDjMode?: boolean;
     castMode?: string;
     roomCode?: string | null;
+    onDisconnect?: () => void;
 }
 
-export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 'none', roomCode = null }: SidebarPlayerProps) => {
+export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 'none', roomCode = null, onDisconnect }: SidebarPlayerProps) => {
     const { currentSource, isPlaying, currentVideo, setCurrentTime, currentTime, layoutMode, queue, currentIndex, duration } = usePlayerStore(
         useShallow(state => ({
             currentSource: state.currentSource,
@@ -344,8 +345,18 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                                 <Monitor className="w-16 h-16 text-primary absolute top-0 left-0 translate-x-4 shadow-[0_0_30px_rgba(var(--primary-rgb),0.3)]" />
                             </div>
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-4">
                             <h3 className="text-2xl font-black text-white tracking-tight">เชื่อมต่อหน้าจอที่ 2 แล้ว</h3>
+
+                            {onDisconnect && (
+                                <button
+                                    onClick={onDisconnect}
+                                    className="flex items-center gap-2 px-4 py-2 bg-red-500/20 hover:bg-red-500 text-red-100 rounded-xl transition-all font-bold text-sm mx-auto group border border-red-500/20"
+                                >
+                                    <Power className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                                    <span>ยกเลิกการเชื่อมต่อ</span>
+                                </button>
+                            )}
                         </div>
                     </div>
                 )}

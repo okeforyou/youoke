@@ -657,7 +657,16 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 "w-full bg-black shrink-0 relative overflow-hidden transition-all duration-500",
                                 layoutMode === 'fullscreen' ? "h-full video-fit-contain" : "aspect-video"
                             )}>
-                                <SidebarPlayer castMode={castMode} roomCode={roomCode} />
+                                <SidebarPlayer
+                                    castMode={castMode}
+                                    roomCode={roomCode}
+                                    onDisconnect={() => {
+                                        setCastMode('none');
+                                        localStorage.setItem('youoke-dual-active', 'false');
+                                        useUIStore.getState().setIsCastingLocal(false);
+                                        addToast('ตัดการเชื่อมต่อแล้ว');
+                                    }}
+                                />
 
                             </div>
                             {/* Mobile Only Controls (Desktop controls moved to Aside for better interaction) */}
