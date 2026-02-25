@@ -140,24 +140,20 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
         // Local player always loads (Phase 6)
 
 
-        if (currentSrc) {
-            if (isStorePlaying) {
-                console.log("▶️ onReady: Loading & Playing initial video:", currentSrc);
-                target.loadVideoById(currentSrc);
-            } else {
-                console.log("⏸️ onReady: Cued initial video (Paused):", currentSrc);
-                target.cueVideoById(currentSrc);
-            }
-        }
-
-        // AUTO-FIX: Force play if store says we are playing
+        // Video loading is now managed by UniversalPlayer props (Phase 11)
+        // We only handle initial playback sync here
         if (isStorePlaying) {
             const savedTime = usePlayerStore.getState().currentTime;
-            if (savedTime > 2) {
-                console.log("⏩ Resuming from:", savedTime);
-                target.seekTo(savedTime);
-            }
-            target.playVideo();
+
+            // Allow a small delay for the player to settle before commanding play/seek
+            setTimeout(() => {
+                if (savedTime > 2) {
+                    console.log("⏩ onReady: Resuming from", savedTime);
+                    target.seekTo(savedTime);
+                }
+                console.log("▶️ onReady: Ensuring playback starts");
+                target.playVideo();
+            }, 500);
         }
     };
 
@@ -214,22 +210,18 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
         }
     }, [isPlaying, showDjOverlay]);
 
+    // 📺 MANUAL LOAD SYNC: Handled via Props in UniversalPlayer (Phase 11)
+    // We only keep the search resolver and search: logic if needed, 
+    // but the actual loadVideoById for standard IDs should be managed by UniversalPlayer props.
     useEffect(() => {
-        if (!playerRef.current || !currentSource) {
-            return;
-        }
-        try {
-            // Check if player is actually ready to receive commands
-            if (typeof playerRef.current.loadVideoById === 'function') {
-                console.log("🔄 Manual Load Code: Switching to", currentSource);
-                playerRef.current.loadVideoById(currentSource);
-            } else {
-                console.warn("⚠️ Player not ready for loadVideoById yet");
-            }
-        } catch (e) {
-            console.warn("Video load error:", e);
-        }
-    }, [currentSource, showDjOverlay]);
+        if (!playerRef.current || !currentSource) return;
+
+        // If it's a special source type, handle accordingly
+        if (currentSource.startsWith('search:')) return;
+
+        // For standard IDs, UniversalPlayer already updates via props.
+        // We only use playerRef.current for play/pause/seek controls.
+    }, [currentSource]);
 
     // 🍞 Toast Logic
     const [showToast, setShowToast] = useState(false);

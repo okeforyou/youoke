@@ -186,7 +186,7 @@ export default function MonitorPage() {
         isIdle ? "opacity-0" : "opacity-100"
       )}>
         <div className="w-full h-full relative">
-          <MemoSiderbarPlayer />
+          <MemoSiderbarPlayer isPassive={true} />
           {/* Gradient Overlay for Text Readability (Bottom) */}
           <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
           {/* Gradient Overlay for Header (Top) */}

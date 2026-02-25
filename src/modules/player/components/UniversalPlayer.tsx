@@ -124,6 +124,8 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
             autoplay: 1 as 0 | 1,
             controls: showControls ? 1 : 0 as 0 | 1,
             modestbranding: 1 as const,
+            origin: typeof window !== 'undefined' ? window.location.origin : undefined,
+            enablejsapi: 1 as 0 | 1,
         },
     };
 
@@ -137,25 +139,26 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     };
 
     const handleYouTubeStateChange = (event: any) => {
-        // 0 = Ended
-        if (event.data === 0 && onEnded) {
-            onEnded();
-        }
+        // Handle state changes if needed
         if (onStateChange) onStateChange(event);
     };
 
+    // Use currentSource as videoId for standard React-YouTube management
+    // But only if it looks like a valid YouTube ID (no search prefix)
+    const activeVideoId = (currentVideo?.sourceType === 'youtube' && currentSource && !currentSource.startsWith('search:'))
+        ? currentSource
+        : undefined;
 
     return (
         <div className={`relative w-full h-full ${className} youtube-player-wrapper`}>
             <YouTube
-                // CRITICAL: Keep videoId undefined to prevent React-YouTube from managing the source.
-                // SidebarPlayer handles loading imperatively via loadVideoById() for smoother transitions.
-                videoId={undefined}
+                videoId={activeVideoId}
                 opts={opts}
                 className="w-full h-full"
                 iframeClassName="w-full h-full"
                 onReady={handleYouTubeReady}
                 onStateChange={handleYouTubeStateChange}
+                onEnd={onEnded} // Use native onEnd properly
             />
         </div>
     );
