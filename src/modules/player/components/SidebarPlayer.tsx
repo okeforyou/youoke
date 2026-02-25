@@ -16,7 +16,7 @@ import { QuotaIndicator } from "./QuotaIndicator";
 import { usePlayerLifecycle } from "../hooks/usePlayerLifecycle";
 import { usePlayerSync } from "../hooks/usePlayerSync";
 
-import { Tv, Radio, Monitor, Power } from 'lucide-react';
+import { Tv, Radio, Monitor, Power, PlayCircle } from 'lucide-react';
 
 interface SidebarPlayerProps {
     isPassive?: boolean;
@@ -24,9 +24,10 @@ interface SidebarPlayerProps {
     castMode?: string;
     roomCode?: string | null;
     onDisconnect?: () => void;
+    onForcePlay?: () => void;
 }
 
-export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 'none', roomCode = null, onDisconnect }: SidebarPlayerProps) => {
+export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 'none', roomCode = null, onDisconnect, onForcePlay }: SidebarPlayerProps) => {
     const { currentSource, isPlaying, currentVideo, setCurrentTime, currentTime, layoutMode, queue, currentIndex, duration } = usePlayerStore(
         useShallow(state => ({
             currentSource: state.currentSource,
@@ -346,17 +347,31 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                             </div>
                         </div>
                         <div className="space-y-4">
-                            <h3 className="text-2xl font-black text-white tracking-tight">เชื่อมต่อหน้าจอที่ 2 แล้ว</h3>
+                            <h3 className="text-2xl font-black text-white tracking-tight">
+                                {castMode === 'smarttv' ? 'เชื่อมต่อแบบข้ามอุปกรณ์' : 'เชื่อมต่อหน้าจอที่ 2 แล้ว'}
+                            </h3>
 
-                            {onDisconnect && (
-                                <button
-                                    onClick={onDisconnect}
-                                    className="flex items-center gap-2 px-4 py-2 bg-red-500/20 hover:bg-red-500 text-red-100 rounded-xl transition-all font-bold text-sm mx-auto group border border-red-500/20"
-                                >
-                                    <Power className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                                    <span>ยกเลิกการเชื่อมต่อ</span>
-                                </button>
-                            )}
+                            <div className="flex flex-col gap-3">
+                                {castMode !== 'none' && !isPlaying && (
+                                    <button
+                                        onClick={onForcePlay || (() => usePlayerStore.getState().play())}
+                                        className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/80 text-white rounded-xl transition-all font-bold text-lg mx-auto shadow-lg shadow-primary/20 animate-bounce"
+                                    >
+                                        <PlayCircle className="w-6 h-6" />
+                                        <span>กดเพื่อเริ่มเล่นวิดีโอ</span>
+                                    </button>
+                                )}
+
+                                {onDisconnect && (
+                                    <button
+                                        onClick={onDisconnect}
+                                        className="flex items-center gap-2 px-4 py-2 bg-red-500/20 hover:bg-red-500 text-red-100 rounded-xl transition-all font-bold text-sm mx-auto group border border-red-500/20"
+                                    >
+                                        <Power className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                                        <span>ยกเลิกการเชื่อมต่อ</span>
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
                 )}

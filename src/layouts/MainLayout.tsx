@@ -22,6 +22,8 @@ import { useToast } from '@/context/ToastContext';
 import useIsMobile from '../hooks/isMobile';
 import { useShallow } from 'zustand/react/shallow';
 import { useRemoteHost } from '../hooks/useRemoteHost';
+import { realtimeDb } from '@/firebase';
+import { ref, push, set } from 'firebase/database';
 
 // Dynamic (Lazy) Imports for Heavy/hidden Components
 const ProfileDrawer = dynamic(() => import('../components/profile/ProfileDrawer'), { ssr: false });
@@ -661,10 +663,38 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                     castMode={castMode}
                                     roomCode={roomCode}
                                     onDisconnect={() => {
+                                        // 🛑 Send PAUSE to the remote room first so it stops playing
+                                        if (castMode === 'smarttv' && roomCode && realtimeDb) {
+                                            const commandsRef = ref(realtimeDb, `rooms/${roomCode}/commands`);
+                                            const newCmdRef = push(commandsRef);
+                                            set(newCmdRef, {
+                                                id: newCmdRef.key,
+                                                command: { type: 'PAUSE', timestamp: Date.now() },
+                                                status: 'pending',
+                                                from: 'dashboard',
+                                                timestamp: Date.now()
+                                            });
+                                        }
+
                                         setCastMode('none');
                                         localStorage.setItem('youoke-dual-active', 'false');
                                         useUIStore.getState().setIsCastingLocal(false);
                                         addToast('ตัดการเชื่อมต่อแล้ว');
+                                    }}
+                                    onForcePlay={() => {
+                                        if (roomCode && realtimeDb) {
+                                            const commandsRef = ref(realtimeDb, `rooms/${roomCode}/commands`);
+                                            const newCmdRef = push(commandsRef);
+                                            set(newCmdRef, {
+                                                id: newCmdRef.key,
+                                                command: { type: 'PLAY', timestamp: Date.now() },
+                                                status: 'pending',
+                                                from: 'dashboard',
+                                                timestamp: Date.now()
+                                            });
+                                            // UI update
+                                            usePlayerStore.getState().play();
+                                        }
                                     }}
                                 />
 
