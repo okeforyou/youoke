@@ -243,8 +243,11 @@ const TVPage = () => {
                 />
             </div>
 
-            {/* Debug (Hidden in Prod) */}
-            {/* <div className="absolute top-2 left-2 text-xs text-white/50 z-50">Room: {roomCode} | State: {isIdle ? 'Idle' : 'Active'}</div> */}
+            {/* Debug State Indicator (Subtle) */}
+            <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${connectedCount > 0 ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`} />
+                <span className="text-[10px] text-white/20 font-mono">{roomCode} {connectedCount} clients</span>
+            </div>
         </div>
     );
 };

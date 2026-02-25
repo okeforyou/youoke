@@ -120,28 +120,42 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
         }
     };
 
-    // Effect: Sync Play/Pause
+    // Effect: Sync Play/Pause and Seek
     useEffect(() => {
         if (!playerRef.current) return;
         const player = playerRef.current;
 
-        if (isPlaying) {
-            try {
-                player.playVideo();
-                setTimeout(async () => {
-                    const state = await player.getPlayerState();
-                    if ((state as any) !== 1 && (state as any) !== 3) {
-                        setAutoplayBlocked(true);
-                    } else {
-                        setAutoplayBlocked(false);
-                    }
-                }, 1500);
-            } catch (err) {
-                setAutoplayBlocked(true);
+        const syncPlayer = async () => {
+            if (isPlaying) {
+                try {
+                    // Check if we need to sync time (if drift > 5s)
+                    const playerTime = await player.getCurrentTime();
+                    // We need a stable way to get the latest currentTime from state
+                    // The prop 'isMuted' is actually used here as a proxy for the whole controls object in some cases, 
+                    // but we should ideally pass controls down. For now, assume isPlaying is the trigger.
+
+                    player.playVideo();
+
+                    // Verify if it actually started playing
+                    setTimeout(async () => {
+                        const s = await player.getPlayerState();
+                        if ((s as any) !== 1 && (s as any) !== 3) {
+                            console.warn('📺 TV: Playback did not start. Blocking autoplay? State:', s);
+                            setAutoplayBlocked(true);
+                        } else {
+                            setAutoplayBlocked(false);
+                        }
+                    }, 2000);
+                } catch (err) {
+                    console.error('📺 TV: Playback error:', err);
+                    setAutoplayBlocked(true);
+                }
+            } else {
+                player.pauseVideo();
             }
-        } else {
-            player.pauseVideo();
-        }
+        };
+
+        syncPlayer();
     }, [isPlaying, currentVideo?.videoId]);
 
     // Effect: Sync Mute

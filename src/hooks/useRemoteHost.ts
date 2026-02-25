@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { realtimeDb } from '../firebase';
-import { ref, set, remove, onValue, onDisconnect, serverTimestamp, off, onChildAdded } from 'firebase/database';
+import { ref, set, remove, onValue, onDisconnect, serverTimestamp, off, onChildAdded, update } from 'firebase/database';
 import { usePlayerStore } from '../modules/player/stores/usePlayerStore';
 import { useUIStore } from '../stores/useUIStore';
 import { useToast } from '@/context/ToastContext';
@@ -129,6 +129,19 @@ export const useRemoteHost = (
             // console.log('📤 [Host] Syncing queue to Firebase:', safeQueue.length);
             set(ref(realtimeDb, `rooms/${sessionId}/state`), statePayload);
             set(ref(realtimeDb, `rooms/${sessionId}/lastActive`), serverTimestamp());
+
+            // Sync Current Time periodically if playing (Heartbeat)
+            if (isPlaying && realtimeDb) {
+                const syncInterval = setInterval(() => {
+                    const preciseTime = usePlayerStore.getState().currentTime;
+                    if (preciseTime > 0 && realtimeDb) {
+                        update(ref(realtimeDb, `rooms/${sessionId}/state/controls`), {
+                            currentTime: preciseTime
+                        });
+                    }
+                }, 5000);
+                return () => clearInterval(syncInterval);
+            }
         } catch (e) {
             console.error('Remote Sync Error:', e);
         }
