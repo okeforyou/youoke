@@ -26,6 +26,8 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     const currentVideo = usePlayerStore(state => state.currentVideo);
     const isPlaying = usePlayerStore(state => state.isPlaying);
     const currentSource = usePlayerStore(state => state.currentSource);
+    const { setCurrentTime, setDuration } = usePlayerStore();
+    const videoRef = useRef<HTMLVideoElement>(null);
 
     // MIDI Engine Hooks
     const { playMidi, stop: stopMidi, isReady: isMidiReady, isPlaying: isMidiPlaying, synth } = useMidiEngine();
@@ -102,16 +104,34 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     }
 
     // 2. VCD (HTML5 Video)
-    if (currentVideo?.sourceType === 'vcd') {
+    useEffect(() => {
+        if (currentVideo?.sourceType === 'vcd' && videoRef.current) {
+            if (isPlaying) {
+                videoRef.current.play().catch(e => console.warn("VCD Play failed:", e));
+            } else {
+                videoRef.current.pause();
+            }
+        }
+    }, [isPlaying, currentVideo?.sourceType]);
+
+    if (currentVideo?.sourceType === 'vcd' && currentVideo.filePath) {
         return (
             <div className={`relative w-full h-full bg-black ${className}`}>
-                <video
-                    src={currentVideo.filePath}
-                    className="w-full h-full object-contain"
-                    autoPlay={isPlaying}
-                    controls={showControls}
-                    onEnded={onEnded}
-                />
+                <div className="absolute inset-0 bg-black flex items-center justify-center">
+                    <video
+                        ref={videoRef}
+                        className="w-full h-full object-contain"
+                        src={currentVideo.filePath}
+                        autoPlay={isPlaying}
+                        controls={showControls}
+                        onEnded={onEnded}
+                        onTimeUpdate={(e) => {
+                            const video = e.currentTarget;
+                            setCurrentTime(video.currentTime);
+                            setDuration(video.duration);
+                        }}
+                    />
+                </div>
             </div>
         );
     }
@@ -121,7 +141,7 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
         height: '100%',
         width: '100%',
         playerVars: {
-            autoplay: 1 as 0 | 1,
+            autoplay: isPlaying ? 1 : 0 as 0 | 1,
             controls: showControls ? 1 : 0 as 0 | 1,
             modestbranding: 1 as const,
             origin: typeof window !== 'undefined' ? window.location.origin : undefined,

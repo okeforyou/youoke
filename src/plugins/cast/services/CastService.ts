@@ -132,11 +132,11 @@ export class CastService {
                 // Monitor listens for Master State (Queue, Video, Play/Pause) from Host
                 usePlayerStore.setState((prev) => ({
                     ...prev,
-                    queue: data.queue || prev.queue,
-                    currentIndex: data.currentIndex ?? prev.currentIndex,
-                    currentVideo: data.currentVideo || prev.currentVideo,
-                    currentSource: data.currentSource || prev.currentSource,
-                    isPlaying: data.isPlaying ?? prev.isPlaying,
+                    queue: data.queue !== undefined ? data.queue : prev.queue,
+                    currentIndex: data.currentIndex !== undefined ? data.currentIndex : prev.currentIndex,
+                    currentVideo: data.currentVideo !== undefined ? data.currentVideo : prev.currentVideo,
+                    currentSource: data.currentSource !== undefined ? data.currentSource : prev.currentSource,
+                    isPlaying: data.isPlaying !== undefined ? data.isPlaying : prev.isPlaying,
                 }));
             }
         });

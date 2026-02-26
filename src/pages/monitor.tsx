@@ -242,14 +242,13 @@ export default function MonitorPage() {
         "absolute bottom-12 left-12 z-30 max-w-2xl transform transition-all duration-700 ease-out",
         (showInfoToast && !isIdle && !isQueueVisible) ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
       )}>
-        {currentVideo && (
-          // ... (existing Now Playing Logic) ...
+        {!isIdle && currentVideo && (
           <div className="flex items-end gap-6">
             {/* Large Artwork */}
             <div className="w-32 h-32 rounded-lg shadow-2xl overflow-hidden border border-white/20 relative hidden sm:block">
               <Image
                 unoptimized
-                src={`https://i.ytimg.com/vi/${currentVideo.videoId}/mqdefault.jpg`}
+                src={currentVideo.thumbnail || (currentVideo.videoId ? `https://i.ytimg.com/vi/${currentVideo.videoId}/mqdefault.jpg` : "/icon-cover.png")}
                 fill
                 className="object-cover"
                 alt="Album Art"
@@ -261,15 +260,15 @@ export default function MonitorPage() {
             </div>
             <div className="pb-2">
               <div className="flex items-center gap-3 mb-2">
-                <span className="bg-primary px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider text-white">Now Playing</span>
+                <span className="bg-primary px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider text-white">กำลังเล่น</span>
                 {currentVideo.addedBy && (
                   <span className="flex items-center gap-1.5 text-xs font-medium text-white/80 bg-black/40 px-2 py-1 rounded backdrop-blur-sm border border-white/10">
                     <UserIcon className="w-3 h-3 text-primary" /> เพิ่มโดย {getAddedByName(currentVideo)}
                   </span>
                 )}
               </div>
-              <h2 className="text-4xl font-bold text-white leading-tight drop-shadow-md line-clamp-2">{currentVideo.title}</h2>
-              <p className="text-xl text-white/70 mt-1 font-medium">{currentVideo.author}</p>
+              <h2 className="text-4xl font-bold text-white leading-tight drop-shadow-md line-clamp-2">{currentVideo.title || "Unknown Song"}</h2>
+              <p className="text-xl text-white/70 mt-1 font-medium">{currentVideo.author || "Unknown"}</p>
             </div>
           </div>
         )}

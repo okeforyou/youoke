@@ -232,6 +232,7 @@ const TVPage = () => {
                     notification={state.notification as any}
                     isPlaying={state.controls.isPlaying}
                     isMuted={state.controls.isMuted}
+                    currentTime={state.controls.currentTime}
                     syncMode="remote"
                     isPassive={true}
                     onStateChange={handlePlayerStateChange}

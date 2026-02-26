@@ -348,12 +348,27 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                                 <Monitor className="w-16 h-16 text-primary absolute top-0 left-0 translate-x-4 shadow-[0_0_30px_rgba(var(--primary-rgb),0.3)]" />
                             </div>
                         </div>
-                        <div className="space-y-4">
-                            <h3 className="text-2xl font-black text-white tracking-tight">
-                                {castMode === 'smarttv' ? 'เชื่อมต่อหน้าจอที่ 2 แล้ว' : 'กำลังเริ่มเชื่อมต่อ...'}
-                            </h3>
 
-                            <div className="flex flex-col gap-3">
+                        <div className="space-y-4 w-full max-w-xs">
+                            <div className="space-y-1">
+                                <h3 className="text-2xl font-black text-white tracking-tight">
+                                    {castMode === 'smarttv' ? 'เชื่อมต่อหน้าจอที่ 2 แล้ว' : 'กำลังเริ่มเชื่อมต่อ...'}
+                                </h3>
+                                {roomCode && (
+                                    <p className="text-primary font-black text-xs uppercase tracking-[0.2em]">ROOM {roomCode}</p>
+                                )}
+                            </div>
+
+                            {/* Now Playing Info (Dual Mode Style) */}
+                            {currentVideo && (
+                                <div className="bg-white/5 border border-white/10 rounded-2xl p-4 animate-in fade-in zoom-in duration-500">
+                                    <p className="text-[10px] font-black text-white/30 uppercase tracking-widest mb-1.5">กำลังเล่นบนหน้าจอทีวี</p>
+                                    <h4 className="text-sm font-bold text-white truncate px-2">{currentVideo.title}</h4>
+                                    <p className="text-xs text-white/40 font-medium truncate opacity-60">{currentVideo.author}</p>
+                                </div>
+                            )}
+
+                            <div className="flex flex-col gap-3 pt-2">
                                 {castMode !== 'none' && !isPlaying && (
                                     <button
                                         onClick={onForcePlay || (() => usePlayerStore.getState().play())}
@@ -375,7 +390,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                                 )}
                             </div>
 
-                            <p className="text-white/30 text-[10px] font-medium max-w-[200px] mx-auto leading-relaxed">
+                            <p className="text-white/30 text-[10px] font-medium mx-auto leading-relaxed pt-2">
                                 วิดีโอและเสียงจะแสดงผลบนหน้าจอ {castMode === 'smarttv' ? 'TV / Monitor' : 'ที่เลือก'} เท่านั้น
                             </p>
                         </div>
@@ -456,37 +471,49 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
             )}
 
             {/* Added By / Up Next Toast (Top-Right - Sharp V2 Metadata-Rich) */}
-            {showToast && (toastType === 'added' ? currentVideo : upNextVideo) && (
-                <div className={`absolute top-6 right-6 z-[60] transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] ${showToast ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4 pointer-events-none'}`}>
-                    <div className="flex items-center gap-3 bg-stone-900/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-2 pr-4 shadow-2xl ring-1 ring-white/5 w-full max-w-[280px]">
-                        {/* Thumbnail */}
-                        <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/5 shadow-inner shrink-0 relative bg-black/40">
-                            <Image
-                                unoptimized
-                                src={(toastType === 'added' ? currentVideo : upNextVideo).thumbnail || `https://i.ytimg.com/vi/${(toastType === 'added' ? currentVideo : upNextVideo).videoId}/mqdefault.jpg`}
-                                fill
-                                className="object-cover"
-                                alt="Cover"
-                            />
-                        </div>
+            {(() => {
+                if (!showToast) return null;
+                const activeVideo = (toastType === 'added' ? currentVideo : upNextVideo);
+                if (!activeVideo) return null;
 
-                        {/* Info */}
-                        <div className="flex flex-col min-w-0 flex-1">
-                            <div className="flex items-center gap-2 mb-0.5">
-                                <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${toastType === 'upnext' ? 'bg-amber-500 text-black' : 'bg-primary text-white'}`}>
-                                    {toastType === 'upnext' ? 'ถัดไป' : 'กำลังเล่น'}
-                                </span>
+                const thumb = activeVideo.thumbnail || (activeVideo.videoId ? `https://i.ytimg.com/vi/${activeVideo.videoId}/mqdefault.jpg` : "/icon-cover.png");
+
+                return (
+                    <div className={`absolute top-6 right-6 z-[60] transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] ${showToast ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4 pointer-events-none'}`}>
+                        <div className="flex items-center gap-3 bg-stone-900/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-2 pr-4 shadow-2xl ring-1 ring-white/5 w-full max-w-[280px]">
+                            {/* Thumbnail */}
+                            <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/5 shadow-inner shrink-0 relative bg-black/40">
+                                <Image
+                                    unoptimized
+                                    src={thumb}
+                                    fill
+                                    className="object-cover"
+                                    alt="Cover"
+                                    onError={(e) => {
+                                        const target = e.target as HTMLImageElement;
+                                        target.src = "/icon-cover.png";
+                                    }}
+                                />
                             </div>
-                            <h3 className="text-[13px] font-black text-white leading-tight truncate">
-                                {(toastType === 'added' ? currentVideo : upNextVideo).title}
-                            </h3>
-                            <p className="text-[11px] font-bold text-white/50 truncate">
-                                {(toastType === 'added' ? currentVideo : upNextVideo).author}
-                            </p>
+
+                            {/* Info */}
+                            <div className="flex flex-col min-w-0 flex-1">
+                                <div className="flex items-center gap-2 mb-0.5">
+                                    <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${toastType === 'upnext' ? 'bg-amber-500 text-black' : 'bg-primary text-white'}`}>
+                                        {toastType === 'upnext' ? 'ถัดไป' : 'กำลังเล่น'}
+                                    </span>
+                                </div>
+                                <h3 className="text-[13px] font-black text-white leading-tight truncate">
+                                    {activeVideo.title || "Unknown Title"}
+                                </h3>
+                                <p className="text-[11px] font-bold text-white/50 truncate">
+                                    {activeVideo.author || "Unknown"}
+                                </p>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                );
+            })()}
 
         </div>
     );

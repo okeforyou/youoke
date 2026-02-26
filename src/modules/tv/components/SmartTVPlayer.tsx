@@ -15,6 +15,7 @@ export interface SmartTVPlayerProps {
     nextVideo: VideoItem | null;
     isPlaying: boolean;
     isMuted: boolean;
+    currentTime?: number;
     onStateChange: (state: number) => void;
     onError: (error: any) => void;
     onReady: (player: YouTubePlayer) => void;
@@ -32,6 +33,7 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
     nextVideo,
     isPlaying,
     isMuted,
+    currentTime = 0,
     onStateChange,
     onError,
     onReady,
@@ -130,9 +132,10 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
                 try {
                     // Check if we need to sync time (if drift > 5s)
                     const playerTime = await player.getCurrentTime();
-                    // We need a stable way to get the latest currentTime from state
-                    // The prop 'isMuted' is actually used here as a proxy for the whole controls object in some cases, 
-                    // but we should ideally pass controls down. For now, assume isPlaying is the trigger.
+                    if (currentTime > 0 && Math.abs(playerTime - currentTime) > 5) {
+                        console.log('🕒 TV: Syncing time with host:', currentTime);
+                        player.seekTo(currentTime);
+                    }
 
                     player.playVideo();
 
@@ -156,7 +159,7 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
         };
 
         syncPlayer();
-    }, [isPlaying, currentVideo?.videoId]);
+    }, [isPlaying, currentVideo?.videoId, currentTime]);
 
     // Effect: Sync Mute
     useEffect(() => {
