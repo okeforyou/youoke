@@ -210,12 +210,14 @@ export class CastService {
 
     private async markCommandComplete(cmdId: string) {
         if (!realtimeDb || !this.roomCode) return;
+        console.log(`✅ Marking command ${cmdId} as completed`);
         const statusRef = ref(realtimeDb, `rooms/${this.roomCode}/commands/${cmdId}/status`);
         set(statusRef, 'completed').catch(e => console.error('Failed to mark command complete', e));
     }
 
     private executeCommand(command: any) {
-        console.log('⚡ Executing Remote Command:', command.type);
+        if (!command || !command.type) return;
+        console.log('⚡ [CastService] Executing Remote Command:', command.type, command.payload || '');
         const store = usePlayerStore.getState();
 
         try {

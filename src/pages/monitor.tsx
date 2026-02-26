@@ -131,12 +131,15 @@ export default function MonitorPage() {
 
     // 1. Get Room Code: ALWAYS check session storage first, then generation (Fresh PIN)
     const roomFromQuery = router.query.room as string;
-    const existingCode = sessionStorage.getItem('youoke_room_code');
-    const localCode = roomFromQuery || existingCode || Math.floor(1000 + Math.random() * 8999).toString();
+    const existingCode = typeof window !== 'undefined' ? sessionStorage.getItem('youoke_room_code') : null;
+
+    // Standardize code generation to match CastService (4 digits padStart)
+    const generateCode = () => Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+    const localCode = roomFromQuery || existingCode || generateCode();
 
     setRoomCode(localCode);
     if (!existingCode || existingCode !== localCode) {
-      sessionStorage.setItem('youoke_room_code', localCode);
+      if (typeof window !== 'undefined') sessionStorage.setItem('youoke_room_code', localCode);
     }
 
     // Ensure PIN is always visible by resetting idle state if needed
@@ -166,9 +169,20 @@ export default function MonitorPage() {
 
   const handleInteraction = () => {
     setHasInteracted(true);
-    // When user clicks, ensure player starts if something is supposed to be playing
-    if (isPlaying && currentVideo) {
-      console.log('🔘 Monitor: User interacted, allowing playback');
+    // 🔘 Force Play if store thinks we are already playing (unblocks audio context)
+    const store = usePlayerStore.getState();
+    if (store.isPlaying && store.currentSource) {
+      console.log('🔘 Monitor: User interacted, forcing play to unblock audio');
+
+      // We need to re-trigger the play command on the adapter
+      // Since isPlaying is already true, it won't trigger the SidebarPlayer useEffect
+      // So we manually call the service or toggle state
+      import('../modules/player/services/playerService').then(({ playerService }) => {
+        const adapter = playerService.getAdapter();
+        if (adapter) {
+          adapter.play();
+        }
+      });
     }
   };
 
