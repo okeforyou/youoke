@@ -15,14 +15,10 @@ import { TvIcon } from '@heroicons/react/24/solid';
 import { useShallow } from 'zustand/react/shallow';
 import clsx from 'clsx';
 
-import { DigitalSignage } from '../modules/tv/components/DigitalSignage';
-import { useSystemConfig } from '../hooks/useSystemConfig';
-
 const MemoSiderbarPlayer = memo(SidebarPlayer);
 
 export default function MonitorPage() {
   const router = useRouter();
-  const { config } = useSystemConfig();
 
   // 1. Local State
   const [roomCode, setRoomCode] = useState<string>('');
@@ -201,17 +197,44 @@ export default function MonitorPage() {
         </div>
       </div>
 
-      {/* 2. Idle Layer (Digital Signage - User Preference) */}
+      {/* 2. Idle Layer (Restored Original Monitor UI) */}
       <div className={clsx(
-        "absolute inset-0 z-10 transition-all duration-1000 bg-black",
-        !isIdle && "opacity-0 pointer-events-none"
+        "absolute inset-0 z-10 transition-all duration-1000 bg-[#0a0a0a]",
+        !isIdle && "opacity-0 pointer-events-none scale-110"
       )}>
-        <DigitalSignage
-          roomCode={roomCode}
-          images={config?.tv?.signageImages}
-          messages={config?.tv?.signageMessages || ['พร้อมสำหรับการเชื่อมต่อแบบไร้สาย', 'กรุณากรอกรหัสบน Dashboard ของคุณ']}
-          template="classic"
-        />
+        {/* Animated Background Gradient */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent opacity-50" />
+
+        <div className="relative z-10 h-full flex flex-col items-center justify-center text-center p-12">
+          <div className="mb-12 flex flex-col items-center">
+            <div className="w-20 h-20 bg-primary/20 rounded-3xl flex items-center justify-center mb-6 border border-primary/20 shadow-[0_0_50px_rgba(var(--primary-rgb),0.1)]">
+              <TvIcon className="w-10 h-10 text-primary" />
+            </div>
+            <h1 className="text-4xl font-black text-white tracking-tight mb-2">Wireless <span className="text-primary">Monitor</span></h1>
+            <p className="text-white/40 font-medium">พร้อมรับภาพและเสียงจากหน้าจอหลักของคุณ</p>
+          </div>
+
+          <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[3rem] p-12 shadow-2xl flex flex-col items-center gap-8 group hover:border-primary/30 transition-all duration-500">
+            <div className="flex flex-col items-center">
+              <span className="text-xs font-black uppercase tracking-[0.3em] text-white/30 mb-4 bg-white/5 px-4 py-1.5 rounded-full">ยืนยันรหัสเชื่อมต่อ</span>
+              <div className="text-[12rem] font-black leading-none tracking-tighter text-white drop-shadow-[0_0_50px_rgba(255,255,255,0.1)] group-hover:text-primary transition-colors duration-500">
+                {roomCode}
+              </div>
+            </div>
+
+            <div className="max-w-xs space-y-4 pt-8 border-t border-white/5">
+              <p className="text-sm text-white/60 leading-relaxed">
+                เปิด Dashboard บนคอมพิวเตอร์ <br />เลือก <span className="text-white font-bold">"Wireless Cast"</span> และกรอกรหัสนี้
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-16 text-white/20 text-[10px] uppercase font-black tracking-[0.5em] flex items-center gap-4">
+            <span className="w-12 h-px bg-white/10"></span>
+            ready to connect
+            <span className="w-12 h-px bg-white/10"></span>
+          </div>
+        </div>
       </div>
 
       {/* 3. Overlays & Toasts */}
