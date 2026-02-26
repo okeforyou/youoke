@@ -32,6 +32,7 @@ export default function MonitorPage() {
       currentSource: state.currentSource,
       isQueueVisible: state.isQueueVisible,
       fullscreenTrigger: state.fullscreenTrigger,
+      isPlaying: state.isPlaying,
     }))
   );
 
@@ -160,6 +161,16 @@ export default function MonitorPage() {
 
 
   const isIdle = !currentSource && queue.length === 0;
+
+  const [hasInteracted, setHasInteracted] = useState(false);
+
+  const handleInteraction = () => {
+    setHasInteracted(true);
+    // When user clicks, ensure player starts if something is supposed to be playing
+    if (isPlaying && currentVideo) {
+      console.log('🔘 Monitor: User interacted, allowing playback');
+    }
+  };
 
   const getAddedByName = (video: any) => {
     if (!video || !video.addedBy) return null;
@@ -378,6 +389,33 @@ export default function MonitorPage() {
           </div>
         </div>
       )}
+
+      {/* Autoplay Interaction Overlay */}
+      {!hasInteracted && !isIdle && (
+        <div
+          onClick={handleInteraction}
+          className="absolute inset-0 z-[100] bg-black/80 backdrop-blur-md flex flex-col items-center justify-center cursor-pointer animate-in fade-in duration-500"
+        >
+          <div className="bg-primary/20 border border-primary/50 text-white p-12 rounded-[3rem] text-center space-y-6 shadow-2xl max-w-lg mx-6 transform transition-all hover:scale-105 active:scale-95">
+            <div className="w-24 h-24 bg-primary rounded-full flex items-center justify-center mx-auto shadow-[0_0_50px_rgba(var(--primary-rgb),0.5)]">
+              <TvIcon className="w-12 h-12 text-white" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-4xl font-black tracking-tight">ระบบพร้อมทำงาน</h2>
+              <p className="text-xl text-white/60 leading-relaxed">
+                กรุณากด <span className="font-bold text-primary px-3 py-1 bg-white/10 rounded-xl">เริ่มการเชื่อมต่อ</span> <br />
+                หรือคลิกที่หน้าจอเพื่อรับชมวิดีโอ
+              </p>
+            </div>
+            <div className="pt-4">
+              <div className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-black rounded-2xl shadow-xl shadow-primary/20 hover:shadow-primary/40 transition-all">
+                <span>ตกลง (OK)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 6. PC Fullscreen Toggle (Hidden on TV usually, useful for PC browser) */}
       <button
         onClick={() => {
