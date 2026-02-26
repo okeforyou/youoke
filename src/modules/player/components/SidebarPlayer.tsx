@@ -338,58 +338,48 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                         className="w-full h-full pointer-events-auto"
                     />
                 ) : (
-                    /* 📺 Casting Overlay (Restored - Phase 10 logic with better UI) */
-                    <div className="absolute inset-0 bg-[#0a0a0a] flex flex-col items-center justify-center p-8 text-center space-y-6 z-20">
-                        <div className="relative h-24 w-32 flex items-center justify-center">
-                            <div className="absolute -inset-8 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
-                            {/* Dual Screen Icon Composition */}
-                            <div className="relative">
-                                <Monitor className="w-16 h-16 text-primary/30 -translate-x-6" />
-                                <Monitor className="w-16 h-16 text-primary absolute top-0 left-0 translate-x-4 shadow-[0_0_30px_rgba(var(--primary-rgb),0.3)]" />
-                            </div>
+                    /* 📺 Casting Overlay (Minimalist Design - Aligned with /dual) */
+                    <div className="absolute inset-0 bg-black flex flex-col items-center justify-center p-8 text-center space-y-8 z-20 animate-in fade-in duration-700">
+                        <div className="relative">
+                            <div className="text-6xl mb-4 relative z-10">🖥️</div>
+                            <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse z-0" />
                         </div>
 
-                        <div className="space-y-4">
-                            <h3 className="text-xl font-black text-white tracking-tight leading-tight">
-                                {castMode !== 'none' ? 'เชื่อมต่อหน้าจอที่สองแล้ว' : 'กำลังเริ่มเชื่อมต่อ...'}
+                        <div className="space-y-3">
+                            <h3 className="text-2xl font-black text-white tracking-tight leading-tight">
+                                2 หน้าจอ (Dual Screen)
                             </h3>
+                            <p className="text-white/40 text-[13px] font-bold tracking-wide">
+                                รอเพลงจากหน้าจอหลัก...
+                            </p>
                         </div>
 
                         {/* Now Playing Info (Standardized Monitor Style - Clean & Premium) */}
                         {currentVideo && (
-                            <div className="space-y-1 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 w-full max-w-[280px] animate-in slide-in-from-bottom-4 duration-700">
                                 <div className="flex flex-col items-center">
-                                    <h4 className="text-lg font-black text-white leading-tight px-4 line-clamp-2 drop-shadow-lg opacity-90">{currentVideo.title}</h4>
-                                    <p className="text-[11px] text-white/40 font-bold mt-1.5 opacity-60">{currentVideo.author}</p>
+                                    <h4 className="text-[14px] font-black text-white leading-tight line-clamp-2">{currentVideo.title}</h4>
+                                    <p className="text-[10px] text-white/40 font-bold mt-1.5 uppercase tracking-wider">{currentVideo.author}</p>
                                 </div>
                             </div>
                         )}
 
-                        <div className="flex flex-col gap-3 pt-4">
-                            {castMode !== 'none' && !isPlaying && (
-                                <button
-                                    onClick={onForcePlay || (() => usePlayerStore.getState().play())}
-                                    className="inline-flex items-center justify-center gap-3 px-8 py-3.5 bg-primary text-white rounded-2xl transition-all font-black text-sm mx-auto shadow-[0_10px_30px_rgba(var(--primary-rgb),0.3)] hover:scale-105 active:scale-95 group"
-                                >
-                                    <PlayCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                                    <span>กดเพื่อเริ่มเล่นวิดีโอ</span>
-                                </button>
-                            )}
-
+                        <div className="flex flex-col items-center gap-6 pt-4">
                             {onDisconnect && (
                                 <button
                                     onClick={onDisconnect}
-                                    className="inline-flex items-center justify-center gap-2 px-4 py-2 text-white/20 hover:text-red-500 rounded-xl transition-all font-bold text-[10px] mx-auto uppercase tracking-widest hover:bg-red-500/10"
+                                    className="group flex items-center gap-2.5 px-6 py-2.5 bg-white/5 hover:bg-red-500/10 text-white/30 hover:text-red-500 rounded-full transition-all border border-white/5 hover:border-red-500/20 shadow-sm"
                                 >
-                                    <Power className="w-3 h-3" />
-                                    <span>ยกเลิกการเชื่อมต่อ</span>
+                                    <Power className="w-3.5 h-3.5" />
+                                    <span className="text-[10px] font-black uppercase tracking-[0.1em]">ยกเลิกการเชื่อมต่อ</span>
                                 </button>
                             )}
-                        </div>
 
-                        <p className="text-white/20 text-[9px] font-black uppercase tracking-[0.2em] mx-auto leading-relaxed pt-2">
-                            วิดีโอและเสียงแสดงผลบนหน้าจอทีวี
-                        </p>
+                            <div className="flex items-center gap-2 text-[9px] font-black text-white/20 uppercase tracking-[0.3em]">
+                                <div className="w-1.5 h-1.5 bg-green-500/30 rounded-full animate-pulse"></div>
+                                <span>Connected to Store</span>
+                            </div>
+                        </div>
                     </div>
                 )}
 
@@ -482,15 +472,14 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                             <div className="flex items-center gap-3 bg-stone-900/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-2 pr-4 shadow-2xl ring-1 ring-white/5 w-full max-w-[280px]">
                                 {/* Thumbnail */}
                                 <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/5 shadow-inner shrink-0 relative bg-black/40">
-                                    <Image
-                                        unoptimized
+                                    <img
                                         src={thumb}
-                                        fill
-                                        className="object-cover"
+                                        className="w-full h-full object-cover"
                                         alt="Cover"
                                         onError={(e) => {
-                                            if (e.currentTarget) {
-                                                e.currentTarget.src = "/icon-cover.png";
+                                            const target = e.target as HTMLImageElement;
+                                            if (target) {
+                                                target.style.display = 'none';
                                             }
                                         }}
                                     />

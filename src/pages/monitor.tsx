@@ -25,7 +25,7 @@ export default function MonitorPage() {
 
   const [mounted, setMounted] = useState(false);
 
-  const { queue, currentVideo, currentSource, isQueueVisible, fullscreenTrigger, isPlaying } = usePlayerStore(
+  const { queue, currentVideo, currentSource, isQueueVisible, fullscreenTrigger } = usePlayerStore(
     useShallow((state) => ({
       queue: state.queue,
       currentVideo: state.currentVideo,
@@ -207,42 +207,42 @@ export default function MonitorPage() {
         </div>
       </div>
 
-      {/* 2. Idle Layer (Minimalist Clean UI - Aligned with Dual Mode) */}
+      {/* 2. Idle Layer (Clean Monitor UI) */}
       <div className={clsx(
-        "absolute inset-0 z-10 transition-all duration-1000 bg-black",
+        "absolute inset-0 z-10 transition-all duration-1000 bg-[#0a0a0a]",
         !isIdle && "opacity-0 pointer-events-none scale-110"
       )}>
-        <div className="h-screen w-screen bg-black text-white flex items-center justify-center">
-          <div className="text-center">
-            {/* Animated TV/Monitor Icon */}
-            <div className="relative inline-block mb-8">
-              <div className="text-7xl mb-4 relative z-10">🖥️</div>
-              <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse z-0" />
+        {/* Animated Background Gradient */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent opacity-50" />
+
+        <div className="relative z-10 h-full flex flex-col items-center justify-center text-center p-12">
+          <div className="mb-12 flex flex-col items-center">
+            <div className="w-20 h-20 bg-primary/20 rounded-3xl flex items-center justify-center mb-6 border border-primary/20 shadow-[0_0_50px_rgba(var(--primary-rgb),0.1)]">
+              <TvIcon className="w-10 h-10 text-primary" />
             </div>
+            <h1 className="text-4xl font-black text-white tracking-tight mb-2">Wireless <span className="text-primary">Monitor</span></h1>
+            <p className="text-white/40 font-medium">พร้อมรับภาพและเสียงจากหน้าจอหลักของคุณ</p>
+          </div>
 
-            <h1 className="text-4xl font-black text-white tracking-tight mb-4">หน้าจอ TV (Wireless Cast)</h1>
-            <p className="text-gray-400 text-lg mb-10 font-medium">รอเพลงจากหน้าจอหลัก...</p>
-
-            <div className="inline-flex flex-col items-center gap-6 p-10 rounded-[3rem] bg-white/5 border border-white/10 backdrop-blur-xl shadow-2xl">
-              <div className="flex flex-col items-center">
-                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30 mb-4 bg-white/5 px-4 py-1.5 rounded-full border border-white/5">รหัสเชื่อมต่อ</span>
-                <div className="text-8xl font-black leading-none tracking-tighter text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.1)]">
-                  {roomCode}
-                </div>
-              </div>
-
-              <div className="pt-6 border-t border-white/5 w-full">
-                <div className="flex items-center justify-center gap-3 text-sm font-bold text-primary/80">
-                  <div className="w-2 h-2 bg-primary rounded-full animate-ping"></div>
-                  <span>พร้อมเชื่อมต่อ</span>
-                </div>
+          <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[3rem] p-12 shadow-2xl flex flex-col items-center gap-8 group hover:border-primary/30 transition-all duration-500">
+            <div className="flex flex-col items-center">
+              <span className="text-xs font-black uppercase tracking-[0.3em] text-white/30 mb-4 bg-white/5 px-4 py-1.5 rounded-full">ยืนยันรหัสเชื่อมต่อ</span>
+              <div className="text-[12rem] font-black leading-none tracking-tighter text-white drop-shadow-[0_0_50px_rgba(255,255,255,0.1)] group-hover:text-primary transition-colors duration-500">
+                {roomCode}
               </div>
             </div>
 
-            <div className="mt-16 flex flex-col items-center gap-2 opacity-30">
-              <p className="text-[10px] font-black uppercase tracking-[0.5em]">youoke service monitor</p>
-              <div className="w-12 h-0.5 bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
+            <div className="max-w-xs space-y-4 pt-8 border-t border-white/5">
+              <p className="text-sm text-white/60 leading-relaxed">
+                เปิด Dashboard บนคอมพิวเตอร์ <br />เลือก <span className="text-white font-bold">"Wireless Cast"</span> และกรอกรหัสนี้
+              </p>
             </div>
+          </div>
+
+          <div className="mt-16 text-white/20 text-[10px] uppercase font-black tracking-[0.5em] flex items-center gap-4">
+            <span className="w-12 h-px bg-white/10"></span>
+            ready to connect
+            <span className="w-12 h-px bg-white/10"></span>
           </div>
         </div>
       </div>
