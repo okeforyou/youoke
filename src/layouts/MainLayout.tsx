@@ -286,77 +286,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
         if (castMode === 'smarttv' && partyPIN) {
             const initCastSync = async () => {
                 const { castService } = await import('../plugins/cast/services/CastService');
-                console.log('🔗 [Main] Initializing Monitor Bridge:', partyPIN);
+                console.log('🔗 [Main] Initializing Master Controller Room:', partyPIN);
                 await castService.initialize(partyPIN, 'host');
             };
             initCastSync();
         } else if (castMode === 'none') {
-            // Cleanup cast service if disabled
             import('../plugins/cast/services/CastService').then(({ castService }) => castService.cleanup());
         }
     }, [castMode, partyPIN]);
-
-    // 🛑 Audio Conflict Logic moved to SidebarPlayer (Local Mute)
-
-    const handleCastSelectYouTube = () => {
-        setCastModalOpen(false);
-        setCastMode('youtube');
-        if (queue.length === 0) {
-            addToast('กรุณาเพิ่มเพลงลงคิวก่อน');
-            return;
-        }
-        const videoIds = queue.map((v) => v.videoId).join(',');
-        const youtubeURL = `https://www.youtube.com/watch_videos?video_ids=${videoIds}`;
-        window.open(youtubeURL, '_blank');
-    };
-
-    // Wireless Remote Host (Room Logic) - Main Screen acts as a Host
-    // Redundant CastService listener removed to prevent command loops.
-    // roomCode and useRemoteHost handle the connection state already.
-    useEffect(() => {
-        if (roomCode && mounted) {
-            console.log('🔗 MainLayout: Web Caster Host Active (Room:', roomCode, ')');
-        }
-    }, [roomCode, mounted]);
-
-    // 📡 Wireless Dual Mode Bridge (Dashboard Controller → Monitor Display)
-    useEffect(() => {
-        if (castMode !== 'smarttv' || !partyPIN || !realtimeDb) return;
-
-        const commandsRef = ref(realtimeDb, `rooms/${partyPIN}/commands`);
-
-        const sendCommand = (type: string, payload?: any) => {
-            console.log(`📤 Forwarding to Monitor: ${type}`);
-            push(commandsRef, sanitizeForFirebase({
-                command: { type, payload, timestamp: Date.now() },
-                status: 'pending',
-                timestamp: Date.now(),
-                from: 'dashboard'
-            }));
-        };
-
-        // Watch for local store changes and forward as intent-based commands
-        const unsubscribe = usePlayerStore.subscribe((state, prevState) => {
-            // 1. Play/Pause
-            if (state.isPlaying !== prevState.isPlaying) {
-                sendCommand(state.isPlaying ? 'PLAY' : 'PAUSE');
-            }
-            // 2. Video Change
-            if (state.currentSource !== prevState.currentSource && state.currentSource) {
-                sendCommand('PLAY_NOW', { videoId: state.currentSource });
-            }
-            // 3. Queue Change (Basic Sync)
-            if (JSON.stringify(state.queue.map(v => v.uuid)) !== JSON.stringify(prevState.queue.map(v => v.uuid))) {
-                sendCommand('REORDER_QUEUE', { queue: state.queue });
-            }
-            // 4. Seeker Sync (Only if jump is significant, e.g. manual seek)
-            if (Math.abs(state.currentTime - prevState.currentTime) > 5) {
-                sendCommand('SEEK', { time: state.currentTime });
-            }
-        });
-
-        return () => unsubscribe();
-    }, [castMode, partyPIN, realtimeDb]);
 
 
     useEffect(() => {
