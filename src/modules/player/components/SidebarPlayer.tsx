@@ -349,32 +349,37 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                             </div>
                         </div>
 
-                        <div className="space-y-4 w-full max-w-xs">
-                            <div className="space-y-1">
-                                <h3 className="text-2xl font-black text-white tracking-tight">
-                                    {castMode === 'smarttv' ? 'เชื่อมต่อหน้าจอที่ 2 แล้ว' : 'กำลังเริ่มเชื่อมต่อ...'}
+                        <div className="space-y-6 w-full max-w-xs">
+                            <div className="space-y-2">
+                                <h3 className="text-2xl font-black text-white tracking-tight leading-tight">
+                                    {castMode === 'smarttv' ? 'เชื่อมต่อหน้าจอทีวีแล้ว' : 'กำลังเริ่มเชื่อมต่อ...'}
                                 </h3>
                                 {roomCode && (
-                                    <p className="text-primary font-black text-xs uppercase tracking-[0.2em]">ROOM {roomCode}</p>
+                                    <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 px-3 py-1 rounded-full">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                                        <span className="text-primary font-black text-[10px] uppercase tracking-[0.2em]">ROOM {roomCode}</span>
+                                    </div>
                                 )}
                             </div>
 
-                            {/* Now Playing Info (Dual Mode Style) */}
+                            {/* Now Playing Info (Standardized Monitor Style - Clean & Premium) */}
                             {currentVideo && (
-                                <div className="bg-white/5 border border-white/10 rounded-2xl p-4 animate-in fade-in zoom-in duration-500">
-                                    <p className="text-[10px] font-black text-white/30 uppercase tracking-widest mb-1.5">กำลังเล่นบนหน้าจอทีวี</p>
-                                    <h4 className="text-sm font-bold text-white truncate px-2">{currentVideo.title}</h4>
-                                    <p className="text-xs text-white/40 font-medium truncate opacity-60">{currentVideo.author}</p>
+                                <div className="space-y-2 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                                    <div className="flex flex-col items-center">
+                                        <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-3 bg-white/5 px-4 py-1.5 rounded-full border border-white/5">กำลังเล่นบนหน้าจอทีวี</span>
+                                        <h4 className="text-xl font-black text-white leading-tight px-4 line-clamp-2 drop-shadow-lg">{currentVideo.title}</h4>
+                                        <p className="text-sm text-white/40 font-bold mt-2 opacity-80">{currentVideo.author}</p>
+                                    </div>
                                 </div>
                             )}
 
-                            <div className="flex flex-col gap-3 pt-2">
+                            <div className="flex flex-col gap-3 pt-4">
                                 {castMode !== 'none' && !isPlaying && (
                                     <button
                                         onClick={onForcePlay || (() => usePlayerStore.getState().play())}
-                                        className="flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/80 text-white rounded-xl transition-all font-bold text-lg mx-auto shadow-lg shadow-primary/20 animate-bounce"
+                                        className="inline-flex items-center justify-center gap-3 px-8 py-3.5 bg-primary text-white rounded-2xl transition-all font-black text-sm mx-auto shadow-[0_10px_30px_rgba(var(--primary-rgb),0.3)] hover:scale-105 active:scale-95 group"
                                     >
-                                        <PlayCircle className="w-6 h-6" />
+                                        <PlayCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
                                         <span>กดเพื่อเริ่มเล่นวิดีโอ</span>
                                     </button>
                                 )}
@@ -382,7 +387,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                                 {onDisconnect && (
                                     <button
                                         onClick={onDisconnect}
-                                        className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-red-500/20 text-white/40 hover:text-red-500 rounded-xl transition-all font-bold text-xs mx-auto group border border-white/5 hover:border-red-500/20"
+                                        className="inline-flex items-center justify-center gap-2 px-4 py-2 text-white/20 hover:text-red-500 rounded-xl transition-all font-bold text-[10px] mx-auto uppercase tracking-widest hover:bg-red-500/10"
                                     >
                                         <Power className="w-3 h-3" />
                                         <span>ยกเลิกการเชื่อมต่อ</span>
@@ -390,27 +395,23 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                                 )}
                             </div>
 
-                            <p className="text-white/30 text-[10px] font-medium mx-auto leading-relaxed pt-2">
-                                วิดีโอและเสียงจะแสดงผลบนหน้าจอ {castMode === 'smarttv' ? 'TV / Monitor' : 'ที่เลือก'} เท่านั้น
+                            <p className="text-white/20 text-[9px] font-black uppercase tracking-[0.2em] mx-auto leading-relaxed pt-2">
+                                วิดีโอและเสียงแสดงผลบนหน้าจอทีวี
                             </p>
                         </div>
                     </div>
                 )}
 
-                {/* 📡 SmartTV Casting Indicator Over Player */}
+                {/* 📡 SmartTV Casting Indicator Over Player (Subtler V2) */}
                 {castMode === 'smarttv' && (
-                    <div className="absolute top-4 left-4 z-30 flex items-center gap-2 bg-primary/20 backdrop-blur-md border border-primary/30 px-3 py-1.5 rounded-full animate-in fade-in slide-in-from-left-2 transition-all">
-                        <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                        <span className="text-[10px] font-black text-white uppercase tracking-wider">Casting to TV {roomCode && `(Room ${roomCode})`}</span>
-                        {onDisconnect && (
-                            <button
-                                onClick={(e) => { e.stopPropagation(); onDisconnect(); }}
-                                className="ml-2 p-1 hover:bg-white/10 rounded-full transition-colors"
-                                title="Disconnect"
-                            >
-                                <Power className="w-3 h-3 text-white/60 hover:text-white" />
-                            </button>
-                        )}
+                    <div className="absolute top-4 left-4 z-40">
+                        <div className="flex items-center gap-2.5 bg-black/40 backdrop-blur-xl border border-white/10 px-3.5 py-1.5 rounded-full shadow-2xl animate-in fade-in slide-in-from-top-2 duration-500">
+                            <div className="relative w-1.5 h-1.5">
+                                <div className="absolute inset-0 bg-primary rounded-full animate-ping opacity-75" />
+                                <div className="relative w-full h-full bg-primary rounded-full" />
+                            </div>
+                            <span className="text-[9px] font-black text-white/90 uppercase tracking-[0.15em]">Casting to TV {roomCode && `#${roomCode}`}</span>
+                        </div>
                     </div>
                 )}
             </div>
