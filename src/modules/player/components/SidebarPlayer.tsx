@@ -347,16 +347,16 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
 
                         <div className="space-y-3">
                             <h3 className="text-2xl font-black text-white tracking-tight leading-tight">
-                                2 หน้าจอ (Dual Screen)
+                                {castMode === 'dual' ? '2 หน้าจอ (HDMI)' : '2 หน้าจอ (Wireless)'}
                             </h3>
                             <p className="text-white/40 text-[13px] font-bold tracking-wide">
-                                รอเพลงจากหน้าจอหลัก...
+                                {currentSource ? 'กำลังเล่นเพลงบนหน้าจอที่สอง...' : 'รอเพลงจากหน้าจอหลัก...'}
                             </p>
                         </div>
 
                         {/* Now Playing Info (Standardized Monitor Style - Clean & Premium) */}
                         {currentVideo && (
-                            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 w-full max-w-[280px] animate-in slide-in-from-bottom-4 duration-700">
+                            <div key={currentVideo.uuid} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 w-full max-w-[280px] animate-in slide-in-from-bottom-4 duration-700">
                                 <div className="flex flex-col items-center">
                                     <h4 className="text-[14px] font-black text-white leading-tight line-clamp-2">{currentVideo.title}</h4>
                                     <p className="text-[10px] text-white/40 font-bold mt-1.5 uppercase tracking-wider">{currentVideo.author}</p>
@@ -368,7 +368,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                             {onDisconnect && (
                                 <button
                                     onClick={onDisconnect}
-                                    className="group flex items-center gap-2.5 px-6 py-2.5 bg-white/5 hover:bg-red-500/10 text-white/30 hover:text-red-500 rounded-full transition-all border border-white/5 hover:border-red-500/20 shadow-sm"
+                                    className="group flex items-center gap-2.5 px-6 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-full transition-all border border-red-500/20 shadow-lg"
                                 >
                                     <Power className="w-3.5 h-3.5" />
                                     <span className="text-[10px] font-black uppercase tracking-[0.1em]">ยกเลิกการเชื่อมต่อ</span>
