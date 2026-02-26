@@ -174,16 +174,25 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
 
     return (
         <div className={`relative w-full h-full ${className} youtube-player-wrapper`}>
-            <YouTube
-                key={activeVideoId || 'idle'}
-                videoId={activeVideoId}
-                opts={opts}
-                className="w-full h-full"
-                iframeClassName="w-full h-full"
-                onReady={handleYouTubeReady}
-                onStateChange={handleYouTubeStateChange}
-                onEnd={onEnded} // Use native onEnd properly
-            />
+            {activeVideoId ? (
+                <YouTube
+                    key={activeVideoId}
+                    videoId={activeVideoId}
+                    opts={opts}
+                    className="w-full h-full"
+                    iframeClassName="w-full h-full"
+                    onReady={handleYouTubeReady}
+                    onStateChange={handleYouTubeStateChange}
+                    onEnd={onEnded}
+                />
+            ) : (
+                <div className="w-full h-full bg-black/20 backdrop-blur-sm flex items-center justify-center">
+                    <div className="flex flex-col items-center gap-4 opacity-20">
+                        <div className="w-12 h-12 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                        <p className="text-xs font-black uppercase tracking-widest text-white">รอรับข้อมูลเพลง...</p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

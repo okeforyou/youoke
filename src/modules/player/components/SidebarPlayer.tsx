@@ -349,56 +349,47 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                             </div>
                         </div>
 
-                        <div className="space-y-6 w-full max-w-xs">
-                            <div className="space-y-2">
-                                <h3 className="text-2xl font-black text-white tracking-tight leading-tight">
-                                    {castMode === 'smarttv' ? 'เชื่อมต่อหน้าจอทีวีแล้ว' : 'กำลังเริ่มเชื่อมต่อ...'}
-                                </h3>
-                                {roomCode && (
-                                    <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 px-3 py-1 rounded-full">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                                        <span className="text-primary font-black text-[10px] uppercase tracking-[0.2em]">ROOM {roomCode}</span>
-                                    </div>
-                                )}
-                            </div>
+                        <div className="space-y-4">
+                            <h3 className="text-xl font-black text-white tracking-tight leading-tight">
+                                {castMode === 'smarttv' ? 'เชื่อมต่อหน้าจอทีวีแล้ว' : 'กำลังเริ่มเชื่อมต่อ...'}
+                            </h3>
+                        </div>
 
-                            {/* Now Playing Info (Standardized Monitor Style - Clean & Premium) */}
-                            {currentVideo && (
-                                <div className="space-y-2 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                                    <div className="flex flex-col items-center">
-                                        <span className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em] mb-3 bg-white/5 px-4 py-1.5 rounded-full border border-white/5">กำลังเล่นบนหน้าจอทีวี</span>
-                                        <h4 className="text-xl font-black text-white leading-tight px-4 line-clamp-2 drop-shadow-lg">{currentVideo.title}</h4>
-                                        <p className="text-sm text-white/40 font-bold mt-2 opacity-80">{currentVideo.author}</p>
-                                    </div>
+                        {/* Now Playing Info (Standardized Monitor Style - Clean & Premium) */}
+                        {currentVideo && (
+                            <div className="space-y-1 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                                <div className="flex flex-col items-center">
+                                    <h4 className="text-lg font-black text-white leading-tight px-4 line-clamp-2 drop-shadow-lg opacity-90">{currentVideo.title}</h4>
+                                    <p className="text-[11px] text-white/40 font-bold mt-1.5 opacity-60">{currentVideo.author}</p>
                                 </div>
+                            </div>
+                        )}
+
+                        <div className="flex flex-col gap-3 pt-4">
+                            {castMode !== 'none' && !isPlaying && (
+                                <button
+                                    onClick={onForcePlay || (() => usePlayerStore.getState().play())}
+                                    className="inline-flex items-center justify-center gap-3 px-8 py-3.5 bg-primary text-white rounded-2xl transition-all font-black text-sm mx-auto shadow-[0_10px_30px_rgba(var(--primary-rgb),0.3)] hover:scale-105 active:scale-95 group"
+                                >
+                                    <PlayCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                                    <span>กดเพื่อเริ่มเล่นวิดีโอ</span>
+                                </button>
                             )}
 
-                            <div className="flex flex-col gap-3 pt-4">
-                                {castMode !== 'none' && !isPlaying && (
-                                    <button
-                                        onClick={onForcePlay || (() => usePlayerStore.getState().play())}
-                                        className="inline-flex items-center justify-center gap-3 px-8 py-3.5 bg-primary text-white rounded-2xl transition-all font-black text-sm mx-auto shadow-[0_10px_30px_rgba(var(--primary-rgb),0.3)] hover:scale-105 active:scale-95 group"
-                                    >
-                                        <PlayCircle className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                                        <span>กดเพื่อเริ่มเล่นวิดีโอ</span>
-                                    </button>
-                                )}
-
-                                {onDisconnect && (
-                                    <button
-                                        onClick={onDisconnect}
-                                        className="inline-flex items-center justify-center gap-2 px-4 py-2 text-white/20 hover:text-red-500 rounded-xl transition-all font-bold text-[10px] mx-auto uppercase tracking-widest hover:bg-red-500/10"
-                                    >
-                                        <Power className="w-3 h-3" />
-                                        <span>ยกเลิกการเชื่อมต่อ</span>
-                                    </button>
-                                )}
-                            </div>
-
-                            <p className="text-white/20 text-[9px] font-black uppercase tracking-[0.2em] mx-auto leading-relaxed pt-2">
-                                วิดีโอและเสียงแสดงผลบนหน้าจอทีวี
-                            </p>
+                            {onDisconnect && (
+                                <button
+                                    onClick={onDisconnect}
+                                    className="inline-flex items-center justify-center gap-2 px-4 py-2 text-white/20 hover:text-red-500 rounded-xl transition-all font-bold text-[10px] mx-auto uppercase tracking-widest hover:bg-red-500/10"
+                                >
+                                    <Power className="w-3 h-3" />
+                                    <span>ยกเลิกการเชื่อมต่อ</span>
+                                </button>
+                            )}
                         </div>
+
+                        <p className="text-white/20 text-[9px] font-black uppercase tracking-[0.2em] mx-auto leading-relaxed pt-2">
+                            วิดีโอและเสียงแสดงผลบนหน้าจอทีวี
+                        </p>
                     </div>
                 )}
 
@@ -421,101 +412,109 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
 
 
             {/* Overlay (Waiting) */}
-            {!currentSource && (
+            {
+                !currentSource && (
 
-                <div className="absolute inset-0 bg-black/80 z-10 flex items-center justify-center text-white/50">
-                    <p>รอเลือกเพลง...</p>
-                </div>
-            )}
+                    <div className="absolute inset-0 bg-black/80 z-10 flex items-center justify-center text-white/50">
+                        <p>รอเลือกเพลง...</p>
+                    </div>
+                )
+            }
 
             {/* Limit Indicator */}
-            {mounted && maxDuration > 0 && currentSource && (
-                <div className="absolute top-2 right-2 z-20 badge badge-warning gap-1 opacity-80 text-xs">
-                    <span>⏱️ จำกัดเวลา: {maxDuration}วิ</span>
-                </div>
-            )}
+            {
+                mounted && maxDuration > 0 && currentSource && (
+                    <div className="absolute top-2 right-2 z-20 badge badge-warning gap-1 opacity-80 text-xs">
+                        <span>⏱️ จำกัดเวลา: {maxDuration}วิ</span>
+                    </div>
+                )
+            }
 
             {/* 🎯 YOUTUBE-STYLE MINI CONTROLS (Fullscreen Only - Rounded Capsule - VANISHING MODE) */}
-            {layoutMode === 'fullscreen' && (
-                <div
-                    className={`absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-50 flex items-center gap-1 p-1.5 bg-black/60 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl shadow-black/60 transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] cursor-default ${showMiniControls ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}
-                >
-                    {/* Play/Pause */}
-                    <button
-                        onClick={() => usePlayerStore.getState().togglePlay()}
-                        className={`w-11 h-11 flex items-center justify-center rounded-full transition-all active:scale-90 ${isPlaying ? 'text-white/70 hover:text-white hover:bg-white/10' : 'bg-primary text-white shadow-lg shadow-primary/20'}`}
-                        title={isPlaying ? "Pause" : "Play"}
+            {
+                layoutMode === 'fullscreen' && (
+                    <div
+                        className={`absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-50 flex items-center gap-1 p-1.5 bg-black/60 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl shadow-black/60 transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] cursor-default ${showMiniControls ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}
                     >
-                        {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-1" />}
-                    </button>
+                        {/* Play/Pause */}
+                        <button
+                            onClick={() => usePlayerStore.getState().togglePlay()}
+                            className={`w-11 h-11 flex items-center justify-center rounded-full transition-all active:scale-90 ${isPlaying ? 'text-white/70 hover:text-white hover:bg-white/10' : 'bg-primary text-white shadow-lg shadow-primary/20'}`}
+                            title={isPlaying ? "Pause" : "Play"}
+                        >
+                            {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-1" />}
+                        </button>
 
-                    <div className="w-[1px] h-6 bg-white/10 mx-1" />
+                        <div className="w-[1px] h-6 bg-white/10 mx-1" />
 
-                    {/* Exit Fullscreen Toggle */}
-                    <button
-                        onClick={toggleFullscreen}
-                        className="w-11 h-11 flex items-center justify-center rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-all active:scale-90"
-                        title="ย่อหน้าจอ"
-                    >
-                        <Minimize2 size={20} />
-                    </button>
+                        {/* Exit Fullscreen Toggle */}
+                        <button
+                            onClick={toggleFullscreen}
+                            className="w-11 h-11 flex items-center justify-center rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-all active:scale-90"
+                            title="ย่อหน้าจอ"
+                        >
+                            <Minimize2 size={20} />
+                        </button>
 
-                    {/* Exit to Split Mode */}
-                    <button
-                        onClick={() => usePlayerStore.getState().setLayoutMode('split')}
-                        className="w-11 h-11 flex items-center justify-center rounded-full text-red-400 hover:text-white hover:bg-red-500 transition-all active:scale-90"
-                        title="ออกจากหน้าจอเต็มจอ"
-                    >
-                        <X size={20} strokeWidth={3} />
-                    </button>
-                </div>
-            )}
+                        {/* Exit to Split Mode */}
+                        <button
+                            onClick={() => usePlayerStore.getState().setLayoutMode('split')}
+                            className="w-11 h-11 flex items-center justify-center rounded-full text-red-400 hover:text-white hover:bg-red-500 transition-all active:scale-90"
+                            title="ออกจากหน้าจอเต็มจอ"
+                        >
+                            <X size={20} strokeWidth={3} />
+                        </button>
+                    </div>
+                )
+            }
 
             {/* Added By / Up Next Toast (Top-Right - Sharp V2 Metadata-Rich) */}
-            {(() => {
-                if (!showToast) return null;
-                const activeVideo = (toastType === 'added' ? currentVideo : upNextVideo);
-                if (!activeVideo) return null;
+            {
+                (() => {
+                    if (!showToast) return null;
+                    const activeVideo = (toastType === 'added' ? currentVideo : upNextVideo);
+                    if (!activeVideo) return null;
 
-                const thumb = activeVideo.thumbnail || (activeVideo.videoId ? `https://i.ytimg.com/vi/${activeVideo.videoId}/mqdefault.jpg` : "/icon-cover.png");
+                    const thumb = activeVideo.thumbnail || (activeVideo.videoId ? `https://i.ytimg.com/vi/${activeVideo.videoId}/mqdefault.jpg` : "/icon-cover.png");
 
-                return (
-                    <div className={`absolute top-6 right-6 z-[60] transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] ${showToast ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4 pointer-events-none'}`}>
-                        <div className="flex items-center gap-3 bg-stone-900/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-2 pr-4 shadow-2xl ring-1 ring-white/5 w-full max-w-[280px]">
-                            {/* Thumbnail */}
-                            <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/5 shadow-inner shrink-0 relative bg-black/40">
-                                <Image
-                                    unoptimized
-                                    src={thumb}
-                                    fill
-                                    className="object-cover"
-                                    alt="Cover"
-                                    onError={(e) => {
-                                        const target = e.target as HTMLImageElement;
-                                        target.src = "/icon-cover.png";
-                                    }}
-                                />
-                            </div>
-
-                            {/* Info */}
-                            <div className="flex flex-col min-w-0 flex-1">
-                                <div className="flex items-center gap-2 mb-0.5">
-                                    <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${toastType === 'upnext' ? 'bg-amber-500 text-black' : 'bg-primary text-white'}`}>
-                                        {toastType === 'upnext' ? 'ถัดไป' : 'กำลังเล่น'}
-                                    </span>
+                    return (
+                        <div className={`absolute top-6 right-6 z-[60] transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] ${showToast ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4 pointer-events-none'}`}>
+                            <div className="flex items-center gap-3 bg-stone-900/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-2 pr-4 shadow-2xl ring-1 ring-white/5 w-full max-w-[280px]">
+                                {/* Thumbnail */}
+                                <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/5 shadow-inner shrink-0 relative bg-black/40">
+                                    <Image
+                                        unoptimized
+                                        src={thumb}
+                                        fill
+                                        className="object-cover"
+                                        alt="Cover"
+                                        onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            target.src = "/icon-cover.png";
+                                        }}
+                                    />
                                 </div>
-                                <h3 className="text-[13px] font-black text-white leading-tight truncate">
-                                    {activeVideo.title || "Unknown Title"}
-                                </h3>
-                                <p className="text-[11px] font-bold text-white/50 truncate">
-                                    {activeVideo.author || "Unknown"}
-                                </p>
+
+                                {/* Info */}
+                                <div className="flex flex-col min-w-0 flex-1">
+                                    <div className="flex items-center gap-2 mb-0.5">
+                                        <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${toastType === 'upnext' ? 'bg-amber-500 text-black' : 'bg-primary text-white'}`}>
+                                            {toastType === 'upnext' ? 'ถัดไป' : 'กำลังเล่น'}
+                                        </span>
+                                    </div>
+                                    <h3 className="text-[13px] font-black text-white leading-tight truncate">
+                                        {activeVideo.title || "Unknown Title"}
+                                    </h3>
+                                    <p className="text-[11px] font-bold text-white/50 truncate">
+                                        {activeVideo.author || "Unknown"}
+                                    </p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                );
-            })()}
+                    );
+                })()
+            }
 
-        </div>
+        </div >
     );
 };
