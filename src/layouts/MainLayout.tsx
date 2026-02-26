@@ -452,11 +452,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 onClick={() => setIsKaraoke(false)}
                                 className={clsx(
                                     "relative flex-1 flex items-center justify-center gap-2 h-full rounded-[18px] text-[13px] font-black uppercase tracking-tight transition-colors z-10",
-                                    !isKaraoke ? "text-gray-900" : "text-gray-400 hover:text-gray-600"
+                                    !isKaraoke ? "text-primary" : "text-gray-400 hover:text-gray-600"
                                 )}
                             >
                                 <Music className="w-4 h-4" />
-                                <span>Song</span>
+                                <span>เพลง</span>
                             </button>
 
                             {/* Karaoke Option */}
@@ -468,7 +468,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 )}
                             >
                                 <Mic className="w-4 h-4" />
-                                <span>Sing</span>
+                                <span>คาราโอเกะ</span>
                             </button>
                         </div>
                     </div>
@@ -523,11 +523,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 onClick={() => setIsKaraoke(false)}
                                 className={clsx(
                                     "relative flex-1 flex items-center justify-center gap-1.5 h-full rounded-xl text-[11px] font-black tracking-tight uppercase transition-colors z-10",
-                                    !isKaraoke ? "text-gray-900" : "text-gray-400 hover:text-gray-600"
+                                    !isKaraoke ? "text-primary" : "text-gray-400 hover:text-gray-600"
                                 )}
                             >
                                 <Music className="w-3.5 h-3.5" />
-                                <span>Song</span>
+                                <span>เพลง</span>
                             </button>
 
                             {/* Karaoke Option */}
@@ -539,7 +539,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 )}
                             >
                                 <Mic className="w-3.5 h-3.5" />
-                                <span>Sing</span>
+                                <span>คาราโอเกะ</span>
                             </button>
                         </div>
 
