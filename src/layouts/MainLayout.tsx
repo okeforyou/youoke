@@ -126,6 +126,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
     // [Loop Prevention] Ref to track if current store change is from a remote
     const isProcessingRemote = useRef(false);
+    const dualWindowRef = useRef<Window | null>(null);
 
     // Remote Control Integration - Main Screen acts as a Host
     const { connectionStatus, connectedClients } = useRemoteHost(
@@ -207,7 +208,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
         useUIStore.getState().setIsCastingLocal(true);
         localStorage.setItem('youoke-dual-active', 'true');
         setCastMode('dual');
-        window.open('/dual?mode=dj', 'YouOkeDual', 'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no');
+        const win = window.open('/dual?mode=dj', 'YouOkeDual', 'width=1280,height=720,menubar=no,toolbar=no,location=no,status=no');
+        dualWindowRef.current = win;
     };
 
     const handleCastSelectGoogle = () => {
@@ -244,6 +246,39 @@ export default function MainLayout({ children }: MainLayoutProps) {
         // Show success notification
         addToast(`เชื่อมต่อหน้าจอทีวี (ห้อง ${code}) สำเร็จ!`);
     };
+
+    const handleDisconnect = useCallback(() => {
+        console.log('🔌 [Main] Disconnecting cast mode:', castMode);
+
+        // 🛑 Send PAUSE to the remote room first so it stops playing
+        if ((castMode === 'smarttv' || castMode === 'webmonitor') && roomCode && realtimeDb) {
+            const commandsRef = ref(realtimeDb, `rooms/${roomCode}/commands`);
+            const newCmdRef = push(commandsRef);
+            set(newCmdRef, {
+                id: newCmdRef.key,
+                command: { type: 'PAUSE', timestamp: Date.now() },
+                status: 'pending',
+                from: 'dashboard',
+                timestamp: Date.now()
+            });
+
+            // Specific cleanup for wireless cast
+            setPartyPIN(null);
+            localStorage.removeItem('youoke_party_pin');
+            import('../plugins/cast/services/CastService').then(({ castService }) => castService.cleanup());
+        }
+
+        if (castMode === 'dual') {
+            if (dualWindowRef.current && !dualWindowRef.current.closed) {
+                dualWindowRef.current.close();
+            }
+            localStorage.setItem('youoke-dual-active', 'false');
+            useUIStore.getState().setIsCastingLocal(false);
+        }
+
+        setCastMode('none');
+        addToast('ตัดการเชื่อมต่อแล้ว');
+    }, [castMode, roomCode, realtimeDb, addToast]);
 
     // 📡 Monitor Sync Bridge (Phase 12: Receiver Model Restoration)
     useEffect(() => {
@@ -686,25 +721,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 <SidebarPlayer
                                     castMode={castMode}
                                     roomCode={roomCode}
-                                    onDisconnect={() => {
-                                        // 🛑 Send PAUSE to the remote room first so it stops playing
-                                        if (castMode === 'smarttv' && roomCode && realtimeDb) {
-                                            const commandsRef = ref(realtimeDb, `rooms/${roomCode}/commands`);
-                                            const newCmdRef = push(commandsRef);
-                                            set(newCmdRef, {
-                                                id: newCmdRef.key,
-                                                command: { type: 'PAUSE', timestamp: Date.now() },
-                                                status: 'pending',
-                                                from: 'dashboard',
-                                                timestamp: Date.now()
-                                            });
-                                        }
-
-                                        setCastMode('none');
-                                        localStorage.setItem('youoke-dual-active', 'false');
-                                        useUIStore.getState().setIsCastingLocal(false);
-                                        addToast('ตัดการเชื่อมต่อแล้ว');
-                                    }}
+                                    onDisconnect={handleDisconnect}
                                     onForcePlay={() => {
                                         if (roomCode && realtimeDb) {
                                             const commandsRef = ref(realtimeDb, `rooms/${roomCode}/commands`);
