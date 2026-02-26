@@ -380,7 +380,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         <div className="flex items-center gap-2">
                             <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center text-primary font-bold">Y</div>
                             <span className="font-bold text-lg text-gray-900">YouOke</span>
-                            <span className="text-[10px] font-bold bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-md hidden sm:inline-block">v2.28.0-VANISH</span>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -398,23 +397,19 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     "lg:hidden fixed left-1/2 -translate-x-1/2 z-50 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] w-[95%] max-w-2xl",
                     isMobileSearchOpen ? "top-20 opacity-100 scale-100 translate-y-0" : "top-16 opacity-0 scale-95 -translate-y-4 pointer-events-none"
                 )}>
-                    {/* Main Card - Glassmorphism Style (Mirror Glass) */}
-                    <div className="bg-[#f4f4f5]/95 backdrop-blur-3xl p-4 rounded-[32px] shadow-[0_20px_60px_-12px_rgba(0,0,0,0.2)] shadow-primary/10 border border-gray-200/50 ring-1 ring-white/50 space-y-4 relative overflow-hidden">
-                        {/* Gradient Mesh - Made slightly more visible */}
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-[50px] -z-10" />
-                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-purple-500/10 rounded-full blur-[40px] -z-10" />
-                        {/* Search Input */}
+                    {/* Main Card */}
+                    <div className="bg-white p-4 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-gray-100 space-y-4 relative overflow-hidden">
                         {/* Search Input Area */}
                         <div className="flex gap-2">
                             <div className="relative group flex-1">
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <Search className="h-6 w-6 text-primary/60 group-focus-within:text-primary transition-colors" />
+                                    <Search className="h-6 w-6 text-gray-300 group-focus-within:text-primary transition-colors" />
                                 </div>
                                 <DebounceInput
                                     minLength={2}
                                     debounceTimeout={300}
                                     placeholder="ค้นหาเพลง, ศิลปิน..."
-                                    className="block w-full pl-12 pr-12 h-14 bg-white/60 hover:bg-white focus:bg-white border-2 border-transparent focus:border-primary/20 rounded-[24px] text-lg font-medium text-gray-900 placeholder-gray-400 focus:outline-none transition-all shadow-inner"
+                                    className="block w-full pl-12 pr-12 h-14 bg-gray-50/50 hover:bg-white focus:bg-white border border-gray-100 focus:border-primary/20 rounded-[22px] text-lg font-bold text-gray-900 placeholder-gray-400 focus:outline-none transition-all"
                                     value={searchTerm}
                                     onChange={(e) => {
                                         router.replace({
@@ -427,27 +422,27 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                     <button onClick={() => {
                                         const { search, ...rest } = router.query;
                                         router.replace({ pathname: '/', query: rest }, undefined, { shallow: true });
-                                    }} className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-red-500 transition-colors">
+                                    }} className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-300 hover:text-red-500 transition-colors">
                                         <X className="h-5 w-5" />
                                     </button>
                                 )}
                             </div>
 
-                            {/* Close Button (New) */}
+                            {/* Close Button */}
                             <button
                                 onClick={() => setMobileSearchOpen(false)}
-                                className="h-14 w-14 flex items-center justify-center bg-gray-100/80 hover:bg-gray-200 text-gray-500 hover:text-red-500 rounded-[24px] transition-colors"
+                                className="h-14 w-14 flex items-center justify-center bg-gray-50/80 hover:bg-gray-100 text-gray-400 hover:text-red-500 rounded-[22px] transition-colors"
                             >
                                 <X className="h-6 w-6" />
                             </button>
                         </div>
 
-                        {/* Mode Toggle (Karaoke/Song) - Sliding Animation */}
-                        <div className="relative flex items-center bg-gray-100/80 rounded-[24px] p-1 h-12">
+                        {/* Mode Toggle (Song/Sing) - Subtler Design */}
+                        <div className="relative flex items-center bg-gray-50 rounded-[22px] p-1 h-12 border border-gray-100">
                             {/* Sliding Active Background */}
                             <div
                                 className={clsx(
-                                    "absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-[20px] shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
+                                    "absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-[18px] shadow-sm transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
                                     isKaraoke ? "left-[calc(50%+2px)]" : "left-1"
                                 )}
                             />
@@ -456,24 +451,24 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             <button
                                 onClick={() => setIsKaraoke(false)}
                                 className={clsx(
-                                    "relative flex-1 flex items-center justify-center gap-2 h-full rounded-[20px] text-sm font-bold transition-colors z-10",
-                                    !isKaraoke ? "text-primary" : "text-gray-400 hover:text-gray-600"
+                                    "relative flex-1 flex items-center justify-center gap-2 h-full rounded-[18px] text-[13px] font-black uppercase tracking-tight transition-colors z-10",
+                                    !isKaraoke ? "text-gray-900" : "text-gray-400 hover:text-gray-600"
                                 )}
                             >
-                                <Music className={clsx("w-4 h-4 transition-transform duration-300", !isKaraoke ? "scale-110" : "scale-100")} strokeWidth={2.5} />
-                                <span>เพลงทั่วไป</span>
+                                <Music className="w-4 h-4" />
+                                <span>Song</span>
                             </button>
 
                             {/* Karaoke Option */}
                             <button
                                 onClick={() => setIsKaraoke(true)}
                                 className={clsx(
-                                    "relative flex-1 flex items-center justify-center gap-2 h-full rounded-[20px] text-sm font-bold transition-colors z-10",
+                                    "relative flex-1 flex items-center justify-center gap-2 h-full rounded-[18px] text-[13px] font-black uppercase tracking-tight transition-colors z-10",
                                     isKaraoke ? "text-primary" : "text-gray-400 hover:text-gray-600"
                                 )}
                             >
-                                <Mic className={clsx("w-4 h-4 transition-transform duration-300", isKaraoke ? "scale-110" : "scale-100")} strokeWidth={2.5} />
-                                <span>คาราโอเกะ</span>
+                                <Mic className="w-4 h-4" />
+                                <span>Sing</span>
                             </button>
                         </div>
                     </div>
@@ -482,14 +477,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 {/* Desktop Header */}
                 <header className="hidden lg:flex h-20 items-center justify-between px-8 border-b border-gray-100 bg-white sticky top-0 z-20 transition-all">
                     <div className="flex-1 max-w-2xl relative group">
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <Search className="h-5 w-5 text-gray-400 group-focus-within:text-primary transition-colors" />
+                        <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                            <Search className="h-5 w-5 text-gray-300 group-focus-within:text-primary transition-colors" />
                         </div>
                         <DebounceInput
                             minLength={2}
                             debounceTimeout={300}
                             placeholder="ค้นหาเพลง, ศิลปิน, หรือวางลิงก์ YouTube..."
-                            className="block w-full pl-12 pr-12 h-12 bg-gray-100 border-none rounded-2xl leading-5 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all shadow-sm"
+                            className="block w-full pl-14 pr-12 h-12 bg-gray-50/50 hover:bg-gray-100/50 focus:bg-white border border-gray-100 focus:border-primary/20 rounded-2xl leading-5 text-gray-900 placeholder-gray-400 focus:outline-none transition-all shadow-sm font-medium"
                             value={searchTerm}
                             onChange={(e) => {
                                 router.replace({
@@ -504,7 +499,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                     const { search, ...rest } = router.query;
                                     router.replace({ pathname: '/', query: rest }, undefined, { shallow: true });
                                 }}
-                                className="absolute inset-y-0 right-12 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                                className="absolute inset-y-0 right-4 flex items-center text-gray-300 hover:text-red-500 transition-colors"
                             >
                                 <X className="h-4 w-4" />
                             </button>
@@ -512,15 +507,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
                     </div>
 
-                    <div className="flex items-center gap-4 ml-4">
-                        {/* Search Toggle (Karaoke/Song) */}
+                    <div className="flex items-center gap-6 ml-6">
                         {/* Search Toggle (Karaoke/Song) - Animated Switch */}
-                        <div className="relative flex items-center bg-gray-100 rounded-2xl p-1 h-12 w-[200px]">
+                        <div className="relative flex items-center bg-gray-50 rounded-2xl p-1 h-11 w-[180px] border border-gray-100">
                             {/* Sliding Active Background */}
                             <div
                                 className={clsx(
-                                    "absolute top-1.5 bottom-1.5 w-[calc(50%-8px)] bg-white rounded-xl shadow-sm transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
-                                    isKaraoke ? "left-[calc(50%+2px)]" : "left-1.5"
+                                    "absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
+                                    isKaraoke ? "left-[calc(50%+2px)]" : "left-1"
                                 )}
                             />
 
@@ -528,24 +522,24 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             <button
                                 onClick={() => setIsKaraoke(false)}
                                 className={clsx(
-                                    "relative flex-1 flex items-center justify-center gap-1.5 h-full rounded-xl text-xs font-bold transition-colors z-10",
+                                    "relative flex-1 flex items-center justify-center gap-1.5 h-full rounded-xl text-[11px] font-black tracking-tight uppercase transition-colors z-10",
                                     !isKaraoke ? "text-gray-900" : "text-gray-400 hover:text-gray-600"
                                 )}
                             >
                                 <Music className="w-3.5 h-3.5" />
-                                <span>เพลง</span>
+                                <span>Song</span>
                             </button>
 
                             {/* Karaoke Option */}
                             <button
                                 onClick={() => setIsKaraoke(true)}
                                 className={clsx(
-                                    "relative flex-1 flex items-center justify-center gap-1.5 h-full rounded-xl text-xs font-bold transition-colors z-10",
+                                    "relative flex-1 flex items-center justify-center gap-1.5 h-full rounded-xl text-[11px] font-black tracking-tight uppercase transition-colors z-10",
                                     isKaraoke ? "text-primary" : "text-gray-400 hover:text-gray-600"
                                 )}
                             >
                                 <Mic className="w-3.5 h-3.5" />
-                                <span>คาราโอเกะ</span>
+                                <span>Sing</span>
                             </button>
                         </div>
 
@@ -555,22 +549,19 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             onClick={() => {
                                 setShowQRCode(true);
                             }}
-                            className="h-12 w-12 rounded-2xl p-0 flex items-center justify-center bg-gray-100 hover:bg-gray-200 mr-2 text-gray-500 hover:text-primary transition-colors relative"
+                            className="h-11 w-11 rounded-2xl p-0 flex items-center justify-center bg-gray-50 hover:bg-gray-100 border border-gray-100 text-gray-400 hover:text-primary transition-all relative group"
                             title="เชื่อมต่อรีโมท (Mobile Remote)"
                         >
-                            <Smartphone className="w-5 h-5" />
+                            <Smartphone className="w-5 h-5 group-hover:scale-110 transition-transform" />
                             {/* Connection Status Dot */}
                             {mounted && (
                                 <div className={clsx(
-                                    "absolute top-3 right-3 w-2.5 h-2.5 rounded-full border-2 border-white transition-colors duration-500",
+                                    "absolute top-2.5 right-2.5 w-2 h-2 rounded-full border-2 border-white transition-colors duration-500",
                                     connectionStatus === 'active' ? "bg-green-500 animate-pulse" :
-                                        connectionStatus === 'background' ? "bg-orange-500" : "bg-gray-400"
+                                        connectionStatus === 'background' ? "bg-orange-500" : "bg-gray-300"
                                 )} />
                             )}
                         </button>
-
-                        {/* User Profile (If needed, or kept in sidebar) */}
-                        {/* Current layout keeps profile in sidebar, which is fine. */}
 
                     </div>
                 </header>
@@ -774,7 +765,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         <div>
                             <div className="flex items-center gap-2">
                                 <h1 className="text-lg font-bold tracking-tight leading-none text-gray-900">YouOke</h1>
-                                <span className="text-[10px] font-bold bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-md">v2.28.0-VANISH</span>
                             </div>
                             <p className="text-[10px] text-gray-500 font-medium tracking-wide">Karaoke Online</p>
                         </div>

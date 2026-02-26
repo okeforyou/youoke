@@ -85,25 +85,17 @@ export default function HomePage() {
 
   return (
     <MainLayout>
-      <div className="flex flex-col min-h-full">
-        {/* Hero Section (Configurable) */}
-        {/* Hero Section (Configurable - Hidden by default unless strictly enabled) */}
-        {!searchTerm && config?.ui?.showHero === true && (
-          <div className="mb-6 animate-in fade-in slide-in-from-top-4 duration-700">
-            <HeroSection
-              title={config?.ui?.hero?.title || "Welcome"}
-              description={config?.ui?.hero?.description || "Select a song to start singing."}
-              imageUrl={config?.ui?.hero?.imageUrl || "https://images.unsplash.com/photo-1516280440614-6697288d5d38?q=80&w=2070&auto=format&fit=crop"}
-            />
-          </div>
-        )}
-
+      <div className="flex flex-col min-h-screen">
         {/* Content Grid */}
-        <div className="flex-1 p-4 max-w-[1600px] mx-auto w-full">
-          {mounted ? <HomePageContent /> : (
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        <div className="flex-1 w-full max-w-[1600px] mx-auto p-4 md:p-8">
+          {mounted ? (
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-700">
+              <HomePageContent />
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
               {[...Array(10)].map((_, i) => (
-                <div key={i} className="aspect-video bg-gray-100 rounded animate-pulse"></div>
+                <div key={i} className="aspect-video bg-gray-50 rounded-2xl animate-pulse border border-gray-100"></div>
               ))}
             </div>
           )}
