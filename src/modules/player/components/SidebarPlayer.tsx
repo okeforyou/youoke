@@ -351,7 +351,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
 
                         <div className="space-y-4">
                             <h3 className="text-xl font-black text-white tracking-tight leading-tight">
-                                {(castMode === 'smarttv' || castMode === 'webmonitor') ? 'เชื่อมต่อหน้าจอทีวีแล้ว' : castMode === 'dual' ? 'เชื่อมต่อหน้าจอที่สองแล้ว' : 'กำลังเริ่มเชื่อมต่อ...'}
+                                {castMode !== 'none' ? 'เชื่อมต่อหน้าจอที่สองแล้ว' : 'กำลังเริ่มเชื่อมต่อ...'}
                             </h3>
                         </div>
 
@@ -489,8 +489,9 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                                         className="object-cover"
                                         alt="Cover"
                                         onError={(e) => {
-                                            const target = e.target as HTMLImageElement;
-                                            target.src = "/icon-cover.png";
+                                            if (e.currentTarget) {
+                                                e.currentTarget.src = "/icon-cover.png";
+                                            }
                                         }}
                                     />
                                 </div>

@@ -73,8 +73,9 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
                         className="object-cover transition-transform duration-500 group-hover/thumb:scale-110"
                         unoptimized
                         onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = '/icon-cover.png';
+                            if (e.currentTarget) {
+                                e.currentTarget.src = '/icon-cover.png';
+                            }
                         }}
                     />
                 </div>
