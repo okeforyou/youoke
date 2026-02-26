@@ -197,6 +197,25 @@ export default function MonitorPage() {
         </div>
       </div>
 
+      {/* 2. Interaction & Idle Layer (Combined for simplicity) */}
+      {!hasInteracted && (
+        <div
+          className="absolute inset-0 z-[100] bg-black/80 backdrop-blur-xl flex items-center justify-center p-6 animate-in fade-in"
+          onClick={handleInteraction}
+        >
+          <div className="bg-zinc-900 border border-white/10 p-12 rounded-[3.5rem] text-center space-y-8 shadow-2xl max-w-md transform active:scale-95 transition-transform">
+            <div className="w-24 h-24 bg-primary rounded-full flex items-center justify-center mx-auto shadow-2xl">
+              <TvIcon className="w-14 h-14 text-white" />
+            </div>
+            <div>
+              <h2 className="text-3xl font-black mb-2">พร้อมเชื่อมต่อ</h2>
+              <p className="text-lg text-white/50">กรุณากดปุ่มเพื่อเริ่มรับชมภาพและเสียง</p>
+            </div>
+            <div className="btn btn-primary btn-lg rounded-2xl w-full">เริ่มการทำงาน (OK)</div>
+          </div>
+        </div>
+      )}
+
       {/* 2. Idle Layer (Restored Original Monitor UI) */}
       <div className={clsx(
         "absolute inset-0 z-10 transition-all duration-1000 bg-[#0a0a0a]",
@@ -271,7 +290,7 @@ export default function MonitorPage() {
         <div className="bg-white/10 backdrop-blur-2xl border border-white/20 p-4 rounded-3xl shadow-2xl flex items-center gap-4 max-w-sm">
           <div className="bg-green-500 rounded-full p-2 text-white shadow-lg shadow-green-500/30"><ListBulletIcon className="w-6 h-6" /></div>
           <div className="min-w-0">
-            <h4 className="text-white font-bold truncate text-base">{addedToastItem?.title}</h4>
+            <h4 className="font-bold text-white truncate text-base">{addedToastItem?.title}</h4>
             <p className="text-white/50 text-xs">เพิ่มลงคิวแล้ว</p>
           </div>
         </div>
@@ -326,22 +345,6 @@ export default function MonitorPage() {
           <button onClick={() => setQrVisibility(false)} className="px-8 py-3 bg-white/5 hover:bg-white/10 rounded-full text-white/60 font-bold transition-all">ยกเลิก</button>
         </div>
       </div>
-
-      {/* Interaction Overlay */}
-      {!hasInteracted && !isIdle && (
-        <div className="absolute inset-0 z-[100] bg-black/80 backdrop-blur-xl flex items-center justify-center p-6 animate-in fade-in" onClick={handleInteraction}>
-          <div className="bg-zinc-900 border border-white/10 p-12 rounded-[3.5rem] text-center space-y-8 shadow-2xl max-w-md transform active:scale-95 transition-transform">
-            <div className="w-24 h-24 bg-primary rounded-full flex items-center justify-center mx-auto shadow-2xl">
-              {!isPlayerReady ? <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin" /> : <TvIcon className="w-14 h-14 text-white" />}
-            </div>
-            <div>
-              <h2 className="text-3xl font-black mb-2">{!isPlayerReady ? "กำลังเตรียมเพลง..." : "พร้อมเล่นเพลง"}</h2>
-              <p className="text-lg text-white/50">{!isPlayerReady ? "กรุณารอสักครู่..." : "กดเพื่อเริ่มรับชมภาพและเสียง"}</p>
-            </div>
-            {isPlayerReady && <div className="btn btn-primary btn-lg rounded-2xl w-full">เริ่มการเชื่อมต่อ</div>}
-          </div>
-        </div>
-      )}
 
       {/* Fullscreen Toggle */}
       <button onClick={() => { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }} className="absolute bottom-6 right-6 z-50 p-3 bg-white/5 rounded-full hover:bg-white/10 opacity-0 hover:opacity-100 transition-opacity">
