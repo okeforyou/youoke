@@ -164,22 +164,29 @@ export default function MonitorPage() {
 
   const handleInteraction = () => {
     setHasInteracted(true);
-    console.log('🔘 Monitor: User interacted, unblocking audio context');
+    console.log('🔘 Monitor: User interacted, priming audio context');
 
-    // Force a play/pause cycle to unblock the browser's audio context
-    // This works even if no song is loaded yet - it primes the context
+    // 1. Force unblock Audio Context (Works on most browsers)
+    try {
+      const AudioContext = (window as any).AudioContext || (window as any).webkitAudioContext;
+      if (AudioContext) {
+        const audioCtx = new AudioContext();
+        audioCtx.resume();
+      }
+    } catch (e) {
+      console.warn('Silent context unblock failed:', e);
+    }
+
+    // 2. Play if active
     const store = usePlayerStore.getState();
     if (store.currentSource) {
-      // If a song is already loaded, force the adapter to play
       import('../modules/player/services/playerService').then(({ playerService }) => {
         const adapter = playerService.getAdapter();
         if (adapter) {
-          console.log('▶️ Monitor: Forcing adapter play after interaction');
+          console.log('▶️ Monitor: Executing play through adapter');
           adapter.play();
         }
       });
-    } else {
-      console.log('⏳ Monitor: No source yet, interaction recorded for when song arrives');
     }
   };
 
@@ -215,6 +222,12 @@ export default function MonitorPage() {
             onPlayerInit={() => {
               console.log('✅ Monitor: SidebarPlayer (YouTube) is READY');
               setIsPlayerReady(true);
+            }}
+            onEnded={() => {
+              console.log('🎬 Monitor: Video ended, signaling NEXT to host');
+              import('../plugins/cast/services/CastService').then(({ castService }) => {
+                castService.sendCommand({ type: 'NEXT' });
+              });
             }}
           />
           {/* Gradient Overlay for Text Readability (Bottom) */}

@@ -26,9 +26,10 @@ interface SidebarPlayerProps {
     onDisconnect?: () => void;
     onForcePlay?: () => void;
     onPlayerInit?: () => void;
+    onEnded?: () => void;
 }
 
-export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 'none', roomCode = null, onDisconnect, onForcePlay, onPlayerInit }: SidebarPlayerProps) => {
+export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 'none', roomCode = null, onDisconnect, onForcePlay, onPlayerInit, onEnded }: SidebarPlayerProps) => {
     const { currentSource, isPlaying, currentVideo, setCurrentTime, currentTime, layoutMode, queue, currentIndex, duration } = usePlayerStore(
         useShallow(state => ({
             currentSource: state.currentSource,
@@ -336,7 +337,8 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                             if (onPlayerStateChange) onPlayerStateChange(event);
                         }}
                         onEnded={() => {
-                            console.log("🎬 Media ended, playing next...");
+                            console.log("🎬 Media ended, notifying parent...");
+                            if (onEnded) onEnded();
                             if (!isPassive) {
                                 usePlayerStore.getState().playNext();
                             }

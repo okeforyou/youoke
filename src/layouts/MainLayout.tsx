@@ -295,38 +295,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
         }
     }, [castMode, partyPIN]);
 
-    // 🎬 Auto-Next for Wireless Cast Mode
-    // When casting to smarttv/webmonitor, Dashboard has no local YouTube player,
-    // so there's no 'onEnded' event. We must watch the Monitor's time reports
-    // and trigger playNext() from the Host when the song finishes.
-    const autoNextFiredRef = useRef<string | null>(null);
-    useEffect(() => {
-        if (castMode !== 'smarttv' && castMode !== 'webmonitor') return;
-
-        const interval = setInterval(() => {
-            const store = usePlayerStore.getState();
-            if (!store.isPlaying || !store.currentSource || store.duration <= 0) return;
-
-            const remaining = store.duration - store.currentTime;
-            const currentId = store.currentSource;
-
-            // Fire playNext when < 1.5s remaining (accounts for sync delay)
-            // Guard: only fire once per song
-            if (remaining < 1.5 && remaining >= 0 && autoNextFiredRef.current !== currentId) {
-                console.log('🎬 [Host] Wireless Cast: Song ending detected, triggering playNext()');
-                autoNextFiredRef.current = currentId;
-                store.playNext();
-            }
-
-            // Reset guard when a new song starts
-            if (currentId !== autoNextFiredRef.current && remaining > 5) {
-                autoNextFiredRef.current = null;
-            }
-        }, 1000);
-
-        return () => clearInterval(interval);
-    }, [castMode]);
-
     // 🛑 Audio Conflict Logic moved to SidebarPlayer (Local Mute)
 
     const handleCastSelectYouTube = () => {

@@ -32,30 +32,33 @@ export class CastService {
 
         await this.createRoomIfNotExists(this.roomCode);
 
-        // BOTH roles need to poll their own specific fields
-        this.startStatePolling();
-
-        // BOTH roles need to listen for the other's fields
-        this.startStateListener();
-
-        if (role === 'monitor') {
-            this.startCommandListener();
+        // ROLE DIFFERENTIATION
+        if (role === 'host') {
+            this.setupHostSync();
+        } else {
+            this.setupMonitorSync();
         }
+
+        // BOTH roles listen for commands (Monitor might signal 'NEXT' to Host)
+        this.startCommandListener();
 
         return this.roomCode;
     }
 
     public cleanup() {
         if (this.pollInterval) clearInterval(this.pollInterval);
+        if (this.unsubscribe) this.unsubscribe();
         if (this.commandListenerOff) this.commandListenerOff();
         if (this.stateListenerOff) this.stateListenerOff();
 
         if (this.roomCode && realtimeDb) {
             off(ref(realtimeDb, `rooms/${this.roomCode}/commands`));
             off(ref(realtimeDb, `rooms/${this.roomCode}/state`));
+            off(ref(realtimeDb, `rooms/${this.roomCode}/state/controls`));
         }
 
         this.roomCode = null;
+        this.unsubscribe = null;
         console.log('🛑 CastService Cleaned Up');
     }
 
@@ -65,7 +68,6 @@ export class CastService {
 
     private async createRoomIfNotExists(roomCode: string) {
         if (!realtimeDb) return;
-        const dbURL = realtimeDb.app.options.databaseURL;
 
         try {
             // Use SDK for initial check to avoid REST latency
@@ -94,87 +96,114 @@ export class CastService {
         }
     }
 
-    private startStatePolling() {
-        if (!realtimeDb || !this.roomCode) return;
+    private setupHostSync() {
+        if (!this.roomCode || !realtimeDb) return;
 
-        // Keep state polling via REST or SDK? SDK is better but let's stick to REST for state writes to avoid listener loops if we were listening too.
-        // Actually, for "Writing State", setInterval is fine to throttle updates (debounce).
-        this.pollInterval = setInterval(async () => {
-            try {
-                this.syncLocalStateToFirebase();
-            } catch (e) {
-                console.error('State Sync Error:', e);
-            }
-        }, 500); // 500ms Poll for smoother Monitor sync
-    }
+        console.log("👂 Host: Monitoring local store for reactive sync...");
 
-    private startStateListener() {
-        if (!realtimeDb || !this.roomCode) return;
-
-        console.log(`👂 ${this.role}: Listening for ${this.role === 'host' ? 'Monitor' : 'Host'} updates...`);
-        const stateRef = ref(realtimeDb, `rooms/${this.roomCode}/state`);
-
-        const listener = onValue(stateRef, (snapshot) => {
-            const data = snapshot.val();
-            if (!data) return;
-
-            if (this.role === 'host') {
-                // Host listens for Progress (Time, Duration) from Monitor
-                const progress = data.controls;
-                if (progress) {
-                    usePlayerStore.setState((prev) => ({
-                        ...prev,
-                        currentTime: progress.currentTime ?? prev.currentTime,
-                        duration: progress.duration ?? prev.duration,
-                    }));
-                }
-            } else {
-                // Monitor listens for Master State (Queue, Video, Play/Pause) from Host
-                usePlayerStore.setState((prev) => ({
-                    ...prev,
-                    queue: data.queue !== undefined ? data.queue : prev.queue,
-                    currentIndex: data.currentIndex !== undefined ? data.currentIndex : prev.currentIndex,
-                    currentVideo: data.currentVideo !== undefined ? data.currentVideo : prev.currentVideo,
-                    currentSource: data.currentSource !== undefined ? data.currentSource : prev.currentSource,
-                    isPlaying: data.isPlaying !== undefined ? data.isPlaying : prev.isPlaying,
-                }));
+        // 1. Reactive Sync: Only write to Firebase when Master State changes
+        // This prevents the 500ms overwrite loop that causes playback flickers
+        let lastSyncKey = '';
+        this.unsubscribe = usePlayerStore.subscribe((state) => {
+            const syncKey = `${state.currentSource}-${state.isPlaying}-${state.queue.length}-${state.layoutMode}`;
+            if (syncKey !== lastSyncKey) {
+                lastSyncKey = syncKey;
+                this.syncMasterState(state);
             }
         });
 
-        this.stateListenerOff = () => off(stateRef, 'value', listener);
+        // 2. Listen for Progress: Get Time/Duration back from Monitor
+        const controlsRef = ref(realtimeDb, `rooms/${this.roomCode}/state/controls`);
+        this.stateListenerOff = onValue(controlsRef, (snapshot) => {
+            const val = snapshot.val();
+            if (val) {
+                // IMPORTANT: Sync back to local store so Host UI (progress bar) shows progress
+                usePlayerStore.getState().syncRemoteTime(val.currentTime || 0);
+                if (val.duration) usePlayerStore.getState().setDuration(val.duration);
+            }
+        });
+
+        // Perform initial sync
+        this.syncMasterState(usePlayerStore.getState());
     }
 
-    private async syncLocalStateToFirebase() {
+    private setupMonitorSync() {
         if (!this.roomCode || !realtimeDb) return;
 
-        const store = usePlayerStore.getState();
+        console.log("👂 Monitor: Listening for Host state & polling progress...");
+
+        // 1. Listen for Master State (Queue, Video, Play/Pause) from Host
         const stateRef = ref(realtimeDb, `rooms/${this.roomCode}/state`);
+        this.stateListenerOff = onValue(stateRef, (snapshot) => {
+            const data = snapshot.val();
+            if (!data) return;
 
-        if (this.role === 'host') {
-            // Host pushes Master Record (Queue, Video, Playback Status)
-            const masterState = {
-                queue: store.queue || [],
-                currentIndex: store.currentIndex ?? 0,
-                currentVideo: store.currentVideo || null,
-                currentSource: store.currentSource || null,
-                isPlaying: store.isPlaying ?? false,
-                lastUpdated: Date.now()
-            };
+            const store = usePlayerStore.getState();
 
-            // Only update if something changed to reduce writes
-            update(stateRef, masterState).catch(e => console.warn('Host Sync failed', e));
-        } else {
-            // Monitor pushes Progress (Time, Duration)
-            const progressState = {
-                currentTime: store.currentTime || 0,
-                duration: store.duration || 0,
-                isPlaying: store.isPlaying ?? false, // Echo back for confirmation
-                lastUpdated: Date.now()
-            };
+            // Atomic update to avoid intermediate render cycles
+            usePlayerStore.setState((prev) => ({
+                ...prev,
+                queue: data.queue !== undefined ? data.queue : prev.queue,
+                currentIndex: data.currentIndex !== undefined ? data.currentIndex : prev.currentIndex,
+                currentVideo: data.currentVideo !== undefined ? data.currentVideo : prev.currentVideo,
+                currentSource: data.currentSource !== undefined ? data.currentSource : prev.currentSource,
+                isPlaying: data.isPlaying !== undefined ? data.isPlaying : prev.isPlaying,
+                layoutMode: data.layoutMode !== undefined ? data.layoutMode : prev.layoutMode,
+            }));
+        });
 
-            // Push to nested 'controls' for progress to avoid overwriting Host's master state keys
-            update(ref(realtimeDb, `rooms/${this.roomCode}/state/controls`), progressState).catch(e => console.warn('Monitor Sync failed', e));
-        }
+        // 2. Poll Progress: Report Time/Duration back to Host
+        // We poll for time because it changes too fast for reactive subscription
+        this.pollInterval = setInterval(() => {
+            this.syncProgressToFirebase();
+        }, 1000); // 1s is enough for progress bars
+
+        // 3. Command Listener
+        this.startCommandListener();
+    }
+
+    private syncMasterState(store: any) {
+        if (!this.roomCode || !realtimeDb || this.role !== 'host') return;
+
+        const stateRef = ref(realtimeDb, `rooms/${this.roomCode}/state`);
+        const masterState = {
+            queue: store.queue || [],
+            currentIndex: store.currentIndex ?? 0,
+            currentVideo: store.currentVideo || null,
+            currentSource: store.currentSource || null,
+            isPlaying: store.isPlaying ?? false,
+            layoutMode: store.layoutMode || 'split',
+            lastUpdated: Date.now()
+        };
+
+        console.log('📡 Host: Syncing Master State to Firebase');
+        update(stateRef, masterState).catch(e => console.warn('Host Sync failed', e));
+    }
+
+    private syncProgressToFirebase() {
+        if (!this.roomCode || !realtimeDb || this.role !== 'monitor') return;
+
+        const store = usePlayerStore.getState();
+        const progressState = {
+            currentTime: store.currentTime || 0,
+            duration: store.duration || 0,
+            lastUpdated: Date.now()
+        };
+
+        // Push to nested 'controls' for progress
+        update(ref(realtimeDb, `rooms/${this.roomCode}/state/controls`), progressState).catch(e => console.warn('Monitor Sync failed', e));
+    }
+
+    public async sendCommand(command: { type: string; payload?: any }) {
+        if (!this.roomCode || !realtimeDb) return;
+        console.log('📡 Sending Remote Command:', command.type);
+        const commandsRef = ref(realtimeDb, `rooms/${this.roomCode}/commands`);
+        const newCommandRef = push(commandsRef);
+        await set(newCommandRef, {
+            command,
+            status: 'pending',
+            timestamp: Date.now()
+        });
     }
 
     private startCommandListener() {
@@ -256,7 +285,7 @@ export class CastService {
                         store.addToQueue(videoToAdd as any);
 
                         // Force immediate sync to update Remote UI
-                        this.syncLocalStateToFirebase();
+                        this.syncMasterState(usePlayerStore.getState());
 
                     } else {
                         console.error('❌ ADD_TO_QUEUE missing video payload:', command.payload);
@@ -288,7 +317,7 @@ export class CastService {
                             if (command.payload.isPlaying) store.play();
                             else store.pause();
                         }
-                        this.syncLocalStateToFirebase();
+                        this.syncMasterState(usePlayerStore.getState());
                     }
                     break;
                 case 'CLEAR_QUEUE':
