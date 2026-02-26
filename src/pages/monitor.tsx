@@ -113,20 +113,15 @@ export default function MonitorPage() {
   useEffect(() => {
     setMounted(true);
 
-    // 🧹 Aggressive Cleanup: Reset local player to prevent "stale" songs
+    // 🧹 Soft Cleanup: Only reset time/duration, NOT queue/video/source
+    // The queue/video will be managed entirely by CastService (Firebase sync)
+    // Wiping them causes race conditions where Firebase hasn't sent data yet
     if (typeof window !== 'undefined') {
-      const store = usePlayerStore.getState();
-      store.pause();
       usePlayerStore.setState({
-        queue: [],
-        currentVideo: null,
-        currentSource: null,
-        currentIndex: 0,
-        isPlaying: false,
         currentTime: 0,
         duration: 0
       });
-      console.log('🧹 Monitor: Local State Cleared');
+      console.log('🧹 Monitor: Soft reset (time only, queue preserved for Firebase)');
     }
 
     // 1. Get Room Code: ALWAYS check session storage first, then generation (Fresh PIN)
@@ -169,20 +164,22 @@ export default function MonitorPage() {
 
   const handleInteraction = () => {
     setHasInteracted(true);
-    // 🔘 Force Play if store thinks we are already playing (unblocks audio context)
-    const store = usePlayerStore.getState();
-    if (store.isPlaying && store.currentSource) {
-      console.log('🔘 Monitor: User interacted, forcing play to unblock audio');
+    console.log('🔘 Monitor: User interacted, unblocking audio context');
 
-      // We need to re-trigger the play command on the adapter
-      // Since isPlaying is already true, it won't trigger the SidebarPlayer useEffect
-      // So we manually call the service or toggle state
+    // Force a play/pause cycle to unblock the browser's audio context
+    // This works even if no song is loaded yet - it primes the context
+    const store = usePlayerStore.getState();
+    if (store.currentSource) {
+      // If a song is already loaded, force the adapter to play
       import('../modules/player/services/playerService').then(({ playerService }) => {
         const adapter = playerService.getAdapter();
         if (adapter) {
+          console.log('▶️ Monitor: Forcing adapter play after interaction');
           adapter.play();
         }
       });
+    } else {
+      console.log('⏳ Monitor: No source yet, interaction recorded for when song arrives');
     }
   };
 

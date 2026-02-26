@@ -64,7 +64,7 @@ export const usePlayerSync = (
 
     // ⏱️ Sync Time & Enforce Duration Limit
     useEffect(() => {
-        if (!playerRef.current || !isPlaying || isPassive) return;
+        if (!playerRef.current || !isPlaying) return;
 
         const interval = setInterval(() => {
             // Safety check for method existence
@@ -80,10 +80,16 @@ export const usePlayerSync = (
             const currentTime = playerRef.current.getCurrentTime();
             const currentDuration = playerRef.current.getDuration();
 
-            // SYNC: Keep store updated so external controls can trigger handoff
-            usePlayerStore.getState().setCurrentTime(currentTime);
+            if (isPassive) {
+                // Passive mode (Monitor): Use syncRemoteTime to update store WITHOUT broadcasting
+                // This allows CastService to read time from store and sync to Firebase
+                usePlayerStore.getState().syncRemoteTime(currentTime);
+            } else {
+                // Active mode: Full broadcast so other tabs/windows stay in sync
+                usePlayerStore.getState().setCurrentTime(currentTime);
+            }
 
-            // SYNC Duration
+            // SYNC Duration (always, so Host knows when song ends)
             const storeDuration = usePlayerStore.getState().duration;
             if (currentDuration && currentDuration > 0 && Math.abs(currentDuration - storeDuration) > 1) {
                 usePlayerStore.getState().setDuration(currentDuration);
