@@ -101,50 +101,54 @@ export class CastService {
     private setupHostSync() {
         if (!this.roomCode || !realtimeDb) return;
 
-        console.log("🎮 Controller Mode: Listening to Receiver (Monitor) state...");
+        console.log("👑 Master Controller Mode: Pushing local state to Monitor...");
 
-        // 1. Controller listens to its own store for USER INTENTS and forwards them as COMMANDS
-        this.unsubscribe = usePlayerStore.subscribe((state, prevState) => {
-            if (this.role !== 'host' || this.isProcessingSync) return; // 🔒 Skip if update came from Firebase
+        // 1. Dashboard is the BOSS: Push every change in our local store to Firebase
+        let lastSyncKey = '';
+        this.unsubscribe = usePlayerStore.subscribe((state) => {
+            if (this.isProcessingSync) return; // Prevent loop if we're updating from monitor progress
 
-            // A. Forward Play/Pause intent
-            if (state.isPlaying !== prevState.isPlaying) {
-                console.log('👆 User toggled Play/Pause');
-                this.sendCommand({ type: state.isPlaying ? 'PLAY' : 'PAUSE' });
-            }
-
-            // B. Forward Next/Previous intent (Index change)
-            if (state.currentIndex !== prevState.currentIndex && state.queue.length === prevState.queue.length) {
-                console.log('👆 User changed track index');
-                this.sendCommand({ type: 'SKIP_TO', payload: { index: state.currentIndex } });
-            }
-
-            // C. Forward ADD_TO_QUEUE intent (Queue grew)
-            // Important: We only send the NEW item to the Receiver
-            if (state.queue.length > prevState.queue.length) {
-                const addedItem = state.queue[state.queue.length - 1];
-                console.log('👆 User added song to queue:', addedItem.title);
-                this.sendCommand({ type: 'ADD_TO_QUEUE', payload: { video: addedItem } });
-
-                // Rollback local queue to previous state immediately 
-                // because the MASTER (Monitor) will update our queue shortly after processing the command.
-                // This prevents duplicate visual entries during the sync lag.
-                this.isProcessingSync = true;
-                usePlayerStore.setState({ queue: prevState.queue });
-                this.isProcessingSync = false;
+            const syncKey = `${state.currentSource}-${state.isPlaying}-${state.queue.length}-${state.layoutMode}-${state.currentIndex}`;
+            if (syncKey !== lastSyncKey) {
+                lastSyncKey = syncKey;
+                this.syncMasterState(state);
             }
         });
 
-        // 2. Controller listens to the Master State (Queue/Video) from the Receiver
+        // 2. Dashboard listens to progress (CurrentTime) reported by the Monitor
+        const controlsRef = ref(realtimeDb, `rooms/${this.roomCode}/state/controls`);
+        this.stateListenerOff = onValue(controlsRef, (snapshot) => {
+            const val = snapshot.val();
+            if (val && !usePlayerStore.getState().isPlaying) {
+                // Only sync time back if we are the host and need to see progress
+                this.isProcessingSync = true;
+                usePlayerStore.getState().syncRemoteTime(val.currentTime || 0);
+                if (val.duration) usePlayerStore.getState().setDuration(val.duration);
+                this.isProcessingSync = false;
+            } else if (val) {
+                // Just sync the time for the progress bar
+                usePlayerStore.getState().syncRemoteTime(val.currentTime || 0);
+            }
+        });
+
+        // Initial Push
+        this.syncMasterState(usePlayerStore.getState());
+    }
+
+    private setupMonitorSync() {
+        if (!this.roomCode || !realtimeDb) return;
+
+        console.log("📺 Passive Monitor Mode: Following Dashboard commands...");
+
+        // 1. Monitor listens to the Master State (Queue/Video) from the Dashboard
         const stateRef = ref(realtimeDb, `rooms/${this.roomCode}/state`);
         this.stateListenerOff = onValue(stateRef, (snapshot) => {
             const data = snapshot.val();
             if (!data) return;
 
-            // 🔒 Start Sync Lock: Don't let our 'subscribe' block react to this update
-            this.isProcessingSync = true;
-            console.log('📡 Dashboard: Mirroring Monitor state...');
+            console.log('📡 Monitor: Syncing with Dashboard state...');
 
+            // Atomic update to match Dashboard exactly
             usePlayerStore.setState((prev) => ({
                 ...prev,
                 queue: data.queue || [],
@@ -154,44 +158,16 @@ export class CastService {
                 isPlaying: data.isPlaying ?? false,
                 layoutMode: data.layoutMode || 'split',
             }));
-
-            this.isProcessingSync = false; // 🔓 Release lock
         });
 
-        // 2. Controller also listens for playback progress for the seekbar
-        const controlsRef = ref(realtimeDb, `rooms/${this.roomCode}/state/controls`);
-        onValue(controlsRef, (snapshot) => {
-            const val = snapshot.val();
-            if (val) {
-                usePlayerStore.getState().syncRemoteTime(val.currentTime || 0);
-                if (val.duration) usePlayerStore.getState().setDuration(val.duration);
-            }
-        });
-    }
-
-    private setupMonitorSync() {
-        if (!this.roomCode || !realtimeDb) return;
-
-        console.log("📺 Receiver Mode: Master Player active. Reporting state to Firebase...");
-
-        // 1. Receiver is the MASTER: Report its local store changes to Firebase
-        let lastSyncKey = '';
-        this.unsubscribe = usePlayerStore.subscribe((state) => {
-            const syncKey = `${state.currentSource}-${state.isPlaying}-${state.queue.length}-${state.layoutMode}`;
-            if (syncKey !== lastSyncKey) {
-                lastSyncKey = syncKey;
-                this.syncMasterState(state);
-            }
-        });
-
-        // 2. Poll Progress: Report Time/Duration back to Controller
+        // 2. Monitor reports its playback progress back to the Dashboard
         this.pollInterval = setInterval(() => {
             this.syncProgressToFirebase();
         }, 1000);
     }
 
     private syncMasterState(store: any) {
-        if (!this.roomCode || !realtimeDb || this.role !== 'monitor') return; // ONLY Monitor writes Master State
+        if (!this.roomCode || !realtimeDb || this.role !== 'host') return; // ONLY Dashboard writes Master State
 
         const stateRef = ref(realtimeDb, `rooms/${this.roomCode}/state`);
         const masterState = {
