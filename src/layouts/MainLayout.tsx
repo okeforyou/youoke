@@ -13,6 +13,7 @@ import { SidebarControls } from '../modules/player/components/SidebarControls';
 import { QueueList } from '../modules/player/components/QueueList';
 import { useSystemConfig } from '../hooks/useSystemConfig';
 import { useUIStore } from '../stores/useUIStore';
+import { sanitizeForFirebase } from '../utils/firebase';
 
 // Static critical imports
 import { MobileBottomNav } from '../components/navigation/MobileBottomNav';
@@ -326,12 +327,12 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
         const sendCommand = (type: string, payload?: any) => {
             console.log(`📤 Forwarding to Monitor: ${type}`);
-            push(commandsRef, {
+            push(commandsRef, sanitizeForFirebase({
                 command: { type, payload, timestamp: Date.now() },
                 status: 'pending',
                 timestamp: Date.now(),
                 from: 'dashboard'
-            });
+            }));
         };
 
         // Watch for local store changes and forward as intent-based commands

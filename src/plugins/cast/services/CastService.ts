@@ -3,6 +3,7 @@ import { signInAnonymously } from 'firebase/auth';
 import { realtimeDb, auth } from '../../../firebase';
 import { usePlayerStore } from '../../../modules/player/stores/usePlayerStore';
 import { Video } from '../../../modules/player/types';
+import { sanitizeForFirebase } from '../../../utils/firebase';
 
 export class CastService {
     private roomCode: string | null = null;
@@ -177,7 +178,7 @@ export class CastService {
         };
 
         console.log('📡 Host: Syncing Master State to Firebase');
-        update(stateRef, masterState).catch(e => console.warn('Host Sync failed', e));
+        update(stateRef, sanitizeForFirebase(masterState)).catch(e => console.warn('Host Sync failed', e));
     }
 
     private syncProgressToFirebase() {
@@ -191,7 +192,7 @@ export class CastService {
         };
 
         // Push to nested 'controls' for progress
-        update(ref(realtimeDb, `rooms/${this.roomCode}/state/controls`), progressState).catch(e => console.warn('Monitor Sync failed', e));
+        update(ref(realtimeDb, `rooms/${this.roomCode}/state/controls`), sanitizeForFirebase(progressState)).catch(e => console.warn('Monitor Sync failed', e));
     }
 
     public async sendCommand(command: { type: string; payload?: any }) {
@@ -199,11 +200,11 @@ export class CastService {
         console.log('📡 Sending Remote Command:', command.type);
         const commandsRef = ref(realtimeDb, `rooms/${this.roomCode}/commands`);
         const newCommandRef = push(commandsRef);
-        await set(newCommandRef, {
+        await set(newCommandRef, sanitizeForFirebase({
             command,
             status: 'pending',
             timestamp: Date.now()
-        });
+        }));
     }
 
     private startCommandListener() {
