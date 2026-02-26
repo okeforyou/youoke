@@ -25,9 +25,10 @@ interface SidebarPlayerProps {
     roomCode?: string | null;
     onDisconnect?: () => void;
     onForcePlay?: () => void;
+    onPlayerInit?: () => void;
 }
 
-export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 'none', roomCode = null, onDisconnect, onForcePlay }: SidebarPlayerProps) => {
+export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 'none', roomCode = null, onDisconnect, onForcePlay, onPlayerInit }: SidebarPlayerProps) => {
     const { currentSource, isPlaying, currentVideo, setCurrentTime, currentTime, layoutMode, queue, currentIndex, duration } = usePlayerStore(
         useShallow(state => ({
             currentSource: state.currentSource,
@@ -125,13 +126,19 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
         usePlayerStore.getState().triggerFullscreen();
     };
 
-    const onReady = (target: any) => {
+    const handlePlayerReady = (target: any) => {
         playerRef.current = target;
         // Register this player instance with the adapter
         const adapter = playerService.getAdapter();
         if (adapter instanceof YouTubeAdapter) {
             adapter.setPlayer(target);
         }
+
+        // Essential for usePlayerSync logic
+        if (onPlayerReady) onPlayerReady({ target });
+
+        // Notify Monitor / Parent
+        if (onPlayerInit) onPlayerInit();
 
         // LOAD VIDEO MANUALLY (Restored: Legacy logic proves more stable)
         const currentSrc = usePlayerStore.getState().currentSource;
@@ -323,7 +330,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                 {(castMode === 'none') ? (
                     <UniversalPlayer
                         onReady={(target) => {
-                            if (onPlayerReady) onPlayerReady({ target });
+                            handlePlayerReady(target);
                         }}
                         onStateChange={(event: any) => {
                             if (onPlayerStateChange) onPlayerStateChange(event);

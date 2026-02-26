@@ -22,8 +22,8 @@ export default function MonitorPage() {
   const router = useRouter();
   const { config } = useSystemConfig();
   const [roomCode, setRoomCode] = useState<string | null>(null);
-
   const [mounted, setMounted] = useState(false);
+  const [isPlayerReady, setIsPlayerReady] = useState(false);
 
   const { queue, currentVideo, currentSource, isQueueVisible, fullscreenTrigger } = usePlayerStore(
     useShallow((state) => ({
@@ -210,7 +210,13 @@ export default function MonitorPage() {
         isIdle ? "opacity-0" : "opacity-100"
       )}>
         <div className="w-full h-full relative">
-          <MemoSiderbarPlayer isPassive={true} />
+          <MemoSiderbarPlayer
+            isPassive={true}
+            onPlayerInit={() => {
+              console.log('✅ Monitor: SidebarPlayer (YouTube) is READY');
+              setIsPlayerReady(true);
+            }}
+          />
           {/* Gradient Overlay for Text Readability (Bottom) */}
           <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none" />
           {/* Gradient Overlay for Header (Top) */}
@@ -409,23 +415,33 @@ export default function MonitorPage() {
         >
           <div className="bg-primary/20 border border-primary/50 text-white p-12 rounded-[3rem] text-center space-y-6 shadow-2xl max-w-lg mx-6 transform transition-all hover:scale-105 active:scale-95">
             <div className="w-24 h-24 bg-primary rounded-full flex items-center justify-center mx-auto shadow-[0_0_50px_rgba(var(--primary-rgb),0.5)]">
-              <TvIcon className="w-12 h-12 text-white" />
+              {!isPlayerReady ? (
+                <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <TvIcon className="w-12 h-12 text-white" />
+              )}
             </div>
             <div className="space-y-2">
-              <h2 className="text-4xl font-black tracking-tight">ระบบพร้อมทำงาน</h2>
+              <h2 className="text-4xl font-black tracking-tight">
+                {!isPlayerReady ? "กำลังเตรียมเพลง..." : "ระบบพร้อมทำงาน"}
+              </h2>
               <p className="text-xl text-white/60 leading-relaxed">
-                กรุณากด <span className="font-bold text-primary px-3 py-1 bg-white/10 rounded-xl">เริ่มการเชื่อมต่อ</span> <br />
-                หรือคลิกที่หน้าจอเพื่อรับชมวิดีโอ
+                {!isPlayerReady
+                  ? "วิดีโอกำลังโหลด กรุณารอสักครู่..."
+                  : <>กรุณากด <span className="font-bold text-primary px-3 py-1 bg-white/10 rounded-xl">เริ่มการเชื่อมต่อ</span> <br />เพื่อรับชมภาพและเสียง</>}
               </p>
             </div>
-            <div className="pt-4">
-              <div className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-black rounded-2xl shadow-xl shadow-primary/20 hover:shadow-primary/40 transition-all">
-                <span>ตกลง (OK)</span>
+            {isPlayerReady && (
+              <div className="pt-4">
+                <div className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-black rounded-2xl shadow-xl shadow-primary/20 hover:shadow-primary/40 transition-all">
+                  <span>ตกลง (OK)</span>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       )}
+
 
       {/* 6. PC Fullscreen Toggle (Hidden on TV usually, useful for PC browser) */}
       <button
