@@ -364,23 +364,25 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                         </div>
 
                         {/* Now Playing Info (Standardized Monitor Style - Clean & Premium) */}
-                        {currentVideo && (
-                            <div key={currentVideo.uuid} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 w-full max-w-[280px] animate-in slide-in-from-bottom-4 duration-700">
+                        {currentVideo ? (
+                            <div key={currentVideo.uuid} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 w-full max-w-[300px] animate-in slide-in-from-bottom-4 duration-700">
                                 <div className="flex flex-col items-center">
-                                    <h4 className="text-[14px] font-black text-white leading-tight line-clamp-2">{currentVideo.title}</h4>
-                                    <p className="text-[10px] text-white/40 font-bold mt-1.5 uppercase tracking-wider">{currentVideo.author}</p>
+                                    <h4 className="text-[15px] font-black text-white leading-tight line-clamp-2 text-center">{currentVideo.title}</h4>
+                                    <p className="text-[11px] text-white/40 font-bold mt-2 uppercase tracking-wider">{currentVideo.author}</p>
                                 </div>
                             </div>
+                        ) : (
+                            <div className="text-white/20 text-xs font-bold animate-pulse">กำลังดึงข้อมูลเพลง...</div>
                         )}
 
-                        <div className="flex flex-col items-center gap-6 pt-4">
+                        <div className="flex flex-col items-center gap-4 pt-4 w-full">
                             {onDisconnect && (
                                 <button
                                     onClick={onDisconnect}
-                                    className="group flex items-center gap-2.5 px-6 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-full transition-all border border-red-500/20 shadow-lg"
+                                    className="group flex items-center justify-center gap-3 px-8 py-3 bg-red-600 hover:bg-red-700 text-white rounded-2xl transition-all shadow-xl shadow-red-600/20 active:scale-95 w-full max-w-[240px]"
                                 >
-                                    <Power className="w-3.5 h-3.5" />
-                                    <span className="text-[10px] font-black uppercase tracking-[0.1em]">ยกเลิกการเชื่อมต่อ</span>
+                                    <Power className="w-5 h-5" />
+                                    <span className="text-[12px] font-black uppercase tracking-[0.05em]">ตัดการเชื่อมต่อ</span>
                                 </button>
                             )}
 
@@ -392,18 +394,6 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                     </div>
                 )}
 
-                {/* 📡 SmartTV Casting Indicator Over Player (Subtler V2) */}
-                {castMode === 'smarttv' && (
-                    <div className="absolute top-4 left-4 z-40">
-                        <div className="flex items-center gap-2.5 bg-black/40 backdrop-blur-xl border border-white/10 px-3.5 py-1.5 rounded-full shadow-2xl animate-in fade-in slide-in-from-top-2 duration-500">
-                            <div className="relative w-1.5 h-1.5">
-                                <div className="absolute inset-0 bg-primary rounded-full animate-ping opacity-75" />
-                                <div className="relative w-full h-full bg-primary rounded-full" />
-                            </div>
-                            <span className="text-[9px] font-black text-white/90 uppercase tracking-[0.15em]">Casting to TV {roomCode && `#${roomCode}`}</span>
-                        </div>
-                    </div>
-                )}
             </div>
 
 

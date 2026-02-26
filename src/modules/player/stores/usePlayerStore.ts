@@ -343,6 +343,7 @@ export const usePlayerStore = create<PlayerStore>()(
                         const updates = {
                             queue: newQueue,
                             currentIndex: 0,
+                            currentVideo: nextVideo,
                             currentSource: source,
                             isPlaying: true,
                             layoutMode: get().layoutMode,

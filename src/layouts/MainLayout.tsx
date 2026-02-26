@@ -360,6 +360,17 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
     useEffect(() => {
         setMounted(true);
+
+        // 🆔 Initialize Room Code for Remote Control (Mobile Remote)
+        // Check local storage for existing session, otherwise generate one.
+        const cachedPin = localStorage.getItem('youoke_party_pin');
+        if (cachedPin) {
+            setPartyPIN(cachedPin);
+        } else {
+            const newPin = Math.floor(1000 + Math.random() * 9000).toString();
+            setPartyPIN(newPin);
+            localStorage.setItem('youoke_party_pin', newPin);
+        }
     }, []);
 
     // Auto-open/close Queue (and Player) based on contents
