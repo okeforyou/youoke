@@ -251,7 +251,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             const initCastSync = async () => {
                 const { castService } = await import('../plugins/cast/services/CastService');
                 console.log('🔗 [Main] Initializing Monitor Bridge:', partyPIN);
-                await castService.initialize(partyPIN);
+                await castService.initialize(partyPIN, 'host');
             };
             initCastSync();
         } else if (castMode === 'none') {

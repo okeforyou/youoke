@@ -32,11 +32,14 @@ export class CastService {
 
         await this.createRoomIfNotExists(this.roomCode);
 
+        // BOTH roles need to poll their own specific fields
+        this.startStatePolling();
+
+        // BOTH roles need to listen for the other's fields
+        this.startStateListener();
+
         if (role === 'monitor') {
-            this.startStatePolling();
             this.startCommandListener();
-        } else {
-            this.startStateListener();
         }
 
         return this.roomCode;
@@ -108,20 +111,34 @@ export class CastService {
     private startStateListener() {
         if (!realtimeDb || !this.roomCode) return;
 
-        console.log("👂 Host: Listening for Monitor state...");
+        console.log(`👂 ${this.role}: Listening for ${this.role === 'host' ? 'Monitor' : 'Host'} updates...`);
         const stateRef = ref(realtimeDb, `rooms/${this.roomCode}/state`);
 
         const listener = onValue(stateRef, (snapshot) => {
             const data = snapshot.val();
             if (!data) return;
 
-            // Update Dashbaord store to match Monitor (Master)
-            usePlayerStore.setState((prev) => ({
-                ...prev,
-                currentTime: data.controls?.currentTime ?? data.currentTime ?? prev.currentTime,
-                duration: data.controls?.duration ?? data.duration ?? prev.duration,
-                isPlaying: data.controls?.isPlaying ?? data.isPlaying ?? prev.isPlaying,
-            }));
+            if (this.role === 'host') {
+                // Host listens for Progress (Time, Duration) from Monitor
+                const progress = data.controls;
+                if (progress) {
+                    usePlayerStore.setState((prev) => ({
+                        ...prev,
+                        currentTime: progress.currentTime ?? prev.currentTime,
+                        duration: progress.duration ?? prev.duration,
+                    }));
+                }
+            } else {
+                // Monitor listens for Master State (Queue, Video, Play/Pause) from Host
+                usePlayerStore.setState((prev) => ({
+                    ...prev,
+                    queue: data.queue || prev.queue,
+                    currentIndex: data.currentIndex ?? prev.currentIndex,
+                    currentVideo: data.currentVideo || prev.currentVideo,
+                    currentSource: data.currentSource || prev.currentSource,
+                    isPlaying: data.isPlaying ?? prev.isPlaying,
+                }));
+            }
         });
 
         this.stateListenerOff = () => off(stateRef, 'value', listener);
@@ -131,29 +148,33 @@ export class CastService {
         if (!this.roomCode || !realtimeDb) return;
 
         const store = usePlayerStore.getState();
-
-        const minimalState = {
-            queue: store.queue,
-            currentIndex: store.currentIndex,
-            currentVideo: store.currentVideo,
-            currentSource: store.currentSource,
-            controls: {
-                isPlaying: store.isPlaying,
-                isMuted: store.isMuted,
-                volume: store.volume,
-                currentTime: store.currentTime,
-                duration: store.duration
-            },
-            layoutMode: store.layoutMode,
-            isQueueVisible: store.isQueueVisible,
-            notification: store.notification, // Sync toasts
-            timestamp: Date.now()
-        };
-
-        // Use SDK set/update for reliability
         const stateRef = ref(realtimeDb, `rooms/${this.roomCode}/state`);
-        // update() is safer than set() to merge keys if structure changes slightly, but we want authoritative override here.
-        set(stateRef, minimalState).catch(e => console.warn('Sync failed', e));
+
+        if (this.role === 'host') {
+            // Host pushes Master Record (Queue, Video, Playback Status)
+            const masterState = {
+                queue: store.queue || [],
+                currentIndex: store.currentIndex ?? 0,
+                currentVideo: store.currentVideo || null,
+                currentSource: store.currentSource || null,
+                isPlaying: store.isPlaying ?? false,
+                lastUpdated: Date.now()
+            };
+
+            // Only update if something changed to reduce writes
+            update(stateRef, masterState).catch(e => console.warn('Host Sync failed', e));
+        } else {
+            // Monitor pushes Progress (Time, Duration)
+            const progressState = {
+                currentTime: store.currentTime || 0,
+                duration: store.duration || 0,
+                isPlaying: store.isPlaying ?? false, // Echo back for confirmation
+                lastUpdated: Date.now()
+            };
+
+            // Push to nested 'controls' for progress to avoid overwriting Host's master state keys
+            update(ref(realtimeDb, `rooms/${this.roomCode}/state/controls`), progressState).catch(e => console.warn('Monitor Sync failed', e));
+        }
     }
 
     private startCommandListener() {

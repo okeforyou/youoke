@@ -128,12 +128,15 @@ export default function MonitorPage() {
       console.log('🧹 Monitor: Local State Cleared');
     }
 
-    // 1. Get Room Code: ALWAYS generate new if not in Query (Fresh PIN)
+    // 1. Get Room Code: ALWAYS check session storage first, then generation (Fresh PIN)
     const roomFromQuery = router.query.room as string;
-    const localCode = roomFromQuery || Math.floor(1000 + Math.random() * 8999).toString();
+    const existingCode = sessionStorage.getItem('youoke_room_code');
+    const localCode = roomFromQuery || existingCode || Math.floor(1000 + Math.random() * 8999).toString();
 
     setRoomCode(localCode);
-    sessionStorage.setItem('youoke_room_code', localCode);
+    if (!existingCode || existingCode !== localCode) {
+      sessionStorage.setItem('youoke_room_code', localCode);
+    }
 
     // Ensure PIN is always visible by resetting idle state if needed
     // (Actual reset happens via store clearing above)
