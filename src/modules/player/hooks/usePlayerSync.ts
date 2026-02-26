@@ -20,9 +20,9 @@ export const usePlayerSync = (
 
         const checkDualMode = () => {
             const dualActive = localStorage.getItem('youoke-dual-active') === 'true';
-            // Also consider active Wireless Casting as Dual Mode
+            // Also consider active Wireless Casting as Dual Mode BUT only for the Dashboard (not isPassive)
             const isCasting = castMode === 'smarttv' || castMode === 'webmonitor';
-            setIsDualActive(dualActive || isCasting);
+            setIsDualActive(!isPassive && (dualActive || isCasting));
         };
 
         checkDualMode();

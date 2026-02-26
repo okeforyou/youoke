@@ -105,13 +105,20 @@ export class CastService {
 
         // 1. Dashboard is the BOSS: Push every change in our local store to Firebase
         let lastSyncKey = '';
-        this.unsubscribe = usePlayerStore.subscribe((state) => {
+        this.unsubscribe = usePlayerStore.subscribe((state, prevState) => {
             if (this.isProcessingSync) return; // Prevent loop if we're updating from monitor progress
 
+            // A. Full State Sync for heavy changes (Queue, Play/Pause, Video Change)
             const syncKey = `${state.currentSource}-${state.isPlaying}-${state.queue.length}-${state.layoutMode}-${state.currentIndex}`;
             if (syncKey !== lastSyncKey) {
                 lastSyncKey = syncKey;
                 this.syncMasterState(state);
+            }
+
+            // B. Manual Seek Detection (Significant jump not caused by progress reporting)
+            if (Math.abs(state.currentTime - prevState.currentTime) > 5) {
+                console.log('👆 User manual seeked to:', state.currentTime);
+                this.sendCommand({ type: 'SEEK', payload: { time: state.currentTime } });
             }
         });
 
@@ -164,6 +171,9 @@ export class CastService {
         this.pollInterval = setInterval(() => {
             this.syncProgressToFirebase();
         }, 1000);
+
+        // 3. Monitor listens for direct commands (SEEK, NEXT, etc.)
+        this.startCommandListener();
     }
 
     private syncMasterState(store: any) {
@@ -297,6 +307,9 @@ export class CastService {
                     break;
                 case 'SKIP_TO':
                     if (typeof command.payload?.index === 'number') store.setCurrentIndex(command.payload.index);
+                    break;
+                case 'SEEK':
+                    if (typeof command.payload?.time === 'number') store.seekTo(command.payload.time);
                     break;
                 case 'REMOVE_AT':
                     // Need UUID to remove safely
