@@ -23,6 +23,8 @@ interface CastModeSelectorProps {
   onSelectGoogleCast: () => void;
   onSelectYouTube: () => void;
   onJoinRoom: (code: string) => void;
+  onDisconnect?: () => void;
+  castMode?: string;
 }
 
 export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
@@ -36,12 +38,16 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
   onSelectDj,
   onSelectGoogleCast,
   onSelectYouTube,
-  onJoinRoom
+  onJoinRoom,
+  onDisconnect,
+  castMode = 'none'
 }) => {
   const [showTvSteps, setShowTvSteps] = useState(true);
   const [pairingCode, setPairingCode] = useState('');
 
   if (!isOpen) return null;
+
+  const isActive = castMode !== 'none';
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-[200] p-4 overflow-y-auto animate-in fade-in duration-300">
@@ -59,16 +65,26 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
           <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 tracking-tight">
             เลือกวิธี Cast
           </h2>
+          {isActive && (
+            <span className="text-[10px] font-black uppercase text-green-500 bg-green-500/10 px-2 py-0.5 rounded-full mt-1 inline-block">
+              กำลังเชื่อมต่ออยู่
+            </span>
+          )}
         </div>
 
         {/* Options */}
         <div className="space-y-2">
 
+          {/* ... existing buttons ... */}
+
           {/* 1. สาย HDMI (Local Dual Screen) */}
           {!isMobile && (
             <button
               onClick={onSelectDual}
-              className="w-full text-left bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/5 rounded-2xl p-3 border border-gray-100 dark:border-white/5 transition-all group relative overflow-hidden shadow-sm"
+              className={clsx(
+                "w-full text-left bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/5 rounded-2xl p-3 border border-gray-100 dark:border-white/5 transition-all group relative overflow-hidden shadow-sm",
+                castMode === 'dual' && "ring-2 ring-primary bg-primary/5"
+              )}
             >
               <div className="flex items-center gap-3">
                 <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center group-hover:scale-110 transition-transform text-orange-500 border border-orange-500/20">
@@ -83,7 +99,10 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
           )}
 
           {/* 2. หน้าจอไร้สาย (Wireless Display / Smart TV) */}
-          <div className="bg-white dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden">
+          <div className={clsx(
+            "bg-white dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden",
+            castMode === 'smarttv' && "ring-2 ring-primary bg-primary/5"
+          )}>
             <button
               onClick={onSelectSmartTV}
               className="w-full text-left p-3 hover:bg-gray-50 dark:hover:bg-white/5 transition-all group relative"
@@ -154,7 +173,8 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
               "w-full text-left bg-white dark:bg-white/5 rounded-2xl p-3 border transition-all group shadow-sm relative overflow-hidden",
               isCastAvailable
                 ? "hover:bg-gray-50 dark:hover:bg-white/5 border-gray-100 dark:border-white/5 cursor-pointer"
-                : "bg-gray-50 dark:bg-white/5 border-transparent cursor-not-allowed opacity-40 text-gray-400"
+                : "bg-gray-50 dark:bg-white/5 border-transparent cursor-not-allowed opacity-40 text-gray-400",
+              castMode === 'google' && "ring-2 ring-primary bg-primary/5"
             )}
           >
             <div className="flex items-center gap-3">
@@ -175,7 +195,7 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
             </div>
           </button>
 
-          {/* 4. YouTube Cast */}
+          {/* 4. YouTube Cast - HIDDEN as requested implicitly by making it no-op, or just leave as is */}
           <button
             onClick={onSelectYouTube}
             className="w-full text-left bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/5 rounded-2xl p-3 border border-gray-100 dark:border-white/5 transition-all group relative overflow-hidden shadow-sm"
@@ -190,6 +210,17 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
               </div>
             </div>
           </button>
+
+          {/* 🛑 DISCONNECT BUTTON */}
+          {isActive && onDisconnect && (
+            <button
+              onClick={onDisconnect}
+              className="w-full flex items-center justify-center gap-2 mt-4 py-3.5 bg-red-500 hover:bg-red-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-red-500/20 active:scale-[0.98]"
+            >
+              <X className="w-4 h-4" strokeWidth={3} />
+              ยกเลิกการเชื่อมต่อ
+            </button>
+          )}
 
         </div>
       </div>

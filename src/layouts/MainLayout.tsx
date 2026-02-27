@@ -237,17 +237,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
         setCastMode('google');
     };
 
-    const handleJoinRoom = (code: string) => {
-        setPartyPIN(code);
-        localStorage.setItem('youoke_party_pin', code);
-        setCastModalOpen(false);
-        setCastMode('smarttv'); // AUTO-ACTIVATE Web Caster mode
-        useUIStore.getState().setIsCastingLocal(false);
-
-        // Show success notification
-        addToast(`เชื่อมต่อหน้าจอทีวี (ห้อง ${code}) สำเร็จ!`);
-    };
-
     const handleDisconnect = useCallback(() => {
         console.log('🔌 [Main] Disconnecting cast mode:', castMode);
 
@@ -262,11 +251,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 from: 'dashboard',
                 timestamp: Date.now()
             });
-
-            // Specific cleanup for wireless cast
-            setPartyPIN(null);
-            localStorage.removeItem('youoke_party_pin');
-            import('../plugins/cast/services/CastService').then(({ castService }) => castService.cleanup());
         }
 
         if (castMode === 'dual') {
@@ -277,9 +261,31 @@ export default function MainLayout({ children }: MainLayoutProps) {
             useUIStore.getState().setIsCastingLocal(false);
         }
 
+        setCastModalOpen(false);
         setCastMode('none');
-        addToast('ตัดการเชื่อมต่อแล้ว');
-    }, [castMode, roomCode, realtimeDb, addToast]);
+        setPartyPIN(null);
+        localStorage.removeItem('youoke-dual-active');
+        localStorage.removeItem('youoke_party_pin');
+        useUIStore.getState().setIsCastingLocal(false);
+
+        // Cleanup CastService if it exists
+        import('../plugins/cast/services/CastService').then(({ castService }) => {
+            castService.cleanup();
+        });
+
+        addToast('ตัดการเชื่อมต่อสำเร็จ');
+    }, [castMode, roomCode, realtimeDb, addToast, setCastMode, setCastModalOpen]);
+
+    const handleJoinRoom = (code: string) => {
+        setPartyPIN(code);
+        localStorage.setItem('youoke_party_pin', code);
+        setCastModalOpen(false);
+        setCastMode('smarttv'); // AUTO-ACTIVATE Web Caster mode
+        useUIStore.getState().setIsCastingLocal(false);
+
+        // Show success notification
+        addToast(`เชื่อมต่อหน้าจอทีวี (ห้อง ${code}) สำเร็จ!`);
+    };
 
     // 📡 Monitor Sync Bridge (Phase 12: Receiver Model Restoration)
     useEffect(() => {
@@ -813,6 +819,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 onSelectGoogleCast={handleCastSelectGoogle}
                 onSelectYouTube={() => { }}
                 onJoinRoom={handleJoinRoom}
+                onDisconnect={handleDisconnect}
+                castMode={castMode}
             />
 
             {/* Global Limit Reached Modal */}
