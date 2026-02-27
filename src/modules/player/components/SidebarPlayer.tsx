@@ -383,20 +383,23 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                             <div className="text-white/20 text-xs font-bold animate-pulse">กำลังดึงข้อมูลเพลง...</div>
                         )}
 
-                        <div className="flex flex-col items-center gap-4 pt-4 w-full">
+                        <div className="flex flex-col items-center gap-6 pt-4 w-full">
                             {onDisconnect && (
                                 <button
-                                    onClick={onDisconnect}
-                                    className="group flex items-center justify-center gap-3 px-8 py-3 bg-red-600 hover:bg-red-700 text-white rounded-2xl transition-all shadow-xl shadow-red-600/20 active:scale-95 w-full max-w-[240px]"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onDisconnect();
+                                    }}
+                                    className="group flex items-center justify-center gap-3 px-10 py-4 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white rounded-2xl transition-all shadow-[0_8px_32px_rgba(239,68,68,0.3)] active:scale-95 w-full max-w-[260px] border border-red-400/20"
                                 >
-                                    <Power className="w-5 h-5" />
-                                    <span className="text-[12px] font-black uppercase tracking-[0.05em]">ตัดการเชื่อมต่อ</span>
+                                    <Power className="w-5 h-5 text-white animate-pulse" strokeWidth={3} />
+                                    <span className="text-[14px] font-black uppercase tracking-widest">ยกเลิกการเชื่อมต่อ</span>
                                 </button>
                             )}
 
-                            <div className="flex items-center gap-2 text-[9px] font-black text-white/20 uppercase tracking-[0.3em]">
-                                <div className="w-1.5 h-1.5 bg-green-500/30 rounded-full animate-pulse"></div>
-                                <span>Connected to Store</span>
+                            <div className="flex items-center gap-3 px-4 py-2 bg-white/5 rounded-full border border-white/5">
+                                <div className="w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
+                                <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Casting Active</span>
                             </div>
                         </div>
                     </div>
