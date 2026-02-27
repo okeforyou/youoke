@@ -811,7 +811,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 onSelectDual={handleCastSelectDual}
                 onSelectDj={handleCastSelectDual}
                 onSelectGoogleCast={handleCastSelectGoogle}
-                onSelectYouTube={handleCastSelectYouTube}
+                onSelectYouTube={() => { }}
                 onJoinRoom={handleJoinRoom}
             />
 
