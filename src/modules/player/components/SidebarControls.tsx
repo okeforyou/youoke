@@ -5,6 +5,7 @@ import { useShallow } from "zustand/react/shallow";
 import { ListMusic, Trash2 } from "lucide-react";
 import { useUIStore } from "../../../stores/useUIStore";
 import { useCast } from "../../../plugins/cast/context/CastContext";
+import clsx from 'clsx';
 
 interface SidebarControlsProps {
     castMode?: string;
