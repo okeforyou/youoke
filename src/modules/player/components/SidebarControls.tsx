@@ -6,7 +6,11 @@ import { ListMusic, Trash2 } from "lucide-react";
 import { useUIStore } from "../../../stores/useUIStore";
 import { useCast } from "../../../plugins/cast/context/CastContext";
 
-export const SidebarControls = () => {
+interface SidebarControlsProps {
+    castMode?: string;
+}
+
+export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => {
     const {
         isPlaying,
         togglePlay,
@@ -34,6 +38,8 @@ export const SidebarControls = () => {
     const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
     const { setCastModalOpen } = useUIStore();
     const { isConnected } = useCast();
+
+    const isAnyCastOn = castMode !== 'none' || isConnected;
 
     const controlItems = [
         {
@@ -64,10 +70,10 @@ export const SidebarControls = () => {
         },
         {
             icon: Cast,
-            label: "CAST",
+            label: isAnyCastOn ? "ยกเลิก" : "CAST",
             onClick: () => setCastModalOpen(true),
-            active: isConnected,
-            color: "text-primary"
+            active: isAnyCastOn,
+            color: isAnyCastOn ? "text-red-500" : "text-primary"
         }
     ];
 
@@ -89,16 +95,26 @@ export const SidebarControls = () => {
                         onClick={item.onClick}
                         className="flex flex-col items-center justify-center flex-1 gap-1 group transition-all active:scale-95 bg-white"
                     >
-                        <div className={`p-1 rounded-lg transition-all ${item.active ? 'bg-red-50' : ''} relative`}>
+                        <div className={clsx(
+                            "p-1 rounded-lg transition-all relative",
+                            item.active ? (item.label === "ยกเลิก" ? "bg-red-500 text-white" : "bg-red-50") : ""
+                        )}>
                             <item.icon
                                 size={22}
-                                className={`text-primary transition-colors ${item.active ? 'fill-current' : ''}`}
+                                className={clsx(
+                                    "transition-colors",
+                                    item.active ? (item.label === "ยกเลิก" ? "text-white" : "text-primary") : "text-primary",
+                                    item.active && item.label !== "ยกเลิก" ? 'fill-current' : ''
+                                )}
                             />
-                            {item.label === "CAST" && isConnected && (
-                                <span className="absolute top-0 right-0 w-2 h-2 bg-green-500 rounded-full animate-pulse border ring-1 ring-white"></span>
+                            {item.label === "ยกเลิก" && (
+                                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse border-2 border-white shadow-sm"></span>
                             )}
                         </div>
-                        <span className="text-[9px] font-medium text-primary uppercase tracking-tighter transition-colors">
+                        <span className={clsx(
+                            "text-[9px] font-black uppercase tracking-tighter transition-colors",
+                            item.active && item.label === "ยกเลิก" ? "text-red-600" : "text-primary"
+                        )}>
                             {item.label}
                         </span>
                     </button>

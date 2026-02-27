@@ -698,7 +698,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             {/* Mobile Only Controls (Desktop controls moved to Aside for better interaction) */}
                             {layoutMode !== 'fullscreen' && (
                                 <div className="lg:hidden">
-                                    <SidebarControls />
+                                    <SidebarControls castMode={castMode} />
                                 </div>
                             )}
                             <button onClick={() => setMobilePlayerExpanded(false)} className="absolute top-4 left-4 z-50 p-2 bg-black/50 text-white rounded-full lg:hidden"><ChevronDown className="w-6 h-6" /></button>
@@ -719,7 +719,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 <div className="flex-1 flex flex-col pt-[236px] h-full relative z-10 bg-white" style={{ backgroundColor: '#ffffff' }}>
                     {/* Desktop Sidebar Controls (Moved here to prevent blocking QueueList) */}
                     <div className="shrink-0 bg-white relative z-20">
-                        <SidebarControls />
+                        <SidebarControls castMode={castMode} />
                     </div>
                     {/* Main Content Area */}
                     <div className="flex-1 flex flex-col min-h-0 bg-white relative z-10" style={{ backgroundColor: '#ffffff' }}>

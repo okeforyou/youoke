@@ -82,8 +82,8 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
             <button
               onClick={onSelectDual}
               className={clsx(
-                "w-full text-left bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/5 rounded-2xl p-3 border border-gray-100 dark:border-white/5 transition-all group relative overflow-hidden shadow-sm",
-                castMode === 'dual' && "ring-2 ring-primary bg-primary/5"
+                "w-full text-left bg-white dark:bg-zinc-800/50 hover:bg-gray-50 dark:hover:bg-zinc-800 rounded-2xl p-3 border border-gray-100 dark:border-zinc-800 transition-all group relative overflow-hidden shadow-sm",
+                castMode === 'dual' && "ring-2 ring-red-500 bg-red-50/50 dark:bg-red-500/10"
               )}
             >
               <div className="flex items-center gap-3">
@@ -100,12 +100,12 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
 
           {/* 2. หน้าจอไร้สาย (Wireless Display / Smart TV) */}
           <div className={clsx(
-            "bg-white dark:bg-white/5 rounded-2xl border border-gray-100 dark:border-white/5 shadow-sm overflow-hidden",
-            castMode === 'smarttv' && "ring-2 ring-primary bg-primary/5"
+            "bg-white dark:bg-zinc-800/50 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm overflow-hidden",
+            castMode === 'smarttv' && "ring-2 ring-red-500 bg-red-50/50 dark:bg-red-500/10"
           )}>
             <button
               onClick={onSelectSmartTV}
-              className="w-full text-left p-3 hover:bg-gray-50 dark:hover:bg-white/5 transition-all group relative"
+              className="w-full text-left p-3 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all group relative"
             >
               <div className="flex items-center gap-3">
                 <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center group-hover:scale-110 transition-transform text-primary border border-primary/10">
@@ -119,7 +119,7 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
             </button>
             <button
               onClick={() => setShowTvSteps(!showTvSteps)}
-              className="w-full py-1.5 px-3 border-t border-gray-50 dark:border-white/5 flex items-center justify-between text-[8px] font-bold text-gray-400 hover:text-primary transition-colors uppercase tracking-wider"
+              className="w-full py-1.5 px-3 border-t border-gray-50 dark:border-zinc-800 flex items-center justify-between text-[8px] font-bold text-gray-400 hover:text-primary transition-colors uppercase tracking-wider"
             >
               <span>วิธีเชื่อมต่อ / กรอกรหัส</span>
               {showTvSteps ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
@@ -170,11 +170,11 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
             onClick={onSelectGoogleCast}
             disabled={!isCastAvailable}
             className={clsx(
-              "w-full text-left bg-white dark:bg-white/5 rounded-2xl p-3 border transition-all group shadow-sm relative overflow-hidden",
+              "w-full text-left bg-white dark:bg-zinc-800/50 rounded-2xl p-3 border transition-all group shadow-sm relative overflow-hidden",
               isCastAvailable
-                ? "hover:bg-gray-50 dark:hover:bg-white/5 border-gray-100 dark:border-white/5 cursor-pointer"
-                : "bg-gray-50 dark:bg-white/5 border-transparent cursor-not-allowed opacity-40 text-gray-400",
-              castMode === 'google' && "ring-2 ring-primary bg-primary/5"
+                ? "hover:bg-gray-50 dark:hover:bg-zinc-800 border-gray-100 dark:border-zinc-800 cursor-pointer"
+                : "bg-gray-50 dark:bg-zinc-800/20 border-transparent cursor-not-allowed opacity-40 text-gray-400",
+              castMode === 'google' && "ring-2 ring-red-500 bg-red-50/50 dark:bg-red-500/10"
             )}
           >
             <div className="flex items-center gap-3">
