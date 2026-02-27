@@ -149,22 +149,35 @@ export class CastService {
 
         // 1. Monitor listens to the Master State (Queue/Video) from the Dashboard
         const stateRef = ref(realtimeDb, `rooms/${this.roomCode}/state`);
+        let syncTimeout: NodeJS.Timeout | null = null;
+
         this.stateListenerOff = onValue(stateRef, (snapshot) => {
             const data = snapshot.val();
             if (!data) return;
 
-            console.log('📡 Monitor: Syncing with Dashboard state...');
+            // 🛡️ Debounce/Safety: If transitioning (source is null), wait a bit before showing 'Waiting' screen
+            // This prevents flickering between songs
+            if (!data.currentSource) {
+                if (syncTimeout) return;
+                syncTimeout = setTimeout(() => {
+                    const latestData = usePlayerStore.getState();
+                    // Only sync null if it's still null after 1.5 seconds
+                    if (!latestData.currentSource) {
+                        console.log('📡 Monitor: Entering Idle state (Verified)');
+                        this.applyMonitorState(data);
+                    }
+                    syncTimeout = null;
+                }, 1500);
+                return;
+            }
 
-            // Atomic update to match Dashboard exactly
-            usePlayerStore.setState((prev) => ({
-                ...prev,
-                queue: data.queue || [],
-                currentIndex: data.currentIndex ?? 0,
-                currentVideo: data.currentVideo || null,
-                currentSource: data.currentSource || null,
-                isPlaying: data.isPlaying ?? false,
-                layoutMode: data.layoutMode || 'split',
-            }));
+            if (syncTimeout) {
+                clearTimeout(syncTimeout);
+                syncTimeout = null;
+            }
+
+            console.log('📡 Monitor: Syncing with Dashboard state...');
+            this.applyMonitorState(data);
         });
 
         // 2. Monitor reports its playback progress back to the Dashboard
@@ -174,6 +187,18 @@ export class CastService {
 
         // 3. Monitor listens for direct commands (SEEK, NEXT, etc.)
         this.startCommandListener();
+    }
+
+    private applyMonitorState(data: any) {
+        usePlayerStore.setState((prev) => ({
+            ...prev,
+            queue: data.queue || [],
+            currentIndex: data.currentIndex ?? 0,
+            currentVideo: data.currentVideo || null,
+            currentSource: data.currentSource || null,
+            isPlaying: data.isPlaying ?? false,
+            layoutMode: data.layoutMode || 'split',
+        }));
     }
 
     private syncMasterState(store: any) {

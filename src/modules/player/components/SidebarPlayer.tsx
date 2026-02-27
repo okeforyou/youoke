@@ -206,6 +206,14 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
             const adapter = playerService.getAdapter();
             if (!adapter) return;
 
+            // 🛡️ CRITICAL SAFETY: Ensure the player's internal iframe/element still exists
+            // This prevents "null reading src" errors when the component unmounts quickly
+            const internalPlayer = playerRef.current;
+            if (!internalPlayer || (typeof internalPlayer.getIframe === 'function' && !internalPlayer.getIframe())) {
+                console.warn("⏯️ SidebarPlayer: Sync skipped - Player not ready or detached");
+                return;
+            }
+
             if (isPlaying) {
                 console.log("▶️ SidebarPlayer: Syncing Play");
                 adapter.play();
@@ -403,9 +411,15 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
             {/* Overlay (Waiting) */}
             {
                 !currentSource && (
-
-                    <div className="absolute inset-0 bg-black/80 z-10 flex items-center justify-center text-white/50">
-                        <p>รอเลือกเพลง...</p>
+                    <div className="absolute inset-0 bg-black/80 z-10 flex flex-col items-center justify-center text-white/50 space-y-4">
+                        {queue.length > 0 ? (
+                            <>
+                                <div className="loading loading-spinner text-primary"></div>
+                                <p className="text-xs font-bold uppercase tracking-widest animate-pulse">กำลังเตรียมเพลงถัดไป...</p>
+                            </>
+                        ) : (
+                            <p>รอเลือกเพลง...</p>
+                        )}
                     </div>
                 )
             }

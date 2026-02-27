@@ -48,19 +48,23 @@ export default function MonitorPage() {
   useEffect(() => {
     if (!router.isReady) return;
 
-    // 🧹 Hard Cleanup: Ensure fresh state for the monitor
-    usePlayerStore.setState({
-      currentTime: 0,
-      duration: 0,
-      isPlaying: false,
-      currentSource: null,
-      currentVideo: null,
-      queue: []
-    });
-    console.log('🧹 Monitor: State reset for fresh connection');
+    // 🧹 Selective Cleanup: Only reset if the room code is actually changing/new
+    const roomFromQuery = router.query.room as string;
+    const currentCachedRoom = typeof window !== 'undefined' ? sessionStorage.getItem('youoke_room_code') : '';
+
+    if (roomFromQuery && roomFromQuery !== currentCachedRoom) {
+      usePlayerStore.setState({
+        currentTime: 0,
+        duration: 0,
+        isPlaying: false,
+        currentSource: null,
+        currentVideo: null,
+        queue: []
+      });
+      console.log('🧹 Monitor: Room changed, performing state reset');
+    }
 
     // Room Code Logic: Query -> Session -> New
-    const roomFromQuery = router.query.room as string;
     let localCode = roomFromQuery || (typeof window !== 'undefined' ? sessionStorage.getItem('youoke_room_code') : '') || '';
 
     if (!localCode) {
