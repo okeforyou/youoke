@@ -81,6 +81,8 @@ export default function MonitorPage() {
     };
     initCast();
 
+    setMounted(true);
+
     const clockTimer = setInterval(() => setTime(new Date()), 60000);
 
     return () => {
