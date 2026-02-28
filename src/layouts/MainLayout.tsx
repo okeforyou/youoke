@@ -447,7 +447,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
                             // Optimized Fullscreen Transition
                             layoutMode === 'fullscreen'
-                                ? "fixed top-0 right-0 w-full h-full z-[100] border-none bg-black shadow-none ring-0 origin-top-right transition-all duration-300"
+                                ? "fixed top-0 right-0 w-full h-[100dvh] z-[100] border-none bg-black shadow-none ring-0 origin-top-right transition-all duration-300"
                                 : [
                                     // Mobile Logic (Inline block at top)
                                     "max-lg:w-full",

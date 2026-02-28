@@ -114,13 +114,22 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                 usePlayerStore.getState().setLayoutMode('split');
             }
         };
+
+        // SYNC BODY BACKGROUND for "Red Line" issue (Matches Theme Color / Safe area)
+        if (layoutMode === 'fullscreen') {
+            document.body.style.backgroundColor = 'black';
+        } else {
+            document.body.style.backgroundColor = '';
+        }
+
         document.addEventListener('fullscreenchange', handleFullscreenChange);
         document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
         return () => {
+            document.body.style.backgroundColor = '';
             document.removeEventListener('fullscreenchange', handleFullscreenChange);
             document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
         };
-    }, []);
+    }, [layoutMode]);
 
     const toggleFullscreen = () => {
         // Use Global Store Trigger instead of local DOM manipulation
@@ -434,6 +443,15 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                     </div>
                 )
             }
+
+            {/* 🎯 FULL-SCREEN ACTIVITY OVERLAY: Catches taps to show controls since iframe blocks parent clicks */}
+            {layoutMode === 'fullscreen' && !showMiniControls && (
+                <div
+                    className="absolute inset-0 z-40 cursor-pointer"
+                    onClick={handleActivity}
+                    onTouchStart={handleActivity}
+                />
+            )}
 
             {/* Limit Indicator */}
             {
