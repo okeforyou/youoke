@@ -748,8 +748,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     <Link href="/" onClick={() => { handleNav(2); setNavOpen(false); }} className={clsx("flex items-center gap-3 px-3 py-3 rounded-lg transition-all font-medium", (router.pathname === '/' && activeIndex === 2) ? "bg-primary/10 text-primary" : "text-gray-600 active:bg-gray-100")}> <Star className="w-5 h-5" /> <span>แนะนำ</span> </Link>
                     <Link href="/" onClick={() => { handleNav(3); setNavOpen(false); }} className={clsx("flex items-center gap-3 px-3 py-3 rounded-lg transition-all font-medium", (router.pathname === '/' && activeIndex === 3) ? "bg-primary/10 text-primary" : "text-gray-600 active:bg-gray-100")}> <Flame className="w-5 h-5" /> <span>มาแรง</span> </Link>
                     <Link href="/" onClick={() => { handleNav(4); setNavOpen(false); }} className={clsx("flex items-center gap-3 px-3 py-3 rounded-lg transition-all font-medium", (router.pathname === '/' && activeIndex === 4) ? "bg-primary/10 text-primary" : "text-gray-600 active:bg-gray-100")}> <Library className="w-5 h-5" /> <span>เพลย์ลิสต์</span> </Link>
+                    {/*
                     <div className="mt-6 px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">ระบบ</div>
                     <Link href="/tv" className="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-600 active:bg-gray-100 font-medium"> <Cast className="w-5 h-5" /> <span>หน้าจอ TV (Premium)</span> </Link>
+                    */}
                     {user?.role === 'admin' && (<><div className="mt-6 px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Admin</div><Link href="/admin" onClick={() => setNavOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-600 active:bg-gray-100 font-medium"> <Shield className="w-5 h-5" /> <span>Admin Panel</span> </Link></>)}
                 </div>
                 <div className="p-4 border-t border-gray-100 bg-white">

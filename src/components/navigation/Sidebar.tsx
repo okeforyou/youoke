@@ -62,6 +62,7 @@ export const Sidebar = memo(() => {
                     <Library className={clsx("w-[22px] h-[22px]", (router.pathname === '/' && activeIndex === 4) ? "text-white" : "text-gray-700")} /> <span>เพลย์ลิสต์</span>
                 </button>
 
+                {/*
                 <div className="mt-8 px-4 mb-3 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">การเชื่อมต่อ</div>
                 <button onClick={() => useUIStore.getState().setReceiverModalOpen(true)} className={clsx("w-full text-left flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-900 duration-300")}>
                     <UserGroupIcon className="w-5 h-5 text-gray-400" /> <span>ปาร์ตี้รูม</span>
@@ -71,6 +72,7 @@ export const Sidebar = memo(() => {
                 <Link href="/store" className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-medium duration-300 text-sm", router.pathname === '/store' ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-gray-900 hover:bg-gray-100/50 hover:text-gray-900")}>
                     <Grid className={clsx("w-[22px] h-[22px]", router.pathname === '/store' ? "text-white" : "text-gray-700")} /> <span>ส่วนเสริม</span>
                 </Link>
+                */}
 
                 <div className="mt-8 px-4 mb-2 text-xs font-black text-black uppercase tracking-wider">ช่วยเหลือ</div>
                 <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-2xl text-gray-900 hover:bg-gray-100/50 hover:text-gray-900 transition-all font-medium text-sm duration-300">
