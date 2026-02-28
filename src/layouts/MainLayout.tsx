@@ -354,7 +354,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             <div className="flex-1 flex flex-col min-w-0 relative bg-white z-10">
 
                 {/* Desktop Header */}
-                <header className="hidden lg:flex h-20 items-center justify-between px-8 border-b border-gray-100 bg-white sticky top-0 z-20 transition-all">
+                <header className="hidden lg:flex h-20 items-center justify-between px-8 border-b border-gray-100 bg-white/70 backdrop-blur-2xl sticky top-0 z-20 transition-all">
                     <div className="flex-1 max-w-2xl relative group">
                         <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
                             <Search className="h-5 w-5 text-gray-300 group-focus-within:text-primary transition-colors" />
@@ -498,7 +498,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             </div>
                             {/* Mobile Only Search & Controls Wrapper */}
                             {layoutMode !== 'fullscreen' && (
-                                <div className="lg:hidden flex flex-col pb-2.5 bg-white border-b border-gray-100 shadow-sm relative z-20">
+                                <div className="lg:hidden flex flex-col pb-2.5 bg-white/75 backdrop-blur-2xl border-b border-gray-100 shadow-sm sticky top-0 z-40">
                                     {/* Seamless Control Section matching Footer style */}
                                     <SidebarControls castMode={castMode} />
 
@@ -506,7 +506,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                     <div className="px-3 pt-2.5">
                                         <div className="flex items-center gap-2.5">
                                             {/* Search Input Box - Height increased for prominence */}
-                                            <div className="flex-1 relative flex items-center bg-gray-50 border border-gray-200 rounded-2xl px-4 h-11 transition-all focus-within:bg-white focus-within:border-black/20 focus-within:ring-2 focus-within:ring-black/5 shadow-sm">
+                                            <div className="flex-1 relative flex items-center bg-black/[0.03] border border-gray-200/50 rounded-2xl px-4 h-11 transition-all focus-within:bg-white focus-within:border-black/10 focus-within:ring-2 focus-within:ring-black/5 shadow-sm">
                                                 <Search className="h-4.5 w-4.5 text-gray-400 shrink-0" />
                                                 <DebounceInput
                                                     minLength={2}

@@ -81,7 +81,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
     return (
         <div className="shrink-0 select-none relative shadow-sm">
             {/* Glass Background matching Footer */}
-            <div className="absolute inset-0 bg-[#f4f4f5]/95 backdrop-blur-xl border-b border-gray-200/50" />
+            <div className="absolute inset-0 bg-[#f4f4f5]/60 backdrop-blur-xl border-b border-gray-200/50" />
 
             {/* Horizontal Controls Row - Full Width with depth */}
             <div className="relative flex items-center justify-between px-2 h-[64px]">
@@ -89,15 +89,17 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                     <button
                         key={index}
                         onClick={item.onClick}
-                        className="flex flex-col items-center justify-center flex-1 gap-1 group transition-all active:scale-95"
+                        className="flex flex-col items-center justify-center flex-1 gap-0 group transition-all active:scale-95"
                     >
                         <div className={clsx(
-                            "p-2 rounded-xl transition-all duration-300 relative",
-                            item.active ? (item.label === "ยกเลิก" ? "bg-red-500 text-white shadow-lg scale-105" : "text-primary bg-white shadow-md scale-105") : "text-black group-hover:text-black"
+                            "p-1.5 rounded-xl transition-all duration-300 relative",
+                            item.active
+                                ? (item.label === "ยกเลิก" ? "bg-red-500 text-white shadow-md scale-105" : "text-primary bg-white shadow-sm border border-primary/10 scale-105")
+                                : "text-black group-hover:text-black"
                         )}>
                             <item.icon
                                 size={20}
-                                strokeWidth={item.active ? 2.5 : 2}
+                                strokeWidth={item.active ? 2 : 1.5}
                                 className={clsx(
                                     "transition-all duration-300",
                                     item.active ? (item.label === "ยกเลิก" ? "text-white" : "text-primary") : "text-black"
@@ -108,8 +110,8 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                             )}
                         </div>
                         <span className={clsx(
-                            "text-[10px] font-medium transition-colors duration-200",
-                            item.active && item.label === "ยกเลิก" ? "text-red-600 font-bold" : (item.active ? "text-primary font-bold" : "text-black/60")
+                            "text-[10px] font-bold transition-colors duration-200 mt-0.5",
+                            item.active && item.label === "ยกเลิก" ? "text-red-600" : (item.active ? "text-primary" : "text-black/50")
                         )}>
                             {item.label}
                         </span>
