@@ -689,8 +689,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
 
 
-            {/* Mobile Bottom Navigation (Always Visible) */}
-            <MobileBottomNav />
+            {/* Mobile Bottom Navigation (Hidden in Fullscreen) */}
+            {layoutMode !== 'fullscreen' && <MobileBottomNav />}
 
             {/* BOTTOM FLOATING PLAYER (Apple Music Style - Unified for Mobile/Desktop) */}
 

@@ -30,10 +30,11 @@ interface SidebarPlayerProps {
 }
 
 export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 'none', roomCode = null, onDisconnect, onForcePlay, onPlayerInit, onEnded }: SidebarPlayerProps) => {
-    const { currentSource, isPlaying, currentVideo, setCurrentTime, currentTime, layoutMode, queue, currentIndex, duration } = usePlayerStore(
+    const { currentSource, isPlaying, isMuted, currentVideo, setCurrentTime, currentTime, layoutMode, queue, currentIndex, duration } = usePlayerStore(
         useShallow(state => ({
             currentSource: state.currentSource,
             isPlaying: state.isPlaying,
+            isMuted: state.isMuted,
             currentVideo: state.currentVideo,
             setCurrentTime: state.setCurrentTime,
             currentTime: state.currentTime,
@@ -248,26 +249,27 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
         // For standard IDs, UniversalPlayer already updates via props.
         // We only use playerRef.current for play/pause/seek controls.
     }, [currentSource]);
-    // 🔇 LOCAL MUTE BRIDGE: Prevent sound on Dashboard when casting to Monitor
+    // 🔇 LOCAL MUTE BRIDGE: Prevent sound on Dashboard when casting to Monitor OR when manually muted
     useEffect(() => {
         const target = playerRef.current;
         if (!target) return;
 
         // 🛡️ CRITICAL SAFETY: Ensure the player's internal iframe/element still exists
-        // This prevents "null reading src" errors when the component unmounts quickly or switches modes
         if (typeof target.getIframe === 'function' && !target.getIframe()) {
             playerRef.current = null;
             return;
         }
 
-        if (castMode === 'smarttv' || castMode === 'webmonitor') {
-            console.log('🔇 SidebarPlayer: Local Mute active (Casting Mode)');
+        const shouldMute = castMode === 'smarttv' || castMode === 'webmonitor' || isMuted;
+
+        if (shouldMute) {
+            console.log(`🔇 SidebarPlayer: Muting (Reason: ${isMuted ? 'Manual' : 'Casting'})`);
             if (typeof target.mute === 'function') target.mute();
         } else {
-            console.log('🔊 SidebarPlayer: Local Mute inactive');
+            console.log('🔊 SidebarPlayer: Unmuting');
             if (typeof target.unMute === 'function') target.unMute();
         }
-    }, [castMode]);
+    }, [castMode, isMuted]);
     // 🍞 Toast Logic
     const [showToast, setShowToast] = useState(false);
     const [toastType, setToastType] = useState<'added' | 'upnext'>('added');
