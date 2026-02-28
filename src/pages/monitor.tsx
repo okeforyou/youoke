@@ -124,9 +124,9 @@ export default function MonitorPage() {
     }
     prevQueueLength.current = queue.length;
 
-    if (currentVideo) {
+    if (currentVideo && currentVideo.videoId) {
       setShowInfoToast(true);
-      const timer = setTimeout(() => setShowInfoToast(false), 8000);
+      const timer = setTimeout(() => setShowInfoToast(false), 6000); // 6 Seconds for monitor
       return () => clearTimeout(timer);
     }
   }, [currentVideo?.videoId, queue.length]);
@@ -194,8 +194,8 @@ export default function MonitorPage() {
             }}
           />
           {/* Gradients */}
-          <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/95 via-black/40 to-transparent pointer-events-none" />
-          <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/80 to-transparent pointer-events-none" />
+          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/95 via-black/40 to-transparent pointer-events-none" />
+          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/80 to-transparent pointer-events-none" />
         </div>
       </div>
 
@@ -275,9 +275,13 @@ export default function MonitorPage() {
         (showInfoToast && !isIdle && !isQueueVisible) ? "translate-y-0 opacity-100" : "translate-y-12 opacity-0"
       )}>
         {!isIdle && currentVideo && (
-          <div className="flex items-end gap-6 bg-black/40 backdrop-blur-3xl p-6 rounded-[2.5rem] border border-white/10 shadow-2xl">
-            <div className="w-24 h-24 rounded-2xl shadow-xl overflow-hidden border border-white/10 shrink-0 relative">
-              <Image unoptimized src={currentVideo.thumbnail || "/icon-cover.png"} fill className="object-cover" alt="Art" />
+          <div className="flex items-end gap-6 bg-black/40 backdrop-blur-3xl p-6 rounded-[2.5rem] border border-white/10 shadow-2xl animate-in slide-in-from-bottom-5 duration-700">
+            <div className="w-24 h-24 rounded-2xl shadow-xl overflow-hidden border border-white/10 shrink-0 relative bg-zinc-900">
+              {/* 💿 THUMBNAIL FALLBACK LOGIC */}
+              {(() => {
+                const thumb = currentVideo.thumbnail || (currentVideo.videoId ? `https://i.ytimg.com/vi/${currentVideo.videoId}/mqdefault.jpg` : "/icon-cover.png");
+                return <Image unoptimized src={thumb} fill className="object-cover" alt="Art" />;
+              })()}
             </div>
             <div className="pb-2 min-w-0">
               <div className="flex items-center gap-2 mb-2">

@@ -431,7 +431,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
 
             {/* Overlay (Waiting) */}
             {
-                !currentSource && (
+                !isPassive && !currentSource && (
                     <div className="absolute inset-0 bg-black/80 z-10 flex flex-col items-center justify-center text-white/50 space-y-4">
                         {queue.length > 0 ? (
                             <>
@@ -447,7 +447,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
 
             {/* Limit Indicator */}
             {
-                mounted && maxDuration > 0 && currentSource && (
+                !isPassive && mounted && maxDuration > 0 && currentSource && (
                     <div className="absolute top-2 right-2 z-20 badge badge-warning gap-1 opacity-80 text-xs">
                         <span>⏱️ จำกัดเวลา: {maxDuration}วิ</span>
                     </div>
@@ -456,7 +456,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
 
             {/* 🎯 YOUTUBE-STYLE MINI CONTROLS (Fullscreen Only - Rounded Capsule - VANISHING MODE) */}
             {
-                layoutMode === 'fullscreen' && (
+                !isPassive && layoutMode === 'fullscreen' && (
                     <div
                         className={`absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-50 flex items-center gap-1 p-1.5 bg-black/60 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl shadow-black/60 transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] cursor-default ${showMiniControls ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}
                     >
@@ -495,7 +495,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
             {/* Added By / Up Next Toast (Top-Right - Sharp V2 Metadata-Rich) */}
             {
                 (() => {
-                    if (!showToast) return null;
+                    if (isPassive || !showToast) return null;
                     const activeVideo = (toastType === 'added' ? currentVideo : upNextVideo);
                     if (!activeVideo) return null;
 
