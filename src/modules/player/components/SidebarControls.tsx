@@ -84,7 +84,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             <div className="absolute inset-0 bg-[#f4f4f5]/95 backdrop-blur-xl border-b border-gray-200/50" />
 
             {/* Horizontal Controls Row - Full Width with depth */}
-            <div className="relative flex items-center justify-between px-2 h-[72px]">
+            <div className="relative flex items-center justify-between px-2 h-[64px]">
                 {controlItems.map((item, index) => (
                     <button
                         key={index}

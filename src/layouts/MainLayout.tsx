@@ -498,12 +498,12 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             </div>
                             {/* Mobile Only Search & Controls Wrapper */}
                             {layoutMode !== 'fullscreen' && (
-                                <div className="lg:hidden flex flex-col pb-3 bg-white border-b border-gray-100 shadow-sm relative z-20">
+                                <div className="lg:hidden flex flex-col pb-2.5 bg-white border-b border-gray-100 shadow-sm relative z-20">
                                     {/* Seamless Control Section matching Footer style */}
                                     <SidebarControls castMode={castMode} />
 
                                     {/* Prominent Row: Larger Search + Outside Switch */}
-                                    <div className="px-3 pt-3">
+                                    <div className="px-3 pt-2.5">
                                         <div className="flex items-center gap-2.5">
                                             {/* Search Input Box - Height increased for prominence */}
                                             <div className="flex-1 relative flex items-center bg-gray-50 border border-gray-200 rounded-2xl px-4 h-11 transition-all focus-within:bg-white focus-within:border-black/20 focus-within:ring-2 focus-within:ring-black/5 shadow-sm">

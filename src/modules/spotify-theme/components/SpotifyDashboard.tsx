@@ -207,7 +207,7 @@ export default function SpotifyDashboard({ showTab = true }) {
 
       {/* Artist Grid - Horizontal Scroll (Carousel) for Mobile/Desktop */}
       {/* Artist Grid - Vertical Layout (Grid) */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 col-span-full pb-6 px-2">
+      <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 col-span-full pb-6 px-2">
         {isLoadTopArtists && (
           <>
             {getSkeletonItems(10).map((s, i) => (
