@@ -295,16 +295,16 @@ export default function MonitorPage() {
               {currentVideo && (
                 <div className="animate-in slide-in-from-right-4 duration-700">
                   <p className="text-xs text-white/40 mb-3 uppercase font-black tracking-widest">กำลังเล่น</p>
-                  <div className="bg-primary/20 border border-primary/30 rounded-2xl p-5 shadow-xl">
-                    <h2 className="text-lg font-black text-white leading-tight mb-2 line-clamp-2">{currentVideo.title}</h2>
+                  <div className="bg-primary/20 border border-primary/30 rounded-2xl p-6 shadow-xl">
+                    <h2 className="text-3xl font-black text-white leading-tight mb-4 line-clamp-2">{currentVideo.title}</h2>
                     {currentVideo.author && (
                       <div className="flex items-center gap-2">
-                        <div className="w-1 h-3 bg-primary rounded-full"></div>
-                        <p className="text-sm text-white/60 font-medium truncate">{currentVideo.author}</p>
+                        <div className="w-1.5 h-4 bg-primary rounded-full"></div>
+                        <p className="text-xl text-white/60 font-medium truncate">{currentVideo.author}</p>
                       </div>
                     )}
                     {currentVideo.addedBy && (
-                      <p className="mt-4 text-[9px] text-white/30 uppercase font-black tracking-widest border-t border-white/5 pt-3">
+                      <p className="mt-6 text-[11px] text-white/30 uppercase font-black tracking-widest border-t border-white/5 pt-4">
                         Added by {getAddedByName(currentVideo)}
                       </p>
                     )}
@@ -330,10 +330,10 @@ export default function MonitorPage() {
                             <span className="text-primary font-black text-xs">{index + 1}</span>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-bold text-sm text-white/90 line-clamp-2 mb-1 group-hover:text-white transition-colors">
+                            <p className="font-bold text-lg text-white/90 line-clamp-2 mb-1 group-hover:text-white transition-colors">
                               {video.title}
                             </p>
-                            {video.author && <p className="text-xs text-white/40 truncate">{video.author}</p>}
+                            {video.author && <p className="text-sm text-white/40 truncate">{video.author}</p>}
                           </div>
                         </div>
                       </div>

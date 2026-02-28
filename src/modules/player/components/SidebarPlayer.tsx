@@ -402,18 +402,6 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                         )}
 
                         <div className="flex flex-col items-center gap-6 pt-4 w-full">
-                            {onDisconnect && (
-                                <button
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onDisconnect();
-                                    }}
-                                    className="group flex items-center justify-center gap-3 px-10 py-4 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white rounded-2xl transition-all shadow-[0_8px_32px_rgba(239,68,68,0.3)] active:scale-95 w-full max-w-[260px] border border-red-400/20"
-                                >
-                                    <Power className="w-5 h-5 text-white animate-pulse" strokeWidth={3} />
-                                    <span className="text-[14px] font-black uppercase tracking-widest">ยกเลิกการเชื่อมต่อ</span>
-                                </button>
-                            )}
 
                             <div className="flex items-center gap-3 px-4 py-2 bg-white/5 rounded-full border border-white/5">
                                 <div className="w-2 h-2 bg-green-500 rounded-full animate-ping"></div>

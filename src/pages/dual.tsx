@@ -398,9 +398,9 @@ export default function DualScreen() {
                   {currentQVideo && (
                     <div>
                       <p className="text-xs text-gray-400 mb-2 uppercase tracking-wide">กำลังเล่น</p>
-                      <div className="bg-primary/20 border border-primary/30 rounded-xl p-4">
-                        <h2 className="text-lg font-bold mb-1 line-clamp-2">{currentQVideo.title}</h2>
-                        {currentQVideo.author && <p className="text-sm text-gray-300 truncate">{currentQVideo.author}</p>}
+                      <div className="bg-primary/20 border border-primary/30 rounded-xl p-6">
+                        <h2 className="text-3xl font-black text-white leading-tight mb-2 line-clamp-2">{currentQVideo.title}</h2>
+                        {currentQVideo.author && <p className="text-lg text-gray-300 truncate">{currentQVideo.author}</p>}
                       </div>
                     </div>
                   )}
@@ -420,8 +420,8 @@ export default function DualScreen() {
                                 <span className="text-primary font-bold text-xs">{index + 1}</span>
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="font-semibold text-sm line-clamp-2 mb-0.5">{video.title}</p>
-                                {video.author && <p className="text-xs text-gray-400 truncate">{video.author}</p>}
+                                <p className="font-bold text-lg line-clamp-2 mb-0.5">{video.title}</p>
+                                {video.author && <p className="text-sm text-gray-400 truncate">{video.author}</p>}
                               </div>
                             </div>
                           </div>
