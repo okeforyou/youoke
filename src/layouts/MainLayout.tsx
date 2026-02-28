@@ -185,6 +185,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
         addToast(`เชื่อมต่อห้อง ${code} สำเร็จ!`);
     };
 
+    // Auto-sync theme color for red line removal
+    useEffect(() => {
+        if (!mounted) return;
+        const color = layoutMode === 'fullscreen' ? '#000000' : '#ef4444';
+        const metas = document.querySelectorAll('meta[name="theme-color"]');
+        metas.forEach(m => m.setAttribute('content', color));
+    }, [layoutMode, mounted]);
+
     return (
         <div className={clsx(
             "flex h-screen w-full text-text-base overflow-hidden subpixel-antialiased antialiased transition-colors duration-500",
@@ -192,6 +200,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         )}>
             <Head>
                 <meta name="theme-color" content={layoutMode === 'fullscreen' ? '#000000' : '#ef4444'} />
+                <title>YouOke - คาราโอเกะออนไลน์</title>
             </Head>
 
             <Sidebar />
@@ -272,11 +281,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         )}
 
                         {/* Page Content */}
-                        <div className="px-0 sm:px-4">
-                            {isMobile && isQueueOpen ? <QueueList /> : children}
+                        <div className="px-0">
+                            {isMobile && isQueueOpen ? <div className="bg-white min-h-screen px-4"><QueueList /></div> : children}
                         </div>
                     </div>
                 </main>
+
+                <MobileBottomNav />
             </div>
 
             {/* Desktop Right Sidebar */}
@@ -293,7 +304,19 @@ export default function MainLayout({ children }: MainLayoutProps) {
             {/* Modals & Overlays */}
             <ProfileDrawer isOpen={isProfileOpen} onClose={() => setProfileOpen(false)} />
             <ReceiverInfoModal />
-            <CastModeSelector isOpen={isCastModalOpen} onClose={() => setCastModalOpen(false)} isCastAvailable={isCastAvailable} isMobile={isMobile} onSelectWebMonitor={handleCastSelectWebMonitor} onSelectSmartTV={handleCastSelectSmartTV} onSelectDual={handleCastSelectDual} onSelectDj={handleCastSelectDual} onSelectGoogleCast={handleCastSelectGoogle} />
+            <ShareRoomModal isOpen={partyModalOpen} onClose={() => setPartyModalOpen(false)} roomCode={roomCode || ''} />
+            <LimitReachedModal />
+            <CastModeSelector
+                isOpen={isCastModalOpen}
+                onClose={() => setCastModalOpen(false)}
+                isCastAvailable={isCastAvailable}
+                isMobile={isMobile}
+                onSelectWebMonitor={handleCastSelectWebMonitor}
+                onSelectSmartTV={handleCastSelectSmartTV}
+                onSelectDual={handleCastSelectDual}
+                onSelectDj={handleCastSelectDual}
+                onSelectGoogleCast={handleCastSelectGoogle}
+            />
 
             {showQRCode && roomCode && (
                 <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowQRCode(false)}>
