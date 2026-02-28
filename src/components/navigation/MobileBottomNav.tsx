@@ -39,6 +39,7 @@ export const MobileBottomNav = () => {
         } else {
             setSearchTerm(''); // Clear search logic from MainLayout
             setActiveIndex(index);
+            setQueueOpen(false); // Close queue when changing main tabs
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
@@ -50,7 +51,7 @@ export const MobileBottomNav = () => {
 
             <div className="relative flex justify-around items-center h-[72px] px-2 pb-2">
                 {navItems.map((item) => {
-                    const isActive = activeIndex === item.id;
+                    const isActive = item.id === 5 ? isQueueOpen : (!isQueueOpen && activeIndex === item.id);
                     return (
                         <button
                             key={item.id}

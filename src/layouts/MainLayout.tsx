@@ -338,131 +338,99 @@ export default function MainLayout({ children }: MainLayoutProps) {
             {/* Main Content Area - Single Divider Strategy */}
             <div className="flex-1 flex flex-col min-w-0 relative bg-white z-10">
                 {/* Mobile Header (Visible only on mobile) */}
-                <header className="lg:hidden h-16 flex items-center justify-between px-4 border-b border-gray-100 bg-white sticky top-0 z-30">
-                    <div className="flex items-center gap-3">
-                        {/* Profile Button instead of Hamburger */}
-                        {/* Back Button or Profile Button */}
-                        {useUIStore((state) => state.backAction) ? (
+                {/* Mobile Header (Always visible, includes Search) */}
+                <header className="lg:hidden flex flex-col gap-3 px-4 pt-3 pb-3 border-b border-gray-100 bg-white sticky top-0 z-[65]">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            {/* Profile Button / Back Button */}
+                            {useUIStore((state) => state.backAction) ? (
+                                <button
+                                    onClick={() => useUIStore.getState().backAction?.()}
+                                    className="p-1.5 rounded-full active:bg-gray-100 transition-colors text-gray-900 -ml-1.5"
+                                >
+                                    <ChevronLeft className="w-6 h-6" />
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => setProfileOpen(true)}
+                                    className="p-0.5 rounded-full active:scale-95 transition-all duration-300 relative group"
+                                >
+                                    <div className="absolute inset-0 bg-gradient-to-tr from-primary via-purple-500 to-pink-500 rounded-full opacity-70 group-hover:opacity-100 blur-[2px]" />
+                                    <div className="relative bg-white p-0.5 rounded-full">
+                                        {user?.photoURL ? (
+                                            <img src={user.photoURL} alt="Profile" className="w-8 h-8 rounded-full border border-gray-100 object-cover" />
+                                        ) : (
+                                            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-gray-400 font-bold border border-gray-100">
+                                                <User size={18} />
+                                            </div>
+                                        )}
+                                    </div>
+                                </button>
+                            )}
+
+                            <div className="flex items-center gap-2">
+                                <div className="w-7 h-7 bg-primary/10 rounded-lg flex items-center justify-center text-primary font-bold text-sm">Y</div>
+                                <span className="font-bold text-lg text-black tracking-tight">YouOke</span>
+                            </div>
+                        </div>
+
+                        {/* Mode Toggle & Connect */}
+                        <div className="flex items-center gap-2">
                             <button
-                                onClick={() => useUIStore.getState().backAction?.()}
-                                className="p-2 rounded-full active:bg-gray-100 transition-colors text-gray-900"
+                                onClick={() => setIsKaraoke(!isKaraoke)}
+                                className={clsx(
+                                    "px-3 h-9 rounded-xl text-[11px] font-black uppercase tracking-wide flex items-center gap-1.5 transition-colors border",
+                                    isKaraoke ? "bg-primary/10 text-primary border-primary/20" : "bg-gray-50 text-black border-gray-100 active:bg-gray-100"
+                                )}
                             >
-                                <ChevronLeft className="w-6 h-6" />
+                                {isKaraoke ? <Mic className="w-3.5 h-3.5" /> : <Music className="w-3.5 h-3.5" />}
+                                <span>{isKaraoke ? 'คาราโอเกะ' : 'เพลง'}</span>
                             </button>
-                        ) : (
+
                             <button
-                                onClick={() => setProfileOpen(true)}
-                                className="p-0.5 rounded-full active:scale-95 transition-all duration-300 relative group"
+                                onClick={() => setShowQRCode(true)}
+                                className="h-9 w-9 rounded-xl p-0 flex items-center justify-center bg-gray-50 active:bg-gray-100 border border-gray-100 text-black transition-all relative"
                             >
-                                <div className="absolute inset-0 bg-gradient-to-tr from-primary via-purple-500 to-pink-500 rounded-full opacity-70 group-hover:opacity-100 blur-[2px]" />
-                                <div className="relative bg-white p-0.5 rounded-full">
-                                    {user?.photoURL ? (
-                                        <img src={user.photoURL} alt="Profile" className="w-9 h-9 rounded-full border border-gray-100 object-cover" />
-                                    ) : (
-                                        <div className="w-9 h-9 bg-white rounded-full flex items-center justify-center text-gray-400 font-bold border border-gray-100">
-                                            <User size={20} />
-                                        </div>
-                                    )}
-                                </div>
+                                <Smartphone className="w-4 h-4" strokeWidth={2.5} />
+                                {mounted && (
+                                    <div className={clsx(
+                                        "absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-white transition-colors duration-500",
+                                        connectionStatus === 'active' ? "bg-green-500 animate-pulse" :
+                                            connectionStatus === 'background' ? "bg-orange-500" : "bg-gray-300"
+                                    )} />
+                                )}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Search Bar */}
+                    <div className="relative w-full">
+                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                            <Search className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <DebounceInput
+                            minLength={2}
+                            debounceTimeout={300}
+                            placeholder="ค้นหาเพลง, ศิลปิน..."
+                            className="block w-full pl-11 pr-10 h-11 bg-gray-50/80 focus:bg-white border border-gray-200 focus:border-primary/30 rounded-[14px] text-[15px] font-bold text-black placeholder-gray-400 focus:outline-none transition-all shadow-sm"
+                            value={searchTerm}
+                            onChange={(e) => {
+                                router.replace({
+                                    pathname: '/',
+                                    query: { ...router.query, search: e.target.value }
+                                }, undefined, { shallow: true });
+                            }}
+                        />
+                        {searchTerm && (
+                            <button onClick={() => {
+                                const { search, ...rest } = router.query;
+                                router.replace({ pathname: '/', query: rest }, undefined, { shallow: true });
+                            }} className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-red-500 transition-colors">
+                                <X className="h-4 w-4" />
                             </button>
                         )}
-
-                        <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center text-primary font-bold">Y</div>
-                            <span className="font-bold text-lg text-gray-900">YouOke</span>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => setMobileSearchOpen(!isMobileSearchOpen)}
-                            className={clsx("p-2 rounded-full transition-colors", isMobileSearchOpen ? "bg-primary/10 text-primary" : "text-gray-600 active:bg-gray-100")}
-                        >
-                            <Search className="w-6 h-6" />
-                        </button>
                     </div>
                 </header>
-
-                {/* Mobile Search Bar (Floating Island - Google Style) */}
-                <div className={clsx(
-                    "lg:hidden fixed left-1/2 -translate-x-1/2 z-50 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] w-[95%] max-w-2xl",
-                    isMobileSearchOpen ? "top-20 opacity-100 scale-100 translate-y-0" : "top-16 opacity-0 scale-95 -translate-y-4 pointer-events-none"
-                )}>
-                    {/* Main Card */}
-                    <div className="bg-white p-4 rounded-[32px] shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-gray-100 space-y-4 relative overflow-hidden">
-                        {/* Search Input Area */}
-                        <div className="flex gap-2">
-                            <div className="relative group flex-1">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <Search className="h-6 w-6 text-gray-300 group-focus-within:text-primary transition-colors" />
-                                </div>
-                                <DebounceInput
-                                    minLength={2}
-                                    debounceTimeout={300}
-                                    placeholder="ค้นหาเพลง, ศิลปิน..."
-                                    className="block w-full pl-12 pr-12 h-14 bg-gray-50/50 hover:bg-white focus:bg-white border border-gray-100 focus:border-primary/20 rounded-[22px] text-lg font-bold text-gray-900 placeholder-gray-400 focus:outline-none transition-all"
-                                    value={searchTerm}
-                                    onChange={(e) => {
-                                        router.replace({
-                                            pathname: '/',
-                                            query: { ...router.query, search: e.target.value }
-                                        }, undefined, { shallow: true });
-                                    }}
-                                />
-                                {searchTerm && (
-                                    <button onClick={() => {
-                                        const { search, ...rest } = router.query;
-                                        router.replace({ pathname: '/', query: rest }, undefined, { shallow: true });
-                                    }} className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-300 hover:text-red-500 transition-colors">
-                                        <X className="h-5 w-5" />
-                                    </button>
-                                )}
-                            </div>
-
-                            {/* Close Button */}
-                            <button
-                                onClick={() => setMobileSearchOpen(false)}
-                                className="h-14 w-14 flex items-center justify-center bg-gray-50/80 hover:bg-gray-100 text-gray-400 hover:text-red-500 rounded-[22px] transition-colors"
-                            >
-                                <X className="h-6 w-6" />
-                            </button>
-                        </div>
-
-                        {/* Mode Toggle (Song/Sing) - Subtler Design */}
-                        <div className="relative flex items-center bg-gray-50 rounded-[22px] p-1 h-12 border border-gray-100">
-                            {/* Sliding Active Background */}
-                            <div
-                                className={clsx(
-                                    "absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-[18px] shadow-sm transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
-                                    isKaraoke ? "left-[calc(50%+2px)]" : "left-1"
-                                )}
-                            />
-
-                            {/* Song Option */}
-                            <button
-                                onClick={() => setIsKaraoke(false)}
-                                className={clsx(
-                                    "relative flex-1 flex items-center justify-center gap-2 h-full rounded-[18px] text-[13px] font-black uppercase tracking-tight transition-colors z-10",
-                                    !isKaraoke ? "text-primary" : "text-gray-400 hover:text-gray-600"
-                                )}
-                            >
-                                <Music className="w-4 h-4" />
-                                <span>เพลง</span>
-                            </button>
-
-                            {/* Karaoke Option */}
-                            <button
-                                onClick={() => setIsKaraoke(true)}
-                                className={clsx(
-                                    "relative flex-1 flex items-center justify-center gap-2 h-full rounded-[18px] text-[13px] font-black uppercase tracking-tight transition-colors z-10",
-                                    isKaraoke ? "text-primary" : "text-gray-400 hover:text-gray-600"
-                                )}
-                            >
-                                <Mic className="w-4 h-4" />
-                                <span>คาราโอเกะ</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
 
                 {/* Desktop Header */}
                 <header className="hidden lg:flex h-20 items-center justify-between px-8 border-b border-gray-100 bg-white sticky top-0 z-20 transition-all">
@@ -556,117 +524,30 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     </div>
                 </header>
 
-                <main className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent pt-4 pb-[64px] lg:pb-0 relative flex flex-col items-center">
-
-                    {/* Floating Player (Moved to Main Column for correct centering) */}
-
-
-                    <div className="w-full">
-                        {children}
-                    </div>
-                    {/* Floating Player (Moved to Bottom of Main) */}
-                    {(() => {
-                        const HEADER_HEIGHT = 48;
-                        const PLAYER_HEIGHT = 86;
-                        const MAX_ITEMS = 5;
-                        const queueContentHeight = Math.min(queue.length, MAX_ITEMS) * 60;
-                        const effectiveQueueHeight = queue.length === 0 ? 100 : queueContentHeight;
-                        const expandedHeight = PLAYER_HEIGHT + HEADER_HEIGHT + effectiveQueueHeight;
-                        const finalExpandedHeight = `min(${expandedHeight}px, 70vh)`;
-                        const showPlayer = mounted && (queue.length > 0 || isMobilePlayerExpanded || isQueueOpen) && !isPlayerHidden;
-
-                        return (
-                            <div
-                                className={clsx(
-                                    "fixed lg:sticky z-[80] transition-all duration-350 ease-[cubic-bezier(0.32,0.72,0,1)] flex flex-col shrink-0 mt-auto mb-0 will-change-transform transform-gpu",
-                                    // Mobile: Full width, docked above nav (71px for 1px overlap to prevent gaps)
-                                    "bottom-[calc(71px+env(safe-area-inset-bottom))] w-full left-0 right-0",
-                                    // Desktop: Floating, centered, reset positioning
-                                    "lg:hidden lg:!bottom-6 lg:w-[95%] lg:max-w-2xl lg:mx-auto lg:!h-[86px] lg:left-auto lg:right-auto",
-                                    showPlayer ? "translate-y-0 opacity-100 scale-100" : "translate-y-[120%] opacity-0 scale-95 pointer-events-none",
-                                    "isolate" // Remove overflow-hidden and bg/border from here to allow tab protrusion
-                                )}
-                                style={{
-                                    height: isQueueOpen ? finalExpandedHeight : '86px'
-                                }}
-                            >
-                                {/* Inner Content Wrapper (Handles BG/Blur/Overflow) */}
-                                <div className={clsx(
-                                    "flex-1 flex flex-col overflow-hidden relative z-10 w-full h-full shadow-[0_-4px_24px_rgba(0,0,0,0.08)] border-t border-l border-r border-gray-200/50 lg:border lg:shadow-[0_8px_48px_-12px_rgba(0,0,0,0.6)]",
-                                    "bg-white",
-                                    isQueueOpen ? "rounded-t-[32px] rounded-b-none lg:rounded-[40px] lg:rounded-b-[40px] lg:!rounded-tr-[40px]" : "rounded-t-[24px] rounded-b-none lg:rounded-[32px] lg:rounded-b-[32px]"
-                                )}>
-
-                                    {mounted && (
-                                        <>
-                                            {/* Queue Section */}
-                                            <div className={clsx(
-                                                "flex-1 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] flex flex-col border-b border-white/10 lg:hidden",
-                                                isQueueOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
-                                            )}>
-                                                <div className="px-4 py-3 flex items-center justify-between shrink-0 bg-white h-[48px]">
-                                                    <div className="flex items-center gap-3">
-                                                        <span className="font-bold text-gray-800/90 text-sm flex items-center gap-2 drop-shadow-sm">
-                                                            <ListMusic className="w-4 h-4 text-primary" />
-                                                            คิวเพลง ({queue.length})
-                                                        </span>
-
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <button onClick={() => { if (confirm('ต้องการลบคิวทั้งหมดใช่หรือไม่?')) usePlayerStore.getState().clearQueue(); }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-600 text-[11px] font-bold transition-all border border-red-500/10 backdrop-blur-sm shadow-sm">
-                                                            <Trash2 className="w-3 h-3" />
-                                                            <span>ลบทั้งหมด</span>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                <div className="flex-1 overflow-y-auto bg-white">
-                                                    <QueueList />
-                                                </div>
-                                            </div>
-
-                                            {/* Player Controls - Hidden on lg (desktop) if using Sidebar controls */}
-                                            {!isMobile && (
-                                                <div className="shrink-0 p-2 sm:p-3 relative z-10 bg-white h-[86px] flex lg:hidden items-center">
-                                                    <div className="w-full">
-                                                        <PlayerControls />
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </>
-                                    )}
-                                </div>
-                            </div>
-                        );
-                    })()}
-                </main>
-
-                {/* MobileMiniPlayer moved to Root Level */}
-            </div >
-
-            {/* Global Player (Detached & Persistent) */}
-            {
-                mounted && (
+                {/* Global Player Container (Top Docked for Mobile, Fixed for Desktop) */}
+                {mounted && (
                     <div
                         id="global-video-player-container"
                         className={clsx(
-                            "fixed transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] z-30 overflow-hidden lg:border-l lg:border-gray-200",
+                            "transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] z-[60] overflow-hidden lg:border-l lg:border-gray-200 shrink-0",
 
-                            // Optimized Fullscreen Transition (Senior-Friendly)
+                            // Optimized Fullscreen Transition
                             layoutMode === 'fullscreen'
                                 ? "fixed top-0 right-0 w-full h-full z-[100] border-none bg-black shadow-none ring-0 origin-top-right transition-all duration-300"
                                 : [
-                                    // Mobile Logic
-                                    !isMobilePlayerExpanded
-                                        ? "max-lg:opacity-0 max-lg:pointer-events-none max-lg:fixed max-lg:bottom-0 max-lg:right-0 max-lg:w-1 max-lg:h-1 lg:opacity-100 bg-black"
-                                        : "max-lg:inset-0 max-lg:w-full max-lg:h-full max-lg:opacity-100 lg:opacity-100 bg-black",
+                                    // Mobile Logic (Inline block at top)
+                                    "max-lg:w-full",
+                                    queue.length > 0
+                                        ? "max-lg:opacity-100 max-lg:h-auto max-lg:pointer-events-auto border-b border-gray-100 shadow-sm"
+                                        : "max-lg:opacity-0 max-lg:h-0 max-lg:pointer-events-none max-lg:border-none",
 
                                     // Desktop Logic
-                                    "lg:top-0 lg:w-[420px] lg:h-[236px] bg-transparent origin-top-right transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+                                    "lg:fixed lg:top-0 lg:w-[420px] lg:h-[236px] bg-transparent origin-top-right transition-all duration-500",
                                     (isQueueOpen && queue.length > 0) ? "lg:right-0" : "lg:-right-[420px]"
                                 ]
                         )}>
                         <div className={clsx(
-                            "relative w-full flex flex-col transition-all duration-500",
+                            "relative w-full flex flex-col transition-all duration-500 bg-white",
                             layoutMode === 'fullscreen' ? "h-[100dvh] bg-black" : "h-full"
                         )}>
                             <div className={clsx(
@@ -693,21 +574,45 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                         }
                                     }}
                                 />
-
                             </div>
-                            {/* Mobile Only Controls (Desktop controls moved to Aside for better interaction) */}
+                            {/* Mobile Only Controls */}
                             {layoutMode !== 'fullscreen' && (
-                                <div className="lg:hidden">
-                                    <SidebarControls castMode={castMode} />
+                                <div className="lg:hidden p-2 bg-white flex items-center">
+                                    <div className="w-full">
+                                        <SidebarControls castMode={castMode} />
+                                    </div>
                                 </div>
                             )}
-                            <button onClick={() => setMobilePlayerExpanded(false)} className="absolute top-4 left-4 z-50 p-2 bg-black/50 text-white rounded-full lg:hidden"><ChevronDown className="w-6 h-6" /></button>
                         </div>
                     </div>
-                )
-            }
+                )}
 
-            {/* Right Sidebar (Queue Only - Collapsible) */}
+                <main className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent lg:pb-0 relative flex flex-col items-center bg-gray-50/30">
+
+                    {/* Mobile: Full-width Queue List or Home Content */}
+                    <div className="w-full pb-20">
+                        {isMobile && isQueueOpen ? (
+                            <div className="w-full h-full flex flex-col">
+                                <div className="px-5 py-3.5 flex items-center justify-between shrink-0 bg-white shadow-sm sticky top-0 z-10">
+                                    <span className="font-bold text-gray-900 text-sm flex items-center gap-2">
+                                        <ListMusic className="w-5 h-5 text-primary" />
+                                        คิวเพลง ({queue.length})
+                                    </span>
+                                    <button onClick={() => { if (confirm('ต้องการลบคิวทั้งหมดใช่หรือไม่?')) usePlayerStore.getState().clearQueue(); }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-50 hover:bg-red-100 text-red-600 text-[11px] font-bold transition-all">
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                        <span>ลบทั้งหมด</span>
+                                    </button>
+                                </div>
+                                <div className="flex-1 w-full bg-white">
+                                    <QueueList />
+                                </div>
+                            </div>
+                        ) : (
+                            children
+                        )}
+                    </div>
+                </main>
+            </div>            {/* Right Sidebar (Queue Only - Collapsible) */}
             <aside
                 className={clsx(
                     "hidden lg:flex w-[420px] border-l border-gray-200 flex-col z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
@@ -782,32 +687,34 @@ export default function MainLayout({ children }: MainLayoutProps) {
             <ReceiverInfoModal />
 
             {/* QR Code Modal for Remote Connect */}
-            {showQRCode && roomCode && (
-                <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setShowQRCode(false)}>
-                    <div className="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-center space-y-6 animate-in zoom-in-95 duration-200 border border-white/20" onClick={e => e.stopPropagation()}>
-                        <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-2">
-                                <Smartphone className="w-5 h-5 text-primary" />
-                                <h3 className="text-lg font-bold text-gray-900">เชื่อมต่อรีโมท</h3>
+            {
+                showQRCode && roomCode && (
+                    <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setShowQRCode(false)}>
+                        <div className="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-center space-y-6 animate-in zoom-in-95 duration-200 border border-white/20" onClick={e => e.stopPropagation()}>
+                            <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-2">
+                                    <Smartphone className="w-5 h-5 text-primary" />
+                                    <h3 className="text-lg font-bold text-gray-900">เชื่อมต่อรีโมท</h3>
+                                </div>
+                                <button onClick={() => setShowQRCode(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><X className="w-5 h-5 text-gray-500" /></button>
                             </div>
-                            <button onClick={() => setShowQRCode(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors"><X className="w-5 h-5 text-gray-500" /></button>
-                        </div>
 
-                        <div className="bg-white p-3 rounded-2xl border-2 border-dashed border-primary/20 inline-block shadow-sm">
-                            <img src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`${typeof window !== 'undefined' ? window.location.origin : ''}/remote?room=${roomCode}`)}`} alt="QR Code" className="w-56 h-56 rounded-lg" />
-                        </div>
+                            <div className="bg-white p-3 rounded-2xl border-2 border-dashed border-primary/20 inline-block shadow-sm">
+                                <img src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`${typeof window !== 'undefined' ? window.location.origin : ''}/remote?room=${roomCode}`)}`} alt="QR Code" className="w-56 h-56 rounded-lg" />
+                            </div>
 
-                        <div className="space-y-2">
-                            <p className="text-sm font-medium text-gray-900">สแกนด้วยกล้องมือถือ</p>
-                            <p className="text-xs text-gray-500">เพื่อใช้มือถือเลือกเพลงและควบคุมการเล่น</p>
-                        </div>
+                            <div className="space-y-2">
+                                <p className="text-sm font-medium text-gray-900">สแกนด้วยกล้องมือถือ</p>
+                                <p className="text-xs text-gray-500">เพื่อใช้มือถือเลือกเพลงและควบคุมการเล่น</p>
+                            </div>
 
-                        <div className="pt-2 border-t border-gray-100">
-                            <p className="text-[10px] text-gray-400 font-mono">Room Code: {roomCode}</p>
+                            <div className="pt-2 border-t border-gray-100">
+                                <p className="text-[10px] text-gray-400 font-mono">Room Code: {roomCode}</p>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             <CastModeSelector
                 isOpen={isCastModalOpen}
