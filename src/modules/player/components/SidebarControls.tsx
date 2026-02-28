@@ -80,13 +80,6 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
 
     return (
         <div className="shrink-0 select-none bg-white">
-            {/* Slim Progress Bar */}
-            <div className="w-full h-[3px] bg-gray-100 overflow-hidden relative">
-                <div
-                    className="h-full bg-primary transition-all duration-300 shadow-[0_0_8px_rgba(239,68,68,0.5)]"
-                    style={{ width: `${progressPercent}%` }}
-                />
-            </div>
 
             {/* Horizontal Controls Row */}
             <div className="flex items-center justify-between px-1 py-1.5" style={{ backgroundColor: '#ffffff' }}>
@@ -103,8 +96,8 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                             <item.icon
                                 size={22}
                                 className={clsx(
-                                    "transition-colors fill-primary",
-                                    item.active ? (item.label === "ยกเลิก" ? "text-white fill-white" : "text-primary") : "text-primary"
+                                    "transition-colors",
+                                    item.active ? (item.label === "ยกเลิก" ? "text-white" : "text-primary fill-primary/20") : "text-primary"
                                 )}
                             />
                             {item.label === "ยกเลิก" && (

@@ -337,66 +337,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
             {/* Main Content Area - Single Divider Strategy */}
             <div className="flex-1 flex flex-col min-w-0 relative bg-white z-10">
-                {/* Compact Mobile Header (Persistent, includes Search & Mode) */}
-                <header className="lg:hidden flex flex-col gap-3 px-4 pt-3 pb-3 border-b border-gray-100 bg-white sticky top-0 z-[65]">
-                    <div className="flex items-center gap-3">
-                        {/* Compact Search & Mode & Remote Group */}
-                        <div className="flex-1 relative">
-                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                                <Search className="h-5 w-5 text-black" />
-                            </div>
-                            <DebounceInput
-                                minLength={2}
-                                debounceTimeout={300}
-                                placeholder="ค้นหาเพลง, ศิลปิน..."
-                                className="block w-full pl-11 pr-24 h-11 bg-gray-50/80 focus:bg-white border border-gray-200 focus:border-black rounded-[14px] text-[15px] font-bold text-black placeholder-gray-400 focus:outline-none transition-all shadow-sm"
-                                value={searchTerm}
-                                onChange={(e) => {
-                                    router.replace({
-                                        pathname: '/',
-                                        query: { ...router.query, search: e.target.value }
-                                    }, undefined, { shallow: true });
-                                }}
-                            />
-                            {/* Inner Actions Overlay */}
-                            <div className="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
-                                {searchTerm && (
-                                    <button onClick={() => {
-                                        const { search, ...rest } = router.query;
-                                        router.replace({ pathname: '/', query: rest }, undefined, { shallow: true });
-                                    }} className="p-2 text-gray-400 hover:text-red-500 transition-colors">
-                                        <X className="h-4 w-4" />
-                                    </button>
-                                )}
-                                <button
-                                    onClick={() => setIsKaraoke(!isKaraoke)}
-                                    className={clsx(
-                                        "w-8 h-8 rounded-lg flex items-center justify-center transition-all border",
-                                        isKaraoke ? "bg-primary text-white border-primary shadow-sm" : "bg-white text-black border-gray-100 shadow-sm"
-                                    )}
-                                    title={isKaraoke ? 'คาราโอเกะ' : 'เพลง'}
-                                >
-                                    {isKaraoke ? <Mic className="w-4 h-4" /> : <Music className="w-4 h-4" />}
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Remote / Cast Action */}
-                        <button
-                            onClick={() => setShowQRCode(true)}
-                            className="h-11 w-11 rounded-xl p-0 flex items-center justify-center bg-white active:bg-gray-50 border border-gray-100 text-black transition-all relative shadow-sm"
-                        >
-                            <Smartphone className="w-5 h-5" strokeWidth={2.5} />
-                            {mounted && (
-                                <div className={clsx(
-                                    "absolute top-2.5 right-2.5 w-2 h-2 rounded-full border-2 border-white transition-colors duration-500",
-                                    connectionStatus === 'active' ? "bg-green-500 animate-pulse" :
-                                        connectionStatus === 'background' ? "bg-orange-500" : "bg-gray-300"
-                                )} />
-                            )}
-                        </button>
-                    </div>
-                </header>
 
                 {/* Desktop Header */}
                 <header className="hidden lg:flex h-20 items-center justify-between px-8 border-b border-gray-100 bg-white sticky top-0 z-20 transition-all">
@@ -504,7 +444,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                     // Mobile Logic (Inline block at top)
                                     "max-lg:w-full",
                                     queue.length > 0
-                                        ? "max-lg:opacity-100 max-lg:h-auto max-lg:pointer-events-auto border-b border-gray-100 shadow-sm"
+                                        ? "max-lg:opacity-100 max-lg:h-auto max-lg:pointer-events-auto shadow-sm"
                                         : "max-lg:opacity-0 max-lg:h-0 max-lg:pointer-events-none max-lg:border-none",
 
                                     // Desktop Logic
@@ -541,11 +481,54 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                     }}
                                 />
                             </div>
-                            {/* Mobile Only Controls */}
+                            {/* Mobile Only Search & Controls Wrapper */}
                             {layoutMode !== 'fullscreen' && (
-                                <div className="lg:hidden p-2 bg-white flex items-center">
-                                    <div className="w-full">
-                                        <SidebarControls castMode={castMode} />
+                                <div className="lg:hidden bg-white border-b border-gray-100">
+                                    <SidebarControls castMode={castMode} />
+
+                                    {/* Mobile In-line Search Bar (Below Controls) */}
+                                    <div className="px-4 pb-3 pt-1">
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex-1 relative">
+                                                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                                    <Search className="h-4.5 w-4.5 text-gray-400" />
+                                                </div>
+                                                <DebounceInput
+                                                    minLength={2}
+                                                    debounceTimeout={300}
+                                                    placeholder="ค้นหาเพลง, ศิลปิน..."
+                                                    className="block w-full pl-10 pr-20 h-10 bg-gray-50/50 border border-gray-100 focus:border-primary/30 rounded-xl text-[14px] font-bold text-black placeholder-gray-400 focus:outline-none transition-all shadow-sm"
+                                                    value={searchTerm}
+                                                    onChange={(e) => {
+                                                        router.replace({
+                                                            pathname: '/',
+                                                            query: { ...router.query, search: e.target.value }
+                                                        }, undefined, { shallow: true });
+                                                    }}
+                                                />
+                                                {/* Mode Selectors (Both Icons Visible) */}
+                                                <div className="absolute inset-y-0 right-1.5 flex items-center gap-1">
+                                                    <button
+                                                        onClick={() => setIsKaraoke(false)}
+                                                        className={clsx(
+                                                            "w-7 h-7 rounded-lg flex items-center justify-center transition-all",
+                                                            !isKaraoke ? "bg-white shadow-sm border border-gray-100 text-primary" : "text-gray-400"
+                                                        )}
+                                                    >
+                                                        <Music className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setIsKaraoke(true)}
+                                                        className={clsx(
+                                                            "w-7 h-7 rounded-lg flex items-center justify-center transition-all",
+                                                            isKaraoke ? "bg-white shadow-sm border border-gray-100 text-primary" : "text-gray-400"
+                                                        )}
+                                                    >
+                                                        <Mic className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             )}
