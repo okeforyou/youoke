@@ -100,7 +100,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
     // Sync Fullscreen State with Global Store (Native ESC Support)
     useEffect(() => {
         const handleFullscreenChange = () => {
-            const isFs = !!document.fullscreenElement;
+            const isFs = !!document.fullscreenElement || !!(document as any).webkitFullscreenElement;
             const currentLayout = usePlayerStore.getState().layoutMode;
 
             // Sync UI Store
@@ -116,20 +116,20 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
         };
 
         // SYNC BODY BACKGROUND & THEME COLOR for "Red Line" issue
-        const themeMeta = document.querySelector('meta[name="theme-color"]');
+        const themeMetas = document.querySelectorAll('meta[name="theme-color"]');
         if (layoutMode === 'fullscreen') {
             document.body.style.backgroundColor = 'black';
-            if (themeMeta) themeMeta.setAttribute('content', '#000000');
+            themeMetas.forEach(m => m.setAttribute('content', '#000000'));
         } else {
             document.body.style.backgroundColor = '';
-            if (themeMeta) themeMeta.setAttribute('content', '#ef4444');
+            themeMetas.forEach(m => m.setAttribute('content', '#ef4444'));
         }
 
         document.addEventListener('fullscreenchange', handleFullscreenChange);
         document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
         return () => {
             document.body.style.backgroundColor = '';
-            if (themeMeta) themeMeta.setAttribute('content', '#ef4444');
+            themeMetas.forEach(m => m.setAttribute('content', '#ef4444'));
             document.removeEventListener('fullscreenchange', handleFullscreenChange);
             document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
         };
@@ -286,8 +286,23 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
     // 🍞 Toast Logic
     const [showToast, setShowToast] = useState(false);
     const [toastType, setToastType] = useState<'added' | 'upnext'>('added');
+    const [activeToastVideo, setActiveToastVideo] = useState<any>(null);
     const [upNextVideo, setUpNextVideo] = useState<any>(null);
     const hasShownUpNext = useRef<string | null>(null);
+
+    // Update active toast video when showToast becomes true
+    useEffect(() => {
+        if (showToast) {
+            const v = (toastType === 'added' ? currentVideo : upNextVideo);
+            if (v) setActiveToastVideo(v);
+        } else {
+            // Keep the content for 1 second to allow exit animation to finish
+            const timer = setTimeout(() => {
+                setActiveToastVideo(null);
+            }, 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [showToast, toastType, currentVideo, upNextVideo]);
 
     // Track "Up Next" logic
 
@@ -507,42 +522,33 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
             {/* 🏝️ iOS DYNAMIC ISLAND STYLE NOTIFICATION (Top-Center) */}
             {
                 (() => {
-                    if (isPassive || !showToast) return null;
-                    const activeVideo = (toastType === 'added' ? currentVideo : upNextVideo);
-                    if (!activeVideo) return null;
-
-                    const thumb = activeVideo.thumbnail || (activeVideo.videoId ? `https://i.ytimg.com/vi/${activeVideo.videoId}/mqdefault.jpg` : "/icon-cover.png");
+                    if (isPassive || !activeToastVideo) return null;
+                    const thumb = activeToastVideo.thumbnail || (activeToastVideo.videoId ? `https://i.ytimg.com/vi/${activeToastVideo.videoId}/mqdefault.jpg` : "/icon-cover.png");
 
                     return (
-                        <div className={`absolute top-4 left-1/2 -translate-x-1/2 z-[60] transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${showToast ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-8 scale-90 pointer-events-none'}`}>
-                            <div className="flex items-center gap-3 bg-black/85 backdrop-blur-2xl border border-white/10 rounded-full py-2 px-3 pl-2 shadow-2xl ring-1 ring-white/5 min-w-[240px] max-w-[90vw]">
-                                {/* Thumbnail (Circular) */}
-                                <div className="w-9 h-9 rounded-full overflow-hidden border border-white/10 shadow-inner shrink-0 relative bg-stone-800">
+                        <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[110] transition-all duration-[600ms] ease-[cubic-bezier(0.23,1,0.32,1)] ${showToast ? 'opacity-100 translate-y-0 scale-100 blur-0' : 'opacity-0 -translate-y-12 scale-[0.8] pointer-events-none blur-sm'}`}>
+                            <div className="flex items-center gap-3 bg-black/90 backdrop-blur-2xl border border-white/20 rounded-full py-2 px-3 pl-2 shadow-2xl ring-1 ring-white/10 min-w-[260px] max-w-[90vw]">
+                                {/* Thumbnail (Circular) with Ring */}
+                                <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white/10 shadow-lg shrink-0 relative bg-stone-900 group">
                                     <img
                                         src={thumb}
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                         alt="Cover"
-                                        onError={(e) => {
-                                            const target = e.target as HTMLImageElement;
-                                            if (target) {
-                                                target.style.display = 'none';
-                                            }
-                                        }}
                                     />
                                 </div>
 
                                 {/* Info */}
                                 <div className="flex flex-col min-w-0 flex-1 pr-2">
-                                    <div className="flex items-center justify-between gap-2 overflow-hidden">
-                                        <h3 className="text-[12px] font-black text-white leading-tight truncate">
-                                            {activeVideo.title || "Unknown Title"}
+                                    <div className="flex items-center justify-between gap-3 overflow-hidden">
+                                        <h3 className="text-[13px] font-black text-white leading-tight truncate">
+                                            {activeToastVideo.title || "Unknown Title"}
                                         </h3>
-                                        <span className={`text-[8px] font-black uppercase tracking-tighter shrink-0 px-1.5 py-0.5 rounded-full ${toastType === 'upnext' ? 'bg-amber-500 text-black' : 'bg-primary text-white'}`}>
+                                        <span className={`text-[9px] font-black uppercase tracking-tighter shrink-0 px-2 py-0.5 rounded-full shadow-sm ${toastType === 'upnext' ? 'bg-amber-500 text-black' : 'bg-primary text-white'}`}>
                                             {toastType === 'upnext' ? 'ถัดไป' : 'กำลังเล่น'}
                                         </span>
                                     </div>
-                                    <p className="text-[10px] font-bold text-white/40 truncate mt-0.5">
-                                        {activeVideo.author || "Unknown"}
+                                    <p className="text-[11px] font-bold text-white/50 truncate mt-1">
+                                        {activeToastVideo.author || "Unknown"}
                                     </p>
                                 </div>
                             </div>

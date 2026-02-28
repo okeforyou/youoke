@@ -1,4 +1,5 @@
 import React, { ReactNode, useState, useEffect, useRef, useCallback } from 'react';
+import Head from 'next/head';
 import dynamic from 'next/dynamic';
 import clsx from 'clsx';
 import { Menu, Search, ListMusic, Home, X, Monitor, MessageCircle, Shield, Key, Smartphone, Flame, Library, Mic, Music, ChevronDown, ChevronRight, ChevronLeft, Cast, Disc, LogOut, UserCheck, Settings, Info, PartyPopper, Star, Trash2, EyeOff, User, Maximize } from 'lucide-react'; // V2.28.0-VANISH
@@ -339,7 +340,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
     // ... (Return statement remains mostly same)
 
     return (
-        <div className="flex h-screen w-full bg-white text-text-base overflow-hidden subpixel-antialiased antialiased selection:bg-primary/10">
+        <div className={clsx(
+            "flex h-screen w-full text-text-base overflow-hidden subpixel-antialiased antialiased selection:bg-primary/10 transition-colors duration-500",
+            layoutMode === 'fullscreen' ? "bg-black" : "bg-white"
+        )}>
+            <Head>
+                <meta name="theme-color" content={layoutMode === 'fullscreen' ? '#000000' : '#ef4444'} />
+            </Head>
             {/* Left Sidebar (Premium White) - Extracted & Memoized */}
             <Sidebar />
 
