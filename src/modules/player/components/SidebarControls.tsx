@@ -40,7 +40,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
     const { setCastModalOpen } = useUIStore();
     const { isConnected } = useCast();
 
-    const isAnyCastOn = castMode !== 'none' || isConnected;
+    const isAnyCastOn = (castMode !== 'none' && castMode !== undefined) || isConnected;
 
     const controlItems = [
         {
@@ -100,7 +100,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                     item.active ? (item.label === "ยกเลิก" ? "text-white" : "text-primary fill-primary/20") : "text-primary"
                                 )}
                             />
-                            {item.label === "ยกเลิก" && (
+                            {item.label === "ยกเลิก" && isConnected && (
                                 <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse border-2 border-white shadow-sm"></span>
                             )}
                         </div>

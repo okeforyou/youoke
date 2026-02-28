@@ -331,7 +331,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     // ... (Return statement remains mostly same)
 
     return (
-        <div className="flex h-screen w-full bg-white text-text-base overflow-hidden">
+        <div className="flex h-screen w-full bg-white text-text-base overflow-hidden subpixel-antialiased antialiased selection:bg-primary/10">
             {/* Left Sidebar (Premium White) - Extracted & Memoized */}
             <Sidebar />
 
@@ -487,57 +487,47 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                     <SidebarControls castMode={castMode} />
 
                                     {/* Separated Search Island */}
-                                    <div className="px-4 pb-4 pt-3 space-y-3">
-                                        {/* Mode Toggle Row - Separated for awareness */}
+                                    <div className="px-4 pb-3 pt-2">
                                         <div className="flex items-center gap-2">
-                                            <button
-                                                onClick={() => setIsKaraoke(false)}
-                                                className={clsx(
-                                                    "flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-[13px] font-black transition-all border",
-                                                    !isKaraoke ? "bg-primary/5 border-primary/20 text-primary shadow-sm ring-1 ring-primary/10" : "bg-gray-50/50 border-gray-100 text-gray-500"
+                                            {/* Prominent Search Input */}
+                                            <div className="flex-1 relative group">
+                                                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                                    <Search className="h-4.5 w-4.5 text-black group-focus-within:text-black transition-colors" />
+                                                </div>
+                                                <DebounceInput
+                                                    minLength={2}
+                                                    debounceTimeout={300}
+                                                    placeholder="ค้นหาเพลง, ศิลปิน..."
+                                                    className="block w-full pl-10 pr-10 h-10 bg-gray-50 border border-gray-100 focus:border-black focus:bg-white rounded-xl text-[14px] font-bold text-black placeholder-gray-400 focus:outline-none transition-all shadow-sm"
+                                                    value={searchTerm}
+                                                    onChange={(e) => {
+                                                        router.replace({
+                                                            pathname: '/',
+                                                            query: { ...router.query, search: e.target.value }
+                                                        }, undefined, { shallow: true });
+                                                    }}
+                                                />
+                                                {searchTerm && (
+                                                    <button onClick={() => {
+                                                        const { search, ...rest } = router.query;
+                                                        router.replace({ pathname: '/', query: rest }, undefined, { shallow: true });
+                                                    }} className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-red-500 transition-colors">
+                                                        <X className="h-4 w-4" />
+                                                    </button>
                                                 )}
-                                            >
-                                                <Music size={14} className={!isKaraoke ? "fill-current" : ""} />
-                                                <span>โหมดเพลง</span>
-                                            </button>
-                                            <button
-                                                onClick={() => setIsKaraoke(true)}
-                                                className={clsx(
-                                                    "flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-[13px] font-black transition-all border",
-                                                    isKaraoke ? "bg-primary/5 border-primary/20 text-primary shadow-sm ring-1 ring-primary/10" : "bg-gray-50/50 border-gray-100 text-gray-500"
-                                                )}
-                                            >
-                                                <Mic size={14} className={isKaraoke ? "fill-current" : ""} />
-                                                <span>คาราโอเกะ</span>
-                                            </button>
-                                        </div>
-
-                                        {/* Prominent Search Input */}
-                                        <div className="relative group">
-                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                                <Search className="h-5 w-5 text-gray-400 group-focus-within:text-primary transition-colors" />
                                             </div>
-                                            <DebounceInput
-                                                minLength={2}
-                                                debounceTimeout={300}
-                                                placeholder="ค้นหาชื่อเพลง หรือ ศิลปิน..."
-                                                className="block w-full pl-12 pr-12 h-12 bg-gray-100/80 border border-transparent focus:border-primary/20 focus:bg-white rounded-2xl text-[15px] font-bold text-black placeholder-gray-400 focus:outline-none transition-all shadow-inner"
-                                                value={searchTerm}
-                                                onChange={(e) => {
-                                                    router.replace({
-                                                        pathname: '/',
-                                                        query: { ...router.query, search: e.target.value }
-                                                    }, undefined, { shallow: true });
-                                                }}
-                                            />
-                                            {searchTerm && (
-                                                <button onClick={() => {
-                                                    const { search, ...rest } = router.query;
-                                                    router.replace({ pathname: '/', query: rest }, undefined, { shallow: true });
-                                                }} className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-red-500 transition-colors">
-                                                    <X className="h-5 w-5" />
-                                                </button>
-                                            )}
+
+                                            {/* Mode Toggle (Song / Karaoke) on the Right */}
+                                            <button
+                                                onClick={() => setIsKaraoke(!isKaraoke)}
+                                                className={clsx(
+                                                    "w-10 h-10 rounded-xl flex items-center justify-center transition-all border",
+                                                    isKaraoke ? "bg-primary/5 border-primary/20 text-primary shadow-sm" : "bg-gray-50 border-gray-100 text-gray-400"
+                                                )}
+                                                title={isKaraoke ? 'โหมดคาราโอเกะ' : 'โหมดปกติ'}
+                                            >
+                                                {isKaraoke ? <Mic size={18} /> : <Music size={18} />}
+                                            </button>
                                         </div>
                                     </div>
                                 </div>

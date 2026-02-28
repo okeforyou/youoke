@@ -7,12 +7,13 @@ import { useShallow } from 'zustand/react/shallow';
 import { useRouter } from 'next/router';
 
 export const MobileBottomNav = () => {
-    const { activeIndex, setActiveIndex, setSearchTerm, queue } = usePlayerStore(
+    const { activeIndex, setActiveIndex, setSearchTerm, queue, currentIndex } = usePlayerStore(
         useShallow(state => ({
             activeIndex: state.activeIndex,
             setActiveIndex: state.setActiveIndex,
             setSearchTerm: state.setSearchTerm,
-            queue: state.queue
+            queue: state.queue,
+            currentIndex: state.currentIndex
         }))
     );
     const { setPlayerHidden, setQueueOpen, isQueueOpen, isPlayerHidden } = useUIStore();
@@ -45,7 +46,7 @@ export const MobileBottomNav = () => {
     };
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-[60] pb-[env(safe-area-inset-bottom)] lg:hidden">
+        <div className="fixed bottom-0 left-0 right-0 z-[60] pb-[env(safe-area-inset-bottom)] lg:hidden subpixel-antialiased antialiased">
             {/* Glass Background */}
             <div className="absolute inset-0 bg-[#f4f4f5]/95 backdrop-blur-xl border-t border-gray-200/50" />
 
@@ -71,9 +72,9 @@ export const MobileBottomNav = () => {
                                     <div className="absolute inset-0 bg-primary/10 blur-lg" />
                                 )}
                                 {/* Queue Badge */}
-                                {item.id === 5 && queue.length > 0 && (
+                                {item.id === 5 && (queue.length - (currentIndex + 1)) > 0 && (
                                     <div className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold h-4 min-w-[16px] px-1 rounded-full flex items-center justify-center border border-white shadow-sm">
-                                        {queue.length}
+                                        {queue.length - (currentIndex + 1)}
                                     </div>
                                 )}
                             </div>
