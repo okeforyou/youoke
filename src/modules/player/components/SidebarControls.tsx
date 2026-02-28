@@ -81,8 +81,8 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
     return (
         <div className="shrink-0 select-none bg-white">
 
-            {/* Horizontal Controls Row - Compact & Tinted */}
-            <div className="flex items-center justify-between px-2 py-2 rounded-2xl bg-gray-50/80 border border-gray-100" style={{ backgroundColor: '#f8fafc' }}>
+            {/* Horizontal Controls Row - Compact & Defined Tint */}
+            <div className="flex items-center justify-between px-2 py-2 rounded-2xl bg-slate-100 border border-slate-200 shadow-sm" style={{ backgroundColor: '#f1f5f9' }}>
                 {controlItems.map((item, index) => (
                     <button
                         key={index}

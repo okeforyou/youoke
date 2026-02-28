@@ -318,8 +318,16 @@ export default function MainLayout({ children }: MainLayoutProps) {
     }, []);
 
     // Auto-open/close Queue (and Player) based on contents
+    const isFirstLoad = useRef(true);
     const prevQueueLen = useRef(0);
     useEffect(() => {
+        // Skip auto-open on initial mount if queue exists (avoid starting on queue page)
+        if (isFirstLoad.current) {
+            isFirstLoad.current = false;
+            prevQueueLen.current = queue.length;
+            return;
+        }
+
         if (prevQueueLen.current === 0 && queue.length > 0) {
             useUIStore.getState().setQueueOpen(true);
         } else if (queue.length === 0) {
@@ -489,17 +497,17 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                         <SidebarControls castMode={castMode} />
                                     </div>
 
-                                    {/* Compact Integrated Row: Search + Outside Switch */}
+                                    {/* Prominent Row: Larger Search + Outside Switch */}
                                     <div className="px-3">
-                                        <div className="flex items-center gap-2">
-                                            {/* Search Input Box */}
-                                            <div className="flex-1 relative flex items-center bg-gray-50 border border-gray-100 rounded-xl px-3 h-9 transition-all focus-within:bg-white focus-within:border-primary/20 focus-within:ring-1 focus-within:ring-primary/5">
-                                                <Search className="h-4 w-4 text-gray-400 shrink-0" />
+                                        <div className="flex items-center gap-2.5">
+                                            {/* Search Input Box - Height increased for prominence */}
+                                            <div className="flex-1 relative flex items-center bg-gray-50 border border-gray-200 rounded-2xl px-4 h-11 transition-all focus-within:bg-white focus-within:border-black/20 focus-within:ring-2 focus-within:ring-black/5 shadow-sm">
+                                                <Search className="h-4.5 w-4.5 text-gray-400 shrink-0" />
                                                 <DebounceInput
                                                     minLength={2}
                                                     debounceTimeout={300}
-                                                    placeholder="ค้นหาเพลง, ศิลปิน..."
-                                                    className="w-full bg-transparent pl-2.5 pr-2 text-[14px] font-bold text-black placeholder-gray-400 focus:outline-none"
+                                                    placeholder="ค้นหาเพลง หรือ ศิลปิน..."
+                                                    className="w-full bg-transparent pl-3 pr-2 text-[15px] font-bold text-black placeholder-gray-400 focus:outline-none"
                                                     value={searchTerm}
                                                     onChange={(e) => {
                                                         router.replace({
@@ -512,31 +520,31 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                     <button onClick={() => {
                                                         const { search, ...rest } = router.query;
                                                         router.replace({ pathname: '/', query: rest }, undefined, { shallow: true });
-                                                    }} className="text-gray-400 ml-1">
-                                                        <X className="h-4 w-4" />
+                                                    }} className="text-gray-400 ml-1.5 p-1 rounded-full hover:bg-gray-100">
+                                                        <X className="h-4.5 w-4.5" />
                                                     </button>
                                                 )}
                                             </div>
 
-                                            {/* Outside Mode Switch (Icon Only Segmented) */}
-                                            <div className="flex bg-gray-100 p-0.5 rounded-xl border border-gray-200 shadow-sm shrink-0">
+                                            {/* Outside Mode Switch - Consistent Height */}
+                                            <div className="flex bg-gray-100 p-1 rounded-2xl border border-gray-200 shadow-inner shrink-0 h-11 items-center">
                                                 <button
                                                     onClick={() => setIsKaraoke(false)}
                                                     className={clsx(
-                                                        "w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-200",
-                                                        !isKaraoke ? "bg-white text-primary shadow-sm scale-[1.05]" : "text-gray-400 hover:text-gray-600"
+                                                        "w-9 h-9 flex items-center justify-center rounded-xl transition-all duration-300",
+                                                        !isKaraoke ? "bg-white text-primary shadow-md scale-[1.1] rotate-0" : "text-gray-400 hover:text-gray-600 scale-100"
                                                     )}
                                                 >
-                                                    <Music size={15} className={!isKaraoke ? "fill-primary/10" : ""} />
+                                                    <Music size={16} className={!isKaraoke ? "fill-primary/5" : ""} />
                                                 </button>
                                                 <button
                                                     onClick={() => setIsKaraoke(true)}
                                                     className={clsx(
-                                                        "w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-200",
-                                                        isKaraoke ? "bg-white text-primary shadow-sm scale-[1.05]" : "text-gray-400 hover:text-gray-600"
+                                                        "w-9 h-9 flex items-center justify-center rounded-xl transition-all duration-300",
+                                                        isKaraoke ? "bg-white text-primary shadow-md scale-[1.1] rotate-0" : "text-gray-400 hover:text-gray-600 scale-100"
                                                     )}
                                                 >
-                                                    <Mic size={15} className={isKaraoke ? "fill-primary/10" : ""} />
+                                                    <Mic size={16} className={isKaraoke ? "fill-primary/5" : ""} />
                                                 </button>
                                             </div>
                                         </div>
