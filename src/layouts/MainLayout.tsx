@@ -491,11 +491,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             </div>
                             {/* Mobile Only Search & Controls Wrapper */}
                             {layoutMode !== 'fullscreen' && (
-                                <div className="lg:hidden flex flex-col pt-2 pb-3 bg-white border-b border-gray-100 shadow-sm relative z-20">
-                                    {/* Small & Tinted Control Section */}
-                                    <div className="px-3 pb-2">
-                                        <SidebarControls castMode={castMode} />
-                                    </div>
+                                <div className="lg:hidden flex flex-col pb-3 bg-white border-b border-gray-100 shadow-sm relative z-20">
+                                    {/* Seamless Control Section matching Footer style */}
+                                    <SidebarControls castMode={castMode} />
 
                                     {/* Prominent Row: Larger Search + Outside Switch */}
                                     <div className="px-3">

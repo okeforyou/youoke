@@ -74,30 +74,33 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             label: isAnyCastOn ? "ยกเลิก" : "CAST",
             onClick: () => setCastModalOpen(true),
             active: isAnyCastOn,
-            color: isAnyCastOn ? "text-red-500" : "text-primary"
+            color: isAnyCastOn ? "text-red-500" : "text-black"
         }
     ];
 
     return (
-        <div className="shrink-0 select-none bg-white">
+        <div className="shrink-0 select-none relative">
+            {/* Glass Background matching Footer */}
+            <div className="absolute inset-0 bg-[#f4f4f5]/95 backdrop-blur-xl border-b border-gray-200/50" />
 
-            {/* Horizontal Controls Row - Compact & Defined Tint */}
-            <div className="flex items-center justify-between px-2 py-2 rounded-2xl bg-slate-100 border border-slate-200 shadow-sm" style={{ backgroundColor: '#f1f5f9' }}>
+            {/* Horizontal Controls Row - Full Width matching Footer style */}
+            <div className="relative flex items-center justify-between px-1 h-[72px]">
                 {controlItems.map((item, index) => (
                     <button
                         key={index}
                         onClick={item.onClick}
-                        className="flex flex-col items-center justify-center flex-1 gap-0.5 group transition-all active:scale-95"
+                        className="flex flex-col items-center justify-center flex-1 gap-1 group transition-all active:scale-95"
                     >
                         <div className={clsx(
-                            "p-1 rounded-lg transition-all relative",
-                            item.active ? (item.label === "ยกเลิก" ? "bg-red-500 text-white" : "bg-red-50") : ""
+                            "p-1.5 rounded-xl transition-all duration-300 relative",
+                            item.active ? (item.label === "ยกเลิก" ? "bg-red-500 text-white" : "text-primary bg-primary/10") : "text-black group-hover:text-black"
                         )}>
                             <item.icon
-                                size={19}
+                                size={22}
+                                strokeWidth={item.active ? 2.5 : 2}
                                 className={clsx(
-                                    "transition-colors",
-                                    item.active ? (item.label === "ยกเลิก" ? "text-white" : "text-primary fill-primary/20") : "text-primary"
+                                    "transition-all duration-300",
+                                    item.active ? (item.label === "ยกเลิก" ? "text-white" : "text-primary scale-110") : "text-black"
                                 )}
                             />
                             {item.label === "ยกเลิก" && isConnected && (
@@ -105,8 +108,8 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                             )}
                         </div>
                         <span className={clsx(
-                            "text-[8px] font-black uppercase tracking-tighter transition-colors",
-                            item.active && item.label === "ยกเลิก" ? "text-red-600" : "text-primary/70"
+                            "text-[10px] font-medium transition-colors duration-200",
+                            item.active && item.label === "ยกเลิก" ? "text-red-600 font-bold" : (item.active ? "text-primary font-bold" : "text-black")
                         )}>
                             {item.label}
                         </span>
