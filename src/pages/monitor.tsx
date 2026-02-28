@@ -48,30 +48,28 @@ export default function MonitorPage() {
   useEffect(() => {
     if (!router.isReady) return;
 
-    // 🧹 Selective Cleanup: Only reset if the room code is actually changing/new
+    // 🧹 ALWAYS Reset Store on Monitor Mount to prevent "stale" values (remembers old songs)
+    usePlayerStore.setState({
+      currentTime: 0,
+      duration: 0,
+      isPlaying: false,
+      currentSource: null,
+      currentVideo: null,
+      queue: []
+    });
+
     const roomFromQuery = router.query.room as string;
-    const currentCachedRoom = typeof window !== 'undefined' ? sessionStorage.getItem('youoke_room_code') : '';
 
-    if (roomFromQuery && roomFromQuery !== currentCachedRoom) {
-      usePlayerStore.setState({
-        currentTime: 0,
-        duration: 0,
-        isPlaying: false,
-        currentSource: null,
-        currentVideo: null,
-        queue: []
-      });
-      console.log('🧹 Monitor: Room changed, performing state reset');
-    }
-
-    // Room Code Logic: Query -> Session -> New
-    let localCode = roomFromQuery || (typeof window !== 'undefined' ? sessionStorage.getItem('youoke_room_code') : '') || '';
+    // Room Code Logic: Query -> New (No session fallback for a fresh experience)
+    let localCode = roomFromQuery || '';
 
     if (!localCode) {
       localCode = Math.floor(1000 + Math.random() * 9000).toString();
     }
 
     setRoomCode(localCode);
+    // Still update session storage for the current tab's consistency if needed by other components, 
+    // but the logic above ensures we start fresh if no room is in query.
     if (typeof window !== 'undefined') sessionStorage.setItem('youoke_room_code', localCode);
 
     // Init Cast Receiver
@@ -83,7 +81,7 @@ export default function MonitorPage() {
     initCast();
 
     // Give store time to propagate clear before allowing render
-    setTimeout(() => setMounted(true), 10);
+    setMounted(true);
 
     const clockTimer = setInterval(() => setTime(new Date()), 60000);
     return () => {
@@ -201,8 +199,8 @@ export default function MonitorPage() {
         </div>
       </div>
 
-      {/* 2. Interaction & Idle Layer (Combined for simplicity) */}
-      {!hasInteracted && (
+      {/* 2. Interaction Layer (Shown only when media is active but not yet confirmed) */}
+      {!hasInteracted && !isIdle && (
         <div
           className="absolute inset-0 z-[100] bg-black/80 backdrop-blur-xl flex items-center justify-center p-6 animate-in fade-in"
           onClick={handleInteraction}
@@ -212,10 +210,10 @@ export default function MonitorPage() {
               <TvIcon className="w-14 h-14 text-white" />
             </div>
             <div>
-              <h2 className="text-3xl font-black mb-2">พร้อมเชื่อมต่อ</h2>
-              <p className="text-lg text-white/50">กรุณากดปุ่มเพื่อเริ่มรับชมภาพและเสียง</p>
+              <h2 className="text-3xl font-black mb-2">เข้าสู่ระบบรับภาพ</h2>
+              <p className="text-lg text-white/50">กรุณากดปุ่มเพื่อเริ่มรับชมภาพและเสียงจากหน้าจอหลัก</p>
             </div>
-            <div className="btn btn-primary btn-lg rounded-2xl w-full">เริ่มการทำงาน (OK)</div>
+            <div className="btn btn-primary btn-lg rounded-2xl w-full select-none">เริ่มการทำงาน (OK)</div>
           </div>
         </div>
       )}
@@ -229,12 +227,12 @@ export default function MonitorPage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent opacity-50" />
 
         <div className="relative z-10 h-full flex flex-col items-center justify-center text-center p-12">
-          <div className="mb-12 flex flex-col items-center">
+          <div className="mb-8 flex flex-col items-center">
             <div className="w-20 h-20 bg-primary/20 rounded-3xl flex items-center justify-center mb-6 border border-primary/20 shadow-[0_0_50px_rgba(var(--primary-rgb),0.1)]">
               <TvIcon className="w-10 h-10 text-primary" />
             </div>
             <h1 className="text-4xl font-black text-white tracking-tight mb-2">Wireless <span className="text-primary">Monitor</span></h1>
-            <p className="text-white/40 font-medium">พร้อมรับภาพและเสียงจากหน้าจอหลักของคุณ</p>
+            <p className="text-white/40 font-medium leading-relaxed">พร้อมรับภาพและเสียงจากหน้าจอหลักของคุณ</p>
           </div>
 
           <div className="bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[3rem] p-12 shadow-2xl flex flex-col items-center gap-8 group hover:border-primary/30 transition-all duration-500">
@@ -246,15 +244,24 @@ export default function MonitorPage() {
             </div>
 
             <div className="max-w-xs space-y-4 pt-8 border-t border-white/5">
-              <p className="text-sm text-white/60 leading-relaxed">
-                เปิด Dashboard บนคอมพิวเตอร์ <br />เลือก <span className="text-white font-bold">"Wireless Cast"</span> และกรอกรหัสนี้
-              </p>
+              {!hasInteracted ? (
+                <button
+                  onClick={handleInteraction}
+                  className="btn btn-primary btn-lg rounded-2xl w-full text-lg shadow-xl shadow-primary/20 transform hover:scale-105 active:scale-95 space-y-0"
+                >
+                  เริ่มรับภาพและเสียง (START)
+                </button>
+              ) : (
+                <p className="text-sm text-white/60 leading-relaxed animate-pulse">
+                  เปิด Dashboard บนคอมพิวเตอร์ <br />เลือก <span className="text-white font-bold">"Wireless Cast"</span> และกรอกรหัสนี้
+                </p>
+              )}
             </div>
           </div>
 
           <div className="mt-16 text-white/20 text-[10px] uppercase font-black tracking-[0.5em] flex items-center gap-4">
             <span className="w-12 h-px bg-white/10"></span>
-            ready to connect
+            {hasInteracted ? 'waiting for connection' : 'ready to start'}
             <span className="w-12 h-px bg-white/10"></span>
           </div>
         </div>
