@@ -115,17 +115,21 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
             }
         };
 
-        // SYNC BODY BACKGROUND for "Red Line" issue (Matches Theme Color / Safe area)
+        // SYNC BODY BACKGROUND & THEME COLOR for "Red Line" issue
+        const themeMeta = document.querySelector('meta[name="theme-color"]');
         if (layoutMode === 'fullscreen') {
             document.body.style.backgroundColor = 'black';
+            if (themeMeta) themeMeta.setAttribute('content', '#000000');
         } else {
             document.body.style.backgroundColor = '';
+            if (themeMeta) themeMeta.setAttribute('content', '#ef4444');
         }
 
         document.addEventListener('fullscreenchange', handleFullscreenChange);
         document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
         return () => {
             document.body.style.backgroundColor = '';
+            if (themeMeta) themeMeta.setAttribute('content', '#ef4444');
             document.removeEventListener('fullscreenchange', handleFullscreenChange);
             document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
         };
@@ -500,7 +504,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                 )
             }
 
-            {/* Added By / Up Next Toast (Top-Right - Sharp V2 Metadata-Rich) */}
+            {/* 🏝️ iOS DYNAMIC ISLAND STYLE NOTIFICATION (Top-Center) */}
             {
                 (() => {
                     if (isPassive || !showToast) return null;
@@ -510,10 +514,10 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                     const thumb = activeVideo.thumbnail || (activeVideo.videoId ? `https://i.ytimg.com/vi/${activeVideo.videoId}/mqdefault.jpg` : "/icon-cover.png");
 
                     return (
-                        <div className={`absolute top-6 right-6 z-[60] transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] ${showToast ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4 pointer-events-none'}`}>
-                            <div className="flex items-center gap-3 bg-stone-900/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-2 pr-4 shadow-2xl ring-1 ring-white/5 w-full max-w-[280px]">
-                                {/* Thumbnail */}
-                                <div className="w-12 h-12 rounded-xl overflow-hidden border border-white/5 shadow-inner shrink-0 relative bg-black/40">
+                        <div className={`absolute top-4 left-1/2 -translate-x-1/2 z-[60] transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${showToast ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-8 scale-90 pointer-events-none'}`}>
+                            <div className="flex items-center gap-3 bg-black/85 backdrop-blur-2xl border border-white/10 rounded-full py-2 px-3 pl-2 shadow-2xl ring-1 ring-white/5 min-w-[240px] max-w-[90vw]">
+                                {/* Thumbnail (Circular) */}
+                                <div className="w-9 h-9 rounded-full overflow-hidden border border-white/10 shadow-inner shrink-0 relative bg-stone-800">
                                     <img
                                         src={thumb}
                                         className="w-full h-full object-cover"
@@ -528,16 +532,16 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                                 </div>
 
                                 {/* Info */}
-                                <div className="flex flex-col min-w-0 flex-1">
-                                    <div className="flex items-center gap-2 mb-0.5">
-                                        <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded ${toastType === 'upnext' ? 'bg-amber-500 text-black' : 'bg-primary text-white'}`}>
+                                <div className="flex flex-col min-w-0 flex-1 pr-2">
+                                    <div className="flex items-center justify-between gap-2 overflow-hidden">
+                                        <h3 className="text-[12px] font-black text-white leading-tight truncate">
+                                            {activeVideo.title || "Unknown Title"}
+                                        </h3>
+                                        <span className={`text-[8px] font-black uppercase tracking-tighter shrink-0 px-1.5 py-0.5 rounded-full ${toastType === 'upnext' ? 'bg-amber-500 text-black' : 'bg-primary text-white'}`}>
                                             {toastType === 'upnext' ? 'ถัดไป' : 'กำลังเล่น'}
                                         </span>
                                     </div>
-                                    <h3 className="text-[13px] font-black text-white leading-tight truncate">
-                                        {activeVideo.title || "Unknown Title"}
-                                    </h3>
-                                    <p className="text-[11px] font-bold text-white/50 truncate">
+                                    <p className="text-[10px] font-bold text-white/40 truncate mt-0.5">
                                         {activeVideo.author || "Unknown"}
                                     </p>
                                 </div>
