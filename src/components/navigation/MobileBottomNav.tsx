@@ -59,7 +59,7 @@ export const MobileBottomNav = () => {
                         >
                             <div className={clsx(
                                 "p-1.5 rounded-xl transition-all duration-300 relative",
-                                isActive ? "text-primary bg-primary/10" : "text-gray-400 group-hover:text-gray-600"
+                                isActive ? "text-primary bg-primary/10" : "text-black group-hover:text-black"
                             )}>
                                 <item.icon
                                     size={24}
@@ -78,7 +78,7 @@ export const MobileBottomNav = () => {
                             </div>
                             <span className={clsx(
                                 "text-[10px] font-medium transition-colors duration-200",
-                                isActive ? "text-primary font-bold" : "text-gray-400"
+                                isActive ? "text-primary font-bold" : "text-black"
                             )}>
                                 {item.label}
                             </span>

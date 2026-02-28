@@ -513,7 +513,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 onClick={() => setIsKaraoke(false)}
                                 className={clsx(
                                     "relative flex-1 flex items-center justify-center gap-1.5 h-full rounded-xl text-[11px] font-black tracking-tight uppercase transition-colors z-10",
-                                    !isKaraoke ? "text-primary" : "text-gray-400 hover:text-gray-600"
+                                    !isKaraoke ? "text-primary" : "text-black hover:text-black/80"
                                 )}
                             >
                                 <Music className="w-3.5 h-3.5" />
@@ -525,7 +525,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 onClick={() => setIsKaraoke(true)}
                                 className={clsx(
                                     "relative flex-1 flex items-center justify-center gap-1.5 h-full rounded-xl text-[11px] font-black tracking-tight uppercase transition-colors z-10",
-                                    isKaraoke ? "text-primary" : "text-gray-400 hover:text-gray-600"
+                                    isKaraoke ? "text-primary" : "text-black hover:text-black/80"
                                 )}
                             >
                                 <Mic className="w-3.5 h-3.5" />
@@ -539,10 +539,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             onClick={() => {
                                 setShowQRCode(true);
                             }}
-                            className="h-11 w-11 rounded-2xl p-0 flex items-center justify-center bg-gray-50 hover:bg-gray-100 border border-gray-100 text-gray-400 hover:text-primary transition-all relative group"
+                            className="h-11 w-11 rounded-2xl p-0 flex items-center justify-center bg-gray-50 hover:bg-gray-100 border border-gray-100 text-black hover:text-primary transition-all relative group shadow-sm"
                             title="เชื่อมต่อรีโมท (Mobile Remote)"
                         >
-                            <Smartphone className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                            <Smartphone className="w-5 h-5 group-hover:scale-110 transition-transform" strokeWidth={2.5} />
                             {/* Connection Status Dot */}
                             {mounted && (
                                 <div className={clsx(

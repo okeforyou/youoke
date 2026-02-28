@@ -49,17 +49,17 @@ export const Sidebar = memo(() => {
             >
                 {/* Main Menu */}
                 <div className="px-4 mb-2 mt-2 text-xs font-black text-black uppercase tracking-wider">เมนูหลัก</div>
-                <button onClick={() => handleNav(1, 'home')} className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-medium duration-300", (router.pathname === '/' && activeIndex === 1) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-gray-900 hover:bg-gray-100/50 hover:text-gray-900")}>
-                    <Home className={clsx("w-[22px] h-[22px]", (router.pathname === '/' && activeIndex === 1) ? "text-white" : "text-gray-700")} /> <span>หน้าหลัก</span>
+                <button onClick={() => handleNav(1, 'home')} className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold duration-300", (router.pathname === '/' && activeIndex === 1) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-black hover:bg-gray-100/50 hover:text-black")}>
+                    <Home className={clsx("w-[22px] h-[22px]", (router.pathname === '/' && activeIndex === 1) ? "text-white" : "text-black")} /> <span>หน้าหลัก</span>
                 </button>
-                <button onClick={() => handleNav(2, 'rec')} className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-medium duration-300 text-sm", (router.pathname === '/' && activeIndex === 2) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-gray-900 hover:bg-gray-100/50 hover:text-gray-900")}>
-                    <Star className={clsx("w-[22px] h-[22px]", (router.pathname === '/' && activeIndex === 2) ? "text-white" : "text-gray-700")} /> <span>แนะนำ</span>
+                <button onClick={() => handleNav(2, 'rec')} className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold duration-300 text-sm", (router.pathname === '/' && activeIndex === 2) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-black hover:bg-gray-100/50 hover:text-black")}>
+                    <Star className={clsx("w-[22px] h-[22px]", (router.pathname === '/' && activeIndex === 2) ? "text-white" : "text-black")} /> <span>แนะนำ</span>
                 </button>
-                <button onClick={() => handleNav(3, 'trending')} className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-medium duration-300 text-sm", (router.pathname === '/' && activeIndex === 3) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-gray-900 hover:bg-gray-100/50 hover:text-gray-900")}>
-                    <Flame className={clsx("w-[22px] h-[22px]", (router.pathname === '/' && activeIndex === 3) ? "text-white" : "text-gray-700")} /> <span>มาแรง</span>
+                <button onClick={() => handleNav(3, 'trending')} className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold duration-300 text-sm", (router.pathname === '/' && activeIndex === 3) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-black hover:bg-gray-100/50 hover:text-black")}>
+                    <Flame className={clsx("w-[22px] h-[22px]", (router.pathname === '/' && activeIndex === 3) ? "text-white" : "text-black")} /> <span>มาแรง</span>
                 </button>
-                <button onClick={() => handleNav(4, 'library')} className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-medium duration-300 text-sm", (router.pathname === '/' && activeIndex === 4) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-gray-900 hover:bg-gray-100/50 hover:text-gray-900")}>
-                    <Library className={clsx("w-[22px] h-[22px]", (router.pathname === '/' && activeIndex === 4) ? "text-white" : "text-gray-700")} /> <span>เพลย์ลิสต์</span>
+                <button onClick={() => handleNav(4, 'library')} className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold duration-300 text-sm", (router.pathname === '/' && activeIndex === 4) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-black hover:bg-gray-100/50 hover:text-black")}>
+                    <Library className={clsx("w-[22px] h-[22px]", (router.pathname === '/' && activeIndex === 4) ? "text-white" : "text-black")} /> <span>เพลย์ลิสต์</span>
                 </button>
 
                 {/*
@@ -75,16 +75,16 @@ export const Sidebar = memo(() => {
                 */}
 
                 <div className="mt-8 px-4 mb-2 text-xs font-black text-black uppercase tracking-wider">ช่วยเหลือ</div>
-                <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-2xl text-gray-900 hover:bg-gray-100/50 hover:text-gray-900 transition-all font-medium text-sm duration-300">
-                    <MessageCircle className="w-[22px] h-[22px] text-gray-700" /> <span>ติดต่อ LINE</span>
+                <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-2xl text-black hover:bg-gray-100/50 hover:text-black transition-all font-bold text-sm duration-300">
+                    <MessageCircle className="w-[22px] h-[22px] text-black" /> <span>ติดต่อ LINE</span>
                 </a>
 
                 {/* Admin Menu (Admin & Owner) */}
                 {(user?.role === 'admin' || user?.role === 'owner') && (
                     <div className="mt-8">
                         <div className="px-4 mb-2 text-xs font-black text-black uppercase tracking-wider">ส่วนผู้ดูแล</div>
-                        <Link href="/admin" className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-medium duration-300 text-sm", router.pathname.startsWith('/admin') ? "bg-red-50 text-red-600 shadow-sm translate-x-1" : "text-gray-900 hover:bg-gray-100/50 hover:text-gray-900")}>
-                            <Shield className={clsx("w-[22px] h-[22px]", router.pathname.startsWith('/admin') ? "text-red-600" : "text-gray-700")} /> <span>ระบบจัดการ</span>
+                        <Link href="/admin" className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold duration-300 text-sm", router.pathname.startsWith('/admin') ? "bg-red-50 text-red-600 shadow-sm translate-x-1" : "text-black hover:bg-gray-100/50 hover:text-black")}>
+                            <Shield className={clsx("w-[22px] h-[22px]", router.pathname.startsWith('/admin') ? "text-red-600" : "text-black")} /> <span>ระบบจัดการ</span>
                         </Link>
                     </div>
                 )}
@@ -104,7 +104,7 @@ export const Sidebar = memo(() => {
                                 {user.photoURL ? <img src={user.photoURL} className="w-10 h-10 rounded-full border border-gray-100 group-hover:ring-2 ring-primary/20 transition-all shadow-sm" alt="" /> : <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">{user.email?.[0]?.toUpperCase() || 'G'}</div>}
                                 <div className="overflow-hidden">
                                     <div className="flex flex-col">
-                                        <span className="text-sm font-bold text-gray-900 truncate max-w-[140px]">
+                                        <span className="text-sm font-bold text-black truncate max-w-[140px]">
                                             {user?.displayName || user?.email?.split('@')[0] || 'Guest User'}
                                         </span>
                                         <span className={clsx(
@@ -134,7 +134,7 @@ export const Sidebar = memo(() => {
                                     </div>
                                 </div>
                             </div>
-                            <button onClick={() => { if (confirm('ยืนยันออกจากระบบ?')) { logOut().then(() => router.push('/login')); } }} className="p-2 text-gray-400 hover:bg-red-50 hover:text-red-500 rounded-xl transition-all shrink-0 hover:scale-110" title="ออกจากระบบ"><LogOut className="w-4.5 h-4.5" /></button>
+                            <button onClick={() => { if (confirm('ยืนยันออกจากระบบ?')) { logOut().then(() => router.push('/login')); } }} className="p-2 text-black hover:bg-red-50 hover:text-red-500 rounded-xl transition-all shrink-0 hover:scale-110" title="ออกจากระบบ"><LogOut className="w-4.5 h-4.5" /></button>
                         </div>
                     ) : (
                         <Link href="/login" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white border border-gray-200 text-gray-700 font-bold shadow-sm hover:shadow-md hover:border-primary/20 hover:text-primary transition-all justify-center group">
