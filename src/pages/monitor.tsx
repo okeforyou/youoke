@@ -30,7 +30,7 @@ export default function MonitorPage() {
   const [addedToastItem, setAddedToastItem] = useState<{ title: string, addedBy: any } | null>(null);
 
   // 2. Player Store Hooks
-  const { queue, currentVideo, currentSource, isQueueVisible, fullscreenTrigger, isQrVisible } = usePlayerStore(
+  const { queue, currentVideo, currentSource, isQueueVisible, fullscreenTrigger, isQrVisible, currentIndex } = usePlayerStore(
     useShallow((state) => ({
       queue: state.queue,
       currentVideo: state.currentVideo,
@@ -38,6 +38,7 @@ export default function MonitorPage() {
       isQueueVisible: state.isQueueVisible,
       fullscreenTrigger: state.fullscreenTrigger,
       isQrVisible: state.isQrVisible,
+      currentIndex: state.currentIndex,
     }))
   );
   const setQrVisibility = usePlayerStore(state => state.setQrVisibility);
@@ -80,10 +81,8 @@ export default function MonitorPage() {
     };
     initCast();
 
-    // Give store time to propagate clear before allowing render
-    setMounted(true);
-
     const clockTimer = setInterval(() => setTime(new Date()), 60000);
+
     return () => {
       import('../plugins/cast/services/CastService').then(({ castService }) => castService.cleanup());
       clearInterval(clockTimer);
@@ -205,7 +204,7 @@ export default function MonitorPage() {
           className="absolute inset-0 z-[100] bg-black/80 backdrop-blur-xl flex items-center justify-center p-6 animate-in fade-in"
           onClick={handleInteraction}
         >
-          <div className="bg-zinc-900 border border-white/10 p-12 rounded-[3.5rem] text-center space-y-8 shadow-2xl max-w-md transform active:scale-95 transition-transform">
+          <div className="bg-zinc-900 border border-white/10 p-12 rounded-[2.5rem] text-center space-y-8 shadow-2xl max-w-md transform active:scale-95 transition-transform">
             <div className="w-24 h-24 bg-primary rounded-full flex items-center justify-center mx-auto shadow-2xl">
               <TvIcon className="w-14 h-14 text-white" />
             </div>
@@ -213,7 +212,7 @@ export default function MonitorPage() {
               <h2 className="text-3xl font-black mb-2">เข้าสู่ระบบรับภาพ</h2>
               <p className="text-lg text-white/50">กรุณากดปุ่มเพื่อเริ่มรับชมภาพและเสียงจากหน้าจอหลัก</p>
             </div>
-            <div className="btn btn-primary btn-lg rounded-2xl w-full select-none">เริ่มการทำงาน (OK)</div>
+            <div className="btn btn-primary btn-lg rounded-full w-full select-none font-black uppercase tracking-widest">เริ่มการทำงาน (OK)</div>
           </div>
         </div>
       )}
@@ -269,82 +268,97 @@ export default function MonitorPage() {
 
       {/* 3. Overlays & Toasts */}
 
-      {/* Toast: Now Playing */}
-      <div className={clsx(
-        "absolute bottom-12 left-12 z-30 transform transition-all duration-700",
-        (showInfoToast && !isIdle && !isQueueVisible) ? "translate-y-0 opacity-100" : "translate-y-12 opacity-0"
-      )}>
-        {!isIdle && currentVideo && (
-          <div className="flex items-end gap-6 bg-black/40 backdrop-blur-3xl p-6 rounded-[2.5rem] border border-white/10 shadow-2xl animate-in slide-in-from-bottom-5 duration-700">
-            <div className="w-24 h-24 rounded-2xl shadow-xl overflow-hidden border border-white/10 shrink-0 relative bg-zinc-900">
-              {/* 💿 THUMBNAIL FALLBACK LOGIC */}
-              {(() => {
-                const thumb = currentVideo.thumbnail || (currentVideo.videoId ? `https://i.ytimg.com/vi/${currentVideo.videoId}/mqdefault.jpg` : "/icon-cover.png");
-                return <Image unoptimized src={thumb} fill className="object-cover" alt="Art" />;
-              })()}
-            </div>
-            <div className="pb-2 min-w-0">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="bg-primary px-2 py-0.5 rounded text-[10px] font-black uppercase text-white">กำลังเล่น</span>
-                {currentVideo.addedBy && (
-                  <span className="text-[10px] text-white/50 bg-white/10 px-2 py-0.5 rounded-full">เพิ่มโดย {getAddedByName(currentVideo)}</span>
-                )}
+      {/* 4. DESIGN PORT: Permanent Sidebar from /dual */}
+      {!isIdle && hasInteracted && (
+        <>
+          {/* Sidebar Area (Ported from dual.tsx) */}
+          <div className={clsx(
+            "absolute top-0 right-0 h-full w-80 lg:w-96 z-40 bg-gradient-to-l from-black/90 via-black/80 to-transparent backdrop-blur-md p-8 overflow-y-auto transition-all duration-700",
+            (isQueueVisible || showInfoToast) ? "translate-x-0 opacity-100" : "translate-x-full opacity-0 pointer-events-none"
+          )}>
+            <div className="space-y-8">
+              {/* Header with Clock */}
+              <div className="flex items-center justify-between border-b border-white/10 pb-6">
+                <div>
+                  <h3 className="text-2xl font-black text-white tracking-tighter">YouOke <span className="text-primary">TV</span></h3>
+                  <p className="text-[10px] text-white/30 uppercase font-black tracking-widest mt-1">Room {roomCode}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-black text-white">{time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                  <div className="flex items-center justify-end gap-1.5 mt-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+                    <span className="text-[10px] text-white/40 font-bold uppercase">Live</span>
+                  </div>
+                </div>
               </div>
-              <h2 className="text-3xl font-black text-white truncate max-w-md">{currentVideo.title}</h2>
-              <p className="text-lg text-white/60 font-medium">{currentVideo.author}</p>
-            </div>
-          </div>
-        )}
-      </div>
 
-      {/* Toast: Added to Queue */}
-      <div className={clsx(
-        "absolute top-12 right-12 z-50 transform transition-all duration-500",
-        addedToastItem ? "translate-y-0 opacity-100" : "-translate-y-4 opacity-0"
-      )}>
-        <div className="bg-white/10 backdrop-blur-2xl border border-white/20 p-4 rounded-3xl shadow-2xl flex items-center gap-4 max-w-sm">
-          <div className="bg-green-500 rounded-full p-2 text-white shadow-lg shadow-green-500/30"><ListBulletIcon className="w-6 h-6" /></div>
-          <div className="min-w-0">
-            <h4 className="font-bold text-white truncate text-base">{addedToastItem?.title}</h4>
-            <p className="text-white/50 text-xs">เพิ่มลงคิวแล้ว</p>
-          </div>
-        </div>
-      </div>
+              {/* Now Playing (Dual Style) */}
+              {currentVideo && (
+                <div className="animate-in slide-in-from-right-4 duration-700">
+                  <p className="text-xs text-white/40 mb-3 uppercase font-black tracking-widest">กำลังเล่น</p>
+                  <div className="bg-primary/20 border border-primary/30 rounded-2xl p-5 shadow-xl">
+                    <h2 className="text-lg font-black text-white leading-tight mb-2 line-clamp-2">{currentVideo.title}</h2>
+                    {currentVideo.author && (
+                      <div className="flex items-center gap-2">
+                        <div className="w-1 h-3 bg-primary rounded-full"></div>
+                        <p className="text-sm text-white/60 font-medium truncate">{currentVideo.author}</p>
+                      </div>
+                    )}
+                    {currentVideo.addedBy && (
+                      <p className="mt-4 text-[9px] text-white/30 uppercase font-black tracking-widest border-t border-white/5 pt-3">
+                        Added by {getAddedByName(currentVideo)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
 
-      {/* Queue Drawer */}
-      <div className={clsx(
-        "absolute top-0 right-0 bottom-0 w-[400px] bg-black/40 backdrop-blur-3xl z-40 border-l border-white/10 shadow-2xl transform transition-transform duration-500",
-        isQueueVisible ? "translate-x-0" : "translate-x-full"
-      )}>
-        <div className="p-8 border-b border-white/10 flex items-center justify-between">
-          <h3 className="font-black text-2xl text-white tracking-tight flex items-center gap-3">
-            <ListBulletIcon className="w-6 h-6 text-primary" /> คิวเพลง
-          </h3>
-          <div className="text-right">
-            <p className="text-2xl font-black">{time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-            <p className="text-[8px] text-white/40 uppercase font-black tracking-widest">PIN {roomCode}</p>
-          </div>
-        </div>
-        <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
-          {queue.slice(1).map((v, i) => (
-            <div key={v.uuid || i} className="flex gap-4 p-4 rounded-2xl bg-white/5 border border-white/5">
-              <span className="text-lg font-black text-white/20 w-6">{i + 1}</span>
-              <div className="flex-1 min-w-0">
-                <h4 className="font-bold text-white truncate text-sm">{v.title}</h4>
-                <p className="text-xs text-white/40 truncate">{v.author}</p>
+              {/* Next in Queue (Dual Style) */}
+              {queue.length > currentIndex + 1 && (
+                <div className="animate-in slide-in-from-right-4 duration-700 delay-200">
+                  <p className="text-xs text-white/40 mb-4 uppercase font-black tracking-widest flex items-center justify-between">
+                    <span className="flex items-center gap-2">
+                      <MusicalNoteIcon className="w-4 h-4 text-primary" />
+                      คิวถัดไป
+                    </span>
+                    <span className="bg-white/5 px-2 py-0.5 rounded-md text-[10px]">{queue.length - currentIndex - 1}</span>
+                  </p>
+                  <div className="space-y-3">
+                    {queue.slice(currentIndex + 1, currentIndex + 10).map((video, index) => (
+                      <div key={video.uuid || index} className="group bg-white/5 hover:bg-white/10 rounded-xl p-4 transition-all border border-white/5">
+                        <div className="flex items-start gap-4">
+                          <div className="flex-shrink-0 w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
+                            <span className="text-primary font-black text-xs">{index + 1}</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-sm text-white/90 line-clamp-2 mb-1 group-hover:text-white transition-colors">
+                              {video.title}
+                            </p>
+                            {video.author && <p className="text-xs text-white/40 truncate">{video.author}</p>}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Remote Connect QR (Subtle) */}
+              <div className="pt-8 mt-8 border-t border-white/5">
+                <div className="bg-white/5 rounded-3xl p-4 flex items-center gap-4">
+                  <div className="bg-white p-1.5 rounded-xl shrink-0"><QRCodeSVG value={qrUrl} size={60} /></div>
+                  <div>
+                    <p className="text-[10px] font-black text-white/60 uppercase tracking-widest mb-1">Scan to Remote</p>
+                    <p className="text-primary font-black text-sm">{roomCode}</p>
+                  </div>
+                </div>
               </div>
             </div>
-          ))}
-        </div>
-        <div className="p-6">
-          <div className="bg-primary/10 p-4 rounded-3xl border border-primary/20 flex gap-4 items-center">
-            <div className="bg-white p-2 rounded-xl"><QRCodeSVG value={qrUrl} size={60} /></div>
-            <div><p className="text-[10px] font-black text-primary uppercase mb-1">สแกนเพื่อขอเพลง</p><p className="text-white/60 text-xs">ใช้มือถือเป็นรีโมท</p></div>
           </div>
-        </div>
-      </div>
+        </>
+      )}
 
-      {/* Global QR (Remote Switch) */}
+      {/* 5. QR Overlay (Request Remote) */}
       <div className={clsx(
         "absolute inset-0 z-[60] bg-black/90 backdrop-blur-2xl flex flex-col items-center justify-center transition-all duration-500",
         isQrVisible ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none"
@@ -354,10 +368,10 @@ export default function MonitorPage() {
             <QRCodeSVG value={qrUrl} size={300} level="H" />
           </div>
           <div>
-            <h2 className="text-5xl font-black tracking-tighter mb-2">สแกนเพื่อเชื่อมต่อ</h2>
-            <p className="text-white/40 text-xl">PIN: <span className="text-primary">{roomCode}</span></p>
+            <h2 className="text-5xl font-black tracking-tighter mb-2 text-white">สแกนเพื่อเชื่อมต่อ</h2>
+            <p className="text-white/40 text-xl font-medium">Remote PIN: <span className="text-red-500 font-black">{roomCode}</span></p>
           </div>
-          <button onClick={() => setQrVisibility(false)} className="px-8 py-3 bg-white/5 hover:bg-white/10 rounded-full text-white/60 font-bold transition-all">ยกเลิก</button>
+          <button onClick={() => setQrVisibility(false)} className="px-10 py-4 bg-white/5 hover:bg-white/10 rounded-2xl text-white/60 font-black uppercase tracking-widest border border-white/10 transition-all active:scale-95">ยกเลิก</button>
         </div>
       </div>
 
