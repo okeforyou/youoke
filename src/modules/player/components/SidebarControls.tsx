@@ -92,14 +92,14 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                         className="flex flex-col items-center justify-center flex-1 gap-0 group transition-all active:scale-95"
                     >
                         <div className={clsx(
-                            "p-1.5 rounded-xl transition-all duration-300 relative",
+                            "p-1 rounded-xl transition-all duration-300 relative mb-[-2px]",
                             item.active
-                                ? (item.label === "ยกเลิก" ? "bg-red-500 text-white shadow-md scale-105" : "text-primary bg-white shadow-sm border border-primary/10 scale-105")
+                                ? (item.label === "ยกเลิก" ? "bg-red-500 text-white shadow-md scale-105" : "text-primary bg-white shadow-sm border border-primary/5 scale-105")
                                 : "text-black group-hover:text-black"
                         )}>
                             <item.icon
                                 size={20}
-                                strokeWidth={item.active ? 2 : 1.5}
+                                strokeWidth={item.active ? 1.8 : 1.5}
                                 className={clsx(
                                     "transition-all duration-300",
                                     item.active ? (item.label === "ยกเลิก" ? "text-white" : "text-primary") : "text-black"
@@ -110,7 +110,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                             )}
                         </div>
                         <span className={clsx(
-                            "text-[10px] font-bold transition-colors duration-200 mt-0.5",
+                            "text-[10px] font-bold transition-colors duration-200",
                             item.active && item.label === "ยกเลิก" ? "text-red-600" : (item.active ? "text-primary" : "text-black/50")
                         )}>
                             {item.label}
