@@ -155,6 +155,12 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
 
             // Allow a small delay for the player to settle before commanding play/seek
             setTimeout(() => {
+                // 🛡️ Safety check: Ensure target is still valid and has iframe
+                if (typeof target.getIframe === 'function' && !target.getIframe()) {
+                    console.log("⏸️ onReady: Player became invalid during timeout, skipping...");
+                    return;
+                }
+
                 if (savedTime > 2) {
                     console.log("⏩ onReady: Resuming from", savedTime);
                     target.seekTo(savedTime);
@@ -232,21 +238,33 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
     useEffect(() => {
         if (!playerRef.current || !currentSource) return;
 
-        // If it's a special source type, handle accordingly
-        if (currentSource.startsWith('search:')) return;
+        const target = playerRef.current;
+        // 🛡️ CRITICAL SAFETY: Ensure the player's internal iframe/element still exists
+        if (typeof target.getIframe === 'function' && !target.getIframe()) {
+            playerRef.current = null;
+            return;
+        }
 
         // For standard IDs, UniversalPlayer already updates via props.
         // We only use playerRef.current for play/pause/seek controls.
     }, [currentSource]);
     // 🔇 LOCAL MUTE BRIDGE: Prevent sound on Dashboard when casting to Monitor
     useEffect(() => {
-        if (!playerRef.current) return;
         const target = playerRef.current;
+        if (!target) return;
+
+        // 🛡️ CRITICAL SAFETY: Ensure the player's internal iframe/element still exists
+        // This prevents "null reading src" errors when the component unmounts quickly or switches modes
+        if (typeof target.getIframe === 'function' && !target.getIframe()) {
+            playerRef.current = null;
+            return;
+        }
 
         if (castMode === 'smarttv' || castMode === 'webmonitor') {
             console.log('🔇 SidebarPlayer: Local Mute active (Casting Mode)');
             if (typeof target.mute === 'function') target.mute();
         } else {
+            console.log('🔊 SidebarPlayer: Local Mute inactive');
             if (typeof target.unMute === 'function') target.unMute();
         }
     }, [castMode]);

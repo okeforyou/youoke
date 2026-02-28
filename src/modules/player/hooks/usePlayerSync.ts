@@ -67,8 +67,12 @@ export const usePlayerSync = (
         if (!playerRef.current || !isPlaying) return;
 
         const interval = setInterval(() => {
-            // Safety check for method existence
-            if (typeof playerRef.current.getCurrentTime !== 'function') return;
+            const target = playerRef.current;
+            if (!target) return;
+
+            // Safety check for method existence and iframe status
+            if (typeof target.getIframe === 'function' && !target.getIframe()) return;
+            if (typeof target.getCurrentTime !== 'function') return;
 
             // LOCK: If seeking, do not overwrite store time (prevents rubber-banding)
             if (isSeekingRef.current) return;
@@ -77,8 +81,8 @@ export const usePlayerSync = (
             // Dual Screen is the Master/Speaker, Main Screen is the Controller/Mirror.
             if (isDualActive) return;
 
-            const currentTime = playerRef.current.getCurrentTime();
-            const currentDuration = playerRef.current.getDuration();
+            const currentTime = target.getCurrentTime();
+            const currentDuration = target.getDuration();
 
             if (isPassive) {
                 // Passive mode (Monitor): Use syncRemoteTime to update store WITHOUT broadcasting
@@ -101,18 +105,21 @@ export const usePlayerSync = (
 
     // ⏩ SYNC: If Store's currentTime changes (via Handoff), seek to it
     useEffect(() => {
+        const target = playerRef.current;
         // Block Sync if Dual Mode is active (Controller Mode)
-        if (!playerRef.current || isPassive || currentTime <= 0 || isDualActive) return;
+        if (!target || isPassive || currentTime <= 0 || isDualActive) return;
 
         try {
-            if (typeof playerRef.current.getCurrentTime === 'function') {
-                const playerTime = playerRef.current.getCurrentTime();
+            if (typeof target.getIframe === 'function' && !target.getIframe()) return;
+
+            if (typeof target.getCurrentTime === 'function') {
+                const playerTime = target.getCurrentTime();
                 if (Math.abs(currentTime - playerTime) > 2) {
                     console.log(`⏩ Syncing time: ${playerTime} -> ${currentTime}`);
 
                     // LOCK Heartbeat
                     isSeekingRef.current = true;
-                    playerRef.current.seekTo(currentTime);
+                    target.seekTo(currentTime);
 
                     // Release Lock
                     setTimeout(() => {
@@ -127,12 +134,16 @@ export const usePlayerSync = (
 
     // Sync Play/Pause
     useEffect(() => {
-        if (!playerRef.current || isDualActive) return;
+        const target = playerRef.current;
+        if (!target || isDualActive) return;
+
         try {
+            if (typeof target.getIframe === 'function' && !target.getIframe()) return;
+
             if (isPlaying) {
-                playerRef.current.playVideo();
+                if (typeof target.playVideo === 'function') target.playVideo();
             } else {
-                playerRef.current.pauseVideo();
+                if (typeof target.pauseVideo === 'function') target.pauseVideo();
             }
         } catch (e) {
             console.warn("Player control error:", e);
