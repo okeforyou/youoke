@@ -81,20 +81,20 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
     return (
         <div className="shrink-0 select-none bg-white">
 
-            {/* Horizontal Controls Row */}
-            <div className="flex items-center justify-between px-1 py-1.5" style={{ backgroundColor: '#ffffff' }}>
+            {/* Horizontal Controls Row - Compact & Tinted */}
+            <div className="flex items-center justify-between px-2 py-2 rounded-2xl bg-gray-50/80 border border-gray-100" style={{ backgroundColor: '#f8fafc' }}>
                 {controlItems.map((item, index) => (
                     <button
                         key={index}
                         onClick={item.onClick}
-                        className="flex flex-col items-center justify-center flex-1 gap-1 group transition-all active:scale-95 bg-white"
+                        className="flex flex-col items-center justify-center flex-1 gap-0.5 group transition-all active:scale-95"
                     >
                         <div className={clsx(
                             "p-1 rounded-lg transition-all relative",
                             item.active ? (item.label === "ยกเลิก" ? "bg-red-500 text-white" : "bg-red-50") : ""
                         )}>
                             <item.icon
-                                size={22}
+                                size={19}
                                 className={clsx(
                                     "transition-colors",
                                     item.active ? (item.label === "ยกเลิก" ? "text-white" : "text-primary fill-primary/20") : "text-primary"
@@ -105,8 +105,8 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                             )}
                         </div>
                         <span className={clsx(
-                            "text-[9px] font-black uppercase tracking-tighter transition-colors",
-                            item.active && item.label === "ยกเลิก" ? "text-red-600" : "text-primary"
+                            "text-[8px] font-black uppercase tracking-tighter transition-colors",
+                            item.active && item.label === "ยกเลิก" ? "text-red-600" : "text-primary/70"
                         )}>
                             {item.label}
                         </span>

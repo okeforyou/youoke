@@ -483,27 +483,23 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             </div>
                             {/* Mobile Only Search & Controls Wrapper */}
                             {layoutMode !== 'fullscreen' && (
-                                <div className="lg:hidden flex flex-col gap-3 pb-4">
-                                    {/* Control Section */}
-                                    <div className="bg-white border-b border-gray-100 shadow-sm">
+                                <div className="lg:hidden flex flex-col pt-2 pb-3 bg-white border-b border-gray-100 shadow-sm relative z-20">
+                                    {/* Small & Tinted Control Section */}
+                                    <div className="px-3 pb-2">
                                         <SidebarControls castMode={castMode} />
                                     </div>
 
-                                    {/* Compact Search Row (Integrated for space) */}
-                                    <div className="px-3 pb-3 pt-1">
+                                    {/* Compact Integrated Row: Search + Outside Switch */}
+                                    <div className="px-3">
                                         <div className="flex items-center gap-2">
-                                            {/* Integrated Row: Search + Segmented Switch */}
-                                            <div className="flex-1 relative flex items-center bg-gray-100 rounded-xl p-1 border border-gray-200/50 shadow-inner">
-                                                {/* In-field Search Icon */}
-                                                <div className="pl-2.5 pointer-events-none">
-                                                    <Search className="h-4 w-4 text-gray-400" />
-                                                </div>
-
+                                            {/* Search Input Box */}
+                                            <div className="flex-1 relative flex items-center bg-gray-50 border border-gray-100 rounded-xl px-3 h-9 transition-all focus-within:bg-white focus-within:border-primary/20 focus-within:ring-1 focus-within:ring-primary/5">
+                                                <Search className="h-4 w-4 text-gray-400 shrink-0" />
                                                 <DebounceInput
                                                     minLength={2}
                                                     debounceTimeout={300}
                                                     placeholder="ค้นหาเพลง, ศิลปิน..."
-                                                    className="block w-full bg-transparent pl-2.5 pr-8 h-8 text-[14px] font-bold text-black placeholder-gray-400 focus:outline-none"
+                                                    className="w-full bg-transparent pl-2.5 pr-2 text-[14px] font-bold text-black placeholder-gray-400 focus:outline-none"
                                                     value={searchTerm}
                                                     onChange={(e) => {
                                                         router.replace({
@@ -516,32 +512,32 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                     <button onClick={() => {
                                                         const { search, ...rest } = router.query;
                                                         router.replace({ pathname: '/', query: rest }, undefined, { shallow: true });
-                                                    }} className="absolute right-[85px] text-gray-400">
+                                                    }} className="text-gray-400 ml-1">
                                                         <X className="h-4 w-4" />
                                                     </button>
                                                 )}
+                                            </div>
 
-                                                {/* Segmented Switch (Right side of row) */}
-                                                <div className="flex bg-white/50 p-0.5 rounded-lg border border-gray-200">
-                                                    <button
-                                                        onClick={() => setIsKaraoke(false)}
-                                                        className={clsx(
-                                                            "w-7 h-7 flex items-center justify-center rounded-md transition-all",
-                                                            !isKaraoke ? "bg-primary text-white shadow-sm" : "text-gray-400"
-                                                        )}
-                                                    >
-                                                        <Music size={14} />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => setIsKaraoke(true)}
-                                                        className={clsx(
-                                                            "w-7 h-7 flex items-center justify-center rounded-md transition-all",
-                                                            isKaraoke ? "bg-primary text-white shadow-sm" : "text-gray-400"
-                                                        )}
-                                                    >
-                                                        <Mic size={14} />
-                                                    </button>
-                                                </div>
+                                            {/* Outside Mode Switch (Icon Only Segmented) */}
+                                            <div className="flex bg-gray-100 p-0.5 rounded-xl border border-gray-200 shadow-sm shrink-0">
+                                                <button
+                                                    onClick={() => setIsKaraoke(false)}
+                                                    className={clsx(
+                                                        "w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-200",
+                                                        !isKaraoke ? "bg-white text-primary shadow-sm scale-[1.05]" : "text-gray-400 hover:text-gray-600"
+                                                    )}
+                                                >
+                                                    <Music size={15} className={!isKaraoke ? "fill-primary/10" : ""} />
+                                                </button>
+                                                <button
+                                                    onClick={() => setIsKaraoke(true)}
+                                                    className={clsx(
+                                                        "w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-200",
+                                                        isKaraoke ? "bg-white text-primary shadow-sm scale-[1.05]" : "text-gray-400 hover:text-gray-600"
+                                                    )}
+                                                >
+                                                    <Mic size={15} className={isKaraoke ? "fill-primary/10" : ""} />
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
