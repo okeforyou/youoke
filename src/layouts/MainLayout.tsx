@@ -337,98 +337,64 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
             {/* Main Content Area - Single Divider Strategy */}
             <div className="flex-1 flex flex-col min-w-0 relative bg-white z-10">
-                {/* Mobile Header (Visible only on mobile) */}
-                {/* Mobile Header (Always visible, includes Search) */}
+                {/* Compact Mobile Header (Persistent, includes Search & Mode) */}
                 <header className="lg:hidden flex flex-col gap-3 px-4 pt-3 pb-3 border-b border-gray-100 bg-white sticky top-0 z-[65]">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            {/* Profile Button / Back Button */}
-                            {useUIStore((state) => state.backAction) ? (
+                    <div className="flex items-center gap-3">
+                        {/* Compact Search & Mode & Remote Group */}
+                        <div className="flex-1 relative">
+                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                <Search className="h-5 w-5 text-black" />
+                            </div>
+                            <DebounceInput
+                                minLength={2}
+                                debounceTimeout={300}
+                                placeholder="ค้นหาเพลง, ศิลปิน..."
+                                className="block w-full pl-11 pr-24 h-11 bg-gray-50/80 focus:bg-white border border-gray-200 focus:border-black rounded-[14px] text-[15px] font-bold text-black placeholder-gray-400 focus:outline-none transition-all shadow-sm"
+                                value={searchTerm}
+                                onChange={(e) => {
+                                    router.replace({
+                                        pathname: '/',
+                                        query: { ...router.query, search: e.target.value }
+                                    }, undefined, { shallow: true });
+                                }}
+                            />
+                            {/* Inner Actions Overlay */}
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-2 gap-1">
+                                {searchTerm && (
+                                    <button onClick={() => {
+                                        const { search, ...rest } = router.query;
+                                        router.replace({ pathname: '/', query: rest }, undefined, { shallow: true });
+                                    }} className="p-2 text-gray-400 hover:text-red-500 transition-colors">
+                                        <X className="h-4 w-4" />
+                                    </button>
+                                )}
                                 <button
-                                    onClick={() => useUIStore.getState().backAction?.()}
-                                    className="p-1.5 rounded-full active:bg-gray-100 transition-colors text-gray-900 -ml-1.5"
+                                    onClick={() => setIsKaraoke(!isKaraoke)}
+                                    className={clsx(
+                                        "w-8 h-8 rounded-lg flex items-center justify-center transition-all border",
+                                        isKaraoke ? "bg-primary text-white border-primary shadow-sm" : "bg-white text-black border-gray-100 shadow-sm"
+                                    )}
+                                    title={isKaraoke ? 'คาราโอเกะ' : 'เพลง'}
                                 >
-                                    <ChevronLeft className="w-6 h-6" />
+                                    {isKaraoke ? <Mic className="w-4 h-4" /> : <Music className="w-4 h-4" />}
                                 </button>
-                            ) : (
-                                <button
-                                    onClick={() => setProfileOpen(true)}
-                                    className="p-0.5 rounded-full active:scale-95 transition-all duration-300 relative group"
-                                >
-                                    <div className="absolute inset-0 bg-gradient-to-tr from-primary via-purple-500 to-pink-500 rounded-full opacity-70 group-hover:opacity-100 blur-[2px]" />
-                                    <div className="relative bg-white p-0.5 rounded-full">
-                                        {user?.photoURL ? (
-                                            <img src={user.photoURL} alt="Profile" className="w-8 h-8 rounded-full border border-gray-100 object-cover" />
-                                        ) : (
-                                            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-gray-400 font-bold border border-gray-100">
-                                                <User size={18} />
-                                            </div>
-                                        )}
-                                    </div>
-                                </button>
-                            )}
-
-                            <div className="flex items-center gap-2">
-                                <div className="w-7 h-7 bg-primary/10 rounded-lg flex items-center justify-center text-primary font-bold text-sm">Y</div>
-                                <span className="font-bold text-lg text-black tracking-tight">YouOke</span>
                             </div>
                         </div>
 
-                        {/* Mode Toggle & Connect */}
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={() => setIsKaraoke(!isKaraoke)}
-                                className={clsx(
-                                    "px-3 h-9 rounded-xl text-[11px] font-black uppercase tracking-wide flex items-center gap-1.5 transition-colors border",
-                                    isKaraoke ? "bg-primary/10 text-primary border-primary/20" : "bg-gray-50 text-black border-gray-100 active:bg-gray-100"
-                                )}
-                            >
-                                {isKaraoke ? <Mic className="w-3.5 h-3.5" /> : <Music className="w-3.5 h-3.5" />}
-                                <span>{isKaraoke ? 'คาราโอเกะ' : 'เพลง'}</span>
-                            </button>
-
-                            <button
-                                onClick={() => setShowQRCode(true)}
-                                className="h-9 w-9 rounded-xl p-0 flex items-center justify-center bg-gray-50 active:bg-gray-100 border border-gray-100 text-black transition-all relative"
-                            >
-                                <Smartphone className="w-4 h-4" strokeWidth={2.5} />
-                                {mounted && (
-                                    <div className={clsx(
-                                        "absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border-2 border-white transition-colors duration-500",
-                                        connectionStatus === 'active' ? "bg-green-500 animate-pulse" :
-                                            connectionStatus === 'background' ? "bg-orange-500" : "bg-gray-300"
-                                    )} />
-                                )}
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Search Bar */}
-                    <div className="relative w-full">
-                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                            <Search className="h-5 w-5 text-gray-400" />
-                        </div>
-                        <DebounceInput
-                            minLength={2}
-                            debounceTimeout={300}
-                            placeholder="ค้นหาเพลง, ศิลปิน..."
-                            className="block w-full pl-11 pr-10 h-11 bg-gray-50/80 focus:bg-white border border-gray-200 focus:border-primary/30 rounded-[14px] text-[15px] font-bold text-black placeholder-gray-400 focus:outline-none transition-all shadow-sm"
-                            value={searchTerm}
-                            onChange={(e) => {
-                                router.replace({
-                                    pathname: '/',
-                                    query: { ...router.query, search: e.target.value }
-                                }, undefined, { shallow: true });
-                            }}
-                        />
-                        {searchTerm && (
-                            <button onClick={() => {
-                                const { search, ...rest } = router.query;
-                                router.replace({ pathname: '/', query: rest }, undefined, { shallow: true });
-                            }} className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-red-500 transition-colors">
-                                <X className="h-4 w-4" />
-                            </button>
-                        )}
+                        {/* Remote / Cast Action */}
+                        <button
+                            onClick={() => setShowQRCode(true)}
+                            className="h-11 w-11 rounded-xl p-0 flex items-center justify-center bg-white active:bg-gray-50 border border-gray-100 text-black transition-all relative shadow-sm"
+                        >
+                            <Smartphone className="w-5 h-5" strokeWidth={2.5} />
+                            {mounted && (
+                                <div className={clsx(
+                                    "absolute top-2.5 right-2.5 w-2 h-2 rounded-full border-2 border-white transition-colors duration-500",
+                                    connectionStatus === 'active' ? "bg-green-500 animate-pulse" :
+                                        connectionStatus === 'background' ? "bg-orange-500" : "bg-gray-300"
+                                )} />
+                            )}
+                        </button>
                     </div>
                 </header>
 
@@ -588,31 +554,17 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 )}
 
                 <main className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent lg:pb-0 relative flex flex-col items-center bg-gray-50/30">
-
-                    {/* Mobile: Full-width Queue List or Home Content */}
                     <div className="w-full pb-20">
                         {isMobile && isQueueOpen ? (
-                            <div className="w-full h-full flex flex-col">
-                                <div className="px-5 py-3.5 flex items-center justify-between shrink-0 bg-white shadow-sm sticky top-0 z-10">
-                                    <span className="font-bold text-gray-900 text-sm flex items-center gap-2">
-                                        <ListMusic className="w-5 h-5 text-primary" />
-                                        คิวเพลง ({queue.length})
-                                    </span>
-                                    <button onClick={() => { if (confirm('ต้องการลบคิวทั้งหมดใช่หรือไม่?')) usePlayerStore.getState().clearQueue(); }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-50 hover:bg-red-100 text-red-600 text-[11px] font-bold transition-all">
-                                        <Trash2 className="w-3.5 h-3.5" />
-                                        <span>ลบทั้งหมด</span>
-                                    </button>
-                                </div>
-                                <div className="flex-1 w-full bg-white">
-                                    <QueueList />
-                                </div>
+                            <div className="w-full bg-white">
+                                <QueueList />
                             </div>
                         ) : (
                             children
                         )}
                     </div>
                 </main>
-            </div>            {/* Right Sidebar (Queue Only - Collapsible) */}
+            </div>
             <aside
                 className={clsx(
                     "hidden lg:flex w-[420px] border-l border-gray-200 flex-col z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",

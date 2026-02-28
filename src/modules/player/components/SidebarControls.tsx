@@ -79,7 +79,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
     ];
 
     return (
-        <div className="border-b border-gray-200 shrink-0 select-none bg-white">
+        <div className="shrink-0 select-none bg-white">
             {/* Slim Progress Bar */}
             <div className="w-full h-[3px] bg-gray-100 overflow-hidden relative">
                 <div
@@ -103,9 +103,8 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                             <item.icon
                                 size={22}
                                 className={clsx(
-                                    "transition-colors",
-                                    item.active ? (item.label === "ยกเลิก" ? "text-white" : "text-primary") : "text-primary",
-                                    item.active && item.label !== "ยกเลิก" ? 'fill-current' : ''
+                                    "transition-colors fill-primary",
+                                    item.active ? (item.label === "ยกเลิก" ? "text-white fill-white" : "text-primary") : "text-primary"
                                 )}
                             />
                             {item.label === "ยกเลิก" && (
