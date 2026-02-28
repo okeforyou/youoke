@@ -194,9 +194,6 @@ export default function MonitorPage() {
               });
             }}
           />
-          {/* Gradients */}
-          <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/95 via-black/40 to-transparent pointer-events-none" />
-          <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-black/80 to-transparent pointer-events-none" />
         </div>
       </div>
 
@@ -377,9 +374,16 @@ export default function MonitorPage() {
         </div>
       </div>
 
-      {/* Fullscreen Toggle */}
-      <button onClick={() => { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }} className="absolute bottom-6 right-6 z-50 p-3 bg-white/5 rounded-full hover:bg-white/10 opacity-0 hover:opacity-100 transition-opacity">
-        <ArrowsPointingOutIcon className="w-6 h-6" />
+      {/* Fullscreen Toggle (Improved Visibility) */}
+      <button
+        onClick={() => {
+          if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+          else document.exitFullscreen();
+        }}
+        className="absolute bottom-8 right-8 z-50 p-4 bg-white/10 backdrop-blur-md rounded-2xl hover:bg-white/20 border border-white/10 transition-all opacity-40 hover:opacity-100 active:scale-95"
+        title="Fullscreen"
+      >
+        <ArrowsPointingOutIcon className="w-6 h-6 text-white" />
       </button>
     </div>
   );
