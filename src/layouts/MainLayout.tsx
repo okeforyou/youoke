@@ -489,43 +489,21 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                         <SidebarControls castMode={castMode} />
                                     </div>
 
-                                    {/* Prominent Search Section (Separated) */}
-                                    <div className="px-4">
-                                        <div className="bg-gray-50 p-3 rounded-2xl border border-gray-100 space-y-3">
-                                            {/* Dual Mode Switch (Prominent for elderly users) */}
-                                            <div className="flex bg-white p-1 rounded-xl border border-gray-200">
-                                                <button
-                                                    onClick={() => setIsKaraoke(false)}
-                                                    className={clsx(
-                                                        "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[13px] font-black transition-all",
-                                                        !isKaraoke ? "bg-primary text-white shadow-md active:scale-[0.98]" : "text-gray-400"
-                                                    )}
-                                                >
-                                                    <Music size={16} className={!isKaraoke ? "fill-white" : ""} />
-                                                    <span>โหมดเพลงปกติ</span>
-                                                </button>
-                                                <button
-                                                    onClick={() => setIsKaraoke(true)}
-                                                    className={clsx(
-                                                        "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[13px] font-black transition-all",
-                                                        isKaraoke ? "bg-primary text-white shadow-md active:scale-[0.98]" : "text-gray-400"
-                                                    )}
-                                                >
-                                                    <Mic size={16} className={isKaraoke ? "fill-white" : ""} />
-                                                    <span>โหมดคาราโอเกะ</span>
-                                                </button>
-                                            </div>
-
-                                            {/* Large Search Input */}
-                                            <div className="relative group">
-                                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                                    <Search className="h-5 w-5 text-gray-400" />
+                                    {/* Compact Search Row (Integrated for space) */}
+                                    <div className="px-3 pb-3 pt-1">
+                                        <div className="flex items-center gap-2">
+                                            {/* Integrated Row: Search + Segmented Switch */}
+                                            <div className="flex-1 relative flex items-center bg-gray-100 rounded-xl p-1 border border-gray-200/50 shadow-inner">
+                                                {/* In-field Search Icon */}
+                                                <div className="pl-2.5 pointer-events-none">
+                                                    <Search className="h-4 w-4 text-gray-400" />
                                                 </div>
+
                                                 <DebounceInput
                                                     minLength={2}
                                                     debounceTimeout={300}
-                                                    placeholder="ค้นหาชื่อเพลง หรือ ศิลปิน..."
-                                                    className="block w-full pl-12 pr-12 h-12 bg-white border border-gray-200 focus:border-primary/30 rounded-xl text-[15px] font-bold text-black placeholder-gray-400 focus:outline-none transition-all shadow-sm"
+                                                    placeholder="ค้นหาเพลง, ศิลปิน..."
+                                                    className="block w-full bg-transparent pl-2.5 pr-8 h-8 text-[14px] font-bold text-black placeholder-gray-400 focus:outline-none"
                                                     value={searchTerm}
                                                     onChange={(e) => {
                                                         router.replace({
@@ -538,10 +516,32 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                     <button onClick={() => {
                                                         const { search, ...rest } = router.query;
                                                         router.replace({ pathname: '/', query: rest }, undefined, { shallow: true });
-                                                    }} className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-red-500 transition-colors">
-                                                        <X className="h-5 w-5" />
+                                                    }} className="absolute right-[85px] text-gray-400">
+                                                        <X className="h-4 w-4" />
                                                     </button>
                                                 )}
+
+                                                {/* Segmented Switch (Right side of row) */}
+                                                <div className="flex bg-white/50 p-0.5 rounded-lg border border-gray-200">
+                                                    <button
+                                                        onClick={() => setIsKaraoke(false)}
+                                                        className={clsx(
+                                                            "w-7 h-7 flex items-center justify-center rounded-md transition-all",
+                                                            !isKaraoke ? "bg-primary text-white shadow-sm" : "text-gray-400"
+                                                        )}
+                                                    >
+                                                        <Music size={14} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setIsKaraoke(true)}
+                                                        className={clsx(
+                                                            "w-7 h-7 flex items-center justify-center rounded-md transition-all",
+                                                            isKaraoke ? "bg-primary text-white shadow-sm" : "text-gray-400"
+                                                        )}
+                                                    >
+                                                        <Mic size={14} />
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
