@@ -140,9 +140,28 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const isProcessingRemote = useRef(false);
     const dualWindowRef = useRef<Window | null>(null);
 
+    const toggleNativeFullscreen = useCallback(() => {
+        const isFs = !!document.fullscreenElement || !!(document as any).webkitFullscreenElement;
+        if (!isFs) {
+            const elem = document.getElementById('karaoke-video-container') || document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen().catch(err => console.error("Fullscreen failed:", err));
+            } else if ((elem as any).webkitRequestFullscreen) {
+                (elem as any).webkitRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen().catch(err => console.error("Exit fullscreen failed:", err));
+            } else if ((document as any).webkitExitFullscreen) {
+                (document as any).webkitExitFullscreen();
+            }
+        }
+        triggerFullscreen();
+    }, [triggerFullscreen]);
+
     const { connectionStatus, connectedClients } = useRemoteHost(
         { current: null } as any,
-        { current: { toggleFullscreen: triggerFullscreen } } as any,
+        { current: { toggleFullscreen: toggleNativeFullscreen } } as any,
         (video) => {
             isProcessingRemote.current = true;
             addToQueue(video);

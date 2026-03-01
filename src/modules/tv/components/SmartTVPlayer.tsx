@@ -134,7 +134,7 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
                     const playerTime = await player.getCurrentTime();
                     if (currentTime > 0 && Math.abs(playerTime - currentTime) > 5) {
                         console.log('🕒 TV: Syncing time with host:', currentTime);
-                        player.seekTo(currentTime);
+                        player.seekTo(currentTime, true);
                     }
 
                     player.playVideo();
@@ -194,7 +194,7 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
     }
 
     return (
-        <div className="relative w-full h-full bg-black overflow-hidden group">
+        <div id="karaoke-video-container" className="relative w-full h-full bg-black overflow-hidden group">
             {/* 1. YouTube Player */}
             <div className="absolute inset-0 pointer-events-none">
                 <YouTube

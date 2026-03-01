@@ -6,7 +6,7 @@ import { ref, onValue, off, set, serverTimestamp } from 'firebase/database';
 import { auth, realtimeDb } from '../../../firebase';
 import { QueueItem } from '../../../modules/player/types';
 import {
-    ListMusic, User, Share2, Maximize, RefreshCw, Volume2, VolumeX, SkipForward, SkipBack, Play, Pause, Trash2, GripVertical, Search, Sun, Moon, Music, Mic,
+    ListMusic, User, Share2, Maximize, Minimize, RefreshCw, Volume2, VolumeX, SkipForward, SkipBack, Play, Pause, Trash2, GripVertical, Search, Sun, Moon, Music, Mic,
     Lock, Chrome, LogIn, AlertCircle
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -40,6 +40,7 @@ interface RoomState {
     currentVideo: QueueItem | null;
     controls: { isPlaying: boolean; isMuted: boolean; volume: number };
     isQueueVisible: boolean;
+    layoutMode?: 'split' | 'fullscreen';
     notification?: { type: 'added' | 'upnext', video: any, timestamp: number } | null;
 }
 
@@ -241,6 +242,7 @@ export default function RemoteControlApp() {
                             currentVideo: data.currentVideo,
                             controls: data.controls || { isPlaying: false, isMuted: false, volume: 100 },
                             isQueueVisible: data.isQueueVisible,
+                            layoutMode: data.layoutMode || data.isFullscreen ? 'fullscreen' : 'split',
                             notification: data.notification
                         });
 
@@ -652,7 +654,11 @@ export default function RemoteControlApp() {
                                 onClick={() => sendCommand('TOGGLE_FULLSCREEN')}
                                 className={`p-2 rounded-full transition-all active:scale-90 ${theme === 'dark' ? 'bg-white/10 text-gray-300' : 'bg-gray-100 text-gray-500 shadow-sm'}`}
                             >
-                                <Maximize size={18} strokeWidth={3} />
+                                {roomState.layoutMode === 'fullscreen' ? (
+                                    <Minimize size={18} strokeWidth={3} />
+                                ) : (
+                                    <Maximize size={18} strokeWidth={3} />
+                                )}
                             </button>
                         </div>
                     </div>

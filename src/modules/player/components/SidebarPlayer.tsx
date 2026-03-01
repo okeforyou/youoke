@@ -139,15 +139,19 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
         const isFs = !!document.fullscreenElement || !!(document as any).webkitFullscreenElement;
 
         if (!isFs) {
-            const elem = document.documentElement;
+            const elem = document.getElementById('karaoke-video-container') || document.documentElement;
             if (elem.requestFullscreen) {
-                elem.requestFullscreen();
+                elem.requestFullscreen().catch(err => {
+                    console.log('📱 Fullscreen request blocked:', err);
+                });
             } else if ((elem as any).webkitRequestFullscreen) {
                 (elem as any).webkitRequestFullscreen();
             }
         } else {
             if (document.exitFullscreen) {
-                document.exitFullscreen();
+                document.exitFullscreen().catch(err => {
+                    console.log('📱 Exit fullscreen failed:', err);
+                });
             } else if ((document as any).webkitExitFullscreen) {
                 (document as any).webkitExitFullscreen();
             }
@@ -399,7 +403,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
             onTouchStart={handleActivity}
         >
             {/* Universal Player Layer (Youtube / MIDI / VCD) */}
-            <div className={`absolute inset-0 max-h-full max-w-full z-0 youtube-player-wrapper`}>
+            <div id="karaoke-video-container" className={`absolute inset-0 max-h-full max-w-full z-0 youtube-player-wrapper`}>
                 {(castMode === 'none' || isPassive) ? (
                     <UniversalPlayer
                         onReady={(target) => {
