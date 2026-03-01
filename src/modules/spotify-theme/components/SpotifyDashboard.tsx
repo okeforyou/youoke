@@ -398,7 +398,7 @@ export default function SpotifyDashboard({ showTab = true }) {
         artist && artist.length > 0 && (
           <div
             ref={songlistRef}
-            className="scroll-mt-32 col-span-full px-2 pt-6 pb-4 text-xl font-bold text-gray-900 flex items-center justify-between border-t border-gray-100"
+            className="scroll-mt-32 col-span-full px-2 pt-6 pb-4 text-[16px] font-bold text-gray-900 flex items-center justify-between border-t border-gray-100"
           >
             <div className="flex items-center gap-3">
               <div className="w-1.5 h-6 bg-primary rounded-full"></div>
@@ -427,7 +427,7 @@ export default function SpotifyDashboard({ showTab = true }) {
                   }, undefined, { shallow: true });
                 }}
               >
-                <figure className="relative w-full aspect-video flex-shrink-0 bg-gray-50 overflow-hidden">
+                <figure className="relative w-full aspect-[4/3] flex-shrink-0 bg-gray-50 overflow-hidden">
                   <Image
                     src={video.imageUrl}
                     priority
