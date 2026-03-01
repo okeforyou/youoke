@@ -11,7 +11,7 @@ interface SidebarControlsProps {
     castMode?: string;
 }
 
-export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => {
+export const SidebarControls = () => {
     const {
         isPlaying,
         togglePlay,
@@ -37,7 +37,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
     );
 
     const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
-    const { setCastModalOpen } = useUIStore();
+    const { setCastModalOpen, castMode } = useUIStore();
     const { isConnected } = useCast();
 
     const isAnyCastOn = (castMode !== 'none' && castMode !== undefined) || isConnected;

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
 interface UIState {
     isQueueOpen: boolean;
@@ -40,48 +41,63 @@ interface UIState {
 
     isCastingLocal: boolean;
     setIsCastingLocal: (isCasting: boolean) => void;
+
+    castMode: string;
+    setCastMode: (mode: string) => void;
 }
 
+export const useUIStore = create<UIState>()(
+    persist(
+        (set) => ({
+            isQueueOpen: false,
+            setQueueOpen: (isOpen: boolean) => set({ isQueueOpen: isOpen }),
+            toggleQueue: () => set((state) => ({ isQueueOpen: !state.isQueueOpen })),
 
+            isNavOpen: false,
+            setNavOpen: (isOpen: boolean) => set({ isNavOpen: isOpen }),
 
-export const useUIStore = create<UIState>((set) => ({
-    isQueueOpen: false,
-    setQueueOpen: (isOpen) => set({ isQueueOpen: isOpen }),
-    toggleQueue: () => set((state) => ({ isQueueOpen: !state.isQueueOpen })),
+            isMobileSearchOpen: false,
+            setMobileSearchOpen: (isOpen: boolean) => set({ isMobileSearchOpen: isOpen }),
 
-    isNavOpen: false,
-    setNavOpen: (isOpen) => set({ isNavOpen: isOpen }),
+            isMobilePlayerExpanded: false,
+            setMobilePlayerExpanded: (expanded: boolean) => set({ isMobilePlayerExpanded: expanded }),
 
-    isMobileSearchOpen: false,
-    setMobileSearchOpen: (isOpen) => set({ isMobileSearchOpen: isOpen }),
+            isProfileOpen: false,
+            setProfileOpen: (isOpen: boolean) => set({ isProfileOpen: isOpen }),
 
-    isMobilePlayerExpanded: false,
-    setMobilePlayerExpanded: (expanded) => set({ isMobilePlayerExpanded: expanded }),
+            isCastModalOpen: false,
+            setCastModalOpen: (isOpen: boolean) => set({ isCastModalOpen: isOpen }),
 
-    isProfileOpen: false,
-    setProfileOpen: (isOpen) => set({ isProfileOpen: isOpen }),
+            isReceiverModalOpen: false,
+            setReceiverModalOpen: (isOpen: boolean) => set({ isReceiverModalOpen: isOpen }),
 
-    isCastModalOpen: false,
-    setCastModalOpen: (isOpen) => set({ isCastModalOpen: isOpen }),
+            isLimitModalOpen: false,
+            setLimitModalOpen: (isOpen: boolean) => set({ isLimitModalOpen: isOpen }),
 
-    isReceiverModalOpen: false,
-    setReceiverModalOpen: (isOpen) => set({ isReceiverModalOpen: isOpen }),
+            isPlayerHidden: false,
+            setPlayerHidden: (hidden: boolean) => set({ isPlayerHidden: hidden }),
 
-    isLimitModalOpen: false,
-    setLimitModalOpen: (isOpen) => set({ isLimitModalOpen: isOpen }),
+            backAction: null,
+            setBackAction: (action: (() => void) | null) => set({ backAction: action }),
 
-    isPlayerHidden: false, // Default visible
-    setPlayerHidden: (hidden) => set({ isPlayerHidden: hidden }),
+            isFullscreen: false,
+            setFullscreen: (fullscreen: boolean) => set({ isFullscreen: fullscreen }),
 
-    backAction: null,
-    setBackAction: (action) => set({ backAction: action }),
+            musicTheme: 'spotify',
+            setMusicTheme: (theme: 'spotify' | 'youtube') => set({ musicTheme: theme }),
 
-    isFullscreen: false,
-    setFullscreen: (fullscreen) => set({ isFullscreen: fullscreen }),
+            isCastingLocal: false,
+            setIsCastingLocal: (isCasting: boolean) => set({ isCastingLocal: isCasting }),
 
-    musicTheme: 'spotify',
-    setMusicTheme: (theme) => set({ musicTheme: theme }),
-
-    isCastingLocal: false,
-    setIsCastingLocal: (isCasting) => set({ isCastingLocal: isCasting }),
-}));
+            castMode: 'none',
+            setCastMode: (mode: string) => set({ castMode: mode }),
+        }),
+        {
+            name: 'youoke-ui-storage',
+            storage: createJSONStorage(() => localStorage),
+            partialize: (state) => ({
+                isQueueOpen: state.isQueueOpen,
+            }),
+        }
+    )
+);

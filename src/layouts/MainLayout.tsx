@@ -48,14 +48,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
         isProfileOpen, setProfileOpen,
         isMobilePlayerExpanded, setMobilePlayerExpanded,
         isPlayerHidden, setPlayerHidden,
-        isReceiverModalOpen, setReceiverModalOpen
+        isReceiverModalOpen, setReceiverModalOpen,
+        castMode, setCastMode
     } = useUIStore();
 
     const [partyModalOpen, setPartyModalOpen] = useState(false);
     const [partyRoomCode, setPartyRoomCode] = useState('');
     const [mounted, setMounted] = useState(false);
     const [showQRCode, setShowQRCode] = useState(false);
-    const [castMode, setCastMode] = useState<CastMode>('none');
 
     const {
         searchTerm, setSearchTerm, activeIndex, setActiveIndex, isKaraoke, setIsKaraoke,
@@ -249,7 +249,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
     return (
         <div className={clsx(
-            "flex max-lg:flex-col h-screen w-full text-text-base overflow-hidden subpixel-antialiased antialiased transition-colors duration-500",
+            "flex max-lg:flex-col lg:h-screen lg:overflow-hidden min-h-screen w-full text-text-base subpixel-antialiased antialiased transition-colors duration-500",
             layoutMode === 'fullscreen' ? "bg-black" : "bg-white"
         )}>
             <Head>
@@ -308,7 +308,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         {/* Mobile Header/Controls */}
                         {layoutMode !== 'fullscreen' && (
                             <div className="lg:hidden flex flex-col pb-2.5 bg-[#f4f4f5]/95 backdrop-blur-xl border-b border-gray-100/50 shadow-sm sticky top-0 z-30">
-                                <SidebarControls castMode={castMode} />
+                                <SidebarControls />
                                 <div className="px-3 pt-1 flex gap-2.5">
                                     <div className="flex-1 relative flex items-center bg-black/[0.04] border border-gray-100 rounded-2xl px-4 h-11 transition-all focus-within:bg-white shadow-inner">
                                         <Search className="h-4.5 w-4.5 text-gray-400" />
@@ -334,7 +334,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                             onClick={() => setIsKaraoke(false)}
                                             className={clsx(
                                                 "relative flex-1 h-full flex items-center justify-center z-10 transition-all duration-300",
-                                                !isKaraoke ? "text-primary scale-110" : "text-gray-400 opacity-60"
+                                                !isKaraoke ? "text-primary scale-110" : "text-gray-400"
                                             )}
                                         >
                                             <Music size={18} strokeWidth={2.5} />
@@ -343,7 +343,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                             onClick={() => setIsKaraoke(true)}
                                             className={clsx(
                                                 "relative flex-1 h-full flex items-center justify-center z-10 transition-all duration-300",
-                                                isKaraoke ? "text-primary scale-110" : "text-gray-400 opacity-60"
+                                                isKaraoke ? "text-primary scale-110" : "text-gray-400"
                                             )}
                                         >
                                             <Mic size={18} strokeWidth={2.5} />
@@ -397,7 +397,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     <div className={clsx("relative w-full flex flex-col bg-black", layoutMode === 'fullscreen' ? "h-[100dvh]" : "h-full")}>
                         <div id="karaoke-video-container-dashboard" className={clsx("w-full bg-black shrink-0 relative overflow-hidden transition-all", layoutMode === 'fullscreen' ? "h-full" : "aspect-video")}>
                             <SidebarPlayer
-                                castMode={castMode}
                                 roomCode={roomCode}
                                 onDisconnect={handleDisconnect}
                                 onForcePlay={() => {
@@ -419,7 +418,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 (isQueueOpen && queue.length > 0 && layoutMode !== 'fullscreen') ? "mr-0 opacity-100" : "-mr-[420px] opacity-0"
             )}>
                 <div className="flex-1 pt-[236px] flex flex-col bg-white">
-                    <SidebarControls castMode={castMode} />
+                    <SidebarControls />
                     <div className="flex-1 overflow-hidden flex flex-col"><QueueList /></div>
                 </div>
             </aside>

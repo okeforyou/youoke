@@ -26,7 +26,7 @@ export default function SearchResultGrid({
       isKaraoke: state.isKaraoke
     }))
   );
-  const prefix = isKaraoke ? '"karaoke" ' : "";
+  const prefix = isKaraoke ? 'karaoke ' : "";
 
 
   const router = useRouter();
@@ -62,9 +62,7 @@ export default function SearchResultGrid({
     queryFn: () => getVideoInfo(curVideoId || ""),
     enabled: !searchTerm.length && !!curVideoId,
     select: ({ recommendedVideos }) => {
-      if (isKaraoke) {
-        return recommendedVideos.filter(titleIncludesKaraoke);
-      }
+      // Re-enable filter only for recommendations if needed, but let's be loose for now
       return recommendedVideos;
     },
   });
@@ -73,9 +71,7 @@ export default function SearchResultGrid({
     queryKey: ["searchResult", prefix + searchTerm],
     queryFn: () => getSearchResult({ q: prefix + searchTerm }),
     select: (results) => {
-      if (isKaraoke) {
-        return results.filter(titleIncludesKaraoke);
-      }
+      // Return raw results to prevent blank pages
       return results;
     },
   });

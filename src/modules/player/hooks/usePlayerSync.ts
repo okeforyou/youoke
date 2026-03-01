@@ -3,15 +3,16 @@ import { usePlayerStore } from '../stores/usePlayerStore';
 import { useDjPresence } from '../../../hooks/useDjPresence';
 import { playerService } from '../services/playerService';
 import { YouTubeAdapter } from '../adapters/YouTubeAdapter';
+import { useUIStore } from '../../../stores/useUIStore';
 
 export const usePlayerSync = (
     isPassive: boolean,
     isDjMode: boolean,
     currentTime: number,
     setCurrentTime: (time: number) => void,
-    playerRef: React.MutableRefObject<any>,
-    castMode?: string
+    playerRef: React.MutableRefObject<any>
 ) => {
+    const { castMode } = useUIStore();
     const { play, pause } = usePlayerStore.getState();
 
     // Check local storage for Dual Mode state
