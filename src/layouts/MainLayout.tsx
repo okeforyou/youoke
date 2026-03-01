@@ -311,6 +311,20 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                         <button onClick={() => setIsKaraoke(false)} className={clsx("w-9 h-9 flex items-center justify-center rounded-xl", !isKaraoke ? "bg-white text-primary shadow-md" : "text-gray-400")}><Music size={16} /></button>
                                         <button onClick={() => setIsKaraoke(true)} className={clsx("w-9 h-9 flex items-center justify-center rounded-xl", isKaraoke ? "bg-white text-primary shadow-md" : "text-gray-400")}><Mic size={16} /></button>
                                     </div>
+                                    <button
+                                        onClick={() => setShowQRCode(true)}
+                                        className="shrink-0 group relative h-11 w-11 rounded-2xl flex items-center justify-center bg-white shadow-sm border border-gray-200 hover:border-primary/30 transition-all text-primary active:scale-95"
+                                        title="เชื่อมต่อรีโมท"
+                                    >
+                                        <Smartphone className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                                        {mounted && (
+                                            <div className={clsx(
+                                                "absolute top-2 right-2 w-2.5 h-2.5 rounded-full border-2 border-white transition-colors duration-500",
+                                                connectionStatus === 'active' ? "bg-green-500 animate-pulse" :
+                                                    connectionStatus === 'background' ? "bg-orange-500" : "bg-gray-300"
+                                            )} />
+                                        )}
+                                    </button>
                                 </div>
                             </div>
                         )}
