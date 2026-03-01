@@ -244,7 +244,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         {/* 🏝️ STICKY GLASS HEADERS */}
 
                         {/* Desktop Header */}
-                        <header className="hidden lg:flex h-20 items-center justify-between px-8 border-b border-gray-100/50 bg-white/85 backdrop-blur-3xl sticky top-0 z-30">
+                        <header className="hidden lg:flex h-20 items-center justify-between px-8 border-b border-gray-100/50 bg-[#f4f4f5]/95 backdrop-blur-xl sticky top-0 z-30">
                             <div className="flex-1 max-w-2xl relative">
                                 <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300" />
                                 <DebounceInput
@@ -265,7 +265,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
                         {/* Mobile Header/Controls */}
                         {layoutMode !== 'fullscreen' && (
-                            <div className="lg:hidden flex flex-col pb-2.5 bg-white/85 backdrop-blur-3xl border-b border-gray-100/50 shadow-sm sticky top-0 z-30">
+                            <div className="lg:hidden flex flex-col pb-2.5 bg-[#f4f4f5]/95 backdrop-blur-xl border-b border-gray-100/50 shadow-sm sticky top-0 z-30">
                                 <SidebarControls castMode={castMode} />
                                 <div className="px-3 pt-2.5 flex gap-2.5">
                                     <div className="flex-1 relative flex items-center bg-black/[0.04] border border-gray-100 rounded-2xl px-4 h-11 transition-all focus-within:bg-white shadow-inner">
@@ -306,18 +306,18 @@ export default function MainLayout({ children }: MainLayoutProps) {
             <ReceiverInfoModal />
             <ShareRoomModal isOpen={partyModalOpen} onClose={() => setPartyModalOpen(false)} roomCode={roomCode || ''} />
             <LimitReachedModal />
-            <CastModeSelector 
-                isOpen={isCastModalOpen} 
-                onClose={() => setCastModalOpen(false)} 
-                isCastAvailable={isCastAvailable} 
-                isMobile={isMobile} 
-                onSelectWebMonitor={handleCastSelectWebMonitor} 
-                onSelectSmartTV={handleCastSelectSmartTV} 
-                onSelectDual={handleCastSelectDual} 
-                onSelectDj={handleCastSelectDual} 
-                onSelectGoogleCast={handleCastSelectGoogle} 
+            <CastModeSelector
+                isOpen={isCastModalOpen}
+                onClose={() => setCastModalOpen(false)}
+                isCastAvailable={isCastAvailable}
+                isMobile={isMobile}
+                onSelectWebMonitor={handleCastSelectWebMonitor}
+                onSelectSmartTV={handleCastSelectSmartTV}
+                onSelectDual={handleCastSelectDual}
+                onSelectDj={handleCastSelectDual}
+                onSelectGoogleCast={handleCastSelectGoogle}
                 onJoinRoom={handleJoinRoom}
-                onSelectYouTube={() => {}} 
+                onSelectYouTube={() => { }}
             />
 
             {showQRCode && roomCode && (
