@@ -26,7 +26,7 @@ export default function SearchResultGrid({
       isKaraoke: state.isKaraoke
     }))
   );
-  const prefix = isKaraoke ? 'karaoke ' : "";
+  const prefix = isKaraoke ? '"karaoke" ' : "";
 
 
   const router = useRouter();
@@ -41,11 +41,8 @@ export default function SearchResultGrid({
   );
 
   const handleDivScroll = () => {
-    // Only scroll to top when list updates meaningfully
-    if (typeof window !== 'undefined') {
-      const main = document.querySelector('main');
-      if (main) main.scrollTo({ top: 0, behavior: 'instant' });
-    }
+    // Scroll to top of the page reliably
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const titleIncludesKaraoke = ({ title }: { title: string }) => {
@@ -62,7 +59,9 @@ export default function SearchResultGrid({
     queryFn: () => getVideoInfo(curVideoId || ""),
     enabled: !searchTerm.length && !!curVideoId,
     select: ({ recommendedVideos }) => {
-      // Re-enable filter only for recommendations if needed, but let's be loose for now
+      if (isKaraoke) {
+        return recommendedVideos.filter(titleIncludesKaraoke);
+      }
       return recommendedVideos;
     },
   });
@@ -71,7 +70,9 @@ export default function SearchResultGrid({
     queryKey: ["searchResult", prefix + searchTerm],
     queryFn: () => getSearchResult({ q: prefix + searchTerm }),
     select: (results) => {
-      // Return raw results to prevent blank pages
+      if (isKaraoke) {
+        return results.filter(titleIncludesKaraoke);
+      }
       return results;
     },
   });
@@ -172,7 +173,7 @@ export default function SearchResultGrid({
 
       {/* Grid View */}
       {viewMode === "grid" && (
-        <div className="relative grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 col-span-full auto-rows-fr">
+        <div className="relative grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 col-span-full auto-rows-fr">
           {isLoading && (
             <>
               {getSkeletonItems(16).map((s) => (
@@ -211,10 +212,10 @@ export default function SearchResultGrid({
                       </div>
                     </figure>
                     <div className="card-body p-2 gap-y-0.5 flex-1 flex flex-col relative pr-8">
-                      <h2 className="font-medium text-[11px] sm:text-[12px] line-clamp-2 flex-1 text-gray-800 leading-snug">
+                      <h2 className="font-medium text-xs sm:text-[13px] line-clamp-2 flex-1 text-gray-800 leading-snug">
                         {rcm.title}
                       </h2>
-                      <h2 className="text-[9px] text-gray-500 truncate">
+                      <h2 className="text-[10px] text-gray-500 truncate">
                         {rcm.author}
                       </h2>
 

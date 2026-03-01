@@ -236,8 +236,6 @@ export const usePlayerStore = create<PlayerStore>()(
                     currentVideo: newItem,
                     currentSource: videoId,
                     isPlaying: true,
-                    currentTime: 0,
-                    duration: 0,
                     layoutMode: get().layoutMode
                 };
                 broadcast(newState);
@@ -277,9 +275,7 @@ export const usePlayerStore = create<PlayerStore>()(
                         currentIndex: 0,
                         currentVideo: newItem,
                         currentSource: source,
-                        isPlaying: true,
-                        currentTime: 0,
-                        duration: 0
+                        isPlaying: true
                     };
                     console.log(`▶️ Store: Playing ${source} (Type: ${newItem.sourceType})`);
                 }
@@ -319,9 +315,7 @@ export const usePlayerStore = create<PlayerStore>()(
                     currentIndex: index,
                     currentVideo: video,
                     currentSource: source,
-                    isPlaying: true,
-                    currentTime: 0,
-                    duration: 0
+                    isPlaying: true
                 };
                 broadcast(updates);
                 return updates;
@@ -352,8 +346,6 @@ export const usePlayerStore = create<PlayerStore>()(
                             currentVideo: nextVideo,
                             currentSource: source,
                             isPlaying: true,
-                            currentTime: 0,
-                            duration: 0,
                             layoutMode: get().layoutMode,
                             seekTarget: null,
                             ignoreUpdatesUntil: 0

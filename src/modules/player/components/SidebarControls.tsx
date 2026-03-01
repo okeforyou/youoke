@@ -11,7 +11,7 @@ interface SidebarControlsProps {
     castMode?: string;
 }
 
-export const SidebarControls = () => {
+export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => {
     const {
         isPlaying,
         togglePlay,
@@ -37,7 +37,7 @@ export const SidebarControls = () => {
     );
 
     const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
-    const { setCastModalOpen, castMode } = useUIStore();
+    const { setCastModalOpen } = useUIStore();
     const { isConnected } = useCast();
 
     const isAnyCastOn = (castMode !== 'none' && castMode !== undefined) || isConnected;
@@ -66,22 +66,7 @@ export const SidebarControls = () => {
         {
             icon: Maximize,
             label: "เต็มจอ",
-            onClick: () => {
-                const isFs = !!document.fullscreenElement || !!(document as any).webkitFullscreenElement;
-                if (!isFs) {
-                    const elem = document.getElementById('karaoke-video-container') || document.documentElement;
-                    if (elem.requestFullscreen) {
-                        elem.requestFullscreen().catch(err => console.error("Fullscreen failed:", err));
-                    } else if ((elem as any).webkitRequestFullscreen) {
-                        (elem as any).webkitRequestFullscreen();
-                    }
-                } else {
-                    if (document.exitFullscreen) {
-                        document.exitFullscreen().catch(err => console.error("Exit fullscreen failed:", err));
-                    }
-                }
-                triggerFullscreen();
-            },
+            onClick: triggerFullscreen,
             color: "text-primary"
         },
         {
@@ -94,26 +79,25 @@ export const SidebarControls = () => {
     ];
 
     return (
-        <div className="shrink-0 select-none relative">
-            {/* Background inherited from parent to support Glassmorphism Mirror effect */}
+        <div className="shrink-0 select-none relative shadow-sm">
+            {/* Glass Background matching Footer */}
+            <div className="absolute inset-0 bg-[#f4f4f5]/95 backdrop-blur-xl border-b border-gray-200/50" />
 
             {/* Horizontal Controls Row - Full Width with depth */}
-            <div className="relative flex items-center justify-between px-2 h-[64px]">
+            <div className="relative flex items-center justify-between px-2 h-[72px]">
                 {controlItems.map((item, index) => (
                     <button
                         key={index}
                         onClick={item.onClick}
-                        className="flex flex-col items-center justify-center flex-1 gap-0 group transition-all active:scale-95"
+                        className="flex flex-col items-center justify-center flex-1 gap-1 group transition-all active:scale-95"
                     >
                         <div className={clsx(
-                            "p-1 rounded-xl transition-all duration-300 relative mb-[-2px]",
-                            item.active
-                                ? (item.label === "ยกเลิก" ? "bg-red-500 text-white shadow-md scale-105" : "text-primary bg-white shadow-sm border border-primary/5 scale-105")
-                                : "text-black group-hover:text-black"
+                            "p-2 rounded-xl transition-all duration-300 relative",
+                            item.active ? (item.label === "ยกเลิก" ? "bg-red-500 text-white shadow-lg scale-105" : "text-primary bg-white shadow-md scale-105") : "text-black group-hover:text-black"
                         )}>
                             <item.icon
                                 size={20}
-                                strokeWidth={item.active ? 1.8 : 1.5}
+                                strokeWidth={item.active ? 2.5 : 2}
                                 className={clsx(
                                     "transition-all duration-300",
                                     item.active ? (item.label === "ยกเลิก" ? "text-white" : "text-primary") : "text-black"
@@ -124,8 +108,8 @@ export const SidebarControls = () => {
                             )}
                         </div>
                         <span className={clsx(
-                            "text-[10px] font-bold transition-colors duration-200",
-                            item.active && item.label === "ยกเลิก" ? "text-red-600" : (item.active ? "text-primary" : "text-black/50")
+                            "text-[10px] font-medium transition-colors duration-200",
+                            item.active && item.label === "ยกเลิก" ? "text-red-600 font-bold" : (item.active ? "text-primary font-bold" : "text-black/60")
                         )}>
                             {item.label}
                         </span>

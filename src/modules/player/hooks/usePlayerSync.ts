@@ -3,16 +3,15 @@ import { usePlayerStore } from '../stores/usePlayerStore';
 import { useDjPresence } from '../../../hooks/useDjPresence';
 import { playerService } from '../services/playerService';
 import { YouTubeAdapter } from '../adapters/YouTubeAdapter';
-import { useUIStore } from '../../../stores/useUIStore';
 
 export const usePlayerSync = (
     isPassive: boolean,
     isDjMode: boolean,
     currentTime: number,
     setCurrentTime: (time: number) => void,
-    playerRef: React.MutableRefObject<any>
+    playerRef: React.MutableRefObject<any>,
+    castMode?: string
 ) => {
-    const { castMode } = useUIStore();
     const { play, pause } = usePlayerStore.getState();
 
     // Check local storage for Dual Mode state
@@ -21,7 +20,9 @@ export const usePlayerSync = (
 
         const checkDualMode = () => {
             const dualActive = localStorage.getItem('youoke-dual-active') === 'true';
-            setIsDualActive(!isPassive && dualActive);
+            // Also consider active Wireless Casting as Dual Mode BUT only for the Dashboard (not isPassive)
+            const isCasting = castMode === 'smarttv' || castMode === 'webmonitor';
+            setIsDualActive(!isPassive && (dualActive || isCasting));
         };
 
         checkDualMode();
@@ -67,7 +68,7 @@ export const usePlayerSync = (
 
         const interval = setInterval(() => {
             const target = playerRef.current;
-            if (!target || isPassive) return;
+            if (!target) return;
 
             // Safety check for method existence and iframe status
             if (typeof target.getIframe === 'function' && !target.getIframe()) return;
@@ -76,15 +77,17 @@ export const usePlayerSync = (
             // LOCK: If seeking, do not overwrite store time (prevents rubber-banding)
             if (isSeekingRef.current) return;
 
-            // CRITICAL: If Dual Screen is active, DO NOT report time from Main Screen.
-            // Dual Screen is the Master/Speaker, Main Screen is the Controller/Mirror.
-            if (isDualActive) return;
-
             const currentTime = target.getCurrentTime();
             const currentDuration = target.getDuration();
 
-            // Active mode: Full broadcast so other tabs/windows stay in sync
-            usePlayerStore.getState().setCurrentTime(currentTime);
+            if (isPassive) {
+                // Passive mode (Monitor): Use syncRemoteTime to update store WITHOUT broadcasting
+                // This allows CastService to read time from store and sync to Firebase
+                usePlayerStore.getState().syncRemoteTime(currentTime);
+            } else {
+                // Active mode: Full broadcast so other tabs/windows stay in sync
+                usePlayerStore.getState().setCurrentTime(currentTime);
+            }
 
             // SYNC Duration (always, so Host knows when song ends)
             const storeDuration = usePlayerStore.getState().duration;
@@ -100,7 +103,7 @@ export const usePlayerSync = (
     useEffect(() => {
         const target = playerRef.current;
         // Block Sync if Dual Mode is active (Controller Mode)
-        if (!target || currentTime <= 0 || isDualActive) return;
+        if (!target || isPassive || currentTime <= 0 || isDualActive) return;
 
         try {
             if (typeof target.getIframe === 'function' && !target.getIframe()) return;

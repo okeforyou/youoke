@@ -29,8 +29,7 @@ interface SidebarPlayerProps {
     onEnded?: () => void;
 }
 
-export const SidebarPlayer = ({ isPassive = false, isDjMode = false, roomCode = null, onDisconnect, onForcePlay, onPlayerInit, onEnded }: SidebarPlayerProps) => {
-    const { castMode } = useUIStore();
+export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 'none', roomCode = null, onDisconnect, onForcePlay, onPlayerInit, onEnded }: SidebarPlayerProps) => {
     const { currentSource, isPlaying, isMuted, currentVideo, setCurrentTime, currentTime, layoutMode, queue, currentIndex, duration } = usePlayerStore(
         useShallow(state => ({
             currentSource: state.currentSource,
@@ -91,7 +90,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, roomCode = 
     }, [isSourceAllowed, currentSource]);
 
     // --- HOOKS INTEGRATION ---
-    const { showDjOverlay, onPlayerReady, onPlayerStateChange } = usePlayerSync(isPassive, isDjMode, currentTime, setCurrentTime, playerRef);
+    const { showDjOverlay, onPlayerReady, onPlayerStateChange } = usePlayerSync(isPassive, isDjMode, currentTime, setCurrentTime, playerRef, castMode);
 
     const { dailyCount, maxDailySongs, maxDuration, showAds, userRole } = usePlayerLifecycle(currentSource, showDjOverlay);
 
@@ -137,28 +136,8 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, roomCode = 
     }, [layoutMode]);
 
     const toggleFullscreen = () => {
-        const isFs = !!document.fullscreenElement || !!(document as any).webkitFullscreenElement;
-
-        if (!isFs) {
-            const elem = document.getElementById('karaoke-video-container') || document.documentElement;
-            if (elem.requestFullscreen) {
-                elem.requestFullscreen().catch(err => {
-                    console.log('📱 Fullscreen request blocked:', err);
-                });
-            } else if ((elem as any).webkitRequestFullscreen) {
-                (elem as any).webkitRequestFullscreen();
-            }
-        } else {
-            if (document.exitFullscreen) {
-                document.exitFullscreen().catch(err => {
-                    console.log('📱 Exit fullscreen failed:', err);
-                });
-            } else if ((document as any).webkitExitFullscreen) {
-                (document as any).webkitExitFullscreen();
-            }
-        }
-
-        // Always sync with store
+        // Use Global Store Trigger instead of local DOM manipulation
+        // This ensures the remote control and main screen stay perfectly in sync.
         usePlayerStore.getState().triggerFullscreen();
     };
 
@@ -398,66 +377,79 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, roomCode = 
     // 2. Standard Video Mode
     return (
         <div
-            id="karaoke-video-container"
             className="w-full h-full relative group"
             onMouseMove={handleActivity}
             onClick={handleActivity}
             onTouchStart={handleActivity}
         >
             {/* Universal Player Layer (Youtube / MIDI / VCD) */}
-            <div className={`absolute inset-0 max-h-full max-w-full z-0 youtube-player-wrapper transition-opacity duration-1000 ${(castMode === 'none' || isPassive) ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                <UniversalPlayer
-                    onReady={(target) => {
-                        handlePlayerReady(target);
-                    }}
-                    onStateChange={(event: any) => {
-                        if (onPlayerStateChange) onPlayerStateChange(event);
-                    }}
-                    onEnded={() => {
-                        console.log("🎬 Media ended, notifying parent...");
-                        if (onEnded) onEnded();
-                        if (!isPassive) {
-                            usePlayerStore.getState().playNext();
-                        }
-                    }}
-                    showControls={false}
-                    className="w-full h-full"
-                />
+            <div className={`absolute inset-0 max-h-full max-w-full z-0 youtube-player-wrapper`}>
+                {(castMode === 'none' || isPassive) ? (
+                    <UniversalPlayer
+                        onReady={(target) => {
+                            handlePlayerReady(target);
+                        }}
+                        onStateChange={(event: any) => {
+                            if (onPlayerStateChange) onPlayerStateChange(event);
+                        }}
+                        onEnded={() => {
+                            console.log("🎬 Media ended, notifying parent...");
+                            if (onEnded) onEnded();
+                            if (!isPassive) {
+                                usePlayerStore.getState().playNext();
+                            }
+                        }}
+                        showControls={false}
+                        className="w-full h-full pointer-events-auto"
+                    />
+                ) : (
+                    /* 📺 Casting Overlay (Minimalist Design - Aligned with /dual) */
+                    <div className="absolute inset-0 bg-black flex flex-col items-center justify-center p-8 text-center space-y-8 z-20 animate-in fade-in duration-700">
+                        <div className="relative">
+                            <div className="text-6xl mb-4 relative z-10">🖥️</div>
+                            <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse z-0" />
+                        </div>
+
+                        <div className="space-y-3">
+                            <h3 className="text-2xl font-black text-white tracking-tight leading-tight">
+                                {castMode === 'dual' ? '2 หน้าจอ (HDMI)' : '2 หน้าจอ (Wireless)'}
+                            </h3>
+                            <p className="text-white/40 text-[13px] font-bold tracking-wide">
+                                {currentSource ? 'กำลังเล่นเพลงบนหน้าจอที่สอง...' : 'รอเพลงจากหน้าจอหลัก...'}
+                            </p>
+                        </div>
+
+                        {/* Now Playing Info (Standardized Monitor Style - Clean & Premium) */}
+                        {currentVideo ? (
+                            <div key={currentVideo.uuid} className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-5 w-full max-w-[300px] animate-in slide-in-from-bottom-4 duration-700">
+                                <div className="flex flex-col items-center">
+                                    <h4 className="text-[15px] font-black text-white leading-tight line-clamp-2 text-center">{currentVideo.title}</h4>
+                                    <p className="text-[11px] text-white/40 font-bold mt-2 uppercase tracking-wider">{currentVideo.author}</p>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="text-white/20 text-xs font-bold animate-pulse">กำลังดึงข้อมูลเพลง...</div>
+                        )}
+
+                        <div className="flex flex-col items-center gap-6 pt-4 w-full">
+
+                            <div className="flex items-center gap-3 px-4 py-2 bg-white/5 rounded-full border border-white/5">
+                                <div className="w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
+                                <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Casting Active</span>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
             </div>
 
-            {/* 📺 Casting Overlay (Minimalist Design - Aligned with /dual) */}
-            {(castMode !== 'none' && !isPassive) && (
-                <div className="absolute inset-0 bg-black flex flex-col items-center justify-center p-8 text-center space-y-8 z-20 animate-in fade-in duration-700">
-                    <div className="relative">
-                        <div className="text-6xl mb-4 relative z-10">🖥️</div>
-                        <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse z-0" />
-                    </div>
 
-                    <div className="space-y-3">
-                        <h3 className="text-2xl font-black text-white tracking-tight leading-tight">
-                            {castMode === 'dual' ? '2 หน้าจอ (HDMI)' : '2 หน้าจอ (Wireless)'}
-                        </h3>
-                        <p className="text-white/40 text-[13px] font-bold tracking-wide">
-                            {currentSource ? 'กำลังเล่นเพลงบนหน้าจอที่สอง...' : 'รอเพลงจากหน้าจอหลัก...'}
-                        </p>
-                    </div>
+            {/* Casting Overlays REMOVED (Phase 6) */}
 
-                    {/* Disconnect Control (Subtle) */}
-                    {onDisconnect && (
-                        <button
-                            onClick={onDisconnect}
-                            className="flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 rounded-full text-xs font-black uppercase tracking-widest text-white/40 hover:text-red-500 transition-all border border-white/5 hover:border-red-500/20"
-                        >
-                            <Power className="w-3.5 h-3.5" />
-                            ยกเลิกโหมด 2 หน้าจอ
-                        </button>
-                    )}
-                </div>
-            )}
 
             {/* Overlay (Waiting) */}
             {
-                !isPassive && !currentSource && castMode === 'none' && (
+                !isPassive && !currentSource && (
                     <div className="absolute inset-0 bg-black/80 z-10 flex flex-col items-center justify-center text-white/50 space-y-4">
                         {queue.length > 0 ? (
                             <>
@@ -472,15 +464,13 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, roomCode = 
             }
 
             {/* 🎯 FULL-SCREEN ACTIVITY OVERLAY: Catches taps to show controls since iframe blocks parent clicks */}
-            {
-                layoutMode === 'fullscreen' && !showMiniControls && (
-                    <div
-                        className="absolute inset-0 z-40 cursor-pointer"
-                        onClick={handleActivity}
-                        onTouchStart={handleActivity}
-                    />
-                )
-            }
+            {layoutMode === 'fullscreen' && !showMiniControls && (
+                <div
+                    className="absolute inset-0 z-40 cursor-pointer"
+                    onClick={handleActivity}
+                    onTouchStart={handleActivity}
+                />
+            )}
 
             {/* Limit Indicator */}
             {
