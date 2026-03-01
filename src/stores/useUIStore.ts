@@ -97,6 +97,8 @@ export const useUIStore = create<UIState>()(
             storage: createJSONStorage(() => localStorage),
             partialize: (state) => ({
                 isQueueOpen: state.isQueueOpen,
+                castMode: state.castMode,
+                musicTheme: state.musicTheme,
             }),
         }
     )

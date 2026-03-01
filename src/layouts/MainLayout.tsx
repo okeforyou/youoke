@@ -185,6 +185,17 @@ export default function MainLayout({ children }: MainLayoutProps) {
         if (connectionStatus === 'active') { handleRemoteConnected(); }
     }, [connectionStatus, handleRemoteConnected]);
 
+    // Sync URL Search Query to Store & Switch to Search Tab
+    useEffect(() => {
+        if (!router.isReady) return;
+        const querySearch = router.query.search as string;
+        if (querySearch && querySearch !== searchTerm) {
+            setSearchTerm(querySearch);
+            // If we have a search term, we MUST be on the search tab (index 0)
+            if (activeIndex !== 0) setActiveIndex(0);
+        }
+    }, [router.query.search, router.isReady, setActiveIndex, setSearchTerm]);
+
     useEffect(() => {
         setMounted(true);
         const cachedPin = localStorage.getItem('youoke_party_pin');
@@ -275,6 +286,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                     className="block w-full pl-14 pr-12 h-12 bg-white/50 hover:bg-white focus:bg-white border border-gray-100 focus:border-primary/20 rounded-2xl leading-5 text-gray-900 placeholder-gray-400 focus:outline-none transition-all shadow-sm font-medium"
                                     value={searchTerm}
                                     onChange={(e) => {
+                                        setSearchTerm(e.target.value);
                                         router.replace({ pathname: '/', query: { ...router.query, search: e.target.value } }, undefined, { shallow: true });
                                     }}
                                 />
@@ -358,7 +370,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             {/* Main Content Layer */}
                             <div className={clsx(
                                 isMobile && "transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
-                                (isMobile && isQueueOpen) ? "opacity-0 -translate-y-10 pointer-events-none" : "opacity-100 translate-y-0"
+                                (isMobile && isQueueOpen) ? "opacity-0 -translate-y-10" : "opacity-100 translate-y-0"
                             )}>
                                 {children}
                             </div>
@@ -440,6 +452,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 onSelectGoogleCast={handleCastSelectGoogle}
                 onJoinRoom={handleJoinRoom}
                 onSelectYouTube={() => { }}
+                onDisconnect={handleDisconnect}
+                castMode={castMode}
             />
 
             {showQRCode && (

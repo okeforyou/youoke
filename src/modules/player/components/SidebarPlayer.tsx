@@ -405,7 +405,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, roomCode = 
             onTouchStart={handleActivity}
         >
             {/* Universal Player Layer (Youtube / MIDI / VCD) */}
-            <div className="absolute inset-0 max-h-full max-w-full z-0 youtube-player-wrapper">
+            <div className={`absolute inset-0 max-h-full max-w-full z-0 youtube-player-wrapper transition-opacity duration-1000 ${(castMode === 'none' || isPassive) ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                 <UniversalPlayer
                     onReady={(target) => {
                         handlePlayerReady(target);
@@ -425,9 +425,39 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, roomCode = 
                 />
             </div>
 
+            {/* 📺 Casting Overlay (Minimalist Design - Aligned with /dual) */}
+            {(castMode !== 'none' && !isPassive) && (
+                <div className="absolute inset-0 bg-black flex flex-col items-center justify-center p-8 text-center space-y-8 z-20 animate-in fade-in duration-700">
+                    <div className="relative">
+                        <div className="text-6xl mb-4 relative z-10">🖥️</div>
+                        <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse z-0" />
+                    </div>
+
+                    <div className="space-y-3">
+                        <h3 className="text-2xl font-black text-white tracking-tight leading-tight">
+                            {castMode === 'dual' ? '2 หน้าจอ (HDMI)' : '2 หน้าจอ (Wireless)'}
+                        </h3>
+                        <p className="text-white/40 text-[13px] font-bold tracking-wide">
+                            {currentSource ? 'กำลังเล่นเพลงบนหน้าจอที่สอง...' : 'รอเพลงจากหน้าจอหลัก...'}
+                        </p>
+                    </div>
+
+                    {/* Disconnect Control (Subtle) */}
+                    {onDisconnect && (
+                        <button
+                            onClick={onDisconnect}
+                            className="flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 rounded-full text-xs font-black uppercase tracking-widest text-white/40 hover:text-red-500 transition-all border border-white/5 hover:border-red-500/20"
+                        >
+                            <Power className="w-3.5 h-3.5" />
+                            ยกเลิกโหมด 2 หน้าจอ
+                        </button>
+                    )}
+                </div>
+            )}
+
             {/* Overlay (Waiting) */}
             {
-                !isPassive && !currentSource && (
+                !isPassive && !currentSource && castMode === 'none' && (
                     <div className="absolute inset-0 bg-black/80 z-10 flex flex-col items-center justify-center text-white/50 space-y-4">
                         {queue.length > 0 ? (
                             <>
