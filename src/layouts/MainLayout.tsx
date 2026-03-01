@@ -241,10 +241,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             {layoutMode !== 'fullscreen' && <Sidebar />}
 
             {/* Main content wrapper */}
-            <div className={clsx(
-                "flex-1 flex flex-col min-w-0 min-h-0 relative bg-white z-10 transition-all duration-500",
-                (isQueueOpen && queue.length > 0 && layoutMode !== 'fullscreen') ? "lg:mr-[420px]" : "lg:mr-0"
-            )}>
+            <div className="flex-1 flex flex-col min-w-0 min-h-0 relative bg-white z-10">
                 {/* Main Scroll Area */}
                 <main ref={mainScrollRef} className="flex-1 overflow-y-auto relative flex flex-col bg-gray-50/20">
                     <div className="w-full pb-20">
@@ -378,7 +375,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
             {/* Desktop Right Sidebar */}
             <aside className={clsx(
-                "hidden lg:flex w-[420px] border-l border-gray-200 flex-col z-20 transition-all duration-500",
+                "hidden lg:flex w-[420px] shrink-0 border-l border-gray-200 flex-col z-20 transition-all duration-500",
                 (isQueueOpen && queue.length > 0 && layoutMode !== 'fullscreen') ? "mr-0 opacity-100" : "-mr-[420px] opacity-0"
             )}>
                 <div className="flex-1 pt-[236px] flex flex-col bg-white">
