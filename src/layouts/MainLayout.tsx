@@ -324,9 +324,30 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                             }}
                                         />
                                     </div>
-                                    <div className="flex bg-gray-200/50 p-1 rounded-2xl border border-gray-200 shrink-0 h-11 items-center shadow-inner">
-                                        <button onClick={() => setIsKaraoke(false)} className={clsx("w-9 h-9 flex items-center justify-center rounded-xl transition-all", !isKaraoke ? "bg-primary text-white shadow-lg mx-0.5" : "text-gray-400 mx-0.5")}><Music size={18} /></button>
-                                        <button onClick={() => setIsKaraoke(true)} className={clsx("w-9 h-9 flex items-center justify-center rounded-xl transition-all", isKaraoke ? "bg-primary text-white shadow-lg mx-0.5" : "text-gray-400 mx-0.5")}><Mic size={18} /></button>
+                                    <div className="relative flex bg-gray-200/50 p-1 rounded-full border border-gray-200/50 shrink-0 h-11 items-center shadow-inner overflow-hidden w-[100px]">
+                                        {/* Premium Sliding Background */}
+                                        <div className={clsx(
+                                            "absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-full shadow-md transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
+                                            isKaraoke ? "left-[calc(50%+2px)]" : "left-1"
+                                        )} />
+                                        <button
+                                            onClick={() => setIsKaraoke(false)}
+                                            className={clsx(
+                                                "relative flex-1 h-full flex items-center justify-center z-10 transition-all duration-300",
+                                                !isKaraoke ? "text-primary scale-110" : "text-gray-400 opacity-60"
+                                            )}
+                                        >
+                                            <Music size={18} strokeWidth={2.5} />
+                                        </button>
+                                        <button
+                                            onClick={() => setIsKaraoke(true)}
+                                            className={clsx(
+                                                "relative flex-1 h-full flex items-center justify-center z-10 transition-all duration-300",
+                                                isKaraoke ? "text-primary scale-110" : "text-gray-400 opacity-60"
+                                            )}
+                                        >
+                                            <Mic size={18} strokeWidth={2.5} />
+                                        </button>
                                     </div>
                                 </div>
                             </div>
