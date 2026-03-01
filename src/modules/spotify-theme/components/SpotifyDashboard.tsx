@@ -201,7 +201,7 @@ export default function SpotifyDashboard({ showTab = true }) {
     <JooxError />
   ) : (
     <>
-      <div className="col-span-full px-2 pt-2 pb-2 text-lg font-bold text-gray-800 flex items-center gap-2">
+      <div className="col-span-full px-2 pt-2 pb-2 text-[15px] font-bold text-gray-800 flex items-center gap-2">
         ศิลปินยอดนิยม
       </div>
 
@@ -256,7 +256,7 @@ export default function SpotifyDashboard({ showTab = true }) {
 
                   {/* Name Text inside Cover (Bottom Left) */}
                   <div className="absolute inset-0 p-3 flex flex-col justify-end items-start z-10 pointer-events-none">
-                    <h2 className="text-white font-bold text-[13px] leading-tight line-clamp-1 drop-shadow-md transform translate-y-0.5 group-hover:translate-y-0 transition-transform text-left">
+                    <h2 className="text-white font-bold text-[11px] leading-tight line-clamp-1 drop-shadow-md transform translate-y-0.5 group-hover:translate-y-0 transition-transform text-left">
                       {artist.name}
                     </h2>
                   </div>
@@ -268,7 +268,7 @@ export default function SpotifyDashboard({ showTab = true }) {
       </div>
 
 
-      <div className="col-span-full px-2 pt-4 pb-3 text-lg font-bold text-gray-800 flex items-center gap-2 border-t border-gray-100 mt-2">
+      <div className="col-span-full px-2 pt-4 pb-3 text-[15px] font-bold text-gray-800 flex items-center gap-2 border-t border-gray-100 mt-2">
         แนวเพลงยอดฮิต
       </div>
 
@@ -279,7 +279,7 @@ export default function SpotifyDashboard({ showTab = true }) {
             key={gen}
             onClick={() => setUpdatedGenreText(gen)}
             className={`
-                 w-full py-2.5 px-4 rounded-2xl text-sm font-black transition-all duration-300 border
+                 w-full py-2 px-4 rounded-xl text-[13px] font-black transition-all duration-300 border
                  ${genreText == gen
                 ? "bg-primary text-white shadow-lg shadow-primary/30 border-primary transform -translate-y-0.5"
                 : "bg-gray-100 text-black border-gray-100 hover:bg-white hover:border-primary/30 hover:shadow-md hover:text-primary hover:-translate-y-0.5"
@@ -306,7 +306,7 @@ export default function SpotifyDashboard({ showTab = true }) {
 
       {/* Recommended Playlists Header */}
       {artistCategories.length > 0 && (
-        <div ref={playlistRef} className="scroll-mt-32 col-span-full px-2 pt-4 pb-3 text-lg font-bold text-gray-800 flex items-center justify-between">
+        <div ref={playlistRef} className="scroll-mt-32 col-span-full px-2 pt-4 pb-3 text-[15px] font-bold text-gray-800 flex items-center justify-between">
           <span>{genreText === "เพลงไทย" ? "เพลย์ลิสต์แนะนำ" : `เพลย์ลิสต์ ${genreText}`}</span>
           <span className="text-xs font-normal text-gray-400 bg-gray-50 px-3 py-1 rounded-full">อัพเดทล่าสุด</span>
         </div>
@@ -348,7 +348,7 @@ export default function SpotifyDashboard({ showTab = true }) {
                   </div>
                 </div>
                 <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                  <span className="text-white font-bold text-base drop-shadow-md line-clamp-2 leading-tight">
+                  <span className="text-white font-bold text-[14px] drop-shadow-md line-clamp-2 leading-tight">
                     {cat.tag_name}
                   </span>
                   <div className="h-1 w-12 bg-primary rounded-full mt-2 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-100 origin-left scale-x-0 group-hover:scale-x-100" />
@@ -398,7 +398,7 @@ export default function SpotifyDashboard({ showTab = true }) {
         artist && artist.length > 0 && (
           <div
             ref={songlistRef}
-            className="scroll-mt-32 col-span-full px-2 pt-6 pb-4 text-[16px] font-bold text-gray-900 flex items-center justify-between border-t border-gray-100"
+            className="scroll-mt-32 col-span-full px-2 pt-6 pb-4 text-[15px] font-bold text-gray-900 flex items-center justify-between border-t border-gray-100"
           >
             <div className="flex items-center gap-3">
               <div className="w-1.5 h-6 bg-primary rounded-full"></div>
@@ -450,10 +450,10 @@ export default function SpotifyDashboard({ showTab = true }) {
                   </div>
                 </figure>
                 <div className="p-2 gap-y-0.5 flex-1 flex flex-col relative">
-                  <h2 className="font-medium text-[11px] sm:text-[13px] line-clamp-2 flex-1 text-gray-800 leading-snug">
+                  <h2 className="font-medium text-[11px] sm:text-[12px] line-clamp-2 flex-1 text-gray-800 leading-snug">
                     {video.title || video.name}
                   </h2>
-                  <p className="text-[10px] text-gray-500 truncate">
+                  <p className="text-[9px] text-gray-500 truncate">
                     {video.artist_name || video.name}
                   </p>
                 </div>

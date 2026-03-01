@@ -48,17 +48,17 @@ export const Sidebar = memo(() => {
                 style={{ fontSize: 'var(--sidebar-font-size, 14px)' } as React.CSSProperties}
             >
                 {/* Main Menu */}
-                <div className="px-4 mb-2 mt-2 text-xs font-black text-black uppercase tracking-wider">เมนูหลัก</div>
-                <button onClick={() => handleNav(1, 'home')} className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold duration-300", (router.pathname === '/' && activeIndex === 1) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-black hover:bg-gray-100/50 hover:text-black")}>
+                <div className="px-4 mb-2 mt-2 text-[11px] font-black text-black uppercase tracking-wider">เมนูหลัก</div>
+                <button onClick={() => handleNav(1, 'home')} className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold duration-300 text-[13px]", (router.pathname === '/' && activeIndex === 1) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-black hover:bg-gray-100/50 hover:text-black")}>
                     <Home className={clsx("w-[22px] h-[22px]", (router.pathname === '/' && activeIndex === 1) ? "text-white" : "text-black")} /> <span>หน้าหลัก</span>
                 </button>
-                <button onClick={() => handleNav(2, 'rec')} className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold duration-300 text-sm", (router.pathname === '/' && activeIndex === 2) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-black hover:bg-gray-100/50 hover:text-black")}>
+                <button onClick={() => handleNav(2, 'rec')} className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold duration-300 text-[13px]", (router.pathname === '/' && activeIndex === 2) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-black hover:bg-gray-100/50 hover:text-black")}>
                     <Star className={clsx("w-[22px] h-[22px]", (router.pathname === '/' && activeIndex === 2) ? "text-white" : "text-black")} /> <span>แนะนำ</span>
                 </button>
-                <button onClick={() => handleNav(3, 'trending')} className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold duration-300 text-sm", (router.pathname === '/' && activeIndex === 3) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-black hover:bg-gray-100/50 hover:text-black")}>
+                <button onClick={() => handleNav(3, 'trending')} className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold duration-300 text-[13px]", (router.pathname === '/' && activeIndex === 3) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-black hover:bg-gray-100/50 hover:text-black")}>
                     <Flame className={clsx("w-[22px] h-[22px]", (router.pathname === '/' && activeIndex === 3) ? "text-white" : "text-black")} /> <span>มาแรง</span>
                 </button>
-                <button onClick={() => handleNav(4, 'library')} className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold duration-300 text-sm", (router.pathname === '/' && activeIndex === 4) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-black hover:bg-gray-100/50 hover:text-black")}>
+                <button onClick={() => handleNav(4, 'library')} className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold duration-300 text-[13px]", (router.pathname === '/' && activeIndex === 4) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-black hover:bg-gray-100/50 hover:text-black")}>
                     <Library className={clsx("w-[22px] h-[22px]", (router.pathname === '/' && activeIndex === 4) ? "text-white" : "text-black")} /> <span>เพลย์ลิสต์</span>
                 </button>
 
@@ -74,16 +74,16 @@ export const Sidebar = memo(() => {
                 </Link>
                 */}
 
-                <div className="mt-8 px-4 mb-2 text-xs font-black text-black uppercase tracking-wider">ช่วยเหลือ</div>
-                <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-2xl text-black hover:bg-gray-100/50 hover:text-black transition-all font-bold text-sm duration-300">
+                <div className="mt-8 px-4 mb-2 text-[11px] font-black text-black uppercase tracking-wider">ช่วยเหลือ</div>
+                <a href="#" className="flex items-center gap-3 px-4 py-3 rounded-2xl text-black hover:bg-gray-100/50 hover:text-black transition-all font-bold text-[13px] duration-300">
                     <MessageCircle className="w-[22px] h-[22px] text-black" /> <span>ติดต่อ LINE</span>
                 </a>
 
                 {/* Admin Menu (Admin & Owner) */}
                 {(user?.role === 'admin' || user?.role === 'owner') && (
                     <div className="mt-8">
-                        <div className="px-4 mb-2 text-xs font-black text-black uppercase tracking-wider">ส่วนผู้ดูแล</div>
-                        <Link href="/admin" className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold duration-300 text-sm", router.pathname.startsWith('/admin') ? "bg-red-50 text-red-600 shadow-sm translate-x-1" : "text-black hover:bg-gray-100/50 hover:text-black")}>
+                        <div className="px-4 mb-2 text-[11px] font-black text-black uppercase tracking-wider">ส่วนผู้ดูแล</div>
+                        <Link href="/admin" className={clsx("w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold duration-300 text-[13px]", router.pathname.startsWith('/admin') ? "bg-red-50 text-red-600 shadow-sm translate-x-1" : "text-black hover:bg-gray-100/50 hover:text-black")}>
                             <Shield className={clsx("w-[22px] h-[22px]", router.pathname.startsWith('/admin') ? "text-red-600" : "text-black")} /> <span>ระบบจัดการ</span>
                         </Link>
                     </div>
@@ -96,7 +96,7 @@ export const Sidebar = memo(() => {
                     isOpen={isProfileDrawerOpen}
                     onClose={() => setIsProfileDrawerOpen(false)}
                 />
-                <div className="px-3 mb-2 text-xs font-black text-black uppercase tracking-wider">บัญชี</div>
+                <div className="px-3 mb-2 text-[11px] font-black text-black uppercase tracking-wider">บัญชี</div>
                 {mounted && (
                     user ? (
                         <div className="flex items-center justify-between gap-2 px-1 py-1">

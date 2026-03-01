@@ -212,10 +212,10 @@ export default function SearchResultGrid({
                       </div>
                     </figure>
                     <div className="card-body p-2 gap-y-0.5 flex-1 flex flex-col relative pr-8">
-                      <h2 className="font-medium text-xs sm:text-[13px] line-clamp-2 flex-1 text-gray-800 leading-snug">
+                      <h2 className="font-medium text-[11px] sm:text-[12px] line-clamp-2 flex-1 text-gray-800 leading-snug">
                         {rcm.title}
                       </h2>
-                      <h2 className="text-[10px] text-gray-500 truncate">
+                      <h2 className="text-[9px] text-gray-500 truncate">
                         {rcm.author}
                       </h2>
 
