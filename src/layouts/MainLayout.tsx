@@ -209,7 +209,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 {/* Fixed/Docked Player Container */}
                 {mounted && (
                     <div className={clsx(
-                        "transition-all duration-500 z-[60] overflow-hidden lg:border-l lg:border-gray-200 shrink-0",
+                        "transition-all duration-500 z-[60] overflow-hidden lg:border-l lg:border-gray-200 shrink-0 relative",
                         layoutMode === 'fullscreen'
                             ? "fixed top-0 right-0 w-full h-[100dvh] z-[100] bg-black"
                             : [
@@ -281,8 +281,26 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         )}
 
                         {/* Page Content */}
-                        <div className="px-0">
-                            {isMobile && isQueueOpen ? <div className="bg-white min-h-screen px-4"><QueueList /></div> : children}
+                        <div className="px-0 relative overflow-hidden min-h-[calc(100vh-200px)]">
+                            {/* Main Content Layer */}
+                            <div className={clsx(
+                                isMobile && "transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+                                (isMobile && isQueueOpen) ? "opacity-0 -translate-y-10 pointer-events-none" : "opacity-100 translate-y-0"
+                            )}>
+                                {children}
+                            </div>
+
+                            {/* Mobile Slide-up Queue Layer */}
+                            {isMobile && (
+                                <div className={clsx(
+                                    "absolute inset-0 bg-white z-20 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+                                    isQueueOpen ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none"
+                                )}>
+                                    <div className="bg-white min-h-screen px-4">
+                                        <QueueList />
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </main>
