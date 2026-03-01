@@ -255,7 +255,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             </div>
                             <div className="flex items-center gap-6 ml-6">
                                 <div className="relative flex items-center bg-gray-50/50 rounded-2xl p-1 h-11 w-[180px] border border-gray-100/50">
-                                    <div className={clsx("absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-xl shadow-sm transition-all", isKaraoke ? "left-[calc(50%+2px)]" : "left-1")} />
+                                    <div className={clsx("absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-xl shadow-md transition-all", isKaraoke ? "left-[calc(50%+2px)]" : "left-1")} />
                                     <button onClick={() => setIsKaraoke(false)} className={clsx("relative flex-1 text-[11px] font-black uppercase z-10", !isKaraoke ? "text-primary" : "text-black/40")}>เพลง</button>
                                     <button onClick={() => setIsKaraoke(true)} className={clsx("relative flex-1 text-[11px] font-black uppercase z-10", isKaraoke ? "text-primary" : "text-black/40")}>คาราโอเกะ</button>
                                 </div>
@@ -267,14 +267,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         {layoutMode !== 'fullscreen' && (
                             <div className="lg:hidden flex flex-col pb-2.5 bg-[#f4f4f5]/95 backdrop-blur-xl border-b border-gray-100/50 shadow-sm sticky top-0 z-30">
                                 <SidebarControls castMode={castMode} />
-                                <div className="px-3 pt-2.5 flex gap-2.5">
+                                <div className="px-3 pt-1 flex gap-2.5">
                                     <div className="flex-1 relative flex items-center bg-black/[0.04] border border-gray-100 rounded-2xl px-4 h-11 transition-all focus-within:bg-white shadow-inner">
                                         <Search className="h-4.5 w-4.5 text-gray-400" />
                                         <DebounceInput minLength={2} debounceTimeout={300} placeholder="ค้นหาเพลง..." className="w-full bg-transparent pl-3 text-[15px] font-bold focus:outline-none" value={searchTerm} onChange={(e) => router.replace({ pathname: '/', query: { ...router.query, search: e.target.value } }, undefined, { shallow: true })} />
                                     </div>
                                     <div className="flex bg-gray-50 p-1 rounded-2xl border border-gray-100 shrink-0 h-11 items-center">
-                                        <button onClick={() => setIsKaraoke(false)} className={clsx("w-9 h-9 flex items-center justify-center rounded-xl", !isKaraoke ? "bg-white text-primary shadow-sm" : "text-gray-400")}><Music size={16} /></button>
-                                        <button onClick={() => setIsKaraoke(true)} className={clsx("w-9 h-9 flex items-center justify-center rounded-xl", isKaraoke ? "bg-white text-primary shadow-sm" : "text-gray-400")}><Mic size={16} /></button>
+                                        <button onClick={() => setIsKaraoke(false)} className={clsx("w-9 h-9 flex items-center justify-center rounded-xl", !isKaraoke ? "bg-white text-primary shadow-md" : "text-gray-400")}><Music size={16} /></button>
+                                        <button onClick={() => setIsKaraoke(true)} className={clsx("w-9 h-9 flex items-center justify-center rounded-xl", isKaraoke ? "bg-white text-primary shadow-md" : "text-gray-400")}><Mic size={16} /></button>
                                     </div>
                                 </div>
                             </div>
