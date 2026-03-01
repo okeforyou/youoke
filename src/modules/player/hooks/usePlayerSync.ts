@@ -21,9 +21,7 @@ export const usePlayerSync = (
 
         const checkDualMode = () => {
             const dualActive = localStorage.getItem('youoke-dual-active') === 'true';
-            // Also consider active Wireless Casting as Dual Mode BUT only for the Dashboard (not isPassive)
-            const isCasting = castMode === 'smarttv' || castMode === 'webmonitor';
-            setIsDualActive(!isPassive && (dualActive || isCasting));
+            setIsDualActive(!isPassive && dualActive);
         };
 
         checkDualMode();
@@ -69,7 +67,7 @@ export const usePlayerSync = (
 
         const interval = setInterval(() => {
             const target = playerRef.current;
-            if (!target) return;
+            if (!target || isPassive) return;
 
             // Safety check for method existence and iframe status
             if (typeof target.getIframe === 'function' && !target.getIframe()) return;
@@ -85,14 +83,8 @@ export const usePlayerSync = (
             const currentTime = target.getCurrentTime();
             const currentDuration = target.getDuration();
 
-            if (isPassive) {
-                // Passive mode (Monitor): Use syncRemoteTime to update store WITHOUT broadcasting
-                // This allows CastService to read time from store and sync to Firebase
-                usePlayerStore.getState().syncRemoteTime(currentTime);
-            } else {
-                // Active mode: Full broadcast so other tabs/windows stay in sync
-                usePlayerStore.getState().setCurrentTime(currentTime);
-            }
+            // Active mode: Full broadcast so other tabs/windows stay in sync
+            usePlayerStore.getState().setCurrentTime(currentTime);
 
             // SYNC Duration (always, so Host knows when song ends)
             const storeDuration = usePlayerStore.getState().duration;
@@ -108,7 +100,7 @@ export const usePlayerSync = (
     useEffect(() => {
         const target = playerRef.current;
         // Block Sync if Dual Mode is active (Controller Mode)
-        if (!target || isPassive || currentTime <= 0 || isDualActive) return;
+        if (!target || currentTime <= 0 || isDualActive) return;
 
         try {
             if (typeof target.getIframe === 'function' && !target.getIframe()) return;
