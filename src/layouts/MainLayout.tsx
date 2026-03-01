@@ -273,10 +273,17 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 </div>
                                 <button
                                     onClick={() => setShowQRCode(true)}
-                                    className="h-11 w-11 rounded-2xl flex items-center justify-center bg-white shadow-lg border border-primary/10 hover:border-primary/30 transition-all text-primary hover:scale-105 active:scale-95"
+                                    className="group relative h-11 w-11 rounded-2xl flex items-center justify-center bg-white shadow-lg border border-primary/10 hover:border-primary/30 transition-all text-primary hover:scale-105 active:scale-95"
                                     title="เชื่อมต่อรีโมท"
                                 >
-                                    <Smartphone className="w-5 h-5" />
+                                    <Smartphone className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                                    {mounted && (
+                                        <div className={clsx(
+                                            "absolute top-2.5 right-2.5 w-2 h-2 rounded-full border-2 border-white transition-colors duration-500",
+                                            connectionStatus === 'active' ? "bg-green-500 animate-pulse" :
+                                                connectionStatus === 'background' ? "bg-orange-500" : "bg-gray-300"
+                                        )} />
+                                    )}
                                 </button>
                             </div>
                         </header>
@@ -399,18 +406,30 @@ export default function MainLayout({ children }: MainLayoutProps) {
             />
 
             {showQRCode && roomCode && (
-                <div className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowQRCode(false)}>
-                    <div className="bg-white p-4 rounded-3xl shadow-2xl max-w-[260px] w-full text-center space-y-2 animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
-                        <div className="flex justify-between items-center text-gray-900">
-                            <h3 className="text-[13px] font-black uppercase tracking-tight">เชื่อมต่อรีโมท</h3>
-                            <button onClick={() => setShowQRCode(false)} className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
+                <div className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setShowQRCode(false)}>
+                    <div className="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-center space-y-6 animate-in zoom-in-95 duration-200 border border-white/20" onClick={e => e.stopPropagation()}>
+                        <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                                <Smartphone className="w-5 h-5 text-primary" />
+                                <h3 className="text-lg font-bold text-gray-900">เชื่อมต่อรีโมท</h3>
+                            </div>
+                            <button onClick={() => setShowQRCode(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                                 <X className="w-5 h-5 text-gray-400" />
                             </button>
                         </div>
-                        <div className="bg-gray-100/50 p-2 rounded-2xl">
-                            <img src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`${typeof window !== 'undefined' ? window.location.origin : ''}/remote?room=${roomCode}`)}`} className="w-full aspect-square mix-blend-multiply" alt="QR Code" />
+
+                        <div className="bg-white p-3 rounded-2xl border-2 border-dashed border-primary/20 inline-block shadow-sm">
+                            <img src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`${typeof window !== 'undefined' ? window.location.origin : ''}/remote?room=${roomCode}`)}`} className="w-56 h-56 rounded-lg" alt="QR Code" />
                         </div>
-                        <p className="text-[10px] font-black text-gray-400/60 uppercase tracking-[0.2em]">PIN: {roomCode}</p>
+
+                        <div className="space-y-2">
+                            <p className="text-sm font-medium text-gray-900">สแกนด้วยกล้องมือถือ</p>
+                            <p className="text-[12px] text-gray-500">เพื่อใช้มือถือเลือกเพลงและควบคุมการเล่น</p>
+                        </div>
+
+                        <div className="pt-2 border-t border-gray-100">
+                            <p className="text-[10px] text-gray-400 font-mono uppercase tracking-widest">Room Code: {roomCode}</p>
+                        </div>
                     </div>
                 </div>
             )}
