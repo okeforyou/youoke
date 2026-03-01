@@ -261,13 +261,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 />
                             </div>
                             <div className="flex items-center gap-6 ml-6">
-                                <div className="relative flex items-center bg-gray-100/50 rounded-2xl p-1 h-11 w-[180px] border border-gray-200/50 shadow-inner">
+                                <div className="relative flex items-center bg-gray-100/50 rounded-2xl p-1 h-11 w-[200px] border border-gray-200/50 shadow-inner">
                                     <div className={clsx(
                                         "absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-xl shadow-lg transition-all duration-300",
                                         isKaraoke ? "left-[calc(50%+2px)]" : "left-1"
                                     )} />
-                                    <button onClick={() => setIsKaraoke(false)} className={clsx("relative flex-1 text-[12px] font-black uppercase z-10 transition-all no-underline", !isKaraoke ? "text-primary scale-105" : "text-black hover:text-primary/70")}>เพลง</button>
-                                    <button onClick={() => setIsKaraoke(true)} className={clsx("relative flex-1 text-[12px] font-black uppercase z-10 transition-all no-underline", isKaraoke ? "text-primary scale-105" : "text-black hover:text-primary/70")}>คาราโอเกะ</button>
+                                    <button onClick={() => setIsKaraoke(false)} className={clsx("relative flex-1 text-sm font-black uppercase z-10 transition-all no-underline", !isKaraoke ? "text-primary scale-105" : "text-black hover:text-primary/70")}>เพลง</button>
+                                    <button onClick={() => setIsKaraoke(true)} className={clsx("relative flex-1 text-sm font-black uppercase z-10 transition-all no-underline", isKaraoke ? "text-primary scale-105" : "text-black hover:text-primary/70")}>คาราโอเกะ</button>
                                 </div>
                                 <button
                                     onClick={() => setShowQRCode(true)}

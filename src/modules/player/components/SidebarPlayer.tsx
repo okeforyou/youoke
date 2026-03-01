@@ -136,8 +136,24 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
     }, [layoutMode]);
 
     const toggleFullscreen = () => {
-        // Use Global Store Trigger instead of local DOM manipulation
-        // This ensures the remote control and main screen stay perfectly in sync.
+        const isFs = !!document.fullscreenElement || !!(document as any).webkitFullscreenElement;
+
+        if (!isFs) {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if ((elem as any).webkitRequestFullscreen) {
+                (elem as any).webkitRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if ((document as any).webkitExitFullscreen) {
+                (document as any).webkitExitFullscreen();
+            }
+        }
+
+        // Always sync with store
         usePlayerStore.getState().triggerFullscreen();
     };
 

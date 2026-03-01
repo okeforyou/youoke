@@ -257,7 +257,7 @@ export default function SpotifyDashboard({ showTab = true }) {
 
                   {/* Name Text inside Cover (Bottom Left) */}
                   <div className="absolute inset-0 p-3 flex flex-col justify-end items-start z-10 pointer-events-none">
-                    <h2 className="text-white font-bold text-[11px] leading-tight line-clamp-1 drop-shadow-md transform translate-y-0.5 group-hover:translate-y-0 transition-transform text-left">
+                    <h2 className="text-white font-bold text-xs leading-tight line-clamp-1 drop-shadow-md transform translate-y-0.5 group-hover:translate-y-0 transition-transform text-left">
                       {artist.name}
                     </h2>
                   </div>
@@ -280,7 +280,7 @@ export default function SpotifyDashboard({ showTab = true }) {
             key={gen}
             onClick={() => setUpdatedGenreText(gen)}
             className={`
-                 w-full py-2 px-4 rounded-xl text-[13px] font-black transition-all duration-300 border
+                 w-full py-2 px-4 rounded-xl text-sm font-black transition-all duration-300 border
                  ${genreText == gen
                 ? "bg-primary text-white shadow-lg shadow-primary/30 border-primary transform -translate-y-0.5"
                 : "bg-gray-100 text-black border-gray-100 hover:bg-white hover:border-primary/30 hover:shadow-md hover:text-primary hover:-translate-y-0.5"
@@ -349,7 +349,7 @@ export default function SpotifyDashboard({ showTab = true }) {
                   </div>
                 </div>
                 <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                  <span className="text-white font-bold text-[14px] drop-shadow-md line-clamp-2 leading-tight">
+                  <span className="text-white font-bold text-base drop-shadow-md line-clamp-2 leading-tight">
                     {cat.tag_name}
                   </span>
                   <div className="h-1 w-12 bg-primary rounded-full mt-2 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-100 origin-left scale-x-0 group-hover:scale-x-100" />

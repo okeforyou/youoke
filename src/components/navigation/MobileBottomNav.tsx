@@ -7,6 +7,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useRouter } from 'next/router';
 
 export const MobileBottomNav = () => {
+    const router = useRouter();
     const { activeIndex, setActiveIndex, setSearchTerm, queue, currentIndex } = usePlayerStore(
         useShallow(state => ({
             activeIndex: state.activeIndex,
@@ -19,14 +20,14 @@ export const MobileBottomNav = () => {
     const { setPlayerHidden, setQueueOpen, isQueueOpen, isPlayerHidden } = useUIStore();
 
     const navItems = [
-        { id: 1, label: 'หน้าหลัก', icon: Home },
-        { id: 2, label: 'แนะนำ', icon: Star },
-        { id: 3, label: 'มาแรง', icon: Flame },
-        { id: 4, label: 'เพลย์ลิสต์', icon: Library },
+        { id: 1, label: 'หน้าหลัก', icon: Home, tab: 'home' },
+        { id: 2, label: 'แนะนำ', icon: Star, tab: 'rec' },
+        { id: 3, label: 'มาแรง', icon: Flame, tab: 'trending' },
+        { id: 4, label: 'เพลย์ลิสต์', icon: Library, tab: 'library' },
         { id: 5, label: 'คิวเพลง', icon: ListMusic },
     ];
 
-    const handleNavClick = (index: number) => {
+    const handleNavClick = (index: number, tab?: string) => {
         if (index === 5) {
             // Queue Action: Toggle Player/Queue visibility
             if (isQueueOpen && !isPlayerHidden) {
@@ -41,6 +42,13 @@ export const MobileBottomNav = () => {
             setSearchTerm(''); // Clear search logic from MainLayout
             setActiveIndex(index);
             setQueueOpen(false); // Close queue when changing main tabs
+
+            if (tab && router.isReady) {
+                router.push({
+                    pathname: '/',
+                    query: { tab: tab }
+                }, undefined, { shallow: true });
+            }
 
             // Explicit scroll reset for navigation commands
             if (typeof window !== 'undefined') {
@@ -61,7 +69,7 @@ export const MobileBottomNav = () => {
                     return (
                         <button
                             key={item.id}
-                            onClick={() => handleNavClick(item.id)}
+                            onClick={() => handleNavClick(item.id, item.tab)}
                             className="flex-1 flex flex-col items-center justify-center gap-1 py-2 active:scale-95 transition-all duration-200 group"
                         >
                             <div className={clsx(

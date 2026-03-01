@@ -210,6 +210,22 @@ export const PlayerControls = () => {
                         {/* Audio Output Switcher (Only visible in DJ Mode) */}
                         <AudioOutputSwitcher />
 
+                        <button
+                            onClick={() => {
+                                const isFs = !!document.fullscreenElement || !!(document as any).webkitFullscreenElement;
+                                if (!isFs) {
+                                    const elem = document.documentElement;
+                                    if (elem.requestFullscreen) elem.requestFullscreen();
+                                    else if ((elem as any).webkitRequestFullscreen) (elem as any).webkitRequestFullscreen();
+                                }
+                                usePlayerStore.getState().triggerFullscreen();
+                            }}
+                            className="text-gray-400 hover:text-primary transition-colors p-2 rounded-lg hover:bg-gray-100"
+                            title="เล่นเต็มจอ"
+                        >
+                            <Maximize2 size={18} />
+                        </button>
+
                         <button onClick={() => setMuted(!isMuted)} className="text-gray-400 hover:text-gray-600">
                             {isMuted || volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
                         </button>
