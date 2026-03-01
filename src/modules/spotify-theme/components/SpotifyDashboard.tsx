@@ -384,7 +384,7 @@ export default function SpotifyDashboard({ showTab = true }) {
       {
         isLoading && (
           <>
-            <div className="col-span-full grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 px-2">
+            <div className="col-span-full grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 px-2">
               {getSkeletonItems(8).map((s) => (
                 <div key={s} className="h-48 bg-gray-100 rounded-3xl animate-pulse" />
               ))}
@@ -412,7 +412,7 @@ export default function SpotifyDashboard({ showTab = true }) {
       }
 
       {/* Song List Grid - Clean Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 col-span-full px-2 pb-24">
+      <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 col-span-full px-2 pb-24">
         {artist?.map((item, i) => {
           const artist = item as any;
           return (

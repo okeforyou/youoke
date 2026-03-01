@@ -173,7 +173,7 @@ export default function SearchResultGrid({
 
       {/* Grid View */}
       {viewMode === "grid" && (
-        <div className="relative grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 col-span-full auto-rows-fr">
+        <div className="relative grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 col-span-full auto-rows-fr">
           {isLoading && (
             <>
               {getSkeletonItems(16).map((s) => (
