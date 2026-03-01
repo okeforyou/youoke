@@ -241,10 +241,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             {layoutMode !== 'fullscreen' && <Sidebar />}
 
             {/* Main content wrapper */}
-            <div className={clsx(
-                "flex-1 flex flex-col min-w-0 min-h-0 relative bg-white z-10",
-                (isQueueOpen && queue.length > 0 && layoutMode !== 'fullscreen') ? "lg:mr-[420px]" : "lg:mr-0"
-            )}>
+            <div className="flex-1 flex flex-col min-w-0 min-h-0 relative bg-white z-10">
                 {/* Main Scroll Area */}
                 <main ref={mainScrollRef} className="flex-1 overflow-y-auto relative flex flex-col bg-gray-50/20">
                     <div className="w-full pb-20">
@@ -269,19 +266,18 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                         "absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-xl shadow-lg transition-all duration-300",
                                         isKaraoke ? "left-[calc(50%+2px)]" : "left-1"
                                     )} />
-                                    <button onClick={() => setIsKaraoke(false)} className={clsx("relative flex-1 text-[12px] font-bold uppercase z-10 transition-colors", !isKaraoke ? "text-black shadow-sm" : "text-gray-500 hover:text-black")}>เพลง</button>
-                                    <button onClick={() => setIsKaraoke(true)} className={clsx("relative flex-1 text-[12px] font-bold uppercase z-10 transition-colors", isKaraoke ? "text-black shadow-sm" : "text-gray-500 hover:text-black")}>คาราโอเกะ</button>
+                                    <button onClick={() => setIsKaraoke(false)} className={clsx("relative flex-1 text-[12px] font-bold uppercase z-10 transition-colors", !isKaraoke ? "text-primary shadow-sm" : "text-black")}>เพลง</button>
+                                    <button onClick={() => setIsKaraoke(true)} className={clsx("relative flex-1 text-[12px] font-bold uppercase z-10 transition-colors", isKaraoke ? "text-primary shadow-sm" : "text-black")}>คาราโอเกะ</button>
                                 </div>
                                 <button
                                     onClick={() => setShowQRCode(true)}
-                                    className="group relative h-11 px-4 rounded-2xl flex items-center justify-center gap-2 bg-primary shadow-lg shadow-primary/30 border border-primary/20 hover:bg-primary/90 transition-all text-white hover:scale-105 active:scale-95"
+                                    className="group relative h-11 w-11 rounded-2xl flex items-center justify-center bg-gray-100 hover:bg-gray-200 border border-gray-200 transition-all text-black hover:scale-105 active:scale-95"
                                     title="เชื่อมต่อรีโมท"
                                 >
-                                    <Smartphone className="w-5 h-5" />
-                                    <span className="font-bold text-[13px] tracking-wide">รีโมท</span>
+                                    <Smartphone className="w-5 h-5 group-hover:scale-110 transition-transform" />
                                     {mounted && (
                                         <div className={clsx(
-                                            "absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full border-[3px] border-white transition-colors duration-500 shadow-sm",
+                                            "absolute top-2.5 right-2.5 w-2 h-2 rounded-full border-2 border-white transition-colors duration-500 shadow-sm",
                                             connectionStatus === 'active' ? "bg-green-500 animate-pulse" :
                                                 connectionStatus === 'background' ? "bg-orange-500" : "bg-gray-300"
                                         )} />
