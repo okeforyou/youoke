@@ -109,6 +109,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
         }
     }, [activeIndex]); // Only on tab change, NOT on searchTerm to avoid jumping while typing on desktop
 
+    // Auto-open queue on desktop when items are added
+    useEffect(() => {
+        if (!isMobile && playerQueue.length > 0 && !isQueueOpen) {
+            setQueueOpen(true);
+        }
+    }, [playerQueue.length, isMobile]);
+
     const handleRemoteConnected = useCallback(() => {
         if (showQRCode || partyModalOpen) {
             setShowQRCode(false);
@@ -258,12 +265,12 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         {/* 🏝️ STICKY GLASS HEADERS */}
 
                         {/* Desktop Header */}
-                        <header className="hidden lg:flex h-20 items-center justify-between px-8 border-b border-gray-100/50 bg-[#f4f4f5]/95 backdrop-blur-xl sticky top-0 z-30">
+                        <header className="hidden lg:flex h-20 items-center justify-between px-8 border-b border-gray-200/50 bg-white/95 backdrop-blur-xl sticky top-0 z-30">
                             <div className="flex-1 max-w-2xl relative">
                                 <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300" />
                                 <DebounceInput
                                     minLength={2} debounceTimeout={300} placeholder="ค้นหาเพลง, ศิลปิน..."
-                                    className="w-full pl-14 pr-12 h-12 bg-gray-100/30 hover:bg-white focus:bg-white border border-gray-100/50 rounded-2xl focus:outline-none transition-all shadow-sm font-medium"
+                                    className="w-full pl-14 pr-12 h-12 bg-white border border-gray-200 rounded-2xl focus:outline-none transition-all shadow-sm font-medium text-black"
                                     value={searchTerm}
                                     onChange={(e) => {
                                         setSearchTerm(e.target.value);
