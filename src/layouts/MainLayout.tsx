@@ -109,11 +109,25 @@ export default function MainLayout({ children }: MainLayoutProps) {
         }
     }, [activeIndex]); // Only on tab change, NOT on searchTerm to avoid jumping while typing on desktop
 
-    // Auto-open queue on desktop when items are added
+    // Auto-open/close Queue (and Player) based on contents (Desktop Only)
+    const isFirstLoad = useRef(true);
+    const prevQueueLen = useRef(0);
     useEffect(() => {
-        if (!isMobile && playerQueue.length > 0 && !isQueueOpen) {
-            setQueueOpen(true);
+        if (isMobile) return; // Only auto-open on Desktop
+
+        // Skip auto-open on initial mount if queue exists
+        if (isFirstLoad.current) {
+            isFirstLoad.current = false;
+            prevQueueLen.current = playerQueue.length;
+            return;
         }
+
+        if (prevQueueLen.current === 0 && playerQueue.length > 0) {
+            setQueueOpen(true);
+        } else if (playerQueue.length === 0) {
+            setQueueOpen(false);
+        }
+        prevQueueLen.current = playerQueue.length;
     }, [playerQueue.length, isMobile]);
 
     const handleRemoteConnected = useCallback(() => {
@@ -265,15 +279,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         {/* 🏝️ STICKY GLASS HEADERS */}
 
                         {/* Desktop Header */}
-                        <header className="hidden lg:flex h-20 items-center justify-between px-8 border-b border-gray-200/50 bg-white/95 backdrop-blur-xl sticky top-0 z-30">
+                        <header className="hidden lg:flex h-20 items-center justify-between px-8 border-b border-gray-100 bg-white sticky top-0 z-30 transition-all">
                             <div className="flex-1 max-w-2xl relative">
                                 <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300" />
                                 <DebounceInput
-                                    minLength={2} debounceTimeout={300} placeholder="ค้นหาเพลง, ศิลปิน..."
-                                    className="w-full pl-14 pr-12 h-12 bg-white border border-gray-200 rounded-2xl focus:outline-none transition-all shadow-sm font-medium text-black"
+                                    minLength={2} debounceTimeout={300} placeholder="ค้นหาเพลง, ศิลปิน, หรือวางลิงก์ YouTube..."
+                                    className="block w-full pl-14 pr-12 h-12 bg-gray-50/50 hover:bg-gray-100/50 focus:bg-white border border-gray-100 focus:border-primary/20 rounded-2xl leading-5 text-gray-900 placeholder-gray-400 focus:outline-none transition-all shadow-sm font-medium"
                                     value={searchTerm}
                                     onChange={(e) => {
-                                        setSearchTerm(e.target.value);
                                         router.replace({ pathname: '/', query: { ...router.query, search: e.target.value } }, undefined, { shallow: true });
                                     }}
                                 />
@@ -316,7 +329,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         )}
 
                         {/* Page Content */}
-                        <div className={clsx("px-0 relative min-h-[calc(100vh-200px)]", isMobile && "overflow-hidden")}>
+                        <div className="px-0 relative overflow-hidden min-h-[calc(100vh-200px)]">
                             {/* Main Content Layer */}
                             <div className={clsx(
                                 isMobile && "transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
@@ -357,7 +370,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             {/* Modals & Overlays */}
             <ProfileDrawer isOpen={isProfileOpen} onClose={() => setProfileOpen(false)} />
             <ReceiverInfoModal />
-            <ShareRoomModal isOpen={partyModalOpen} onClose={() => setPartyModalOpen(false)} roomCode={roomCode || ''} />
+            <ShareRoomModal isOpen={partyModalOpen} onClose={() => setPartyModalOpen(false)} roomCode={roomCode || ''} shareUrl={`${typeof window !== 'undefined' ? window.location.origin : ''}/remote?room=${roomCode}`} />
             <LimitReachedModal />
             <CastModeSelector
                 isOpen={isCastModalOpen}
