@@ -68,11 +68,11 @@ export default function ListCommunityPlaylists({ onPlay }: ListCommunityPlaylist
     return (
         <div className="pb-10">
             <div className="px-6 pt-2 pb-6">
-                <h2 className="text-2xl font-black text-gray-900 flex items-center gap-2">
-                    <FireIcon className="w-8 h-8 text-orange-500" />
+                <h2 className="text-[17px] font-black text-gray-900 flex items-center gap-2">
+                    <FireIcon className="w-5 h-5 text-orange-500" />
                     ฮิตติดชาร์ต (Community Hits)
                 </h2>
-                <p className="text-gray-500 text-sm mt-1 ml-10">เพลย์ลิสต์ยอดนิยมจากเพื่อนๆ ในชุมชน YouOke</p>
+                <p className="text-gray-500 text-[12px] mt-1 ml-7">เพลย์ลิสต์ยอดนิยมจากเพื่อนๆ ในชุมชน YouOke</p>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-10 px-6">

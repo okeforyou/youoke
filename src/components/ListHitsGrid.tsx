@@ -49,7 +49,7 @@ export default function ListHitsGrid() {
 
     return (
         <div className="pt-2 px-4 pb-24">
-            <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-white">
+            <h2 className="text-[17px] font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-white">
                 เพลงฮิตติดกระแส (Thailand Top 50)
             </h2>
 
@@ -84,10 +84,10 @@ export default function ListHitsGrid() {
 
                         {/* Info Section */}
                         <div className="absolute bottom-0 inset-x-0 p-4 text-left">
-                            <h3 className="text-white font-bold text-sm line-clamp-1 leading-tight mb-1 group-hover:text-primary transition-colors">
+                            <h3 className="text-white font-bold text-[12px] line-clamp-1 leading-tight mb-1 group-hover:text-primary transition-colors">
                                 {hit.title}
                             </h3>
-                            <p className="text-gray-300 text-xs line-clamp-1 font-medium">
+                            <p className="text-gray-300 text-[10px] line-clamp-1 font-medium">
                                 {hit.artist_name}
                             </p>
                         </div>

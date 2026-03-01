@@ -87,10 +87,10 @@ export default function CardV2({
             {/* 7. Info Section */}
             <div className="flex justify-between items-start px-1">
                 <div className="flex-1 min-w-0 pr-2">
-                    <h3 className="font-bold text-gray-900 truncate group-hover:text-primary transition-colors text-base leading-tight">
+                    <h3 className="font-bold text-gray-900 truncate group-hover:text-primary transition-colors text-[14px] leading-tight">
                         {name}
                     </h3>
-                    <p className="text-xs font-medium text-gray-500 mt-1 flex items-center gap-2">
+                    <p className="text-[11px] font-medium text-gray-500 mt-1 flex items-center gap-2">
                         <span className="inline-block px-2 py-0.5 rounded-md bg-gray-100 border border-gray-200">
                             {count} เพลง
                         </span>

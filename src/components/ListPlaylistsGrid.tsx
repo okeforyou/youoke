@@ -407,8 +407,8 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
       {/* Header */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-6 py-8 sm:py-10">
         <div className="text-center md:text-left">
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight leading-none mb-2">คลังเพลย์ลิสต์</h1>
-          <p className="text-gray-500 text-sm font-medium">แหล่งรวมความบันเทิงที่คุณสร้างสรรค์เองได้</p>
+          <h1 className="text-[20px] font-black text-gray-900 tracking-tight leading-none mb-2">คลังเพลย์ลิสต์</h1>
+          <p className="text-gray-500 text-[12px] font-medium">แหล่งรวมความบันเทิงที่คุณสร้างสรรค์เองได้</p>
         </div>
 
         {/* Tabs */}
@@ -426,7 +426,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
             <button
               onClick={() => setActiveIndex(0)}
               className={clsx(
-                "relative flex-1 flex items-center justify-center gap-2 h-full rounded-xl text-sm font-bold transition-colors z-10",
+                "relative flex-1 flex items-center justify-center gap-2 h-full rounded-xl text-[13px] font-bold transition-colors z-10",
                 activeIndex === 0 ? "text-gray-900" : "text-gray-400 hover:text-gray-600"
               )}
             >
@@ -437,7 +437,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
             <button
               onClick={() => setActiveIndex(1)}
               className={clsx(
-                "relative flex-1 flex items-center justify-center gap-2 h-full rounded-xl text-sm font-bold transition-colors z-10",
+                "relative flex-1 flex items-center justify-center gap-2 h-full rounded-xl text-[13px] font-bold transition-colors z-10",
                 activeIndex === 1 ? "text-gray-900" : "text-gray-400 hover:text-gray-600"
               )}
             >
@@ -448,7 +448,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
         ) : (
           /* Guest Mode: Single Static Pill */
           <div className="bg-gray-100 rounded-2xl p-1 h-12 inline-flex items-center">
-            <div className="bg-white rounded-xl shadow-sm h-full px-6 flex items-center gap-2 text-sm font-bold text-gray-900">
+            <div className="bg-white rounded-xl shadow-sm h-full px-6 flex items-center gap-2 text-[13px] font-bold text-gray-900">
               <GlobeAltIcon className="w-4 h-4" />
               <span>ชุมชน</span>
             </div>
@@ -457,7 +457,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
 
         {/* Add Button (Desktop) - Always visible if user exists */}
         {user?.uid && (
-          <button onClick={openCreateModal} className="hidden md:flex items-center gap-2 px-6 py-3 bg-gray-900 hover:bg-black text-white rounded-full font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 active:scale-95">
+          <button onClick={openCreateModal} className="hidden md:flex items-center gap-2 px-6 py-3 bg-gray-900 hover:bg-black text-white rounded-full text-[13px] font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 active:scale-95">
             <PlusIcon className="w-5 h-5" />
             <span>สร้างใหม่</span>
           </button>
@@ -592,8 +592,8 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
             </div>
             {/* Title & Info */}
             <div className="flex-1 min-w-0">
-              <h2 className="text-lg font-black text-gray-900 leading-tight mb-1 truncate">{selectedItem?.name}</h2>
-              <div className="flex items-center gap-2 text-xs text-gray-500 font-medium font-mono">
+              <h2 className="text-[15px] font-black text-gray-900 leading-tight mb-1 truncate">{selectedItem?.name}</h2>
+              <div className="flex items-center gap-2 text-[10px] text-gray-500 font-medium font-mono">
                 <span className="bg-gray-100 px-2 py-0.5 rounded text-gray-600">{selectedItem?.playlists?.length || 0} เพลง</span>
                 <span>•</span>
                 <span className="truncate max-w-[120px]">{user?.displayName || 'ผู้สร้าง'}</span>
@@ -630,8 +630,8 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
                     </div>
 
                     <div className="flex-1 min-w-0 pr-4">
-                      <p className="text-sm font-bold text-gray-900 truncate group-hover:text-primary transition-colors leading-tight mb-0.5">{v.title}</p>
-                      <p className="text-[11px] text-gray-500 truncate">{v.author}</p>
+                      <p className="text-[13px] font-bold text-gray-900 truncate group-hover:text-primary transition-colors leading-tight mb-0.5">{v.title}</p>
+                      <p className="text-[10px] text-gray-500 truncate">{v.author}</p>
                     </div>
 
                     {activeIndex === 1 ? (

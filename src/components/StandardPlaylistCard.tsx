@@ -91,14 +91,14 @@ export default function PlaylistCard({
             {/* Content */}
             <div className="flex justify-between items-start px-1 mt-1">
                 <div className="min-w-0 flex-1 pr-2">
-                    <h3 className="font-bold text-base text-gray-800 truncate group-hover:text-primary transition-colors leading-tight">
+                    <h3 className="font-bold text-[14px] text-gray-800 truncate group-hover:text-primary transition-colors leading-tight">
                         {name}
                     </h3>
                     <div className="flex items-center gap-2 mt-1">
                         {isRecommended ? (
                             <p className="text-xs text-gray-500">Playlist</p>
                         ) : (
-                            <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200">
+                            <span className="text-[10px] font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200">
                                 {count} เพลง
                             </span>
                         )}

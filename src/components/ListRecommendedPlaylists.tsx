@@ -264,7 +264,7 @@ export default function ListRecommendedPlaylists() {
                         >
                             <ChevronLeftIcon className="w-6 h-6 text-gray-600" />
                         </button>
-                        <h2 className="text-xl font-bold truncate">{selectedPlaylist.tag_name}</h2>
+                        <h2 className="text-[16px] font-bold truncate">{selectedPlaylist.tag_name}</h2>
                     </div>
 
                     {/* Import Button */}
@@ -320,8 +320,8 @@ export default function ListRecommendedPlaylists() {
                                     </div>
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <h3 className="font-bold text-gray-900 truncate">{song.title}</h3>
-                                    <p className="text-sm text-gray-500 truncate">{song.artist_name}</p>
+                                    <h3 className="font-bold text-[14px] text-gray-900 truncate">{song.title}</h3>
+                                    <p className="text-[11px] text-gray-500 truncate">{song.artist_name}</p>
                                 </div>
                             </div>
                         ))
@@ -336,10 +336,10 @@ export default function ListRecommendedPlaylists() {
         <div className="pb-20">
             <div className="px-6 pt-6 pb-2 flex items-start justify-between">
                 <div>
-                    <h2 className="text-2xl font-black text-gray-900 flex items-center gap-2">
+                    <h2 className="text-[17px] font-black text-gray-900 flex items-center gap-2">
                         แนะนำสำหรับคุณ
                     </h2>
-                    <p className="text-gray-500 text-sm mt-1">เพลย์ลิสต์ยอดนิยมจากหัวข้อ "{currentTopic}"</p>
+                    <p className="text-gray-500 text-[12px] mt-1">เพลย์ลิสต์ยอดนิยมจากหัวข้อ "{currentTopic}"</p>
                 </div>
 
                 {/* Refresh Topic Button */}
