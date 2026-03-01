@@ -241,7 +241,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
             {layoutMode !== 'fullscreen' && <Sidebar />}
 
             {/* Main content wrapper */}
-            <div className="flex-1 flex flex-col min-w-0 min-h-0 relative bg-white z-10">
+            <div className={clsx(
+                "flex-1 flex flex-col min-w-0 min-h-0 relative bg-white z-10 transition-all duration-500",
+                (isQueueOpen && queue.length > 0 && layoutMode !== 'fullscreen') ? "lg:mr-[420px]" : "lg:mr-0"
+            )}>
                 {/* Main Scroll Area */}
                 <main ref={mainScrollRef} className="flex-1 overflow-y-auto relative flex flex-col bg-gray-50/20">
                     <div className="w-full pb-20">
@@ -266,8 +269,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                         "absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-xl shadow-lg transition-all duration-300",
                                         isKaraoke ? "left-[calc(50%+2px)]" : "left-1"
                                     )} />
-                                    <button onClick={() => setIsKaraoke(false)} className={clsx("relative flex-1 text-[12px] font-bold uppercase z-10 transition-colors", !isKaraoke ? "text-primary shadow-sm" : "text-black")}>เพลง</button>
-                                    <button onClick={() => setIsKaraoke(true)} className={clsx("relative flex-1 text-[12px] font-bold uppercase z-10 transition-colors", isKaraoke ? "text-primary shadow-sm" : "text-black")}>คาราโอเกะ</button>
+                                    <button onClick={() => setIsKaraoke(false)} className={clsx("relative flex-1 text-[12px] font-black uppercase z-10 transition-all no-underline", !isKaraoke ? "text-primary scale-105" : "text-black hover:text-primary/70")}>เพลง</button>
+                                    <button onClick={() => setIsKaraoke(true)} className={clsx("relative flex-1 text-[12px] font-black uppercase z-10 transition-all no-underline", isKaraoke ? "text-primary scale-105" : "text-black hover:text-primary/70")}>คาราโอเกะ</button>
                                 </div>
                                 <button
                                     onClick={() => setShowQRCode(true)}
@@ -305,9 +308,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                             }}
                                         />
                                     </div>
-                                    <div className="flex bg-gray-50 p-1 rounded-2xl border border-gray-100 shrink-0 h-11 items-center">
-                                        <button onClick={() => setIsKaraoke(false)} className={clsx("w-9 h-9 flex items-center justify-center rounded-xl", !isKaraoke ? "bg-white text-black shadow-md" : "text-gray-400")}><Music size={16} /></button>
-                                        <button onClick={() => setIsKaraoke(true)} className={clsx("w-9 h-9 flex items-center justify-center rounded-xl", isKaraoke ? "bg-white text-black shadow-md" : "text-gray-400")}><Mic size={16} /></button>
+                                    <div className="flex bg-gray-100/50 p-1 rounded-full border border-gray-100 shrink-0 h-11 items-center">
+                                        <button onClick={() => setIsKaraoke(false)} className={clsx("w-9 h-9 flex items-center justify-center rounded-full transition-all", !isKaraoke ? "bg-primary text-white shadow-lg mx-0.5" : "text-gray-400 mx-0.5")}><Music size={18} /></button>
+                                        <button onClick={() => setIsKaraoke(true)} className={clsx("w-9 h-9 flex items-center justify-center rounded-full transition-all", isKaraoke ? "bg-primary text-white shadow-lg mx-0.5" : "text-gray-400 mx-0.5")}><Mic size={18} /></button>
                                     </div>
                                 </div>
                             </div>
@@ -403,7 +406,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 onSelectYouTube={() => { }}
             />
 
-            {showQRCode && roomCode && (
+            {showQRCode && (
                 <div className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setShowQRCode(false)}>
                     <div className="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-center space-y-6 animate-in zoom-in-95 duration-200 border border-white/20" onClick={e => e.stopPropagation()}>
                         <div className="flex justify-between items-center">
@@ -416,18 +419,27 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             </button>
                         </div>
 
-                        <div className="bg-white p-3 rounded-2xl border-2 border-dashed border-primary/20 inline-block shadow-sm">
-                            <img src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`${typeof window !== 'undefined' ? window.location.origin : ''}/remote?room=${roomCode}`)}`} className="w-56 h-56 rounded-lg" alt="QR Code" />
-                        </div>
+                        {roomCode ? (
+                            <>
+                                <div className="bg-white p-3 rounded-2xl border-2 border-dashed border-primary/20 inline-block shadow-sm">
+                                    <img src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`${typeof window !== 'undefined' ? window.location.origin : ''}/remote?room=${roomCode}`)}`} className="w-56 h-56 rounded-lg" alt="QR Code" />
+                                </div>
 
-                        <div className="space-y-2">
-                            <p className="text-sm font-medium text-gray-900">สแกนด้วยกล้องมือถือ</p>
-                            <p className="text-[12px] text-gray-500">เพื่อใช้มือถือเลือกเพลงและควบคุมการเล่น</p>
-                        </div>
+                                <div className="space-y-2">
+                                    <p className="text-sm font-medium text-gray-900">สแกนด้วยกล้องมือถือ</p>
+                                    <p className="text-[12px] text-gray-500">เพื่อใช้มือถือเลือกเพลงและควบคุมการเล่น</p>
+                                </div>
 
-                        <div className="pt-2 border-t border-gray-100">
-                            <p className="text-[10px] text-gray-400 font-mono uppercase tracking-widest">Room Code: {roomCode}</p>
-                        </div>
+                                <div className="pt-2 border-t border-gray-100">
+                                    <p className="text-[10px] text-gray-400 font-mono uppercase tracking-widest">Room Code: {roomCode}</p>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="py-12 flex flex-col items-center gap-4">
+                                <div className="loading loading-spinner text-primary"></div>
+                                <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">กำลังสร้างห้อง...</p>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
