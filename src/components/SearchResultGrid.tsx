@@ -41,7 +41,11 @@ export default function SearchResultGrid({
   );
 
   const handleDivScroll = () => {
-    // Scroll logic handled by MainLayout centralized ref
+    // Only scroll to top when list updates meaningfully
+    if (typeof window !== 'undefined') {
+      const main = document.querySelector('main');
+      if (main) main.scrollTo({ top: 0, behavior: 'instant' });
+    }
   };
 
   const titleIncludesKaraoke = ({ title }: { title: string }) => {
