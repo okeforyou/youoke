@@ -143,7 +143,14 @@ export default function ListRecommendedPlaylists() {
             });
         }
     }, [tracksData, selectedPlaylist, router.query.view]);
-
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const main = document.querySelector('main');
+            if (main) {
+                main.scrollTo({ top: 0, behavior: 'instant' });
+            }
+        }
+    }, [!!selectedPlaylist]);
     const [isImporting, setIsImporting] = useState(false);
     const { addToQueue, play: playVideo } = usePlayerStore();
 

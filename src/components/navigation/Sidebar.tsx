@@ -28,6 +28,12 @@ export const Sidebar = memo(() => {
             pathname: '/',
             query: { tab: tabName }
         }, undefined, { shallow: true });
+
+        // Explicit scroll reset for navigation commands
+        if (typeof window !== 'undefined') {
+            const main = document.querySelector('main');
+            if (main) main.scrollTo({ top: 0, behavior: 'instant' });
+        }
     };
 
     return (

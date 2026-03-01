@@ -160,20 +160,21 @@ export default function SpotifyDashboard({ showTab = true }) {
   // Auto-scroll when Playlists (Categories) update
   useEffect(() => {
     if (artistCategories.length > 0 && genreText && shouldScrollToPlaylist) {
-      setTimeout(() => {
+      // Use requestAnimationFrame for smoother and more reliable scroll
+      requestAnimationFrame(() => {
         playlistRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
         setShouldScrollToPlaylist(false);
-      }, 300);
+      });
     }
   }, [genreText, artistCategories.length, shouldScrollToPlaylist]);
 
   // Auto-scroll when Songs (Artists) update
   useEffect(() => {
     if (artist && artist.length > 0 && tagId && shouldScrollToSongs) {
-      setTimeout(() => {
+      requestAnimationFrame(() => {
         songlistRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
         setShouldScrollToSongs(false);
-      }, 300);
+      });
     }
   }, [tagId, artist?.length, shouldScrollToSongs]);
 

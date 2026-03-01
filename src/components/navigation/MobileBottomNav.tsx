@@ -41,6 +41,12 @@ export const MobileBottomNav = () => {
             setSearchTerm(''); // Clear search logic from MainLayout
             setActiveIndex(index);
             setQueueOpen(false); // Close queue when changing main tabs
+
+            // Explicit scroll reset for navigation commands
+            if (typeof window !== 'undefined') {
+                const main = document.querySelector('main');
+                if (main) main.scrollTo({ top: 0, behavior: 'instant' });
+            }
         }
     };
 
