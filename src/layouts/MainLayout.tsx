@@ -351,7 +351,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             <Sidebar />
 
             {/* Main Content Area - Single Divider Strategy */}
-            <div className="flex-1 flex flex-col min-w-0 relative bg-white z-10">
+            <div className="flex-1 flex flex-col min-w-0 relative bg-white">
 
                 {/* Desktop Header */}
                 <header className="hidden lg:flex h-20 items-center justify-between px-8 border-b border-gray-100 bg-white sticky top-0 z-20 transition-all">
@@ -450,11 +450,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     <div
                         id="global-video-player-container"
                         className={clsx(
-                            "transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] z-[60] overflow-hidden lg:border-l lg:border-gray-200 shrink-0",
+                            "transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] z-[100] overflow-hidden lg:border-l lg:border-gray-200 shrink-0",
 
                             // Optimized Fullscreen Transition
                             layoutMode === 'fullscreen'
-                                ? "fixed top-0 right-0 w-full h-[100dvh] z-[100] border-none bg-black shadow-none ring-0 origin-top-right transition-all duration-300"
+                                ? "fixed inset-0 w-screen h-[100dvh] border-none bg-black shadow-none ring-0 origin-top-right transition-all duration-300"
                                 : [
                                     // Mobile Logic (Inline block at top)
                                     "max-lg:w-full",
@@ -463,7 +463,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                         : "max-lg:opacity-0 max-lg:h-0 max-lg:pointer-events-none max-lg:border-none",
 
                                     // Desktop Logic
-                                    "lg:fixed lg:top-0 lg:w-[420px] lg:h-[236px] bg-transparent origin-top-right transition-all duration-500",
+                                    "lg:fixed lg:top-0 lg:w-[420px] lg:h-[236px] bg-black origin-top-right transition-all duration-500",
                                     (isQueueOpen && queue.length > 0) ? "lg:right-0" : "lg:-right-[420px]"
                                 ]
                         )}>

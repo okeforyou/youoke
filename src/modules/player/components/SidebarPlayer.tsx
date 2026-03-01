@@ -383,7 +383,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
             onTouchStart={handleActivity}
         >
             {/* Universal Player Layer (Youtube / MIDI / VCD) */}
-            <div className={`absolute inset-0 max-h-full max-w-full z-0 youtube-player-wrapper`}>
+            <div className={`absolute inset-0 max-h-full max-w-full z-0 youtube-player-wrapper bg-black`}>
                 {(castMode === 'none' || isPassive) ? (
                     <UniversalPlayer
                         onReady={(target) => {
