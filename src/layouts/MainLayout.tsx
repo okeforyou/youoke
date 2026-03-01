@@ -15,6 +15,7 @@ import { QueueList } from '../modules/player/components/QueueList';
 import { useSystemConfig } from '../hooks/useSystemConfig';
 import { useUIStore } from '../stores/useUIStore';
 import { sanitizeForFirebase } from '../utils/firebase';
+import { useModule } from '../hooks/useModule'; // Added for context logic if needed
 
 import { MobileBottomNav } from '../components/navigation/MobileBottomNav';
 import { Sidebar } from '../components/navigation/Sidebar';
@@ -94,6 +95,15 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const { addToast } = useToast() || { addToast: () => { } };
     const isMobile = useIsMobile();
     const { queue } = usePlayerStore();
+    const mainScrollRef = useRef<HTMLElement>(null);
+
+    // CENTRALIZED SCROLL TO TOP LOGIC
+    // When switching tabs or searching, reset scroll position of the main container
+    useEffect(() => {
+        if (mainScrollRef.current) {
+            mainScrollRef.current.scrollTo({ top: 0, behavior: 'instant' });
+        }
+    }, [activeIndex, searchTerm]);
 
     const handleRemoteConnected = useCallback(() => {
         if (showQRCode || partyModalOpen) {
@@ -239,7 +249,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 )}
 
                 {/* Main Scroll Area */}
-                <main className="flex-1 overflow-y-auto relative flex flex-col bg-gray-50/20">
+                <main ref={mainScrollRef} className="flex-1 overflow-y-auto relative flex flex-col bg-gray-50/20">
                     <div className="w-full pb-20">
                         {/* 🏝️ STICKY GLASS HEADERS */}
 

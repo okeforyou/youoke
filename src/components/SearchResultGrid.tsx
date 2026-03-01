@@ -41,8 +41,7 @@ export default function SearchResultGrid({
   );
 
   const handleDivScroll = () => {
-    // Scroll to top of the page reliably
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Scroll logic handled by MainLayout centralized ref
   };
 
   const titleIncludesKaraoke = ({ title }: { title: string }) => {

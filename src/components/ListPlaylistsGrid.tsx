@@ -471,7 +471,6 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
             const playerStore = usePlayerStore.getState();
             playerStore.setSearchTerm(pl.title);
             playerStore.setActiveIndex(0); // Switch to Search Tab
-            window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll up to see results
           }} />
         </div>
       )}

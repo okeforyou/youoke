@@ -41,7 +41,6 @@ export const MobileBottomNav = () => {
             setSearchTerm(''); // Clear search logic from MainLayout
             setActiveIndex(index);
             setQueueOpen(false); // Close queue when changing main tabs
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
 
