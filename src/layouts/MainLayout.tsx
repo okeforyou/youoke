@@ -241,38 +241,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
             <Sidebar />
 
             <div className="flex-1 flex flex-col min-w-0 relative bg-white z-10">
-                {/* Fixed/Docked Player Container */}
-                {mounted && (
-                    <div className={clsx(
-                        "transition-all duration-500 z-[60] overflow-hidden lg:border-l lg:border-gray-200 shrink-0 relative",
-                        layoutMode === 'fullscreen'
-                            ? "fixed top-0 right-0 w-full h-[100dvh] z-[100] bg-black"
-                            : [
-                                "max-lg:w-full",
-                                queue.length > 0 ? "max-lg:h-auto" : "max-lg:h-0",
-                                "lg:fixed lg:top-0 lg:w-[420px] lg:h-[236px] bg-transparent transition-all duration-500",
-                                (isQueueOpen && queue.length > 0) ? "lg:right-0" : "lg:-right-[420px]"
-                            ]
-                    )}>
-                        <div className={clsx("relative w-full flex flex-col bg-white", layoutMode === 'fullscreen' ? "h-[100dvh] bg-black" : "h-full")}>
-                            <div className={clsx("w-full bg-black shrink-0 relative overflow-hidden transition-all", layoutMode === 'fullscreen' ? "h-full" : "aspect-video")}>
-                                <SidebarPlayer
-                                    castMode={castMode}
-                                    roomCode={roomCode}
-                                    onDisconnect={handleDisconnect}
-                                    onForcePlay={() => {
-                                        if (roomCode && realtimeDb) {
-                                            const newCmdRef = push(ref(realtimeDb, `rooms/${roomCode}/commands`));
-                                            set(newCmdRef, { id: newCmdRef.key, command: { type: 'PLAY', timestamp: Date.now() }, status: 'pending', from: 'dashboard', timestamp: Date.now() });
-                                            usePlayerStore.getState().play();
-                                        }
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                )}
-
                 {/* Main Scroll Area */}
                 <main ref={mainScrollRef} className="flex-1 overflow-y-auto relative flex flex-col bg-gray-50/20">
                     <div className="w-full pb-20">
@@ -355,6 +323,38 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
                 <MobileBottomNav />
             </div>
+
+            {/* Desktop/Mobile Fixed Player Layer (z-[60] above everything) */}
+            {mounted && (
+                <div className={clsx(
+                    "transition-all duration-500 z-[60] overflow-hidden lg:border-l lg:border-gray-200 shrink-0 relative",
+                    layoutMode === 'fullscreen'
+                        ? "fixed top-0 right-0 w-full h-[100dvh] z-[100] bg-black"
+                        : [
+                            "max-lg:w-full",
+                            queue.length > 0 ? "max-lg:h-auto shadow-xl" : "max-lg:h-0",
+                            "lg:fixed lg:top-0 lg:w-[420px] lg:h-[236px] bg-transparent transition-all duration-500",
+                            (isQueueOpen && queue.length > 0) ? "lg:right-0" : "lg:-right-[420px]"
+                        ]
+                )}>
+                    <div className={clsx("relative w-full flex flex-col bg-black", layoutMode === 'fullscreen' ? "h-[100dvh]" : "h-full")}>
+                        <div className={clsx("w-full bg-black shrink-0 relative overflow-hidden transition-all", layoutMode === 'fullscreen' ? "h-full" : "aspect-video")}>
+                            <SidebarPlayer
+                                castMode={castMode}
+                                roomCode={roomCode}
+                                onDisconnect={handleDisconnect}
+                                onForcePlay={() => {
+                                    if (roomCode && realtimeDb) {
+                                        const newCmdRef = push(ref(realtimeDb, `rooms/${roomCode}/commands`));
+                                        set(newCmdRef, { id: newCmdRef.key, command: { type: 'PLAY', timestamp: Date.now() }, status: 'pending', from: 'dashboard', timestamp: Date.now() });
+                                        usePlayerStore.getState().play();
+                                    }
+                                }}
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Desktop Right Sidebar */}
             <aside className={clsx(
