@@ -113,7 +113,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const isFirstLoad = useRef(true);
     const prevQueueLen = useRef(0);
     useEffect(() => {
-        if (isMobile) return; // Only auto-open on Desktop
+        if (!mounted || isMobile || (typeof window !== 'undefined' && window.innerWidth < 1024)) return;
 
         // Skip auto-open on initial mount if queue exists
         if (isFirstLoad.current) {
@@ -128,7 +128,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             setQueueOpen(false);
         }
         prevQueueLen.current = playerQueue.length;
-    }, [playerQueue.length, isMobile]);
+    }, [playerQueue.length, isMobile, mounted]);
 
     const handleRemoteConnected = useCallback(() => {
         if (showQRCode || partyModalOpen) {
@@ -242,7 +242,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
             <div className={clsx(
                 "flex-1 flex flex-col min-w-0 relative bg-white z-10",
-                layoutMode === 'fullscreen' && "hidden"
+                // Removed layoutMode === 'fullscreen' && "hidden" to prevent blank pages
             )}>
                 {/* Main Scroll Area */}
                 <main ref={mainScrollRef} className="flex-1 overflow-y-auto relative flex flex-col bg-gray-50/20">
