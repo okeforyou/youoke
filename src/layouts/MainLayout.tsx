@@ -98,7 +98,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const mainScrollRef = useRef<HTMLElement>(null);
 
     // CENTRALIZED SCROLL TO TOP LOGIC
-    // When switching tabs or searching, reset scroll position of the main container
+    // When switching tabs, reset scroll position of the main container
     useEffect(() => {
         if (mainScrollRef.current) {
             // Use a slight delay to ensure content has started rendering
@@ -107,7 +107,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             }, 50);
             return () => clearTimeout(timer);
         }
-    }, [activeIndex, searchTerm]);
+    }, [activeIndex]); // Only on tab change, NOT on searchTerm to avoid jumping while typing on desktop
 
     const handleRemoteConnected = useCallback(() => {
         if (showQRCode || partyModalOpen) {
@@ -264,7 +264,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 <DebounceInput
                                     minLength={2} debounceTimeout={300} placeholder="ค้นหาเพลง, ศิลปิน..."
                                     className="w-full pl-14 pr-12 h-12 bg-gray-100/30 hover:bg-white focus:bg-white border border-gray-100/50 rounded-2xl focus:outline-none transition-all shadow-sm font-medium"
-                                    value={searchTerm} onChange={(e) => router.replace({ pathname: '/', query: { ...router.query, search: e.target.value } }, undefined, { shallow: true })}
+                                    value={searchTerm}
+                                    onChange={(e) => {
+                                        setSearchTerm(e.target.value);
+                                        router.replace({ pathname: '/', query: { ...router.query, search: e.target.value } }, undefined, { shallow: true });
+                                    }}
                                 />
                             </div>
                             <div className="flex items-center gap-6 ml-6">
@@ -284,7 +288,17 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 <div className="px-3 pt-1 flex gap-2.5">
                                     <div className="flex-1 relative flex items-center bg-black/[0.04] border border-gray-100 rounded-2xl px-4 h-11 transition-all focus-within:bg-white shadow-inner">
                                         <Search className="h-4.5 w-4.5 text-gray-400" />
-                                        <DebounceInput minLength={2} debounceTimeout={300} placeholder="ค้นหาเพลง..." className="w-full bg-transparent pl-3 text-[15px] font-bold focus:outline-none" value={searchTerm} onChange={(e) => router.replace({ pathname: '/', query: { ...router.query, search: e.target.value } }, undefined, { shallow: true })} />
+                                        <DebounceInput
+                                            minLength={2}
+                                            debounceTimeout={300}
+                                            placeholder="ค้นหาเพลง..."
+                                            className="w-full bg-transparent pl-3 text-[15px] font-bold focus:outline-none"
+                                            value={searchTerm}
+                                            onChange={(e) => {
+                                                setSearchTerm(e.target.value);
+                                                router.replace({ pathname: '/', query: { ...router.query, search: e.target.value } }, undefined, { shallow: true });
+                                            }}
+                                        />
                                     </div>
                                     <div className="flex bg-gray-50 p-1 rounded-2xl border border-gray-100 shrink-0 h-11 items-center">
                                         <button onClick={() => setIsKaraoke(false)} className={clsx("w-9 h-9 flex items-center justify-center rounded-xl", !isKaraoke ? "bg-white text-primary shadow-md" : "text-gray-400")}><Music size={16} /></button>
@@ -295,7 +309,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         )}
 
                         {/* Page Content */}
-                        <div className="px-0 relative min-h-[calc(100vh-200px)]">
+                        <div className={clsx("px-0 relative min-h-[calc(100vh-200px)]", isMobile && "overflow-hidden")}>
                             {/* Main Content Layer */}
                             <div className={clsx(
                                 isMobile && "transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
