@@ -238,21 +238,24 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 <title>YouOke - คาราโอเกะออนไลน์</title>
             </Head>
 
-            <Sidebar />
+            {layoutMode !== 'fullscreen' && <Sidebar />}
 
-            <div className="flex-1 flex flex-col min-w-0 relative bg-white z-10">
+            <div className={clsx(
+                "flex-1 flex flex-col min-w-0 relative bg-white z-10",
+                layoutMode === 'fullscreen' && "hidden"
+            )}>
                 {/* Main Scroll Area */}
                 <main ref={mainScrollRef} className="flex-1 overflow-y-auto relative flex flex-col bg-gray-50/20">
                     <div className="w-full pb-20">
                         {/* 🏝️ STICKY GLASS HEADERS */}
 
                         {/* Desktop Header */}
-                        <header className="hidden lg:flex h-20 items-center justify-between px-8 border-b border-gray-100 bg-white sticky top-0 z-30 transition-all">
+                        <header className="hidden lg:flex h-20 items-center justify-between px-8 border-b border-gray-100/50 bg-white/70 backdrop-blur-xl sticky top-0 z-30 transition-all">
                             <div className="flex-1 max-w-2xl relative">
                                 <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-300" />
                                 <DebounceInput
                                     minLength={2} debounceTimeout={300} placeholder="ค้นหาเพลง, ศิลปิน, หรือวางลิงก์ YouTube..."
-                                    className="block w-full pl-14 pr-12 h-12 bg-gray-50/50 hover:bg-gray-100/50 focus:bg-white border border-gray-100 focus:border-primary/20 rounded-2xl leading-5 text-gray-900 placeholder-gray-400 focus:outline-none transition-all shadow-sm font-medium"
+                                    className="block w-full pl-14 pr-12 h-12 bg-white/50 hover:bg-white focus:bg-white border border-gray-100 focus:border-primary/20 rounded-2xl leading-5 text-gray-900 placeholder-gray-400 focus:outline-none transition-all shadow-sm font-medium"
                                     value={searchTerm}
                                     onChange={(e) => {
                                         router.replace({ pathname: '/', query: { ...router.query, search: e.target.value } }, undefined, { shallow: true });
@@ -260,12 +263,21 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 />
                             </div>
                             <div className="flex items-center gap-6 ml-6">
-                                <div className="relative flex items-center bg-gray-50/50 rounded-2xl p-1 h-11 w-[180px] border border-gray-100/50">
-                                    <div className={clsx("absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-xl shadow-md transition-all", isKaraoke ? "left-[calc(50%+2px)]" : "left-1")} />
-                                    <button onClick={() => setIsKaraoke(false)} className={clsx("relative flex-1 text-[11px] font-black uppercase z-10", !isKaraoke ? "text-primary" : "text-black/40")}>เพลง</button>
-                                    <button onClick={() => setIsKaraoke(true)} className={clsx("relative flex-1 text-[11px] font-black uppercase z-10", isKaraoke ? "text-primary" : "text-black/40")}>คาราโอเกะ</button>
+                                <div className="relative flex items-center bg-gray-100/50 rounded-2xl p-1 h-11 w-[180px] border border-gray-200/50 shadow-inner">
+                                    <div className={clsx(
+                                        "absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-xl shadow-lg transition-all duration-300",
+                                        isKaraoke ? "left-[calc(50%+2px)]" : "left-1"
+                                    )} />
+                                    <button onClick={() => setIsKaraoke(false)} className={clsx("relative flex-1 text-[11px] font-black uppercase z-10 transition-colors", !isKaraoke ? "text-primary" : "text-black/30")}>เพลง</button>
+                                    <button onClick={() => setIsKaraoke(true)} className={clsx("relative flex-1 text-[11px] font-black uppercase z-10 transition-colors", isKaraoke ? "text-primary" : "text-black/30")}>คาราโอเกะ</button>
                                 </div>
-                                <button onClick={() => setShowQRCode(true)} className="h-11 w-11 rounded-2xl flex items-center justify-center bg-gray-50/50 hover:bg-white border border-gray-100/50"><Smartphone className="w-5 h-5" /></button>
+                                <button
+                                    onClick={() => setShowQRCode(true)}
+                                    className="h-11 w-11 rounded-2xl flex items-center justify-center bg-white shadow-lg border border-primary/10 hover:border-primary/30 transition-all text-primary hover:scale-105 active:scale-95"
+                                    title="เชื่อมต่อรีโมท"
+                                >
+                                    <Smartphone className="w-5 h-5" />
+                                </button>
                             </div>
                         </header>
 
@@ -387,11 +399,18 @@ export default function MainLayout({ children }: MainLayoutProps) {
             />
 
             {showQRCode && roomCode && (
-                <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowQRCode(false)}>
-                    <div className="bg-white p-6 rounded-3xl shadow-2xl max-w-sm w-full text-center space-y-6" onClick={e => e.stopPropagation()}>
-                        <div className="flex justify-between items-center text-gray-900"><h3 className="font-bold">เชื่อมต่อรีโมท</h3><X onClick={() => setShowQRCode(false)} className="w-5 h-5 cursor-pointer" /></div>
-                        <img src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`${typeof window !== 'undefined' ? window.location.origin : ''}/remote?room=${roomCode}`)}`} className="w-48 h-48 mx-auto" />
-                        <p className="text-xs text-gray-500">สแกนเพื่อควบคุม (PIN: {roomCode})</p>
+                <div className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowQRCode(false)}>
+                    <div className="bg-white p-6 rounded-3xl shadow-2xl max-w-[300px] w-full text-center space-y-6 animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+                        <div className="flex justify-between items-center text-gray-900">
+                            <h3 className="font-bold">เชื่อมต่อรีโมท</h3>
+                            <button onClick={() => setShowQRCode(false)} className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="bg-gray-50 p-4 rounded-2xl">
+                            <img src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`${typeof window !== 'undefined' ? window.location.origin : ''}/remote?room=${roomCode}`)}`} className="w-full aspect-square mix-blend-multiply" alt="QR Code" />
+                        </div>
+                        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">PIN: {roomCode}</p>
                     </div>
                 </div>
             )}
