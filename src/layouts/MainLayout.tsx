@@ -344,7 +344,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         ? "fixed top-0 right-0 w-full h-[100dvh] z-[100] bg-black"
                         : [
                             "max-lg:w-full",
-                            queue.length > 0 ? "max-lg:h-auto shadow-xl" : "max-lg:h-0",
+                            queue.length > 0 ? "max-lg:h-[236px] shadow-xl" : "max-lg:h-0",
                             "lg:fixed lg:top-0 lg:w-[420px] lg:h-[236px] bg-transparent transition-all duration-500",
                             (isQueueOpen && queue.length > 0) ? "lg:right-0" : "lg:-right-[420px]"
                         ]
@@ -400,17 +400,17 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
             {showQRCode && roomCode && (
                 <div className="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowQRCode(false)}>
-                    <div className="bg-white p-6 rounded-3xl shadow-2xl max-w-[300px] w-full text-center space-y-6 animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+                    <div className="bg-white p-4 rounded-3xl shadow-2xl max-w-[260px] w-full text-center space-y-2 animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
                         <div className="flex justify-between items-center text-gray-900">
-                            <h3 className="font-bold">เชื่อมต่อรีโมท</h3>
+                            <h3 className="text-[13px] font-black uppercase tracking-tight">เชื่อมต่อรีโมท</h3>
                             <button onClick={() => setShowQRCode(false)} className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
-                                <X className="w-5 h-5" />
+                                <X className="w-5 h-5 text-gray-400" />
                             </button>
                         </div>
-                        <div className="bg-gray-50 p-4 rounded-2xl">
+                        <div className="bg-gray-100/50 p-2 rounded-2xl">
                             <img src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`${typeof window !== 'undefined' ? window.location.origin : ''}/remote?room=${roomCode}`)}`} className="w-full aspect-square mix-blend-multiply" alt="QR Code" />
                         </div>
-                        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">PIN: {roomCode}</p>
+                        <p className="text-[10px] font-black text-gray-400/60 uppercase tracking-[0.2em]">PIN: {roomCode}</p>
                     </div>
                 </div>
             )}
