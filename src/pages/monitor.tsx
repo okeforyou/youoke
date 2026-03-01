@@ -107,9 +107,16 @@ export default function MonitorPage() {
   useEffect(() => {
     if (fullscreenTrigger > 0) {
       if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(() => { });
+        const elem = document.getElementById('karaoke-video-container') || document.documentElement;
+        if (elem.requestFullscreen) {
+          elem.requestFullscreen().catch(() => { });
+        } else if ((elem as any).webkitRequestFullscreen) {
+          (elem as any).webkitRequestFullscreen();
+        }
       } else {
-        document.exitFullscreen().catch(() => { });
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(() => { });
+        }
       }
     }
   }, [fullscreenTrigger]);

@@ -184,7 +184,7 @@ export function QueueList() {
                 )}
             </div>
             {/* Queue Items with Drag & Drop - Content starts immediately */}
-            <div className="flex-1 overflow-y-auto pt-2 pb-6 relative z-10 bg-white" style={{ backgroundColor: '#ffffff' }}>
+            <div className="flex-1 overflow-y-auto pt-2 pb-24 lg:pb-6 relative z-10 bg-white" style={{ backgroundColor: '#ffffff' }}>
                 <DndContext
                     sensors={sensors}
                     collisionDetection={closestCenter}

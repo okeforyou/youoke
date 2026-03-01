@@ -143,7 +143,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const toggleNativeFullscreen = useCallback(() => {
         const isFs = !!document.fullscreenElement || !!(document as any).webkitFullscreenElement;
         if (!isFs) {
-            const elem = document.getElementById('karaoke-video-container') || document.documentElement;
+            const elem = document.getElementById('karaoke-video-container-dashboard') || document.getElementById('karaoke-video-container') || document.documentElement;
             if (elem.requestFullscreen) {
                 elem.requestFullscreen().catch(err => console.error("Fullscreen failed:", err));
             } else if ((elem as any).webkitRequestFullscreen) {
@@ -324,9 +324,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                             }}
                                         />
                                     </div>
-                                    <div className="flex bg-gray-100/50 p-1 rounded-full border border-gray-100 shrink-0 h-11 items-center">
-                                        <button onClick={() => setIsKaraoke(false)} className={clsx("w-9 h-9 flex items-center justify-center rounded-full transition-all", !isKaraoke ? "bg-primary text-white shadow-lg mx-0.5" : "text-gray-400 mx-0.5")}><Music size={18} /></button>
-                                        <button onClick={() => setIsKaraoke(true)} className={clsx("w-9 h-9 flex items-center justify-center rounded-full transition-all", isKaraoke ? "bg-primary text-white shadow-lg mx-0.5" : "text-gray-400 mx-0.5")}><Mic size={18} /></button>
+                                    <div className="flex bg-gray-200/50 p-1 rounded-2xl border border-gray-200 shrink-0 h-11 items-center shadow-inner">
+                                        <button onClick={() => setIsKaraoke(false)} className={clsx("w-9 h-9 flex items-center justify-center rounded-xl transition-all", !isKaraoke ? "bg-primary text-white shadow-lg mx-0.5" : "text-gray-400 mx-0.5")}><Music size={18} /></button>
+                                        <button onClick={() => setIsKaraoke(true)} className={clsx("w-9 h-9 flex items-center justify-center rounded-xl transition-all", isKaraoke ? "bg-primary text-white shadow-lg mx-0.5" : "text-gray-400 mx-0.5")}><Mic size={18} /></button>
                                     </div>
                                 </div>
                             </div>
@@ -348,7 +348,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                     "absolute inset-0 bg-white z-20 transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
                                     isQueueOpen ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none"
                                 )}>
-                                    <div className="bg-white min-h-screen px-4">
+                                    <div className="bg-white h-full px-1 flex flex-col overflow-hidden">
                                         <QueueList />
                                     </div>
                                 </div>
@@ -374,7 +374,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         ]
                 )}>
                     <div className={clsx("relative w-full flex flex-col bg-black", layoutMode === 'fullscreen' ? "h-[100dvh]" : "h-full")}>
-                        <div className={clsx("w-full bg-black shrink-0 relative overflow-hidden transition-all", layoutMode === 'fullscreen' ? "h-full" : "aspect-video")}>
+                        <div id="karaoke-video-container-dashboard" className={clsx("w-full bg-black shrink-0 relative overflow-hidden transition-all", layoutMode === 'fullscreen' ? "h-full" : "aspect-video")}>
                             <SidebarPlayer
                                 castMode={castMode}
                                 roomCode={roomCode}

@@ -66,7 +66,22 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
         {
             icon: Maximize,
             label: "เต็มจอ",
-            onClick: triggerFullscreen,
+            onClick: () => {
+                const isFs = !!document.fullscreenElement || !!(document as any).webkitFullscreenElement;
+                if (!isFs) {
+                    const elem = document.getElementById('karaoke-video-container') || document.documentElement;
+                    if (elem.requestFullscreen) {
+                        elem.requestFullscreen().catch(err => console.error("Fullscreen failed:", err));
+                    } else if ((elem as any).webkitRequestFullscreen) {
+                        (elem as any).webkitRequestFullscreen();
+                    }
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen().catch(err => console.error("Exit fullscreen failed:", err));
+                    }
+                }
+                triggerFullscreen();
+            },
             color: "text-primary"
         },
         {

@@ -26,11 +26,20 @@
   },
   "include": [
     "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx"
+    "src/**/*.ts",
+    "src/**/*.tsx"
   ],
   "exclude": [
     "node_modules",
-    "mockup dashboard"
+    "mockup dashboard",
+    ".next",
+    "out",
+    "dist",
+    "hooks",
+    "services",
+    "types",
+    "utils",
+    "const",
+    "scripts"
   ]
 }

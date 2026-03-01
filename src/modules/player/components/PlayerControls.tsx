@@ -214,9 +214,16 @@ export const PlayerControls = () => {
                             onClick={() => {
                                 const isFs = !!document.fullscreenElement || !!(document as any).webkitFullscreenElement;
                                 if (!isFs) {
-                                    const elem = document.documentElement;
-                                    if (elem.requestFullscreen) elem.requestFullscreen();
-                                    else if ((elem as any).webkitRequestFullscreen) (elem as any).webkitRequestFullscreen();
+                                    const elem = document.getElementById('karaoke-video-container') || document.documentElement;
+                                    if (elem.requestFullscreen) {
+                                        elem.requestFullscreen().catch(err => console.error("Fullscreen failed:", err));
+                                    } else if ((elem as any).webkitRequestFullscreen) {
+                                        (elem as any).webkitRequestFullscreen();
+                                    }
+                                } else {
+                                    if (document.exitFullscreen) {
+                                        document.exitFullscreen().catch(err => console.error("Exit fullscreen failed:", err));
+                                    }
                                 }
                                 usePlayerStore.getState().triggerFullscreen();
                             }}
