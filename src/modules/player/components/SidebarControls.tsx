@@ -79,9 +79,8 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
     ];
 
     return (
-        <div className="shrink-0 select-none relative shadow-sm">
-            {/* Glass Background matching Footer */}
-            <div className="absolute inset-0 bg-[#f4f4f5]/60 backdrop-blur-xl border-b border-gray-200/50" />
+        <div className="shrink-0 select-none relative">
+            {/* Background inherited from parent to support Glassmorphism Mirror effect */}
 
             {/* Horizontal Controls Row - Full Width with depth */}
             <div className="relative flex items-center justify-between px-2 h-[64px]">
