@@ -5,32 +5,24 @@ import { getSkeletonItems } from "../utils/api";
 import { useToast } from "@/context/ToastContext";
 import { useAuthStore } from "@/modules/auth/useAuthStore";
 import { TrophyIcon, FireIcon } from "@heroicons/react/24/solid";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface ListCommunityPlaylistsProps {
     onPlay?: (playlist: any) => void;
 }
 
 export default function ListCommunityPlaylists({ onPlay }: ListCommunityPlaylistsProps) {
-    const [playlists, setPlaylists] = useState<CommunityPlaylist[]>([]);
-    const [loading, setLoading] = useState(true);
-    const { addToast } = useToast() || { addToast: console.log };
+    const queryClient = useQueryClient();
     const { user } = useAuthStore();
+    const { addToast } = useToast() || { addToast: console.log };
 
-    useEffect(() => {
-        loadTopPlaylists();
-    }, []);
+    const { data: playlistsData, isLoading: loading } = useQuery({
+        queryKey: ["communityPlaylists"],
+        queryFn: () => PlaylistService.getTopPlaylists(20),
+        staleTime: 1000 * 60 * 60, // 1 hour
+    });
 
-    const loadTopPlaylists = async () => {
-        setLoading(true);
-        try {
-            const data = await PlaylistService.getTopPlaylists(20);
-            setPlaylists(data);
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const playlists = playlistsData || [];
 
     const handleLike = async (playlist: CommunityPlaylist) => {
         if (!user) {
@@ -38,10 +30,10 @@ export default function ListCommunityPlaylists({ onPlay }: ListCommunityPlaylist
             return;
         }
 
-        // Optimistic Update
-        setPlaylists(prev => prev.map(p =>
-            p.id === playlist.id ? { ...p, likes: (p.likes || 0) + 1 } : p
-        ));
+        // Optimistic Update in Cache
+        queryClient.setQueryData(["communityPlaylists"], (old: CommunityPlaylist[] | undefined) =>
+            old?.map(p => p.id === playlist.id ? { ...p, likes: (p.likes || 0) + 1 } : p)
+        );
 
         try {
             await PlaylistService.likePlaylist({
@@ -51,15 +43,10 @@ export default function ListCommunityPlaylists({ onPlay }: ListCommunityPlaylist
                 source: playlist.source,
                 tracksCount: playlist.tracksCount
             }, user.uid || '');
-
-            // No toast needed for like action, visual feedback is enough
-            // addToast("Liked!");
         } catch (error) {
             console.error("Like failed", error);
-            // Revert if failed
-            setPlaylists(prev => prev.map(p =>
-                p.id === playlist.id ? { ...p, likes: (p.likes || 1) - 1 } : p
-            ));
+            // Revert
+            queryClient.invalidateQueries({ queryKey: ["communityPlaylists"] });
         }
     };
 

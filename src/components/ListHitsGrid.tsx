@@ -4,29 +4,17 @@ import { PlayIcon } from "@heroicons/react/24/solid";
 import { usePlayerStore } from "../modules/player/stores/usePlayerStore";
 import { getHitSingles, getSearchResult } from "../utils/api";
 import { Single } from "../types";
+import { useQuery } from "@tanstack/react-query";
 
 export default function ListHitsGrid() {
-    const [hits, setHits] = useState<Single[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [playingIndex, setPlayingIndex] = useState<number | null>(null);
     const router = useRouter();
+    const { data: hitsData, isLoading } = useQuery({
+        queryKey: ["hitSingles"],
+        queryFn: getHitSingles,
+        staleTime: 1000 * 60 * 60 * 24, // 24 hours
+    });
 
-    useEffect(() => {
-        const fetchHits = async () => {
-            try {
-                const data = await getHitSingles();
-                if (data.singles) {
-                    setHits(data.singles);
-                }
-            } catch (error) {
-                console.error("Failed to fetch hits:", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchHits();
-    }, []);
+    const hits = hitsData?.singles || [];
 
     const handleClick = (hit: Single) => {
         // Switch to Search Mode via URL so history is preserved

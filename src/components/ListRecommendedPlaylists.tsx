@@ -131,6 +131,7 @@ export default function ListRecommendedPlaylists() {
         queryKey: ["playlistTracks", selectedPlaylist?.tag_id || playlistIdFromUrl],
         queryFn: () => getArtists(selectedPlaylist?.tag_id || playlistIdFromUrl),
         enabled: shouldFetch,
+        staleTime: 1000 * 60 * 60, // 1 hour
     });
 
     // Self-Healing: If we don't have selectedPlaylist but API returned metadata, Start Healing

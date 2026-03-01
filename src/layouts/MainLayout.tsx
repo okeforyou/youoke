@@ -101,7 +101,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
     // When switching tabs or searching, reset scroll position of the main container
     useEffect(() => {
         if (mainScrollRef.current) {
-            mainScrollRef.current.scrollTo({ top: 0, behavior: 'instant' });
+            // Use a slight delay to ensure content has started rendering
+            const timer = setTimeout(() => {
+                mainScrollRef.current?.scrollTo({ top: 0, behavior: 'instant' });
+            }, 50);
+            return () => clearTimeout(timer);
         }
     }, [activeIndex, searchTerm]);
 
@@ -291,7 +295,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         )}
 
                         {/* Page Content */}
-                        <div className="px-0 relative overflow-hidden min-h-[calc(100vh-200px)]">
+                        <div className="px-0 relative min-h-[calc(100vh-200px)]">
                             {/* Main Content Layer */}
                             <div className={clsx(
                                 isMobile && "transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
