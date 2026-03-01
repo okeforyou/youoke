@@ -230,7 +230,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
     return (
         <div className={clsx(
-            "flex h-screen w-full text-text-base overflow-hidden subpixel-antialiased antialiased transition-colors duration-500",
+            "flex max-lg:flex-col h-screen w-full text-text-base overflow-hidden subpixel-antialiased antialiased transition-colors duration-500",
             layoutMode === 'fullscreen' ? "bg-black" : "bg-white"
         )}>
             <Head>
@@ -240,9 +240,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
             {layoutMode !== 'fullscreen' && <Sidebar />}
 
+            {/* Main content wrapper */}
             <div className={clsx(
-                "flex-1 flex flex-col min-w-0 relative bg-white z-10",
-                // Removed layoutMode === 'fullscreen' && "hidden" to prevent blank pages
+                "flex-1 flex flex-col min-w-0 min-h-0 relative bg-white z-10",
+                (isQueueOpen && queue.length > 0 && layoutMode !== 'fullscreen') ? "lg:mr-[420px]" : "lg:mr-0"
             )}>
                 {/* Main Scroll Area */}
                 <main ref={mainScrollRef} className="flex-1 overflow-y-auto relative flex flex-col bg-gray-50/20">
@@ -364,7 +365,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     layoutMode === 'fullscreen'
                         ? "fixed top-0 right-0 w-full h-[100dvh] z-[100] bg-black"
                         : [
-                            "max-lg:w-full",
+                            "max-lg:-order-1 max-lg:w-full",
                             queue.length > 0 ? "max-lg:h-[236px] shadow-xl" : "max-lg:h-0",
                             "lg:fixed lg:top-0 lg:w-[420px] lg:h-[236px] bg-transparent transition-all duration-500",
                             (isQueueOpen && queue.length > 0) ? "lg:right-0" : "lg:-right-[420px]"
