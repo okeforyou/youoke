@@ -269,18 +269,19 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                         "absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-xl shadow-lg transition-all duration-300",
                                         isKaraoke ? "left-[calc(50%+2px)]" : "left-1"
                                     )} />
-                                    <button onClick={() => setIsKaraoke(false)} className={clsx("relative flex-1 text-[11px] font-black uppercase z-10 transition-colors", !isKaraoke ? "text-primary" : "text-black/30")}>เพลง</button>
-                                    <button onClick={() => setIsKaraoke(true)} className={clsx("relative flex-1 text-[11px] font-black uppercase z-10 transition-colors", isKaraoke ? "text-primary" : "text-black/30")}>คาราโอเกะ</button>
+                                    <button onClick={() => setIsKaraoke(false)} className={clsx("relative flex-1 text-[12px] font-bold uppercase z-10 transition-colors", !isKaraoke ? "text-black shadow-sm" : "text-gray-500 hover:text-black")}>เพลง</button>
+                                    <button onClick={() => setIsKaraoke(true)} className={clsx("relative flex-1 text-[12px] font-bold uppercase z-10 transition-colors", isKaraoke ? "text-black shadow-sm" : "text-gray-500 hover:text-black")}>คาราโอเกะ</button>
                                 </div>
                                 <button
                                     onClick={() => setShowQRCode(true)}
-                                    className="group relative h-11 w-11 rounded-2xl flex items-center justify-center bg-white shadow-lg border border-primary/10 hover:border-primary/30 transition-all text-primary hover:scale-105 active:scale-95"
+                                    className="group relative h-11 px-4 rounded-2xl flex items-center justify-center gap-2 bg-primary shadow-lg shadow-primary/30 border border-primary/20 hover:bg-primary/90 transition-all text-white hover:scale-105 active:scale-95"
                                     title="เชื่อมต่อรีโมท"
                                 >
-                                    <Smartphone className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                                    <Smartphone className="w-5 h-5" />
+                                    <span className="font-bold text-[13px] tracking-wide">รีโมท</span>
                                     {mounted && (
                                         <div className={clsx(
-                                            "absolute top-2.5 right-2.5 w-2 h-2 rounded-full border-2 border-white transition-colors duration-500",
+                                            "absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full border-[3px] border-white transition-colors duration-500 shadow-sm",
                                             connectionStatus === 'active' ? "bg-green-500 animate-pulse" :
                                                 connectionStatus === 'background' ? "bg-orange-500" : "bg-gray-300"
                                         )} />
@@ -309,23 +310,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                         />
                                     </div>
                                     <div className="flex bg-gray-50 p-1 rounded-2xl border border-gray-100 shrink-0 h-11 items-center">
-                                        <button onClick={() => setIsKaraoke(false)} className={clsx("w-9 h-9 flex items-center justify-center rounded-xl", !isKaraoke ? "bg-white text-primary shadow-md" : "text-gray-400")}><Music size={16} /></button>
-                                        <button onClick={() => setIsKaraoke(true)} className={clsx("w-9 h-9 flex items-center justify-center rounded-xl", isKaraoke ? "bg-white text-primary shadow-md" : "text-gray-400")}><Mic size={16} /></button>
+                                        <button onClick={() => setIsKaraoke(false)} className={clsx("w-9 h-9 flex items-center justify-center rounded-xl", !isKaraoke ? "bg-white text-black shadow-md" : "text-gray-400")}><Music size={16} /></button>
+                                        <button onClick={() => setIsKaraoke(true)} className={clsx("w-9 h-9 flex items-center justify-center rounded-xl", isKaraoke ? "bg-white text-black shadow-md" : "text-gray-400")}><Mic size={16} /></button>
                                     </div>
-                                    <button
-                                        onClick={() => setShowQRCode(true)}
-                                        className="shrink-0 group relative h-11 w-11 rounded-2xl flex items-center justify-center bg-white shadow-sm border border-gray-200 hover:border-primary/30 transition-all text-primary active:scale-95"
-                                        title="เชื่อมต่อรีโมท"
-                                    >
-                                        <Smartphone className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                                        {mounted && (
-                                            <div className={clsx(
-                                                "absolute top-2 right-2 w-2.5 h-2.5 rounded-full border-2 border-white transition-colors duration-500",
-                                                connectionStatus === 'active' ? "bg-green-500 animate-pulse" :
-                                                    connectionStatus === 'background' ? "bg-orange-500" : "bg-gray-300"
-                                            )} />
-                                        )}
-                                    </button>
                                 </div>
                             </div>
                         )}
