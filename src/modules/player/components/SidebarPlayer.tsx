@@ -404,7 +404,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                     />
                 ) : (
                     /* 📺 Casting Overlay (Minimalist Design - Aligned with /dual) */
-                    <div className="absolute inset-0 bg-black flex flex-col items-center justify-center p-8 text-center space-y-8 z-20 animate-in fade-in duration-700">
+                    <div className="absolute inset-0 bg-[#0a0a0a] flex flex-col items-center justify-center p-8 text-center space-y-8 z-30 animate-in fade-in duration-700">
                         <div className="relative">
                             <div className="text-6xl mb-4 relative z-10">🖥️</div>
                             <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse z-0" />
@@ -433,9 +433,9 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
 
                         <div className="flex flex-col items-center gap-6 pt-4 w-full">
 
-                            <div className="flex items-center gap-3 px-4 py-2 bg-white/5 rounded-full border border-white/5">
-                                <div className="w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
-                                <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Casting Active</span>
+                            <div className="flex items-center gap-3 px-5 py-2.5 bg-red-500/10 rounded-full border border-red-500/20 shadow-[0_0_20px_rgba(239,68,68,0.1)]">
+                                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.5)]"></div>
+                                <span className="text-[11px] font-black text-red-500 uppercase tracking-[0.2em]">Casting Active</span>
                             </div>
                         </div>
                     </div>

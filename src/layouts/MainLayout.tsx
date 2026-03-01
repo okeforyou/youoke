@@ -468,8 +468,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 ]
                         )}>
                         <div className={clsx(
-                            "relative w-full flex flex-col transition-all duration-500 bg-white",
-                            layoutMode === 'fullscreen' ? "h-[100dvh] bg-black" : "h-full"
+                            "relative w-full flex flex-col transition-all duration-500 bg-black",
+                            layoutMode === 'fullscreen' ? "h-[100dvh]" : "h-full"
                         )}>
                             <div className={clsx(
                                 "w-full bg-black shrink-0 relative overflow-hidden transition-all duration-500",
