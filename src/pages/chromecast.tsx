@@ -257,14 +257,14 @@ export default function ChromecastReceiver() {
             const cast = (window as any).cast;
 
             if (!cast || !cast.framework) {
-                if (retries < 50) { // Try for 5 seconds (50 * 100ms)
+                if (retries < 150) { // Try for 15 seconds (150 * 100ms) — Smart TVs are slow
                     if (retries % 10 === 0) {
                         setInitStatus(`Loading Cast SDK... (${retries / 10}s)`);
                         console.log(`⏳ [Chromecast] Framework not ready, retrying (${retries})...`);
                     }
                     setTimeout(() => initCast(retries + 1), 100);
                 } else {
-                    console.error('❌ [Chromecast] Cast Framework failed to load after 5 seconds.');
+                    console.error('❌ [Chromecast] Cast Framework failed to load after 15 seconds.');
                     setInitStatus('Failed to load Cast Framework. Please reload.');
                 }
                 return;
@@ -308,22 +308,27 @@ export default function ChromecastReceiver() {
             }
         };
 
-        // Load Receiver script
-        if (!(window as any).cast) {
-            setInitStatus('Loading Cast Receiver SDK...');
-            const script = document.createElement('script');
-            script.src = '//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js';
-            script.onload = () => {
-                console.log('📦 [Chromecast] Receiver SDK script loaded');
-                initCast(0);
-            };
-            script.onerror = () => {
-                console.error('❌ [Chromecast] Failed to load receiver SDK script');
-                setInitStatus('Failed to load Cast SDK. Check network.');
-            };
-            document.head.appendChild(script);
-        } else {
+        // Cast Receiver SDK is pre-loaded via _document.tsx (blocking script)
+        // Just wait for it to be available - Smart TVs can be slow
+        const cast = (window as any).cast;
+        if (cast?.framework) {
+            // Framework already available (pre-loaded in _document.tsx)
+            console.log('📦 [Chromecast] Receiver SDK already available!');
             initCast(0);
+        } else {
+            // Wait for framework to initialize (it's pre-loaded but may need time)
+            setInitStatus('Waiting for Cast Framework...');
+            console.log('⏳ [Chromecast] Waiting for pre-loaded framework to initialize...');
+
+            // Also try loading dynamically as fallback
+            if (!document.querySelector('script[src*="cast_receiver_framework"]')) {
+                console.log('📦 [Chromecast] Adding fallback script tag...');
+                const script = document.createElement('script');
+                script.src = 'https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js';
+                document.head.appendChild(script);
+            }
+
+            initCast(0); // Start polling, will retry up to 15 seconds
         }
 
         // Cleanup

@@ -24,6 +24,9 @@ export default function Document() {
         <link rel="dns-prefetch" href="https://apis.google.com" />
       </Head>
       <body>
+        {/* Cast Receiver Framework - Must load BEFORE Next.js hydration
+            for Chromecast devices. This SDK self-detects if running on Chromecast. */}
+        <script src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
         <Main />
         <NextScript />
       </body>
