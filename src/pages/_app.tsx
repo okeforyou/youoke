@@ -42,12 +42,14 @@ function App({ Component, pageProps }: AppProps) {
   useSystemThemeSync();
 
   // Optimize: Only load heavy Cast/Player stack on pages that need it
-  // Exclude: Login, Admin, Monitor (Receiver), Chromecast, TV
-  const isReceiverPath = ['/monitor', '/chromecast', '/receiver', '/tv'].includes(router.pathname);
+  // Chromecast receiver = LIGHTEST possible (no MIDI, no Cast Sender, no Ads)
+  // Monitor/TV = needs MIDI but NO Cast Sender
+  const isChromecastReceiver = router.pathname === '/chromecast';
+  const isReceiverPath = ['/monitor', '/receiver', '/tv'].includes(router.pathname);
   const isLoginPage = router.pathname === '/login';
   const isAdminPage = router.pathname.startsWith('/admin');
 
-  const shouldLoadCast = !isReceiverPath && !isLoginPage && !isAdminPage;
+  const shouldLoadCast = !isChromecastReceiver && !isReceiverPath && !isLoginPage && !isAdminPage;
 
   // Debug (Client-side only)
   if (typeof window !== 'undefined') {
@@ -162,8 +164,12 @@ function App({ Component, pageProps }: AppProps) {
                     </FirebaseCastProvider>
                   </CastProvider>
                 </MidiEngineProvider>
+              ) : isChromecastReceiver ? (
+                // Chromecast Receiver - LIGHTEST stack (no MIDI, no Ads, no Cast Sender)
+                // Smart TVs have limited resources, load absolute minimum
+                <Component {...pageProps} />
               ) : isReceiverPath ? (
-                // Monitor Stack (Receiver) - Needs MIDI but NO Cast Sender
+                // Monitor Stack (HDMI Receiver) - Needs MIDI but NO Cast Sender
                 <MidiEngineProvider>
                   <AdsProvider>
                     <Component {...pageProps} />

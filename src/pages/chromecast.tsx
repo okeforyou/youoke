@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import Head from 'next/head';
 import clsx from 'clsx';
 import { usePlayerStore } from '../modules/player/stores/usePlayerStore';
-import { UniversalPlayer } from '../modules/player/components/UniversalPlayer';
 import { QueueItem } from '../modules/player/types';
 
 // Icons ported from dual.tsx
@@ -11,9 +10,107 @@ import { useShallow } from 'zustand/react/shallow';
 
 const CAST_NAMESPACE = 'urn:x-cast:com.youoke.cast';
 
+/**
+ * Lightweight YouTube player for Chromecast receiver.
+ * Does NOT use UniversalPlayer to avoid heavy MidiEngine dependency.
+ * Smart TV's have limited resources so we keep this as lean as possible.
+ */
+function ReceiverYouTubePlayer({ onEnded }: { onEnded: () => void }) {
+    const currentSource = usePlayerStore(state => state.currentSource);
+    const isPlaying = usePlayerStore(state => state.isPlaying);
+    const playerRef = useRef<any>(null);
+    const [ytReady, setYtReady] = useState(false);
+
+    // Load YouTube IFrame API once
+    useEffect(() => {
+        if ((window as any).YT?.Player) {
+            setYtReady(true);
+            return;
+        }
+
+        const tag = document.createElement('script');
+        tag.src = 'https://www.youtube.com/iframe_api';
+        document.head.appendChild(tag);
+
+        (window as any).onYouTubeIframeAPIReady = () => {
+            console.log('📺 [Receiver] YouTube IFrame API Ready');
+            setYtReady(true);
+        };
+    }, []);
+
+    // Create/update player when source changes
+    useEffect(() => {
+        if (!ytReady || !currentSource) return;
+
+        // Destroy old player
+        if (playerRef.current?.destroy) {
+            try { playerRef.current.destroy(); } catch (e) { /* ignore */ }
+            playerRef.current = null;
+        }
+
+        console.log('🎬 [Receiver] Loading YouTube video:', currentSource);
+
+        playerRef.current = new (window as any).YT.Player('receiver-yt-player', {
+            videoId: currentSource,
+            width: '100%',
+            height: '100%',
+            playerVars: {
+                autoplay: 1,
+                controls: 0,
+                modestbranding: 1,
+                rel: 0,
+                showinfo: 0,
+                iv_load_policy: 3,
+                origin: window.location.origin,
+                enablejsapi: 1,
+            },
+            events: {
+                onReady: (event: any) => {
+                    console.log('✅ [Receiver] YouTube player ready, playing...');
+                    event.target.playVideo();
+                },
+                onStateChange: (event: any) => {
+                    // YT.PlayerState.ENDED === 0
+                    if (event.data === 0) {
+                        console.log('🏁 [Receiver] Video ended');
+                        onEnded();
+                    }
+                },
+                onError: (event: any) => {
+                    console.error('❌ [Receiver] YouTube player error:', event.data);
+                    // Auto-skip on error
+                    setTimeout(() => onEnded(), 2000);
+                },
+            },
+        });
+    }, [ytReady, currentSource, onEnded]);
+
+    // Play/Pause control
+    useEffect(() => {
+        if (!playerRef.current?.getPlayerState) return;
+        try {
+            if (isPlaying) {
+                playerRef.current.playVideo();
+            } else {
+                playerRef.current.pauseVideo();
+            }
+        } catch (e) { /* player not ready yet */ }
+    }, [isPlaying]);
+
+    return (
+        <div className="w-full h-full">
+            <div id="receiver-yt-player" className="w-full h-full" />
+        </div>
+    );
+}
+
+
 export default function ChromecastReceiver() {
     const [isReceiverReady, setIsReceiverReady] = useState(false);
+    const [initStatus, setInitStatus] = useState('Loading...');
     const [time, setTime] = useState(new Date());
+    const castContextRef = useRef<any>(null);
+    const initCalledRef = useRef(false);
 
     const {
         queue, currentIndex, currentVideo, currentSource, isPlaying,
@@ -32,111 +129,218 @@ export default function ChromecastReceiver() {
         playNext: state.playNext
     })));
 
+    // Clock
     useEffect(() => {
         const timer = setInterval(() => setTime(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
 
+    // Handle incoming Cast messages - stable callback using refs
+    const handleCastMessage = useCallback((event: any) => {
+        try {
+            const message = event.data;
+            console.log('📡 [Chromecast] Received Message:', JSON.stringify(message));
+
+            // Get latest store actions directly (avoid stale closures)
+            const store = usePlayerStore.getState();
+
+            switch (message.type) {
+                case 'LOAD_VIDEO':
+                    console.log('🎬 [Chromecast] Loading Video:', message.videoId);
+                    store.playVideo(message.videoId);
+                    break;
+                case 'PLAY':
+                    console.log('▶️ [Chromecast] Play Command');
+                    store.play();
+                    break;
+                case 'PAUSE':
+                    console.log('⏸️ [Chromecast] Pause Command');
+                    store.pause();
+                    break;
+                case 'LOAD_QUEUE':
+                case 'UPDATE_QUEUE':
+                    console.log(`📋 [Chromecast] ${message.type} received:`, message.videos?.length, 'items');
+                    if (message.videos && Array.isArray(message.videos)) {
+                        const newQueue: QueueItem[] = message.videos.map((v: any, index: number) => ({
+                            uuid: v.uuid || `cc-${Date.now()}-${index}`,
+                            id: v.videoId,
+                            videoId: v.videoId,
+                            title: v.title || 'Unknown Title',
+                            author: v.author || 'Unknown Artist',
+                            thumbnail: v.thumbnail || `https://i.ytimg.com/vi/${v.videoId}/mqdefault.jpg`,
+                            sourceType: 'youtube'
+                        }));
+
+                        // Atomic update
+                        store.reorderQueue(newQueue);
+
+                        if (typeof message.currentIndex === 'number') {
+                            store.setCurrentIndex(message.currentIndex);
+                        } else if (message.type === 'LOAD_QUEUE' && typeof message.startIndex === 'number') {
+                            store.setCurrentIndex(message.startIndex);
+                        }
+
+                        // If LOAD_QUEUE with a video, start playing immediately
+                        if (message.type === 'LOAD_QUEUE' && newQueue.length > 0) {
+                            const startIdx = message.startIndex ?? message.currentIndex ?? 0;
+                            const videoToPlay = newQueue[startIdx];
+                            if (videoToPlay?.videoId) {
+                                console.log('▶️ [Chromecast] Auto-playing from LOAD_QUEUE:', videoToPlay.title);
+                                store.playVideo(videoToPlay.videoId);
+                            }
+                        }
+                    }
+                    break;
+                case 'ADD_ITEM':
+                    if (message.video) {
+                        console.log('➕ [Chromecast] Adding item:', message.video.title);
+                        store.addToQueue({
+                            uuid: `cc-${Date.now()}`,
+                            id: message.video.videoId,
+                            videoId: message.video.videoId,
+                            title: message.video.title || 'Unknown',
+                            author: message.video.author || 'Unknown',
+                            thumbnail: `https://i.ytimg.com/vi/${message.video.videoId}/mqdefault.jpg`,
+                            sourceType: 'youtube'
+                        } as QueueItem);
+                    }
+                    break;
+                case 'NEXT':
+                    console.log('⏭️ [Chromecast] Next Command');
+                    store.playNext();
+                    break;
+                case 'PREVIOUS':
+                    console.log('⏮️ [Chromecast] Previous Command');
+                    store.playPrevious();
+                    break;
+                default:
+                    console.log('❓ [Chromecast] Unknown message type:', message.type);
+            }
+        } catch (err) {
+            console.error('📡 [Chromecast] Message parsing error:', err);
+        }
+    }, []);
+
+    // Send RECEIVER_READY handshake back to sender
+    const sendReceiverReady = useCallback(() => {
+        const context = castContextRef.current;
+        if (!context) return;
+
+        try {
+            // Get all connected senders
+            const senders = context.getSenders();
+            const readyMessage = JSON.stringify({ type: 'RECEIVER_READY' });
+
+            if (senders && senders.length > 0) {
+                senders.forEach((sender: any) => {
+                    context.sendCustomMessage(CAST_NAMESPACE, sender.id, readyMessage);
+                });
+                console.log('🤝 [Chromecast] RECEIVER_READY sent to', senders.length, 'sender(s)');
+            } else {
+                // Broadcast to all
+                context.sendCustomMessage(CAST_NAMESPACE, undefined, readyMessage);
+                console.log('🤝 [Chromecast] RECEIVER_READY broadcast');
+            }
+        } catch (e) {
+            console.warn('⚠️ [Chromecast] Could not send RECEIVER_READY:', e);
+        }
+    }, []);
+
+    // Initialize Cast Receiver - runs ONCE only
     useEffect(() => {
-        // Initialize Cast Receiver
+        if (initCalledRef.current) return;
+        initCalledRef.current = true;
+
         const initCast = (retries = 0) => {
             if (typeof window === 'undefined') return;
 
             const cast = (window as any).cast;
 
-            // Safety Check: Framework namespace might not be ready yet
             if (!cast || !cast.framework) {
-                if (retries < 30) { // Try for 3 seconds
-                    console.log(`⏳ [Chromecast] Framework not ready, retrying (${retries})...`);
+                if (retries < 50) { // Try for 5 seconds (50 * 100ms)
+                    if (retries % 10 === 0) {
+                        setInitStatus(`Loading Cast SDK... (${retries / 10}s)`);
+                        console.log(`⏳ [Chromecast] Framework not ready, retrying (${retries})...`);
+                    }
                     setTimeout(() => initCast(retries + 1), 100);
                 } else {
-                    console.error('❌ [Chromecast] Cast Framework failed to load after multiple attempts.');
+                    console.error('❌ [Chromecast] Cast Framework failed to load after 5 seconds.');
+                    setInitStatus('Failed to load Cast Framework. Please reload.');
                 }
                 return;
             }
 
             try {
+                setInitStatus('Starting receiver...');
                 const context = cast.framework.CastReceiverContext.getInstance();
+                castContextRef.current = context;
 
-                context.addCustomMessageListener(CAST_NAMESPACE, (event: any) => {
-                    try {
-                        const message = event.data;
-                        console.log('📡 [Chromecast] Received Message:', message);
+                // Register message listener
+                context.addCustomMessageListener(CAST_NAMESPACE, handleCastMessage);
 
-                        switch (message.type) {
-                            case 'LOAD_VIDEO':
-                                console.log('🎬 [Chromecast] Loading Video:', message.videoId);
-                                playVideo(message.videoId);
-                                break;
-                            case 'PLAY':
-                                console.log('▶️ [Chromecast] Play Command');
-                                play();
-                                break;
-                            case 'PAUSE':
-                                console.log('⏸️ [Chromecast] Pause Command');
-                                pause();
-                                break;
-                            case 'LOAD_QUEUE':
-                            case 'UPDATE_QUEUE':
-                                console.log(`📋 [Chromecast] ${message.type} received:`, message.videos?.length, 'items');
-                                if (message.videos && Array.isArray(message.videos)) {
-                                    const newQueue: QueueItem[] = message.videos.map((v: any, index: number) => ({
-                                        uuid: v.uuid || `cc-${Date.now()}-${index}`,
-                                        id: v.videoId,
-                                        videoId: v.videoId,
-                                        title: v.title || 'Unknown Title',
-                                        author: v.author || 'Unknown Artist',
-                                        thumbnail: v.thumbnail || `https://i.ytimg.com/vi/${v.videoId}/mqdefault.jpg`,
-                                        sourceType: 'youtube'
-                                    }));
-
-                                    // Robust Atomic Update
-                                    reorderQueue(newQueue);
-
-                                    if (typeof message.currentIndex === 'number') {
-                                        setCurrentIndex(message.currentIndex);
-                                    } else if (message.type === 'LOAD_QUEUE' && typeof message.startIndex === 'number') {
-                                        setCurrentIndex(message.startIndex);
-                                    }
-                                }
-                                break;
-                            default:
-                                console.log('❓ [Chromecast] Unknown message type:', message.type);
-                        }
-                    } catch (err) {
-                        console.error('📡 [Chromecast] Message parsing error:', err);
+                // Listen for sender connected events to send RECEIVER_READY
+                context.addEventListener(
+                    cast.framework.system.EventType.SENDER_CONNECTED,
+                    () => {
+                        console.log('📱 [Chromecast] Sender connected!');
+                        // Small delay to ensure message channel is ready
+                        setTimeout(sendReceiverReady, 500);
                     }
-                });
+                );
 
+                // Configure receiver options for lightweight operation
                 const options = new cast.framework.CastReceiverOptions();
-                options.disableIdleTimeout = true; // Prevent timeout
-                options.maxInactivity = 3600; // 1 hr timeout
+                options.disableIdleTimeout = true;
+                options.maxInactivity = 3600; // 1 hr
+                options.skipPlayersLoad = true; // Skip built-in media player (we use our own)
 
                 context.start(options);
                 setIsReceiverReady(true);
-                console.log('📺 [Chromecast] Receiver Started!');
+                setInitStatus('');
+                console.log('📺 [Chromecast] ✅ Receiver Started Successfully!');
+
+                // If senders already connected, send ready immediately
+                setTimeout(sendReceiverReady, 1000);
+
             } catch (initErr) {
                 console.error('❌ [Chromecast] Context initialization error:', initErr);
+                setInitStatus(`Error: ${initErr}`);
             }
         };
 
-        // Load Script if not loaded
+        // Load Receiver script
         if (!(window as any).cast) {
+            setInitStatus('Loading Cast Receiver SDK...');
             const script = document.createElement('script');
             script.src = '//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js';
-            script.async = true; // Allow async but handle via onload + framework check
-            script.onload = () => initCast(0);
-            document.body.appendChild(script);
+            script.onload = () => {
+                console.log('📦 [Chromecast] Receiver SDK script loaded');
+                initCast(0);
+            };
+            script.onerror = () => {
+                console.error('❌ [Chromecast] Failed to load receiver SDK script');
+                setInitStatus('Failed to load Cast SDK. Check network.');
+            };
+            document.head.appendChild(script);
         } else {
             initCast(0);
         }
 
-    }, [playVideo, play, pause, reorderQueue, setCurrentIndex]);
+        // Cleanup
+        return () => {
+            if (castContextRef.current) {
+                try {
+                    castContextRef.current.stop();
+                } catch (e) { /* ignore cleanup errors */ }
+            }
+        };
+    }, [handleCastMessage, sendReceiverReady]);
 
-    const handlePlayerEnded = () => {
+    const handlePlayerEnded = useCallback(() => {
         console.log('🏁 [Chromecast] Media ended, playing next in local queue.');
-        playNext();
-    };
+        const store = usePlayerStore.getState();
+        store.playNext();
+    }, []);
 
     const isIdle = !currentSource;
 
@@ -144,21 +348,16 @@ export default function ChromecastReceiver() {
         <div className="h-screen w-screen bg-black overflow-hidden relative font-sans text-white">
             <Head>
                 <title>YouOke Chromecast Receiver</title>
-                {/* Ensure scaling is disabled for TVs */}
                 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
             </Head>
 
-            {/* 1. Fullscreen Player Layer */}
+            {/* 1. Fullscreen Player Layer - Lightweight YouTube Player */}
             <div className={clsx(
                 "absolute inset-0 z-0 transition-all duration-1000",
                 isIdle ? "opacity-0 scale-105 blur-2xl" : "opacity-100 scale-100 blur-0"
             )}>
                 <div className="w-full h-full relative">
-                    <UniversalPlayer
-                        showControls={false}
-                        onEnded={handlePlayerEnded}
-                        className="w-full h-full pointer-events-none"
-                    />
+                    <ReceiverYouTubePlayer onEnded={handlePlayerEnded} />
                 </div>
             </div>
 
@@ -178,13 +377,20 @@ export default function ChromecastReceiver() {
                     {!isReceiverReady && (
                         <div className="mt-12 flex flex-col items-center">
                             <div className="loading loading-spinner text-primary loading-lg"></div>
-                            <p className="text-sm font-bold text-white/30 uppercase tracking-widest mt-4">Initializing Framework...</p>
+                            <p className="text-sm font-bold text-white/30 uppercase tracking-widest mt-4">{initStatus}</p>
+                        </div>
+                    )}
+
+                    {isReceiverReady && (
+                        <div className="mt-8 flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                            <p className="text-sm text-green-400/60 font-semibold">พร้อมรับคำสั่ง</p>
                         </div>
                     )}
                 </div>
             </div>
 
-            {/* 3. Sidebar Area (Ported from dual.tsx) */}
+            {/* 3. Sidebar Area */}
             {!isIdle && (
                 <div className="absolute top-0 right-0 h-full w-80 lg:w-96 z-40 bg-gradient-to-l from-black/90 via-black/80 to-transparent backdrop-blur-md p-8 overflow-y-auto transition-all duration-700">
                     <div className="space-y-8">
