@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import Head from 'next/head';
+import Script from 'next/script';
 import clsx from 'clsx';
 import { usePlayerStore } from '../modules/player/stores/usePlayerStore';
 import { QueueItem } from '../modules/player/types';
@@ -308,27 +309,17 @@ export default function ChromecastReceiver() {
             }
         };
 
-        // Cast Receiver SDK is pre-loaded via _document.tsx (blocking script)
-        // Just wait for it to be available - Smart TVs can be slow
+        // Check if Cast SDK is already available (e.g., Chromecast device injects it)
         const cast = (window as any).cast;
         if (cast?.framework) {
-            // Framework already available (pre-loaded in _document.tsx)
             console.log('📦 [Chromecast] Receiver SDK already available!');
             initCast(0);
         } else {
-            // Wait for framework to initialize (it's pre-loaded but may need time)
-            setInitStatus('Waiting for Cast Framework...');
-            console.log('⏳ [Chromecast] Waiting for pre-loaded framework to initialize...');
-
-            // Also try loading dynamically as fallback
-            if (!document.querySelector('script[src*="cast_receiver_framework"]')) {
-                console.log('📦 [Chromecast] Adding fallback script tag...');
-                const script = document.createElement('script');
-                script.src = 'https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js';
-                document.head.appendChild(script);
-            }
-
-            initCast(0); // Start polling, will retry up to 15 seconds
+            // SDK will be loaded via next/Script in the JSX below
+            // Start polling - initCast will retry until the script loads
+            setInitStatus('Loading Cast Receiver SDK...');
+            console.log('⏳ [Chromecast] Waiting for Receiver SDK to load via Script tag...');
+            initCast(0);
         }
 
         // Cleanup
@@ -355,6 +346,15 @@ export default function ChromecastReceiver() {
                 <title>YouOke Chromecast Receiver</title>
                 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
             </Head>
+
+            {/* Cast Receiver SDK - loaded ONLY on this page via next/Script */}
+            <Script
+                src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"
+                strategy="afterInteractive"
+                onLoad={() => {
+                    console.log('📦 [Chromecast] Receiver SDK script loaded via next/Script!');
+                }}
+            />
 
             {/* 1. Fullscreen Player Layer - Lightweight YouTube Player */}
             <div className={clsx(
