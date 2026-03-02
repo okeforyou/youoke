@@ -80,6 +80,8 @@ function App({ Component, pageProps }: AppProps) {
         }
       } catch (e) {
         console.warn('Cleanup failed', e);
+        // Verified Vercel Auto-deploy
+        
       }
     };
     clearServices();
