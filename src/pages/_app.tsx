@@ -41,13 +41,13 @@ function App({ Component, pageProps }: AppProps) {
   // Sync System Theme (Music Provider)
   useSystemThemeSync();
 
-  // Optimize: Only load heavy Cast/Player text on pages that need it
-  // Exclude: Login, Admin, Monitor (Receiver)
-  const isMonitorPage = router.pathname === '/monitor';
+  // Optimize: Only load heavy Cast/Player stack on pages that need it
+  // Exclude: Login, Admin, Monitor (Receiver), Chromecast, TV
+  const isReceiverPath = ['/monitor', '/chromecast', '/receiver', '/tv'].includes(router.pathname);
   const isLoginPage = router.pathname === '/login';
   const isAdminPage = router.pathname.startsWith('/admin');
 
-  const shouldLoadCast = !isMonitorPage && !isLoginPage && !isAdminPage;
+  const shouldLoadCast = !isReceiverPath && !isLoginPage && !isAdminPage;
 
   // Debug (Client-side only)
   if (typeof window !== 'undefined') {
@@ -162,7 +162,7 @@ function App({ Component, pageProps }: AppProps) {
                     </FirebaseCastProvider>
                   </CastProvider>
                 </MidiEngineProvider>
-              ) : isMonitorPage ? (
+              ) : isReceiverPath ? (
                 // Monitor Stack (Receiver) - Needs MIDI but NO Cast Sender
                 <MidiEngineProvider>
                   <AdsProvider>

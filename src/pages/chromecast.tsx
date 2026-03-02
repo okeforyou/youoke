@@ -39,68 +39,96 @@ export default function ChromecastReceiver() {
 
     useEffect(() => {
         // Initialize Cast Receiver
-        const initCast = () => {
-            if (typeof window === 'undefined' || !(window as any).cast) return;
+        const initCast = (retries = 0) => {
+            if (typeof window === 'undefined') return;
 
             const cast = (window as any).cast;
-            const context = cast.framework.CastReceiverContext.getInstance();
 
-            context.addCustomMessageListener(CAST_NAMESPACE, (event: any) => {
-                try {
-                    const message = event.data;
-                    console.log('📡 [Chromecast] Received Message:', message);
-
-                    switch (message.type) {
-                        case 'LOAD_VIDEO':
-                            playVideo(message.videoId);
-                            break;
-                        case 'PLAY':
-                            play();
-                            break;
-                        case 'PAUSE':
-                            pause();
-                            break;
-                        case 'UPDATE_QUEUE':
-                            if (message.videos && Array.isArray(message.videos)) {
-                                const newQueue: QueueItem[] = message.videos.map((v: any, index: number) => ({
-                                    uuid: `cc-${Date.now()}-${index}`,
-                                    id: v.videoId,
-                                    videoId: v.videoId,
-                                    title: v.title || 'Unknown Title',
-                                    author: v.author || 'Unknown Artist',
-                                    thumbnail: v.thumbnail || `https://i.ytimg.com/vi/${v.videoId}/mqdefault.jpg`,
-                                    sourceType: 'youtube'
-                                }));
-                                reorderQueue(newQueue);
-                                if (typeof message.currentIndex === 'number') {
-                                    setCurrentIndex(message.currentIndex);
-                                }
-                            }
-                            break;
-                    }
-                } catch (err) {
-                    console.error('📡 [Chromecast] Message parsing error:', err);
+            // Safety Check: Framework namespace might not be ready yet
+            if (!cast || !cast.framework) {
+                if (retries < 30) { // Try for 3 seconds
+                    console.log(`⏳ [Chromecast] Framework not ready, retrying (${retries})...`);
+                    setTimeout(() => initCast(retries + 1), 100);
+                } else {
+                    console.error('❌ [Chromecast] Cast Framework failed to load after multiple attempts.');
                 }
-            });
+                return;
+            }
 
-            const options = new cast.framework.CastReceiverOptions();
-            options.disableIdleTimeout = true; // Prevent timeout
-            options.maxInactivity = 3600; // 1 hr timeout
+            try {
+                const context = cast.framework.CastReceiverContext.getInstance();
 
-            context.start(options);
-            setIsReceiverReady(true);
-            console.log('📺 [Chromecast] Receiver Started!');
+                context.addCustomMessageListener(CAST_NAMESPACE, (event: any) => {
+                    try {
+                        const message = event.data;
+                        console.log('📡 [Chromecast] Received Message:', message);
+
+                        switch (message.type) {
+                            case 'LOAD_VIDEO':
+                                console.log('🎬 [Chromecast] Loading Video:', message.videoId);
+                                playVideo(message.videoId);
+                                break;
+                            case 'PLAY':
+                                console.log('▶️ [Chromecast] Play Command');
+                                play();
+                                break;
+                            case 'PAUSE':
+                                console.log('⏸️ [Chromecast] Pause Command');
+                                pause();
+                                break;
+                            case 'LOAD_QUEUE':
+                            case 'UPDATE_QUEUE':
+                                console.log(`📋 [Chromecast] ${message.type} received:`, message.videos?.length, 'items');
+                                if (message.videos && Array.isArray(message.videos)) {
+                                    const newQueue: QueueItem[] = message.videos.map((v: any, index: number) => ({
+                                        uuid: v.uuid || `cc-${Date.now()}-${index}`,
+                                        id: v.videoId,
+                                        videoId: v.videoId,
+                                        title: v.title || 'Unknown Title',
+                                        author: v.author || 'Unknown Artist',
+                                        thumbnail: v.thumbnail || `https://i.ytimg.com/vi/${v.videoId}/mqdefault.jpg`,
+                                        sourceType: 'youtube'
+                                    }));
+
+                                    // Robust Atomic Update
+                                    reorderQueue(newQueue);
+
+                                    if (typeof message.currentIndex === 'number') {
+                                        setCurrentIndex(message.currentIndex);
+                                    } else if (message.type === 'LOAD_QUEUE' && typeof message.startIndex === 'number') {
+                                        setCurrentIndex(message.startIndex);
+                                    }
+                                }
+                                break;
+                            default:
+                                console.log('❓ [Chromecast] Unknown message type:', message.type);
+                        }
+                    } catch (err) {
+                        console.error('📡 [Chromecast] Message parsing error:', err);
+                    }
+                });
+
+                const options = new cast.framework.CastReceiverOptions();
+                options.disableIdleTimeout = true; // Prevent timeout
+                options.maxInactivity = 3600; // 1 hr timeout
+
+                context.start(options);
+                setIsReceiverReady(true);
+                console.log('📺 [Chromecast] Receiver Started!');
+            } catch (initErr) {
+                console.error('❌ [Chromecast] Context initialization error:', initErr);
+            }
         };
 
         // Load Script if not loaded
         if (!(window as any).cast) {
             const script = document.createElement('script');
             script.src = '//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js';
-            script.async = false;
-            script.onload = initCast;
+            script.async = true; // Allow async but handle via onload + framework check
+            script.onload = () => initCast(0);
             document.body.appendChild(script);
         } else {
-            initCast();
+            initCast(0);
         }
 
     }, [playVideo, play, pause, reorderQueue, setCurrentIndex]);
