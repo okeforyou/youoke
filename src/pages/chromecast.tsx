@@ -47,32 +47,23 @@ function ReceiverYouTubePlayer({
         };
     }, []);
 
-    // Create/update player when source changes
+    // 1. Create player ONCE when API is ready
     useEffect(() => {
-        if (!ytReady || !currentSource) return;
+        if (!ytReady) return;
+        if (playerRef.current) return; // Already created
 
-        // Destroy old player
-        isPlayerReadyRef.current = false;
-        if (playerRef.current?.destroy) {
-            try { playerRef.current.destroy(); } catch (e) { /* ignore */ }
-            playerRef.current = null;
-        }
-
-        // Recreate the target div (YouTube replaces it with iframe)
         const container = document.getElementById('receiver-yt-player-container');
-        if (container) {
-            const oldDiv = document.getElementById('receiver-yt-player');
-            if (oldDiv) container.removeChild(oldDiv);
+        if (container && !document.getElementById('receiver-yt-player')) {
             const newDiv = document.createElement('div');
             newDiv.id = 'receiver-yt-player';
             newDiv.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;';
             container.appendChild(newDiv);
         }
 
-        console.log('🎬 [Receiver] Loading YouTube video:', currentSource);
+        console.log('🎬 [Receiver] Initializing YouTube player instance');
 
         playerRef.current = new (window as any).YT.Player('receiver-yt-player', {
-            videoId: currentSource,
+            videoId: currentSource || '',
             width: '100%',
             height: '100%',
             playerVars: {
@@ -90,8 +81,9 @@ function ReceiverYouTubePlayer({
                 onReady: (event: any) => {
                     console.log('✅ [Receiver] YouTube player ready');
                     isPlayerReadyRef.current = true;
-                    // Always play when ready (receiver should always play)
-                    event.target.playVideo();
+                    if (currentSource) {
+                        event.target.loadVideoById(currentSource);
+                    }
                 },
                 onStateChange: (event: any) => {
                     if (event.data === 0) { // ENDED
@@ -105,7 +97,20 @@ function ReceiverYouTubePlayer({
                 },
             },
         });
-    }, [ytReady, currentSource, onEnded]);
+    }, [ytReady]); // intentionally exclude currentSource to avoid recreation
+
+    // 2. Load video when currentSource changes
+    useEffect(() => {
+        if (!playerRef.current || !isPlayerReadyRef.current) return;
+        if (currentSource) {
+            console.log('🎬 [Receiver] Loading new video source:', currentSource);
+            playerRef.current.loadVideoById(currentSource);
+            // Ensure play state
+            if (isPlaying) {
+                playerRef.current.playVideo();
+            }
+        }
+    }, [currentSource]);
 
     // Play/Pause control
     useEffect(() => {
@@ -158,12 +163,7 @@ function ReceiverYouTubePlayer({
                 backgroundColor: '#000',
                 overflow: 'hidden',
             }}
-        >
-            <div
-                id="receiver-yt-player"
-                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
-            />
-        </div>
+        />
     );
 }
 
@@ -532,7 +532,7 @@ export default function ChromecastReceiver() {
 
                     {/* Next in Queue Badge */}
                     <div className={clsx(
-                        "mt-4 bg-black/70 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/10 shadow-2xl text-left transform transition-all duration-500",
+                        "mt-4 bg-[#111111]/90 px-5 py-3 rounded-2xl border border-white/10 shadow-2xl text-left transform transition-all duration-500",
                         showQueue && queue.length > currentIndex + 1 ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8 pointer-events-none"
                     )}>
                         {queue.length > currentIndex + 1 && (
