@@ -66,6 +66,8 @@ function ReceiverYouTubePlayer({ onEnded }: { onEnded: () => void }) {
 
         playerRef.current = new (window as any).YT.Player('receiver-yt-player', {
             videoId: currentSource,
+            width: '100%',
+            height: '100%',
             playerVars: {
                 autoplay: 1,
                 controls: 0,
