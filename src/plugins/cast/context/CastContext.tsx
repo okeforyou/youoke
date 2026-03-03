@@ -53,7 +53,7 @@ const logger = createLogger('CastContext');
 
 // Cast message types (must match receiver message handler)
 type CastMessage =
-  | { type: 'LOAD_VIDEO', videoId: string }
+  | { type: 'LOAD_VIDEO', videoId: string, title?: string, author?: string, thumbnail?: string }
   | { type: 'LOAD_QUEUE', videos: Array<{ videoId: string, title: string }>, startIndex?: number }
   | { type: 'UPDATE_QUEUE', videos: Array<{ videoId: string, title: string }>, currentIndex?: number }
   | { type: 'PLAY' }
@@ -384,7 +384,10 @@ export function CastProvider({ children }: { children: ReactNode }) {
       if (video) {
         sendMessage({
           type: 'LOAD_VIDEO',
-          videoId: video.videoId
+          videoId: video.videoId || '',
+          title: video.title || video.videoId || '',
+          author: (video as any).author || '',
+          thumbnail: (video as any).thumbnail || `https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`,
         });
       }
 
@@ -675,7 +678,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
       sendMessage({
         type: 'LOAD_QUEUE',
         videos: newPlaylist.map(v => ({
-          videoId: v.videoId,
+          videoId: v.videoId || '',
           title: v.title || 'Unknown'
         })),
       });
@@ -772,7 +775,10 @@ export function CastProvider({ children }: { children: ReactNode }) {
       // Send LOAD_VIDEO to play the video at this index
       sendMessage({
         type: 'LOAD_VIDEO',
-        videoId: video.videoId,
+        videoId: video.videoId || '',
+        title: video.title || video.videoId || '',
+        author: (video as any).author || '',
+        thumbnail: (video as any).thumbnail || `https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`,
       });
     } else {
       console.warn('⚠️ Not connected! Cannot jump to video');
@@ -916,10 +922,13 @@ export function CastProvider({ children }: { children: ReactNode }) {
     // setCurrentVideo(latestPlaylist[newIndex]); // Removed as currentVideo is from store
 
     if (isConnected && latestPlaylist[newIndex]) {
-      // Send LOAD_VIDEO instead of just NEXT to ensure receiver plays the correct video
+      const vid = latestPlaylist[newIndex];
       sendMessage({
         type: 'LOAD_VIDEO',
-        videoId: latestPlaylist[newIndex].videoId
+        videoId: vid.videoId || '',
+        title: vid.title || vid.videoId || '',
+        author: vid.author || '',
+        thumbnail: vid.thumbnail || `https://i.ytimg.com/vi/${vid.videoId}/mqdefault.jpg`,
       });
     } else {
       console.warn('⚠️ Not connected or no video at index', newIndex);
@@ -945,10 +954,13 @@ export function CastProvider({ children }: { children: ReactNode }) {
     // setCurrentVideo(latestPlaylist[newIndex]); // Removed as currentVideo is from store
 
     if (isConnected && latestPlaylist[newIndex]) {
-      // Send LOAD_VIDEO instead of just PREVIOUS to ensure receiver plays the correct video
+      const vid = latestPlaylist[newIndex];
       sendMessage({
         type: 'LOAD_VIDEO',
-        videoId: latestPlaylist[newIndex].videoId
+        videoId: vid.videoId,
+        title: vid.title || vid.videoId,
+        author: vid.author || '',
+        thumbnail: vid.thumbnail || `https://i.ytimg.com/vi/${vid.videoId}/mqdefault.jpg`,
       });
     } else {
       console.warn('⚠️ Not connected or no video at index', newIndex);

@@ -173,8 +173,23 @@ export default function ChromecastReceiver() {
 
             switch (message.type) {
                 case 'LOAD_VIDEO':
-                    console.log('🎬 [Chromecast] Loading Video:', message.videoId);
-                    store.playVideo(message.videoId);
+                    console.log('🎬 [Chromecast] Loading Video:', message.videoId, message.title);
+                    if (message.title && message.title !== 'Playing Video') {
+                        // Build proper queue item with real metadata
+                        const videoItem: QueueItem = {
+                            uuid: `cc-${Date.now()}`,
+                            id: message.videoId,
+                            videoId: message.videoId,
+                            title: message.title || message.videoId,
+                            author: message.author || '',
+                            thumbnail: message.thumbnail || `https://i.ytimg.com/vi/${message.videoId}/mqdefault.jpg`,
+                            sourceType: 'youtube'
+                        };
+                        store.reorderQueue([videoItem]);
+                        store.setCurrentIndex(0);
+                    } else {
+                        store.playVideo(message.videoId);
+                    }
                     break;
                 case 'PLAY':
                     console.log('▶️ [Chromecast] Play Command');
@@ -382,12 +397,20 @@ export default function ChromecastReceiver() {
                 }}
             />
 
-            {/* 1. Fullscreen Player Layer - Lightweight YouTube Player */}
-            <div className={clsx(
-                "absolute inset-0 z-0 transition-all duration-1000",
-                isIdle ? "opacity-0 scale-105 blur-2xl" : "opacity-100 scale-100 blur-0"
-            )}>
-                <div className="w-full h-full relative">
+            {/* 1. Fullscreen Player Layer - always rendered, shown/hidden by opacity */}
+            <div
+                style={{
+                    position: 'absolute',
+                    inset: 0,
+                    zIndex: 0,
+                    opacity: isIdle ? 0 : 1,
+                    transition: 'opacity 1s ease',
+                    // CRITICAL: do NOT use scale/blur when idle — it causes layout recalc
+                    // that breaks the iframe dimensions on Chromecast
+                }}
+            >
+                {/* Inner wrapper must also be absolute to give iframe a real parent size */}
+                <div style={{ position: 'absolute', inset: 0 }}>
                     <ReceiverYouTubePlayer onEnded={handlePlayerEnded} />
                 </div>
             </div>
