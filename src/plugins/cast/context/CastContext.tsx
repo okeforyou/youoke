@@ -35,9 +35,10 @@ interface CastContextValue {
   moveUp: (index: number) => void;
   moveDown: (index: number) => void;
 
-  // Player Controls
   play: () => void;
   pause: () => void;
+  mute: () => void;
+  unmute: () => void;
   next: () => void;
   previous: () => void;
 
@@ -58,6 +59,8 @@ type CastMessage =
   | { type: 'UPDATE_QUEUE', videos: Array<{ videoId: string, title: string }>, currentIndex?: number }
   | { type: 'PLAY' }
   | { type: 'PAUSE' }
+  | { type: 'MUTE' }
+  | { type: 'UNMUTE' }
   | { type: 'NEXT' }
   | { type: 'PREVIOUS' }
   | { type: 'ADD_ITEM', video: { videoId: string, title: string } }
@@ -850,6 +853,22 @@ export function CastProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const mute = () => {
+    console.log('🔇 mute() called, isConnected:', isConnected);
+    usePlayerStore.getState().setMuted(true);
+    if (isConnected) {
+      sendMessage({ type: 'MUTE' });
+    }
+  };
+
+  const unmute = () => {
+    console.log('🔊 unmute() called, isConnected:', isConnected);
+    usePlayerStore.getState().setMuted(false);
+    if (isConnected) {
+      sendMessage({ type: 'UNMUTE' });
+    }
+  };
+
   const next = () => {
     // Use refs to get latest state
     const latestPlaylist = playlistRef.current;
@@ -980,6 +999,8 @@ export function CastProvider({ children }: { children: ReactNode }) {
     moveDown,
     play,
     pause,
+    mute,
+    unmute,
     next,
     previous,
     updateCurrentIndexSilent,

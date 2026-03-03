@@ -16,9 +16,16 @@ const CAST_NAMESPACE = 'urn:x-cast:com.youoke.cast';
  * Does NOT use UniversalPlayer to avoid heavy MidiEngine dependency.
  * Smart TV's have limited resources so we keep this as lean as possible.
  */
-function ReceiverYouTubePlayer({ onEnded }: { onEnded: () => void }) {
+function ReceiverYouTubePlayer({
+    onEnded,
+    onTimeUpdate
+}: {
+    onEnded: () => void;
+    onTimeUpdate?: (time: number, duration: number) => void;
+}) {
     const currentSource = usePlayerStore(state => state.currentSource);
     const isPlaying = usePlayerStore(state => state.isPlaying);
+    const isMuted = usePlayerStore(state => state.isMuted);
     const playerRef = useRef<any>(null);
     const isPlayerReadyRef = useRef(false);
     const [ytReady, setYtReady] = useState(false);
@@ -112,6 +119,33 @@ function ReceiverYouTubePlayer({ onEnded }: { onEnded: () => void }) {
         } catch (e) { /* player not ready yet */ }
     }, [isPlaying]);
 
+    // Mute/Unmute control
+    useEffect(() => {
+        if (!isPlayerReadyRef.current || !playerRef.current) return;
+        try {
+            if (isMuted) {
+                playerRef.current.mute();
+            } else {
+                playerRef.current.unMute();
+            }
+        } catch (e) { /* player not ready yet */ }
+    }, [isMuted]);
+
+    // Time tracking
+    useEffect(() => {
+        if (!isPlayerReadyRef.current || !playerRef.current) return;
+        const interval = setInterval(async () => {
+            try {
+                if (isPlaying) {
+                    const time = await playerRef.current.getCurrentTime();
+                    const duration = await playerRef.current.getDuration();
+                    if (onTimeUpdate) onTimeUpdate(time, duration);
+                }
+            } catch (e) { }
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [isPlaying, onTimeUpdate]);
+
     return (
         // Use absolute positioning to guarantee 100% fill on TV
         <div
@@ -141,6 +175,10 @@ export default function ChromecastReceiver() {
     const castContextRef = useRef<any>(null);
     const initCalledRef = useRef(false);
 
+    const [showQueue, setShowQueue] = useState(true);
+    const [forceShowQueue, setForceShowQueue] = useState(false);
+    const lastQueueLengthRef = useRef(0);
+
     const {
         queue, currentIndex, currentVideo, currentSource, isPlaying,
         play, pause, playVideo, reorderQueue, setCurrentIndex, playNext
@@ -163,6 +201,38 @@ export default function ChromecastReceiver() {
         const timer = setInterval(() => setTime(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
+
+    // Watch queue length changes
+    useEffect(() => {
+        const currentLength = queue.length;
+        const prevLength = lastQueueLengthRef.current;
+        if (currentLength !== prevLength && prevLength !== 0 && currentLength > prevLength) {
+            setForceShowQueue(true);
+            setShowQueue(true);
+            const timer = setTimeout(() => {
+                setForceShowQueue(false);
+            }, 10000);
+            lastQueueLengthRef.current = currentLength;
+            return () => clearTimeout(timer);
+        }
+        lastQueueLengthRef.current = currentLength;
+    }, [queue.length]);
+
+    const handleTimeUpdate = useCallback((t: number, d: number) => {
+        const remaining = d - t;
+        const hasNext = queue.length > currentIndex + 1;
+
+        if (forceShowQueue) {
+            setShowQueue(true);
+            return;
+        }
+
+        if (hasNext && (t < 15 || remaining < 45)) {
+            setShowQueue(true);
+        } else {
+            setShowQueue(false);
+        }
+    }, [queue.length, currentIndex, forceShowQueue]);
 
     // Handle incoming Cast messages - stable callback using refs
     const handleCastMessage = useCallback((event: any) => {
@@ -200,6 +270,14 @@ export default function ChromecastReceiver() {
                 case 'PAUSE':
                     console.log('⏸️ [Chromecast] Pause Command');
                     store.pause();
+                    break;
+                case 'MUTE':
+                    console.log('🔇 [Chromecast] Mute Command');
+                    store.setMuted(true);
+                    break;
+                case 'UNMUTE':
+                    console.log('🔊 [Chromecast] Unmute Command');
+                    store.setMuted(false);
                     break;
                 case 'LOAD_QUEUE':
                 case 'UPDATE_QUEUE':
@@ -409,7 +487,10 @@ export default function ChromecastReceiver() {
                 }}
             >
                 <div style={{ position: 'absolute', inset: 0 }}>
-                    <ReceiverYouTubePlayer onEnded={handlePlayerEnded} />
+                    <ReceiverYouTubePlayer
+                        onEnded={handlePlayerEnded}
+                        onTimeUpdate={handleTimeUpdate}
+                    />
                 </div>
             </div>
 
@@ -450,18 +531,23 @@ export default function ChromecastReceiver() {
                     </p>
 
                     {/* Next in Queue Badge */}
-                    {queue.length > currentIndex + 1 && (
-                        <div className="mt-4 bg-black/70 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/10 shadow-2xl text-left transform transition-all duration-500 animate-in fade-in slide-in-from-right-8">
-                            <div className="flex items-center gap-2 mb-1.5">
-                                <MusicalNoteIcon className="w-3 h-3 text-primary" />
-                                <p className="text-[10px] text-white/60 uppercase font-black tracking-widest drop-shadow-sm">คิวถัดไป</p>
-                            </div>
-                            <p className="text-base font-bold text-white line-clamp-1 truncate drop-shadow-sm">{queue[currentIndex + 1].title}</p>
-                            {queue[currentIndex + 1].author && (
-                                <p className="text-xs text-white/50 truncate mt-0.5">{queue[currentIndex + 1].author}</p>
-                            )}
-                        </div>
-                    )}
+                    <div className={clsx(
+                        "mt-4 bg-black/70 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/10 shadow-2xl text-left transform transition-all duration-500",
+                        showQueue && queue.length > currentIndex + 1 ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8 pointer-events-none"
+                    )}>
+                        {queue.length > currentIndex + 1 && (
+                            <>
+                                <div className="flex items-center gap-2 mb-1.5">
+                                    <MusicalNoteIcon className="w-3 h-3 text-primary" />
+                                    <p className="text-[10px] text-white/60 uppercase font-black tracking-widest drop-shadow-sm">คิวถัดไป</p>
+                                </div>
+                                <p className="text-base font-bold text-white line-clamp-1 truncate drop-shadow-sm">{queue[currentIndex + 1].title}</p>
+                                {queue[currentIndex + 1].author && (
+                                    <p className="text-xs text-white/50 truncate mt-0.5">{queue[currentIndex + 1].author}</p>
+                                )}
+                            </>
+                        )}
+                    </div>
                 </div>
             )}
         </div>

@@ -38,7 +38,8 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
 
     const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
     const { setCastModalOpen } = useUIStore();
-    const { isConnected } = useCast();
+    const cast = useCast();
+    const { isConnected } = cast;
 
     const isAnyCastOn = (castMode !== 'none' && castMode !== undefined) || isConnected;
 
@@ -46,20 +47,38 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
         {
             icon: isPlaying ? Pause : Play,
             label: "เล่น/หยุด",
-            onClick: togglePlay,
+            onClick: () => {
+                if (isConnected) {
+                    isPlaying ? cast.pause() : cast.play();
+                } else {
+                    togglePlay();
+                }
+            },
             active: isPlaying,
             color: "text-primary"
         },
         {
             icon: SkipForward,
             label: "เพลงถัดไป",
-            onClick: () => playNext(),
+            onClick: () => {
+                if (isConnected) {
+                    cast.next();
+                } else {
+                    playNext();
+                }
+            },
             color: "text-primary"
         },
         {
             icon: isMuted ? VolumeX : Volume2,
             label: isMuted ? "เปิดเสียง" : "ปิดเสียง",
-            onClick: () => setMuted(!isMuted),
+            onClick: () => {
+                if (isConnected) {
+                    isMuted ? cast.unmute() : cast.mute();
+                } else {
+                    setMuted(!isMuted);
+                }
+            },
             active: isMuted,
             color: "text-primary"
         },
