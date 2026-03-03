@@ -5,6 +5,7 @@ import { usePlayerStore } from "../stores/usePlayerStore";
 import { useUIStore } from "../../../stores/useUIStore";
 import { MarqueeText } from "../../../components/MarqueeText";
 import { AudioOutputSwitcher } from "./AudioOutputSwitcher";
+import { useCast } from "../../../plugins/cast/context/CastContext";
 
 export const PlayerControls = () => {
     const { isPlaying, volume, isMuted, playNext, playPrevious, currentVideo, togglePlay, setVolume, setMuted, isKaraoke, queue } = usePlayerStore(
@@ -22,6 +23,35 @@ export const PlayerControls = () => {
             queue: state.queue
         }))
     );
+
+    // Cast integration: route controls through Cast when connected
+    const cast = useCast();
+    const isCasting = cast.isConnected;
+
+    const handlePlayPause = () => {
+        if (isCasting) {
+            // Route through Cast — sends PLAY/PAUSE message to receiver
+            isPlaying ? cast.pause() : cast.play();
+        } else {
+            togglePlay();
+        }
+    };
+
+    const handleNext = () => {
+        if (isCasting) {
+            cast.next();
+        } else {
+            playNext();
+        }
+    };
+
+    const handlePrevious = () => {
+        if (isCasting) {
+            cast.previous();
+        } else {
+            playPrevious();
+        }
+    };
 
     const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const vol = parseInt(e.target.value);
@@ -162,14 +192,14 @@ export const PlayerControls = () => {
 
                     {/* Previous */}
                     <button
-                        onClick={() => playPrevious()}
+                        onClick={() => handlePrevious()}
                         className="hidden sm:block text-gray-400 hover:text-gray-900 transition-colors active:scale-90 p-2"
                     >
                         <SkipBack size={24} fill="currentColor" strokeWidth={0} />
                     </button>
 
                     <button
-                        onClick={togglePlay}
+                        onClick={handlePlayPause}
                         className="
                             w-11 h-11 sm:w-12 sm:h-12 rounded-full 
                             bg-white text-gray-900 border border-gray-200
@@ -186,7 +216,7 @@ export const PlayerControls = () => {
                     </button>
 
                     <button
-                        onClick={() => playNext()}
+                        onClick={() => handleNext()}
                         className="hidden sm:block text-gray-400 hover:text-gray-900 transition-colors active:scale-90 p-2"
                     >
                         <SkipForward size={24} fill="currentColor" strokeWidth={0} />

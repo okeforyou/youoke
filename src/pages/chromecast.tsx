@@ -20,6 +20,7 @@ function ReceiverYouTubePlayer({ onEnded }: { onEnded: () => void }) {
     const currentSource = usePlayerStore(state => state.currentSource);
     const isPlaying = usePlayerStore(state => state.isPlaying);
     const playerRef = useRef<any>(null);
+    const isPlayerReadyRef = useRef(false);
     const [ytReady, setYtReady] = useState(false);
 
     // Load YouTube IFrame API once
@@ -44,17 +45,27 @@ function ReceiverYouTubePlayer({ onEnded }: { onEnded: () => void }) {
         if (!ytReady || !currentSource) return;
 
         // Destroy old player
+        isPlayerReadyRef.current = false;
         if (playerRef.current?.destroy) {
             try { playerRef.current.destroy(); } catch (e) { /* ignore */ }
             playerRef.current = null;
+        }
+
+        // Recreate the target div (YouTube replaces it with iframe)
+        const container = document.getElementById('receiver-yt-player-container');
+        if (container) {
+            const oldDiv = document.getElementById('receiver-yt-player');
+            if (oldDiv) container.removeChild(oldDiv);
+            const newDiv = document.createElement('div');
+            newDiv.id = 'receiver-yt-player';
+            newDiv.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;';
+            container.appendChild(newDiv);
         }
 
         console.log('🎬 [Receiver] Loading YouTube video:', currentSource);
 
         playerRef.current = new (window as any).YT.Player('receiver-yt-player', {
             videoId: currentSource,
-            width: '100%',
-            height: '100%',
             playerVars: {
                 autoplay: 1,
                 controls: 0,
@@ -64,22 +75,23 @@ function ReceiverYouTubePlayer({ onEnded }: { onEnded: () => void }) {
                 iv_load_policy: 3,
                 origin: window.location.origin,
                 enablejsapi: 1,
+                playsinline: 1,
             },
             events: {
                 onReady: (event: any) => {
-                    console.log('✅ [Receiver] YouTube player ready, playing...');
+                    console.log('✅ [Receiver] YouTube player ready');
+                    isPlayerReadyRef.current = true;
+                    // Always play when ready (receiver should always play)
                     event.target.playVideo();
                 },
                 onStateChange: (event: any) => {
-                    // YT.PlayerState.ENDED === 0
-                    if (event.data === 0) {
+                    if (event.data === 0) { // ENDED
                         console.log('🏁 [Receiver] Video ended');
                         onEnded();
                     }
                 },
                 onError: (event: any) => {
                     console.error('❌ [Receiver] YouTube player error:', event.data);
-                    // Auto-skip on error
                     setTimeout(() => onEnded(), 2000);
                 },
             },
@@ -88,7 +100,7 @@ function ReceiverYouTubePlayer({ onEnded }: { onEnded: () => void }) {
 
     // Play/Pause control
     useEffect(() => {
-        if (!playerRef.current?.getPlayerState) return;
+        if (!isPlayerReadyRef.current || !playerRef.current) return;
         try {
             if (isPlaying) {
                 playerRef.current.playVideo();
@@ -99,8 +111,22 @@ function ReceiverYouTubePlayer({ onEnded }: { onEnded: () => void }) {
     }, [isPlaying]);
 
     return (
-        <div className="w-full h-full">
-            <div id="receiver-yt-player" className="w-full h-full" />
+        // Use absolute positioning to guarantee 100% fill on TV
+        <div
+            id="receiver-yt-player-container"
+            style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                backgroundColor: '#000',
+                overflow: 'hidden',
+            }}
+        >
+            <div
+                id="receiver-yt-player"
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+            />
         </div>
     );
 }
