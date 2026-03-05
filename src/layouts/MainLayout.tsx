@@ -531,7 +531,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                 )}
                                             </div>
 
-                                            {/* Outside Mode Switch - Consistent Height */}
+                                            {/* Mode Switch - Consistent Height */}
                                             <div className="flex bg-gray-100 p-1 rounded-2xl border border-gray-200 shadow-inner shrink-0 h-11 items-center">
                                                 <button
                                                     onClick={() => setIsKaraoke(false)}
@@ -552,6 +552,30 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                     <Mic size={16} className={isKaraoke ? "fill-primary/5" : ""} />
                                                 </button>
                                             </div>
+
+                                            {/* Mobile Top-Right Profile Button */}
+                                            <button
+                                                onClick={() => {
+                                                    if (user) {
+                                                        useUIStore.getState().setProfileOpen(true);
+                                                    } else {
+                                                        router.push('/login');
+                                                    }
+                                                }}
+                                                className="w-11 h-11 flex items-center justify-center bg-gray-50 border border-gray-200 rounded-2xl shrink-0 shadow-sm active:scale-95 transition-all"
+                                            >
+                                                {mounted && user ? (
+                                                    user.photoURL ? (
+                                                        <img src={user.photoURL} className="w-8 h-8 rounded-full border border-gray-100" alt="Profile" />
+                                                    ) : (
+                                                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+                                                            {user.email?.[0]?.toUpperCase() || 'U'}
+                                                        </div>
+                                                    )
+                                                ) : (
+                                                    <User className="w-5 h-5 text-gray-500" />
+                                                )}
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
