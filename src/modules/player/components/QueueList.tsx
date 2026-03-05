@@ -169,12 +169,9 @@ export function QueueList() {
                         <div className="flex items-center gap-2">
                             <ListMusic size={14} className="text-primary" />
                             <span className="text-[16px] font-black text-black tracking-tight">
-                                คิวเพลง
+                                คิวเพลง {remainingCount > 0 && <span className="text-gray-400 font-bold ml-1 text-[13px]">({remainingCount})</span>}
                             </span>
                         </div>
-                        <p className="text-[11px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">
-                            {remainingCount > 0 ? `จะเล่นในลำดับถัดไป (${remainingCount})` : 'ไม่มีเพลงที่รอคิว'}
-                        </p>
                     </div>
                 </div>
                 {queue.length > 0 && (
