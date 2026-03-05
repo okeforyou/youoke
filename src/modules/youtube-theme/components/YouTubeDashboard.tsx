@@ -64,6 +64,16 @@ export default function YouTubeDashboard() {
 
     const isSearching = !!debouncedTerm;
 
+    // Scroll to top when search results appear or change
+    useEffect(() => {
+        if (isSearching) {
+            const mainContent = document.getElementById("main-content");
+            if (mainContent) {
+                mainContent.scrollTo({ top: 0, behavior: 'instant' });
+            }
+        }
+    }, [debouncedTerm, searchFilter, isSearching]);
+
     // --- History & Back Navigation Logic ---
     const router = useRouter();
 

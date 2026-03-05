@@ -562,7 +562,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
                 {/* Content Wrapper for Main and Mobile Queue */}
                 <div className="flex-1 relative overflow-hidden flex flex-col">
-                    <main className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent relative flex flex-col items-center bg-gray-50/30">
+                    <main id="main-content" className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent relative flex flex-col items-center bg-gray-50/30">
                         <div className="w-full pb-20">
                             {children}
                         </div>

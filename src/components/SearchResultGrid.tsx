@@ -41,8 +41,13 @@ export default function SearchResultGrid({
   );
 
   const handleDivScroll = () => {
-    // Scroll to top of the page reliably
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Scroll to top of the main content container reliably
+    const mainContent = document.getElementById("main-content");
+    if (mainContent) {
+      mainContent.scrollTo({ top: 0, behavior: 'instant' });
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const titleIncludesKaraoke = ({ title }: { title: string }) => {

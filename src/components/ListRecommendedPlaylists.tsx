@@ -191,7 +191,28 @@ export default function ListRecommendedPlaylists() {
    * Best UX is to trigger a search for the user to pick the best version (Karaoke/MV).
    */
     const handlePlaySong = (song: any) => {
-        const query = `${song.title} ${song.artist_name}`;
+        // Clean title for better search success (remove junk like "Official MV")
+        let cleanTitle = song.title || "";
+
+        // Remove (Official...), [Official...], (Lyric...), etc.
+        cleanTitle = cleanTitle
+            .replace(/\(Official.*?\)/gi, '')
+            .replace(/\[Official.*?\]/gi, '')
+            .replace(/\(Audio.*?\)/gi, '')
+            .replace(/\[Audio.*?\]/gi, '')
+            .replace(/\(Lyric.*?\)/gi, '')
+            .replace(/\[Lyric.*?\]/gi, '')
+            .replace(/\(MV.*?\)/gi, '')
+            .replace(/\[MV.*?\]/gi, '')
+            .replace(/Official\s+MV/gi, '')
+            .replace(/Official\s+Video/gi, '')
+            .replace(/Music\s+Video/gi, '')
+            .replace(/Lyric\s+Video/gi, '')
+            .replace(/\s+/g, ' ') // Collapse spaces
+            .trim();
+
+        const query = `${cleanTitle} ${song.artist_name || ""}`.trim();
+
         router.push({
             pathname: router.pathname,
             query: { ...router.query, search: query }
