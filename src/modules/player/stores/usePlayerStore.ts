@@ -247,37 +247,45 @@ export const usePlayerStore = create<PlayerStore>()(
             setPlayerState: (state) => set((prev) => ({ ...prev, ...state })),
 
             addToQueue: (video, autoPlay = true) => set((state) => {
-                console.log('🏗️ Store Action: addToQueue', video);
-                const newItem: QueueItem = { ...video, uuid: generateUUID() };
-                const newQueue = [...state.queue, newItem];
-                console.log('✅ New Queue Length:', newQueue.length);
+                const videos = Array.isArray(video) ? video : [video];
+                console.log(`🏗️ Store Action: addToQueue (${videos.length} items, Next Up Priority)`);
 
-                let updates: Partial<PlayerStore> = { queue: newQueue };
+                const newItems: QueueItem[] = videos.map(v => ({ ...v, uuid: generateUUID() }));
+                let newQueue;
+                let updates: Partial<PlayerStore> = {};
 
-                // If queue was empty, set as current (only if autoPlay is true)
-                if (state.queue.length === 0 && !state.currentVideo && autoPlay) {
-                    // Determine source string based on type
-                    // Robust Source Extraction
-                    let source = newItem.id; // Default fallback
-                    const type = newItem.sourceType || 'youtube'; // Default to YouTube if missing
+                if (state.queue.length === 0) {
+                    newQueue = [...newItems];
+                    updates.queue = newQueue;
 
-                    if (type === 'youtube') {
-                        source = newItem.videoId || newItem.id;
-                        if (!source) console.error("❌ PlayerStore: YouTube ID missing for item", newItem);
-                    } else if (type === 'vcd') {
-                        source = newItem.filePath || newItem.id;
-                    } else if (type === 'midi') {
-                        source = newItem.id;
+                    if (!state.currentVideo && autoPlay && newItems.length > 0) {
+                        const firstItem = newItems[0];
+                        let source = firstItem.id;
+                        const type = firstItem.sourceType || 'youtube';
+
+                        if (type === 'youtube') {
+                            source = firstItem.videoId || firstItem.id;
+                        } else if (type === 'vcd') {
+                            source = firstItem.filePath || firstItem.id;
+                        } else if (type === 'midi') {
+                            source = firstItem.id;
+                        }
+
+                        updates = {
+                            ...updates,
+                            currentIndex: 0,
+                            currentVideo: firstItem,
+                            currentSource: source,
+                            isPlaying: true
+                        };
                     }
-
-                    updates = {
-                        ...updates,
-                        currentIndex: 0,
-                        currentVideo: newItem,
-                        currentSource: source,
-                        isPlaying: true
-                    };
-                    console.log(`▶️ Store: Playing ${source} (Type: ${newItem.sourceType})`);
+                } else {
+                    newQueue = [...state.queue];
+                    const insertAt = state.currentIndex + 1;
+                    // Insert all new items at once right after current song
+                    newQueue.splice(insertAt, 0, ...newItems);
+                    updates.queue = newQueue;
+                    console.log(`✅ Inserted ${newItems.length} items at index ${insertAt}`);
                 }
 
                 broadcast(updates);

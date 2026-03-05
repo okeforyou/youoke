@@ -654,13 +654,13 @@ export function CastProvider({ children }: { children: ReactNode }) {
     });
 
     if (isConnected) {
-      console.log('📤 Sending ADD_ITEM to receiver...');
+      console.log('📤 Syncing updated queue to receiver (Next Up Priority)...');
       sendMessage({
-        type: 'ADD_ITEM',
-        video: {
-          videoId: video.videoId,
-          title: video.title || 'Unknown'
-        }
+        type: 'UPDATE_QUEUE',
+        videos: newPlaylist.map(v => ({
+          videoId: v.videoId || '',
+          title: v.title || 'Unknown'
+        })).filter(v => v.videoId),
       });
     } else {
       console.warn('⚠️ Not connected! Queue not sent to TV');

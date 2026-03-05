@@ -214,14 +214,15 @@ export default function YouTubeDashboard() {
     };
 
     const handlePlayPlaylist = (items: YTItem[]) => {
-        items.forEach(item => addToQueue({
+        const videos = items.map(item => ({
             id: item.id,
             videoId: item.id,
             title: item.title,
             author: item.subtitle,
             sourceType: 'youtube',
             thumbnail: item.thumbnail
-        } as any));
+        }));
+        addToQueue(videos as any);
     };
 
     // PLAYLIST VIEW
