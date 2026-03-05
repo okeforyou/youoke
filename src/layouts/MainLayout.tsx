@@ -562,16 +562,23 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
                 <main className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent lg:pb-0 relative flex flex-col items-center bg-gray-50/30">
                     <div className="w-full pb-20">
-                        {isMobile && isQueueOpen ? (
-                            <div className="w-full bg-white">
-                                <QueueList />
-                            </div>
-                        ) : (
-                            children
-                        )}
+                        {children}
                     </div>
                 </main>
             </div>
+
+            {/* Mobile Queue Slide-up Overlay */}
+            {isMobile && (
+                <div
+                    className={clsx(
+                        "fixed inset-0 z-[110] transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] bg-white lg:hidden",
+                        isQueueOpen ? "translate-y-0" : "translate-y-full"
+                    )}
+                >
+                    <QueueList />
+                </div>
+            )}
+
             <aside
                 className={clsx(
                     "hidden lg:flex w-[420px] border-l border-gray-200 flex-col z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",

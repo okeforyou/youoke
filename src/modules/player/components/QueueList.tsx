@@ -1,6 +1,7 @@
 import React from "react";
-import { ListMusic, Trash2, Menu } from "lucide-react";
+import { ListMusic, Trash2, Menu, ChevronDown } from "lucide-react";
 import { usePlayerStore } from "../stores/usePlayerStore";
+import { useUIStore } from "../../../stores/useUIStore";
 import Image from 'next/image';
 import {
     DndContext,
@@ -48,7 +49,7 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
         <div
             ref={setNodeRef}
             style={{ ...style, backgroundColor: '#ffffff' }}
-            className="group flex items-center gap-2 py-2 px-3 bg-white"
+            className="group flex items-center gap-2 py-2 px-3 bg-white animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both"
         >
             {/* Drag Handle - Outside the card */}
             <div
@@ -147,27 +148,34 @@ export function QueueList() {
         }
     };
 
-    if (queueItems.length === 0) {
-        return (
-            <div className="h-full flex-1 flex flex-col items-center justify-center p-8 text-gray-400 min-h-[400px] relative z-20 bg-white" style={{ backgroundColor: '#ffffff' }}>
-                <ListMusic className="w-12 h-12 mb-3 opacity-30" />
-                <p className="text-sm font-medium">ยังไม่มีคิวเพลง</p>
-                <p className="text-xs text-gray-400 mt-1">เพิ่มเพลงเข้าคิวเพื่อเล่นต่อ</p>
-            </div>
-        );
-    }
-
     return (
         <div className="flex-1 flex flex-col h-full relative z-20 bg-white" style={{ backgroundColor: '#ffffff' }}>
+            {/* Mobile Handle */}
+            <div className="lg:hidden flex justify-center pt-3 pb-1 shrink-0">
+                <div className="w-12 h-1.5 bg-gray-200 rounded-full" />
+            </div>
+
             {/* Sticky Queue Header (Restored from SidebarControls) */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white sticky top-0 z-30" style={{ backgroundColor: '#ffffff' }}>
-                <div className="flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-full bg-gray-50 flex items-center justify-center">
-                        <ListMusic size={12} className="text-gray-900" />
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50 bg-white sticky top-0 z-30 shrink-0" style={{ backgroundColor: '#ffffff' }}>
+                <div className="flex items-center gap-4">
+                    {/* Mobile Close Button (Chevron Down) */}
+                    <button
+                        onClick={() => useUIStore.getState().setQueueOpen(false)}
+                        className="lg:hidden w-10 h-10 flex items-center justify-center bg-gray-50 rounded-2xl text-gray-500 active:scale-90 transition-all shadow-sm"
+                    >
+                        <ChevronDown size={22} />
+                    </button>
+                    <div className="flex flex-col">
+                        <div className="flex items-center gap-2">
+                            <ListMusic size={14} className="text-primary" />
+                            <span className="text-[16px] font-black text-black tracking-tight">
+                                คิวเพลง
+                            </span>
+                        </div>
+                        <p className="text-[11px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">
+                            {remainingCount > 0 ? `จะเล่นในลำดับถัดไป (${remainingCount})` : 'ไม่มีเพลงที่รอคิว'}
+                        </p>
                     </div>
-                    <span className="text-[14px] font-black text-black tracking-tight">
-                        คิวเพลง <span className="ml-0.5 text-black">({remainingCount})</span>
-                    </span>
                 </div>
                 {queue.length > 0 && (
                     <button
@@ -183,32 +191,42 @@ export function QueueList() {
                     </button>
                 )}
             </div>
-            {/* Queue Items with Drag & Drop - Content starts immediately */}
+
+            {/* Content Area */}
             <div className="flex-1 overflow-y-auto pt-2 pb-24 lg:pb-6 relative z-10 bg-white" style={{ backgroundColor: '#ffffff' }}>
-                <DndContext
-                    sensors={sensors}
-                    collisionDetection={closestCenter}
-                    onDragEnd={handleDragEnd}
-                >
-                    <SortableContext
-                        items={queueItems.map(v => v.uuid)}
-                        strategy={verticalListSortingStrategy}
+                {queueItems.length === 0 ? (
+                    <div className="h-full flex flex-col items-center justify-center p-8 text-gray-400 min-h-[300px]">
+                        <ListMusic className="w-12 h-12 mb-3 opacity-30" />
+                        <p className="text-sm font-medium">ยังไม่มีคิวเพลง</p>
+                        <p className="text-xs text-gray-400 mt-1 text-center">เพิ่มเพลงเข้าคิวเพื่อสัมผัสความสนุกอย่างต่อเนื่อง</p>
+                    </div>
+                ) : (
+                    <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={handleDragEnd}
                     >
-                        {queueItems.map((video, index) => {
-                            const actualIndex = currentIndex + 1 + index;
-                            return (
-                                <SortableQueueItem
-                                    key={video.uuid}
-                                    video={video}
-                                    index={index}
-                                    actualIndex={actualIndex}
-                                    onRemove={removeFromQueue}
-                                    onPlay={setCurrentIndex}
-                                />
-                            );
-                        })}
-                    </SortableContext>
-                </DndContext>
+                        <SortableContext
+                            items={queueItems.map(v => v.uuid)}
+                            strategy={verticalListSortingStrategy}
+                        >
+                            {queueItems.map((video, index) => {
+                                const actualIndex = currentIndex + 1 + index;
+                                return (
+                                    <div key={video.uuid} className="animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both" style={{ animationDelay: `${index * 50}ms` }}>
+                                        <SortableQueueItem
+                                            video={video}
+                                            index={index}
+                                            actualIndex={actualIndex}
+                                            onRemove={removeFromQueue}
+                                            onPlay={setCurrentIndex}
+                                        />
+                                    </div>
+                                );
+                            })}
+                        </SortableContext>
+                    </DndContext>
+                )}
             </div>
         </div>
     );
