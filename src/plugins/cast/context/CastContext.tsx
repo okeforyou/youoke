@@ -654,7 +654,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
     });
 
     if (isConnected) {
-      console.log('📤 Syncing updated queue to receiver (Next Up Priority)...');
+      console.log('📤 Syncing updated queue to receiver...');
       sendMessage({
         type: 'UPDATE_QUEUE',
         videos: newPlaylist.map(v => ({

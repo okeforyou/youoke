@@ -248,7 +248,7 @@ export const usePlayerStore = create<PlayerStore>()(
 
             addToQueue: (video, autoPlay = true) => set((state) => {
                 const videos = Array.isArray(video) ? video : [video];
-                console.log(`🏗️ Store Action: addToQueue (${videos.length} items, Next Up Priority)`);
+                console.log(`🏗️ Store Action: addToQueue (${videos.length} items)`);
 
                 const newItems: QueueItem[] = videos.map(v => ({ ...v, uuid: generateUUID() }));
                 let newQueue;
@@ -280,12 +280,9 @@ export const usePlayerStore = create<PlayerStore>()(
                         };
                     }
                 } else {
-                    newQueue = [...state.queue];
-                    const insertAt = state.currentIndex + 1;
-                    // Insert all new items at once right after current song
-                    newQueue.splice(insertAt, 0, ...newItems);
+                    newQueue = [...state.queue, ...newItems];
                     updates.queue = newQueue;
-                    console.log(`✅ Inserted ${newItems.length} items at index ${insertAt}`);
+                    console.log(`✅ Appended ${newItems.length} items to end of queue. Total: ${newQueue.length}`);
                 }
 
                 broadcast(updates);

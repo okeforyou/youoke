@@ -50,8 +50,8 @@ export const HomePageContent = memo(() => {
             usePlayerStore.getState().addToQueue(videoToAdd);
         }} />;
         case 1: return <MusicProviderContainer showTab={false} />;
-        case 2: return <ListRecommendedPlaylists />; // Replaced with External Playlists
-        case 3: return <ListHitsGrid />;
+        case 2: return <ListHitsGrid />; // Match "มาแรง" (Trending)
+        case 3: return <ListRecommendedPlaylists />; // Match "เพลย์ลิสต์" (Playlists)
         case 4: return <ListPlaylistsGrid defaultTab={1} />;
         default: return <MusicProviderContainer showTab={false} />;
     }
