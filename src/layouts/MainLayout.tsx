@@ -560,24 +560,27 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     </div>
                 )}
 
-                <main className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent lg:pb-0 relative flex flex-col items-center bg-gray-50/30">
-                    <div className="w-full pb-20">
-                        {children}
-                    </div>
-                </main>
-            </div>
+                {/* Content Wrapper for Main and Mobile Queue */}
+                <div className="flex-1 relative overflow-hidden flex flex-col">
+                    <main className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent relative flex flex-col items-center bg-gray-50/30">
+                        <div className="w-full pb-20">
+                            {children}
+                        </div>
+                    </main>
 
-            {/* Mobile Queue Slide-up Overlay */}
-            {isMobile && (
-                <div
-                    className={clsx(
-                        "fixed inset-0 z-[110] transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] bg-white lg:hidden",
-                        isQueueOpen ? "translate-y-0" : "translate-y-full"
+                    {/* Mobile Queue Slide-up Overlay - Contained within content area */}
+                    {isMobile && mounted && (
+                        <div
+                            className={clsx(
+                                "absolute inset-0 z-[40] transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] bg-white",
+                                isQueueOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-full pointer-events-none"
+                            )}
+                        >
+                            <QueueList />
+                        </div>
                     )}
-                >
-                    <QueueList />
                 </div>
-            )}
+            </div>
 
             <aside
                 className={clsx(
