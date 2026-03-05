@@ -4,6 +4,7 @@ import { useTransition } from 'react'
 import {
   ArrowLeftOnRectangleIcon,
   ChatBubbleLeftIcon,
+  HomeIcon,
   MusicalNoteIcon,
   RectangleStackIcon,
   TrophyIcon,
@@ -53,24 +54,24 @@ export default function BottomNavigation() {
         className={`flex flex-col items-center justify-center gap-1 min-h-[64px] text-primary p-2 ${isHomePage && activeIndex === 1 ? "active" : ""}`}
         onClick={() => navigateToHome(1)}
       >
-        <MusicalNoteIcon className="w-6 h-6 pointer-events-none" />
-        <span className="btm-nav-label pointer-events-none">แนะนำ</span>
+        <HomeIcon className="w-6 h-6 pointer-events-none" />
+        <span className="btm-nav-label pointer-events-none">หน้าแรก</span>
       </button>
       <button
         type="button"
         className={`flex flex-col items-center justify-center gap-1 min-h-[64px] text-primary p-2 ${isHomePage && activeIndex === 2 ? "active" : ""}`}
         onClick={() => navigateToHome(2)}
       >
-        <TrophyIcon className="w-6 h-6 pointer-events-none" />
-        <span className="btm-nav-label pointer-events-none">มาแรง</span>
+        <RectangleStackIcon className="w-6 h-6 pointer-events-none" />
+        <span className="btm-nav-label pointer-events-none">แนะนำ</span>
       </button>
       <button
         type="button"
         className={`flex flex-col items-center justify-center gap-1 min-h-[64px] text-primary p-2 ${isHomePage && activeIndex === 3 ? "active" : ""}`}
         onClick={() => navigateToHome(3)}
       >
-        <RectangleStackIcon className="w-6 h-6 pointer-events-none" />
-        <span className="btm-nav-label pointer-events-none">เพลย์ลิสต์</span>
+        <TrophyIcon className="w-6 h-6 pointer-events-none" />
+        <span className="btm-nav-label pointer-events-none">มาแรง</span>
       </button>
       <button
         type="button"
