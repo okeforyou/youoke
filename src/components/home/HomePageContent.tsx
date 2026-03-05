@@ -49,9 +49,9 @@ export const HomePageContent = memo(() => {
             } as any;
             usePlayerStore.getState().addToQueue(videoToAdd);
         }} />;
-        case 1: return <MusicProviderContainer showTab={false} />;
-        case 2: return <ListHitsGrid />; // Match "มาแรง" (Trending)
-        case 3: return <ListRecommendedPlaylists />; // Match "เพลย์ลิสต์" (Playlists)
+        case 1: return <ListRecommendedPlaylists />; // "แนะนำ" -> Recommended Playlists
+        case 2: return <ListHitsGrid />; // "มาแรง" -> Hit Singles
+        case 3: return <MusicProviderContainer showTab={false} />; // "เพลย์ลิสต์" -> Dashboard
         case 4: return <ListPlaylistsGrid defaultTab={1} />;
         default: return <MusicProviderContainer showTab={false} />;
     }
