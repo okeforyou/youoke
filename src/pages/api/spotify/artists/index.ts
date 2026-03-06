@@ -79,7 +79,21 @@ export default async function handler(
       "Lazyloxy": "เลซี่ล็อกซี่",
       "UrboyTJ": "ยัวบอยทีเจ",
       "Silly Fools": "ซิลลี่ ฟูลส์",
-      "Loso": "โลโซ"
+      "Loso": "โลโซ",
+      "Joey Boy": "โจอี้ บอย",
+      "Da Endorphine": "ดา เอ็นโดรฟิน",
+      "Big Ass": "บิ๊กแอส",
+      "Retrospect": "เรโทรสเปกต์",
+      "Sweet Mullet": "สวีตมัลเล็ต",
+      "25hours": "ทเวนตี้ไฟว์อาวเวอร์ส",
+      "Singto Numchok": "สิงโต นำโชค",
+      "Wan Thanakrit": "ว่าน ธนกฤต",
+      "Stamp": "แสตมป์ อภิวัชร์",
+      "Tattoo Colour": "แทททู คัลเลอร์",
+      "Polycat": "โพลีแคท",
+      "The Parkinson": "เดอะ พาร์กินสัน",
+      "Safeplanet": "เซฟแพลนเน็ต",
+      "Anatomy Rabbit": "อนาโตมี แรบบิท"
     };
 
     // Use same playlist as trending hits for consistency
@@ -102,9 +116,15 @@ export default async function handler(
     const featuredPlaylists = [
       { id: "yt-PLpOT2ApxaBcq09ZNzwzdKsb2Sy8tt8EWg", name: "ลูกทุ่ง 100 ล้านวิว" },
       { id: "yt-PL0X-JpLCn4aOvsQYWPLir4lOMR0Ykf7_9", name: "GMM Grammy ฮิต" },
-      { id: "yt-PLBu7mKQnV2hc2v01t6rEsjyK2aH0OGfdX", name: "T-Pop Hits" }, // T-Pop 2024
+      { id: "yt-PLBu7mKQnV2hc2v01t6rEsjyK2aH0OGfdX", name: "T-Pop Hits" },
       { id: "yt-PLMcRF2wAtPEGSYJW65CoXlqX687pKNvyO", name: "เพลงฮิตยุค 2000" },
-      { id: "yt-PLlYKDqBVDxX0jbg8R1_y5BWv_Z_v2yO_k", name: "เพลงใหม่ล่าสุด" }
+      { id: "yt-PLlYKDqBVDxX0jbg8R1_y5BWv_Z_v2yO_k", name: "เพลงใหม่ล่าสุด" },
+      { id: "yt-PL0X-JpLCn4aPY_nS-fSg9-wAnYtXoP6hH", name: "ร็อกไทยยอดนิยม" },
+      { id: "yt-PLcstN9e009S0S5zIu0-T_R-zX5zX_y5vF", name: "เพลงเพื่อชีวิต" },
+      { id: "yt-PL84C9ED7DF6D4C8D8", name: "เพลงเก่า 80s-90s" },
+      { id: "yt-PLBu7mKQnV2hd2G6n3-m-DkEnJm2P2EUPn", name: "อินดี้ไทยมาแรง" },
+      { id: "yt-PLLp8fTzOovW4_N5NfM9l_r8P6U9pBvq4G", name: "แดนซ์สายย่อ" },
+      { id: "yt-PLMcRF2wAtPEF7q9S_iL1u1y6W6B6o9c_o", name: "รวมเพลงเศร้า" }
     ];
 
 
@@ -157,14 +177,29 @@ export default async function handler(
       featuredPlaylists.map(async cat => {
         // HYBRID MODE: If YouTube ID, return static data immediately
         if (cat.id.startsWith('yt-')) {
-          return {
-            data: {
-              id: cat.id,
-              name: cat.name,
-              images: [{ url: `https://ui-avatars.com/api/?name=${encodeURIComponent(cat.name)}&background=random&size=300` }] // Use UI Avatars as placeholder
-            },
-            _id: cat.id
-          };
+          const playlistId = cat.id.replace('yt-', '');
+          try {
+            const { scrapeYouTubePlaylistVideos } = await import("../../../../utils/youtubeScraper");
+            const videos = await scrapeYouTubePlaylistVideos(playlistId);
+            const firstVideo = videos[0];
+            return {
+              data: {
+                id: cat.id,
+                name: cat.name,
+                images: [{ url: firstVideo?.videoThumbnails?.[0]?.url || `https://ui-avatars.com/api/?name=${encodeURIComponent(cat.name)}&background=random&size=300` }]
+              },
+              _id: cat.id
+            };
+          } catch (e) {
+            return {
+              data: {
+                id: cat.id,
+                name: cat.name,
+                images: [{ url: `https://ui-avatars.com/api/?name=${encodeURIComponent(cat.name)}&background=random&size=300` }]
+              },
+              _id: cat.id
+            };
+          }
         }
 
         // Spotify ID
@@ -254,21 +289,27 @@ export default async function handler(
       const fallbackArtists: GetTopArtists = {
         status: "success",
         artist: [
-          { name: "Three Man Down", imageUrl: "https://ui-avatars.com/api/?name=Three+Man+Down&background=random&size=400" },
-          { name: "Jeff Satur", imageUrl: "https://ui-avatars.com/api/?name=Jeff+Satur&background=random&size=400" },
-          { name: "NONT TANONT", imageUrl: "https://ui-avatars.com/api/?name=NONT+TANONT&background=random&size=400" },
-          { name: "BOWKYLION", imageUrl: "https://ui-avatars.com/api/?name=BOWKYLION&background=random&size=400" },
-          { name: "Ink Waruntorn", imageUrl: "https://ui-avatars.com/api/?name=Ink+Waruntorn&background=random&size=400" },
-          { name: "Fellow Fellow", imageUrl: "https://ui-avatars.com/api/?name=Fellow+Fellow&background=random&size=400" },
-          { name: "Pop Pongkool", imageUrl: "https://ui-avatars.com/api/?name=Pop+Pongkool&background=random&size=400" },
-          { name: "TaitosmitH", imageUrl: "https://ui-avatars.com/api/?name=TaitosmitH&background=random&size=400" },
-          { name: "Cocktail", imageUrl: "https://ui-avatars.com/api/?name=Cocktail&background=random&size=400" },
-          { name: "Potato", imageUrl: "https://ui-avatars.com/api/?name=Potato&background=random&size=400" }
+          { name: "Three Man Down", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebc40618dc2b22f77839352755" },
+          { name: "Jeff Satur", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb46112c9b20d58849b28ba551" },
+          { name: "NONT TANONT", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb2e361c4c1a74284b3d39589d" },
+          { name: "BOWKYLION", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb1d2b0cb0407c427042a492bd" },
+          { name: "Ink Waruntorn", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb435645543c72635467431f4e" },
+          { name: "Fellow Fellow", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb564016147424ad4df344ba44" },
+          { name: "Pop Pongkool", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb4e6e02613998797f62058b76" },
+          { name: "TaitosmitH", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebabcf712869584347712395d8" },
+          { name: "Cocktail", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebd76c5b964998822a84a9561b" },
+          { name: "Potato", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebd940c6c1920ae1076b4a2f8d" },
+          { name: "Bodyslam", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebf87132172778747ef8d227b6" },
+          { name: "Palmy", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb1d2b0cb0407c427042a492bd" },
+          { name: "Meyou", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb8095b525892582772584100c" },
+          { name: "Sprite", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb604616147424ad4df344ba44" }
         ],
         artistCategories: [
-          { tag_id: "yt-PLpOT2ApxaBcq09ZNzwzdKsb2Sy8tt8EWg", tag_name: "ลูกทุ่ง 100 ล้านวิว", imageUrl: "https://ui-avatars.com/api/?name=ลูกทุ่ง&background=random&size=300" },
-          { tag_id: "yt-PL0X-JpLCn4aOvsQYWPLir4lOMR0Ykf7_9", tag_name: "GMM Grammy ฮิต", imageUrl: "https://ui-avatars.com/api/?name=GMM&background=random&size=300" },
-          { tag_id: "yt-PLBu7mKQnV2hc2v01t6rEsjyK2aH0OGfdX", tag_name: "T-Pop Hits", imageUrl: "https://ui-avatars.com/api/?name=T-Pop&background=random&size=300" }
+          { tag_id: "yt-PLpOT2ApxaBcq09ZNzwzdKsb2Sy8tt8EWg", tag_name: "ลูกทุ่ง 100 ล้านวิว", imageUrl: "https://i.ytimg.com/vi/PLpOT2ApxaBcq09ZNzwzdKsb2Sy8tt8EWg/hqdefault.jpg" },
+          { tag_id: "yt-PL0X-JpLCn4aOvsQYWPLir4lOMR0Ykf7_9", tag_name: "GMM Grammy ฮิต", imageUrl: "https://i.ytimg.com/vi/mqdefault.jpg" },
+          { tag_id: "yt-PLBu7mKQnV2hc2v01t6rEsjyK2aH0OGfdX", tag_name: "T-Pop Hits", imageUrl: "https://i.ytimg.com/vi/mqdefault.jpg" },
+          { tag_id: "yt-PLMcRF2wAtPEGSYJW65CoXlqX687pKNvyO", tag_name: "เพลงฮิตยุค 2000", imageUrl: "https://i.ytimg.com/vi/mqdefault.jpg" },
+          { tag_id: "yt-PLlYKDqBVDxX0jbg8R1_y5BWv_Z_v2yO_k", tag_name: "เพลงใหม่ล่าสุด", imageUrl: "https://i.ytimg.com/vi/mqdefault.jpg" }
         ]
       };
 
@@ -320,9 +361,11 @@ export default async function handler(
         { name: "Potato", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebd940c6c1920ae1076b4a2f8d" }
       ],
       artistCategories: [
-        { tag_id: "yt-PLpOT2ApxaBcq09ZNzwzdKsb2Sy8tt8EWg", tag_name: "ลูกทุ่ง 100 ล้านวิว", imageUrl: "https://ui-avatars.com/api/?name=ลูกทุ่ง&background=random&size=300" },
-        { tag_id: "yt-PL0X-JpLCn4aOvsQYWPLir4lOMR0Ykf7_9", tag_name: "GMM Grammy ฮิต", imageUrl: "https://ui-avatars.com/api/?name=GMM&background=random&size=300" },
-        { tag_id: "yt-PLBu7mKQnV2hc2v01t6rEsjyK2aH0OGfdX", tag_name: "T-Pop Hits", imageUrl: "https://ui-avatars.com/api/?name=T-Pop&background=random&size=300" }
+        { tag_id: "yt-PLpOT2ApxaBcq09ZNzwzdKsb2Sy8tt8EWg", tag_name: "ลูกทุ่ง 100 ล้านวิว", imageUrl: "https://i.ytimg.com/vi/mqdefault.jpg" },
+        { tag_id: "yt-PL0X-JpLCn4aOvsQYWPLir4lOMR0Ykf7_9", tag_name: "GMM Grammy ฮิต", imageUrl: "https://i.ytimg.com/vi/mqdefault.jpg" },
+        { tag_id: "yt-PLBu7mKQnV2hc2v01t6rEsjyK2aH0OGfdX", tag_name: "T-Pop Hits", imageUrl: "https://i.ytimg.com/vi/mqdefault.jpg" },
+        { tag_id: "yt-PLMcRF2wAtPEGSYJW65CoXlqX687pKNvyO", tag_name: "เพลงฮิตยุค 2000", imageUrl: "https://i.ytimg.com/vi/mqdefault.jpg" },
+        { tag_id: "yt-PLlYKDqBVDxX0jbg8R1_y5BWv_Z_v2yO_k", tag_name: "เพลงใหม่ล่าสุด", imageUrl: "https://i.ytimg.com/vi/mqdefault.jpg" }
       ]
     };
 
