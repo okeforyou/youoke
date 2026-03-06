@@ -21,7 +21,8 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
         triggerFullscreen,
         currentTime,
         duration,
-        seekTo
+        seekTo,
+        currentVideo
     } = usePlayerStore(
         useShallow(state => ({
             isPlaying: state.isPlaying,
@@ -32,7 +33,8 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             triggerFullscreen: state.triggerFullscreen,
             currentTime: state.currentTime,
             duration: state.duration,
-            seekTo: state.seekTo
+            seekTo: state.seekTo,
+            currentVideo: state.currentVideo
         }))
     );
 
@@ -44,6 +46,19 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
     const isAnyCastOn = (castMode !== 'none' && castMode !== undefined) || isConnected;
 
     const controlItems = [
+        {
+            icon: RotateCcw,
+            label: "ร้องซ้ำ",
+            onClick: () => {
+                if (isConnected && currentVideo) {
+                    cast.playNow(currentVideo);
+                } else {
+                    seekTo(0);
+                    if (!isPlaying) togglePlay();
+                }
+            },
+            color: "text-primary"
+        },
         {
             icon: isPlaying ? Pause : Play,
             label: "เล่น/หยุด",

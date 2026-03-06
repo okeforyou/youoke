@@ -27,7 +27,7 @@ interface CastContextValue {
   setPlaylist: (playlist: QueueItem[]) => void;
   updatePlaylistOrder: (playlist: QueueItem[]) => void; // Update playlist order without reloading (for drag & drop)
   addToQueue: (video: SearchResult | RecommendedVideo) => void;
-  playNow: (video: SearchResult | RecommendedVideo) => void;
+  playNow: (video: SearchResult | RecommendedVideo | QueueItem) => void;
   playNext: (video: SearchResult | RecommendedVideo) => void;
   jumpToIndex: (index: number) => void; // Jump to specific song in queue without modifying queue
   insertAt: (video: SearchResult | RecommendedVideo, index: number) => void;
@@ -667,7 +667,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const playNow = (video: SearchResult | RecommendedVideo) => {
+  const playNow = (video: any) => {
     const newVideo = { ...video, uuid: generateUUID() };
     const newPlaylist = [newVideo, ...playlist];
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Music, Mic, ListMusic, Maximize2, Shuffle } from "lucide-react";
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Music, Mic, ListMusic, Maximize2, Shuffle, RotateCcw } from "lucide-react";
 import { useShallow } from 'zustand/react/shallow';
 import { usePlayerStore } from "../stores/usePlayerStore";
 import { useUIStore } from "../../../stores/useUIStore";
@@ -189,6 +189,21 @@ export const PlayerControls = () => {
 
                 {/* Center: Controls */}
                 <div className="flex items-center justify-center gap-2 sm:gap-4 shrink-0">
+                    {/* Replay */}
+                    <button
+                        onClick={() => {
+                            if (isCasting && currentVideo) {
+                                cast.playNow(currentVideo);
+                            } else {
+                                seekTo(0);
+                                if (!isPlaying) togglePlay();
+                            }
+                        }}
+                        className="text-gray-400 hover:text-primary transition-colors active:scale-90 p-2 rounded-full hover:bg-gray-100"
+                        title="ร้องเพลงนี้ซ้ำ"
+                    >
+                        <RotateCcw size={20} />
+                    </button>
 
                     {/* Previous */}
                     <button
