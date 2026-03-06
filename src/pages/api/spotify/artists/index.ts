@@ -29,21 +29,21 @@ export default async function handler(
     // 1. Curated Thai Artists (User's favorites and famous ones)
     // Reverting to high-quality curated list to ensure "karaoke-friendly" songs
     let artistList: Artist[] = [
-      { name: "Three Man Down", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebc40618dc2b22f77839352755" },
-      { name: "Jeff Satur", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb46112c9b20d58849b28ba551" },
-      { name: "NONT TANONT", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb2e361c4c1a74284b3d39589d" },
-      { name: "BOWKYLION", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb1d2b0cb0407c427042a492bd" },
-      { name: "Ink Waruntorn", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb435645543c72635467431f4e" },
-      { name: "TaitosmitH", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebabcf712869584347712395d8" },
-      { name: "Bodyslam", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebf87132172778747ef8d227b6" },
-      { name: "Potato", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebd940c6c1920ae1076b4a2f8d" },
-      { name: "Cocktail", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebd76c5b964998822a84a9561b" },
-      { name: "Labanoon", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb6c4296ca8375a03e670ba51d" },
-      { name: "Big Ass", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb27339719bf25e365e1008675" },
-      { name: "The Toys", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebd086383637f9e80277df6956" },
-      { name: "Meyou", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb8095b525892582772584100c" },
-      { name: "Zom Marie", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb56e9c93b680c6517a94025a1" },
-      { name: "Safeplanet", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb576352ff135e82512e088ba7" }
+      { name: "ทรีแมนดาวน์", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebc40618dc2b22f77839352755" },
+      { name: "เจฟ ซาเตอร์", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb46112c9b20d58849b28ba551" },
+      { name: "นนท์ ธนนท์", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb2e361c4c1a74284b3d39589d" },
+      { name: "โบกี้ไลอ้อน", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb1d2b0cb0407c427042a492bd" },
+      { name: "อิ้งค์ วรันธร", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb435645543c72635467431f4e" },
+      { name: "ไททศมิตร", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebabcf712869584347712395d8" },
+      { name: "บอดี้สแลม", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebf87132172778747ef8d227b6" },
+      { name: "โปเตโต้", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebd940c6c1920ae1076b4a2f8d" },
+      { name: "ค็อกเทล", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebd76c5b964998822a84a9561b" },
+      { name: "ลาบานูน", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb6c4296ca8375a03e670ba51d" },
+      { name: "บิ๊กแอส", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb27339719bf25e365e1008675" },
+      { name: "เดอะทอยส์", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebd086383637f9e80277df6956" },
+      { name: "มียู", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb8095b525892582772584100c" },
+      { name: "ส้ม มารี", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb56e9c93b680c6517a94025a1" },
+      { name: "เซฟแพลนเน็ต", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb576352ff135e82512e088ba7" }
     ];
 
     // 2. Featured Playlists (Refined Queries for 100% Thai Content)

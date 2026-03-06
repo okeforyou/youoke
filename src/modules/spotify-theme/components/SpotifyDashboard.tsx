@@ -18,7 +18,6 @@ import { useSystemConfig } from "../../../hooks/useSystemConfig";
 import { useUIStore } from "../../../stores/useUIStore";
 
 const GENRES = [
-  "เพลงไทย",
   "ลูกทุ่ง",
   "ลูกกรุง",
   "เพื่อชีวิต",
@@ -257,7 +256,7 @@ export default function SpotifyDashboard({ showTab = true }) {
 
                   {/* Name Text inside Cover (Bottom Left) */}
                   <div className="absolute inset-0 p-3 flex flex-col justify-end items-start z-10 pointer-events-none">
-                    <h2 className="text-white font-bold text-xs leading-tight line-clamp-1 drop-shadow-md transform translate-y-0.5 group-hover:translate-y-0 transition-transform text-left">
+                    <h2 className="text-white font-bold text-[11px] sm:text-[12px] leading-tight line-clamp-1 drop-shadow-md transform translate-y-0.5 group-hover:translate-y-0 transition-transform text-left">
                       {artist.name}
                     </h2>
                   </div>
@@ -280,7 +279,7 @@ export default function SpotifyDashboard({ showTab = true }) {
             key={gen}
             onClick={() => setUpdatedGenreText(gen)}
             className={`
-                 w-full py-2 px-4 rounded-xl text-sm font-black transition-all duration-300 border
+                 w-full py-2 px-3 rounded-xl text-[12px] font-bold transition-all duration-300 border
                  ${genreText == gen
                 ? "bg-primary text-white shadow-lg shadow-primary/30 border-primary transform -translate-y-0.5"
                 : "bg-gray-100 text-black border-gray-100 hover:bg-white hover:border-primary/30 hover:shadow-md hover:text-primary hover:-translate-y-0.5"
@@ -290,19 +289,6 @@ export default function SpotifyDashboard({ showTab = true }) {
             {gen}
           </button>
         ))}
-        {/* 'All' option or Special Playlist */}
-        <button
-          onClick={() => setUpdatedGenreText(OKE_PLAYLIST)}
-          className={`
-               w-full py-2.5 px-4 rounded-2xl text-sm font-black transition-all duration-300 border
-               ${genreText === OKE_PLAYLIST
-              ? "bg-primary text-white shadow-lg shadow-primary/30 border-primary transform -translate-y-0.5"
-              : "bg-gray-100 text-black border-gray-100 hover:bg-white hover:border-primary/30 hover:shadow-md hover:text-primary hover:-translate-y-0.5"
-            }
-            `}
-        >
-          {OKE_PLAYLIST}
-        </button>
       </div>
 
       {/* Recommended Playlists Header */}
