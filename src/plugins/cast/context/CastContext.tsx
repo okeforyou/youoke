@@ -463,7 +463,13 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
                   session.sendMessage(
                     CAST_NAMESPACE,
-                    { type: 'LOAD_VIDEO', videoId: nextVideo.videoId || nextVideo.id || '' },
+                    {
+                      type: 'LOAD_VIDEO',
+                      videoId: nextVideo.videoId || nextVideo.id || '',
+                      title: nextVideo.title || nextVideo.videoId || nextVideo.id || '',
+                      author: nextVideo.author || '',
+                      thumbnail: nextVideo.thumbnail || `https://i.ytimg.com/vi/${nextVideo.videoId || nextVideo.id}/mqdefault.jpg`
+                    },
                     () => console.log('✅ Next video sent:', nextVideo.videoId || nextVideo.id),
                     (error: any) => console.error('❌ Error sending next video:', error)
                   );

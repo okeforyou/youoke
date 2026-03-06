@@ -438,9 +438,38 @@ export default function ChromecastReceiver() {
     }, [handleCastMessage, sendReceiverReady]);
 
     const handlePlayerEnded = useCallback(() => {
-        console.log('🏁 [Chromecast] Media ended, playing next in local queue.');
+        console.log('🏁 [Chromecast] Media ended, processing next step.');
         const store = usePlayerStore.getState();
-        store.playNext();
+        const context = castContextRef.current;
+        let sentToSender = false;
+
+        // Notify senders that video ended so they can manage the queue
+        if (context && store.currentSource) {
+            const senders = context.getSenders();
+            if (senders && senders.length > 0) {
+                const message = JSON.stringify({
+                    type: 'VIDEO_ENDED',
+                    videoId: store.currentSource,
+                    currentIndex: store.currentIndex
+                });
+                try {
+                    // Send to all connected senders
+                    senders.forEach((sender: any) => {
+                        context.sendCustomMessage(CAST_NAMESPACE, sender.id, message);
+                    });
+                    console.log('📤 [Chromecast] VIDEO_ENDED sent to senders');
+                    sentToSender = true;
+                } catch (e) {
+                    console.error('Error sending VIDEO_ENDED:', e);
+                }
+            }
+        }
+
+        // If no sender took control, play next locally as a fallback
+        if (!sentToSender) {
+            console.log('⚠️ [Chromecast] No senders connected, playing next in local queue as fallback.');
+            store.playNext();
+        }
     }, []);
 
     const isIdle = !currentSource;
