@@ -53,7 +53,7 @@ const logger = createLogger('CastContext');
 
 // Cast message types (must match receiver message handler)
 type CastMessage =
-  | { type: 'LOAD_VIDEO', videoId: string }
+  | { type: 'LOAD_VIDEO', videoId: string, title?: string, author?: string, thumbnail?: string }
   | { type: 'LOAD_QUEUE', videos: Array<{ videoId: string, title: string }>, startIndex?: number }
   | { type: 'UPDATE_QUEUE', videos: Array<{ videoId: string, title: string }>, currentIndex?: number }
   | { type: 'PLAY' }
@@ -91,6 +91,9 @@ export function CastProvider({ children }: { children: ReactNode }) {
   const playlistRef = useRef(playlist);
   const currentIndexRef = useRef(currentIndex);
   const currentVideoRef = useRef(currentVideo);
+
+  // Track last index received from Chromecast to prevent echo loops
+  const lastReceivedIndexRef = useRef<number>(-1);
 
   // Sync refs with store changes
   useEffect(() => {
@@ -207,7 +210,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
       // Send full queue to receiver with startIndex
       const videos = playlist.map(v => ({
-        videoId: v.videoId,
+        videoId: v.videoId || v.id || '',
         title: v.title || 'Unknown'
       }));
 
@@ -333,64 +336,8 @@ export function CastProvider({ children }: { children: ReactNode }) {
     // Reset receiver state flag to trigger re-sync
     setReceiverStateReceived(false);
 
-    // Bridge to Global Player Store
-    // Bridge to Global Player Store (Manual Access)
-    const playerStore = usePlayerStore.getState();
-    const { queue: storeQueue, currentIndex: storeIndex, setCurrentIndex: setStoreIndex } = playerStore;
+    // Removed invalid hooks from here (moved to top-level of CastProvider)
 
-    // 1. Sync Out: Local Store -> Cast Receiver
-    useEffect(() => {
-      // Only sync if connected and we have a session
-      if (!isConnected || !castSession) return;
-
-      console.log('🔄 [Sync Out] Store Queue changed:', storeQueue.length);
-
-      // Map store queue to cast format
-      const castVideos = storeQueue.map(item => ({
-        videoId: item.videoId || '',
-        title: item.title || 'Unknown',
-        author: item.author,
-        addedBy: item.addedBy, // Pass through social info
-        thumbnail: item.thumbnail
-      })).filter(v => v.videoId); // Filter invalid videos
-
-      // Detect if this is just an index change or a queue change?
-      // For simplicity, we send UPDATE_QUEUE on any queue structure change.
-      // Ideally we diff, but sending the list is robust.
-
-      sendMessage({
-        type: 'UPDATE_QUEUE',
-        videos: castVideos
-      });
-
-    }, [storeQueue, isConnected, castSession]); // Sync when queue changes
-
-    // 2. Sync Out: Local Index -> Cast Receiver (SKIP/JUMP)
-    // We need to be careful not to create a loop if Receiver updates us.
-    // We can track "last received index from cast" to avoid re-sending.
-    const lastReceivedIndexRef = useRef<number>(-1);
-
-    useEffect(() => {
-      if (!isConnected || !castSession) return;
-
-      // If the change came from the receiver (Store Index == Last Received Index), ignore
-      if (storeIndex === lastReceivedIndexRef.current) return;
-
-      console.log('🔄 [Sync Out] Store Index changed:', storeIndex);
-
-      // Send LOAD_VIDEO (Jump) to receiver
-      // We need the video ID at this index
-      const video = storeQueue[storeIndex];
-      if (video) {
-        sendMessage({
-          type: 'LOAD_VIDEO',
-          videoId: video.videoId
-        });
-      }
-
-    }, [storeIndex, isConnected, castSession]);
-
-    // ... (Existing useEffects) ...
 
     // Setup message listener
     session.addMessageListener(CAST_NAMESPACE, (namespace: string, message: string) => {
@@ -410,7 +357,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
             if (currentQueue.length > 0) {
               const videos = currentQueue.map(v => ({
-                videoId: v.videoId,
+                videoId: v.videoId || v.id || '',
                 title: v.title || 'Unknown'
               }));
 
@@ -437,9 +384,10 @@ export function CastProvider({ children }: { children: ReactNode }) {
               lastReceivedIndexRef.current = data.currentIndex;
 
               // Update Store if different
-              if (data.currentIndex !== storeIndex) {
+              const currentState = usePlayerStore.getState();
+              if (data.currentIndex !== currentState.currentIndex) {
                 logger.log('🔄 [Sync In] Updating Store Index to:', data.currentIndex);
-                setCurrentIndex(data.currentIndex);
+                currentState.setCurrentIndex(data.currentIndex);
               }
             }
 
@@ -495,7 +443,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
               // Send updated queue to receiver
               if (newPlaylist.length > 0) {
                 const videos = newPlaylist.map(v => ({
-                  videoId: v.videoId,
+                  videoId: v.videoId || v.id || '',
                   title: v.title || 'Unknown'
                 }));
                 session.sendMessage(
@@ -515,8 +463,8 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
                   session.sendMessage(
                     CAST_NAMESPACE,
-                    { type: 'LOAD_VIDEO', videoId: nextVideo.videoId },
-                    () => console.log('✅ Next video sent:', nextVideo.videoId),
+                    { type: 'LOAD_VIDEO', videoId: nextVideo.videoId || nextVideo.id || '' },
+                    () => console.log('✅ Next video sent:', nextVideo.videoId || nextVideo.id),
                     (error: any) => console.error('❌ Error sending next video:', error)
                   );
                 } else {
@@ -675,7 +623,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
       sendMessage({
         type: 'LOAD_QUEUE',
         videos: newPlaylist.map(v => ({
-          videoId: v.videoId,
+          videoId: v.videoId || v.id || '',
           title: v.title || 'Unknown'
         })),
       });
@@ -737,15 +685,15 @@ export function CastProvider({ children }: { children: ReactNode }) {
       // Send LOAD_VIDEO to start playing immediately
       sendMessage({
         type: 'LOAD_VIDEO',
-        videoId: video.videoId,
+        videoId: video.videoId || (video as any).id || '',
       });
       // Send full queue for reference
       sendMessage({
         type: 'LOAD_QUEUE',
         videos: newPlaylist.map(v => ({
-          videoId: v.videoId || '',
+          videoId: v.videoId || (v as any).id || '',
           title: v.title || 'Unknown'
-        })).filter(v => v.videoId),
+        })).filter(v => v.videoId || (v as any).id),
       });
     }
   };
@@ -772,7 +720,10 @@ export function CastProvider({ children }: { children: ReactNode }) {
       // Send LOAD_VIDEO to play the video at this index
       sendMessage({
         type: 'LOAD_VIDEO',
-        videoId: video.videoId,
+        videoId: video.videoId || video.id || '',
+        title: video.title || video.videoId || '',
+        author: (video as any).author || '',
+        thumbnail: (video as any).thumbnail || `https://i.ytimg.com/vi/${video.videoId || video.id}/mqdefault.jpg`,
       });
     } else {
       console.warn('⚠️ Not connected! Cannot jump to video');
@@ -795,9 +746,9 @@ export function CastProvider({ children }: { children: ReactNode }) {
       sendMessage({
         type: 'UPDATE_QUEUE',
         videos: newPlaylist.map(v => ({
-          videoId: v.videoId || '',
+          videoId: v.videoId || (v as any).id || '',
           title: v.title || 'Unknown'
-        })).filter(v => v.videoId),
+        })).filter(v => v.videoId || (v as any).id),
       });
     }
   };
@@ -818,9 +769,9 @@ export function CastProvider({ children }: { children: ReactNode }) {
       sendMessage({
         type: 'UPDATE_QUEUE',
         videos: newPlaylist.map(v => ({
-          videoId: v.videoId || '',
+          videoId: v.videoId || (v as any).id || '',
           title: v.title || 'Unknown'
-        })).filter(v => v.videoId),
+        })).filter(v => v.videoId || (v as any).id),
       });
     }
   };
@@ -881,6 +832,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
   // Player Controls
   const play = () => {
     console.log('▶️ play() called, isConnected:', isConnected);
+    usePlayerStore.getState().play(); // Update sender UI
     if (isConnected) {
       sendMessage({ type: 'PLAY' });
     } else {
@@ -890,6 +842,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
   const pause = () => {
     console.log('⏸️ pause() called, isConnected:', isConnected);
+    usePlayerStore.getState().pause(); // Update sender UI
     if (isConnected) {
       sendMessage({ type: 'PAUSE' });
     } else {
@@ -916,10 +869,13 @@ export function CastProvider({ children }: { children: ReactNode }) {
     // setCurrentVideo(latestPlaylist[newIndex]); // Removed as currentVideo is from store
 
     if (isConnected && latestPlaylist[newIndex]) {
-      // Send LOAD_VIDEO instead of just NEXT to ensure receiver plays the correct video
+      const vid = latestPlaylist[newIndex];
       sendMessage({
         type: 'LOAD_VIDEO',
-        videoId: latestPlaylist[newIndex].videoId
+        videoId: vid.videoId || '',
+        title: vid.title || vid.videoId || '',
+        author: vid.author || '',
+        thumbnail: vid.thumbnail || `https://i.ytimg.com/vi/${vid.videoId}/mqdefault.jpg`,
       });
     } else {
       console.warn('⚠️ Not connected or no video at index', newIndex);
@@ -945,10 +901,13 @@ export function CastProvider({ children }: { children: ReactNode }) {
     // setCurrentVideo(latestPlaylist[newIndex]); // Removed as currentVideo is from store
 
     if (isConnected && latestPlaylist[newIndex]) {
-      // Send LOAD_VIDEO instead of just PREVIOUS to ensure receiver plays the correct video
+      const vid = latestPlaylist[newIndex];
       sendMessage({
         type: 'LOAD_VIDEO',
-        videoId: latestPlaylist[newIndex].videoId
+        videoId: vid.videoId || '',
+        title: vid.title || vid.videoId || '',
+        author: vid.author || '',
+        thumbnail: vid.thumbnail || `https://i.ytimg.com/vi/${vid.videoId}/mqdefault.jpg`,
       });
     } else {
       console.warn('⚠️ Not connected or no video at index', newIndex);
