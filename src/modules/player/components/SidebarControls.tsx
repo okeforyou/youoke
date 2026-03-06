@@ -22,7 +22,9 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
         currentTime,
         duration,
         seekTo,
-        currentVideo
+        currentVideo,
+        currentIndex,
+        play
     } = usePlayerStore(
         useShallow(state => ({
             isPlaying: state.isPlaying,
@@ -34,7 +36,9 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             currentTime: state.currentTime,
             duration: state.duration,
             seekTo: state.seekTo,
-            currentVideo: state.currentVideo
+            currentVideo: state.currentVideo,
+            currentIndex: state.currentIndex,
+            play: state.play
         }))
     );
 
@@ -63,11 +67,11 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             icon: RotateCcw,
             label: "ร้องซ้ำ",
             onClick: () => {
-                if (isConnected && currentVideo) {
-                    cast.playNow(currentVideo);
+                if (isConnected) {
+                    cast.jumpToIndex(currentIndex);
                 } else {
                     seekTo(0);
-                    if (!isPlaying) togglePlay();
+                    play(); // Explicitly play to restart if ended/paused
                 }
             },
             color: "text-primary"

@@ -8,7 +8,7 @@ import { AudioOutputSwitcher } from "./AudioOutputSwitcher";
 import { useCast } from "../../../plugins/cast/context/CastContext";
 
 export const PlayerControls = () => {
-    const { isPlaying, volume, isMuted, playNext, playPrevious, currentVideo, togglePlay, setVolume, setMuted, isKaraoke, queue } = usePlayerStore(
+    const { isPlaying, volume, isMuted, playNext, playPrevious, currentVideo, togglePlay, setVolume, setMuted, isKaraoke, queue, currentIndex, play } = usePlayerStore(
         useShallow(state => ({
             isPlaying: state.isPlaying,
             volume: state.volume,
@@ -20,7 +20,9 @@ export const PlayerControls = () => {
             setVolume: state.setVolume,
             setMuted: state.setMuted,
             isKaraoke: state.isKaraoke,
-            queue: state.queue
+            queue: state.queue,
+            currentIndex: state.currentIndex,
+            play: state.play
         }))
     );
 
@@ -217,11 +219,11 @@ export const PlayerControls = () => {
                     {/* Replay */}
                     <button
                         onClick={() => {
-                            if (isCasting && currentVideo) {
-                                cast.playNow(currentVideo);
+                            if (isCasting) {
+                                cast.jumpToIndex(currentIndex);
                             } else {
                                 seekTo(0);
-                                if (!isPlaying) togglePlay();
+                                play(); // Explicitly play to restart
                             }
                         }}
                         className="text-gray-400 hover:text-primary transition-colors active:scale-90 p-2 rounded-full hover:bg-gray-100"

@@ -103,7 +103,7 @@ export const usePlayerSync = (
     useEffect(() => {
         const target = playerRef.current;
         // Block Sync if Dual Mode is active (Controller Mode)
-        if (!target || isPassive || currentTime <= 0 || isDualActive) return;
+        if (!target || isPassive || currentTime < 0 || isDualActive) return;
 
         try {
             if (typeof target.getIframe === 'function' && !target.getIframe()) return;
