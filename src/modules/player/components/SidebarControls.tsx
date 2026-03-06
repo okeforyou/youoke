@@ -47,19 +47,6 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
 
     const controlItems = [
         {
-            icon: RotateCcw,
-            label: "ร้องซ้ำ",
-            onClick: () => {
-                if (isConnected && currentVideo) {
-                    cast.playNow(currentVideo);
-                } else {
-                    seekTo(0);
-                    if (!isPlaying) togglePlay();
-                }
-            },
-            color: "text-primary"
-        },
-        {
             icon: isPlaying ? Pause : Play,
             label: "เล่น/หยุด",
             onClick: () => {
@@ -70,6 +57,19 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                 }
             },
             active: isPlaying,
+            color: "text-primary"
+        },
+        {
+            icon: RotateCcw,
+            label: "ร้องซ้ำ",
+            onClick: () => {
+                if (isConnected && currentVideo) {
+                    cast.playNow(currentVideo);
+                } else {
+                    seekTo(0);
+                    if (!isPlaying) togglePlay();
+                }
+            },
             color: "text-primary"
         },
         {

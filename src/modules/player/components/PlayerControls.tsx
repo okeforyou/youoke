@@ -189,22 +189,6 @@ export const PlayerControls = () => {
 
                 {/* Center: Controls */}
                 <div className="flex items-center justify-center gap-2 sm:gap-4 shrink-0">
-                    {/* Replay */}
-                    <button
-                        onClick={() => {
-                            if (isCasting && currentVideo) {
-                                cast.playNow(currentVideo);
-                            } else {
-                                seekTo(0);
-                                if (!isPlaying) togglePlay();
-                            }
-                        }}
-                        className="text-gray-400 hover:text-primary transition-colors active:scale-90 p-2 rounded-full hover:bg-gray-100"
-                        title="ร้องเพลงนี้ซ้ำ"
-                    >
-                        <RotateCcw size={20} />
-                    </button>
-
                     {/* Previous */}
                     <button
                         onClick={() => handlePrevious()}
@@ -228,6 +212,22 @@ export const PlayerControls = () => {
                         ) : (
                             <Play size={20} fill="currentColor" className="ml-0.5" strokeWidth={0} />
                         )}
+                    </button>
+
+                    {/* Replay */}
+                    <button
+                        onClick={() => {
+                            if (isCasting && currentVideo) {
+                                cast.playNow(currentVideo);
+                            } else {
+                                seekTo(0);
+                                if (!isPlaying) togglePlay();
+                            }
+                        }}
+                        className="text-gray-400 hover:text-primary transition-colors active:scale-90 p-2 rounded-full hover:bg-gray-100"
+                        title="ร้องเพลงนี้ซ้ำ"
+                    >
+                        <RotateCcw size={20} />
                     </button>
 
                     <button
