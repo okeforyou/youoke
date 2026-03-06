@@ -7,18 +7,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // CATEGORY CONFIGURATION (Thai Content Focus)
         const VIDEO_CATEGORIES = [
-            { query: 'เพลงไทยฮิตล่าสุด', title: '🔥 เพลงไทยมาแรง 2025' },
-            { query: 'ลูกทุ่งฮิต 100 ล้านวิว', title: '🌾 ลูกทุ่งยอดนิยม' },
-            { query: 'T-Pop Hits', title: '🎤 T-Pop ฮิตติดชาร์ต' },
-            { query: 'เพลงร็อคไทยฮิต', title: '🎸 ร็อคไทยหัวใจสิงห์' },
-            { query: 'เพลงเพื่อชีวิตฮิต', title: '🐃 เพื่อชีวิตตำนาน' },
-            { query: 'เพลงแดนซ์สายย่อ', title: '🕺 แดนซ์สายย่อ' }
+            { query: 'เพลงไทยฮิตล่าสุด 2025', title: '🔥 เพลงไทยมาแรง 2025' },
+            { query: 'รวมเพลงลูกทุ่งยอดฮิต 100 ล้านวิว', title: '🌾 ลูกทุ่งยอดนิยม' },
+            { query: 'T-Pop Hits 2025 เพลงไทย', title: '🎤 T-Pop ฮิตติดชาร์ต' },
+            { query: 'เพลงร็อกไทย ยอดนิยม', title: '🎸 ร็อกไทยหัวใจสิงห์' },
+            { query: 'เพลงเพื่อชีวิต ฮิตตลอดกาล ไทย', title: '🐃 เพื่อชีวิตตำนาน' },
+            { query: 'เพลงแดนซ์ไทย สายย่อ 2025', title: '🕺 แดนซ์สายย่อ' }
         ];
 
         const PLAYLIST_CATEGORIES = [
-            { query: 'รวมเพลงไทยฮิต 2025', title: '📂 เพลย์ลิสต์แนะนำ' },
-            { query: 'เพลงเก่าที่คิดถึง 90s', title: '📼 ย้อนวันวาน 90s' },
-            { query: 'เพลงเศร้าอกหัก 2025', title: '💔 เพลงเศร้าเหงาจับใจ' }
+            { query: 'รวมเพลงไทยฮิต ยอดนิยม 2025', title: '📂 เพลย์ลิสต์แนะนำ' },
+            { query: 'รวมเพลงไทยเก่า ยุค 90s', title: '📼 ย้อนวันวาน 90s' },
+            { query: 'รวมเพลงเศร้าไทย 2025 อกหัก', title: '💔 เพลงเศร้าเหงาจับใจ' }
         ];
 
         console.log(`[API/Explore] Fetching ${VIDEO_CATEGORIES.length} Video & ${PLAYLIST_CATEGORIES.length} Playlist Categories...`);

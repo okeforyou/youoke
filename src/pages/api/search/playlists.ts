@@ -10,7 +10,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
-        console.log(`[API] Searching playlists via Spotify API for: ${q} (Page: ${req.query.page || 1})`);
+        let searchQuery = q as string;
+        // Optimization: Enhance query for better Thai music results if it's a genre or general term
+        const thaiGenreKeywords = ["ลูกทุ่ง", "ลูกกรุง", "เพื่อชีวิต", "หมอลำ", "อีสาน", "ปักษ์ใต้", "ร็อก", "ป็อป", "เพลงไทย"];
+        if (thaiGenreKeywords.some(k => searchQuery.includes(k))) {
+            if (!searchQuery.includes("ไทย")) searchQuery += " ไทย";
+            if (!searchQuery.includes("ฮิต")) searchQuery += " ฮิต";
+        }
+
+        console.log(`[API] Searching playlists for: ${searchQuery} (Page: ${req.query.page || 1})`);
 
         // Pagination
         const page = Number(req.query.page) || 1;
@@ -23,7 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             let spotifyResults: any[] = [];
             try {
                 // This calls the internal service which uses getAccessToken
-                spotifyResults = await searchSpotifyPlaylists(q as string, limit, offset);
+                spotifyResults = await searchSpotifyPlaylists(searchQuery, limit, offset);
             } catch (err) {
                 console.warn("Spotify Search Skipped/Failed:", err);
             }
@@ -46,8 +54,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // 2. Fallback to YouTube Scraper if Spotify failed or empty
         if (results.length === 0) {
-            console.log(`[API] Fallback: Searching YouTube for: ${q}`);
-            const ytResults = await scrapeYouTubePlaylistSearch(q as string);
+            console.log(`[API] Fallback: Searching YouTube for: ${searchQuery}`);
+            const ytResults = await scrapeYouTubePlaylistSearch(searchQuery);
             results = ytResults;
         }
 

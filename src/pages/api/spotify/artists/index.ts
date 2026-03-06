@@ -114,17 +114,17 @@ export default async function handler(
     // Additional Categories (Hybrid Mode: YouTube Playlists for Genres)
     // IDs verified via manual search
     const featuredPlaylists = [
-      { id: "yt-PLpOT2ApxaBcq09ZNzwzdKsb2Sy8tt8EWg", name: "ลูกทุ่ง 100 ล้านวิว" },
-      { id: "yt-PL0X-JpLCn4aOvsQYWPLir4lOMR0Ykf7_9", name: "GMM Grammy ฮิต" },
-      { id: "yt-PLBu7mKQnV2hc2v01t6rEsjyK2aH0OGfdX", name: "T-Pop Hits" },
-      { id: "yt-PLMcRF2wAtPEGSYJW65CoXlqX687pKNvyO", name: "เพลงฮิตยุค 2000" },
-      { id: "yt-PLlYKDqBVDxX0jbg8R1_y5BWv_Z_v2yO_k", name: "เพลงใหม่ล่าสุด" },
-      { id: "yt-PL0X-JpLCn4aPY_nS-fSg9-wAnYtXoP6hH", name: "ร็อกไทยยอดนิยม" },
-      { id: "yt-PLcstN9e009S0S5zIu0-T_R-zX5zX_y5vF", name: "เพลงเพื่อชีวิต" },
-      { id: "yt-PL84C9ED7DF6D4C8D8", name: "เพลงเก่า 80s-90s" },
-      { id: "yt-PLBu7mKQnV2hd2G6n3-m-DkEnJm2P2EUPn", name: "อินดี้ไทยมาแรง" },
-      { id: "yt-PLLp8fTzOovW4_N5NfM9l_r8P6U9pBvq4G", name: "แดนซ์สายย่อ" },
-      { id: "yt-PLMcRF2wAtPEF7q9S_iL1u1y6W6B6o9c_o", name: "รวมเพลงเศร้า" }
+      { query: "เพลงไทย ลูกทุ่งยอดฮิต 2025", name: "ลูกทุ่งยอดนิยม" },
+      { query: "รวมเพลงไทย GMM Grammy ฮิตตลอดกาล", name: "GMM Grammy ฮิต" },
+      { query: "T-Pop Hits 2025 เพลงไทยล่าสุด", name: "T-Pop Hits" },
+      { query: "รวมเพลงไทยยุค 2000 ฮิต", name: "ไทยฮิตยุค 2000" },
+      { query: "เพลงไทยใหม่ล่าสุด 2025 ยอดนิยม", name: "ไทยใหม่ล่าสุด" },
+      { query: "รวมเพลงร็อกไทย ยอดนิยม", name: "ร็อกไทยยอดนิยม" },
+      { query: "เพลงเพื่อชีวิต ฮิตตลอดกาล ไทย", name: "เพลงเพื่อชีวิต" },
+      { query: "เพลงเก่าที่คิดถึง 80s 90s ไทย", name: "ไทยเก่า 80s-90s" },
+      { query: "เพลงอินดี้ไทย มาแรง 2025", name: "อินดี้มาแรง" },
+      { query: "เพลงแดนซ์ไทย สายย่อ 2025", name: "แดนซ์สายย่อ" },
+      { query: "รวมเพลงเศร้าไทย 2025 ล่าสุด", name: "รวมเพลงไทยเศร้า" }
     ];
 
 
@@ -175,45 +175,34 @@ export default async function handler(
     console.log("🎵 [API] Fetching Categories...");
     const categoryResponses = await Promise.all(
       featuredPlaylists.map(async cat => {
-        // HYBRID MODE: If YouTube ID, return static data immediately
-        if (cat.id.startsWith('yt-')) {
-          const playlistId = cat.id.replace('yt-', '');
-          try {
-            const { scrapeYouTubePlaylistVideos } = await import("../../../../utils/youtubeScraper");
-            const videos = await scrapeYouTubePlaylistVideos(playlistId);
-            const firstVideo = videos[0];
+        try {
+          const { scrapeYouTubePlaylistSearch } = await import("../../../../utils/youtubeScraper");
+          // Resolution Strategy: Search for the keyword, take best match
+          const results = await scrapeYouTubePlaylistSearch(cat.query);
+          const best = results[0];
+
+          if (best) {
             return {
               data: {
-                id: cat.id,
+                id: `yt-${best.playlistId}`,
                 name: cat.name,
-                images: [{ url: firstVideo?.videoThumbnails?.[0]?.url || `https://ui-avatars.com/api/?name=${encodeURIComponent(cat.name)}&background=random&size=300` }]
+                images: [{ url: best.thumbnail }]
               },
-              _id: cat.id
-            };
-          } catch (e) {
-            return {
-              data: {
-                id: cat.id,
-                name: cat.name,
-                images: [{ url: `https://ui-avatars.com/api/?name=${encodeURIComponent(cat.name)}&background=random&size=300` }]
-              },
-              _id: cat.id
+              _id: best.playlistId
             };
           }
+          throw new Error("No results");
+        } catch (e) {
+          // Dynamic Fallback using UI Avatars if search fails
+          return {
+            data: {
+              id: `query-${encodeURIComponent(cat.query)}`,
+              name: cat.name,
+              images: [{ url: `https://ui-avatars.com/api/?name=${encodeURIComponent(cat.name)}&background=random&size=300` }]
+            },
+            _id: cat.name
+          };
         }
-
-        // Spotify ID
-        if (accessToken) {
-          return axios.get(`https://api.spotify.com/v1/playlists/${cat.id}?fields=id,name,images`, {
-            headers: { Authorization: `Bearer ${accessToken}` }
-          }).then(res => ({ ...res, _id: cat.id }))
-            .catch(err => {
-              console.error(`❌ [API] Failed to fetch category ${cat.name} (${cat.id}):`, err.message);
-              return { data: null };
-            });
-        }
-
-        return { data: null };
       })
     );
 
