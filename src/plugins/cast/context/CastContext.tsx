@@ -213,7 +213,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
       // Send full queue to receiver with startIndex
       const videos = playlist.map(v => ({
-        videoId: v.videoId,
+        videoId: v.videoId || v.id || '',
         title: v.title || 'Unknown'
       }));
 
@@ -658,7 +658,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
       sendMessage({
         type: 'UPDATE_QUEUE',
         videos: newPlaylist.map(v => ({
-          videoId: v.videoId || '',
+          videoId: v.videoId || v.id || '',
           title: v.title || 'Unknown'
         })).filter(v => v.videoId),
       });
@@ -688,13 +688,13 @@ export function CastProvider({ children }: { children: ReactNode }) {
       // Send LOAD_VIDEO to start playing immediately
       sendMessage({
         type: 'LOAD_VIDEO',
-        videoId: video.videoId,
+        videoId: video.videoId || video.id || '',
       });
       // Send full queue for reference
       sendMessage({
         type: 'LOAD_QUEUE',
         videos: newPlaylist.map(v => ({
-          videoId: v.videoId || '',
+          videoId: v.videoId || v.id || '',
           title: v.title || 'Unknown'
         })).filter(v => v.videoId),
       });
@@ -723,10 +723,10 @@ export function CastProvider({ children }: { children: ReactNode }) {
       // Send LOAD_VIDEO to play the video at this index
       sendMessage({
         type: 'LOAD_VIDEO',
-        videoId: video.videoId || '',
-        title: video.title || video.videoId || '',
+        videoId: video.videoId || video.id || '',
+        title: video.title || video.videoId || video.id || '',
         author: (video as any).author || '',
-        thumbnail: (video as any).thumbnail || `https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`,
+        thumbnail: (video as any).thumbnail || `https://i.ytimg.com/vi/${video.videoId || video.id}/mqdefault.jpg`,
       });
     } else {
       console.warn('⚠️ Not connected! Cannot jump to video');
@@ -749,7 +749,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
       sendMessage({
         type: 'UPDATE_QUEUE',
         videos: newPlaylist.map(v => ({
-          videoId: v.videoId || '',
+          videoId: v.videoId || v.id || '',
           title: v.title || 'Unknown'
         })).filter(v => v.videoId),
       });
@@ -772,7 +772,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
       sendMessage({
         type: 'UPDATE_QUEUE',
         videos: newPlaylist.map(v => ({
-          videoId: v.videoId || '',
+          videoId: v.videoId || v.id || '',
           title: v.title || 'Unknown'
         })).filter(v => v.videoId),
       });

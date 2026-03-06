@@ -260,7 +260,8 @@ export default function ChromecastReceiver() {
                         store.reorderQueue([videoItem]);
                         store.setCurrentIndex(0);
                     } else {
-                        store.playVideo(message.videoId);
+                        const vid = message.videoId || message.id;
+                        if (vid) store.playVideo(vid);
                     }
                     break;
                 case 'PLAY':
@@ -283,15 +284,18 @@ export default function ChromecastReceiver() {
                 case 'UPDATE_QUEUE':
                     console.log(`📋 [Chromecast] ${message.type} received:`, message.videos?.length, 'items');
                     if (message.videos && Array.isArray(message.videos)) {
-                        const newQueue: QueueItem[] = message.videos.map((v: any, index: number) => ({
-                            uuid: v.uuid || `cc-${Date.now()}-${index}`,
-                            id: v.videoId,
-                            videoId: v.videoId,
-                            title: v.title || 'Unknown Title',
-                            author: v.author || 'Unknown Artist',
-                            thumbnail: v.thumbnail || `https://i.ytimg.com/vi/${v.videoId}/mqdefault.jpg`,
-                            sourceType: 'youtube'
-                        }));
+                        const newQueue: QueueItem[] = message.videos.map((v: any, index: number) => {
+                            const vid = v.videoId || v.id || '';
+                            return {
+                                uuid: v.uuid || `cc-${Date.now()}-${index}`,
+                                id: vid,
+                                videoId: vid,
+                                title: v.title || v.id || 'Unknown Title',
+                                author: v.author || 'Unknown Artist',
+                                thumbnail: v.thumbnail || (vid ? `https://i.ytimg.com/vi/${vid}/mqdefault.jpg` : ''),
+                                sourceType: 'youtube'
+                            };
+                        });
 
                         // Atomic update
                         store.reorderQueue(newQueue);
@@ -306,9 +310,10 @@ export default function ChromecastReceiver() {
                         if (message.type === 'LOAD_QUEUE' && newQueue.length > 0) {
                             const startIdx = message.startIndex ?? message.currentIndex ?? 0;
                             const videoToPlay = newQueue[startIdx];
-                            if (videoToPlay?.videoId) {
+                            const vidToPlay = videoToPlay?.videoId || videoToPlay?.id;
+                            if (vidToPlay) {
                                 console.log('▶️ [Chromecast] Auto-playing from LOAD_QUEUE:', videoToPlay.title);
-                                store.playVideo(videoToPlay.videoId);
+                                store.playVideo(vidToPlay);
                             }
                         }
                     }
