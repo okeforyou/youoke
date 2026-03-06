@@ -35,7 +35,7 @@ const GENRES = [
 export default function SpotifyDashboard({ showTab = true }) {
   const router = useRouter();
   const { config } = useSystemConfig();
-  const genres = (config?.ui?.genres || GENRES).filter(g => g !== "เพลงไทย" && g !== "ทั้งหมด");
+  const genres = config?.ui?.genres || GENRES;
 
   // URL-Driven State or Fallback to Default
   const genreText = (router.query.genre as string) || "ลูกทุ่ง";
@@ -92,7 +92,7 @@ export default function SpotifyDashboard({ showTab = true }) {
 
   // When default Top Artists load (Only if no genre selected or Default)
   useEffect(() => {
-    if (tempTopArtistsData && genreText === "เพลงไทย") {
+    if (tempTopArtistsData && genreText === "ลูกทุ่ง") {
       setTopArtistsData(tempTopArtistsData);
     }
   }, [tempTopArtistsData, genreText]);
@@ -277,9 +277,9 @@ export default function SpotifyDashboard({ showTab = true }) {
         {genres?.map((gen) => (
           <button
             key={gen}
-            onClick={() => setUpdatedGenreText(gen)}
+            onClick={() => setGenreText(gen)}
             className={`
-                 w-full py-2 px-3 rounded-xl text-[12px] font-bold transition-all duration-300 border
+                 w-full py-2 px-4 rounded-xl text-[12px] font-bold transition-all duration-300 border
                  ${genreText == gen
                 ? "bg-primary text-white shadow-lg shadow-primary/30 border-primary transform -translate-y-0.5"
                 : "bg-gray-100 text-black border-gray-100 hover:bg-white hover:border-primary/30 hover:shadow-md hover:text-primary hover:-translate-y-0.5"
@@ -290,61 +290,62 @@ export default function SpotifyDashboard({ showTab = true }) {
           </button>
         ))}
       </div>
-
-      {/* Recommended Playlists Header */}
-      {artistCategories.length > 0 && (
-        <div ref={playlistRef} className="scroll-mt-32 col-span-full px-2 pt-4 pb-3 text-[13px] font-bold text-gray-500 uppercase tracking-wider flex items-center justify-between">
-          <span>{genreText === "เพลงไทย" ? "เพลย์ลิสต์แนะนำ" : `เพลย์ลิสต์ ${genreText}`}</span>
-          <span className="text-xs font-normal text-gray-400 bg-gray-50 px-3 py-1 rounded-full">อัพเดทล่าสุด</span>
-        </div>
-      )}
+      {
+        artistCategories.length > 0 && (
+          <div ref={playlistRef} className="scroll-mt-32 col-span-full px-2 pt-4 pb-3 text-[13px] font-bold text-gray-500 uppercase tracking-wider flex items-center justify-between">
+            <span>{genreText === "ลูกทุ่ง" ? "เพลย์ลิสต์แนะนำ" : `เพลย์ลิสต์ ${genreText}`}</span>
+            <span className="text-xs font-normal text-gray-400 bg-gray-50 px-3 py-1 rounded-full">อัพเดทล่าสุด</span>
+          </div>
+        )
+      }
 
       {/* Playlists: Premium Cards */}
-      {!isLoadTopArtists && artistCategories.length > 0 && (
-        <div className="col-span-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 px-4 pb-10">
-          {artistCategories.map((cat) => (
-            <div
-              key={cat.tag_id}
-              onClick={() => {
-                setTagId(cat.tag_id);
-                setShouldScrollToSongs(true);
-                if (typeof window !== 'undefined') {
-                  window.history.pushState({ view: 'singer_playlist' }, '');
-                }
-              }}
-              className={`
+      {
+        !isLoadTopArtists && artistCategories.length > 0 && (
+          <div className="col-span-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 px-4 pb-10">
+            {artistCategories.map((cat) => (
+              <div
+                key={cat.tag_id}
+                onClick={() => {
+                  setTagId(cat.tag_id);
+                  setShouldScrollToSongs(true);
+                  if (typeof window !== 'undefined') {
+                    window.history.pushState({ view: 'singer_playlist' }, '');
+                  }
+                }}
+                className={`
                     relative w-full aspect-video rounded-3xl overflow-hidden cursor-pointer shadow-sm hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 hover:-translate-y-1.5 group bg-gray-100
                     ${tagId == cat.tag_id ? "ring-4 ring-offset-2 ring-primary" : ""}
                  `}
-            >
-              <Image
-                src={cat.imageUrl || "/icon-cover.png"}
-                alt={cat.tag_name}
-                fill
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
-                onError={(e) => { e.currentTarget.src = "/icon-cover.png"; }}
-                unoptimized
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-90 transition-opacity" />
+              >
+                <Image
+                  src={cat.imageUrl || "/icon-cover.png"}
+                  alt={cat.tag_name}
+                  fill
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                  onError={(e) => { e.currentTarget.src = "/icon-cover.png"; }}
+                  unoptimized
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-90 transition-opacity" />
 
-              {/* Content Overlay */}
-              <div className="absolute inset-0 p-6 flex flex-col justify-between">
-                <div className="self-end opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-x-2 group-hover:translate-x-0">
-                  <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center">
-                    <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+                {/* Content Overlay */}
+                <div className="absolute inset-0 p-6 flex flex-col justify-between">
+                  <div className="self-end opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-x-2 group-hover:translate-x-0">
+                    <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center">
+                      <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+                    </div>
+                  </div>
+                  <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                    <span className="text-white font-bold text-[14px] drop-shadow-md line-clamp-2 leading-tight">
+                      {cat.tag_name}
+                    </span>
+                    <div className="h-1 w-12 bg-primary rounded-full mt-2 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-100 origin-left scale-x-0 group-hover:scale-x-100" />
                   </div>
                 </div>
-                <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                  <span className="text-white font-bold text-[14px] drop-shadow-md line-clamp-2 leading-tight">
-                    {cat.tag_name}
-                  </span>
-                  <div className="h-1 w-12 bg-primary rounded-full mt-2 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-100 origin-left scale-x-0 group-hover:scale-x-100" />
-                </div>
               </div>
-            </div>
-          ))}
-        </div >
-      )
+            ))}
+          </div >
+        )
       }
 
       {/* Load More Button */}

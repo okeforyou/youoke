@@ -5,7 +5,7 @@ import { getAccessToken } from "../../../../modules/spotify-theme/services/auth"
 import { Artist, ArtistCategory, GetTopArtists } from "../../../../types";
 
 /**
- * Get Top Artists Strategy: Curated Thai Favorites + Robust Category Scraper
+ * Get Top Artists Strategy: Working V1 Restoration Links
  */
 let cachedData: GetTopArtists | null = null;
 let lastFetch: number = 0;
@@ -26,27 +26,26 @@ export default async function handler(
       accessToken = await getAccessToken();
     } catch (authErr) { }
 
-    // 1. Curated Thai Artists (User's favorites and famous ones)
-    // Using Thai names and verified images
+    // 1. Working V1 Artist List (Thai Names)
     let artistList: Artist[] = [
-      { name: "ทรีแมนดาวน์", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebc40618dc2b22f77839352755" },
-      { name: "เจฟ ซาเตอร์", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb46112c9b20d58849b28ba551" },
-      { name: "นนท์ ธนนท์", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb2e361c4c1a74284b3d39589d" },
-      { name: "โบกี้ไลอ้อน", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb1d2b0cb0407c427042a492bd" },
-      { name: "อิ้งค์ วรันธร", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb435645543c72635467431f4e" },
-      { name: "ไททศมิตร", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebabcf712869584347712395d8" },
-      { name: "บอดี้สแลม", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebf87132172778747ef8d227b6" },
-      { name: "โปเตโต้", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebd940c6c1920ae1076b4a2f8d" },
-      { name: "ค็อกเทล", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebd76c5b964998822a84a9561b" },
-      { name: "ลาบานูน", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb6c4296ca8375a03e670ba51d" },
-      { name: "บิ๊กแอส", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb27339719bf25e365e1008675" },
-      { name: "เดอะทอยส์", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebd086383637f9e80277df6956" },
-      { name: "มียู", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb8095b525892582772584100c" },
-      { name: "ส้ม มารี", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb56e9c93b680c6517a94025a1" },
-      { name: "เซฟแพลนเน็ต", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb576352ff135e82512e088ba7" }
+      { name: "ทรีแมนดาวน์", imageUrl: "https://i.scdn.co/image/ab67616d0000b27360f2f73480eace853c802085" },
+      { name: "วันใหม่", imageUrl: "https://i.scdn.co/image/ab67616d0000b2732fb0ac23f67ccba1df959003" },
+      { name: "ส้ม มารี", imageUrl: "https://i.scdn.co/image/ab67616d0000b273da11e035d075181deae50cd2" },
+      { name: "Tilly Birds", imageUrl: "https://i.scdn.co/image/ab67616d0000b273f461ea0b333bce3f8bea6ab0" },
+      { name: "อิ้งค์ วรันธร", imageUrl: "https://i.scdn.co/image/ab67616d0000b27369e4ac87e71b153db343f4be" },
+      { name: "Room 39", imageUrl: "https://i.scdn.co/image/ab67616d0000b2738a4f6f32c40f65dd225ca781" },
+      { name: "ป๊อบ ปองกูล", imageUrl: "https://i.scdn.co/image/ab67616d0000b2738364201303fbee03253bfe56" },
+      { name: "ว่าน ธนกฤต", imageUrl: "https://i.scdn.co/image/ab67616d0000b27339cd513b6a902f1d02750a7c" },
+      { name: "Mon Monik", imageUrl: "https://i.scdn.co/image/ab67616d0000b2736281d0860b60021d8856912f" },
+      { name: "Marc Tatchapon", imageUrl: "https://i.scdn.co/image/ab67616d0000b2738d81c345529c9a00eb464f51" },
+      { name: "โปเตโต้", imageUrl: "https://i.scdn.co/image/ab67616d0000b273cda90a6e82931e7e7b506d7d" },
+      { name: "Lomosonic", imageUrl: "https://i.scdn.co/image/ab67616d0000b273230f5f4ddaf12eef0a3232d2" },
+      { name: "แสตมป์ อภิวัชร์", imageUrl: "https://i.scdn.co/image/ab67616d0000b273001e3efb91be417cad578b6d" },
+      { name: "ETC.", imageUrl: "https://i.scdn.co/image/ab67616d0000b27321fcbce2d60d79422af93ed9" },
+      { name: "The Kastle", imageUrl: "https://i.scdn.co/image/ab67616d0000b273865cd94b26a166bd4b72b7c4" }
     ];
 
-    // 2. Featured Playlists (No "เพลงไทย" query, focus on actual sub-genres)
+    // 2. Featured Playlists (Refined Queries for 100% Thai Content)
     const featuredPlaylists = [
       { query: "เพลงลูกทุ่งยอดฮิต 2025", name: "ลูกทุ่งยอดนิยม" },
       { query: "รวมเพลง GMM Grammy ฮิตตลอดกาล", name: "GMM Grammy ฮิต" },
@@ -79,12 +78,12 @@ export default async function handler(
           }
           throw new Error("No cover");
         } catch (e) {
-          // Reliable Fallback
+          // Reliable Fallback using ui-avatars as seen in V1 restore
           return {
             data: {
               id: `q-${encodeURIComponent(cat.query)}`,
               name: cat.name,
-              images: [{ url: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=800&q=80" }]
+              images: [{ url: `https://ui-avatars.com/api/?name=${encodeURIComponent(cat.name)}&background=random&size=300` }]
             }
           };
         }

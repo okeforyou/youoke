@@ -24,21 +24,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         console.log(`[API/Explore] Fetching ${VIDEO_CATEGORIES.length} Video & ${PLAYLIST_CATEGORIES.length} Playlist Categories...`);
 
         // Parallel Fetch
-        const [videoResults, playlistResults, topThaiSongs] = await Promise.all([
+        const [videoResults, playlistResults] = await Promise.all([
             Promise.all(VIDEO_CATEGORIES.map(cat =>
                 scrapeYouTubeSearch(cat.query).catch(() => [])
             )),
             Promise.all(PLAYLIST_CATEGORIES.map(cat =>
                 scrapeYouTubePlaylistSearch(cat.query).catch(() => [])
-            )),
-            scrapeYouTubeSearch('เพลงไทยยอดนิยมที่สุดตอนนี้').catch(() => [])
+            ))
         ]);
 
         // Helper to map video items
         const mapVideos = (items: any[]) => items.map((item: any) => ({
             title: item.title,
             subtitle: item.author || 'YouTube',
-            thumbnail: item.videoThumbnails?.[0]?.url || item.videoThumbnails?.[1]?.url || `https://i.ytimg.com/vi/${item.videoId}/mqdefault.jpg`,
+            thumbnail: item.videoThumbnails?.[0]?.url || item.videoThumbnails?.[1]?.url || '',
             id: item.videoId,
             type: 'video'
         }));
@@ -47,19 +46,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const mapPlaylists = (items: any[]) => items.map((item: any) => ({
             title: item.title,
             subtitle: `${item.videoCount} · ${item.author}`,
-            thumbnail: item.thumbnail || 'https://i.ytimg.com/vi/mqdefault.jpg',
+            thumbnail: item.thumbnail,
             id: item.playlistId,
             type: 'playlist'
         }));
 
         // Construct Shelves (Mix Playlists and Videos)
         const shelves = [
-            // 0. Top Content First (Mixed)
-            {
-                title: '📌 เพลงไทยยอดนิยม',
-                items: mapVideos(topThaiSongs).slice(0, 10)
-            },
-            // Featured Playlists
+            // Featured Playlists First
             ...PLAYLIST_CATEGORIES.map((cat, i) => ({
                 title: cat.title,
                 items: mapPlaylists(playlistResults[i] || []).slice(0, 15)
