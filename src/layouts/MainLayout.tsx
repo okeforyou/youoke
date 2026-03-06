@@ -67,7 +67,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const {
         searchTerm, setSearchTerm, activeIndex, setActiveIndex, isKaraoke, setIsKaraoke,
         queue: playerQueue, addToQueue, reorderQueue, isPlaying, layoutMode, triggerFullscreen,
-        currentVideo
+        currentVideo, currentIndex
     } = usePlayerStore(
         useShallow(state => ({
             searchTerm: state.searchTerm,
@@ -77,6 +77,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             isKaraoke: state.isKaraoke,
             setIsKaraoke: state.setIsKaraoke,
             queue: state.queue,
+            currentIndex: state.currentIndex,
             addToQueue: state.addToQueue,
             reorderQueue: state.reorderQueue,
             isPlaying: state.isPlaying,
@@ -497,27 +498,27 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 </button>
                             </div>
 
-                            {/* Profile Button */}
+                            {/* Queue Button */}
                             <button
                                 onClick={() => {
-                                    if (user) {
-                                        useUIStore.getState().setProfileOpen(true);
+                                    if (isQueueOpen && !isPlayerHidden) {
+                                        setPlayerHidden(true);
+                                        setQueueOpen(false);
                                     } else {
-                                        router.push('/login');
+                                        setPlayerHidden(false);
+                                        setQueueOpen(true);
                                     }
                                 }}
-                                className="w-11 h-11 flex items-center justify-center bg-gray-200 border border-transparent rounded-2xl shrink-0 shadow-sm active:scale-95 transition-all"
+                                className={clsx(
+                                    "w-11 h-11 flex items-center justify-center rounded-2xl shrink-0 shadow-sm active:scale-95 transition-all relative",
+                                    isQueueOpen ? "bg-primary text-white" : "bg-gray-200 text-gray-700 border border-transparent"
+                                )}
                             >
-                                {user ? (
-                                    user.photoURL ? (
-                                        <img src={user.photoURL} className="w-8 h-8 rounded-full border border-gray-100" alt="Profile" />
-                                    ) : (
-                                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-                                            {user.email?.[0]?.toUpperCase() || 'U'}
-                                        </div>
-                                    )
-                                ) : (
-                                    <User className="w-5 h-5 text-gray-700" />
+                                <ListMusic className="w-5 h-5" />
+                                {queue.length > 0 && (queue.length - (currentIndex + 1)) > 0 && (
+                                    <div className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-black h-4.5 min-w-[18px] px-1 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                                        {queue.length - (currentIndex + 1)}
+                                    </div>
                                 )}
                             </button>
                         </div>

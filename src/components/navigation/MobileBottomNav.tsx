@@ -2,39 +2,37 @@ import React from 'react';
 import { Home, Star, Flame, Library, User, ListMusic, Search, Gem } from 'lucide-react';
 import { usePlayerStore } from '../../modules/player/stores/usePlayerStore';
 import { useUIStore } from '../../stores/useUIStore';
+import { useSystem } from '../../core/container/SystemContext';
 import clsx from 'clsx';
 import { useShallow } from 'zustand/react/shallow';
 import { useRouter } from 'next/router';
 
 export const MobileBottomNav = () => {
-    const { activeIndex, setActiveIndex, setSearchTerm, queue, currentIndex } = usePlayerStore(
+    const router = useRouter();
+    const { user } = useSystem().auth();
+    const { activeIndex, setActiveIndex, setSearchTerm } = usePlayerStore(
         useShallow(state => ({
             activeIndex: state.activeIndex,
             setActiveIndex: state.setActiveIndex,
             setSearchTerm: state.setSearchTerm,
-            queue: state.queue,
-            currentIndex: state.currentIndex
         }))
     );
-    const { setPlayerHidden, setQueueOpen, isQueueOpen, isPlayerHidden } = useUIStore();
+    const { setProfileOpen, isProfileOpen, setQueueOpen, isQueueOpen } = useUIStore();
 
     const navItems = [
         { id: 1, label: 'หน้าหลัก', icon: Home },
         { id: 2, label: 'แนะนำ', icon: Star },
         { id: 3, label: 'มาแรง', icon: Flame },
         { id: 4, label: 'เพลย์ลิสต์', icon: Library },
-        { id: 5, label: 'คิวเพลง', icon: ListMusic },
+        { id: 5, label: 'บัญชี', icon: User },
     ];
 
     const handleNavClick = (index: number) => {
         if (index === 5) {
-            // Queue Action: Toggle Player/Queue visibility
-            if (isQueueOpen && !isPlayerHidden) {
-                setPlayerHidden(true); // Hide completely logic
-                setQueueOpen(false);
+            if (user) {
+                setProfileOpen(true);
             } else {
-                setPlayerHidden(false); // Ensure visible
-                setQueueOpen(true); // Open Queue
+                router.push('/login');
             }
             return;
         } else {
@@ -52,7 +50,7 @@ export const MobileBottomNav = () => {
 
             <div className="relative flex justify-around items-center h-[72px] px-2 pb-2">
                 {navItems.map((item) => {
-                    const isActive = item.id === 5 ? isQueueOpen : (!isQueueOpen && activeIndex === item.id);
+                    const isActive = item.id === 5 ? isProfileOpen : (!isQueueOpen && activeIndex === item.id);
                     return (
                         <button
                             key={item.id}
@@ -63,19 +61,23 @@ export const MobileBottomNav = () => {
                                 "p-1.5 rounded-xl transition-all duration-300 relative",
                                 isActive ? "text-primary bg-primary/10" : "text-black group-hover:text-black"
                             )}>
-                                <item.icon
-                                    size={24}
-                                    strokeWidth={isActive ? 2.5 : 2}
-                                    className={clsx("transition-transform duration-300", isActive && "scale-110")}
-                                />
+                                {item.id === 5 && user ? (
+                                    user.photoURL ? (
+                                        <img src={user.photoURL} className={clsx("w-6 h-6 rounded-full border transition-transform duration-300", isActive ? "scale-110 border-primary" : "border-transparent")} alt="Profile" />
+                                    ) : (
+                                        <div className={clsx("w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-300", isActive ? "bg-primary text-white scale-110" : "bg-gray-200 text-gray-600")}>
+                                            {user.email?.[0]?.toUpperCase() || 'U'}
+                                        </div>
+                                    )
+                                ) : (
+                                    <item.icon
+                                        size={24}
+                                        strokeWidth={isActive ? 2.5 : 2}
+                                        className={clsx("transition-transform duration-300", isActive && "scale-110")}
+                                    />
+                                )}
                                 {isActive && (
                                     <div className="absolute inset-0 bg-primary/10 blur-lg" />
-                                )}
-                                {/* Queue Badge */}
-                                {item.id === 5 && (queue.length - (currentIndex + 1)) > 0 && (
-                                    <div className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold h-4 min-w-[16px] px-1 rounded-full flex items-center justify-center border border-white shadow-sm">
-                                        {queue.length - (currentIndex + 1)}
-                                    </div>
                                 )}
                             </div>
                             <span className={clsx(
@@ -91,3 +93,4 @@ export const MobileBottomNav = () => {
         </div>
     );
 };
+
