@@ -446,84 +446,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     </div>
                 </header>
 
-                {/* Mobile Header (Search + Profile) - Always visible on mobile */}
-                {mounted && layoutMode !== 'fullscreen' && (
-                    <header className="lg:hidden flex flex-col bg-white border-b border-gray-100 sticky top-0 z-[110] px-3 py-3 shadow-sm">
-                        <div className="flex items-center gap-2.5">
-                            {/* Search Input Box */}
-                            <div className="flex-1 relative flex items-center bg-gray-50 border border-gray-200 rounded-2xl px-4 h-11 transition-all focus-within:bg-white focus-within:border-black/10 shadow-sm">
-                                <Search className="h-4.5 w-4.5 text-gray-400 shrink-0" />
-                                <DebounceInput
-                                    minLength={2}
-                                    debounceTimeout={300}
-                                    placeholder="ค้นหาเพลง หรือ ศิลปิน..."
-                                    className="w-full bg-transparent pl-3 pr-2 text-[15px] font-bold text-black placeholder-gray-400 focus:outline-none"
-                                    value={searchTerm}
-                                    onChange={(e) => {
-                                        router.replace({
-                                            pathname: '/',
-                                            query: { ...router.query, search: e.target.value }
-                                        }, undefined, { shallow: true });
-                                    }}
-                                />
-                                {searchTerm && (
-                                    <button onClick={() => {
-                                        const { search, ...rest } = router.query;
-                                        router.replace({ pathname: '/', query: rest }, undefined, { shallow: true });
-                                    }} className="text-gray-400 ml-1.5 p-1 rounded-full hover:bg-gray-100">
-                                        <X className="h-4.5 w-4.5" />
-                                    </button>
-                                )}
-                            </div>
 
-                            {/* Mode Switch (Song/Karaoke) */}
-                            <div className="flex bg-gray-100 p-1 rounded-2xl border border-gray-200 shadow-inner shrink-0 h-11 items-center">
-                                <button
-                                    onClick={() => setIsKaraoke(false)}
-                                    className={clsx(
-                                        "w-9 h-9 flex items-center justify-center rounded-xl transition-all duration-300",
-                                        !isKaraoke ? "bg-white text-primary shadow-md scale-105" : "text-gray-400 scale-100"
-                                    )}
-                                >
-                                    <Music size={16} className={!isKaraoke ? "fill-primary/5" : ""} />
-                                </button>
-                                <button
-                                    onClick={() => setIsKaraoke(true)}
-                                    className={clsx(
-                                        "w-9 h-9 flex items-center justify-center rounded-xl transition-all duration-300",
-                                        isKaraoke ? "bg-white text-primary shadow-md scale-105" : "text-gray-400 scale-100"
-                                    )}
-                                >
-                                    <Mic size={16} className={isKaraoke ? "fill-primary/5" : ""} />
-                                </button>
-                            </div>
-
-                            {/* Queue Button */}
-                            <button
-                                onClick={() => {
-                                    if (isQueueOpen && !isPlayerHidden) {
-                                        setPlayerHidden(true);
-                                        setQueueOpen(false);
-                                    } else {
-                                        setPlayerHidden(false);
-                                        setQueueOpen(true);
-                                    }
-                                }}
-                                className={clsx(
-                                    "w-11 h-11 flex items-center justify-center rounded-2xl shrink-0 shadow-sm active:scale-95 transition-all relative",
-                                    isQueueOpen ? "bg-primary text-white" : "bg-gray-200 text-gray-700 border border-transparent"
-                                )}
-                            >
-                                <ListMusic className="w-5 h-5" />
-                                {queue.length > 0 && (queue.length - (currentIndex + 1)) > 0 && (
-                                    <div className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-black h-4.5 min-w-[18px] px-1 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
-                                        {queue.length - (currentIndex + 1)}
-                                    </div>
-                                )}
-                            </button>
-                        </div>
-                    </header>
-                )}
 
 
                 {/* Global Player Container (Top Docked for Mobile, Fixed for Desktop) */}
@@ -579,9 +502,86 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             </div>
                             {/* Mobile Only Controls Wrapper */}
                             {layoutMode !== 'fullscreen' && (
-                                <div className="lg:hidden flex flex-col pb-3 bg-white border-b border-gray-100 shadow-sm relative z-20">
-                                    <SidebarControls castMode={castMode} />
-                                </div>
+                                <>
+                                    <div className="lg:hidden flex flex-col bg-white border-b border-gray-100 shadow-sm relative z-20">
+                                        <SidebarControls castMode={castMode} />
+                                    </div>
+                                    <header className="lg:hidden flex flex-col bg-white border-b border-gray-100 sticky top-0 z-[110] px-3 py-3 shadow-sm">
+                                        <div className="flex items-center gap-2.5">
+                                            {/* Search Input Box */}
+                                            <div className="flex-1 relative flex items-center bg-gray-50 border border-gray-200 rounded-2xl px-4 h-11 transition-all focus-within:bg-white focus-within:border-black/10 shadow-sm">
+                                                <Search className="h-4.5 w-4.5 text-gray-400 shrink-0" />
+                                                <DebounceInput
+                                                    minLength={2}
+                                                    debounceTimeout={300}
+                                                    placeholder="ค้นหาเพลง หรือ ศิลปิน..."
+                                                    className="w-full bg-transparent pl-3 pr-2 text-[15px] font-bold text-black placeholder-gray-400 focus:outline-none"
+                                                    value={searchTerm}
+                                                    onChange={(e) => {
+                                                        router.replace({
+                                                            pathname: '/',
+                                                            query: { ...router.query, search: e.target.value }
+                                                        }, undefined, { shallow: true });
+                                                    }}
+                                                />
+                                                {searchTerm && (
+                                                    <button onClick={() => {
+                                                        const { search, ...rest } = router.query;
+                                                        router.replace({ pathname: '/', query: rest }, undefined, { shallow: true });
+                                                    }} className="text-gray-400 ml-1.5 p-1 rounded-full hover:bg-gray-100">
+                                                        <X className="h-4.5 w-4.5" />
+                                                    </button>
+                                                )}
+                                            </div>
+
+                                            {/* Mode Switch (Song/Karaoke) */}
+                                            <div className="flex bg-gray-100 p-1 rounded-2xl border border-gray-200 shadow-inner shrink-0 h-11 items-center">
+                                                <button
+                                                    onClick={() => setIsKaraoke(false)}
+                                                    className={clsx(
+                                                        "w-9 h-9 flex items-center justify-center rounded-xl transition-all duration-300",
+                                                        !isKaraoke ? "bg-white text-primary shadow-md scale-105" : "text-gray-400 scale-100"
+                                                    )}
+                                                >
+                                                    <Music size={16} className={!isKaraoke ? "fill-primary/5" : ""} />
+                                                </button>
+                                                <button
+                                                    onClick={() => setIsKaraoke(true)}
+                                                    className={clsx(
+                                                        "w-9 h-9 flex items-center justify-center rounded-xl transition-all duration-300",
+                                                        isKaraoke ? "bg-white text-primary shadow-md scale-105" : "text-gray-400 scale-100"
+                                                    )}
+                                                >
+                                                    <Mic size={16} className={isKaraoke ? "fill-primary/5" : ""} />
+                                                </button>
+                                            </div>
+
+                                            {/* Queue Button */}
+                                            <button
+                                                onClick={() => {
+                                                    if (isQueueOpen && !isPlayerHidden) {
+                                                        setPlayerHidden(true);
+                                                        setQueueOpen(false);
+                                                    } else {
+                                                        setPlayerHidden(false);
+                                                        setQueueOpen(true);
+                                                    }
+                                                }}
+                                                className={clsx(
+                                                    "w-11 h-11 flex items-center justify-center rounded-2xl shrink-0 shadow-sm active:scale-95 transition-all relative",
+                                                    isQueueOpen ? "bg-primary text-white" : "bg-gray-200 text-gray-700 border border-transparent"
+                                                )}
+                                            >
+                                                <ListMusic className="w-5 h-5" />
+                                                {queue.length > 0 && (queue.length - (currentIndex + 1)) > 0 && (
+                                                    <div className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-black h-4.5 min-w-[18px] px-1 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                                                        {queue.length - (currentIndex + 1)}
+                                                    </div>
+                                                )}
+                                            </button>
+                                        </div>
+                                    </header>
+                                </>
                             )}
                         </div>
                     </div>
