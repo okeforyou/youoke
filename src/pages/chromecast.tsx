@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import Head from 'next/head';
-import Script from 'next/script';
 import clsx from 'clsx';
 import { usePlayerStore } from '../modules/player/stores/usePlayerStore';
 import { QueueItem } from '../modules/player/types';
@@ -16,18 +15,10 @@ const CAST_NAMESPACE = 'urn:x-cast:com.youoke.cast';
  * Does NOT use UniversalPlayer to avoid heavy MidiEngine dependency.
  * Smart TV's have limited resources so we keep this as lean as possible.
  */
-function ReceiverYouTubePlayer({
-    onEnded,
-    onTimeUpdate
-}: {
-    onEnded: () => void;
-    onTimeUpdate?: (time: number, duration: number) => void;
-}) {
+function ReceiverYouTubePlayer({ onEnded }: { onEnded: () => void }) {
     const currentSource = usePlayerStore(state => state.currentSource);
     const isPlaying = usePlayerStore(state => state.isPlaying);
-    const isMuted = usePlayerStore(state => state.isMuted);
     const playerRef = useRef<any>(null);
-    const isPlayerReadyRef = useRef(false);
     const [ytReady, setYtReady] = useState(false);
 
     // Load YouTube IFrame API once
@@ -47,23 +38,20 @@ function ReceiverYouTubePlayer({
         };
     }, []);
 
-    // 1. Create player ONCE when API is ready
+    // Create/update player when source changes
     useEffect(() => {
-        if (!ytReady) return;
-        if (playerRef.current) return; // Already created
+        if (!ytReady || !currentSource) return;
 
-        const container = document.getElementById('receiver-yt-player-container');
-        if (container && !document.getElementById('receiver-yt-player')) {
-            const newDiv = document.createElement('div');
-            newDiv.id = 'receiver-yt-player';
-            newDiv.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;';
-            container.appendChild(newDiv);
+        // Destroy old player
+        if (playerRef.current?.destroy) {
+            try { playerRef.current.destroy(); } catch (e) { /* ignore */ }
+            playerRef.current = null;
         }
 
-        console.log('🎬 [Receiver] Initializing YouTube player instance');
+        console.log('🎬 [Receiver] Loading YouTube video:', currentSource);
 
         playerRef.current = new (window as any).YT.Player('receiver-yt-player', {
-            videoId: currentSource || '',
+            videoId: currentSource,
             width: '100%',
             height: '100%',
             playerVars: {
@@ -75,46 +63,31 @@ function ReceiverYouTubePlayer({
                 iv_load_policy: 3,
                 origin: window.location.origin,
                 enablejsapi: 1,
-                playsinline: 1,
             },
             events: {
                 onReady: (event: any) => {
-                    console.log('✅ [Receiver] YouTube player ready');
-                    isPlayerReadyRef.current = true;
-                    if (currentSource) {
-                        event.target.loadVideoById(currentSource);
-                    }
+                    console.log('✅ [Receiver] YouTube player ready, playing...');
+                    event.target.playVideo();
                 },
                 onStateChange: (event: any) => {
-                    if (event.data === 0) { // ENDED
+                    // YT.PlayerState.ENDED === 0
+                    if (event.data === 0) {
                         console.log('🏁 [Receiver] Video ended');
                         onEnded();
                     }
                 },
                 onError: (event: any) => {
                     console.error('❌ [Receiver] YouTube player error:', event.data);
+                    // Auto-skip on error
                     setTimeout(() => onEnded(), 2000);
                 },
             },
         });
-    }, [ytReady]); // intentionally exclude currentSource to avoid recreation
-
-    // 2. Load video when currentSource changes
-    useEffect(() => {
-        if (!playerRef.current || !isPlayerReadyRef.current) return;
-        if (currentSource) {
-            console.log('🎬 [Receiver] Loading new video source:', currentSource);
-            playerRef.current.loadVideoById(currentSource);
-            // Ensure play state
-            if (isPlaying) {
-                playerRef.current.playVideo();
-            }
-        }
-    }, [currentSource]);
+    }, [ytReady, currentSource, onEnded]);
 
     // Play/Pause control
     useEffect(() => {
-        if (!isPlayerReadyRef.current || !playerRef.current) return;
+        if (!playerRef.current?.getPlayerState) return;
         try {
             if (isPlaying) {
                 playerRef.current.playVideo();
@@ -124,46 +97,10 @@ function ReceiverYouTubePlayer({
         } catch (e) { /* player not ready yet */ }
     }, [isPlaying]);
 
-    // Mute/Unmute control
-    useEffect(() => {
-        if (!isPlayerReadyRef.current || !playerRef.current) return;
-        try {
-            if (isMuted) {
-                playerRef.current.mute();
-            } else {
-                playerRef.current.unMute();
-            }
-        } catch (e) { /* player not ready yet */ }
-    }, [isMuted]);
-
-    // Time tracking
-    useEffect(() => {
-        if (!isPlayerReadyRef.current || !playerRef.current) return;
-        const interval = setInterval(async () => {
-            try {
-                if (isPlaying) {
-                    const time = await playerRef.current.getCurrentTime();
-                    const duration = await playerRef.current.getDuration();
-                    if (onTimeUpdate) onTimeUpdate(time, duration);
-                }
-            } catch (e) { }
-        }, 1000);
-        return () => clearInterval(interval);
-    }, [isPlaying, onTimeUpdate]);
-
     return (
-        // Use absolute positioning to guarantee 100% fill on TV
-        <div
-            id="receiver-yt-player-container"
-            style={{
-                position: 'absolute',
-                inset: 0,
-                width: '100%',
-                height: '100%',
-                backgroundColor: '#000',
-                overflow: 'hidden',
-            }}
-        />
+        <div className="w-full h-full">
+            <div id="receiver-yt-player" className="w-full h-full" />
+        </div>
     );
 }
 
@@ -174,10 +111,6 @@ export default function ChromecastReceiver() {
     const [time, setTime] = useState(new Date());
     const castContextRef = useRef<any>(null);
     const initCalledRef = useRef(false);
-
-    const [showQueue, setShowQueue] = useState(true);
-    const [forceShowQueue, setForceShowQueue] = useState(false);
-    const lastQueueLengthRef = useRef(0);
 
     const {
         queue, currentIndex, currentVideo, currentSource, isPlaying,
@@ -202,38 +135,6 @@ export default function ChromecastReceiver() {
         return () => clearInterval(timer);
     }, []);
 
-    // Watch queue length changes
-    useEffect(() => {
-        const currentLength = queue.length;
-        const prevLength = lastQueueLengthRef.current;
-        if (currentLength !== prevLength && prevLength !== 0 && currentLength > prevLength) {
-            setForceShowQueue(true);
-            setShowQueue(true);
-            const timer = setTimeout(() => {
-                setForceShowQueue(false);
-            }, 10000);
-            lastQueueLengthRef.current = currentLength;
-            return () => clearTimeout(timer);
-        }
-        lastQueueLengthRef.current = currentLength;
-    }, [queue.length]);
-
-    const handleTimeUpdate = useCallback((t: number, d: number) => {
-        const remaining = d - t;
-        const hasNext = queue.length > currentIndex + 1;
-
-        if (forceShowQueue) {
-            setShowQueue(true);
-            return;
-        }
-
-        if (hasNext && (t < 15 || remaining < 45)) {
-            setShowQueue(true);
-        } else {
-            setShowQueue(false);
-        }
-    }, [queue.length, currentIndex, forceShowQueue]);
-
     // Handle incoming Cast messages - stable callback using refs
     const handleCastMessage = useCallback((event: any) => {
         try {
@@ -245,24 +146,8 @@ export default function ChromecastReceiver() {
 
             switch (message.type) {
                 case 'LOAD_VIDEO':
-                    console.log('🎬 [Chromecast] Loading Video:', message.videoId, message.title);
-                    if (message.title && message.title !== 'Playing Video') {
-                        // Build proper queue item with real metadata
-                        const videoItem: QueueItem = {
-                            uuid: `cc-${Date.now()}`,
-                            id: message.videoId,
-                            videoId: message.videoId,
-                            title: message.title || message.videoId,
-                            author: message.author || '',
-                            thumbnail: message.thumbnail || `https://i.ytimg.com/vi/${message.videoId}/mqdefault.jpg`,
-                            sourceType: 'youtube'
-                        };
-                        store.reorderQueue([videoItem]);
-                        store.setCurrentIndex(0);
-                    } else {
-                        const vid = message.videoId || message.id;
-                        if (vid) store.playVideo(vid);
-                    }
+                    console.log('🎬 [Chromecast] Loading Video:', message.videoId);
+                    store.playVideo(message.videoId);
                     break;
                 case 'PLAY':
                     console.log('▶️ [Chromecast] Play Command');
@@ -272,30 +157,19 @@ export default function ChromecastReceiver() {
                     console.log('⏸️ [Chromecast] Pause Command');
                     store.pause();
                     break;
-                case 'MUTE':
-                    console.log('🔇 [Chromecast] Mute Command');
-                    store.setMuted(true);
-                    break;
-                case 'UNMUTE':
-                    console.log('🔊 [Chromecast] Unmute Command');
-                    store.setMuted(false);
-                    break;
                 case 'LOAD_QUEUE':
                 case 'UPDATE_QUEUE':
                     console.log(`📋 [Chromecast] ${message.type} received:`, message.videos?.length, 'items');
                     if (message.videos && Array.isArray(message.videos)) {
-                        const newQueue: QueueItem[] = message.videos.map((v: any, index: number) => {
-                            const vid = v.videoId || v.id || '';
-                            return {
-                                uuid: v.uuid || `cc-${Date.now()}-${index}`,
-                                id: vid,
-                                videoId: vid,
-                                title: v.title || v.id || 'Unknown Title',
-                                author: v.author || 'Unknown Artist',
-                                thumbnail: v.thumbnail || (vid ? `https://i.ytimg.com/vi/${vid}/mqdefault.jpg` : ''),
-                                sourceType: 'youtube'
-                            };
-                        });
+                        const newQueue: QueueItem[] = message.videos.map((v: any, index: number) => ({
+                            uuid: v.uuid || `cc-${Date.now()}-${index}`,
+                            id: v.videoId,
+                            videoId: v.videoId,
+                            title: v.title || 'Unknown Title',
+                            author: v.author || 'Unknown Artist',
+                            thumbnail: v.thumbnail || `https://i.ytimg.com/vi/${v.videoId}/mqdefault.jpg`,
+                            sourceType: 'youtube'
+                        }));
 
                         // Atomic update
                         store.reorderQueue(newQueue);
@@ -310,10 +184,9 @@ export default function ChromecastReceiver() {
                         if (message.type === 'LOAD_QUEUE' && newQueue.length > 0) {
                             const startIdx = message.startIndex ?? message.currentIndex ?? 0;
                             const videoToPlay = newQueue[startIdx];
-                            const vidToPlay = videoToPlay?.videoId || videoToPlay?.id;
-                            if (vidToPlay) {
+                            if (videoToPlay?.videoId) {
                                 console.log('▶️ [Chromecast] Auto-playing from LOAD_QUEUE:', videoToPlay.title);
-                                store.playVideo(vidToPlay);
+                                store.playVideo(videoToPlay.videoId);
                             }
                         }
                     }
@@ -384,14 +257,14 @@ export default function ChromecastReceiver() {
             const cast = (window as any).cast;
 
             if (!cast || !cast.framework) {
-                if (retries < 150) { // Try for 15 seconds (150 * 100ms) — Smart TVs are slow
+                if (retries < 50) { // Try for 5 seconds (50 * 100ms)
                     if (retries % 10 === 0) {
                         setInitStatus(`Loading Cast SDK... (${retries / 10}s)`);
                         console.log(`⏳ [Chromecast] Framework not ready, retrying (${retries})...`);
                     }
                     setTimeout(() => initCast(retries + 1), 100);
                 } else {
-                    console.error('❌ [Chromecast] Cast Framework failed to load after 15 seconds.');
+                    console.error('❌ [Chromecast] Cast Framework failed to load after 5 seconds.');
                     setInitStatus('Failed to load Cast Framework. Please reload.');
                 }
                 return;
@@ -435,16 +308,21 @@ export default function ChromecastReceiver() {
             }
         };
 
-        // Check if Cast SDK is already available (e.g., Chromecast device injects it)
-        const cast = (window as any).cast;
-        if (cast?.framework) {
-            console.log('📦 [Chromecast] Receiver SDK already available!');
-            initCast(0);
-        } else {
-            // SDK will be loaded via next/Script in the JSX below
-            // Start polling - initCast will retry until the script loads
+        // Load Receiver script
+        if (!(window as any).cast) {
             setInitStatus('Loading Cast Receiver SDK...');
-            console.log('⏳ [Chromecast] Waiting for Receiver SDK to load via Script tag...');
+            const script = document.createElement('script');
+            script.src = '//www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js';
+            script.onload = () => {
+                console.log('📦 [Chromecast] Receiver SDK script loaded');
+                initCast(0);
+            };
+            script.onerror = () => {
+                console.error('❌ [Chromecast] Failed to load receiver SDK script');
+                setInitStatus('Failed to load Cast SDK. Check network.');
+            };
+            document.head.appendChild(script);
+        } else {
             initCast(0);
         }
 
@@ -473,36 +351,20 @@ export default function ChromecastReceiver() {
                 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
             </Head>
 
-            {/* Cast Receiver SDK - loaded ONLY on this page via next/Script */}
-            <Script
-                src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"
-                strategy="afterInteractive"
-                onLoad={() => {
-                    console.log('📦 [Chromecast] Receiver SDK script loaded via next/Script!');
-                }}
-            />
-
-            {/* 1. Fullscreen Player Layer - always rendered */}
-            <div
-                style={{
-                    position: 'absolute',
-                    inset: 0,
-                    zIndex: 0,
-                    backgroundColor: '#000',
-                }}
-            >
-                <div style={{ position: 'absolute', inset: 0 }}>
-                    <ReceiverYouTubePlayer
-                        onEnded={handlePlayerEnded}
-                        onTimeUpdate={handleTimeUpdate}
-                    />
+            {/* 1. Fullscreen Player Layer - Lightweight YouTube Player */}
+            <div className={clsx(
+                "absolute inset-0 z-0 transition-all duration-1000",
+                isIdle ? "opacity-0 scale-105 blur-2xl" : "opacity-100 scale-100 blur-0"
+            )}>
+                <div className="w-full h-full relative">
+                    <ReceiverYouTubePlayer onEnded={handlePlayerEnded} />
                 </div>
             </div>
 
             {/* 2. Idle Layer */}
             <div className={clsx(
-                "absolute inset-0 z-10 transition-opacity duration-1000 bg-[#0a0a0a]",
-                !isIdle && "opacity-0 pointer-events-none"
+                "absolute inset-0 z-10 transition-all duration-1000 bg-[#0a0a0a]",
+                !isIdle && "opacity-0 pointer-events-none scale-110"
             )}>
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent opacity-50" />
                 <div className="relative z-10 h-full flex flex-col items-center justify-center text-center p-12">
@@ -528,29 +390,67 @@ export default function ChromecastReceiver() {
                 </div>
             </div>
 
-            {/* 3. Overlay Area (Top Right) */}
+            {/* 3. Sidebar Area */}
             {!isIdle && (
-                <div className="absolute top-8 right-8 z-40 max-w-sm text-right">
-                    <p className="text-xl font-black text-white/80 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-                        {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </p>
-
-                    {/* Next in Queue Badge */}
-                    <div className={clsx(
-                        "mt-4 bg-[#111111]/90 px-5 py-3 rounded-2xl border border-white/10 shadow-2xl text-left transform transition-all duration-500",
-                        showQueue && queue.length > currentIndex + 1 ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8 pointer-events-none"
-                    )}>
-                        {queue.length > currentIndex + 1 && (
-                            <>
-                                <div className="flex items-center gap-2 mb-1.5">
-                                    <MusicalNoteIcon className="w-3 h-3 text-primary" />
-                                    <p className="text-[10px] text-white/60 uppercase font-black tracking-widest drop-shadow-sm">คิวถัดไป</p>
+                <div className="absolute top-0 right-0 h-full w-80 lg:w-96 z-40 bg-gradient-to-l from-black/90 via-black/80 to-transparent backdrop-blur-md p-8 overflow-y-auto transition-all duration-700">
+                    <div className="space-y-8">
+                        <div className="flex items-center justify-between border-b border-white/10 pb-6">
+                            <div>
+                                <h3 className="text-2xl font-black text-white tracking-tighter">YouOke <span className="text-primary">Cast</span></h3>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-2xl font-black text-white">{time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                <div className="flex items-center justify-end gap-1.5 mt-1">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+                                    <span className="text-[10px] text-white/40 font-bold uppercase">Connected</span>
                                 </div>
-                                <p className="text-base font-bold text-white line-clamp-1 truncate drop-shadow-sm">{queue[currentIndex + 1].title}</p>
-                                {queue[currentIndex + 1].author && (
-                                    <p className="text-xs text-white/50 truncate mt-0.5">{queue[currentIndex + 1].author}</p>
-                                )}
-                            </>
+                            </div>
+                        </div>
+
+                        {/* Now Playing */}
+                        {currentVideo && (
+                            <div className="animate-in slide-in-from-right-4 duration-700">
+                                <p className="text-xs text-white/40 mb-3 uppercase font-black tracking-widest">กำลังเล่น</p>
+                                <div className="bg-primary/20 border border-primary/30 rounded-2xl p-6 shadow-xl">
+                                    <h2 className="text-3xl font-black text-white leading-tight mb-4 line-clamp-2">{currentVideo.title}</h2>
+                                    {currentVideo.author && (
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-1.5 h-4 bg-primary rounded-full"></div>
+                                            <p className="text-xl text-white/60 font-medium truncate">{currentVideo.author}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Next in Queue */}
+                        {queue.length > currentIndex + 1 && (
+                            <div className="animate-in slide-in-from-right-4 duration-700 delay-200">
+                                <p className="text-xs text-white/40 mb-4 uppercase font-black tracking-widest flex items-center justify-between">
+                                    <span className="flex items-center gap-2">
+                                        <MusicalNoteIcon className="w-4 h-4 text-primary" />
+                                        คิวถัดไป
+                                    </span>
+                                    <span className="bg-white/5 px-2 py-0.5 rounded-md text-[10px]">{queue.length - currentIndex - 1}</span>
+                                </p>
+                                <div className="space-y-3">
+                                    {queue.slice(currentIndex + 1, currentIndex + 8).map((video, index) => (
+                                        <div key={video.uuid || index} className="group bg-white/5 hover:bg-white/10 rounded-xl p-4 transition-all border border-white/5">
+                                            <div className="flex items-start gap-4">
+                                                <div className="flex-shrink-0 w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
+                                                    <span className="text-primary font-black text-xs">{currentIndex + index + 2}</span>
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="font-bold text-lg text-white/90 line-clamp-2 mb-1 group-hover:text-white transition-colors">
+                                                        {video.title}
+                                                    </p>
+                                                    {video.author && <p className="text-sm text-white/40 truncate">{video.author}</p>}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         )}
                     </div>
                 </div>
