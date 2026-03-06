@@ -508,15 +508,77 @@ export interface YouTubePlaylistResult {
 }
 
 /**
- * Scrape YouTube Playlist Search Results
- * Uses sp=EgIQAw%3D%3D to filter for playlists
+ * Parse playlist results from ytInitialData JSON (Robust Deep Search)
+ */
+function parsePlaylistResults(ytInitialData: any): YouTubePlaylistResult[] {
+  try {
+    const results: YouTubePlaylistResult[] = [];
+    const seenIds = new Set<string>();
+
+    const findPlaylists = (obj: any) => {
+      if (!obj || typeof obj !== 'object') return;
+
+      // 1. Standard Playlist Renderer
+      if (obj.playlistRenderer) {
+        const p = obj.playlistRenderer;
+        if (p.playlistId && !seenIds.has(p.playlistId)) {
+          seenIds.add(p.playlistId);
+          results.push({
+            playlistId: p.playlistId,
+            title: p.title?.simpleText || p.title?.runs?.[0]?.text || 'Unknown',
+            author: p.shortBylineText?.runs?.[0]?.text || 'YouTube',
+            videoCount: p.videoCountText?.simpleText || p.videoCountText?.runs?.[0]?.text || '0',
+            thumbnail: p.thumbnails?.[0]?.thumbnails?.[0]?.url || p.thumbnails?.[0]?.url || ""
+          });
+        }
+      }
+
+      // 2. LockupViewModel (New UI)
+      if (obj.lockupViewModel && obj.lockupViewModel.contentId) {
+        const lvm = obj.lockupViewModel;
+        const playlistId = lvm.contentId;
+        // Check if it's a playlist (usually start with PL or common patterns)
+        if (playlistId && (playlistId.startsWith('PL') || playlistId.startsWith('RD')) && !seenIds.has(playlistId)) {
+          seenIds.add(playlistId);
+          results.push({
+            playlistId: playlistId,
+            title: lvm.metadata?.lockupMetadataViewModel?.title?.content || 'Unknown',
+            author: lvm.metadata?.lockupMetadataViewModel?.metadata?.content || 'YouTube',
+            videoCount: 'Playlist',
+            thumbnail: lvm.contentImage?.collectionThumbnailViewModel?.primaryThumbnail?.image?.sources?.[0]?.url || ""
+          });
+        }
+      }
+
+      // Recursion
+      if (Array.isArray(obj)) {
+        for (const item of obj) findPlaylists(item);
+      } else {
+        for (const key of Object.keys(obj)) {
+          findPlaylists(obj[key]);
+        }
+      }
+    };
+
+    const contentRoot = ytInitialData.contents || ytInitialData.onResponseReceivedCommands || ytInitialData;
+    findPlaylists(contentRoot);
+
+    return results;
+  } catch (error) {
+    console.error('Error parsing playlist results:', error);
+    return [];
+  }
+}
+
+/**
+ * Scrape YouTube Playlist Search Results (Robust)
  */
 export async function scrapeYouTubePlaylistSearch(
   query: string,
   timeout: number = 10000
 ): Promise<YouTubePlaylistResult[]> {
   const encodedQuery = encodeURIComponent(query);
-  const url = `https://www.youtube.com/results?search_query=${encodedQuery}&sp=EgIQAw%3D%3D`; // Force type=playlist
+  const url = `https://www.youtube.com/results?search_query=${encodedQuery}&sp=EgIQAw%3D%3D`;
 
   try {
     const controller = new AbortController();
@@ -526,6 +588,7 @@ export async function scrapeYouTubePlaylistSearch(
       headers: {
         'User-Agent': getRandomUserAgent(),
         'Accept-Language': 'en-US,en;q=0.9,th;q=0.8',
+        'Cookie': 'CONSENT=YES+cb.20210328-17-p0.en+FX+417; SOCS=CAESEwgDEgk1NzY3NDIwMzQaAmVuIAEaBgiA_LyaBg;',
       },
       signal: controller.signal,
     });
@@ -538,29 +601,7 @@ export async function scrapeYouTubePlaylistSearch(
 
     if (!ytInitialData) throw new Error('Could not find ytInitialData');
 
-    const contents = ytInitialData?.contents?.twoColumnSearchResultsRenderer?.primaryContents?.sectionListRenderer?.contents;
-    if (!contents) return [];
-
-    const results: YouTubePlaylistResult[] = [];
-
-    for (const section of contents) {
-      if (!section.itemSectionRenderer?.contents) continue;
-      for (const item of section.itemSectionRenderer.contents) {
-        const renderer = item.playlistRenderer;
-        if (!renderer) continue;
-
-        const playlistId = renderer.playlistId;
-        const title = renderer.title.simpleText || renderer.title.runs?.[0]?.text || "Unknown";
-        const author = renderer.shortBylineText?.runs?.[0]?.text || "Unknown";
-        const videoCount = renderer.videoCountText?.simpleText || renderer.videoCountText?.runs?.[0]?.text || "0";
-        const thumbnail = renderer.thumbnails?.[0]?.url || "";
-
-        if (playlistId) {
-          results.push({ playlistId, title, author, videoCount, thumbnail });
-        }
-      }
-    }
-
+    const results = parsePlaylistResults(ytInitialData);
     console.log(`[YouTube Scraper] Found ${results.length} playlists for query: ${query}`);
     return results;
 
