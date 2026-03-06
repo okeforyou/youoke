@@ -35,10 +35,10 @@ const GENRES = [
 export default function SpotifyDashboard({ showTab = true }) {
   const router = useRouter();
   const { config } = useSystemConfig();
-  const genres = config?.ui?.genres || GENRES;
+  const genres = (config?.ui?.genres || GENRES).filter(g => g !== "เพลงไทย" && g !== "ทั้งหมด");
 
   // URL-Driven State or Fallback to Default
-  const genreText = (router.query.genre as string) || "เพลงไทย";
+  const genreText = (router.query.genre as string) || "ลูกทุ่ง";
   const tagId = (router.query.playlist as string) || "";
 
   console.log("🔍 SpotifyDashboard Render:", {

@@ -27,7 +27,7 @@ export default async function handler(
     } catch (authErr) { }
 
     // 1. Curated Thai Artists (User's favorites and famous ones)
-    // Reverting to high-quality curated list to ensure "karaoke-friendly" songs
+    // Using Thai names and verified images
     let artistList: Artist[] = [
       { name: "ทรีแมนดาวน์", imageUrl: "https://i.scdn.co/image/ab6761610000e5ebc40618dc2b22f77839352755" },
       { name: "เจฟ ซาเตอร์", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb46112c9b20d58849b28ba551" },
@@ -46,19 +46,18 @@ export default async function handler(
       { name: "เซฟแพลนเน็ต", imageUrl: "https://i.scdn.co/image/ab6761610000e5eb576352ff135e82512e088ba7" }
     ];
 
-    // 2. Featured Playlists (Refined Queries for 100% Thai Content)
+    // 2. Featured Playlists (No "เพลงไทย" query, focus on actual sub-genres)
     const featuredPlaylists = [
-      { query: "เพลงไทย ลูกทุ่งยอดฮิต 2025", name: "ลูกทุ่งยอดนิยม" },
-      { query: "รวมเพลงไทย GMM Grammy ฮิตตลอดกาล", name: "GMM Grammy ฮิต" },
-      { query: "T-Pop Hits 2025 เพลงไทยล่าสุด", name: "T-Pop Hits" },
-      { query: "รวมเพลงไทยยุค 2000 ฮิต", name: "ไทยฮิตยุค 2000" },
-      { query: "เพลงไทยใหม่ล่าสุด 2025 ยอดนิยม", name: "ไทยใหม่ล่าสุด" },
+      { query: "เพลงลูกทุ่งยอดฮิต 2025", name: "ลูกทุ่งยอดนิยม" },
+      { query: "รวมเพลง GMM Grammy ฮิตตลอดกาล", name: "GMM Grammy ฮิต" },
+      { query: "T-Pop Hits 2025 ล่าสุด", name: "T-Pop Hits" },
+      { query: "รวมเพลงเก่า ยุค 2000 ฮิต", name: "เก่าฮิตยุค 2000" },
+      { query: "เพลงใหม่ล่าสุด 2025 ไทย", name: "ไทยใหม่ล่าสุด" },
       { query: "รวมเพลงร็อกไทย ยอดนิยม", name: "ร็อกไทยยอดนิยม" },
-      { query: "เพลงเพื่อชีวิต ฮิตตลอดกาล ไทย", name: "เพลงเพื่อชีวิต" },
-      { query: "เพลงเก่าที่คิดถึง 80s 90s ไทย", name: "ไทยเก่า 80s-90s" },
+      { query: "เพลงเพื่อชีวิต ฮิตตลอดกาล", name: "เพลงเพื่อชีวิต" },
+      { query: "เพลงเก่าที่คิดถึง 80s 90s", name: "ไทยเก่า 80s-90s" },
       { query: "เพลงอินดี้ไทย มาแรง 2025", name: "อินดี้มาแรง" },
-      { query: "เพลงแดนซ์ไทย สายย่อ 2025", name: "แดนซ์สายย่อ" },
-      { query: "รวมเพลงเศร้าไทย 2025 ล่าสุด", name: "รวมเพลงไทยเศร้า" }
+      { query: "เพลงแดนซ์ไทย สายย่อ 2025", name: "แดนซ์สายย่อ" }
     ];
 
     // 3. Resolve Category Thumbnails (Robust Scraper)
@@ -80,7 +79,7 @@ export default async function handler(
           }
           throw new Error("No cover");
         } catch (e) {
-          // Reliable Fallback: Use a vibrant placeholder or a generic YouTube cover
+          // Reliable Fallback
           return {
             data: {
               id: `q-${encodeURIComponent(cat.query)}`,
