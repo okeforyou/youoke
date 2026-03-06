@@ -445,6 +445,86 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     </div>
                 </header>
 
+                {/* Mobile Header (Search + Profile) - Always visible on mobile */}
+                {mounted && layoutMode !== 'fullscreen' && (
+                    <header className="lg:hidden flex flex-col bg-white border-b border-gray-100 sticky top-0 z-[110] px-3 py-3 shadow-sm">
+                        <div className="flex items-center gap-2.5">
+                            {/* Search Input Box */}
+                            <div className="flex-1 relative flex items-center bg-gray-50 border border-gray-200 rounded-2xl px-4 h-11 transition-all focus-within:bg-white focus-within:border-black/10 shadow-sm">
+                                <Search className="h-4.5 w-4.5 text-gray-400 shrink-0" />
+                                <DebounceInput
+                                    minLength={2}
+                                    debounceTimeout={300}
+                                    placeholder="ค้นหาเพลง หรือ ศิลปิน..."
+                                    className="w-full bg-transparent pl-3 pr-2 text-[15px] font-bold text-black placeholder-gray-400 focus:outline-none"
+                                    value={searchTerm}
+                                    onChange={(e) => {
+                                        router.replace({
+                                            pathname: '/',
+                                            query: { ...router.query, search: e.target.value }
+                                        }, undefined, { shallow: true });
+                                    }}
+                                />
+                                {searchTerm && (
+                                    <button onClick={() => {
+                                        const { search, ...rest } = router.query;
+                                        router.replace({ pathname: '/', query: rest }, undefined, { shallow: true });
+                                    }} className="text-gray-400 ml-1.5 p-1 rounded-full hover:bg-gray-100">
+                                        <X className="h-4.5 w-4.5" />
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Mode Switch (Song/Karaoke) */}
+                            <div className="flex bg-gray-100 p-1 rounded-2xl border border-gray-200 shadow-inner shrink-0 h-11 items-center">
+                                <button
+                                    onClick={() => setIsKaraoke(false)}
+                                    className={clsx(
+                                        "w-9 h-9 flex items-center justify-center rounded-xl transition-all duration-300",
+                                        !isKaraoke ? "bg-white text-primary shadow-md scale-105" : "text-gray-400 scale-100"
+                                    )}
+                                >
+                                    <Music size={16} className={!isKaraoke ? "fill-primary/5" : ""} />
+                                </button>
+                                <button
+                                    onClick={() => setIsKaraoke(true)}
+                                    className={clsx(
+                                        "w-9 h-9 flex items-center justify-center rounded-xl transition-all duration-300",
+                                        isKaraoke ? "bg-white text-primary shadow-md scale-105" : "text-gray-400 scale-100"
+                                    )}
+                                >
+                                    <Mic size={16} className={isKaraoke ? "fill-primary/5" : ""} />
+                                </button>
+                            </div>
+
+                            {/* Profile Button */}
+                            <button
+                                onClick={() => {
+                                    if (user) {
+                                        useUIStore.getState().setProfileOpen(true);
+                                    } else {
+                                        router.push('/login');
+                                    }
+                                }}
+                                className="w-11 h-11 flex items-center justify-center bg-gray-200 border border-transparent rounded-2xl shrink-0 shadow-sm active:scale-95 transition-all"
+                            >
+                                {user ? (
+                                    user.photoURL ? (
+                                        <img src={user.photoURL} className="w-8 h-8 rounded-full border border-gray-100" alt="Profile" />
+                                    ) : (
+                                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+                                            {user.email?.[0]?.toUpperCase() || 'U'}
+                                        </div>
+                                    )
+                                ) : (
+                                    <User className="w-5 h-5 text-gray-700" />
+                                )}
+                            </button>
+                        </div>
+                    </header>
+                )}
+
+
                 {/* Global Player Container (Top Docked for Mobile, Fixed for Desktop) */}
                 {mounted && (
                     <div
@@ -496,88 +576,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                     }}
                                 />
                             </div>
-                            {/* Mobile Only Search & Controls Wrapper */}
+                            {/* Mobile Only Controls Wrapper */}
                             {layoutMode !== 'fullscreen' && (
                                 <div className="lg:hidden flex flex-col pb-3 bg-white border-b border-gray-100 shadow-sm relative z-20">
-                                    {/* Seamless Control Section matching Footer style */}
                                     <SidebarControls castMode={castMode} />
-
-                                    {/* Prominent Row: Larger Search + Outside Switch */}
-                                    <div className="px-3 pt-3">
-                                        <div className="flex items-center gap-2.5">
-                                            {/* Search Input Box - Height increased for prominence */}
-                                            <div className="flex-1 relative flex items-center bg-gray-50 border border-gray-200 rounded-2xl px-4 h-11 transition-all focus-within:bg-white focus-within:border-black/20 focus-within:ring-2 focus-within:ring-black/5 shadow-sm">
-                                                <Search className="h-4.5 w-4.5 text-gray-400 shrink-0" />
-                                                <DebounceInput
-                                                    minLength={2}
-                                                    debounceTimeout={300}
-                                                    placeholder="ค้นหาเพลง หรือ ศิลปิน..."
-                                                    className="w-full bg-transparent pl-3 pr-2 text-[15px] font-bold text-black placeholder-gray-400 focus:outline-none"
-                                                    value={searchTerm}
-                                                    onChange={(e) => {
-                                                        router.replace({
-                                                            pathname: '/',
-                                                            query: { ...router.query, search: e.target.value }
-                                                        }, undefined, { shallow: true });
-                                                    }}
-                                                />
-                                                {searchTerm && (
-                                                    <button onClick={() => {
-                                                        const { search, ...rest } = router.query;
-                                                        router.replace({ pathname: '/', query: rest }, undefined, { shallow: true });
-                                                    }} className="text-gray-400 ml-1.5 p-1 rounded-full hover:bg-gray-100">
-                                                        <X className="h-4.5 w-4.5" />
-                                                    </button>
-                                                )}
-                                            </div>
-
-                                            {/* Mode Switch - Consistent Height */}
-                                            <div className="flex bg-gray-100 p-1 rounded-2xl border border-gray-200 shadow-inner shrink-0 h-11 items-center">
-                                                <button
-                                                    onClick={() => setIsKaraoke(false)}
-                                                    className={clsx(
-                                                        "w-9 h-9 flex items-center justify-center rounded-xl transition-all duration-300",
-                                                        !isKaraoke ? "bg-white text-primary shadow-md scale-[1.1] rotate-0" : "text-gray-400 hover:text-gray-600 scale-100"
-                                                    )}
-                                                >
-                                                    <Music size={16} className={!isKaraoke ? "fill-primary/5" : ""} />
-                                                </button>
-                                                <button
-                                                    onClick={() => setIsKaraoke(true)}
-                                                    className={clsx(
-                                                        "w-9 h-9 flex items-center justify-center rounded-xl transition-all duration-300",
-                                                        isKaraoke ? "bg-white text-primary shadow-md scale-[1.1] rotate-0" : "text-gray-400 hover:text-gray-600 scale-100"
-                                                    )}
-                                                >
-                                                    <Mic size={16} className={isKaraoke ? "fill-primary/5" : ""} />
-                                                </button>
-                                            </div>
-
-                                            {/* Mobile Top-Right Profile Button */}
-                                            <button
-                                                onClick={() => {
-                                                    if (user) {
-                                                        useUIStore.getState().setProfileOpen(true);
-                                                    } else {
-                                                        router.push('/login');
-                                                    }
-                                                }}
-                                                className="w-11 h-11 flex items-center justify-center bg-gray-50 border border-gray-200 rounded-2xl shrink-0 shadow-sm active:scale-95 transition-all"
-                                            >
-                                                {mounted && user ? (
-                                                    user.photoURL ? (
-                                                        <img src={user.photoURL} className="w-8 h-8 rounded-full border border-gray-100" alt="Profile" />
-                                                    ) : (
-                                                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-                                                            {user.email?.[0]?.toUpperCase() || 'U'}
-                                                        </div>
-                                                    )
-                                                ) : (
-                                                    <User className="w-5 h-5 text-gray-500" />
-                                                )}
-                                            </button>
-                                        </div>
-                                    </div>
                                 </div>
                             )}
                         </div>
