@@ -601,26 +601,21 @@ export default function ChromecastReceiver() {
             {!isIdle && (
                 <>
                     {/* Top Left: Logo & Branding */}
-                    <div className="absolute top-6 left-6 z-50 flex items-center gap-3 opacity-60">
-                        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-black text-xl shadow-lg border border-white/20 uppercase">Y</div>
-                        <div>
-                            <h2 className="text-xl font-bold tracking-tight leading-none text-white drop-shadow-lg">
-                                YouOke <span className="text-primary italic">ChromeCast</span>
-                            </h2>
-                        </div>
+                    <div className="absolute top-6 left-8 z-50">
+                        <span className="text-white/80 text-sm font-bold tracking-widest uppercase drop-shadow-md">
+                            YouOke <span className="text-primary">ChromeCast</span>
+                        </span>
                     </div>
 
                     {/* Top Right: Precise Time */}
-                    <div className="absolute top-6 right-6 z-50 text-right opacity-60">
-                        <div className="bg-black/60 backdrop-blur-md px-4 py-1.5 rounded-xl border border-white/10 shadow-2xl">
-                            <p className="text-2xl font-bold text-white/95 tracking-tight font-mono">
-                                {time.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false })}
-                            </p>
+                    <div className="absolute top-6 right-8 z-50 text-right">
+                        <div className="text-white/90 text-sm font-bold font-mono tracking-tighter bg-black/40 px-3 py-1 rounded-lg backdrop-blur-sm border border-white/10">
+                            {time.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false })}
                         </div>
 
-                        {/* Next Up Badge - Improved stability */}
+                        {/* Next Up Badge - High Contrast */}
                         <div className={clsx(
-                            "mt-4 bg-[#111]/90 backdrop-blur-xl px-4 py-3 rounded-xl border border-white/10 shadow-2xl text-left transition-all duration-700 w-72",
+                            "mt-3 bg-black/80 backdrop-blur-xl px-4 py-3 rounded-xl border border-primary/30 shadow-2xl text-left transition-all duration-700 w-72",
                             showQueue && queue.length > currentIndex + 1 ? "opacity-100 translate-x-0" : "opacity-0 translate-x-10 pointer-events-none"
                         )}>
                             {queue.length > currentIndex + 1 && (
@@ -629,23 +624,24 @@ export default function ChromecastReceiver() {
                                         <MusicalNoteIcon className="w-4 h-4 text-primary" />
                                         <p className="text-[10px] text-primary uppercase font-black tracking-widest">รายการถัดไป</p>
                                     </div>
-                                    <p className="text-base font-bold text-white line-clamp-1 truncate">{queue[currentIndex + 1].title}</p>
+                                    <p className="text-base font-bold text-white line-clamp-2 leading-tight drop-shadow-sm">{queue[currentIndex + 1].title}</p>
+                                    <p className="text-[11px] text-white/60 truncate mt-1">{queue[currentIndex + 1].author}</p>
                                 </>
                             )}
                         </div>
                     </div>
 
-                    {/* Bottom Left: Simple Toast Notification */}
+                    {/* Bottom Left: Vivid Toast Notification */}
                     <div className={clsx(
                         "absolute bottom-10 left-10 z-[60] transition-all duration-700",
                         toast ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10 pointer-events-none"
                     )}>
                         {toast && (
-                            <div className="bg-black/60 backdrop-blur-md text-white px-5 py-3 rounded-xl border border-white/10 flex items-center gap-4 shadow-2xl">
-                                <ListMusic size={20} className="text-primary" />
+                            <div className="bg-black/90 backdrop-blur-xl text-white px-5 py-3.5 rounded-2xl border-l-4 border-primary shadow-[0_20px_50px_rgba(0,0,0,0.4)] flex items-center gap-4">
+                                <ListMusic size={24} className="text-primary animate-bounce" />
                                 <div className="min-w-0">
-                                    <p className="text-[10px] text-primary/80 font-bold uppercase tracking-wider">Added to Queue</p>
-                                    <p className="text-sm font-bold truncate max-w-[250px]">{toast.title}</p>
+                                    <p className="text-[10px] text-primary font-black uppercase tracking-widest mb-0.5">Added to Queue</p>
+                                    <p className="text-base font-bold text-white truncate max-w-[300px] leading-tight">{toast.title}</p>
                                 </div>
                             </div>
                         )}
