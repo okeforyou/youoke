@@ -570,16 +570,16 @@ export default function ChromecastReceiver() {
 
             {/* 2. Idle Layer */}
             <div className={clsx(
-                "absolute inset-0 z-10 transition-all duration-1000 bg-[#0a0a0a]",
-                !isIdle && "opacity-0 pointer-events-none invisible delay-1000"
+                "absolute inset-0 z-10 transition-opacity duration-700 bg-[#0a0a0a]",
+                !isIdle && "opacity-0 pointer-events-none invisible"
             )}>
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent opacity-50" />
                 <div className="relative z-10 h-full flex flex-col items-center justify-center text-center p-12">
-                    <div className="w-32 h-32 bg-primary/20 rounded-3xl flex items-center justify-center mb-8 border border-primary/30 shadow-[0_0_60px_rgba(239,68,68,0.2)]">
-                        <TvIcon className="w-16 h-16 text-primary animate-pulse" />
+                    <div className="w-24 h-24 bg-primary/20 rounded-3xl flex items-center justify-center mb-6 border border-primary/20">
+                        <TvIcon className="w-12 h-12 text-primary animate-pulse" />
                     </div>
-                    <h1 className="text-7xl font-black text-white tracking-tight mb-4">YouOke <span className="text-primary italic">Cast</span></h1>
-                    <p className="text-2xl text-white/50 font-medium tracking-wide">รอรับคำสั่งจากโทรศัพท์มือถือของคุณ...</p>
+                    <h1 className="text-5xl font-black text-white tracking-tight mb-2">YouOke <span className="text-primary">Cast</span></h1>
+                    <p className="text-xl text-white/40 font-medium tracking-wide">รอรับคำสั่งจากโทรศัพท์มือถือของคุณ...</p>
 
                     {!isReceiverReady && (
                         <div className="mt-16 flex flex-col items-center">
@@ -601,62 +601,51 @@ export default function ChromecastReceiver() {
             {!isIdle && (
                 <>
                     {/* Top Left: Logo & Branding */}
-                    <div className="absolute top-10 left-10 z-50 flex items-center gap-5 transition-opacity duration-1000">
-                        <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center text-white font-black text-3xl shadow-xl shadow-primary/30 border border-white/20 uppercase">Y</div>
+                    <div className="absolute top-6 left-6 z-50 flex items-center gap-3 opacity-60">
+                        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-black text-xl shadow-lg border border-white/20 uppercase">Y</div>
                         <div>
-                            <h2 className="text-3xl font-black tracking-tight leading-none text-white drop-shadow-lg">
+                            <h2 className="text-xl font-bold tracking-tight leading-none text-white drop-shadow-lg">
                                 YouOke <span className="text-primary italic">ChromeCast</span>
                             </h2>
-                            <p className="text-[11px] uppercase font-black text-white/50 tracking-[0.3em] mt-1.5 drop-shadow-md">
-                                Premium Karaoke Experience
-                            </p>
                         </div>
                     </div>
 
                     {/* Top Right: Precise Time */}
-                    <div className="absolute top-10 right-10 z-50 text-right">
-                        <div className="bg-black/60 backdrop-blur-md px-6 py-2 rounded-2xl border border-white/10 shadow-2xl">
-                            <p className="text-3xl font-black text-white/95 tracking-tight font-mono">
-                                {time.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
+                    <div className="absolute top-6 right-6 z-50 text-right opacity-60">
+                        <div className="bg-black/60 backdrop-blur-md px-4 py-1.5 rounded-xl border border-white/10 shadow-2xl">
+                            <p className="text-2xl font-bold text-white/95 tracking-tight font-mono">
+                                {time.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false })}
                             </p>
                         </div>
 
                         {/* Next Up Badge - Improved stability */}
                         <div className={clsx(
-                            "mt-5 bg-[#111]/95 backdrop-blur-xl px-6 py-4 rounded-2xl border border-white/20 shadow-2xl text-left transition-all duration-700 w-80",
+                            "mt-4 bg-[#111]/90 backdrop-blur-xl px-4 py-3 rounded-xl border border-white/10 shadow-2xl text-left transition-all duration-700 w-72",
                             showQueue && queue.length > currentIndex + 1 ? "opacity-100 translate-x-0" : "opacity-0 translate-x-10 pointer-events-none"
                         )}>
                             {queue.length > currentIndex + 1 && (
                                 <>
-                                    <div className="flex items-center gap-2.5 mb-2">
-                                        <div className="p-1.5 bg-primary/20 rounded-lg">
-                                            <MusicalNoteIcon className="w-4 h-4 text-primary" />
-                                        </div>
-                                        <p className="text-[11px] text-primary uppercase font-black tracking-widest">รายการถัดไป</p>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <MusicalNoteIcon className="w-4 h-4 text-primary" />
+                                        <p className="text-[10px] text-primary uppercase font-black tracking-widest">รายการถัดไป</p>
                                     </div>
-                                    <p className="text-lg font-bold text-white line-clamp-2 leading-tight">{queue[currentIndex + 1].title}</p>
-                                    {queue[currentIndex + 1].author && (
-                                        <p className="text-sm text-white/50 truncate mt-1 font-medium">{queue[currentIndex + 1].author}</p>
-                                    )}
+                                    <p className="text-base font-bold text-white line-clamp-1 truncate">{queue[currentIndex + 1].title}</p>
                                 </>
                             )}
                         </div>
                     </div>
 
-                    {/* Bottom Center: Added Toast Notification */}
+                    {/* Bottom Left: Simple Toast Notification */}
                     <div className={clsx(
-                        "absolute bottom-20 left-1/2 -translate-x-1/2 z-[60] transition-all duration-700",
-                        toast ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"
+                        "absolute bottom-10 left-10 z-[60] transition-all duration-700",
+                        toast ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10 pointer-events-none"
                     )}>
                         {toast && (
-                            <div className="bg-white text-black px-8 py-5 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center gap-6 border-b-4 border-primary">
-                                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center shrink-0">
-                                    <ListMusic className="w-8 h-8 text-primary" />
-                                </div>
+                            <div className="bg-black/60 backdrop-blur-md text-white px-5 py-3 rounded-xl border border-white/10 flex items-center gap-4 shadow-2xl">
+                                <ListMusic size={20} className="text-primary" />
                                 <div className="min-w-0">
-                                    <p className="text-[12px] font-black text-primary uppercase tracking-[0.2em] mb-1">เพิ่มเพลงใหม่ในคิวแล้ว</p>
-                                    <h3 className="text-xl font-black truncate max-w-md">{toast.title}</h3>
-                                    <p className="text-sm font-bold text-black/50 truncate">{toast.author}</p>
+                                    <p className="text-[10px] text-primary/80 font-bold uppercase tracking-wider">Added to Queue</p>
+                                    <p className="text-sm font-bold truncate max-w-[250px]">{toast.title}</p>
                                 </div>
                             </div>
                         )}
