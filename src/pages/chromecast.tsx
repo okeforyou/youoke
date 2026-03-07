@@ -533,10 +533,9 @@ export default function ChromecastReceiver() {
             {/* 2. Idle Layer - ONLY render when idle to prevent obscuring video */}
             {isIdle && (
                 <div className="absolute inset-0 z-10 bg-[#0a0a0a] flex flex-col items-center justify-center text-center p-12">
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent opacity-50" />
                     <div className="relative z-10">
                         <div className="w-24 h-24 bg-primary/20 rounded-3xl flex items-center justify-center mb-6 border border-primary/20 mx-auto">
-                            <TvIcon className="w-12 h-12 text-primary animate-pulse" />
+                            <TvIcon className="w-12 h-12 text-primary" />
                         </div>
                         <h1 className="text-5xl font-black text-white tracking-tight mb-2">YouOke <span className="text-primary">Cast</span></h1>
                         <p className="text-xl text-white/40 font-medium tracking-wide">รอรับคำสั่งจากโทรศัพท์มือถือของคุณ...</p>
@@ -550,7 +549,7 @@ export default function ChromecastReceiver() {
 
                         {isReceiverReady && (
                             <div className="mt-12 flex items-center gap-3 bg-white/5 px-6 py-3 rounded-full border border-white/10 mx-auto w-fit">
-                                <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_#22c55e]"></div>
+                                <div className="w-2.5 h-2.5 rounded-full bg-green-500"></div>
                                 <p className="text-sm text-green-400 font-bold uppercase tracking-widest">พร้อมรับคำสั่งแล้ว</p>
                             </div>
                         )}
@@ -563,7 +562,7 @@ export default function ChromecastReceiver() {
                 <>
                     {/* Top Left: Logo & Branding */}
                     <div className="absolute top-6 left-8 z-50">
-                        <span className="text-white text-xs font-bold tracking-[0.2em] uppercase drop-shadow-md">
+                        <span className="text-white text-xs font-bold tracking-[0.2em] uppercase">
                             YouOke ChromeCast
                         </span>
                     </div>
@@ -571,9 +570,10 @@ export default function ChromecastReceiver() {
                     {/* Top Right: Precise Time REMOVED */}
                     <div className="absolute top-6 right-8 z-50 text-right">
                         {/* Next Up Badge - Dark Semi-transparent */}
+                        {/* Next Up Badge - Solid Dark */}
                         <div className={clsx(
-                            "mt-3 bg-black/85 px-4 py-3 rounded-xl shadow-2xl text-left transition-all duration-700 w-72",
-                            showQueue && queue.length > currentIndex + 1 ? "opacity-100 translate-x-0" : "opacity-0 translate-x-10 pointer-events-none"
+                            "mt-3 bg-black/90 px-4 py-3 rounded-xl text-left w-72 transition-opacity duration-300",
+                            showQueue && queue.length > currentIndex + 1 ? "opacity-100" : "opacity-0 pointer-events-none"
                         )}>
                             {queue.length > currentIndex + 1 && (
                                 <>
@@ -588,13 +588,13 @@ export default function ChromecastReceiver() {
                         </div>
                     </div>
 
-                    {/* Bottom Left: Added Toast Notification (Dark Semi-transparent) */}
+                    {/* Bottom Left: Added Toast Notification (Solid Dark) */}
                     <div className={clsx(
-                        "absolute bottom-10 left-10 z-[60] transition-all duration-700",
-                        toast ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10 pointer-events-none"
+                        "absolute bottom-10 left-10 z-[60] transition-opacity duration-300",
+                        toast ? "opacity-100" : "opacity-0 pointer-events-none"
                     )}>
                         {toast && (
-                            <div className="bg-black/85 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-4">
+                            <div className="bg-black/95 text-white px-5 py-3 rounded-xl flex items-center gap-4 border border-white/10">
                                 <ListMusic size={20} className="text-primary" />
                                 <div className="min-w-0">
                                     <p className="text-[10px] text-primary font-bold uppercase tracking-widest leading-none mb-1">Song Added</p>
