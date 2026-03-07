@@ -281,19 +281,9 @@ export default function ChromecastReceiver() {
 
                         if (typeof message.currentIndex === 'number') {
                             store.setCurrentIndex(message.currentIndex);
-                        } else if (message.type === 'LOAD_QUEUE' && typeof message.startIndex === 'number') {
-                            store.setCurrentIndex(message.startIndex);
-                        }
-
-                        // If LOAD_QUEUE with a video, start playing immediately
-                        if (message.type === 'LOAD_QUEUE' && newQueue.length > 0) {
-                            const startIdx = message.startIndex ?? message.currentIndex ?? 0;
-                            const videoToPlay = newQueue[startIdx];
-                            const vidToPlay = videoToPlay?.videoId || videoToPlay?.id;
-                            if (vidToPlay) {
-                                console.log('▶️ [Chromecast] Auto-playing from LOAD_QUEUE:', videoToPlay.title);
-                                store.playVideo(vidToPlay);
-                            }
+                        } else if (message.type === 'LOAD_QUEUE') {
+                            const startIdx = message.startIndex ?? 0;
+                            store.setCurrentIndex(startIdx);
                         }
                     }
                     break;

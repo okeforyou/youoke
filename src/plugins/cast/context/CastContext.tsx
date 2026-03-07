@@ -715,21 +715,21 @@ export function CastProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    const video = latestPlaylist[index];
-    console.log('📍 Jumping to video:', video.title || video.videoId);
+    console.log('📍 Jumping to index:', index, 'videoId:', latestPlaylist[index]?.videoId);
 
     // Update state and refs
     setCurrentIndex(index); // Use store action
-    // setCurrentVideo(video); // Removed as currentVideo is from store
 
     if (isConnected) {
-      // Send LOAD_VIDEO to play the video at this index
       sendMessage({
-        type: 'LOAD_VIDEO',
-        videoId: video.videoId || video.id || '',
-        title: video.title || video.videoId || '',
-        author: (video as any).author || '',
-        thumbnail: (video as any).thumbnail || `https://i.ytimg.com/vi/${video.videoId || video.id}/mqdefault.jpg`,
+        type: 'UPDATE_QUEUE',
+        videos: latestPlaylist.map(v => ({
+          videoId: v.videoId || v.id || '',
+          title: v.title || 'Unknown',
+          author: v.author || 'Unknown',
+          thumbnail: v.thumbnail || ''
+        })),
+        currentIndex: index
       });
     } else {
       console.warn('⚠️ Not connected! Cannot jump to video');
@@ -872,19 +872,18 @@ export function CastProvider({ children }: { children: ReactNode }) {
     console.log('📍 Moving to index:', newIndex, 'videoId:', latestPlaylist[newIndex]?.videoId);
 
     setCurrentIndex(newIndex); // Use store action
-    // setCurrentVideo(latestPlaylist[newIndex]); // Removed as currentVideo is from store
 
-    if (isConnected && latestPlaylist[newIndex]) {
-      const vid = latestPlaylist[newIndex];
+    if (isConnected) {
       sendMessage({
-        type: 'LOAD_VIDEO',
-        videoId: vid.videoId || '',
-        title: vid.title || vid.videoId || '',
-        author: vid.author || '',
-        thumbnail: vid.thumbnail || `https://i.ytimg.com/vi/${vid.videoId}/mqdefault.jpg`,
+        type: 'UPDATE_QUEUE',
+        videos: latestPlaylist.map(v => ({
+          videoId: v.videoId || v.id || '',
+          title: v.title || 'Unknown',
+          author: v.author || 'Unknown',
+          thumbnail: v.thumbnail || ''
+        })),
+        currentIndex: newIndex
       });
-    } else {
-      console.warn('⚠️ Not connected or no video at index', newIndex);
     }
   };
 
@@ -904,19 +903,18 @@ export function CastProvider({ children }: { children: ReactNode }) {
     console.log('📍 Moving to index:', newIndex, 'videoId:', latestPlaylist[newIndex]?.videoId);
 
     setCurrentIndex(newIndex); // Use store action
-    // setCurrentVideo(latestPlaylist[newIndex]); // Removed as currentVideo is from store
 
-    if (isConnected && latestPlaylist[newIndex]) {
-      const vid = latestPlaylist[newIndex];
+    if (isConnected) {
       sendMessage({
-        type: 'LOAD_VIDEO',
-        videoId: vid.videoId || '',
-        title: vid.title || vid.videoId || '',
-        author: vid.author || '',
-        thumbnail: vid.thumbnail || `https://i.ytimg.com/vi/${vid.videoId}/mqdefault.jpg`,
+        type: 'UPDATE_QUEUE',
+        videos: latestPlaylist.map(v => ({
+          videoId: v.videoId || v.id || '',
+          title: v.title || 'Unknown',
+          author: v.author || 'Unknown',
+          thumbnail: v.thumbnail || ''
+        })),
+        currentIndex: newIndex
       });
-    } else {
-      console.warn('⚠️ Not connected or no video at index', newIndex);
     }
   };
 

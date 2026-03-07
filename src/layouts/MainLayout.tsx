@@ -112,7 +112,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
     // Cast & UI Store
     const { isCastModalOpen, setCastModalOpen } = useUIStore();
-    const { connect: connectGoogleCast, isAvailable: isCastAvailable } = useCast();
+    const { connect: connectGoogleCast, disconnect: disconnectGoogleCast, isAvailable: isCastAvailable } = useCast();
     const { addToast } = useToast() || { addToast: () => { } };
     const isMobile = useIsMobile();
     const { queue } = usePlayerStore();
@@ -261,6 +261,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
             }
             localStorage.setItem('youoke-dual-active', 'false');
             useUIStore.getState().setIsCastingLocal(false);
+        }
+
+        if (castMode === 'google') {
+            disconnectGoogleCast();
         }
 
         setCastModalOpen(false);
