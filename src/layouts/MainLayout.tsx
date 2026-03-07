@@ -572,8 +572,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                     }
                                                 }}
                                                 className={clsx(
-                                                    "w-11 h-11 flex items-center justify-center rounded-2xl shrink-0 shadow-sm active:scale-95 transition-all relative",
-                                                    isQueueOpen ? "bg-primary text-white" : "bg-gray-200 text-gray-700 border border-transparent"
+                                                    "w-11 h-11 flex items-center justify-center rounded-2xl shrink-0 shadow-sm active:scale-95 transition-all relative border border-transparent",
+                                                    isQueueOpen ? "bg-primary/10 text-primary border-primary/20" : "bg-gray-200 text-gray-700"
                                                 )}
                                             >
                                                 <ListMusic className="w-5 h-5" />
