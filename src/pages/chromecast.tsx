@@ -509,8 +509,8 @@ export default function ChromecastReceiver() {
 
             {/* 2. Idle Layer */}
             <div className={clsx(
-                "absolute inset-0 z-10 transition-opacity duration-1000 bg-[#0a0a0a]",
-                !isIdle && "opacity-0 pointer-events-none"
+                "absolute inset-0 z-10 transition-all duration-1000 bg-[#0a0a0a]",
+                !isIdle && "opacity-0 pointer-events-none invisible delay-1000"
             )}>
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent opacity-50" />
                 <div className="relative z-10 h-full flex flex-col items-center justify-center text-center p-12">
@@ -539,24 +539,24 @@ export default function ChromecastReceiver() {
             {/* 3. Overlay Area (Top Right) */}
             {!isIdle && (
                 <div className="absolute top-8 right-8 z-40 max-w-sm text-right">
-                    <p className="text-xl font-black text-white/80 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                    <p className="text-xl font-black text-white/90 bg-black/60 px-3 py-1 rounded-lg inline-block">
                         {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </p>
 
                     {/* Next in Queue Badge */}
                     <div className={clsx(
-                        "mt-4 bg-black/70 backdrop-blur-md px-5 py-3 rounded-2xl border border-white/10 shadow-2xl text-left transform transition-all duration-500",
-                        showQueue && queue.length > currentIndex + 1 ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8 pointer-events-none"
+                        "mt-4 bg-[#111]/95 px-5 py-3 rounded-2xl border border-white/20 shadow-xl text-left transition-opacity duration-500",
+                        showQueue && queue.length > currentIndex + 1 ? "opacity-100" : "opacity-0 pointer-events-none"
                     )}>
                         {queue.length > currentIndex + 1 && (
                             <>
                                 <div className="flex items-center gap-2 mb-1.5">
-                                    <MusicalNoteIcon className="w-3 h-3 text-primary" />
-                                    <p className="text-[10px] text-white/60 uppercase font-black tracking-widest drop-shadow-sm">คิวถัดไป</p>
+                                    <MusicalNoteIcon className="w-4 h-4 text-primary" />
+                                    <p className="text-[11px] text-white/80 uppercase font-black tracking-widest">คิวถัดไป</p>
                                 </div>
-                                <p className="text-base font-bold text-white line-clamp-1 truncate drop-shadow-sm">{queue[currentIndex + 1].title}</p>
+                                <p className="text-base font-bold text-white line-clamp-1 truncate">{queue[currentIndex + 1].title}</p>
                                 {queue[currentIndex + 1].author && (
-                                    <p className="text-xs text-white/50 truncate mt-0.5">{queue[currentIndex + 1].author}</p>
+                                    <p className="text-xs text-white/60 truncate mt-0.5">{queue[currentIndex + 1].author}</p>
                                 )}
                             </>
                         )}
