@@ -321,15 +321,26 @@ export default function ChromecastReceiver() {
                             thumbnail: v.thumbnail || v.thumbnail_url || `https://i.ytimg.com/vi/${v.videoId || v.id}/mqdefault.jpg`,
                             sourceType: 'youtube'
                         }));
+                        const updates: Partial<PlayerState> = { queue: newQueue };
+                        let targetIndex: number | undefined = undefined;
 
-                        const updates: any = { queue: newQueue };
-                        if (typeof message.currentIndex === 'number' && message.currentIndex >= 0 && message.currentIndex < newQueue.length) {
-                            updates.currentIndex = message.currentIndex;
-                            const video = newQueue[message.currentIndex];
+                        if (typeof message.currentIndex === 'number') targetIndex = message.currentIndex;
+                        else if (typeof message.startIndex === 'number') targetIndex = message.startIndex;
+                        else if (message.type === 'LOAD_QUEUE' && newQueue.length > 0) targetIndex = 0; // Auto-start at 0 for initial load
+
+                        if (targetIndex !== undefined && targetIndex >= 0 && targetIndex < newQueue.length) {
+                            updates.currentIndex = targetIndex;
+                            const video = newQueue[targetIndex];
                             updates.currentVideo = video;
                             updates.currentSource = video.videoId || video.id;
-                            // If message says play/pause, respect it, otherwise keep current state
-                            if (typeof message.isPlaying === 'boolean') updates.isPlaying = message.isPlaying;
+
+                            // If explicit playing state is sent, respect it.
+                            // If it's a new LOAD_QUEUE, force play.
+                            if (typeof message.isPlaying === 'boolean') {
+                                updates.isPlaying = message.isPlaying;
+                            } else if (message.type === 'LOAD_QUEUE') {
+                                updates.isPlaying = true;
+                            }
                         }
                         store.setPlayerState(updates);
                     }
