@@ -88,16 +88,11 @@ function ReceiverYouTubePlayer({
                 origin: window.location.origin,
                 enablejsapi: 1,
                 playsinline: 1,
-                vq: 'hd1080', // Legacy but sometimes helps
             },
             events: {
                 onReady: (event: any) => {
                     console.log('✅ [Receiver] YouTube player ready');
                     isPlayerReadyRef.current = true;
-                    // Force high quality if possible
-                    try {
-                        event.target.setPlaybackQuality('hd1080');
-                    } catch (e) { }
                     event.target.playVideo();
                 },
                 onStateChange: (event: any) => {
@@ -343,8 +338,10 @@ export default function ChromecastReceiver() {
                 case 'SET_MUTED': store.setMuted(message.muted); break;
                 case 'SET_REPEAT':
                 case 'REPEAT':
-                    const mode = message.repeatMode || (store.repeatMode === 'one' ? 'off' : 'one');
-                    store.setRepeatMode(mode);
+                    const rMode = message.repeatMode || (store.repeatMode === 'one' ? 'off' : 'one');
+                    store.setRepeatMode(rMode);
+                    // "ร้องซ้ำ" usually means restart immediately in Karaoke
+                    store.seekTo(0);
                     break;
                 case 'SEEK': store.seekTo(message.time); break;
             }
