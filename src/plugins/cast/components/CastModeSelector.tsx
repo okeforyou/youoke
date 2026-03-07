@@ -88,7 +88,7 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
               )}
             >
               <div className="flex items-center gap-4">
-                <div className="flex-shrink-0 w-13 h-13 rounded-2xl bg-orange-500/10 flex items-center justify-center group-hover:scale-110 transition-transform text-orange-500 border border-orange-500/20">
+                <div className="flex-shrink-0 w-13 h-13 rounded-2xl bg-orange-500/10 flex items-center justify-center group-hover:scale-110 transition-transform text-orange-500">
                   <Monitor className="w-6 h-6" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -109,7 +109,7 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
               className="w-full text-left p-4.5 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all group relative"
             >
               <div className="flex items-center gap-4">
-                <div className="flex-shrink-0 w-13 h-13 rounded-2xl bg-primary/5 flex items-center justify-center group-hover:scale-110 transition-transform text-primary border border-primary/10">
+                <div className="flex-shrink-0 w-13 h-13 rounded-2xl bg-primary/5 flex items-center justify-center group-hover:scale-110 transition-transform text-primary">
                   <Radio className="w-6 h-6" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -128,7 +128,7 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
 
             {showTvSteps && (
               <div className="p-4 pt-0 space-y-4 animate-in slide-in-from-top-1 duration-200">
-                <div className="bg-gray-50 dark:bg-black/20 rounded-2xl p-4 text-xs font-bold text-gray-600 dark:text-gray-400 leading-relaxed border border-gray-100 dark:border-white/5">
+                <div className="bg-gray-50 dark:bg-black/20 rounded-2xl p-4 text-xs font-bold text-gray-600 dark:text-gray-400 leading-relaxed">
                   <div className="flex gap-3">
                     <span className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 font-black text-[10px]">1</span>
                     <p>เปิด <span className="font-black text-primary">{typeof window !== 'undefined' ? window.location.host : 'youoke.vercel.app'}/monitor</span> บนหน้าจออื่น</p>
@@ -180,8 +180,8 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
           >
             <div className="flex items-center gap-4">
               <div className={clsx(
-                "flex-shrink-0 w-13 h-13 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110 border",
-                isCastAvailable ? "bg-primary/5 text-primary border-primary/10" : "bg-gray-100 text-gray-400 border-gray-200"
+                "flex-shrink-0 w-13 h-13 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110",
+                isCastAvailable ? "bg-primary/5 text-primary" : "bg-gray-100 text-gray-400"
               )}>
                 {isCastAvailable ? (
                   <Cast className="w-6 h-6" />
@@ -190,7 +190,7 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-base font-black text-gray-900 dark:text-gray-100 italic">Google ChromeCast (AndroidTV)</h3>
+                <h3 className="text-base font-black text-gray-900 dark:text-gray-100">Google ChromeCast (AndroidTV)</h3>
                 <p className="text-xs text-gray-500 font-bold uppercase tracking-wide">ส่งภาพขึ้นหน้าจอทันที</p>
               </div>
             </div>
@@ -202,7 +202,7 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
             className="w-full text-left bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/5 rounded-3xl p-4.5 border border-gray-100 dark:border-white/5 transition-all group relative overflow-hidden shadow-sm"
           >
             <div className="flex items-center gap-4">
-              <div className="flex-shrink-0 w-13 h-13 rounded-2xl bg-primary/5 flex items-center justify-center group-hover:scale-110 transition-transform text-primary border border-primary/10">
+              <div className="flex-shrink-0 w-13 h-13 rounded-2xl bg-primary/5 flex items-center justify-center group-hover:scale-110 transition-transform text-primary">
                 <Youtube className="w-6 h-6" />
               </div>
               <div className="flex-1 min-w-0">
