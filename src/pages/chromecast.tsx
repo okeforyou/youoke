@@ -88,11 +88,15 @@ function ReceiverYouTubePlayer({
                 origin: window.location.origin,
                 enablejsapi: 1,
                 playsinline: 1,
+                vq: 'hd1080',
             },
             events: {
                 onReady: (event: any) => {
                     console.log('✅ [Receiver] YouTube player ready');
                     isPlayerReadyRef.current = true;
+                    try {
+                        event.target.setPlaybackQuality('hd1080');
+                    } catch (e) { }
                     event.target.playVideo();
                 },
                 onStateChange: (event: any) => {
@@ -220,8 +224,24 @@ export default function ChromecastReceiver() {
         playNext: state.playNext,
         setVolume: state.setVolume,
         setMuted: state.setMuted,
-        seekTo: state.seekTo
+        seekTo: state.seekTo,
+        clearQueue: state.clearQueue,
+        setPlayerState: state.setPlayerState
     })));
+
+    // Clear state on first mount to avoid "remembering" old queue/songs on TV
+    useEffect(() => {
+        const store = usePlayerStore.getState();
+        // Reset everything to clean slate
+        store.setPlayerState({
+            queue: [],
+            currentSource: null,
+            currentVideo: null,
+            currentIndex: 0,
+            isPlaying: false
+        });
+        console.log('🧹 [Chromecast] Store reset on initialization');
+    }, []);
 
     // Clock removed due to accuracy issues on different devices.
     /*
@@ -311,11 +331,20 @@ export default function ChromecastReceiver() {
                             videoId: v.videoId || v.id || '',
                             title: v.title || 'Unknown',
                             author: v.author || '',
-                            thumbnail: v.thumbnail || `https://i.ytimg.com/vi/${v.videoId}/mqdefault.jpg`,
+                            thumbnail: v.thumbnail || v.thumbnail_url || `https://i.ytimg.com/vi/${v.videoId || v.id}/mqdefault.jpg`,
                             sourceType: 'youtube'
                         }));
-                        store.reorderQueue(newQueue);
-                        if (typeof message.currentIndex === 'number') store.setCurrentIndex(message.currentIndex);
+
+                        const updates: any = { queue: newQueue };
+                        if (typeof message.currentIndex === 'number' && message.currentIndex >= 0 && message.currentIndex < newQueue.length) {
+                            updates.currentIndex = message.currentIndex;
+                            const video = newQueue[message.currentIndex];
+                            updates.currentVideo = video;
+                            updates.currentSource = video.videoId || video.id;
+                            // If message says play/pause, respect it, otherwise keep current state
+                            if (typeof message.isPlaying === 'boolean') updates.isPlaying = message.isPlaying;
+                        }
+                        store.setPlayerState(updates);
                     }
                     break;
                 case 'ADD_ITEM':

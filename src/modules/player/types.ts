@@ -114,7 +114,7 @@ export interface PlayerStore extends PlayerState {
     clearQueue: () => void;
 
     // Internal (called by adapters)
-    setPlayerState: (state: Partial<PlayerState>) => void;
+    setPlayerState: (state: Partial<PlayerStore>) => void;
     setRepeatMode: (mode: 'off' | 'one' | 'all') => void;
 
     // Sync Action
