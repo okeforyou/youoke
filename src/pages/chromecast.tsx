@@ -379,11 +379,15 @@ export default function ChromecastReceiver() {
             const cast = (window as any).cast;
 
             if (!cast || !cast.framework) {
-                if (retries < 200) { // Try for 10 seconds (200 * 50ms)
-                    setTimeout(() => initCast(retries + 1), 50);
+                if (retries < 150) { // Try for 15 seconds (150 * 100ms) — Smart TVs are slow
+                    if (retries % 10 === 0) {
+                        setInitStatus(`Loading Cast SDK... (${retries / 10}s)`);
+                        console.log(`⏳ [Chromecast] Framework not ready, retrying (${retries})...`);
+                    }
+                    setTimeout(() => initCast(retries + 1), 100);
                 } else {
-                    console.error('❌ [Chromecast] Cast Framework failed to load.');
-                    setInitStatus('Reload required');
+                    console.error('❌ [Chromecast] Cast Framework failed to load after 15 seconds.');
+                    setInitStatus('Failed to load Cast Framework. Please reload.');
                 }
                 return;
             }
@@ -502,10 +506,13 @@ export default function ChromecastReceiver() {
                 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
             </Head>
 
-            {/* Cast Receiver SDK - loaded ASAP */}
+            {/* Cast Receiver SDK - loaded ONLY on this page via next/Script */}
             <Script
                 src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"
-                strategy="beforeInteractive"
+                strategy="afterInteractive"
+                onLoad={() => {
+                    console.log('📦 [Chromecast] Receiver SDK script loaded via next/Script!');
+                }}
             />
 
             {/* 1. Fullscreen Player Layer - always rendered */}
@@ -525,7 +532,7 @@ export default function ChromecastReceiver() {
                 </div>
             </div>
 
-            {/* 2. Idle Layer - ONLY render when idle */}
+            {/* 2. Idle Layer - ONLY render when idle to prevent obscuring video */}
             {isIdle && (
                 <div className="absolute inset-0 z-10 bg-[#0a0a0a] flex flex-col items-center justify-center text-center p-12">
                     <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent opacity-50" />
@@ -558,18 +565,18 @@ export default function ChromecastReceiver() {
                 <>
                     {/* Top Left: Logo & Branding */}
                     <div className="absolute top-6 left-8 z-50">
-                        <span className="text-white text-xs font-bold tracking-[0.2em] uppercase">
+                        <span className="text-white text-xs font-bold tracking-[0.2em] uppercase drop-shadow-md">
                             YouOke ChromeCast
                         </span>
                     </div>
 
                     {/* Top Right: Precise Time */}
                     <div className="absolute top-6 right-8 z-50 text-right">
-                        <div className="text-white text-base font-bold font-mono">
+                        <div className="text-white text-base font-bold font-mono drop-shadow-md">
                             {time.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false })}
                         </div>
 
-                        {/* Next Up Badge - High Contrast Solid */}
+                        {/* Next Up Badge - High Contrast */}
                         <div className={clsx(
                             "mt-3 bg-black px-4 py-3 rounded-xl border border-white/20 shadow-2xl text-left transition-all duration-700 w-72",
                             showQueue && queue.length > currentIndex + 1 ? "opacity-100 translate-x-0" : "opacity-0 translate-x-10 pointer-events-none"
@@ -578,15 +585,15 @@ export default function ChromecastReceiver() {
                                 <>
                                     <div className="flex items-center gap-2 mb-1">
                                         <MusicalNoteIcon className="w-4 h-4 text-primary" />
-                                        <p className="text-[10px] text-primary uppercase font-bold tracking-widest leading-none">Next Up</p>
+                                        <p className="text-[10px] text-primary uppercase font-bold tracking-widest">Next Up</p>
                                     </div>
-                                    <p className="text-base font-bold text-white line-clamp-1 truncate leading-tight">{queue[currentIndex + 1].title}</p>
+                                    <p className="text-base font-bold text-white line-clamp-1 truncate">{queue[currentIndex + 1].title}</p>
                                 </>
                             )}
                         </div>
                     </div>
 
-                    {/* Bottom Left: Vivid Toast Notification (Solid High Contrast) */}
+                    {/* Bottom Left: Added Toast Notification (High Contrast Solid) */}
                     <div className={clsx(
                         "absolute bottom-10 left-10 z-[60] transition-all duration-700",
                         toast ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10 pointer-events-none"
