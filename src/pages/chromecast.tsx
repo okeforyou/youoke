@@ -3,7 +3,7 @@ import Head from 'next/head';
 import Script from 'next/script';
 import clsx from 'clsx';
 import { usePlayerStore } from '../modules/player/stores/usePlayerStore';
-import { QueueItem } from '../modules/player/types';
+import { QueueItem, PlayerState, PlayerStore } from '../modules/player/types';
 
 // Icons ported from dual.tsx
 import { MusicalNoteIcon, TvIcon } from '@heroicons/react/24/solid';
@@ -11,6 +11,19 @@ import { ListMusic } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 
 const CAST_NAMESPACE = 'urn:x-cast:com.youoke.cast';
+
+// Prevent TV from restoring an old queue from last session before the phone connects
+if (typeof window !== 'undefined' && !(window as any).__CHROMECAST_INITIALIZED__) {
+    (window as any).__CHROMECAST_INITIALIZED__ = true;
+    usePlayerStore.getState().setPlayerState({
+        queue: [],
+        currentSource: null,
+        currentVideo: null,
+        currentIndex: 0,
+        isPlaying: false
+    });
+    console.log('🧹 [Chromecast] Purged stale queue from memory on startup');
+}
 
 /**
  * Lightweight YouTube player for Chromecast receiver.
@@ -321,7 +334,7 @@ export default function ChromecastReceiver() {
                             thumbnail: v.thumbnail || v.thumbnail_url || `https://i.ytimg.com/vi/${v.videoId || v.id}/mqdefault.jpg`,
                             sourceType: 'youtube'
                         }));
-                        const updates: Partial<PlayerState> = { queue: newQueue };
+                        const updates: Partial<PlayerStore> = { queue: newQueue };
                         let targetIndex: number | undefined = undefined;
 
                         if (typeof message.currentIndex === 'number') targetIndex = message.currentIndex;
