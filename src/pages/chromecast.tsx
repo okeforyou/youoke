@@ -224,11 +224,13 @@ export default function ChromecastReceiver() {
         seekTo: state.seekTo
     })));
 
-    // Clock
+    // Clock removed due to accuracy issues on different devices.
+    /*
     useEffect(() => {
         const timer = setInterval(() => setTime(new Date()), 1000);
         return () => clearInterval(timer);
     }, []);
+    */
 
     // Watch queue length changes
     useEffect(() => {
@@ -262,13 +264,9 @@ export default function ChromecastReceiver() {
 
         if (forceShowQueue) {
             setShowQueue(true);
-            return;
-        }
-
-        // Stability: use a small buffer to prevent flashing
-        if (hasNext && (t < 10 || remaining < 40)) {
+        } else if (hasNext && (t < 12 || remaining < 45)) {
             setShowQueue(true);
-        } else if (!hasNext || (t > 12 && remaining > 42)) {
+        } else {
             setShowQueue(false);
         }
     }, [queue.length, currentIndex, forceShowQueue]);
@@ -570,40 +568,38 @@ export default function ChromecastReceiver() {
                         </span>
                     </div>
 
-                    {/* Top Right: Precise Time */}
+                    {/* Top Right: Precise Time REMOVED */}
                     <div className="absolute top-6 right-8 z-50 text-right">
-                        <div className="text-white text-base font-bold font-mono drop-shadow-md">
-                            {time.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', hour12: false })}
-                        </div>
-
-                        {/* Next Up Badge - High Contrast */}
+                        {/* Next Up Badge - Semi-transparent Glass */}
                         <div className={clsx(
-                            "mt-3 bg-black px-4 py-3 rounded-xl border border-white/20 shadow-2xl text-left transition-all duration-700 w-72",
+                            "mt-3 bg-black/60 backdrop-blur-md px-4 py-3 rounded-xl border border-white/20 shadow-2xl text-left transition-all duration-700 w-72",
                             showQueue && queue.length > currentIndex + 1 ? "opacity-100 translate-x-0" : "opacity-0 translate-x-10 pointer-events-none"
                         )}>
                             {queue.length > currentIndex + 1 && (
                                 <>
                                     <div className="flex items-center gap-2 mb-1">
                                         <MusicalNoteIcon className="w-4 h-4 text-primary" />
-                                        <p className="text-[10px] text-primary uppercase font-bold tracking-widest">Next Up</p>
+                                        <p className="text-[10px] text-primary uppercase font-bold tracking-widest leading-none">Next Up</p>
                                     </div>
-                                    <p className="text-base font-bold text-white line-clamp-1 truncate">{queue[currentIndex + 1].title}</p>
+                                    <p className="text-base font-bold text-white line-clamp-1 truncate leading-tight">{queue[currentIndex + 1].title}</p>
+                                    <p className="text-[11px] text-white/70 truncate mt-1 leading-none">{queue[currentIndex + 1].author}</p>
                                 </>
                             )}
                         </div>
                     </div>
 
-                    {/* Bottom Left: Added Toast Notification (High Contrast Solid) */}
+                    {/* Bottom Left: Added Toast Notification (Semi-transparent Glass) */}
                     <div className={clsx(
                         "absolute bottom-10 left-10 z-[60] transition-all duration-700",
                         toast ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10 pointer-events-none"
                     )}>
                         {toast && (
-                            <div className="bg-black text-white px-5 py-3 rounded-xl border border-primary shadow-2xl flex items-center gap-4">
+                            <div className="bg-black/60 backdrop-blur-md text-white px-5 py-3 rounded-xl border border-primary/50 shadow-2xl flex items-center gap-4">
                                 <ListMusic size={20} className="text-primary" />
                                 <div className="min-w-0">
-                                    <p className="text-[10px] text-primary font-bold uppercase tracking-widest">Song Added</p>
-                                    <p className="text-sm font-bold text-white truncate max-w-[250px]">{toast.title}</p>
+                                    <p className="text-[10px] text-primary font-bold uppercase tracking-widest leading-none mb-1">Song Added</p>
+                                    <p className="text-sm font-bold text-white truncate max-w-[250px] leading-tight">{toast.title}</p>
+                                    <p className="text-[11px] text-white/70 truncate leading-none mt-1">{toast.author}</p>
                                 </div>
                             </div>
                         )}
