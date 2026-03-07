@@ -570,9 +570,9 @@ export default function ChromecastReceiver() {
 
                     {/* Top Right: Precise Time REMOVED */}
                     <div className="absolute top-6 right-8 z-50 text-right">
-                        {/* Next Up Badge - Semi-transparent Glass */}
+                        {/* Next Up Badge - Dark Semi-transparent */}
                         <div className={clsx(
-                            "mt-3 bg-black/60 backdrop-blur-md px-4 py-3 rounded-xl border border-white/20 shadow-2xl text-left transition-all duration-700 w-72",
+                            "mt-3 bg-black/85 px-4 py-3 rounded-xl shadow-2xl text-left transition-all duration-700 w-72",
                             showQueue && queue.length > currentIndex + 1 ? "opacity-100 translate-x-0" : "opacity-0 translate-x-10 pointer-events-none"
                         )}>
                             {queue.length > currentIndex + 1 && (
@@ -588,13 +588,13 @@ export default function ChromecastReceiver() {
                         </div>
                     </div>
 
-                    {/* Bottom Left: Added Toast Notification (Semi-transparent Glass) */}
+                    {/* Bottom Left: Added Toast Notification (Dark Semi-transparent) */}
                     <div className={clsx(
                         "absolute bottom-10 left-10 z-[60] transition-all duration-700",
                         toast ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10 pointer-events-none"
                     )}>
                         {toast && (
-                            <div className="bg-black/60 backdrop-blur-md text-white px-5 py-3 rounded-xl border border-primary/50 shadow-2xl flex items-center gap-4">
+                            <div className="bg-black/85 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-4">
                                 <ListMusic size={20} className="text-primary" />
                                 <div className="min-w-0">
                                     <p className="text-[10px] text-primary font-bold uppercase tracking-widest leading-none mb-1">Song Added</p>
