@@ -107,11 +107,27 @@ function ReceiverYouTubePlayer({
                     console.log('✅ [Receiver] YouTube player ready');
                     isPlayerReadyRef.current = true;
                     try {
-                        event.target.setPlaybackQuality('hd1080');
+                        event.target.setPlaybackQuality('hd1080'); // Force HD
                     } catch (e) { }
-                    event.target.playVideo();
+
+                    const playIfNeeded = () => {
+                        const store = usePlayerStore.getState();
+                        if (store.isPlaying) {
+                            try { event.target.playVideo(); } catch (e) { }
+                        }
+                    };
+
+                    playIfNeeded();
+                    // Retry play after 500ms to be absolutely sure
+                    setTimeout(playIfNeeded, 500);
                 },
                 onStateChange: (event: any) => {
+                    if (event.data === -1 || event.data === 5) { // UNSTARTED or CUED
+                        const store = usePlayerStore.getState();
+                        if (store.isPlaying) {
+                            try { event.target.playVideo(); } catch (e) { }
+                        }
+                    }
                     if (event.data === 0) { // ENDED
                         console.log('🏁 [Receiver] Video ended');
                         onEnded();
