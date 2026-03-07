@@ -48,6 +48,7 @@ export interface PlayerState {
     isMuted: boolean;
     currentSource: string | null;
     adapterId: string;
+    repeatMode: 'off' | 'one' | 'all';
 }
 
 export interface PlayerStore extends PlayerState {
@@ -114,6 +115,7 @@ export interface PlayerStore extends PlayerState {
 
     // Internal (called by adapters)
     setPlayerState: (state: Partial<PlayerState>) => void;
+    setRepeatMode: (mode: 'off' | 'one' | 'all') => void;
 
     // Sync Action
     syncState: (state: Partial<PlayerStore>) => void;

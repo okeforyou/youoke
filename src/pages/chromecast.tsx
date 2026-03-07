@@ -88,12 +88,16 @@ function ReceiverYouTubePlayer({
                 origin: window.location.origin,
                 enablejsapi: 1,
                 playsinline: 1,
+                vq: 'hd1080', // Legacy but sometimes helps
             },
             events: {
                 onReady: (event: any) => {
                     console.log('✅ [Receiver] YouTube player ready');
                     isPlayerReadyRef.current = true;
-                    // Always play when ready (receiver should always play)
+                    // Force high quality if possible
+                    try {
+                        event.target.setPlaybackQuality('hd1080');
+                    } catch (e) { }
                     event.target.playVideo();
                 },
                 onStateChange: (event: any) => {
@@ -264,12 +268,18 @@ export default function ChromecastReceiver() {
 
         if (forceShowQueue) {
             setShowQueue(true);
-        } else if (hasNext && (t < 12 || remaining < 45)) {
+        } else if (hasNext && (t < 8 || remaining < 30)) {
             setShowQueue(true);
         } else {
             setShowQueue(false);
         }
     }, [queue.length, currentIndex, forceShowQueue]);
+
+    // Reset UI states on song change to prevent stickiness
+    useEffect(() => {
+        setShowQueue(false);
+        setForceShowQueue(false);
+    }, [currentSource]);
 
     // Handle incoming Cast messages
     const handleCastMessage = useCallback((event: any) => {
@@ -331,6 +341,11 @@ export default function ChromecastReceiver() {
                 case 'PREVIOUS': store.playPrevious(); break;
                 case 'SET_VOLUME': store.setVolume(message.volume); break;
                 case 'SET_MUTED': store.setMuted(message.muted); break;
+                case 'SET_REPEAT':
+                case 'REPEAT':
+                    const mode = message.repeatMode || (store.repeatMode === 'one' ? 'off' : 'one');
+                    store.setRepeatMode(mode);
+                    break;
                 case 'SEEK': store.seekTo(message.time); break;
             }
         } catch (err) { console.error('📡 Error:', err); }
@@ -481,9 +496,14 @@ export default function ChromecastReceiver() {
             }
         }
 
+        // Local repeat logic check
+        if (store.repeatMode === 'one' && store.currentSource) {
+            console.log('🔁 [Chromecast] Repeating current song...');
+            store.setCurrentIndex(store.currentIndex); // Re-trigger play of same index
+            return;
+        }
+
         // If no sender took control, play next locally as a fallback
-        // we ALWAYS try to playNext on the receiver if items exist, 
-        // because smart TVs often lose connection or senders go to sleep.
         if (store.queue.length > store.currentIndex + 1) {
             console.log('⏭️ [Chromecast] Auto-playing next song...');
             const nextTimer = setTimeout(() => {
@@ -579,7 +599,7 @@ export default function ChromecastReceiver() {
                                 <>
                                     <div className="flex items-center gap-2 mb-1">
                                         <MusicalNoteIcon className="w-4 h-4 text-primary" />
-                                        <p className="text-[10px] text-primary uppercase font-bold tracking-widest leading-none">Next Up</p>
+                                        <p className="text-[10px] text-primary uppercase font-bold tracking-widest leading-none">เพลงถัดไป</p>
                                     </div>
                                     <p className="text-base font-bold text-white line-clamp-1 truncate leading-tight">{queue[currentIndex + 1].title}</p>
                                     <p className="text-[11px] text-white/70 truncate mt-1 leading-none">{queue[currentIndex + 1].author}</p>
@@ -597,7 +617,7 @@ export default function ChromecastReceiver() {
                             <div className="bg-black/95 text-white px-5 py-3 rounded-xl flex items-center gap-4 border border-white/10">
                                 <ListMusic size={20} className="text-primary" />
                                 <div className="min-w-0">
-                                    <p className="text-[10px] text-primary font-bold uppercase tracking-widest leading-none mb-1">Song Added</p>
+                                    <p className="text-[10px] text-primary font-bold uppercase tracking-widest leading-none mb-1">เพิ่มเพลงใหม่ในคิวแล้ว</p>
                                     <p className="text-sm font-bold text-white truncate max-w-[250px] leading-tight">{toast.title}</p>
                                     <p className="text-[11px] text-white/70 truncate leading-none mt-1">{toast.author}</p>
                                 </div>

@@ -21,6 +21,7 @@ export const usePlayerStore = create<PlayerStore>()(
             currentSource: null,
             adapterId: 'youtube', // Default
             activeAdapterId: 'youtube',
+            repeatMode: 'off',
             queue: [],
             currentIndex: 0,
             currentVideo: null,
@@ -70,6 +71,10 @@ export const usePlayerStore = create<PlayerStore>()(
                 set({ layoutMode: mode });
                 // Layout mode is arguably local preference, but let's sync for control
                 broadcast({ layoutMode: mode });
+            },
+            setRepeatMode: (mode) => {
+                set({ repeatMode: mode });
+                broadcast({ repeatMode: mode });
             },
             toggleQueueVisibility: () => set((state) => {
                 const newValue = !state.isQueueVisible;
@@ -485,6 +490,7 @@ export const usePlayerStore = create<PlayerStore>()(
                 searchTerm: state.searchTerm,
                 isKaraoke: state.isKaraoke,
                 activeIndex: state.activeIndex,
+                repeatMode: state.repeatMode,
             }),
         }
     )
