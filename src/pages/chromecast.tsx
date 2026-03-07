@@ -274,6 +274,7 @@ export default function ChromecastReceiver() {
     useEffect(() => {
         setShowQueue(false);
         setForceShowQueue(false);
+        setToast(null);
     }, [currentSource]);
 
     // Handle incoming Cast messages
@@ -584,33 +585,23 @@ export default function ChromecastReceiver() {
                         </span>
                     </div>
 
-                    {/* Top Right: Precise Time REMOVED */}
-                    <div className="absolute top-6 right-8 z-50 text-right">
-                        {/* Next Up Badge - Dark Semi-transparent */}
-                        {/* Next Up Badge - Solid Dark */}
-                        <div className={clsx(
-                            "mt-3 bg-black/90 px-4 py-3 rounded-xl text-left w-72 transition-opacity duration-300",
-                            showQueue && queue.length > currentIndex + 1 ? "opacity-100" : "opacity-0 pointer-events-none"
-                        )}>
-                            {queue.length > currentIndex + 1 && (
-                                <>
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <MusicalNoteIcon className="w-4 h-4 text-primary" />
-                                        <p className="text-[10px] text-primary uppercase font-bold tracking-widest leading-none">เพลงถัดไป</p>
-                                    </div>
-                                    <p className="text-base font-bold text-white line-clamp-1 truncate leading-tight">{queue[currentIndex + 1].title}</p>
-                                    <p className="text-[11px] text-white/70 truncate mt-1 leading-none">{queue[currentIndex + 1].author}</p>
-                                </>
-                            )}
+                    {/* Top Right: Next Up Badge (Conditional DOM Render) */}
+                    {showQueue && queue.length > currentIndex + 1 && (
+                        <div className="absolute top-10 right-8 z-50 text-right">
+                            <div className="bg-black/95 px-4 py-3 rounded-xl text-left w-72 border border-white/10">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <MusicalNoteIcon className="w-4 h-4 text-primary" />
+                                    <p className="text-[10px] text-primary uppercase font-bold tracking-widest leading-none">เพลงถัดไป</p>
+                                </div>
+                                <p className="text-base font-bold text-white line-clamp-1 truncate leading-tight">{queue[currentIndex + 1].title}</p>
+                                <p className="text-[11px] text-white/70 truncate mt-1 leading-none">{queue[currentIndex + 1].author}</p>
+                            </div>
                         </div>
-                    </div>
+                    )}
 
-                    {/* Bottom Left: Added Toast Notification (Solid Dark) */}
-                    <div className={clsx(
-                        "absolute bottom-10 left-10 z-[60] transition-opacity duration-300",
-                        toast ? "opacity-100" : "opacity-0 pointer-events-none"
-                    )}>
-                        {toast && (
+                    {/* Bottom Left: Added Toast Notification (Conditional DOM Render) */}
+                    {toast && (
+                        <div className="absolute bottom-10 left-10 z-[60]">
                             <div className="bg-black/95 text-white px-5 py-3 rounded-xl flex items-center gap-4 border border-white/10">
                                 <ListMusic size={20} className="text-primary" />
                                 <div className="min-w-0">
@@ -619,8 +610,8 @@ export default function ChromecastReceiver() {
                                     <p className="text-[11px] text-white/70 truncate leading-none mt-1">{toast.author}</p>
                                 </div>
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </>
             )}
         </div>
