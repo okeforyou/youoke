@@ -689,16 +689,16 @@ export default function RemoteControlApp() {
                             </div>
 
                             <div className={`relative flex p-1 rounded-full gap-1 shrink-0 ${theme === 'dark' ? 'bg-black' : 'bg-gray-100'}`}>
-                                <div className={`absolute inset-1 w-[46px] h-[46px] bg-primary rounded-full transition-all duration-300 ease-out shadow-lg ${searchType === 'karaoke' ? 'translate-x-[50px]' : 'translate-x-0'}`} />
+                                <div className={`absolute inset-1 w-[46px] h-[46px] transition-all duration-300 ease-out ${searchType === 'karaoke' ? 'translate-x-[50px]' : 'translate-x-0'} ${theme === 'dark' ? 'bg-primary/20 border border-primary/40' : 'bg-red-50 border border-red-100 shadow-sm'}`} style={{ borderRadius: '9999px' }} />
                                 <button
                                     onClick={() => handleTypeToggle('video')}
-                                    className={`relative z-10 w-[46px] h-[46px] rounded-full flex items-center justify-center transition-colors duration-300 ${searchType === 'video' ? 'text-white' : 'text-gray-500 hover:text-gray-700'}`}
+                                    className={`relative z-10 w-[46px] h-[46px] rounded-full flex items-center justify-center transition-colors duration-300 ${searchType === 'video' ? 'text-primary' : 'text-gray-500 hover:text-gray-700'}`}
                                 >
                                     <Music size={20} strokeWidth={3} />
                                 </button>
                                 <button
                                     onClick={() => handleTypeToggle('karaoke')}
-                                    className={`relative z-10 w-[46px] h-[46px] rounded-full flex items-center justify-center transition-colors duration-300 ${searchType === 'karaoke' ? 'text-white' : 'text-gray-500 hover:text-gray-700'}`}
+                                    className={`relative z-10 w-[46px] h-[46px] rounded-full flex items-center justify-center transition-colors duration-300 ${searchType === 'karaoke' ? 'text-primary' : 'text-gray-500 hover:text-gray-700'}`}
                                 >
                                     <Mic size={20} strokeWidth={3} />
                                 </button>
