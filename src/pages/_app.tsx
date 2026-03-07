@@ -172,7 +172,9 @@ function App({ Component, pageProps }: AppProps) {
                 // Monitor Stack (HDMI Receiver) - Needs MIDI but NO Cast Sender
                 <MidiEngineProvider>
                   <AdsProvider>
-                    <Component {...pageProps} />
+                    <CastProvider>
+                      <Component {...pageProps} />
+                    </CastProvider>
                   </AdsProvider>
                 </MidiEngineProvider>
               ) : (
