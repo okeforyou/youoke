@@ -83,17 +83,17 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
             <button
               onClick={onSelectDual}
               className={clsx(
-                "w-full text-left bg-transparent hover:bg-gray-50 dark:hover:bg-white/5 rounded-3xl p-4.5 transition-all group relative overflow-hidden",
-                castMode === 'dual' && "bg-red-50 dark:bg-red-500/10"
+                "w-full text-left bg-white dark:bg-zinc-800/50 hover:bg-gray-50 dark:hover:bg-zinc-800 rounded-3xl p-4.5 border border-gray-100 dark:border-zinc-800 transition-all group relative overflow-hidden shadow-sm",
+                castMode === 'dual' && "ring-2 ring-red-500 bg-red-50/50 dark:bg-red-500/10"
               )}
             >
               <div className="flex items-center gap-4">
-                <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center group-hover:scale-110 transition-transform text-orange-500">
-                  <Monitor className="w-8 h-8" />
+                <div className="flex-shrink-0 w-13 h-13 rounded-2xl bg-orange-500/10 flex items-center justify-center group-hover:scale-110 transition-transform text-orange-500">
+                  <Monitor className="w-6 h-6" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-base font-black text-gray-900 dark:text-gray-100">โหมดสายต่อ (HDMI Mode)</h3>
-                  <p className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.1em]">ต่อจอแยก (Local Sync)</p>
+                  <p className="text-xs text-gray-500 font-bold uppercase tracking-wide">ต่อจอแยก (Local Sync)</p>
                 </div>
               </div>
             </button>
@@ -101,26 +101,26 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
 
           {/* 2. หน้าจอไร้สาย (Wireless Display / Smart TV) */}
           <div className={clsx(
-            "bg-transparent rounded-3xl overflow-hidden",
-            castMode === 'smarttv' && "bg-red-50 dark:bg-red-500/10"
+            "bg-white dark:bg-zinc-800/50 rounded-3xl border border-gray-100 dark:border-zinc-800 shadow-sm overflow-hidden",
+            castMode === 'smarttv' && "ring-2 ring-red-500 bg-red-50/50 dark:bg-red-500/10"
           )}>
             <button
               onClick={onSelectSmartTV}
-              className="w-full text-left p-4.5 hover:bg-gray-50 dark:hover:bg-white/5 transition-all group relative"
+              className="w-full text-left p-4.5 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all group relative"
             >
               <div className="flex items-center gap-4">
-                <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center group-hover:scale-110 transition-transform text-primary">
-                  <Radio className="w-8 h-8" />
+                <div className="flex-shrink-0 w-13 h-13 rounded-2xl bg-primary/5 flex items-center justify-center group-hover:scale-110 transition-transform text-primary">
+                  <Radio className="w-6 h-6" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-base font-black text-gray-900 dark:text-gray-100">จอภาพไร้สาย (Wireless Display)</h3>
-                  <p className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.1em] leading-tight">ส่งภาพไปทีวี หรือคอมอื่นๆ</p>
+                  <p className="text-xs text-gray-500 font-bold uppercase tracking-wide leading-tight">ส่งภาพไปทีวี หรือคอมอื่นๆ</p>
                 </div>
               </div>
             </button>
             <button
               onClick={() => setShowTvSteps(!showTvSteps)}
-              className="w-full py-2 px-4 flex items-center justify-between text-[10px] font-black text-gray-400 hover:text-primary transition-colors uppercase tracking-widest"
+              className="w-full py-2 px-4 border-t border-gray-50 dark:border-zinc-800 flex items-center justify-between text-[10px] font-black text-gray-400 hover:text-primary transition-colors uppercase tracking-widest"
             >
               <span>วิธีเชื่อมต่อ / กรอกรหัส</span>
               {showTvSteps ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
@@ -170,27 +170,27 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
             onClick={onSelectGoogleCast}
             disabled={!isCastAvailable}
             className={clsx(
-              "w-full text-left bg-transparent rounded-3xl p-4.5 transition-all group relative overflow-hidden",
+              "w-full text-left bg-white dark:bg-zinc-800/50 rounded-3xl p-4.5 border transition-all group shadow-sm relative overflow-hidden",
               isCastAvailable
-                ? "hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer"
-                : "cursor-not-allowed opacity-40 text-gray-400",
-              castMode === 'google' && "bg-red-50 dark:bg-red-500/10"
+                ? "hover:bg-gray-50 dark:hover:bg-zinc-800 border-gray-100 dark:border-zinc-800 cursor-pointer"
+                : "bg-gray-50 dark:bg-zinc-800/20 border-transparent cursor-not-allowed opacity-40 text-gray-400",
+              castMode === 'google' && "ring-2 ring-red-500 bg-red-50/50 dark:bg-red-500/10"
             )}
           >
             <div className="flex items-center gap-4">
               <div className={clsx(
-                "flex-shrink-0 w-12 h-12 flex items-center justify-center transition-transform group-hover:scale-110",
-                isCastAvailable ? "text-primary" : "text-gray-400"
+                "flex-shrink-0 w-13 h-13 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110",
+                isCastAvailable ? "bg-primary/5 text-primary" : "bg-gray-100 text-gray-400"
               )}>
                 {isCastAvailable ? (
-                  <Cast className="w-8 h-8" />
+                  <Cast className="w-6 h-6" />
                 ) : (
-                  <Loader2 className="w-8 h-8 animate-spin" />
+                  <Loader2 className="w-6 h-6 animate-spin" />
                 )}
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-base font-black text-gray-900 dark:text-gray-100">Google ChromeCast (AndroidTV)</h3>
-                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.1em]">ส่งภาพขึ้นหน้าจอทันที</p>
+                <p className="text-xs text-gray-500 font-bold uppercase tracking-wide">ส่งภาพขึ้นหน้าจอทันที</p>
               </div>
             </div>
           </button>
@@ -198,15 +198,15 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
           {/* 4. YouTube Cast - HIDDEN as requested implicitly by making it no-op, or just leave as is */}
           <button
             onClick={onSelectYouTube}
-            className="w-full text-left bg-transparent hover:bg-gray-50 dark:hover:bg-white/5 rounded-3xl p-4.5 transition-all group relative overflow-hidden"
+            className="w-full text-left bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/5 rounded-3xl p-4.5 border border-gray-100 dark:border-white/5 transition-all group relative overflow-hidden shadow-sm"
           >
             <div className="flex items-center gap-4">
-              <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center group-hover:scale-110 transition-transform text-primary">
-                <Youtube className="w-8 h-8" />
+              <div className="flex-shrink-0 w-13 h-13 rounded-2xl bg-primary/5 flex items-center justify-center group-hover:scale-110 transition-transform text-primary">
+                <Youtube className="w-6 h-6" />
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-base font-black text-gray-900 dark:text-gray-100">YouTube Cast</h3>
-                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-[0.1em]">ส่งตรงไป TV YouTube App</p>
+                <p className="text-xs text-gray-500 font-bold uppercase tracking-wide">ส่งตรงไป TV YouTube App</p>
               </div>
             </div>
           </button>
