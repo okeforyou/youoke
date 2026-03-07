@@ -7,6 +7,7 @@ import {
     DndContext,
     closestCenter,
     PointerSensor,
+    TouchSensor,
     useSensor,
     useSensors,
     DragEndEvent,
@@ -120,7 +121,13 @@ export function QueueList() {
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 5, // Require 5px movement to start dragging, differentiating from click
+                distance: 8,
+            },
+        }),
+        useSensor(TouchSensor, {
+            activationConstraint: {
+                delay: 250,
+                tolerance: 5,
             },
         })
     );
@@ -139,11 +146,14 @@ export function QueueList() {
                 const currentUuid = queue[currentIndex]?.uuid;
                 const newCurrentIndex = newQueue.findIndex(q => q.uuid === currentUuid);
 
-                reorderQueue(newQueue);
-
+                const updates: any = { queue: newQueue };
                 if (newCurrentIndex !== -1 && newCurrentIndex !== currentIndex) {
-                    setCurrentIndex(newCurrentIndex);
+                    updates.currentIndex = newCurrentIndex;
+                    const video = newQueue[newCurrentIndex];
+                    updates.currentVideo = video;
+                    updates.currentSource = video.videoId || video.id;
                 }
+                setPlayerState(updates);
             }
         }
     };
@@ -210,7 +220,7 @@ export function QueueList() {
                             {queueItems.map((video, index) => {
                                 const actualIndex = currentIndex + 1 + index;
                                 return (
-                                    <div key={video.uuid} className="animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both" style={{ animationDelay: `${index * 50}ms` }}>
+                                    <div key={video.uuid}>
                                         <SortableQueueItem
                                             video={video}
                                             index={index}

@@ -249,7 +249,10 @@ export const usePlayerStore = create<PlayerStore>()(
 
             setActiveAdapter: (id) => set({ activeAdapterId: id }),
 
-            setPlayerState: (state) => set((prev) => ({ ...prev, ...state })),
+            setPlayerState: (state) => {
+                set((prev) => ({ ...prev, ...state }));
+                broadcast(state);
+            },
 
             addToQueue: (video, autoPlay = true) => set((state) => {
                 const videos = Array.isArray(video) ? video : [video];
