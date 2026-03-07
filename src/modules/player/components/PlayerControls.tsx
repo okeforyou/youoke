@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Music, Mic, ListMusic, Maximize2, Shuffle, RotateCcw } from "lucide-react";
 import { useShallow } from 'zustand/react/shallow';
 import { usePlayerStore } from "../stores/usePlayerStore";
@@ -55,10 +55,16 @@ export const PlayerControls = () => {
         }
     };
 
+    const volumeTimerRef = useRef<NodeJS.Timeout | null>(null);
     const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const vol = parseInt(e.target.value);
-        setVolume(vol);
-        if (isCasting) cast.setVolume(vol);
+        setVolume(vol); // Local UI updates instantly
+        if (isCasting) {
+            if (volumeTimerRef.current) clearTimeout(volumeTimerRef.current);
+            volumeTimerRef.current = setTimeout(() => {
+                cast.setVolume(vol);
+            }, 300); // Debounce to prevent flooding the Cast SDK channel
+        }
     };
 
     // Real time progress

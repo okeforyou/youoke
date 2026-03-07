@@ -67,11 +67,11 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             icon: RotateCcw,
             label: "ร้องซ้ำ",
             onClick: () => {
+                seekTo(0);
+                play(); // Explicitly play locally to re-orient lock
                 if (isConnected) {
-                    cast.jumpToIndex(currentIndex);
-                } else {
-                    seekTo(0);
-                    play(); // Explicitly play to restart if ended/paused
+                    cast.seekTo(0);
+                    cast.play();
                 }
             },
             color: "text-primary"
@@ -92,10 +92,10 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             icon: isMuted ? VolumeX : Volume2,
             label: isMuted ? "เปิดเสียง" : "ปิดเสียง",
             onClick: () => {
+                const toggled = !isMuted;
+                setMuted(toggled);
                 if (isConnected) {
-                    isMuted ? cast.unmute() : cast.mute();
-                } else {
-                    setMuted(!isMuted);
+                    cast.setMuted(toggled);
                 }
             },
             active: isMuted,
