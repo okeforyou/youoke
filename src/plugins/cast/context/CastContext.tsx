@@ -451,39 +451,38 @@ export function CastProvider({ children }: { children: ReactNode }) {
               if (newPlaylist.length > 0) {
                 const videos = newPlaylist.map(v => ({
                   videoId: v.videoId || v.id || '',
-                  title: v.title || 'Unknown'
+                  title: v.title || v.videoId || 'Unknown'
                 }));
-                session.sendMessage(
-                  CAST_NAMESPACE,
-                  { type: 'UPDATE_QUEUE', videos },
-                  () => console.log('✅ Updated queue sent after VIDEO_ENDED:', videos.length, 'videos'),
-                  (error: any) => console.error('❌ Error sending updated queue:', error)
-                );
 
                 // Play next video if available (at same index, since we just deleted the current one)
                 if (endedIndex < newPlaylist.length) {
                   const nextVideo = newPlaylist[endedIndex];
                   console.log('▶️ Playing next video:', nextVideo.title);
                   setCurrentIndex(endedIndex); // Update store
-                  // currentVideo is derived from store's currentIndex and queue
-                  // setCurrentVideo(nextVideo); // Removed as currentVideo is from store
 
+                  // Send atomic sync command
                   session.sendMessage(
                     CAST_NAMESPACE,
                     {
-                      type: 'LOAD_VIDEO',
-                      videoId: nextVideo.videoId || nextVideo.id || '',
-                      title: nextVideo.title || nextVideo.videoId || nextVideo.id || '',
-                      author: nextVideo.author || '',
-                      thumbnail: nextVideo.thumbnail || `https://i.ytimg.com/vi/${nextVideo.videoId || nextVideo.id}/mqdefault.jpg`
+                      type: 'LOAD_QUEUE',
+                      videos,
+                      startIndex: endedIndex,
+                      isPlaying: true
                     },
-                    () => console.log('✅ Next video sent:', nextVideo.videoId || nextVideo.id),
-                    (error: any) => console.error('❌ Error sending next video:', error)
+                    () => console.log('✅ Next video and updated queue sent:', nextVideo.videoId),
+                    (error: any) => console.error('❌ Error sending next video state:', error)
                   );
                 } else {
                   console.log('📭 Queue finished');
                   setCurrentIndex(0); // Update store
-                  // setCurrentVideo(null); // Removed as currentVideo is from store
+
+                  // Sync empty state
+                  session.sendMessage(
+                    CAST_NAMESPACE,
+                    { type: 'UPDATE_QUEUE', videos },
+                    () => console.log('✅ Finished queue state synced'),
+                    (error: any) => console.error('❌ Error syncing finished queue:', error)
+                  );
                 }
               } else {
                 // Queue empty
