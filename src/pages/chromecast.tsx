@@ -417,15 +417,11 @@ export default function ChromecastReceiver() {
             const cast = (window as any).cast;
 
             if (!cast || !cast.framework) {
-                if (retries < 150) { // Try for 15 seconds (150 * 100ms) — Smart TVs are slow
-                    if (retries % 10 === 0) {
-                        setInitStatus(`Loading Cast SDK... (${retries / 10}s)`);
-                        console.log(`⏳ [Chromecast] Framework not ready, retrying (${retries})...`);
-                    }
-                    setTimeout(() => initCast(retries + 1), 100);
+                if (retries < 200) { // Try for 10 seconds (200 * 50ms)
+                    setTimeout(() => initCast(retries + 1), 50);
                 } else {
-                    console.error('❌ [Chromecast] Cast Framework failed to load after 15 seconds.');
-                    setInitStatus('Failed to load Cast Framework. Please reload.');
+                    console.error('❌ [Chromecast] Cast Framework failed to load.');
+                    setInitStatus('Reload required');
                 }
                 return;
             }
@@ -542,13 +538,10 @@ export default function ChromecastReceiver() {
                 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
             </Head>
 
-            {/* Cast Receiver SDK - loaded ONLY on this page via next/Script */}
+            {/* Cast Receiver SDK - loaded ASAP */}
             <Script
                 src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"
-                strategy="afterInteractive"
-                onLoad={() => {
-                    console.log('📦 [Chromecast] Receiver SDK script loaded via next/Script!');
-                }}
+                strategy="beforeInteractive"
             />
 
             {/* 1. Fullscreen Player Layer - always rendered */}
