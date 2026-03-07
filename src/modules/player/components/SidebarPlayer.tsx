@@ -15,6 +15,7 @@ import { QuotaIndicator } from "./QuotaIndicator";
 // Hooks
 import { usePlayerLifecycle } from "../hooks/usePlayerLifecycle";
 import { usePlayerSync } from "../hooks/usePlayerSync";
+import { useCast } from "../../../plugins/cast/context/CastContext";
 
 import { Tv, Radio, Monitor, Power, PlayCircle } from 'lucide-react';
 
@@ -47,6 +48,15 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
     const playerRef = useRef<any>(null);
     const controlsTimerRef = useRef<NodeJS.Timeout | null>(null);
     const [showMiniControls, setShowMiniControls] = useState(false);
+    const cast = useCast();
+
+    const handlePlayPause = () => {
+        if (cast.isConnected) {
+            isPlaying ? cast.pause() : cast.play();
+        } else {
+            usePlayerStore.getState().togglePlay();
+        }
+    };
 
     // 🕵️ ACTIVITY TRACKING (Auto-hide controls after 5s)
     const handleActivity = () => {
@@ -489,7 +499,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                     >
                         {/* Play/Pause */}
                         <button
-                            onClick={() => usePlayerStore.getState().togglePlay()}
+                            onClick={handlePlayPause}
                             className={`w-11 h-11 flex items-center justify-center rounded-full transition-all active:scale-90 ${isPlaying ? 'text-white/70 hover:text-white hover:bg-white/10' : 'bg-primary text-white shadow-lg shadow-primary/20'}`}
                             title={isPlaying ? "Pause" : "Play"}
                         >

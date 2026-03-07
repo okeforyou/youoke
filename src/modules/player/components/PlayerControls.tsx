@@ -58,6 +58,7 @@ export const PlayerControls = () => {
     const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const vol = parseInt(e.target.value);
         setVolume(vol);
+        if (isCasting) cast.setVolume(vol);
     };
 
     // Real time progress
@@ -90,6 +91,7 @@ export const PlayerControls = () => {
         if (duration > 0) {
             const newTime = (parseFloat((e.target as HTMLInputElement).value) / 100) * duration;
             seekTo(newTime);
+            if (isCasting) cast.seekTo(newTime);
         }
     };
 
@@ -219,11 +221,11 @@ export const PlayerControls = () => {
                     {/* Replay */}
                     <button
                         onClick={() => {
+                            seekTo(0);
+                            play(); // Explicitly play to restart
                             if (isCasting) {
-                                cast.jumpToIndex(currentIndex);
-                            } else {
-                                seekTo(0);
-                                play(); // Explicitly play to restart
+                                cast.seekTo(0);
+                                cast.play();
                             }
                         }}
                         className="text-gray-400 hover:text-primary transition-colors active:scale-90 p-2 rounded-full hover:bg-gray-100"
@@ -280,7 +282,13 @@ export const PlayerControls = () => {
                             <Maximize2 size={18} />
                         </button>
 
-                        <button onClick={() => setMuted(!isMuted)} className="text-gray-400 hover:text-gray-600">
+                        <button
+                            onClick={() => {
+                                setMuted(!isMuted);
+                                if (isCasting) cast.setMuted(!isMuted);
+                            }}
+                            className="text-gray-400 hover:text-gray-600"
+                        >
                             {isMuted || volume === 0 ? <VolumeX size={18} /> : <Volume2 size={18} />}
                         </button>
                         <div className="w-20 group relative py-2 cursor-pointer">

@@ -25,6 +25,9 @@ function ReceiverYouTubePlayer({
 }) {
     const currentSource = usePlayerStore(state => state.currentSource);
     const isPlaying = usePlayerStore(state => state.isPlaying);
+    const volume = usePlayerStore(state => state.volume);
+    const isMuted = usePlayerStore(state => state.isMuted);
+    const seekTarget = usePlayerStore(state => state.seekTarget);
     const playerRef = useRef<any>(null);
     const isPlayerReadyRef = useRef(false);
     const [ytReady, setYtReady] = useState(false);
@@ -118,6 +121,27 @@ function ReceiverYouTubePlayer({
         } catch (e) { /* player not ready yet */ }
     }, [isPlaying]);
 
+    // Volume & Mute control
+    useEffect(() => {
+        if (!isPlayerReadyRef.current || !playerRef.current) return;
+        try {
+            playerRef.current.setVolume(volume);
+            if (isMuted) {
+                playerRef.current.mute();
+            } else {
+                playerRef.current.unMute();
+            }
+        } catch (e) { }
+    }, [volume, isMuted]);
+
+    // Seek control
+    useEffect(() => {
+        if (!isPlayerReadyRef.current || !playerRef.current || seekTarget === null) return;
+        try {
+            playerRef.current.seekTo(seekTarget, true);
+        } catch (e) { }
+    }, [seekTarget]);
+
     // Time tracking
     useEffect(() => {
         if (!isPlayerReadyRef.current || !playerRef.current) return;
@@ -180,7 +204,10 @@ export default function ChromecastReceiver() {
         playVideo: state.playVideo,
         reorderQueue: state.reorderQueue,
         setCurrentIndex: state.setCurrentIndex,
-        playNext: state.playNext
+        playNext: state.playNext,
+        setVolume: state.setVolume,
+        setMuted: state.setMuted,
+        seekTo: state.seekTo
     })));
 
     // Clock
@@ -308,6 +335,15 @@ export default function ChromecastReceiver() {
                 case 'PREVIOUS':
                     console.log('⏮️ [Chromecast] Previous Command');
                     store.playPrevious();
+                    break;
+                case 'SET_VOLUME':
+                    store.setVolume(message.volume);
+                    break;
+                case 'SET_MUTED':
+                    store.setMuted(message.muted);
+                    break;
+                case 'SEEK':
+                    store.seekTo(message.time);
                     break;
                 default:
                     console.log('❓ [Chromecast] Unknown message type:', message.type);

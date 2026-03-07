@@ -41,6 +41,10 @@ interface CastContextValue {
   next: () => void;
   previous: () => void;
 
+  setVolume: (volume: number) => void;
+  setMuted: (muted: boolean) => void;
+  seekTo: (time: number) => void;
+
   // Index Management (for drag & drop reordering)
   updateCurrentIndexSilent: (newIndex: number) => void;
 }
@@ -63,7 +67,10 @@ type CastMessage =
   | { type: 'ADD_ITEM', video: { videoId: string, title: string } }
   | { type: 'REMOVE_ITEM', index: number }
   | { type: 'MOVE_ITEM', fromIndex: number, toIndex: number }
-  | { type: 'CLEAR_QUEUE' };
+  | { type: 'CLEAR_QUEUE' }
+  | { type: 'SEEK', time: number }
+  | { type: 'SET_VOLUME', volume: number }
+  | { type: 'SET_MUTED', muted: boolean };
 
 export function CastProvider({ children }: { children: ReactNode }) {
   const [isAvailable, setIsAvailable] = useState(false);
@@ -705,37 +712,30 @@ export function CastProvider({ children }: { children: ReactNode }) {
   };
 
   const jumpToIndex = (index: number) => {
-    // Use refs to get latest state
+    // Use refs to avoid stale state in callbacks
     const latestPlaylist = playlistRef.current;
 
-    console.log('🎯 jumpToIndex() called, index:', index, 'playlist.length:', latestPlaylist.length, 'isConnected:', isConnected);
+    if (index >= 0 && index < latestPlaylist.length) {
+      console.log('📍 Jumping to index:', index, 'videoId:', latestPlaylist[index]?.videoId);
 
-    if (index < 0 || index >= latestPlaylist.length) {
-      console.warn('⚠️ Invalid index:', index);
-      return;
-    }
+      setCurrentIndex(index); // Use store action
 
-    console.log('📍 Jumping to index:', index, 'videoId:', latestPlaylist[index]?.videoId);
-
-    // Update state and refs
-    setCurrentIndex(index); // Use store action
-
-    if (isConnected) {
-      sendMessage({
-        type: 'UPDATE_QUEUE',
-        videos: latestPlaylist.map(v => ({
-          videoId: v.videoId || v.id || '',
-          title: v.title || 'Unknown',
-          author: v.author || 'Unknown',
-          thumbnail: v.thumbnail || ''
-        })),
-        currentIndex: index
-      });
-    } else {
-      console.warn('⚠️ Not connected! Cannot jump to video');
+      if (isConnected) {
+        sendMessage({
+          type: 'UPDATE_QUEUE',
+          videos: latestPlaylist.map(v => ({
+            videoId: v.videoId || v.id || '',
+            title: v.title || v.id || 'Unknown',
+            author: v.author || 'Unknown',
+            thumbnail: v.thumbnail || ''
+          })),
+          currentIndex: index
+        });
+      } else {
+        console.warn('⚠️ Not connected! Cannot jump to video');
+      }
     }
   };
-
   const playNext = (video: SearchResult | RecommendedVideo) => {
     const newVideo: QueueItem = {
       ...video,
@@ -962,6 +962,21 @@ export function CastProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const setVolume = (volume: number) => {
+    logger.log('🔊 setVolume() called:', volume);
+    if (isConnected) sendMessage({ type: 'SET_VOLUME', volume });
+  };
+
+  const setMuted = (muted: boolean) => {
+    logger.log('🔇 setMuted() called:', muted);
+    if (isConnected) sendMessage({ type: 'SET_MUTED', muted });
+  };
+
+  const seekTo = (time: number) => {
+    logger.log('🕒 seekTo() called:', time);
+    if (isConnected) sendMessage({ type: 'SEEK', time });
+  };
+
   const value: CastContextValue = useMemo(() => ({
     isAvailable,
     isConnected,
@@ -986,6 +1001,9 @@ export function CastProvider({ children }: { children: ReactNode }) {
     pause,
     next,
     previous,
+    setVolume,
+    setMuted,
+    seekTo,
     updateCurrentIndexSilent,
   }), [
     isAvailable,
