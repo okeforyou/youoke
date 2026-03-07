@@ -7,6 +7,7 @@ import { QueueItem } from '../modules/player/types';
 
 // Icons ported from dual.tsx
 import { MusicalNoteIcon, TvIcon } from '@heroicons/react/24/solid';
+import { ListMusic } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 
 const CAST_NAMESPACE = 'urn:x-cast:com.youoke.cast';
@@ -186,9 +187,21 @@ export default function ChromecastReceiver() {
     const castContextRef = useRef<any>(null);
     const initCalledRef = useRef(false);
 
-    const [showQueue, setShowQueue] = useState(true);
+    const [showQueue, setShowQueue] = useState(false);
     const [forceShowQueue, setForceShowQueue] = useState(false);
     const lastQueueLengthRef = useRef(0);
+
+    // Toast Notification System
+    const [toast, setToast] = useState<{ title: string; author: string; type: 'added' | 'info' } | null>(null);
+    const toastTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+    const showToast = useCallback((title: string, author: string, type: 'added' | 'info' = 'added') => {
+        if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+        setToast({ title, author, type });
+        toastTimerRef.current = setTimeout(() => {
+            setToast(null);
+        }, 6000);
+    }, []);
 
     const {
         queue, currentIndex, currentVideo, currentSource, isPlaying,
@@ -220,19 +233,29 @@ export default function ChromecastReceiver() {
     useEffect(() => {
         const currentLength = queue.length;
         const prevLength = lastQueueLengthRef.current;
-        if (currentLength !== prevLength && prevLength !== 0 && currentLength > prevLength) {
-            setForceShowQueue(true);
-            setShowQueue(true);
-            const timer = setTimeout(() => {
-                setForceShowQueue(false);
-            }, 10000);
+        if (currentLength !== prevLength) {
+            if (prevLength !== 0 && currentLength > prevLength) {
+                setForceShowQueue(true);
+                setShowQueue(true);
+                const timer = setTimeout(() => {
+                    setForceShowQueue(false);
+                }, 8000); // 8s is enough
+
+                // Show notification for the last added item
+                const lastItem = queue[queue.length - 1];
+                if (lastItem) {
+                    showToast(lastItem.title, lastItem.author || '');
+                }
+
+                lastQueueLengthRef.current = currentLength;
+                return () => clearTimeout(timer);
+            }
             lastQueueLengthRef.current = currentLength;
-            return () => clearTimeout(timer);
         }
-        lastQueueLengthRef.current = currentLength;
-    }, [queue.length]);
+    }, [queue.length, queue, showToast]);
 
     const handleTimeUpdate = useCallback((t: number, d: number) => {
+        if (d <= 0) return;
         const remaining = d - t;
         const hasNext = queue.length > currentIndex + 1;
 
@@ -241,9 +264,10 @@ export default function ChromecastReceiver() {
             return;
         }
 
-        if (hasNext && (t < 15 || remaining < 45)) {
+        // Stability: use a small buffer to prevent flashing
+        if (hasNext && (t < 10 || remaining < 40)) {
             setShowQueue(true);
-        } else {
+        } else if (!hasNext || (t > 12 && remaining > 42)) {
             setShowQueue(false);
         }
     }, [queue.length, currentIndex, forceShowQueue]);
@@ -316,16 +340,20 @@ export default function ChromecastReceiver() {
                     break;
                 case 'ADD_ITEM':
                     if (message.video) {
+                        const vid = message.video.videoId || message.video.id;
                         console.log('➕ [Chromecast] Adding item:', message.video.title);
-                        store.addToQueue({
-                            uuid: `cc-${Date.now()}`,
-                            id: message.video.videoId || message.video.id,
-                            videoId: message.video.videoId || message.video.id,
+                        const newItem = {
+                            uuid: message.video.uuid || `cc-${Date.now()}`,
+                            id: vid,
+                            videoId: vid,
                             title: message.video.title || 'Unknown',
                             author: message.video.author || 'Unknown',
-                            thumbnail: `https://i.ytimg.com/vi/${message.video.videoId || message.video.id}/mqdefault.jpg`,
+                            thumbnail: message.video.thumbnail || `https://i.ytimg.com/vi/${vid}/mqdefault.jpg`,
                             sourceType: 'youtube'
-                        } as QueueItem);
+                        } as QueueItem;
+
+                        store.addToQueue(newItem);
+                        showToast(newItem.title, newItem.author || '');
                     }
                     break;
                 case 'NEXT':
@@ -351,7 +379,7 @@ export default function ChromecastReceiver() {
         } catch (err) {
             console.error('📡 [Chromecast] Message parsing error:', err);
         }
-    }, []);
+    }, [showToast]);
 
     // Send RECEIVER_READY handshake back to sender
     const sendReceiverReady = useCallback(() => {
@@ -492,9 +520,16 @@ export default function ChromecastReceiver() {
         }
 
         // If no sender took control, play next locally as a fallback
-        if (!sentToSender) {
-            console.log('⚠️ [Chromecast] No senders connected, playing next in local queue as fallback.');
-            store.playNext();
+        // we ALWAYS try to playNext on the receiver if items exist, 
+        // because smart TVs often lose connection or senders go to sleep.
+        if (store.queue.length > store.currentIndex + 1) {
+            console.log('⏭️ [Chromecast] Auto-playing next song...');
+            const nextTimer = setTimeout(() => {
+                store.playNext();
+            }, 1000);
+            return () => clearTimeout(nextTimer);
+        } else {
+            console.log('⏹️ [Chromecast] End of queue reached or no sender available.');
         }
     }, []);
 
@@ -540,54 +575,93 @@ export default function ChromecastReceiver() {
             )}>
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent opacity-50" />
                 <div className="relative z-10 h-full flex flex-col items-center justify-center text-center p-12">
-                    <div className="w-24 h-24 bg-primary/20 rounded-3xl flex items-center justify-center mb-6 border border-primary/20 shadow-[0_0_50px_rgba(var(--primary-rgb),0.1)]">
-                        <TvIcon className="w-12 h-12 text-primary animate-pulse" />
+                    <div className="w-32 h-32 bg-primary/20 rounded-3xl flex items-center justify-center mb-8 border border-primary/30 shadow-[0_0_60px_rgba(239,68,68,0.2)]">
+                        <TvIcon className="w-16 h-16 text-primary animate-pulse" />
                     </div>
-                    <h1 className="text-5xl font-black text-white tracking-tight mb-4">YouOke <span className="text-primary">Cast</span></h1>
-                    <p className="text-xl text-white/50 font-medium tracking-wide">รอรับคำสั่งจากโทรศัพท์มือถือของคุณ...</p>
+                    <h1 className="text-7xl font-black text-white tracking-tight mb-4">YouOke <span className="text-primary italic">Cast</span></h1>
+                    <p className="text-2xl text-white/50 font-medium tracking-wide">รอรับคำสั่งจากโทรศัพท์มือถือของคุณ...</p>
 
                     {!isReceiverReady && (
-                        <div className="mt-12 flex flex-col items-center">
+                        <div className="mt-16 flex flex-col items-center">
                             <div className="loading loading-spinner text-primary loading-lg"></div>
-                            <p className="text-sm font-bold text-white/30 uppercase tracking-widest mt-4">{initStatus}</p>
+                            <p className="text-sm font-bold text-white/30 uppercase tracking-widest mt-6">{initStatus}</p>
                         </div>
                     )}
 
                     {isReceiverReady && (
-                        <div className="mt-8 flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                            <p className="text-sm text-green-400/60 font-semibold">พร้อมรับคำสั่ง</p>
+                        <div className="mt-12 flex items-center gap-3 bg-white/5 px-6 py-3 rounded-full border border-white/10">
+                            <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_#22c55e]"></div>
+                            <p className="text-sm text-green-400 font-bold uppercase tracking-widest">พร้อมรับคำสั่ง</p>
                         </div>
                     )}
                 </div>
             </div>
 
-            {/* 3. Overlay Area (Top Right) */}
+            {/* 3. Global Overlay Layer (Always on top of video) */}
             {!isIdle && (
-                <div className="absolute top-8 right-8 z-40 max-w-sm text-right">
-                    <p className="text-xl font-black text-white/90 bg-black/60 px-3 py-1 rounded-lg inline-block">
-                        {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </p>
+                <>
+                    {/* Top Left: Logo & Branding */}
+                    <div className="absolute top-10 left-10 z-50 flex items-center gap-5 transition-opacity duration-1000">
+                        <div className="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center text-white font-black text-3xl shadow-xl shadow-primary/30 border border-white/20 uppercase">Y</div>
+                        <div>
+                            <h2 className="text-3xl font-black tracking-tight leading-none text-white drop-shadow-lg">
+                                YouOke <span className="text-primary italic">ChromeCast</span>
+                            </h2>
+                            <p className="text-[11px] uppercase font-black text-white/50 tracking-[0.3em] mt-1.5 drop-shadow-md">
+                                Premium Karaoke Experience
+                            </p>
+                        </div>
+                    </div>
 
-                    {/* Next in Queue Badge */}
+                    {/* Top Right: Precise Time */}
+                    <div className="absolute top-10 right-10 z-50 text-right">
+                        <div className="bg-black/60 backdrop-blur-md px-6 py-2 rounded-2xl border border-white/10 shadow-2xl">
+                            <p className="text-3xl font-black text-white/95 tracking-tight font-mono">
+                                {time.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
+                            </p>
+                        </div>
+
+                        {/* Next Up Badge - Improved stability */}
+                        <div className={clsx(
+                            "mt-5 bg-[#111]/95 backdrop-blur-xl px-6 py-4 rounded-2xl border border-white/20 shadow-2xl text-left transition-all duration-700 w-80",
+                            showQueue && queue.length > currentIndex + 1 ? "opacity-100 translate-x-0" : "opacity-0 translate-x-10 pointer-events-none"
+                        )}>
+                            {queue.length > currentIndex + 1 && (
+                                <>
+                                    <div className="flex items-center gap-2.5 mb-2">
+                                        <div className="p-1.5 bg-primary/20 rounded-lg">
+                                            <MusicalNoteIcon className="w-4 h-4 text-primary" />
+                                        </div>
+                                        <p className="text-[11px] text-primary uppercase font-black tracking-widest">รายการถัดไป</p>
+                                    </div>
+                                    <p className="text-lg font-bold text-white line-clamp-2 leading-tight">{queue[currentIndex + 1].title}</p>
+                                    {queue[currentIndex + 1].author && (
+                                        <p className="text-sm text-white/50 truncate mt-1 font-medium">{queue[currentIndex + 1].author}</p>
+                                    )}
+                                </>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Bottom Center: Added Toast Notification */}
                     <div className={clsx(
-                        "mt-4 bg-[#111]/95 px-5 py-3 rounded-2xl border border-white/20 shadow-xl text-left transition-opacity duration-500",
-                        showQueue && queue.length > currentIndex + 1 ? "opacity-100" : "opacity-0 pointer-events-none"
+                        "absolute bottom-20 left-1/2 -translate-x-1/2 z-[60] transition-all duration-700",
+                        toast ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"
                     )}>
-                        {queue.length > currentIndex + 1 && (
-                            <>
-                                <div className="flex items-center gap-2 mb-1.5">
-                                    <MusicalNoteIcon className="w-4 h-4 text-primary" />
-                                    <p className="text-[11px] text-white/80 uppercase font-black tracking-widest">คิวถัดไป</p>
+                        {toast && (
+                            <div className="bg-white text-black px-8 py-5 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-center gap-6 border-b-4 border-primary">
+                                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center shrink-0">
+                                    <ListMusic className="w-8 h-8 text-primary" />
                                 </div>
-                                <p className="text-base font-bold text-white line-clamp-1 truncate">{queue[currentIndex + 1].title}</p>
-                                {queue[currentIndex + 1].author && (
-                                    <p className="text-xs text-white/60 truncate mt-0.5">{queue[currentIndex + 1].author}</p>
-                                )}
-                            </>
+                                <div className="min-w-0">
+                                    <p className="text-[12px] font-black text-primary uppercase tracking-[0.2em] mb-1">เพิ่มเพลงใหม่ในคิวแล้ว</p>
+                                    <h3 className="text-xl font-black truncate max-w-md">{toast.title}</h3>
+                                    <p className="text-sm font-bold text-black/50 truncate">{toast.author}</p>
+                                </div>
+                            </div>
                         )}
                     </div>
-                </div>
+                </>
             )}
         </div>
     );
