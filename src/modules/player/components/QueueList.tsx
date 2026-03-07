@@ -7,7 +7,6 @@ import {
     DndContext,
     closestCenter,
     PointerSensor,
-    TouchSensor,
     useSensor,
     useSensors,
     DragEndEvent,
@@ -50,7 +49,7 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
         <div
             ref={setNodeRef}
             style={{ ...style, backgroundColor: '#ffffff' }}
-            className="group flex items-center gap-2 py-2 px-3 bg-white animate-in fade-in slide-in-from-bottom-2 duration-300 fill-mode-both"
+            className="group flex items-center gap-2 py-2 px-3 bg-white"
         >
             {/* Drag Handle - Outside the card */}
             <div
@@ -121,13 +120,7 @@ export function QueueList() {
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 8,
-            },
-        }),
-        useSensor(TouchSensor, {
-            activationConstraint: {
-                delay: 250,
-                tolerance: 5,
+                distance: 5,
             },
         })
     );
@@ -144,16 +137,14 @@ export function QueueList() {
 
                 // Update current index if needed
                 const currentUuid = queue[currentIndex]?.uuid;
-                const newCurrentIndex = newQueue.findIndex(q => q.uuid === currentUuid);
+                reorderQueue(newQueue);
 
-                const updates: any = { queue: newQueue };
-                if (newCurrentIndex !== -1 && newCurrentIndex !== currentIndex) {
-                    updates.currentIndex = newCurrentIndex;
-                    const video = newQueue[newCurrentIndex];
-                    updates.currentVideo = video;
-                    updates.currentSource = video.videoId || video.id;
+                if (currentUuid) {
+                    const newCurrentIndex = newQueue.findIndex(q => q.uuid === currentUuid);
+                    if (newCurrentIndex !== -1 && newCurrentIndex !== currentIndex) {
+                        setCurrentIndex(newCurrentIndex);
+                    }
                 }
-                setPlayerState(updates);
             }
         }
     };

@@ -16,7 +16,6 @@ import {
     DndContext,
     closestCenter,
     PointerSensor,
-    TouchSensor,
     useSensor,
     useSensors,
     DragEndEvent,
@@ -482,13 +481,7 @@ export default function RemoteControlApp() {
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 8,
-            },
-        }),
-        useSensor(TouchSensor, {
-            activationConstraint: {
-                delay: 250,
-                tolerance: 5,
+                distance: 5,
             },
         })
     );
