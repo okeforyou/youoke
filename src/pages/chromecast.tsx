@@ -88,7 +88,6 @@ function ReceiverYouTubePlayer({
                 origin: window.location.origin,
                 enablejsapi: 1,
                 playsinline: 1,
-                vq: 'hd1080',
             },
             events: {
                 onReady: (event: any) => {
@@ -229,19 +228,7 @@ export default function ChromecastReceiver() {
         setPlayerState: state.setPlayerState
     })));
 
-    // Clear state on first mount to avoid "remembering" old queue/songs on TV
-    useEffect(() => {
-        const store = usePlayerStore.getState();
-        // Reset everything to clean slate
-        store.setPlayerState({
-            queue: [],
-            currentSource: null,
-            currentVideo: null,
-            currentIndex: 0,
-            isPlaying: false
-        });
-        console.log('🧹 [Chromecast] Store reset on initialization');
-    }, []);
+
 
     // Clock removed due to accuracy issues on different devices.
     /*
@@ -442,13 +429,12 @@ export default function ChromecastReceiver() {
                     if (messageHandlerRef.current) messageHandlerRef.current(event);
                 });
 
-                // Listen for sender connected events to send RECEIVER_READY
                 context.addEventListener(
                     cast.framework.system.EventType.SENDER_CONNECTED,
                     () => {
                         console.log('📱 [Chromecast] Sender connected!');
-                        // Small delay to ensure message channel is ready
-                        setTimeout(sendReceiverReady, 500);
+                        // Very short delay to ensure message channel is active
+                        setTimeout(sendReceiverReady, 100);
                     }
                 );
 
