@@ -415,7 +415,7 @@ export default function SpotifyDashboard({ showTab = true }) {
                   }, undefined, { shallow: true });
                 }}
               >
-                <figure className="relative w-full aspect-video flex-shrink-0 bg-gray-50 overflow-hidden">
+                <figure className="relative w-full aspect-[4/3] flex-shrink-0 bg-gray-50 overflow-hidden">
                   <Image
                     src={video.imageUrl}
                     priority
