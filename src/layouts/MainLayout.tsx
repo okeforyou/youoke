@@ -117,6 +117,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
     // Helper to handle navigation state
     const handleNav = (index: number) => {
         setSearchTerm(''); // Clear search when changing tabs
+
+        // Remove search from URL to prevent index.tsx from restoring it
+        if (router.query.search) {
+            const { search, ...rest } = router.query;
+            router.push({ pathname: router.pathname, query: rest }, undefined, { shallow: true });
+        }
+
         setActiveIndex(index);
     };
 

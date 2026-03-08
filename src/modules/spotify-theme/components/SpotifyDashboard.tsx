@@ -50,10 +50,12 @@ export default function SpotifyDashboard({ showTab = true }) {
 
   // Helper to update URL without reloading
   const setGenreText = (text: string) => {
+    const { search, ...rest } = router.query;
     router.push({
       pathname: router.pathname,
-      query: { ...router.query, genre: text, playlist: undefined } // clear playlist when genre changes
+      query: { ...rest, genre: text, playlist: undefined } // clear playlist and search
     }, undefined, { shallow: true });
+    setSearchTerm(''); // Clear store search to prevent index.tsx from forcing search view
     setShouldScrollToPlaylist(true);
   };
 
@@ -145,9 +147,11 @@ export default function SpotifyDashboard({ showTab = true }) {
 
   const topArtists = tempTopArtistsData?.artist || [];
 
+  // Fallback: If genrePlaylists is empty (e.g. API search returns nothing), 
+  // we fallback to the default categories from topArtistsData which contains the baseline sets.
   const artistCategories = (genreText === "เพลงไทย")
     ? (topArtistsData?.artistCategories || [])
-    : (genrePlaylists.length > 0 ? genrePlaylists : []);
+    : (genrePlaylists.length > 0 ? genrePlaylists : (topArtistsData?.artistCategories || []));
 
   const { artist } = artists || {};
   const [isError, setIsError] = useState(false);

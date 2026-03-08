@@ -39,6 +39,14 @@ export const MobileBottomNav = () => {
             setSearchTerm(''); // Clear search logic from MainLayout
             setActiveIndex(index);
             setQueueOpen(false); // Close queue when changing main tabs
+
+            // Sync with URL like Sidebar
+            const tabMap: Record<number, string> = { 1: 'home', 2: 'rec', 3: 'trending', 4: 'library' };
+            router.push({
+                pathname: '/',
+                query: { tab: tabMap[index] }
+            }, undefined, { shallow: true });
+
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
