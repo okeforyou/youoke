@@ -23,6 +23,7 @@ import { useCast } from '../plugins/cast/context/CastContext';
 import { useToast } from '@/context/ToastContext';
 import { useRemoteHost } from '../hooks/useRemoteHost';
 import { useVoiceSearch } from '../hooks/useVoiceSearch';
+import { useShallow } from 'zustand/react/shallow';
 import { realtimeDb } from '@/firebase';
 import { ref, push, set } from 'firebase/database';
 
