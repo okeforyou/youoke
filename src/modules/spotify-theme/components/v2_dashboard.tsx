@@ -409,7 +409,6 @@ export default function SpotifyDashboard({ showTab = true }) {
                 className="group cursor-pointer bg-white rounded-lg border border-gray-100 hover:shadow-sm flex flex-col h-full transition-all active:scale-[0.98] duration-100 relative overflow-hidden"
                 onClick={() => {
                   const query = video.title ? `${video.title} ${video.artist_name}` : video.name;
-                  setSearchTerm(query);
                   router.push({
                     pathname: router.pathname,
                     query: { ...router.query, search: query }
