@@ -39,23 +39,31 @@ export const usePlayerStore = create<PlayerStore>()(
 
             syncState: (newState) => {
                 // When receiving state from another tab, we also respect the smart lock.
-                const { ignoreUpdatesUntil, seekTarget } = get();
+                const { ignoreUpdatesUntil, seekTarget, currentTime: localTime } = get();
                 const now = Date.now();
 
-                // If we have a local lock, and the incoming state has a time...
+                // 1. SMART LOCK: If we are in the middle of a seek, ignore incoming times that don't match our target
                 if (newState.currentTime !== undefined && ignoreUpdatesUntil && now < ignoreUpdatesUntil && seekTarget !== null) {
-                    // Same smart check: is the incoming time close to our target?
                     if (Math.abs(newState.currentTime - seekTarget) < 1.5) {
-                        // Unlock!
                         set({ ...newState, ignoreUpdatesUntil: 0, seekTarget: null });
                     } else {
-                        // Ignore the time part of the sync, keep our local seek target time
-                        // safely destructure to avoid overwriting with stale time
                         const { currentTime, ...rest } = newState;
                         set({ ...rest });
                         return;
                     }
                 }
+
+                // 2. STALE TIME PROTECTION: Ignore backward jumps (loops) that are likely stale broadcasts
+                if (newState.currentTime !== undefined && !newState.currentVideo) {
+                    // If the incoming time is significantly behind our local time (> 2s), 
+                    // and we're not explicitly seeking, ignore it.
+                    if (newState.currentTime < localTime - 2 && !ignoreUpdatesUntil) {
+                        const { currentTime, ...rest } = newState;
+                        if (Object.keys(rest).length > 0) set(rest);
+                        return;
+                    }
+                }
+
                 set((prev) => ({ ...prev, ...newState }));
             },
 
@@ -241,6 +249,7 @@ export const usePlayerStore = create<PlayerStore>()(
                     currentVideo: newItem,
                     currentSource: videoId,
                     isPlaying: true,
+                    currentTime: 0,
                     layoutMode: get().layoutMode
                 };
                 broadcast(newState);
@@ -284,7 +293,8 @@ export const usePlayerStore = create<PlayerStore>()(
                             currentIndex: 0,
                             currentVideo: firstItem,
                             currentSource: source,
-                            isPlaying: true
+                            isPlaying: true,
+                            currentTime: 0
                         };
                     }
                 } else {
@@ -328,7 +338,8 @@ export const usePlayerStore = create<PlayerStore>()(
                     currentIndex: index,
                     currentVideo: video,
                     currentSource: source,
-                    isPlaying: true
+                    isPlaying: true,
+                    currentTime: 0
                 };
                 broadcast(updates);
                 return updates;
@@ -360,6 +371,7 @@ export const usePlayerStore = create<PlayerStore>()(
                             currentSource: source,
                             isPlaying: true,
                             layoutMode: get().layoutMode,
+                            currentTime: 0,
                             seekTarget: null,
                             ignoreUpdatesUntil: 0
                         };
