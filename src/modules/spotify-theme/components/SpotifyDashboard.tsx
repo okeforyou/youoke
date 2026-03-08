@@ -314,7 +314,7 @@ export default function SpotifyDashboard({ showTab = true }) {
                   }
                 }}
                 className={`
-                    relative w-full aspect-video rounded-3xl overflow-hidden cursor-pointer shadow-sm hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 hover:-translate-y-1.5 group bg-gray-100
+                    relative w-full aspect-square rounded-3xl overflow-hidden cursor-pointer shadow-sm hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 hover:-translate-y-1.5 group bg-gray-100
                     ${tagId == cat.tag_id ? "ring-4 ring-offset-2 ring-primary" : ""}
                  `}
               >
