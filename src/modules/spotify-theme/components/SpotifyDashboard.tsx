@@ -302,7 +302,7 @@ export default function SpotifyDashboard({ showTab = true }) {
       {/* Playlists: Premium Cards */}
       {
         !isLoadTopArtists && artistCategories.length > 0 && (
-          <div className="col-span-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 px-4 pb-10">
+          <div className="col-span-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 px-4 pb-10">
             {artistCategories.map((cat) => (
               <div
                 key={cat.tag_id}
@@ -415,7 +415,7 @@ export default function SpotifyDashboard({ showTab = true }) {
                   }, undefined, { shallow: true });
                 }}
               >
-                <figure className="relative w-full aspect-[4/3] flex-shrink-0 bg-gray-50 overflow-hidden">
+                <figure className="relative w-full aspect-video flex-shrink-0 bg-gray-50 overflow-hidden">
                   <Image
                     src={video.imageUrl}
                     priority
