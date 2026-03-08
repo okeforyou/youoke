@@ -141,7 +141,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                     item.active ? (item.label === "ยกเลิก" ? "text-white" : "text-primary") : "text-black"
                                 )}
                             />
-                            {item.label === "ยกเลิก" && isConnected && (
+                            {item.label === "ยกเลิก" && isAnyCastOn && (
                                 <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse border-2 border-white shadow-sm"></span>
                             )}
                         </div>

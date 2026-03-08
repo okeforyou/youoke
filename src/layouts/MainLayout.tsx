@@ -46,7 +46,6 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
     const router = useRouter();
-    // Use Global UI Store instead of local state
     const {
         isQueueOpen, setQueueOpen,
         isNavOpen, setNavOpen,
@@ -54,7 +53,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
         isProfileOpen, setProfileOpen,
         isMobilePlayerExpanded, setMobilePlayerExpanded,
         isPlayerHidden, setPlayerHidden,
-        isReceiverModalOpen, setReceiverModalOpen
+        isReceiverModalOpen, setReceiverModalOpen,
+        castMode, setCastMode
     } = useUIStore();
 
     // Local state for layout-specific things only
@@ -63,7 +63,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const [partyRoomCode, setPartyRoomCode] = useState('');
     const [mounted, setMounted] = useState(false);
     const [showQRCode, setShowQRCode] = useState(false);
-    const [castMode, setCastMode] = useState<CastMode>('none');
 
     const {
         searchTerm, setSearchTerm, activeIndex, setActiveIndex, isKaraoke, setIsKaraoke,
@@ -428,7 +427,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                     onClick={toggleListening}
                                     className={clsx(
                                         "p-2 rounded-full transition-all flex items-center justify-center",
-                                        isListening ? "bg-primary text-white scale-110 animate-pulse shadow-md" : "text-gray-300 hover:text-primary"
+                                        isListening ? "bg-primary text-white scale-110 animate-pulse shadow-md" : "text-black hover:text-primary"
                                     )}
                                     title="ค้นหาด้วยเสียง"
                                 >
@@ -592,7 +591,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                     onClick={() => setIsKaraoke(false)}
                                                     className={clsx(
                                                         "w-9 h-9 flex items-center justify-center rounded-xl transition-all duration-300",
-                                                        !isKaraoke ? "bg-white text-primary shadow-md scale-105" : "text-gray-400 scale-100"
+                                                        !isKaraoke ? "bg-white text-primary shadow-md scale-105" : "text-black scale-100"
                                                     )}
                                                 >
                                                     <Music size={16} className={!isKaraoke ? "fill-primary/5" : ""} />
@@ -601,7 +600,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                     onClick={() => setIsKaraoke(true)}
                                                     className={clsx(
                                                         "w-9 h-9 flex items-center justify-center rounded-xl transition-all duration-300",
-                                                        isKaraoke ? "bg-white text-primary shadow-md scale-105" : "text-gray-400 scale-100"
+                                                        isKaraoke ? "bg-white text-primary shadow-md scale-105" : "text-black scale-100"
                                                     )}
                                                 >
                                                     <Mic size={16} className={isKaraoke ? "fill-primary/5" : ""} />

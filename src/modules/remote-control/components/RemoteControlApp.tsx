@@ -702,7 +702,7 @@ export default function RemoteControlApp() {
                                         : 'bg-gray-100 text-gray-900 focus:ring-2 focus:ring-primary/20 placeholder:text-gray-400'
                                         }`}
                                 />
-                                <div className={`absolute left-4 top-1/2 -translate-y-1/2 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'}`}>
+                                <div className={`absolute left-4 top-1/2 -translate-y-1/2 text-black`}>
                                     <Search size={20} strokeWidth={3} />
                                 </div>
                                 {isSearching && (
@@ -713,7 +713,7 @@ export default function RemoteControlApp() {
                                 {isVoiceSupported && (
                                     <button
                                         onClick={toggleListening}
-                                        className={`absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full transition-all active:scale-95 ${isListening ? 'bg-primary text-white shadow-lg shadow-primary/40 animate-pulse' : theme === 'dark' ? 'text-gray-600' : 'text-gray-400'
+                                        className={`absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full transition-all active:scale-95 ${isListening ? 'bg-primary text-white shadow-lg shadow-primary/40 animate-pulse' : 'text-black hover:text-primary'
                                             }`}
                                     >
                                         <Mic size={20} strokeWidth={3} className={isListening ? 'animate-bounce' : ''} />
@@ -725,13 +725,13 @@ export default function RemoteControlApp() {
                                 <div className={`absolute inset-1 w-[46px] h-[46px] transition-all duration-300 ease-out ${searchType === 'karaoke' ? 'translate-x-[50px]' : 'translate-x-0'} ${theme === 'dark' ? 'bg-primary/20 border border-primary/40' : 'bg-red-50 border border-red-100 shadow-sm'}`} style={{ borderRadius: '9999px' }} />
                                 <button
                                     onClick={() => handleTypeToggle('video')}
-                                    className={`relative z-10 w-[46px] h-[46px] rounded-full flex items-center justify-center transition-colors duration-300 ${searchType === 'video' ? 'text-primary' : 'text-gray-500 hover:text-gray-700'}`}
+                                    className={`relative z-10 w-[46px] h-[46px] rounded-full flex items-center justify-center transition-colors duration-300 ${searchType === 'video' ? 'text-primary' : 'text-black hover:text-black/80'}`}
                                 >
                                     <Music size={20} strokeWidth={3} />
                                 </button>
                                 <button
                                     onClick={() => handleTypeToggle('karaoke')}
-                                    className={`relative z-10 w-[46px] h-[46px] rounded-full flex items-center justify-center transition-colors duration-300 ${searchType === 'karaoke' ? 'text-primary' : 'text-gray-500 hover:text-gray-700'}`}
+                                    className={`relative z-10 w-[46px] h-[46px] rounded-full flex items-center justify-center transition-colors duration-300 ${searchType === 'karaoke' ? 'text-primary' : 'text-black hover:text-black/80'}`}
                                 >
                                     <Mic2 size={20} strokeWidth={3} />
                                 </button>
