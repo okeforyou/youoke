@@ -94,29 +94,29 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
     const { addToast } = useToast() || { addToast: (message: string) => { } };
 
-    /* DISABLING VOICE SEARCH FOR DEBUGGING
-    const { isListening, toggleListening, isSupported: isVoiceSupported } = useVoiceSearch({
-        onResult: (text) => {
-            console.log('Voice result:', text);
-            setSearchTerm(text);
-            router.replace({
-                pathname: '/',
-                query: { ...router.query, search: text }
-            }, undefined, { shallow: true });
-            addToast(`🎙️ ค้นหาแล้ว: ${text}`, 'voice');
-        },
-        onError: (err) => {
-            if (err === 'not-allowed') {
-                addToast('⚠️ กรุณาอนุญาตการเข้าถึงไมโครโฟน', 'error');
-            } else {
-                addToast('⚠️ ไม่สามารถค้นหาด้วยเสียงได้ในขณะนี้', 'error');
-            }
+    // Voice Search Callbacks (memoized to prevent re-render loops)
+    const handleVoiceResult = useCallback((text: string) => {
+        console.log('Voice result:', text);
+        setSearchTerm(text);
+        // Use router.replace to update URL without adding history entry
+        const currentQuery = { ...router.query, search: text };
+        router.replace({ pathname: '/', query: currentQuery }, undefined, { shallow: true });
+        addToast(`🎙️ ค้นหาแล้ว: ${text}`, 'voice');
+    }, [setSearchTerm, router, addToast]);
+
+    const handleVoiceError = useCallback((err: string) => {
+        if (err === 'not-allowed') {
+            addToast('⚠️ กรุณาอนุญาตการเข้าถึงไมโครโฟน', 'error');
+        } else if (err !== 'no-speech' && err !== 'aborted') {
+            addToast('⚠️ ไม่สามารถค้นหาด้วยเสียงได้ในขณะนี้', 'error');
         }
+    }, [addToast]);
+
+    // Initialize Voice Search (hook uses refs internally, safe from re-render loops)
+    const { isListening, toggleListening, isSupported: isVoiceSupported } = useVoiceSearch({
+        onResult: handleVoiceResult,
+        onError: handleVoiceError
     });
-    */
-    const isListening = false;
-    const toggleListening = () => { };
-    const isVoiceSupported = false;
 
     // Helper to handle navigation state
     const handleNav = (index: number) => {

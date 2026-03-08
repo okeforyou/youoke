@@ -143,26 +143,26 @@ export default function RemoteControlApp() {
         debounceRef.current = setTimeout(() => performSearch(value, searchType), 600);
     };
 
-    // Voice Search Integration
-    /* DISABLING VOICE SEARCH FOR DEBUGGING
-    const { isListening, toggleListening, isSupported: isVoiceSupported } = useVoiceSearch({
-        onResult: (text) => {
-            setSearchTerm(text);
-            handleSearchInput(text);
-            addToast(`🎙️ ค้นหาแล้ว: ${text}`, 'voice');
-        },
-        onError: (err) => {
-            if (err === 'not-allowed') {
-                addToast('⚠️ กรุณาอนุญาตการเข้าถึงไมโครโฟน', 'error');
-            } else {
-                addToast('⚠️ ไม่สามารถค้นหาด้วยเสียงได้', 'error');
-            }
+    // Voice Search Callbacks (memoized)
+    const handleVoiceResult = React.useCallback((text: string) => {
+        setSearchTerm(text);
+        handleSearchInput(text);
+        addToast(`🎙️ ค้นหาแล้ว: ${text}`, 'voice');
+    }, [addToast]);
+
+    const handleVoiceError = React.useCallback((err: string) => {
+        if (err === 'not-allowed') {
+            addToast('⚠️ กรุณาอนุญาตการเข้าถึงไมโครโฟน', 'error');
+        } else if (err !== 'no-speech' && err !== 'aborted') {
+            addToast('⚠️ ไม่สามารถค้นหาด้วยเสียงได้', 'error');
         }
+    }, [addToast]);
+
+    // Voice Search Integration (hook uses refs internally, safe from re-render loops)
+    const { isListening, toggleListening, isSupported: isVoiceSupported } = useVoiceSearch({
+        onResult: handleVoiceResult,
+        onError: handleVoiceError
     });
-    */
-    const isListening = false;
-    const toggleListening = () => { };
-    const isVoiceSupported = false;
 
     const handleTypeToggle = (type: 'video' | 'karaoke') => {
         setSearchType(type);
