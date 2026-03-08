@@ -30,7 +30,6 @@ const GENRES = [
   "ฮาร์ดร็อก",
   "ร็อกแอนด์โรล",
   "ริทึมแอนด์บลูส์",
-  "ริทึมแอนด์บลูส์",
 ];
 
 export default function SpotifyDashboard({ showTab = true }) {
@@ -303,7 +302,7 @@ export default function SpotifyDashboard({ showTab = true }) {
       {/* Playlists: Premium Cards */}
       {
         !isLoadTopArtists && artistCategories.length > 0 && (
-          <div className="col-span-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5 gap-6 px-4 pb-10">
+          <div className="col-span-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 px-4 pb-10">
             {artistCategories.map((cat) => (
               <div
                 key={cat.tag_id}
@@ -315,7 +314,7 @@ export default function SpotifyDashboard({ showTab = true }) {
                   }
                 }}
                 className={`
-                    relative w-full aspect-square rounded-3xl overflow-hidden cursor-pointer shadow-sm hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 hover:-translate-y-1.5 group bg-gray-100
+                    relative w-full aspect-video rounded-3xl overflow-hidden cursor-pointer shadow-sm hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 hover:-translate-y-1.5 group bg-gray-100
                     ${tagId == cat.tag_id ? "ring-4 ring-offset-2 ring-primary" : ""}
                  `}
               >
@@ -369,6 +368,19 @@ export default function SpotifyDashboard({ showTab = true }) {
         )
       }
 
+      {/* Loading Skeletons */}
+      {
+        isLoading && (
+          <>
+            <div className="col-span-full grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 px-2">
+              {getSkeletonItems(8).map((s) => (
+                <div key={s} className="h-48 bg-gray-100 rounded-3xl animate-pulse" />
+              ))}
+            </div>
+          </>
+        )
+      }
+
       {/* Song List Header */}
       {
         artist && artist.length > 0 && (
@@ -388,7 +400,7 @@ export default function SpotifyDashboard({ showTab = true }) {
       }
 
       {/* Song List Grid - Clean Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-3 col-span-full px-2 pb-24">
+      <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 col-span-full px-2 pb-24">
         {artist?.map((item, i) => {
           const video = item as any;
           return (
@@ -397,13 +409,14 @@ export default function SpotifyDashboard({ showTab = true }) {
                 className="group cursor-pointer bg-white rounded-lg border border-gray-100 hover:shadow-sm flex flex-col h-full transition-all active:scale-[0.98] duration-100 relative overflow-hidden"
                 onClick={() => {
                   const query = video.title ? `${video.title} ${video.artist_name}` : video.name;
+                  setSearchTerm(query);
                   router.push({
                     pathname: router.pathname,
                     query: { ...router.query, search: query }
                   }, undefined, { shallow: true });
                 }}
               >
-                <figure className="relative w-full aspect-square flex-shrink-0 bg-gray-50 overflow-hidden">
+                <figure className="relative w-full aspect-[4/3] flex-shrink-0 bg-gray-50 overflow-hidden">
                   <Image
                     src={video.imageUrl}
                     priority
