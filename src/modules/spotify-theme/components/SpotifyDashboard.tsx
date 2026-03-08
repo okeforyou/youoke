@@ -299,9 +299,9 @@ export default function SpotifyDashboard({ showTab = true }) {
       </div>
       {
         artistCategories.length > 0 && (
-          <div ref={playlistRef} className="scroll-mt-32 col-span-full px-2 pt-4 pb-3 text-[13px] font-bold text-gray-500 uppercase tracking-wider flex items-center justify-between">
+          <div ref={playlistRef} className="scroll-mt-32 col-span-full px-2 pt-4 pb-3 text-[12px] sm:text-[13px] font-bold text-gray-500 uppercase tracking-wider flex items-center justify-between">
             <span>{genreText === "ลูกทุ่ง" ? "เพลย์ลิสต์แนะนำ" : `เพลย์ลิสต์ ${genreText}`}</span>
-            <span className="text-xs font-normal text-gray-400 bg-gray-50 px-3 py-1 rounded-full">อัพเดทล่าสุด</span>
+            <span className="text-[10px] sm:text-xs font-normal text-gray-400 bg-gray-50 px-3 py-1 rounded-full">อัพเดทล่าสุด</span>
           </div>
         )
       }
@@ -343,7 +343,7 @@ export default function SpotifyDashboard({ showTab = true }) {
                     </div>
                   </div>
                   <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                    <span className="text-white font-bold text-[14px] drop-shadow-md line-clamp-2 leading-tight">
+                    <span className="text-white font-bold text-[13px] sm:text-[14px] drop-shadow-md line-clamp-2 leading-tight">
                       {cat.tag_name}
                     </span>
                     <div className="h-1 w-12 bg-primary rounded-full mt-2 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-100 origin-left scale-x-0 group-hover:scale-x-100" />
