@@ -60,6 +60,7 @@ export default function SpotifyDashboard({ showTab = true }) {
   };
 
   const setTagId = (id: string) => {
+    console.log("🎯 SpotifyDashboard: setTagId:", id);
     if (id) {
       router.push({
         pathname: router.pathname,
@@ -92,12 +93,13 @@ export default function SpotifyDashboard({ showTab = true }) {
     refetchInterval: 0,
   });
 
-  // When default Top Artists load (Only if no genre selected or Default)
+  // When default Top Artists load
   useEffect(() => {
-    if (tempTopArtistsData && genreText === "ลูกทุ่ง") {
+    if (tempTopArtistsData && (genreText === "ลูกทุ่ง" || topArtistsData.artistCategories.length === 0)) {
+      console.log("📦 SpotifyDashboard: Populating topArtistsData", tempTopArtistsData.artistCategories.length);
       setTopArtistsData(tempTopArtistsData);
     }
-  }, [tempTopArtistsData, genreText]);
+  }, [tempTopArtistsData, genreText, topArtistsData.artistCategories.length]);
 
 
   const { data: artists, isLoading } = useQuery({
