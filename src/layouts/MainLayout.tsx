@@ -402,9 +402,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             <button
                                 onClick={() => {
                                     const { search, ...rest } = router.query;
+                                    setSearchTerm('');
                                     router.replace({ pathname: '/', query: rest }, undefined, { shallow: true });
                                 }}
-                                className="absolute inset-y-0 right-12 flex items-center text-gray-300 hover:text-red-500 transition-colors"
+                                className="absolute inset-y-0 right-14 flex items-center text-gray-300 hover:text-red-500 transition-colors"
                             >
                                 <X className="h-4 w-4" />
                             </button>
@@ -456,7 +457,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                     isKaraoke ? "text-primary" : "text-black hover:text-black/80"
                                 )}
                             >
-                                <Library className="w-3.5 h-3.5" />
+                                <Mic className="w-3.5 h-3.5" />
                                 <span>คาราโอเกะ</span>
                             </button>
                         </div>
@@ -565,6 +566,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                 {searchTerm && (
                                                     <button onClick={() => {
                                                         const { search, ...rest } = router.query;
+                                                        setSearchTerm('');
                                                         router.replace({ pathname: '/', query: rest }, undefined, { shallow: true });
                                                     }} className="text-gray-400 ml-1.5 p-1 rounded-full hover:bg-gray-100">
                                                         <X className="h-4.5 w-4.5" />
@@ -600,7 +602,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                         isKaraoke ? "bg-white text-primary shadow-md scale-105" : "text-gray-400 scale-100"
                                                     )}
                                                 >
-                                                    <Library size={16} className={isKaraoke ? "fill-primary/5" : ""} />
+                                                    <Mic size={16} className={isKaraoke ? "fill-primary/5" : ""} />
                                                 </button>
                                             </div>
 
