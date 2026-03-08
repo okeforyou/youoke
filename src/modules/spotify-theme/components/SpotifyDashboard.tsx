@@ -302,7 +302,7 @@ export default function SpotifyDashboard({ showTab = true }) {
       {/* Playlists: Premium Cards */}
       {
         !isLoadTopArtists && artistCategories.length > 0 && (
-          <div className="col-span-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 px-4 pb-10">
+          <div className="col-span-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5 gap-6 px-4 pb-10">
             {artistCategories.map((cat) => (
               <div
                 key={cat.tag_id}
@@ -400,7 +400,7 @@ export default function SpotifyDashboard({ showTab = true }) {
       }
 
       {/* Song List Grid - Clean Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 col-span-full px-2 pb-24">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-3 col-span-full px-2 pb-24">
         {artist?.map((item, i) => {
           const video = item as any;
           return (
@@ -415,7 +415,7 @@ export default function SpotifyDashboard({ showTab = true }) {
                   }, undefined, { shallow: true });
                 }}
               >
-                <figure className="relative w-full aspect-video flex-shrink-0 bg-gray-50 overflow-hidden">
+                <figure className="relative w-full aspect-square flex-shrink-0 bg-gray-50 overflow-hidden">
                   <Image
                     src={video.imageUrl}
                     priority
