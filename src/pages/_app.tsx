@@ -164,15 +164,13 @@ function App({ Component, pageProps }: AppProps) {
                     </FirebaseCastProvider>
                   </CastProvider>
                 </MidiEngineProvider>
-              ) : isChromecastReceiver ? (
-                // Chromecast Receiver - LIGHTEST stack (no MIDI, no Ads, no Cast Sender)
-                // Smart TVs have limited resources, load absolute minimum
-                <Component {...pageProps} />
-              ) : isReceiverPath ? (
-                // Monitor Stack (HDMI Receiver) - Needs MIDI but NO Cast Sender
+              ) : (isChromecastReceiver || isReceiverPath) ? (
+                // Monitor/TV Stack (HTML Receiver / Chromecast Receiver)
                 <MidiEngineProvider>
                   <AdsProvider>
-                    <Component {...pageProps} />
+                    <CastProvider>
+                      <Component {...pageProps} />
+                    </CastProvider>
                   </AdsProvider>
                 </MidiEngineProvider>
               ) : (

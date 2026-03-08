@@ -422,10 +422,12 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
 
                         <div className="space-y-3">
                             <h3 className="text-2xl font-black text-white tracking-tight leading-tight">
-                                {castMode === 'dual' ? '2 หน้าจอ (HDMI)' : '2 หน้าจอ (Wireless)'}
+                                {castMode === 'dual' ? 'จอภาพโหมดสายต่อ (HDMI)'
+                                    : castMode === 'google' ? 'Google ChromeCast (TV)'
+                                        : 'จอภาพไร้สาย (Wireless Display)'}
                             </h3>
                             <p className="text-white/40 text-[13px] font-bold tracking-wide">
-                                {currentSource ? 'กำลังเล่นเพลงบนหน้าจอที่สอง...' : 'รอเพลงจากหน้าจอหลัก...'}
+                                {currentSource ? `เชื่อมต่อระบบ ${castMode === 'dual' ? 'HDMI' : castMode === 'google' ? 'Cast' : 'Wireless'} สำเร็จ` : 'รอเพลงจากหน้าจอหลัก...'}
                             </p>
                         </div>
 
