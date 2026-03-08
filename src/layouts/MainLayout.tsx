@@ -136,6 +136,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const { isListening, toggleListening, isSupported: isVoiceSupported } = useVoiceSearch({
         onResult: (text) => {
             console.log('Voice result:', text);
+            setSearchTerm(text);
             router.replace({
                 pathname: '/',
                 query: { ...router.query, search: text }
