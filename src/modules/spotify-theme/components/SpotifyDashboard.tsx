@@ -62,6 +62,7 @@ export default function SpotifyDashboard({ showTab = true }) {
   const setTagId = (id: string) => {
     console.log("🎯 SpotifyDashboard: setTagId:", id);
     if (id) {
+      setSearchTerm(''); // Clear search store to ensure we stay on Dashboard tab
       router.push({
         pathname: router.pathname,
         query: { ...router.query, playlist: id }
