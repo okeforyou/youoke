@@ -455,7 +455,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                     isKaraoke ? "text-primary" : "text-black hover:text-black/80"
                                 )}
                             >
-                                <Mic className="w-3.5 h-3.5" />
+                                <Library className="w-3.5 h-3.5" />
                                 <span>คาราโอเกะ</span>
                             </button>
                         </div>
@@ -599,7 +599,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                         isKaraoke ? "bg-white text-primary shadow-md scale-105" : "text-gray-400 scale-100"
                                                     )}
                                                 >
-                                                    <Mic size={16} className={isKaraoke ? "fill-primary/5" : ""} />
+                                                    <Library size={16} className={isKaraoke ? "fill-primary/5" : ""} />
                                                 </button>
                                             </div>
 
