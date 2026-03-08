@@ -719,7 +719,7 @@ export default function RemoteControlApp() {
                                     onClick={() => handleTypeToggle('karaoke')}
                                     className={`relative z-10 w-[46px] h-[46px] rounded-full flex items-center justify-center transition-colors duration-300 ${searchType === 'karaoke' ? 'text-primary' : 'text-gray-500 hover:text-gray-700'}`}
                                 >
-                                    <Mic size={20} strokeWidth={3} />
+                                    <Library size={20} strokeWidth={3} />
                                 </button>
                             </div>
                         </div>
