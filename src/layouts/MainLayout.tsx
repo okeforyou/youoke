@@ -2,7 +2,7 @@ import React, { ReactNode, useState, useEffect, useRef, useCallback } from 'reac
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
 import clsx from 'clsx';
-import { Menu, Search, ListMusic, Home, X, Monitor, MessageCircle, Shield, Key, Smartphone, Flame, Library, Mic, Music, ChevronDown, ChevronRight, ChevronLeft, Cast, Disc, LogOut, UserCheck, Settings, Info, PartyPopper, Star, Trash2, EyeOff, User, Maximize } from 'lucide-react'; // V2.28.0-VANISH
+import { Menu, Search, ListMusic, Home, X, Monitor, MessageCircle, Shield, Key, Smartphone, Flame, Library, Mic, Mic2, Music, ChevronDown, ChevronRight, ChevronLeft, Cast, Disc, LogOut, UserCheck, Settings, Info, PartyPopper, Star, Trash2, EyeOff, User, Maximize } from 'lucide-react'; // V2.28.0-VANISH
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { DebounceInput } from 'react-debounce-input';
@@ -22,8 +22,9 @@ import { Sidebar } from '../components/navigation/Sidebar';
 import { useCast } from '../plugins/cast/context/CastContext';
 import { useToast } from '@/context/ToastContext';
 import useIsMobile from '../hooks/isMobile';
-import { useShallow } from 'zustand/react/shallow';
 import { useRemoteHost } from '../hooks/useRemoteHost';
+import { useVoiceSearch } from '../hooks/useVoiceSearch';
+import { useShallow } from 'zustand/react/shallow';
 import { realtimeDb } from '@/firebase';
 import { ref, push, set } from 'firebase/database';
 
@@ -45,7 +46,6 @@ interface MainLayoutProps {
 
 export default function MainLayout({ children }: MainLayoutProps) {
     const router = useRouter();
-    // Use Global UI Store instead of local state
     const {
         isQueueOpen, setQueueOpen,
         isNavOpen, setNavOpen,
@@ -53,7 +53,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
         isProfileOpen, setProfileOpen,
         isMobilePlayerExpanded, setMobilePlayerExpanded,
         isPlayerHidden, setPlayerHidden,
-        isReceiverModalOpen, setReceiverModalOpen
+        isReceiverModalOpen, setReceiverModalOpen,
+        castMode, setCastMode
     } = useUIStore();
 
     // Local state for layout-specific things only
@@ -62,7 +63,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const [partyRoomCode, setPartyRoomCode] = useState('');
     const [mounted, setMounted] = useState(false);
     const [showQRCode, setShowQRCode] = useState(false);
-    const [castMode, setCastMode] = useState<CastMode>('none');
 
     const {
         searchTerm, setSearchTerm, activeIndex, setActiveIndex, isKaraoke, setIsKaraoke,
@@ -91,9 +91,42 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const dataSource = isKaraoke ? 'karaoke' : 'mv';
     const toggleSource = (source: 'karaoke' | 'mv') => setIsKaraoke(source === 'karaoke');
 
+    const { addToast } = useToast() || { addToast: (message: string) => { } };
+
+    // Voice Search Callbacks (memoized to prevent re-render loops)
+    const handleVoiceResult = useCallback((text: string) => {
+        console.log('Voice result:', text);
+        setSearchTerm(text);
+        // Use router.replace to update URL without adding history entry
+        const currentQuery = { ...router.query, search: text };
+        router.replace({ pathname: '/', query: currentQuery }, undefined, { shallow: true });
+        addToast(`🎙️ ค้นหาแล้ว: ${text}`, 'voice');
+    }, [setSearchTerm, router, addToast]);
+
+    const handleVoiceError = useCallback((err: string) => {
+        if (err === 'not-allowed') {
+            addToast('⚠️ กรุณาอนุญาตการเข้าถึงไมโครโฟน', 'error');
+        } else if (err !== 'no-speech' && err !== 'aborted') {
+            addToast('⚠️ ไม่สามารถค้นหาด้วยเสียงได้ในขณะนี้', 'error');
+        }
+    }, [addToast]);
+
+    // Initialize Voice Search (hook uses refs internally, safe from re-render loops)
+    const { isListening, toggleListening, isSupported: isVoiceSupported } = useVoiceSearch({
+        onResult: handleVoiceResult,
+        onError: handleVoiceError
+    });
+
     // Helper to handle navigation state
     const handleNav = (index: number) => {
         setSearchTerm(''); // Clear search when changing tabs
+
+        // Remove search from URL to prevent index.tsx from restoring it
+        if (router.query.search) {
+            const { search, ...rest } = router.query;
+            router.push({ pathname: router.pathname, query: rest }, undefined, { shallow: true });
+        }
+
         setActiveIndex(index);
     };
 
@@ -113,7 +146,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
     // Cast & UI Store
     const { isCastModalOpen, setCastModalOpen } = useUIStore();
     const { connect: connectGoogleCast, disconnect: disconnectGoogleCast, isAvailable: isCastAvailable } = useCast();
-    const { addToast } = useToast() || { addToast: () => { } };
     const isMobile = useIsMobile();
     const { queue } = usePlayerStore();
 
@@ -367,7 +399,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         <DebounceInput
                             minLength={2}
                             debounceTimeout={300}
-                            placeholder="ค้นหาเพลง, ศิลปิน, หรือวางลิงก์ YouTube..."
+                            placeholder="ค้นหาเพลง หรือ ศิลปิน..."
                             className="block w-full pl-14 pr-12 h-12 bg-gray-50/50 hover:bg-gray-100/50 focus:bg-white border border-gray-100 focus:border-primary/20 rounded-2xl leading-5 text-gray-900 placeholder-gray-400 focus:outline-none transition-all shadow-sm font-medium"
                             value={searchTerm}
                             onChange={(e) => {
@@ -377,17 +409,32 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 }, undefined, { shallow: true });
                             }}
                         />
-                        {searchTerm && (
-                            <button
-                                onClick={() => {
-                                    const { search, ...rest } = router.query;
-                                    router.replace({ pathname: '/', query: rest }, undefined, { shallow: true });
-                                }}
-                                className="absolute inset-y-0 right-4 flex items-center text-gray-300 hover:text-red-500 transition-colors"
-                            >
-                                <X className="h-4 w-4" />
-                            </button>
-                        )}
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 gap-1">
+                            {searchTerm && (
+                                <button
+                                    onClick={() => {
+                                        const { search, ...rest } = router.query;
+                                        router.replace({ pathname: '/', query: rest }, undefined, { shallow: true });
+                                    }}
+                                    className="p-2 text-gray-300 hover:text-red-500 transition-colors"
+                                >
+                                    <X className="h-4 w-4" />
+                                </button>
+                            )}
+
+                            {isVoiceSupported && (
+                                <button
+                                    onClick={toggleListening}
+                                    className={clsx(
+                                        "p-2 rounded-full transition-all flex items-center justify-center",
+                                        isListening ? "bg-primary text-white scale-110 animate-pulse shadow-md" : "text-black hover:text-primary"
+                                    )}
+                                    title="ค้นหาด้วยเสียง"
+                                >
+                                    <Mic className={clsx("h-5 w-5", isListening && "animate-bounce")} />
+                                </button>
+                            )}
+                        </div>
 
                     </div>
 
@@ -422,7 +469,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                     isKaraoke ? "text-primary" : "text-black hover:text-black/80"
                                 )}
                             >
-                                <Mic className="w-3.5 h-3.5" />
+                                <Mic2 className="w-3.5 h-3.5" />
                                 <span>คาราโอเกะ</span>
                             </button>
                         </div>
@@ -544,7 +591,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                     onClick={() => setIsKaraoke(false)}
                                                     className={clsx(
                                                         "w-9 h-9 flex items-center justify-center rounded-xl transition-all duration-300",
-                                                        !isKaraoke ? "bg-white text-primary shadow-md scale-105" : "text-gray-400 scale-100"
+                                                        !isKaraoke ? "bg-white text-primary shadow-md scale-105" : "text-black scale-100"
                                                     )}
                                                 >
                                                     <Music size={16} className={!isKaraoke ? "fill-primary/5" : ""} />
@@ -553,7 +600,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                     onClick={() => setIsKaraoke(true)}
                                                     className={clsx(
                                                         "w-9 h-9 flex items-center justify-center rounded-xl transition-all duration-300",
-                                                        isKaraoke ? "bg-white text-primary shadow-md scale-105" : "text-gray-400 scale-100"
+                                                        isKaraoke ? "bg-white text-primary shadow-md scale-105" : "text-black scale-100"
                                                     )}
                                                 >
                                                     <Mic size={16} className={isKaraoke ? "fill-primary/5" : ""} />

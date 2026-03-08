@@ -6,9 +6,11 @@ import { ref, onValue, off, set, serverTimestamp } from 'firebase/database';
 import { auth, realtimeDb } from '../../../firebase';
 import { QueueItem } from '../../../modules/player/types';
 import {
-    ListMusic, User, Share2, Maximize, Minimize, RefreshCw, Volume2, VolumeX, SkipForward, SkipBack, Play, Pause, Trash2, GripVertical, Search, Sun, Moon, Music, Mic,
+    ListMusic, User, Share2, Maximize, Minimize, RefreshCw, Volume2, VolumeX, SkipForward, SkipBack, Play, Pause, Trash2, GripVertical, Search, Sun, Moon, Music, Mic, Mic2,
     Lock, Chrome, LogIn, AlertCircle
 } from 'lucide-react';
+import { useToast } from '@/context/ToastContext';
+import { useVoiceSearch } from '../../../hooks/useVoiceSearch';
 import { useAuth } from '@/context/AuthContext';
 import { useSystemConfig } from '@/hooks/useSystemConfig';
 import { QRCodeSVG } from 'qrcode.react';
@@ -57,6 +59,7 @@ export default function RemoteControlApp() {
         controls: { isPlaying: false, isMuted: false, volume: 100 },
         isQueueVisible: false
     });
+    const { addToast } = useToast() || { addToast: () => { } };
     const [guestName, setGuestName] = useState('');
     const [showNameModal, setShowNameModal] = useState(false);
 
@@ -139,6 +142,27 @@ export default function RemoteControlApp() {
         setIsSearching(true);
         debounceRef.current = setTimeout(() => performSearch(value, searchType), 600);
     };
+
+    // Voice Search Callbacks (memoized)
+    const handleVoiceResult = React.useCallback((text: string) => {
+        setSearchTerm(text);
+        handleSearchInput(text);
+        addToast(`🎙️ ค้นหาแล้ว: ${text}`, 'voice');
+    }, [addToast]);
+
+    const handleVoiceError = React.useCallback((err: string) => {
+        if (err === 'not-allowed') {
+            addToast('⚠️ กรุณาอนุญาตการเข้าถึงไมโครโฟน', 'error');
+        } else if (err !== 'no-speech' && err !== 'aborted') {
+            addToast('⚠️ ไม่สามารถค้นหาด้วยเสียงได้', 'error');
+        }
+    }, [addToast]);
+
+    // Voice Search Integration (hook uses refs internally, safe from re-render loops)
+    const { isListening, toggleListening, isSupported: isVoiceSupported } = useVoiceSearch({
+        onResult: handleVoiceResult,
+        onError: handleVoiceError
+    });
 
     const handleTypeToggle = (type: 'video' | 'karaoke') => {
         setSearchType(type);
@@ -678,13 +702,22 @@ export default function RemoteControlApp() {
                                         : 'bg-gray-100 text-gray-900 focus:ring-2 focus:ring-primary/20 placeholder:text-gray-400'
                                         }`}
                                 />
-                                <div className={`absolute left-4 top-1/2 -translate-y-1/2 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'}`}>
+                                <div className={`absolute left-4 top-1/2 -translate-y-1/2 text-black`}>
                                     <Search size={20} strokeWidth={3} />
                                 </div>
                                 {isSearching && (
-                                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                                        <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                    <div className="absolute right-12 top-1/2 -translate-y-1/2">
+                                        <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                                     </div>
+                                )}
+                                {isVoiceSupported && (
+                                    <button
+                                        onClick={toggleListening}
+                                        className={`absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full transition-all active:scale-95 ${isListening ? 'bg-primary text-white shadow-lg shadow-primary/40 animate-pulse' : 'text-black hover:text-primary'
+                                            }`}
+                                    >
+                                        <Mic size={20} strokeWidth={3} className={isListening ? 'animate-bounce' : ''} />
+                                    </button>
                                 )}
                             </div>
 
@@ -692,15 +725,15 @@ export default function RemoteControlApp() {
                                 <div className={`absolute inset-1 w-[46px] h-[46px] transition-all duration-300 ease-out ${searchType === 'karaoke' ? 'translate-x-[50px]' : 'translate-x-0'} ${theme === 'dark' ? 'bg-primary/20 border border-primary/40' : 'bg-red-50 border border-red-100 shadow-sm'}`} style={{ borderRadius: '9999px' }} />
                                 <button
                                     onClick={() => handleTypeToggle('video')}
-                                    className={`relative z-10 w-[46px] h-[46px] rounded-full flex items-center justify-center transition-colors duration-300 ${searchType === 'video' ? 'text-primary' : 'text-gray-500 hover:text-gray-700'}`}
+                                    className={`relative z-10 w-[46px] h-[46px] rounded-full flex items-center justify-center transition-colors duration-300 ${searchType === 'video' ? 'text-primary' : 'text-black hover:text-black/80'}`}
                                 >
                                     <Music size={20} strokeWidth={3} />
                                 </button>
                                 <button
                                     onClick={() => handleTypeToggle('karaoke')}
-                                    className={`relative z-10 w-[46px] h-[46px] rounded-full flex items-center justify-center transition-colors duration-300 ${searchType === 'karaoke' ? 'text-primary' : 'text-gray-500 hover:text-gray-700'}`}
+                                    className={`relative z-10 w-[46px] h-[46px] rounded-full flex items-center justify-center transition-colors duration-300 ${searchType === 'karaoke' ? 'text-primary' : 'text-black hover:text-black/80'}`}
                                 >
-                                    <Mic size={20} strokeWidth={3} />
+                                    <Mic2 size={20} strokeWidth={3} />
                                 </button>
                             </div>
                         </div>
@@ -923,6 +956,6 @@ export default function RemoteControlApp() {
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 }

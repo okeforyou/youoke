@@ -50,15 +50,19 @@ export default function SpotifyDashboard({ showTab = true }) {
 
   // Helper to update URL without reloading
   const setGenreText = (text: string) => {
+    const { search, ...rest } = router.query;
     router.push({
       pathname: router.pathname,
-      query: { ...router.query, genre: text, playlist: undefined } // clear playlist when genre changes
+      query: { ...rest, genre: text, playlist: undefined } // clear playlist and search
     }, undefined, { shallow: true });
+    setSearchTerm(''); // Clear store search to prevent index.tsx from forcing search view
     setShouldScrollToPlaylist(true);
   };
 
   const setTagId = (id: string) => {
+    console.log("🎯 SpotifyDashboard: setTagId:", id);
     if (id) {
+      setSearchTerm(''); // Clear search store to ensure we stay on Dashboard tab
       router.push({
         pathname: router.pathname,
         query: { ...router.query, playlist: id }
@@ -90,12 +94,13 @@ export default function SpotifyDashboard({ showTab = true }) {
     refetchInterval: 0,
   });
 
-  // When default Top Artists load (Only if no genre selected or Default)
+  // When default Top Artists load
   useEffect(() => {
-    if (tempTopArtistsData && genreText === "ลูกทุ่ง") {
+    if (tempTopArtistsData && (genreText === "ลูกทุ่ง" || topArtistsData.artistCategories.length === 0)) {
+      console.log("📦 SpotifyDashboard: Populating topArtistsData", tempTopArtistsData.artistCategories.length);
       setTopArtistsData(tempTopArtistsData);
     }
-  }, [tempTopArtistsData, genreText]);
+  }, [tempTopArtistsData, genreText, topArtistsData.artistCategories.length]);
 
 
   const { data: artists, isLoading } = useQuery({
@@ -145,9 +150,11 @@ export default function SpotifyDashboard({ showTab = true }) {
 
   const topArtists = tempTopArtistsData?.artist || [];
 
+  // Fallback: If genrePlaylists is empty (e.g. API search returns nothing), 
+  // we fallback to the default categories from topArtistsData which contains the baseline sets.
   const artistCategories = (genreText === "เพลงไทย")
     ? (topArtistsData?.artistCategories || [])
-    : (genrePlaylists.length > 0 ? genrePlaylists : []);
+    : (genrePlaylists.length > 0 ? genrePlaylists : (topArtistsData?.artistCategories || []));
 
   const { artist } = artists || {};
   const [isError, setIsError] = useState(false);
@@ -292,9 +299,9 @@ export default function SpotifyDashboard({ showTab = true }) {
       </div>
       {
         artistCategories.length > 0 && (
-          <div ref={playlistRef} className="scroll-mt-32 col-span-full px-2 pt-4 pb-3 text-[13px] font-bold text-gray-500 uppercase tracking-wider flex items-center justify-between">
+          <div ref={playlistRef} className="scroll-mt-32 col-span-full px-2 pt-4 pb-3 text-[11px] sm:text-[12px] font-bold text-gray-500 uppercase tracking-wider flex items-center justify-between">
             <span>{genreText === "ลูกทุ่ง" ? "เพลย์ลิสต์แนะนำ" : `เพลย์ลิสต์ ${genreText}`}</span>
-            <span className="text-xs font-normal text-gray-400 bg-gray-50 px-3 py-1 rounded-full">อัพเดทล่าสุด</span>
+            <span className="text-[10px] font-normal text-gray-400 bg-gray-50 px-3 py-1 rounded-full">อัพเดทล่าสุด</span>
           </div>
         )
       }
@@ -336,7 +343,7 @@ export default function SpotifyDashboard({ showTab = true }) {
                     </div>
                   </div>
                   <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                    <span className="text-white font-bold text-[14px] drop-shadow-md line-clamp-2 leading-tight">
+                    <span className="text-white font-bold text-[11px] sm:text-[12px] drop-shadow-md line-clamp-2 leading-tight">
                       {cat.tag_name}
                     </span>
                     <div className="h-1 w-12 bg-primary rounded-full mt-2 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-100 origin-left scale-x-0 group-hover:scale-x-100" />
@@ -386,7 +393,7 @@ export default function SpotifyDashboard({ showTab = true }) {
         artist && artist.length > 0 && (
           <div
             ref={songlistRef}
-            className="scroll-mt-32 col-span-full px-2 pt-6 pb-4 text-[13px] font-bold text-gray-500 uppercase tracking-wider flex items-center justify-between border-t border-gray-100"
+            className="scroll-mt-32 col-span-full px-2 pt-6 pb-4 text-[11px] sm:text-[12px] font-bold text-gray-500 uppercase tracking-wider flex items-center justify-between border-t border-gray-100"
           >
             <div className="flex items-center gap-3">
               <div className="w-1.5 h-6 bg-primary rounded-full"></div>
@@ -409,6 +416,7 @@ export default function SpotifyDashboard({ showTab = true }) {
                 className="group cursor-pointer bg-white rounded-lg border border-gray-100 hover:shadow-sm flex flex-col h-full transition-all active:scale-[0.98] duration-100 relative overflow-hidden"
                 onClick={() => {
                   const query = video.title ? `${video.title} ${video.artist_name}` : video.name;
+                  setSearchTerm(query);
                   router.push({
                     pathname: router.pathname,
                     query: { ...router.query, search: query }

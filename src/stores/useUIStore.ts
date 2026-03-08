@@ -40,6 +40,9 @@ interface UIState {
 
     isCastingLocal: boolean;
     setIsCastingLocal: (isCasting: boolean) => void;
+
+    castMode: 'none' | 'smarttv' | 'webmonitor' | 'dual' | 'google';
+    setCastMode: (mode: 'none' | 'smarttv' | 'webmonitor' | 'dual' | 'google') => void;
 }
 
 
@@ -84,4 +87,7 @@ export const useUIStore = create<UIState>((set) => ({
 
     isCastingLocal: false,
     setIsCastingLocal: (isCasting) => set({ isCastingLocal: isCasting }),
+
+    castMode: 'none',
+    setCastMode: (mode) => set({ castMode: mode }),
 }));
