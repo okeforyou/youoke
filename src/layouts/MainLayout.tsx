@@ -23,6 +23,7 @@ import { useCast } from '../plugins/cast/context/CastContext';
 import { useToast } from '@/context/ToastContext';
 import useIsMobile from '../hooks/isMobile';
 import { useShallow } from 'zustand/react/shallow';
+import { useVoiceSearch } from '../hooks/useVoiceSearch';
 import { useRemoteHost } from '../hooks/useRemoteHost';
 import { realtimeDb } from '@/firebase';
 import { ref, push, set } from 'firebase/database';
@@ -130,6 +131,25 @@ export default function MainLayout({ children }: MainLayoutProps) {
     // [Loop Prevention] Ref to track if current store change is from a remote
     const isProcessingRemote = useRef(false);
     const dualWindowRef = useRef<Window | null>(null);
+
+    // Initialize Voice Search
+    const { isListening, toggleListening, isSupported: isVoiceSupported } = useVoiceSearch({
+        onResult: (text) => {
+            console.log('Voice result:', text);
+            router.replace({
+                pathname: '/',
+                query: { ...router.query, search: text }
+            }, undefined, { shallow: true });
+            addToast(`🔍 ค้นหา: ${text}`);
+        },
+        onError: (err) => {
+            if (err === 'not-allowed') {
+                addToast('⚠️ กรุณาอนุญาตการเข้าถึงไมโครโฟน');
+            } else {
+                addToast('⚠️ ไม่สามารถค้นหาด้วยเสียงได้ในขณะนี้');
+            }
+        }
+    });
 
     // Remote Control Integration - Main Screen acts as a Host
     const { connectionStatus, connectedClients } = useRemoteHost(
@@ -383,12 +403,25 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                     const { search, ...rest } = router.query;
                                     router.replace({ pathname: '/', query: rest }, undefined, { shallow: true });
                                 }}
-                                className="absolute inset-y-0 right-4 flex items-center text-gray-300 hover:text-red-500 transition-colors"
+                                className="absolute inset-y-0 right-12 flex items-center text-gray-300 hover:text-red-500 transition-colors"
                             >
                                 <X className="h-4 w-4" />
                             </button>
                         )}
-
+                        {/* Voice Search Button (Desktop) */}
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                toggleListening();
+                            }}
+                            className={clsx(
+                                "absolute inset-y-2 right-2 w-8 h-8 flex items-center justify-center rounded-xl transition-all duration-300",
+                                isListening ? "bg-primary text-white scale-110 shadow-lg animate-pulse" : "bg-white text-gray-400 hover:text-primary border border-gray-100"
+                            )}
+                            title={isListening ? "กำลังฟัง..." : "ค้นหาด้วยเสียง"}
+                        >
+                            <Mic className={clsx("h-4 w-4", isListening && "animate-bounce")} />
+                        </button>
                     </div>
 
                     <div className="flex items-center gap-6 ml-6">
@@ -536,6 +569,16 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                         <X className="h-4.5 w-4.5" />
                                                     </button>
                                                 )}
+                                                {/* Voice Search Button (Mobile) */}
+                                                <button
+                                                    onClick={toggleListening}
+                                                    className={clsx(
+                                                        "ml-2 flex items-center justify-center w-8 h-8 rounded-full transition-all",
+                                                        isListening ? "bg-primary text-white scale-110 animate-pulse shadow-md" : "text-gray-400"
+                                                    )}
+                                                >
+                                                    <Mic className={clsx("h-4.5 w-4.5", isListening && "animate-bounce")} />
+                                                </button>
                                             </div>
 
                                             {/* Mode Switch (Song/Karaoke) */}

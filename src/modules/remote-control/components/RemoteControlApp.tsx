@@ -7,8 +7,9 @@ import { auth, realtimeDb } from '../../../firebase';
 import { QueueItem } from '../../../modules/player/types';
 import {
     ListMusic, User, Share2, Maximize, Minimize, RefreshCw, Volume2, VolumeX, SkipForward, SkipBack, Play, Pause, Trash2, GripVertical, Search, Sun, Moon, Music, Mic,
-    Lock, Chrome, LogIn, AlertCircle
+    Lock, Chrome, LogIn, AlertCircle, AudioLines
 } from 'lucide-react';
+import { useVoiceSearch } from '../../../hooks/useVoiceSearch';
 import { useAuth } from '@/context/AuthContext';
 import { useSystemConfig } from '@/hooks/useSystemConfig';
 import { QRCodeSVG } from 'qrcode.react';
@@ -139,6 +140,14 @@ export default function RemoteControlApp() {
         setIsSearching(true);
         debounceRef.current = setTimeout(() => performSearch(value, searchType), 600);
     };
+
+    // Voice Search Integration
+    const { isListening, toggleListening } = useVoiceSearch({
+        onResult: (text) => {
+            setSearchTerm(text);
+            performSearch(text, searchType);
+        }
+    });
 
     const handleTypeToggle = (type: 'video' | 'karaoke') => {
         setSearchType(type);
@@ -681,11 +690,21 @@ export default function RemoteControlApp() {
                                 <div className={`absolute left-4 top-1/2 -translate-y-1/2 ${theme === 'dark' ? 'text-gray-600' : 'text-gray-400'}`}>
                                     <Search size={20} strokeWidth={3} />
                                 </div>
-                                {isSearching && (
+                                {isSearching && !isListening && (
                                     <div className="absolute right-4 top-1/2 -translate-y-1/2">
                                         <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                                     </div>
                                 )}
+                                {/* Voice Search Button */}
+                                <button
+                                    onClick={toggleListening}
+                                    className={`absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full transition-all duration-300 ${isListening
+                                        ? 'bg-primary text-white scale-125 shadow-lg animate-pulse'
+                                        : theme === 'dark' ? 'text-gray-600 hover:text-primary' : 'text-gray-400 hover:text-primary'
+                                        }`}
+                                >
+                                    {isListening ? <AudioLines size={18} strokeWidth={3} className="animate-bounce" /> : <Mic size={20} strokeWidth={3} />}
+                                </button>
                             </div>
 
                             <div className={`relative flex p-1 rounded-full gap-1 shrink-0 ${theme === 'dark' ? 'bg-black' : 'bg-gray-100'}`}>
