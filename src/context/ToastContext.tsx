@@ -88,7 +88,7 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
             <div
               key={toast.id}
               className={clsx(
-                "relative flex items-center gap-3 bg-black/60 backdrop-blur-2xl rounded-full py-2 px-5 shadow-2xl transition-all duration-700 pointer-events-auto cursor-default",
+                "relative flex items-center gap-3 bg-black/85 backdrop-blur-2xl rounded-full py-2 px-5 shadow-2xl transition-all duration-700 pointer-events-auto cursor-default",
                 "animate-in slide-in-from-top-6 fade-in",
                 "hover:scale-[1.02] active:scale-[0.98]"
               )}

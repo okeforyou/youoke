@@ -539,7 +539,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
 
                     return (
                         <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[110] transition-all duration-[600ms] ease-[cubic-bezier(0.23,1,0.32,1)] ${showToast ? 'opacity-100 translate-y-0 scale-100 blur-0' : 'opacity-0 -translate-y-12 scale-[0.8] pointer-events-none blur-sm'}`}>
-                            <div className="flex items-center gap-3 bg-black/60 backdrop-blur-2xl rounded-full py-2 px-3 pl-2 shadow-2xl min-w-[260px] max-w-[90vw]">
+                            <div className="flex items-center gap-3 bg-black/85 backdrop-blur-2xl rounded-full py-2 px-3 pl-2 shadow-2xl min-w-[260px] max-w-[90vw]">
                                 {/* Thumbnail (Circular) with Ring */}
                                 <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white/10 shadow-lg shrink-0 relative bg-stone-900 group">
                                     <img
