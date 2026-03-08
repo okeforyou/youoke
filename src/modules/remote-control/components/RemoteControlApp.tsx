@@ -144,6 +144,7 @@ export default function RemoteControlApp() {
     };
 
     // Voice Search Integration
+    /* DISABLING VOICE SEARCH FOR DEBUGGING
     const { isListening, toggleListening, isSupported: isVoiceSupported } = useVoiceSearch({
         onResult: (text) => {
             setSearchTerm(text);
@@ -158,6 +159,10 @@ export default function RemoteControlApp() {
             }
         }
     });
+    */
+    const isListening = false;
+    const toggleListening = () => { };
+    const isVoiceSupported = false;
 
     const handleTypeToggle = (type: 'video' | 'karaoke') => {
         setSearchType(type);

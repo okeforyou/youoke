@@ -94,7 +94,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
     const { addToast } = useToast() || { addToast: (message: string) => { } };
 
-    // Initialize Voice Search
+    /* DISABLING VOICE SEARCH FOR DEBUGGING
     const { isListening, toggleListening, isSupported: isVoiceSupported } = useVoiceSearch({
         onResult: (text) => {
             console.log('Voice result:', text);
@@ -113,6 +113,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
             }
         }
     });
+    */
+    const isListening = false;
+    const toggleListening = () => { };
+    const isVoiceSupported = false;
 
     // Helper to handle navigation state
     const handleNav = (index: number) => {
