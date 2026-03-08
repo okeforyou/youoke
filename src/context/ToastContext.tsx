@@ -80,7 +80,7 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
           }
 
           const cleanMessage = toast.message
-            .replace(/[🔍⚠️🎙️📱✅✨🛡️]/g, '')
+            .replace(/[🔍⚠️🎙️📱✅✨🛡️🎬▶️📻📺]/g, '')
             .replace(/\s{2,}/g, ' ')
             .trim();
 
@@ -88,13 +88,10 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
             <div
               key={toast.id}
               className={clsx(
-                "relative flex items-center gap-3 bg-black/90 backdrop-blur-2xl border border-white/10 rounded-full py-2 px-5 shadow-2xl transition-all duration-700 pointer-events-auto cursor-default",
+                "relative flex items-center gap-3 bg-black/60 backdrop-blur-2xl rounded-full py-2 px-5 shadow-2xl transition-all duration-700 pointer-events-auto cursor-default",
                 "animate-in slide-in-from-top-6 fade-in",
                 "hover:scale-[1.02] active:scale-[0.98]"
               )}
-              style={{
-                boxShadow: `0 10px 40px -10px ${glowColor}, 0 20px 50px rgba(0,0,0,0.5)`,
-              }}
             >
               <div className={clsx(
                 "flex items-center justify-center shrink-0 w-8 h-8 rounded-full bg-white/5 border border-white/5",
