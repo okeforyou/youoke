@@ -380,22 +380,24 @@ export default function SpotifyDashboard({ showTab = true }) {
       }
 
       {/* Song List Content: Header + Grid */}
-      {
-        tagId && artist && artist.length > 0 && (
-          <>
+      {tagId && (
+        <>
+          {artist && artist.length > 0 && (
             <div
               ref={songlistRef}
               className="scroll-mt-32 col-span-full px-2 pt-6 pb-4 text-[13px] font-bold text-gray-500 uppercase tracking-wider flex items-center justify-between border-t border-gray-100"
             >
               <div className="flex items-center gap-3">
                 <div className="w-1.5 h-6 bg-primary rounded-full"></div>
-                {(artistCategories || []).find((cat) => cat.tag_id === tagId)?.tag_name || "เพลง"}
+                {(artistCategories || []).find((cat) => cat.tag_id === tagId)?.tag_name || "รายการเพลง"}
               </div>
               <span className="text-xs font-medium text-gray-400 bg-gray-50 px-3 py-1 rounded-lg border border-gray-100">
                 {artist.length} รายการ
               </span>
             </div>
+          )}
 
+          {!isLoading && artist && artist.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-3 col-span-full px-2 pb-24">
               {artist.map((item, i) => {
                 const video = item as any;
@@ -405,9 +407,10 @@ export default function SpotifyDashboard({ showTab = true }) {
                       className="group cursor-pointer bg-white rounded-lg border border-gray-100 hover:shadow-sm flex flex-col h-full transition-all active:scale-[0.98] duration-100 relative overflow-hidden"
                       onClick={() => {
                         const query = video.title ? `${video.title} ${video.artist_name}` : video.name;
+                        setSearchTerm(query);
                         router.push({
-                          pathname: router.pathname,
-                          query: { ...router.query, search: query }
+                          pathname: '/', // Go to home search results
+                          query: { ...router.query, search: query, playlist: undefined, genre: undefined }
                         }, undefined, { shallow: true });
                       }}
                     >
@@ -439,17 +442,16 @@ export default function SpotifyDashboard({ showTab = true }) {
                 );
               })}
             </div>
-          </>
-        )
-      }
+          )}
 
-      {/* Loading state for songs */}
-      {tagId && isLoading && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 col-span-full px-2">
-          {getSkeletonItems(10).map((i) => (
-            <div key={i} className="aspect-square bg-gray-50 rounded-lg animate-pulse border border-gray-100" />
-          ))}
-        </div>
+          {isLoading && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 col-span-full px-2 pb-24">
+              {getSkeletonItems(10).map((i) => (
+                <div key={i} className="aspect-square bg-gray-50 rounded-lg animate-pulse border border-gray-100" />
+              ))}
+            </div>
+          )}
+        </>
       )}
     </>
   );

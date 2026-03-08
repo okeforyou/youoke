@@ -2,7 +2,7 @@ import React, { ReactNode, useState, useEffect, useRef, useCallback } from 'reac
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
 import clsx from 'clsx';
-import { Menu, Search, ListMusic, Home, X, Monitor, MessageCircle, Shield, Key, Smartphone, Flame, Library, Mic, Music, ChevronDown, ChevronRight, ChevronLeft, Cast, Disc, LogOut, UserCheck, Settings, Info, PartyPopper, Star, Trash2, EyeOff, User, Maximize } from 'lucide-react'; // V2.28.0-VANISH
+import { Menu, Search, ListMusic, Home, X, Monitor, MessageCircle, Shield, Key, Smartphone, Flame, Library, Mic, Mic2, Music, ChevronDown, ChevronRight, ChevronLeft, Cast, Disc, LogOut, UserCheck, Settings, Info, PartyPopper, Star, Trash2, EyeOff, User, Maximize } from 'lucide-react'; // V2.28.0-VANISH
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { DebounceInput } from 'react-debounce-input';
@@ -457,7 +457,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                     isKaraoke ? "text-primary" : "text-black hover:text-black/80"
                                 )}
                             >
-                                <Mic className="w-3.5 h-3.5" />
+                                <Mic2 className="w-3.5 h-3.5" />
                                 <span>คาราโอเกะ</span>
                             </button>
                         </div>
@@ -602,7 +602,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                         isKaraoke ? "bg-white text-primary shadow-md scale-105" : "text-gray-400 scale-100"
                                                     )}
                                                 >
-                                                    <Mic size={16} className={isKaraoke ? "fill-primary/5" : ""} />
+                                                    <Mic2 size={16} className={isKaraoke ? "fill-primary/5" : ""} />
                                                 </button>
                                             </div>
 
