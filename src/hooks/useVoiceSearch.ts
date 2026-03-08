@@ -13,7 +13,7 @@ export const useVoiceSearch = ({ onResult, onError, language = 'th-TH' }: UseVoi
 
     useEffect(() => {
         // Initialize SpeechRecognition
-        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        const SpeechRecognition = typeof window !== 'undefined' ? ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition) : null;
 
         if (SpeechRecognition) {
             const recognitionInstance = new SpeechRecognition();
@@ -83,6 +83,6 @@ export const useVoiceSearch = ({ onResult, onError, language = 'th-TH' }: UseVoi
     return {
         isListening,
         toggleListening,
-        isSupported: !!recognition || !!((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition)
+        isSupported: typeof window !== 'undefined' && (!!recognition || !!((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition))
     };
 };
