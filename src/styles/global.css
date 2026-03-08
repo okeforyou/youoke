@@ -227,6 +227,32 @@ html {
   }
 }
 
+@keyframes slide-in-top {
+  from {
+    opacity: 0;
+    transform: translateY(-1.5rem) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-in {
+  animation-duration: 500ms;
+  animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+  animation-fill-mode: both;
+}
+
+.slide-in-from-top-6 {
+  animation-name: slide-in-top;
+}
+
+.fade-in {
+  opacity: 1;
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

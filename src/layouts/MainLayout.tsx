@@ -103,13 +103,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 pathname: '/',
                 query: { ...router.query, search: text }
             }, undefined, { shallow: true });
-            addToast(`🔍 ค้นหา: ${text}`);
+            addToast(`🎙️ ค้นหาแล้ว: ${text}`, 'voice');
         },
         onError: (err) => {
             if (err === 'not-allowed') {
-                addToast('⚠️ กรุณาอนุญาตการเข้าถึงไมโครโฟน');
+                addToast('⚠️ กรุณาอนุญาตการเข้าถึงไมโครโฟน', 'error');
             } else {
-                addToast('⚠️ ไม่สามารถค้นหาด้วยเสียงได้ในขณะนี้');
+                addToast('⚠️ ไม่สามารถค้นหาด้วยเสียงได้ในขณะนี้', 'error');
             }
         }
     });

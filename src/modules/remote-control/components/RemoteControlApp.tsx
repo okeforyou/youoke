@@ -9,6 +9,7 @@ import {
     ListMusic, User, Share2, Maximize, Minimize, RefreshCw, Volume2, VolumeX, SkipForward, SkipBack, Play, Pause, Trash2, GripVertical, Search, Sun, Moon, Music, Mic, Mic2,
     Lock, Chrome, LogIn, AlertCircle
 } from 'lucide-react';
+import { useToast } from '@/context/ToastContext';
 import { useVoiceSearch } from '../../../hooks/useVoiceSearch';
 import { useAuth } from '@/context/AuthContext';
 import { useSystemConfig } from '@/hooks/useSystemConfig';
@@ -58,6 +59,7 @@ export default function RemoteControlApp() {
         controls: { isPlaying: false, isMuted: false, volume: 100 },
         isQueueVisible: false
     });
+    const { addToast } = useToast() || { addToast: () => { } };
     const [guestName, setGuestName] = useState('');
     const [showNameModal, setShowNameModal] = useState(false);
 
@@ -146,6 +148,14 @@ export default function RemoteControlApp() {
         onResult: (text) => {
             setSearchTerm(text);
             handleSearchInput(text);
+            addToast(`🎙️ ค้นหาแล้ว: ${text}`, 'voice');
+        },
+        onError: (err) => {
+            if (err === 'not-allowed') {
+                addToast('⚠️ กรุณาอนุญาตการเข้าถึงไมโครโฟน', 'error');
+            } else {
+                addToast('⚠️ ไม่สามารถค้นหาด้วยเสียงได้', 'error');
+            }
         }
     });
 
