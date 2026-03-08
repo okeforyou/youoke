@@ -21,6 +21,7 @@ import { MobileBottomNav } from '../components/navigation/MobileBottomNav';
 import { Sidebar } from '../components/navigation/Sidebar';
 import { useCast } from '../plugins/cast/context/CastContext';
 import { useToast } from '@/context/ToastContext';
+import useIsMobile from '../hooks/isMobile';
 import { useRemoteHost } from '../hooks/useRemoteHost';
 import { useVoiceSearch } from '../hooks/useVoiceSearch';
 import { useShallow } from 'zustand/react/shallow';
@@ -91,7 +92,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const dataSource = isKaraoke ? 'karaoke' : 'mv';
     const toggleSource = (source: 'karaoke' | 'mv') => setIsKaraoke(source === 'karaoke');
 
-    const { addToast } = useToast();
+    const { addToast } = useToast() || { addToast: (message: string) => { } };
 
     // Initialize Voice Search
     const { isListening, toggleListening, isSupported: isVoiceSupported } = useVoiceSearch({
