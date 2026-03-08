@@ -368,88 +368,89 @@ export default function SpotifyDashboard({ showTab = true }) {
         )
       }
 
-      {/* Loading Skeletons */}
+      {/* Loading State for Search (Genres) */}
       {
-        isLoading && (
+        isLoadingGenre && (
+          <div className="col-span-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 px-2">
+            {getSkeletonItems(5).map((s) => (
+              <div key={s} className="h-10 bg-gray-50 rounded-xl animate-pulse" />
+            ))}
+          </div>
+        )
+      }
+
+      {/* Song List Content: Header + Grid */}
+      {
+        tagId && artist && artist.length > 0 && (
           <>
-            <div className="col-span-full grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 px-2">
-              {getSkeletonItems(8).map((s) => (
-                <div key={s} className="h-48 bg-gray-100 rounded-3xl animate-pulse" />
-              ))}
+            <div
+              ref={songlistRef}
+              className="scroll-mt-32 col-span-full px-2 pt-6 pb-4 text-[13px] font-bold text-gray-500 uppercase tracking-wider flex items-center justify-between border-t border-gray-100"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-1.5 h-6 bg-primary rounded-full"></div>
+                {(artistCategories || []).find((cat) => cat.tag_id === tagId)?.tag_name || "เพลง"}
+              </div>
+              <span className="text-xs font-medium text-gray-400 bg-gray-50 px-3 py-1 rounded-lg border border-gray-100">
+                {artist.length} รายการ
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-3 col-span-full px-2 pb-24">
+              {artist.map((item, i) => {
+                const video = item as any;
+                return (
+                  <Fragment key={video.name + i}>
+                    <div
+                      className="group cursor-pointer bg-white rounded-lg border border-gray-100 hover:shadow-sm flex flex-col h-full transition-all active:scale-[0.98] duration-100 relative overflow-hidden"
+                      onClick={() => {
+                        const query = video.title ? `${video.title} ${video.artist_name}` : video.name;
+                        router.push({
+                          pathname: router.pathname,
+                          query: { ...router.query, search: query }
+                        }, undefined, { shallow: true });
+                      }}
+                    >
+                      <figure className="relative w-full aspect-square flex-shrink-0 bg-gray-50 overflow-hidden">
+                        <Image
+                          src={video.imageUrl}
+                          priority={i < 4}
+                          alt={video.name}
+                          unoptimized
+                          layout="fill"
+                          className="object-cover transition-transform duration-700 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                          <div className="w-9 h-9 rounded-full bg-white/90 flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span className="text-black text-sm font-bold">▶</span>
+                          </div>
+                        </div>
+                      </figure>
+                      <div className="p-2 gap-y-0.5 flex-1 flex flex-col relative">
+                        <h2 className="font-medium text-[11px] sm:text-[12px] line-clamp-2 flex-1 text-gray-800 leading-snug">
+                          {video.title || video.name}
+                        </h2>
+                        <p className="text-[9px] text-gray-500 truncate">
+                          {video.artist_name || video.name}
+                        </p>
+                      </div>
+                    </div>
+                  </Fragment>
+                );
+              })}
             </div>
           </>
         )
       }
 
-      {/* Song List Header */}
-      {
-        artist && artist.length > 0 && (
-          <div
-            ref={songlistRef}
-            className="scroll-mt-32 col-span-full px-2 pt-6 pb-4 text-[13px] font-bold text-gray-500 uppercase tracking-wider flex items-center justify-between border-t border-gray-100"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-1.5 h-6 bg-primary rounded-full"></div>
-              {(artistCategories || []).find((cat) => cat.tag_id === tagId)?.tag_name || "เพลง"}
-            </div>
-            <span className="text-xs font-medium text-gray-400 bg-gray-50 px-3 py-1 rounded-lg border border-gray-100">
-              {artist.length} รายการ
-            </span>
-          </div>
-        )
-      }
-
-      {/* Song List Grid - Clean Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-3 col-span-full px-2 pb-24">
-        {artist?.map((item, i) => {
-          const video = item as any;
-          return (
-            <Fragment key={video.name + i}>
-              <div
-                className="group cursor-pointer bg-white rounded-lg border border-gray-100 hover:shadow-sm flex flex-col h-full transition-all active:scale-[0.98] duration-100 relative overflow-hidden"
-                onClick={() => {
-                  const query = video.title ? `${video.title} ${video.artist_name}` : video.name;
-                  router.push({
-                    pathname: router.pathname,
-                    query: { ...router.query, search: query }
-                  }, undefined, { shallow: true });
-                }}
-              >
-                <figure className="relative w-full aspect-square flex-shrink-0 bg-gray-50 overflow-hidden">
-                  <Image
-                    src={video.imageUrl}
-                    priority
-                    alt={video.name}
-                    unoptimized
-                    layout="fill"
-                    className="object-cover transition-transform duration-700 group-hover:scale-110"
-                    onLoad={(ev) =>
-                      ev.currentTarget.classList.remove("animate-pulse")
-                    }
-                    onErrorCapture={(ev) => {
-                      ev.currentTarget.src = "/assets/avatar.jpeg";
-                    }}
-                  />
-                  {/* Play Overlay matching Search Grid */}
-                  <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                    <div className="w-9 h-9 rounded-full bg-white/90 flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
-                      <span className="text-black text-sm font-bold">▶</span>
-                    </div>
-                  </div>
-                </figure>
-                <div className="p-2 gap-y-0.5 flex-1 flex flex-col relative">
-                  <h2 className="font-medium text-[11px] sm:text-[12px] line-clamp-2 flex-1 text-gray-800 leading-snug">
-                    {video.title || video.name}
-                  </h2>
-                  <p className="text-[9px] text-gray-500 truncate">
-                    {video.artist_name || video.name}
-                  </p>
-                </div>
-              </div>
-            </Fragment>
-          );
-        })}
-      </div>
+      {/* Loading state for songs */}
+      {tagId && isLoading && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 col-span-full px-2">
+          {getSkeletonItems(10).map((i) => (
+            <div key={i} className="aspect-square bg-gray-50 rounded-lg animate-pulse border border-gray-100" />
+          ))}
+        </div>
+      )}
     </>
   );
 }
