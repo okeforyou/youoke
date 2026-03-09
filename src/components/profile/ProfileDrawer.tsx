@@ -19,6 +19,7 @@ import { UserProfile } from '../../types/subscription';
 import { MembershipCard } from './MembershipCard';
 import { PackageStore } from './PackageStore';
 import { NotificationList } from './NotificationList';
+import { GuestCard } from './GuestCard';
 
 interface ProfileDrawerProps {
     isOpen: boolean;
@@ -164,6 +165,12 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                         {loading && !profile ? (
                                             <div className="flex-1 flex items-center justify-center">
                                                 <div className="loading loading-spinner loading-lg text-primary"></div>
+                                            </div>
+                                        ) : user?.displayName === 'Guest' ? (
+                                            // Guest View
+                                            <div className="flex-1 px-4 py-6 space-y-4">
+                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">สถานะการใช้งาน</p>
+                                                <GuestCard />
                                             </div>
                                         ) : (
                                             <>

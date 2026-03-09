@@ -6,6 +6,7 @@ import { useSystem } from '../../core/container/SystemContext';
 import clsx from 'clsx';
 import { useShallow } from 'zustand/react/shallow';
 import { useRouter } from 'next/router';
+import { auth } from '../../firebase';
 
 export const MobileBottomNav = () => {
     const router = useRouter();
@@ -73,13 +74,16 @@ export const MobileBottomNav = () => {
                                 isActive ? "text-primary bg-primary/10" : "text-black group-hover:text-black"
                             )}>
                                 {item.id === 5 && user ? (
-                                    user.photoURL ? (
-                                        <img src={user.photoURL} className={clsx("w-6 h-6 rounded-full border transition-transform duration-300", isActive ? "scale-110 border-primary" : "border-transparent")} alt="Profile" />
-                                    ) : (
-                                        <div className={clsx("w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-300", isActive ? "bg-primary text-white scale-110" : "bg-gray-200 text-gray-600")}>
-                                            {user.email?.[0]?.toUpperCase() || 'U'}
-                                        </div>
-                                    )
+                                    (() => {
+                                        const photoURL = user.photoURL || auth?.currentUser?.photoURL;
+                                        return photoURL ? (
+                                            <img src={photoURL} className={clsx("w-6 h-6 rounded-full border transition-transform duration-300", isActive ? "scale-110 border-primary" : "border-transparent")} alt="Profile" />
+                                        ) : (
+                                            <div className={clsx("w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-300", isActive ? "bg-primary text-white scale-110" : "bg-gray-200 text-gray-600")}>
+                                                {user.displayName === 'Guest' ? '👤' : (user.email?.[0]?.toUpperCase() || 'U')}
+                                            </div>
+                                        );
+                                    })()
                                 ) : (
                                     <item.icon
                                         size={24}
