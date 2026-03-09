@@ -583,6 +583,19 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                         <X className="h-4.5 w-4.5" />
                                                     </button>
                                                 )}
+
+                                                {isVoiceSupported && (
+                                                    <button
+                                                        onClick={toggleListening}
+                                                        className={clsx(
+                                                            "ml-1 p-1 rounded-full transition-all flex items-center justify-center",
+                                                            isListening ? "bg-primary text-white scale-110 animate-pulse shadow-md" : "text-black hover:text-primary"
+                                                        )}
+                                                        title="ค้นหาด้วยเสียง"
+                                                    >
+                                                        <Mic className={clsx("h-4.5 w-4.5", isListening && "animate-bounce")} />
+                                                    </button>
+                                                )}
                                             </div>
 
                                             {/* Mode Switch (Song/Karaoke) */}
