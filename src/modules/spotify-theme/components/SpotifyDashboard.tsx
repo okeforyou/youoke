@@ -150,11 +150,12 @@ export default function SpotifyDashboard({ showTab = true }) {
 
   const topArtists = tempTopArtistsData?.artist || [];
 
-  // Fallback: If genrePlaylists is empty (e.g. API search returns nothing), 
-  // we fallback to the default categories from topArtistsData which contains the baseline sets.
-  const artistCategories = (genreText === "เพลงไทย")
+  // Fallback: If genrePlaylists is empty AND we are loading, don't fall back to default.
+  // Only fall back to topArtistsData for the DEFAULT genre ("ลูกทุ่ง").
+  const isGenreDefault = genreText === "เพลงไทย" || genreText === "ลูกทุ่ง";
+  const artistCategories = isGenreDefault
     ? (topArtistsData?.artistCategories || [])
-    : (genrePlaylists.length > 0 ? genrePlaylists : (topArtistsData?.artistCategories || []));
+    : genrePlaylists; // Show only genre-specific results (empty = empty, loading = skeleton)
 
   const { artist } = artists || {};
   const [isError, setIsError] = useState(false);
@@ -298,13 +299,29 @@ export default function SpotifyDashboard({ showTab = true }) {
         ))}
       </div>
       {
-        artistCategories.length > 0 && (
+        (artistCategories.length > 0 || (!isGenreDefault && isLoadingGenre)) && (
           <div ref={playlistRef} className="scroll-mt-32 col-span-full px-2 pt-4 pb-3 text-[11px] sm:text-[12px] font-black text-black uppercase tracking-wider flex items-center justify-between">
-            <span>{genreText === "ลูกทุ่ง" ? "เพลย์ลิสต์แนะนำ" : `เพลย์ลิสต์ ${genreText}`}</span>
+            <span>{isGenreDefault ? "เพลย์ลิสต์แนะนำ" : `เพลย์ลิสต์ ${genreText}`}</span>
             <span className="text-[10px] font-normal text-gray-400 bg-gray-50 px-3 py-1 rounded-full">อัพเดทล่าสุด</span>
           </div>
         )
       }
+
+      {/* Genre Loading Skeleton */}
+      {!isGenreDefault && isLoadingGenre && artistCategories.length === 0 && (
+        <div className="col-span-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 px-4 pb-8">
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div key={i} className="aspect-square rounded-3xl bg-gray-100 animate-pulse" />
+          ))}
+        </div>
+      )}
+
+      {/* Genre Empty State */}
+      {!isGenreDefault && !isLoadingGenre && artistCategories.length === 0 && (
+        <div className="col-span-full px-4 pb-8 text-center">
+          <p className="text-gray-400 text-sm">ไม่พบเพลย์ลิสต์สำหรับ "{genreText}" กรุณาลองใหม่อีกครั้ง</p>
+        </div>
+      )}
 
       {/* Playlists: Premium Cards */}
       {

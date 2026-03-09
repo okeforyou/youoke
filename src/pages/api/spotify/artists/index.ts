@@ -78,12 +78,27 @@ export default async function handler(
           }
           throw new Error("No cover");
         } catch (e) {
-          // Reliable Fallback using ui-avatars as seen in V1 restore
+          // Fallback: Try to get a video thumbnail that matches the query
+          try {
+            const { scrapeYouTubeSearch } = await import("../../../../utils/youtubeScraper");
+            const videoResults = await scrapeYouTubeSearch(cat.query);
+            if (videoResults[0]?.videoId) {
+              return {
+                data: {
+                  id: `q-${encodeURIComponent(cat.query)}`,
+                  name: cat.name,
+                  images: [{ url: `https://i.ytimg.com/vi/${videoResults[0].videoId}/hqdefault.jpg` }]
+                }
+              };
+            }
+          } catch { } // ignore
+
+          // Final fallback: YouTube icon placeholder
           return {
             data: {
               id: `q-${encodeURIComponent(cat.query)}`,
               name: cat.name,
-              images: [{ url: `https://ui-avatars.com/api/?name=${encodeURIComponent(cat.name)}&background=random&size=300` }]
+              images: [{ url: "/icon-cover.png" }]
             }
           };
         }

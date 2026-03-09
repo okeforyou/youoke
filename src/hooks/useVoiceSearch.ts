@@ -64,7 +64,10 @@ export const useVoiceSearch = ({ onResult, onError, language = 'th-TH' }: UseVoi
                 .join('');
 
             if (event.results[0].isFinal) {
-                onResultRef.current(transcript);
+                // Only accept results with at least 2 characters (filter out noise)
+                if (transcript.trim().length >= 2) {
+                    onResultRef.current(transcript.trim());
+                }
                 instance.stop();
                 return;
             }
@@ -73,7 +76,7 @@ export const useVoiceSearch = ({ onResult, onError, language = 'th-TH' }: UseVoi
             if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
             silenceTimerRef.current = setTimeout(() => {
                 try { instance.stop(); } catch (e) { /* ignore */ }
-            }, 2000); // 2 seconds of silence → stop
+            }, 3000); // 3 seconds of silence → stop (increased from 2s for better UX)
         };
 
         recognitionRef.current = instance;
