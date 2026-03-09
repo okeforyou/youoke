@@ -70,6 +70,7 @@ const SubscriptionsPage: React.FC = () => {
   useEffect(() => {
     const fetchPlans = async () => {
       try {
+        if (!db) { setError("Firebase not initialized"); setIsLoading(false); return; }
         const q = query(collection(db, "plans"));
         const querySnapshot = await getDocs(q);
         const fetchedPlans = querySnapshot.docs.map(doc => ({
