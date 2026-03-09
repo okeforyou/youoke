@@ -127,24 +127,30 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                     <button
                         key={index}
                         onClick={item.onClick}
-                        className="flex items-center justify-center flex-1 h-full group transition-all active:scale-95"
+                        className="flex flex-col items-center justify-center flex-1 h-full group transition-all active:scale-95 relative"
                     >
                         <div className={clsx(
-                            "p-2.5 rounded-xl transition-all duration-300 relative",
-                            item.active ? (item.label === "ยกเลิก" ? "bg-red-500 text-white shadow-lg scale-105" : "text-primary bg-white shadow-md scale-105") : "text-black group-hover:text-black"
+                            "p-2 rounded-xl transition-all duration-300 flex items-center justify-center",
+                            item.active ? (item.label === "ยกเลิก" ? "text-red-500" : "text-primary") : "text-black group-hover:text-primary/70"
                         )}>
                             <item.icon
                                 size={22}
-                                strokeWidth={item.active ? 2.5 : 2}
-                                className={clsx(
-                                    "transition-all duration-300",
-                                    item.active ? (item.label === "ยกเลิก" ? "text-white" : "text-primary") : "text-black"
-                                )}
+                                strokeWidth={item.active ? 2.2 : 1.8}
+                                fill={item.active && (item.label === "เล่น/หยุด" || item.label === "เปิดเสียง" || item.label === "ปิดเสียง") ? "currentColor" : "none"}
+                                className="transition-all duration-300"
                             />
+
+                            {/* Connection Pulse for Cast */}
                             {item.label === "ยกเลิก" && isAnyCastOn && (
-                                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse border-2 border-white shadow-sm"></span>
+                                <span className="absolute top-1 right-1 w-2 h-2 bg-green-500 rounded-full animate-pulse border border-white shadow-sm"></span>
                             )}
                         </div>
+
+                        {/* Sharp Minimalist Active Indicator (Dot) */}
+                        <div className={clsx(
+                            "absolute bottom-1 w-1 h-1 rounded-full transition-all duration-300",
+                            item.active ? (item.label === "ยกเลิก" ? "bg-red-500 scale-100" : "bg-primary scale-100") : "bg-transparent scale-0"
+                        )} />
                     </button>
                 ))}
             </div>
