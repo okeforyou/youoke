@@ -633,7 +633,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                 </button>
                                             </div>
 
-                                            {/* Queue Button - Depth/Shadow Effect */}
+                                            {/* Queue Button - Enhanced for Visibility (Red: Closed, Green: Open) */}
                                             <button
                                                 onClick={() => {
                                                     if (isQueueOpen && !isPlayerHidden) {
@@ -645,17 +645,25 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                     }
                                                 }}
                                                 className={clsx(
-                                                    "w-10 h-10 flex items-center justify-center rounded-2xl shrink-0 transition-all duration-200 relative border",
+                                                    "w-11 h-10 flex items-center justify-center rounded-2xl shrink-0 transition-all duration-300 relative border-2",
                                                     isQueueOpen
-                                                        ? "bg-gray-100 text-primary border-black/5 shadow-[inset_2px_2px_4px_rgba(0,0,0,0.05),inset_-1px_-1px_2px_rgba(255,255,255,0.8)] scale-95"
-                                                        : "bg-white text-gray-700 border-gray-100 shadow-[2px_2px_8px_rgba(0,0,0,0.06),-2px_-2px_8px_rgba(255,255,255,0.9)] hover:shadow-md active:scale-95"
+                                                        ? "bg-green-50 text-green-600 border-green-500/20 shadow-inner scale-95"
+                                                        : "bg-white text-black border-gray-100 shadow-md active:scale-95"
                                                 )}
+                                                aria-label="คิวเพลง"
                                             >
-                                                <ListMusic className={clsx("w-5 h-5 transition-transform", isQueueOpen && "scale-90")} />
+                                                <ListMusic className={clsx("w-5.5 h-5.5 transition-all", isQueueOpen ? "scale-110" : "scale-100")} />
                                                 {queue.length > 0 && (
-                                                    <div className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-black h-4.5 min-w-[18px] px-1 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
+                                                    <div className={clsx(
+                                                        "absolute -top-2 -right-1.5 text-white text-[10px] font-black h-5 min-w-[20px] px-1.5 rounded-full flex items-center justify-center border-2 border-white shadow-md transition-colors duration-300",
+                                                        isQueueOpen ? "bg-green-500 animate-[pulse_2s_infinite]" : "bg-red-500"
+                                                    )}>
                                                         {queue.length}
                                                     </div>
+                                                )}
+                                                {/* Visual indicator for 'active' state */}
+                                                {isQueueOpen && (
+                                                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-green-500 rounded-full" />
                                                 )}
                                             </button>
                                         </div>
