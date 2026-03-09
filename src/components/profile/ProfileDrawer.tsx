@@ -110,16 +110,6 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
             label: 'วิธีการใช้งาน',
             href: '/tutorial',
         },
-        {
-            icon: SparklesIcon,
-            label: 'โปรโมชั่นพิเศษ',
-            href: '/promotions',
-        },
-        {
-            icon: CreditCardIcon,
-            label: 'แพ็กเกจของฉัน',
-            href: '/profile', // Point to profile page for now as it shows subscription
-        },
     ];
 
     if (!user) return null;
@@ -204,87 +194,64 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                                     </h2>
                                                     <p className="text-sm text-gray-500 mt-1">{profile?.email || user.email}</p>
 
-                                                    {/* Music Service Badges - Show generally or based on mock settings */}
-                                                    <div className="flex gap-3 mt-6">
-                                                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 rounded-full text-xs font-bold border border-green-100 grayscale opacity-50">
-                                                            <MusicalNoteIcon className="w-3.5 h-3.5" />
-                                                            Spotify
-                                                        </div>
-                                                        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-700 rounded-full text-xs font-bold border border-red-100">
-                                                            <PlayCircleIcon className="w-3.5 h-3.5 text-red-600" />
-                                                            YouTube
+                                                    {/* Music Service Badges Removed per request */}
+                                                </div>
+
+                                                {/* Integrated Membership & Store Section */}
+                                                <div className="px-4 pb-12 space-y-8">
+
+                                                    {/* Membership Status (The Pretty Card) */}
+                                                    <div>
+                                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 px-2">บัตรสมาชิก</p>
+                                                        <MembershipCard
+                                                            membership={user.membership || { type: 'free', status: 'active', expiresAt: null }}
+                                                            role={user.role}
+                                                            onUpgrade={() => { }} // Scroll is handled naturally in single view
+                                                        />
+                                                    </div>
+
+                                                    {/* Notifications */}
+                                                    <div>
+                                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 px-2">การแจ้งเตือน</p>
+                                                        <div className="rounded-2xl border border-gray-100 bg-gray-50/30 p-4">
+                                                            <NotificationList />
                                                         </div>
                                                     </div>
-                                                </div>
 
-                                                {/* Menu List */}
-                                                <div className="flex-1 px-4 pb-6">
-                                                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-2">บัญชีผู้ใช้</p>
-                                                    <ul className="space-y-1">
-                                                        {menuItems.map((item, index) => (
-                                                            <li key={index}>
-                                                                <Link href={item.href} onClick={onClose} className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors group">
-                                                                    <div className="flex items-center gap-3">
-                                                                        <div className="p-2 bg-gray-100 rounded-lg text-gray-500 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                                                                            <item.icon className="w-5 h-5" />
+                                                    {/* Package Store (Buy Direct) */}
+                                                    <div>
+                                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 px-2">เลือกแพ็กเกจ</p>
+                                                        <PackageStore />
+                                                    </div>
+
+                                                    {/* Menu List (Simplified) */}
+                                                    <div>
+                                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 px-2">การตั้งค่า</p>
+                                                        <ul className="space-y-1">
+                                                            {menuItems.map((item, index) => (
+                                                                <li key={index}>
+                                                                    <Link href={item.href} onClick={onClose} className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors group">
+                                                                        <div className="flex items-center gap-3">
+                                                                            <div className="p-2 bg-gray-100 rounded-lg text-gray-500 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                                                                                <item.icon className="w-5 h-5" />
+                                                                            </div>
+                                                                            <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">{item.label}</span>
                                                                         </div>
-                                                                        <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">{item.label}</span>
-                                                                    </div>
-                                                                    <ChevronRightIcon className="w-4 h-4 text-gray-400 group-hover:text-gray-600 group-hover:translate-x-0.5 transition-all" />
-                                                                </Link>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
+                                                                        <ChevronRightIcon className="w-4 h-4 text-gray-400 group-hover:text-gray-600 group-hover:translate-x-0.5 transition-all" />
+                                                                    </Link>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
 
-                                                    <div className="my-6 border-b border-gray-100" />
-
-                                                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-2">ช่วยเหลือ</p>
-                                                    <button
-                                                        onClick={handleLogout}
-                                                        className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-red-50 transition-colors text-left group"
-                                                    >
-                                                        <div className="p-2 bg-red-50 rounded-lg text-red-500 group-hover:bg-red-100 transition-colors">
-                                                            <ArrowRightOnRectangleIcon className="w-5 h-5" />
-                                                        </div>
-                                                        <span className="text-sm font-medium text-red-600 group-hover:text-red-700">ออกจากระบบ</span>
-                                                    </button>
-                                                </div>
-
-                                                {/* Pro Banner (Bottom Sticky) */}
-                                                <div className="p-4 bg-gray-50 mt-auto border-t border-gray-100">
-                                                    <div className="relative overflow-hidden rounded-2xl bg-gray-900 p-5 text-white shadow-lg">
-                                                        {/* Background decoration */}
-                                                        <div className="absolute top-0 right-0 -mr-8 -mt-8 h-32 w-32 rounded-full bg-white/10 blur-xl" />
-                                                        <div className="absolute bottom-0 left-0 -ml-8 -mb-8 h-32 w-32 rounded-full bg-primary/20 blur-xl" />
-
-                                                        <div className="relative z-10">
-                                                            <div className="flex items-center gap-2 mb-1">
-                                                                {isPremium ? (
-                                                                    <span className="bg-yellow-500 text-black text-[10px] font-bold px-1.5 py-0.5 rounded">PRO</span>
-                                                                ) : (
-                                                                    <span className="bg-gray-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">FREE</span>
-                                                                )}
-                                                                <p className="text-xs font-medium text-gray-300 tracking-widest uppercase">Membership</p>
+                                                        <button
+                                                            onClick={handleLogout}
+                                                            className="w-full mt-4 flex items-center gap-3 p-3 rounded-xl hover:bg-red-50 transition-colors text-left group"
+                                                        >
+                                                            <div className="p-2 bg-red-50 rounded-lg text-red-500 group-hover:bg-red-100 transition-colors">
+                                                                <ArrowRightOnRectangleIcon className="w-5 h-5" />
                                                             </div>
-                                                            <h3 className="text-xl font-bold text-white mb-3">
-                                                                {isAdmin ? "ADMINISTRATOR" : (isPremium ? `YOUOKE ${getPackageDisplayName(profile?.subscription?.plan)}`.toUpperCase() : 'YOUOKE FREE')}
-                                                            </h3>
-
-                                                            <div className="flex items-end justify-between">
-                                                                <div>
-                                                                    <p className="text-[10px] text-gray-400 uppercase tracking-wider mb-0.5">Valid Until</p>
-                                                                    <p className="text-sm font-bold text-white">
-                                                                        {isAdmin ? "SYSTEM OWNER" : (isLifetime ? "LIFETIME" :
-                                                                            profile?.subscription?.endDate ?
-                                                                                new Date(profile.subscription.endDate).toLocaleDateString('th-TH') :
-                                                                                "-")}
-                                                                    </p>
-                                                                </div>
-                                                                <Link href="/pricing" onClick={onClose} className="bg-white text-black text-xs font-bold px-4 py-2 rounded-full hover:bg-gray-100 transition-colors flex items-center gap-1">
-                                                                    {isPremium ? "ต่ออายุ" : "อัพเกรด"} <ChevronRightIcon className="w-3 h-3" />
-                                                                </Link>
-                                                            </div>
-                                                        </div>
+                                                            <span className="text-sm font-medium text-red-600 group-hover:text-red-700">ออกจากระบบ</span>
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </>
