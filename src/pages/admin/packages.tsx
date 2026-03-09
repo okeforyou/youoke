@@ -43,19 +43,17 @@ interface PackageData {
     isPopular?: boolean;
 }
 
-// Modernized Features for YouOke (Killer Features)
+// Real System Features for YouOke (Short Version for Packages)
 const PREDEFINED_FEATURES = [
-    { id: 'hd_audio', label: "เสียงชัดระดับ HD", description: "High Quality Audio", icon: Volume2 },
-    { id: 'no_ads', label: "ไม่มีโฆษณาคั่น", description: "Ad-Free Experience", icon: Ban },
-    { id: 'unlimited_songs', label: "ร้องเพลงได้ไม่จำกัด", description: "Unlimited YouTube Songs", icon: Play },
+    { id: 'no_ads', label: "ไร้โฆษณาคั่น", description: "100% Ad-Free", icon: Ban },
+    { id: 'unlimited_queue', label: "คิวไม่จำกัด", description: "Unlimited Song Queue", icon: Zap },
+    { id: 'mobile_remote', label: "รีโมทมือถือ", description: "Smartphone Remote", icon: Smartphone },
+    { id: 'dual_screen', label: "ระบบ 2 หน้าจอ", description: "Dual Screen System", icon: Tv },
+    { id: 'universal_cast', label: "ส่งขึ้นจอ TV", description: "Universal Casting", icon: Play },
+    { id: 'voice_search', label: "ค้นหาด้วยเสียง", description: "Voice Search Control", icon: Mic2 },
+    { id: 'search_filter', label: "แยกคาราโอเกะ", description: "Song / Karaoke Filter", icon: Search },
     { id: 'personal_playlists', label: "บันทึกเพลงโปรด", description: "Personal Songbook", icon: Bookmark },
-    { id: 'mobile_remote', label: "รีโมทควบคุมผ่านมือถือ", description: "Mobile Remote Control", icon: Smartphone },
-    { id: 'dual_screen', label: "เชื่อมต่อหน้าจอแยก", description: "Dual Screen / Casting", icon: Tv },
-    { id: 'vocal_cut', label: "ระบบตัดเสียงร้อง AI", description: "Smart Vocal Remover", icon: Mic2 },
-    { id: 'key_changer', label: "ปรับคีย์เพลงอิสระ", description: "Real-time Key Changer", icon: Music },
-    { id: 'unlimited_queue', label: "คิวเพลงไม่จำกัด", description: "Unlimited Song Queue", icon: Zap },
-    { id: 'early_access', label: "ฟีเจอร์ใหม่ก่อนใคร", description: "Beta & Early Access", icon: Sparkles },
-    { id: 'support_creator', label: "สนับสนุนนักพัฒนา", description: "Support YouOke Team", icon: Heart }
+    { id: 'global_library', label: "คลังเพลงทั่วโลก", description: "Global YouTube Music", icon: Library }
 ];
 
 export default function PackagesPage() {
