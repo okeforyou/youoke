@@ -197,7 +197,6 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
 
                                                         <Link
                                                             href="/profile/edit"
-                                                            onClick={onClose}
                                                             className="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/5 px-2 py-0.5 rounded-full hover:bg-primary/10 transition-colors"
                                                         >
                                                             <UserCircleIcon className="w-3 h-3" /> แก้ไขโปรไฟล์
@@ -238,7 +237,7 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                                         <ul className="space-y-1">
                                                             {menuItems.map((item, index) => (
                                                                 <li key={index}>
-                                                                    <Link href={item.href} onClick={onClose} className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors group">
+                                                                    <Link href={item.href} className="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition-colors group">
                                                                         <div className="flex items-center gap-3">
                                                                             <div className="p-2 bg-gray-100 rounded-lg text-gray-500 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
                                                                                 <item.icon className="w-5 h-5" />

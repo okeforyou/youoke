@@ -1,8 +1,15 @@
 import { useRouter } from "next/router";
 import { ChevronLeft, Play, Search, Music, Mic2, Tv, Smartphone } from "lucide-react";
+import { useUIStore } from "@/stores/useUIStore";
 
 export default function TutorialPage() {
     const router = useRouter();
+    const setProfileOpen = useUIStore(state => state.setProfileOpen);
+
+    const handleBack = () => {
+        setProfileOpen(true);
+        router.back();
+    };
 
     const guides = [
         {
@@ -41,7 +48,7 @@ export default function TutorialPage() {
         <div className="min-h-screen bg-gray-50 flex flex-col">
             {/* Header */}
             <header className="bg-white border-b border-gray-100 px-4 py-4 flex items-center justify-between sticky top-0 z-10 shadow-sm">
-                <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                <button onClick={handleBack} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                     <ChevronLeft className="w-6 h-6 text-gray-600" />
                 </button>
                 <h1 className="text-lg font-bold text-gray-900">วิธีการใช้งาน</h1>

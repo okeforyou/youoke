@@ -7,10 +7,24 @@ import { doc, updateDoc } from "firebase/firestore";
 import { updateProfile } from "firebase/auth";
 import { auth } from "@/firebase";
 
+import { useUIStore } from "@/stores/useUIStore";
+
 export default function EditProfilePage() {
     const router = useRouter();
     const { user } = useAuthStore();
+    const setProfileOpen = useUIStore(state => state.setProfileOpen);
     const [displayName, setDisplayName] = useState("");
+
+    const handleBack = () => {
+        setProfileOpen(true);
+        router.back();
+    };
+
+    useEffect(() => {
+        if (user) {
+            setDisplayName(user.displayName || "");
+        }
+    }, [user]);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
 
@@ -29,14 +43,14 @@ export default function EditProfilePage() {
 
         try {
             // Update Auth Profile
-            if (auth.currentUser) {
+            if (auth?.currentUser) {
                 await updateProfile(auth.currentUser, {
                     displayName: displayName.trim()
                 });
             }
 
             // Update Firestore Profile
-            const userRef = doc(db, "users", user.uid);
+            const userRef = doc(db!, "users", user.uid);
             await updateDoc(userRef, {
                 displayName: displayName.trim(),
                 updatedAt: new Date()
@@ -44,7 +58,7 @@ export default function EditProfilePage() {
 
             setMessage("บันทึกข้อมูลเรียบร้อยแล้ว");
             setTimeout(() => {
-                router.back();
+                handleBack();
             }, 1500);
         } catch (error) {
             console.error("Error updating profile:", error);
@@ -60,7 +74,7 @@ export default function EditProfilePage() {
         <div className="min-h-screen bg-gray-50 flex flex-col">
             {/* Header */}
             <header className="bg-white border-b border-gray-100 px-4 py-4 flex items-center justify-between sticky top-0 z-10 shadow-sm">
-                <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                <button onClick={handleBack} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                     <ChevronLeft className="w-6 h-6 text-gray-600" />
                 </button>
                 <h1 className="text-lg font-bold text-gray-900">แก้ไขข้อมูลส่วนตัว</h1>
