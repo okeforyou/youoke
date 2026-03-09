@@ -6,10 +6,12 @@
  */
 
 import { useEffect, useState } from "react";
+import { SystemService } from "../../../services/systemService";
 
-const GUEST_LIMIT = 3;
+const DEFAULT_GUEST_LIMIT = 3;
 const STORAGE_KEY = "guest_play_count";
 const TIMESTAMP_KEY = "guest_play_timestamp";
+const LIMIT_CACHE_KEY = "guest_limit_cache";
 
 interface GuestLimitData {
   count: number;
@@ -18,12 +20,42 @@ interface GuestLimitData {
 
 export function useGuestLimit() {
   const [playedCount, setPlayedCount] = useState(0);
-  const [remainingPlays, setRemainingPlays] = useState(GUEST_LIMIT);
+  const [internalGuestLimit, setInternalGuestLimit] = useState(DEFAULT_GUEST_LIMIT);
+  const [remainingPlays, setRemainingPlays] = useState(DEFAULT_GUEST_LIMIT);
   const [isLimitReached, setIsLimitReached] = useState(false);
 
   useEffect(() => {
+    // 1. First load from memory/defaults
+    const cachedLimit = localStorage.getItem(LIMIT_CACHE_KEY);
+    if (cachedLimit) {
+      const limit = parseInt(cachedLimit);
+      setInternalGuestLimit(limit);
+      setRemainingPlays(Math.max(0, limit - playedCount));
+    }
+
     loadGuestData();
+
+    // 2. Fetch fresh config from backend
+    syncLimitFromBackend();
   }, []);
+
+  async function syncLimitFromBackend() {
+    try {
+      const config = await SystemService.getAppConfig();
+      if (config.guestLimit !== internalGuestLimit) {
+        setInternalGuestLimit(config.guestLimit);
+        localStorage.setItem(LIMIT_CACHE_KEY, config.guestLimit.toString());
+
+        // Re-calculate remaining plays with new limit
+        const stored = localStorage.getItem(STORAGE_KEY);
+        const count = stored ? parseInt(stored) : 0;
+        setRemainingPlays(Math.max(0, config.guestLimit - count));
+        setIsLimitReached(count >= config.guestLimit);
+      }
+    } catch (error) {
+      console.warn("Failed to sync guest limit, using default/cached");
+    }
+  }
 
   function loadGuestData() {
     try {
@@ -49,8 +81,8 @@ export function useGuestLimit() {
       // โหลดข้อมูลเดิม
       const count = parseInt(stored);
       setPlayedCount(count);
-      setRemainingPlays(Math.max(0, GUEST_LIMIT - count));
-      setIsLimitReached(count >= GUEST_LIMIT);
+      setRemainingPlays(Math.max(0, internalGuestLimit - count));
+      setIsLimitReached(count >= internalGuestLimit);
     } catch (error) {
       console.error("Error loading guest data:", error);
       resetGuestData();
@@ -59,7 +91,7 @@ export function useGuestLimit() {
 
   function resetGuestData() {
     setPlayedCount(0);
-    setRemainingPlays(GUEST_LIMIT);
+    setRemainingPlays(internalGuestLimit);
     setIsLimitReached(false);
     localStorage.setItem(STORAGE_KEY, "0");
     localStorage.setItem(TIMESTAMP_KEY, Date.now().toString());
@@ -68,22 +100,22 @@ export function useGuestLimit() {
   function incrementPlayCount() {
     const newCount = playedCount + 1;
     setPlayedCount(newCount);
-    setRemainingPlays(Math.max(0, GUEST_LIMIT - newCount));
-    setIsLimitReached(newCount >= GUEST_LIMIT);
+    setRemainingPlays(Math.max(0, internalGuestLimit - newCount));
+    setIsLimitReached(newCount >= internalGuestLimit);
 
     localStorage.setItem(STORAGE_KEY, newCount.toString());
     localStorage.setItem(TIMESTAMP_KEY, Date.now().toString());
   }
 
   function canPlayNext(): boolean {
-    return playedCount < GUEST_LIMIT;
+    return playedCount < internalGuestLimit;
   }
 
   return {
     playedCount,
     remainingPlays,
     isLimitReached,
-    guestLimit: GUEST_LIMIT,
+    guestLimit: internalGuestLimit,
     canPlayNext,
     incrementPlayCount,
     resetGuestData,
