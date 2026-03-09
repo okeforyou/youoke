@@ -146,8 +146,8 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                             )}
                         </div>
                         <span className={clsx(
-                            "text-[8px] font-black uppercase tracking-tighter transition-colors duration-200 mt-[-2px]",
-                            item.active ? (item.label === "ยกเลิก" ? "text-red-600" : "text-black") : "text-black/40"
+                            "text-[10px] font-bold uppercase tracking-wide transition-colors duration-200 mt-0.5",
+                            item.active ? (item.label === "ยกเลิก" ? "text-red-600" : "text-black") : "text-black/60"
                         )}>
                             {item.label}
                         </span>
