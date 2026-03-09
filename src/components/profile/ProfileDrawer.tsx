@@ -16,6 +16,9 @@ import { useSystem } from '../../core/container/SystemContext'; // DI Container
 import Link from 'next/link';
 import { getUserProfile } from '../../services/userService';
 import { UserProfile } from '../../types/subscription';
+import { MembershipCard } from './MembershipCard';
+import { PackageStore } from './PackageStore';
+import { NotificationList } from './NotificationList';
 
 interface ProfileDrawerProps {
     isOpen: boolean;
