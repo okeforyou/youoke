@@ -47,7 +47,10 @@ export const MobileBottomNav = () => {
                 query: { tab: tabMap[index] }
             }, undefined, { shallow: true });
 
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            const mainContent = document.getElementById('main-content');
+            if (mainContent) {
+                mainContent.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         }
     };
 
