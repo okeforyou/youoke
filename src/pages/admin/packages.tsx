@@ -41,6 +41,8 @@ interface PackageData {
     features: any;
     isActive: boolean;
     isPopular?: boolean;
+    createdAt?: any;
+    updatedAt?: any;
 }
 
 // Real System Features for YouOke (Short Version for Packages)
@@ -185,13 +187,13 @@ export default function PackagesPage() {
 
             const payload = {
                 ...dataToSave,
-                ...(editMode ? {} : { createdAt: serverTimestamp() })
+                ...(editMode ? { createdAt: formData.createdAt } : { createdAt: serverTimestamp() })
             };
 
             console.log("Saving payload to", finalId, payload);
 
-            // DEBUG: Step 4 - Execute Write
-            await setDoc(doc(db, 'packages', finalId), payload, { merge: true });
+            // Removed { merge: true } to ensure old keys in features are fully replaced/deleted
+            await setDoc(doc(db, 'packages', finalId), payload);
 
             alert("✅ บันทึกข้อมูลสำเร็จ! (Saved to " + finalId + ")");
             setEditMode(null);
