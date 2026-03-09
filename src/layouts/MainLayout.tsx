@@ -633,7 +633,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                 </button>
                                             </div>
 
-                                            {/* Queue Button - Enhanced for Visibility (Red: Closed, Green: Open) */}
+                                            {/* Queue Button - Clean Design with Status Badge (Red: Closed, Green: Open) */}
                                             <button
                                                 onClick={() => {
                                                     if (isQueueOpen && !isPlayerHidden) {
@@ -645,25 +645,21 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                     }
                                                 }}
                                                 className={clsx(
-                                                    "w-11 h-10 flex items-center justify-center rounded-2xl shrink-0 transition-all duration-300 relative border-2",
+                                                    "w-10 h-10 flex items-center justify-center rounded-2xl shrink-0 transition-all duration-200 relative border",
                                                     isQueueOpen
-                                                        ? "bg-green-50 text-green-600 border-green-500/20 shadow-inner scale-95"
-                                                        : "bg-white text-black border-gray-100 shadow-md active:scale-95"
+                                                        ? "bg-gray-50 text-black border-black/10 shadow-inner scale-95"
+                                                        : "bg-white text-gray-700 border-gray-100 shadow-sm active:scale-95"
                                                 )}
                                                 aria-label="คิวเพลง"
                                             >
-                                                <ListMusic className={clsx("w-5.5 h-5.5 transition-all", isQueueOpen ? "scale-110" : "scale-100")} />
+                                                <ListMusic className="w-5 h-5" />
                                                 {queue.length > 0 && (
                                                     <div className={clsx(
-                                                        "absolute -top-2 -right-1.5 text-white text-[10px] font-black h-5 min-w-[20px] px-1.5 rounded-full flex items-center justify-center border-2 border-white shadow-md transition-colors duration-300",
-                                                        isQueueOpen ? "bg-green-500 animate-[pulse_2s_infinite]" : "bg-red-500"
+                                                        "absolute -top-1.5 -right-1.5 text-white text-[9px] font-black h-4.5 min-w-[18px] px-1 rounded-full flex items-center justify-center border-2 border-white shadow-sm transition-colors duration-300",
+                                                        isQueueOpen ? "bg-green-500" : "bg-red-500"
                                                     )}>
                                                         {queue.length}
                                                     </div>
-                                                )}
-                                                {/* Visual indicator for 'active' state */}
-                                                {isQueueOpen && (
-                                                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-green-500 rounded-full" />
                                                 )}
                                             </button>
                                         </div>
