@@ -12,6 +12,7 @@ import {
 } from '@heroicons/react/24/outline'
 
 import { useAuth } from "@/context/AuthContext";
+import { auth } from "@/firebase";
 import { usePlayerStore } from '../modules/player/stores/usePlayerStore'
 import { useUIStore } from '../stores/useUIStore'
 
@@ -109,9 +110,10 @@ export default function BottomNavigation() {
             <span className="loading loading-spinner loading-sm"></span>
           ) : (
             <div className="relative">
-              {user.photoURL ? (
+              {/* Check both user store and direct firebase auth (ultimate fallback) */}
+              {(user.photoURL || auth?.currentUser?.photoURL) ? (
                 <div className="w-6 h-6 rounded-full overflow-hidden ring-1 ring-primary/20 bg-muted">
-                  <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
+                  <img src={user.photoURL || auth?.currentUser?.photoURL || ""} alt="Profile" className="w-full h-full object-cover" />
                 </div>
               ) : (
                 <UserCircleIcon className="w-6 h-6 pointer-events-none" />
