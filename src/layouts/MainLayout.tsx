@@ -646,9 +646,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                 )}
                                             >
                                                 <ListMusic className={clsx("w-5 h-5 transition-transform", isQueueOpen && "scale-90")} />
-                                                {queue.length > 0 && (queue.length - (currentIndex + 1)) > 0 && (
+                                                {queue.length > 0 && (
                                                     <div className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-black h-4.5 min-w-[18px] px-1 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
-                                                        {queue.length - (currentIndex + 1)}
+                                                        {queue.length}
                                                     </div>
                                                 )}
                                             </button>
