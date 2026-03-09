@@ -121,6 +121,12 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const handleNav = (index: number) => {
         setSearchTerm(''); // Clear search when changing tabs
 
+        // Explicit scroll reset for navigation commands
+        const mainContent = document.getElementById('main-content');
+        if (mainContent) {
+            mainContent.scrollTo({ top: 0, behavior: 'instant' });
+        }
+
         // Remove search from URL to prevent index.tsx from restoring it
         if (router.query.search) {
             const { search, ...rest } = router.query;
