@@ -607,7 +607,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                         !isKaraoke ? "bg-white text-primary shadow-md scale-105" : "text-black scale-100"
                                                     )}
                                                 >
-                                                    <Music size={16} className={!isKaraoke ? "fill-primary/5" : ""} />
+                                                    <Music size={16} />
                                                 </button>
                                                 <button
                                                     onClick={() => setIsKaraoke(true)}
@@ -616,7 +616,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                         isKaraoke ? "bg-white text-primary shadow-md scale-105" : "text-black scale-100"
                                                     )}
                                                 >
-                                                    <Mic size={16} className={isKaraoke ? "fill-primary/5" : ""} />
+                                                    <Mic2 size={16} />
                                                 </button>
                                             </div>
 
