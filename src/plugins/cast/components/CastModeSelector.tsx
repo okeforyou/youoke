@@ -52,7 +52,7 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-[200] p-4 overflow-y-auto animate-in fade-in duration-300">
-      <div className="bg-white dark:bg-zinc-900 rounded-[32px] shadow-[0_24px_80px_-12px_rgba(0,0,0,0.4)] max-w-sm w-full p-6 relative my-auto max-h-[95vh] overflow-y-auto border border-white/20">
+      <div className="bg-white dark:bg-zinc-900 rounded-[32px] shadow-[0_24px_80px_-12px_rgba(0,0,0,0.4)] max-w-sm w-[92%] sm:w-full p-6 relative my-auto max-h-[95vh] overflow-y-auto border border-white/20">
         {/* Close Button */}
         <button
           onClick={onClose}

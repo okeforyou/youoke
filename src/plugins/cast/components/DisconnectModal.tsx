@@ -19,7 +19,7 @@ export const DisconnectModal: React.FC<DisconnectModalProps> = ({
     return (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 animate-in fade-in duration-200">
             {/* Custom Dark Theme Card to match Host UI */}
-            <div className="w-full max-w-xs bg-[#111] border border-white/10 shadow-2xl rounded-2xl overflow-hidden">
+            <div className="w-[92%] sm:w-full max-w-xs bg-[#111] border border-white/10 shadow-2xl rounded-2xl overflow-hidden">
                 <div className="p-6 text-center flex flex-col items-center">
 
                     {/* Icon */}
