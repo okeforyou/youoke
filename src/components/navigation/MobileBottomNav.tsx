@@ -30,11 +30,7 @@ export const MobileBottomNav = () => {
 
     const handleNavClick = (index: number) => {
         if (index === 5) {
-            if (user) {
-                setProfileOpen(true);
-            } else {
-                router.push('/login');
-            }
+            setProfileOpen(true);
             return;
         } else {
             setSearchTerm(''); // Clear search logic from MainLayout
@@ -73,14 +69,14 @@ export const MobileBottomNav = () => {
                                 "p-1.5 rounded-xl transition-all duration-300 relative",
                                 isActive ? "text-primary bg-primary/10" : "text-black group-hover:text-black"
                             )}>
-                                {item.id === 5 && user ? (
+                                {item.id === 5 ? (
                                     (() => {
-                                        const photoURL = user.photoURL || auth?.currentUser?.photoURL;
+                                        const photoURL = user?.photoURL || auth?.currentUser?.photoURL;
                                         return photoURL ? (
                                             <img src={photoURL} className={clsx("w-6 h-6 rounded-full border transition-transform duration-300", isActive ? "scale-110 border-primary" : "border-transparent")} alt="Profile" />
                                         ) : (
                                             <div className={clsx("w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-300", isActive ? "bg-primary text-white scale-110" : "bg-gray-200 text-gray-600")}>
-                                                {user.displayName === 'Guest' ? '👤' : (user.email?.[0]?.toUpperCase() || 'U')}
+                                                {!user || user.displayName === 'Guest' ? '👤' : (user.email?.[0]?.toUpperCase() || 'U')}
                                             </div>
                                         );
                                     })()

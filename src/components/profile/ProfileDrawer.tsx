@@ -20,6 +20,7 @@ import { MembershipCard } from './MembershipCard';
 import { PackageStore } from './PackageStore';
 import { NotificationList } from './NotificationList';
 import { GuestCard } from './GuestCard';
+import { auth } from '@/firebase';
 
 interface ProfileDrawerProps {
     isOpen: boolean;
@@ -28,6 +29,7 @@ interface ProfileDrawerProps {
 
 export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
     const { user, signOut: logOut } = useSystem().auth(); // specific hook
+    const isGuest = !user || user.displayName === 'Guest';
     const router = useRouter();
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(false);
@@ -166,7 +168,7 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                             <div className="flex-1 flex items-center justify-center">
                                                 <div className="loading loading-spinner loading-lg text-primary"></div>
                                             </div>
-                                        ) : user?.displayName === 'Guest' ? (
+                                        ) : isGuest ? (
                                             // Guest View
                                             <div className="flex-1 px-4 py-6 space-y-4">
                                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">สถานะการใช้งาน</p>
@@ -175,18 +177,21 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                         ) : (
                                             <>
                                                 {/* Compact Profile Header */}
-                                                <div className="px-6 py-5 flex items-center gap-4 bg-gray-50/50 border-b border-gray-100 mb-6">
+                                                <div className="px-6 py-5 flex items-center gap-4 bg-gray-50/50 border-b border-gray-100 mb-6 relative">
                                                     <div className="relative">
                                                         <div className="w-16 h-16 rounded-2xl ring-2 ring-white shadow-sm overflow-hidden bg-white flex items-center justify-center text-primary font-black text-2xl">
-                                                            {(profile?.photoURL || user.photoURL) ? (
-                                                                <img
-                                                                    src={profile?.photoURL || user.photoURL || ""}
-                                                                    alt="Avatar"
-                                                                    className="w-full h-full object-cover"
-                                                                />
-                                                            ) : (
-                                                                (profile?.displayName || user.displayName || user.email || "U").charAt(0).toUpperCase()
-                                                            )}
+                                                            {(() => {
+                                                                const displayPhoto = profile?.photoURL || user?.photoURL || auth?.currentUser?.photoURL;
+                                                                return displayPhoto ? (
+                                                                    <img
+                                                                        src={displayPhoto}
+                                                                        alt="Avatar"
+                                                                        className="w-full h-full object-cover"
+                                                                    />
+                                                                ) : (
+                                                                    <span>{(profile?.displayName || user?.displayName || user?.email || "U").charAt(0).toUpperCase()}</span>
+                                                                );
+                                                            })()}
                                                         </div>
                                                         {isAdmin && (
                                                             <div className="absolute -bottom-1 -right-1 bg-red-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded-lg shadow-sm border border-white">
@@ -197,10 +202,10 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
 
                                                     <div className="flex-1 min-w-0">
                                                         <h2 className="text-base font-bold text-gray-900 truncate flex items-center gap-1.5">
-                                                            {profile?.displayName || user.displayName || "YouOke User"}
+                                                            {profile?.displayName || user?.displayName || "YouOke User"}
                                                             {isPremium && !isAdmin && <SparklesIcon className="w-3.5 h-3.5 text-yellow-500" />}
                                                         </h2>
-                                                        <p className="text-xs text-gray-500 truncate mb-1.5">{profile?.email || user.email}</p>
+                                                        <p className="text-xs text-gray-500 truncate mb-1.5">{profile?.email || user?.email}</p>
 
                                                         <Link
                                                             href="/profile/edit"
@@ -213,13 +218,12 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
 
                                                 {/* Integrated Membership & Store Section */}
                                                 <div className="px-4 pb-12 space-y-8">
-
                                                     {/* Membership Status (The Pretty Card) */}
                                                     <div>
                                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 px-2">บัตรสมาชิก</p>
                                                         <MembershipCard
-                                                            membership={user.membership || { type: 'free', status: 'active', expiresAt: null }}
-                                                            role={user.role}
+                                                            membership={user?.membership || { type: 'free', status: 'active', expiresAt: null }}
+                                                            role={user?.role}
                                                             onUpgrade={() => { }} // Scroll is handled naturally in single view
                                                         />
                                                     </div>
@@ -274,10 +278,10 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                     </div>
                                 </Dialog.Panel>
                             </Transition.Child>
-                        </div>
-                    </div>
-                </div>
-            </Dialog>
-        </Transition.Root>
+                        </div >
+                    </div >
+                </div >
+            </Dialog >
+        </Transition.Root >
     );
 }
