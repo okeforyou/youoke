@@ -13,7 +13,18 @@ import {
     XMarkIcon,
     TrashIcon,
     FolderArrowDownIcon,
-    ArrowPathIcon
+    ArrowPathIcon,
+    SpeakerWaveIcon,
+    NoSymbolIcon,
+    PlayIcon,
+    BookmarkIcon,
+    DevicePhoneMobileIcon,
+    TvIcon,
+    MicrophoneIcon,
+    MusicalNoteIcon,
+    BoltIcon,
+    SparklesIcon,
+    HeartIcon
 } from '@heroicons/react/24/outline';
 import { cn } from '../../../utils/cn';
 
@@ -30,18 +41,19 @@ interface PackageData {
     updatedAt?: any;
 }
 
-// Analyzed Features for YouOke Karaoke Platform
+// Modernized Features for YouOke (Killer Features)
 const PREDEFINED_FEATURES = [
-    "🎧 เสียงชัดระดับ HD (High Quality Audio)",
-    "🚫 ไม่มีโฆษณาคั่น (Ad-Free Experience)",
-    "🎤 ร้องเพลงได้ทุกเพลง (Unlimited Songs)",
-    "📑 สร้างเพลย์ลิสต์ส่วนตัว (Personal Playlists)",
-    "📱 ควบคุมผ่านมือถือ (Mobile Remote)",
-    "🎼 ปรับคีย์เพลงได้ (Key Changer)",
-    "🎵 ระบบตัดเสียงร้อง (Vocal Cut)",
-    "⚡ คิวเพลงไม่จำกัด (Unlimited Queue)",
-    "🌟 เข้าถึงเพลงใหม่ก่อนใคร (Early Access)",
-    "💎 สนับสนุนผู้พัฒนา (Support Creator)"
+    { id: 'hd_audio', label: "เสียงชัดระดับ HD", description: "High Quality Audio", icon: SpeakerWaveIcon },
+    { id: 'no_ads', label: "ไม่มีโฆษณาคั่น", description: "Ad-Free Experience", icon: NoSymbolIcon },
+    { id: 'unlimited_songs', label: "ร้องเพลงได้ไม่จำกัด", description: "Unlimited YouTube Songs", icon: PlayIcon },
+    { id: 'personal_playlists', label: "บันทึกเพลงโปรด", description: "Personal Songbook", icon: BookmarkIcon },
+    { id: 'mobile_remote', label: "รีโมทควบคุมผ่านมือถือ", description: "Mobile Remote Control", icon: DevicePhoneMobileIcon },
+    { id: 'dual_screen', label: "เชื่อมต่อหน้าจอแยก", description: "Dual Screen / Casting", icon: TvIcon },
+    { id: 'vocal_cut', label: "ระบบตัดเสียงร้อง AI", description: "Smart Vocal Remover", icon: MicrophoneIcon },
+    { id: 'key_changer', label: "ปรับคีย์เพลงอิสระ", description: "Real-time Key Changer", icon: MusicalNoteIcon },
+    { id: 'unlimited_queue', label: "คิวเพลงไม่จำกัด", description: "Unlimited Song Queue", icon: BoltIcon },
+    { id: 'early_access', label: "ฟีเจอร์ใหม่ก่อนใคร", description: "Beta & Early Access", icon: SparklesIcon },
+    { id: 'support_creator', label: "สนับสนุนนักพัฒนา", description: "Support YouOke Team", icon: HeartIcon }
 ];
 
 export default function PackagesPage() {
@@ -418,22 +430,38 @@ export default function PackagesPage() {
 
                             <div className="form-control">
                                 <label className="label"><span className="label-text font-medium text-gray-700">ฟีเจอร์ด่วน (Quick Select)</span></label>
-                                <div className="grid grid-cols-2 gap-2">
+                                <div className="grid grid-cols-2 gap-3">
                                     {PREDEFINED_FEATURES.map((feature) => {
-                                        const isEnabled = isFeatureEnabled(feature);
+                                        const isEnabled = isFeatureEnabled(feature.label);
+                                        const Icon = feature.icon;
                                         return (
                                             <div
-                                                key={feature}
-                                                onClick={() => toggleFeature(feature)}
+                                                key={feature.id}
+                                                onClick={() => toggleFeature(feature.label)}
                                                 className={cn(
-                                                    "cursor-pointer rounded-lg border p-3 flex items-center justify-between transition-all select-none active:scale-95",
+                                                    "cursor-pointer rounded-xl border p-3 flex items-center gap-3 transition-all select-none active:scale-95 group",
                                                     isEnabled
-                                                        ? "bg-primary/10 border-primary text-primary"
+                                                        ? "bg-primary/10 border-primary shadow-sm"
                                                         : "bg-gray-50 border-gray-200 hover:bg-gray-100 text-gray-500"
                                                 )}
                                             >
-                                                <span className="text-xs font-medium">{feature.split('(')[0]}</span>
-                                                {isEnabled && <CheckIcon className="w-4 h-4" />}
+                                                <div className={cn(
+                                                    "h-8 w-8 rounded-lg flex items-center justify-center transition-colors",
+                                                    isEnabled ? "bg-primary text-white" : "bg-gray-100 text-gray-400 group-hover:text-gray-600"
+                                                )}>
+                                                    <Icon className="w-5 h-5" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className={cn("text-xs font-bold leading-tight truncate", isEnabled ? "text-primary" : "text-gray-700")}>
+                                                        {feature.label}
+                                                    </p>
+                                                    <p className="text-[10px] text-gray-500 truncate leading-tight mt-0.5">
+                                                        {feature.description}
+                                                    </p>
+                                                </div>
+                                                {isEnabled && (
+                                                    <CheckIcon className="w-4 h-4 text-primary" />
+                                                )}
                                             </div>
                                         );
                                     })}

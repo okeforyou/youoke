@@ -13,7 +13,21 @@ import {
     Trash2,
     Save,
     AlertCircle,
-    Clock
+    Clock,
+    Search,
+    Smartphone,
+    Tv,
+    Mic2,
+    Music,
+    Ban,
+    Library,
+    Zap,
+    Heart,
+    Sparkles,
+    Volume2,
+    Play,
+    Bookmark,
+    ListMusic
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -29,18 +43,19 @@ interface PackageData {
     isPopular?: boolean;
 }
 
-// Analyzed Features for YouOke Karaoke Platform
+// Modernized Features for YouOke (Killer Features)
 const PREDEFINED_FEATURES = [
-    "🎧 เสียงชัดระดับ HD (High Quality Audio)",
-    "🚫 ไม่มีโฆษณาคั่น (Ad-Free Experience)",
-    "🎤 ร้องเพลงได้ทุกเพลง (Unlimited Songs)",
-    "📑 สร้างเพลย์ลิสต์ส่วนตัว (Personal Playlists)",
-    "📱 ควบคุมผ่านมือถือ (Mobile Remote)",
-    "🎼 ปรับคีย์เพลงได้ (Key Changer)",
-    "🎵 ระบบตัดเสียงร้อง (Vocal Cut)",
-    "⚡ คิวเพลงไม่จำกัด (Unlimited Queue)",
-    "🌟 เข้าถึงเพลงใหม่ก่อนใคร (Early Access)",
-    "💎 สนับสนุนผู้พัฒนา (Support Creator)"
+    { id: 'hd_audio', label: "เสียงชัดระดับ HD", description: "High Quality Audio", icon: Volume2 },
+    { id: 'no_ads', label: "ไม่มีโฆษณาคั่น", description: "Ad-Free Experience", icon: Ban },
+    { id: 'unlimited_songs', label: "ร้องเพลงได้ไม่จำกัด", description: "Unlimited YouTube Songs", icon: Play },
+    { id: 'personal_playlists', label: "บันทึกเพลงโปรด", description: "Personal Songbook", icon: Bookmark },
+    { id: 'mobile_remote', label: "รีโมทควบคุมผ่านมือถือ", description: "Mobile Remote Control", icon: Smartphone },
+    { id: 'dual_screen', label: "เชื่อมต่อหน้าจอแยก", description: "Dual Screen / Casting", icon: Tv },
+    { id: 'vocal_cut', label: "ระบบตัดเสียงร้อง AI", description: "Smart Vocal Remover", icon: Mic2 },
+    { id: 'key_changer', label: "ปรับคีย์เพลงอิสระ", description: "Real-time Key Changer", icon: Music },
+    { id: 'unlimited_queue', label: "คิวเพลงไม่จำกัด", description: "Unlimited Song Queue", icon: Zap },
+    { id: 'early_access', label: "ฟีเจอร์ใหม่ก่อนใคร", description: "Beta & Early Access", icon: Sparkles },
+    { id: 'support_creator', label: "สนับสนุนนักพัฒนา", description: "Support YouOke Team", icon: Heart }
 ];
 
 export default function PackagesPage() {
@@ -228,24 +243,6 @@ export default function PackagesPage() {
                     <p className="mt-1 text-muted-foreground">จัดการแผนราคาแบบขายสิทธิ์สมาชิกแบบต่างๆ</p>
                 </div>
                 <div className="flex gap-2">
-                    <button onClick={async () => {
-                        try {
-                            const { db } = await import('../../firebase');
-                            if (!db) return;
-                            const { setDoc, doc } = await import('firebase/firestore');
-                            await setDoc(doc(db, 'packages', 'test_write_' + Date.now()), {
-                                name: "Test Write",
-                                price: 100,
-                                isActive: false,
-                                test: true
-                            });
-                            alert("✅ Test Write Success! Permissions are invalid.");
-                        } catch (e: any) {
-                            alert("❌ Test Write Failed: " + e.message);
-                        }
-                    }} className="btn btn-ghost btn-xs text-muted-foreground/30 hover:text-muted-foreground">
-                        Test Write
-                    </button>
                     <button onClick={handleCreate} className="btn bg-primary text-primary-foreground hover:bg-primary/90 gap-2 rounded-lg border-none shadow-sm">
                         <Plus className="w-4 h-4" /> สร้างแพ็กเกจ
                     </button>
@@ -461,25 +458,42 @@ export default function PackagesPage() {
                                 ></textarea>
                             </div>
 
-                            {/* Quick Select Features */}
                             <div className="form-control">
                                 <label className="label"><span className="label-text font-medium text-foreground">ฟีเจอร์ด่วน (Quick Select)</span></label>
-                                <div className="grid grid-cols-2 gap-2">
+                                <div className="grid grid-cols-2 gap-3">
                                     {PREDEFINED_FEATURES.map((feature) => {
-                                        const isEnabled = isFeatureEnabled(feature);
+                                        const isEnabled = isFeatureEnabled(feature.label);
+                                        const Icon = feature.icon;
                                         return (
                                             <div
-                                                key={feature}
-                                                onClick={() => toggleFeature(feature)}
+                                                key={feature.id}
+                                                onClick={() => toggleFeature(feature.label)}
                                                 className={cn(
-                                                    "cursor-pointer rounded-lg border p-3 flex items-center justify-between transition-all select-none active:scale-95",
+                                                    "cursor-pointer rounded-xl border p-3 flex items-center gap-3 transition-all select-none active:scale-95 group",
                                                     isEnabled
-                                                        ? "bg-primary/10 border-primary text-primary"
-                                                        : "bg-muted/20 border-border hover:bg-muted/40 text-muted-foreground"
+                                                        ? "bg-primary/10 border-primary shadow-sm"
+                                                        : "bg-muted/20 border-border hover:bg-muted/40"
                                                 )}
                                             >
-                                                <span className="text-sm font-medium">{feature}</span>
-                                                {isEnabled && <Check className="w-4 h-4" />}
+                                                <div className={cn(
+                                                    "h-8 w-8 rounded-lg flex items-center justify-center transition-colors",
+                                                    isEnabled ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground group-hover:text-foreground"
+                                                )}>
+                                                    <Icon className="w-5 h-5" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className={cn("text-xs font-bold leading-tight truncate", isEnabled ? "text-primary" : "text-foreground")}>
+                                                        {feature.label}
+                                                    </p>
+                                                    <p className="text-[10px] text-muted-foreground truncate leading-tight mt-0.5">
+                                                        {feature.description}
+                                                    </p>
+                                                </div>
+                                                {isEnabled && (
+                                                    <div className="bg-primary rounded-full p-0.5">
+                                                        <Check className="w-3 h-3 text-primary-foreground" />
+                                                    </div>
+                                                )}
                                             </div>
                                         );
                                     })}
