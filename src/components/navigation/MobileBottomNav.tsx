@@ -84,9 +84,6 @@ export const MobileBottomNav = () => {
                                         className={clsx("transition-transform duration-300", isActive && "scale-110")}
                                     />
                                 )}
-                                {isActive && (
-                                    <div className="absolute inset-0 bg-primary/10 blur-lg" />
-                                )}
                             </div>
                             <span className={clsx(
                                 "text-[10px] font-medium transition-colors duration-200",

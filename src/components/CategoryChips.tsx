@@ -45,8 +45,8 @@ export const CategoryChips = ({ categories, activeCategory, onSelect }: Category
                         className={`
               whitespace-nowrap px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200
               ${activeCategory === cat
-                                ? 'bg-white text-black font-bold'
-                                : 'bg-white/10 text-gray-300 hover:bg-white/20 hover:text-white'
+                                ? 'bg-primary text-white font-bold'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                             }
             `}
                     >

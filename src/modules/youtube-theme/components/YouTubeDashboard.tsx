@@ -248,7 +248,7 @@ export default function YouTubeDashboard() {
                     <button onClick={handleBack} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                         <ArrowLeft className="w-6 h-6 text-gray-700" />
                     </button>
-                    <h2 className="text-lg font-bold truncate flex-1 text-gray-900">{activePlaylist.title}</h2>
+                    <h2 className="text-lg font-bold truncate flex-1 text-black">{activePlaylist.title}</h2>
                 </div>
 
 
@@ -340,7 +340,7 @@ export default function YouTubeDashboard() {
                                         </div>
 
                                         <div className="flex-1 min-w-0">
-                                            <h4 className={`font-bold text-gray-900 truncate transition-colors ${isKaraokeItem ? 'group-hover:text-red-600' : 'group-hover:text-red-600'}`}>
+                                            <h4 className={`font-bold text-black truncate transition-colors ${isKaraokeItem ? 'group-hover:text-red-600' : 'group-hover:text-red-600'}`}>
                                                 {item.title}
                                             </h4>
                                             <p className={`text-sm truncate flex items-center gap-1 ${isKaraokeItem ? 'text-red-500 font-medium' : 'text-gray-500'}`}>
@@ -403,7 +403,7 @@ export default function YouTubeDashboard() {
                     </button>
                     <div>
                         <p className="text-xs text-gray-400 font-medium">ผลการค้นหาสำหรับ</p>
-                        <h2 className="text-base font-bold text-gray-900 line-clamp-1">"{searchTerm}"</h2>
+                        <h2 className="text-base font-bold text-black line-clamp-1">"{searchTerm}"</h2>
                     </div>
                 </div>
             )}
@@ -417,7 +417,7 @@ export default function YouTubeDashboard() {
                             key={type}
                             onClick={() => setSearchFilter(type)}
                             className={`px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-colors border ${searchFilter === type
-                                ? 'bg-red-600 text-white border-red-600 shadow-md transform scale-105'
+                                ? 'bg-red-600 text-white border-red-600 transform scale-105'
                                 : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300'
                                 }`}
                         >
@@ -442,7 +442,7 @@ export default function YouTubeDashboard() {
                         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                             <X className="w-8 h-8 text-red-500" />
                         </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">เกิดข้อผิดพลาด</h3>
+                        <h3 className="text-xl font-bold text-black mb-2">เกิดข้อผิดพลาด</h3>
                         <p className="text-gray-500">{(error as any).message}</p>
                     </div>
                 )}
@@ -478,7 +478,7 @@ export default function YouTubeDashboard() {
                                     </div>
 
                                     <div className="space-y-1">
-                                        <h3 className="font-bold text-gray-900 truncate leading-tight group-hover:text-red-600 transition-colors">
+                                        <h3 className="font-bold text-black truncate leading-tight group-hover:text-red-600 transition-colors">
                                             {item.title}
                                         </h3>
                                         <div className="flex items-center gap-2 text-sm text-gray-500 font-medium">
@@ -516,7 +516,7 @@ export default function YouTubeDashboard() {
                         {shelves.map((shelf, shelfIndex) => (
                             <section key={shelfIndex} className="space-y-6">
                                 <div className="flex items-center justify-between">
-                                    <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                                    <h2 className="text-2xl font-bold text-black flex items-center gap-3">
                                         <span className="w-1.5 h-8 bg-red-600 rounded-full"></span>
                                         {shelf.title}
                                     </h2>
@@ -546,7 +546,7 @@ export default function YouTubeDashboard() {
                                                     </div>
                                                 </div>
                                             </div>
-                                            <h3 className="font-bold text-gray-900 text-sm truncate group-hover:text-red-600 transition-colors">{item.title}</h3>
+                                            <h3 className="font-bold text-black text-sm truncate group-hover:text-red-600 transition-colors">{item.title}</h3>
                                             <p className="text-xs text-gray-500 truncate mt-0.5">{item.subtitle}</p>
                                         </div>
                                     ))}

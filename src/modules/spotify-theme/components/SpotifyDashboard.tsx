@@ -208,7 +208,7 @@ export default function SpotifyDashboard({ showTab = true }) {
     <JooxError />
   ) : (
     <>
-      <div className="col-span-full px-2 pt-2 pb-2 text-[13px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+      <div className="col-span-full px-2 pt-2 pb-2 text-[13px] font-black text-black uppercase tracking-wider flex items-center gap-2">
         ศิลปินยอดนิยม
       </div>
 
@@ -275,7 +275,7 @@ export default function SpotifyDashboard({ showTab = true }) {
       </div>
 
 
-      <div className="col-span-full px-2 pt-4 pb-3 text-[13px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2 border-t border-gray-100 mt-2">
+      <div className="col-span-full px-2 pt-4 pb-3 text-[13px] font-black text-black uppercase tracking-wider flex items-center gap-2 border-t border-gray-100 mt-2">
         แนวเพลงยอดฮิต
       </div>
 
@@ -288,8 +288,8 @@ export default function SpotifyDashboard({ showTab = true }) {
             className={`
                  w-full py-2 px-4 rounded-xl text-[12px] font-bold transition-all duration-300 border
                  ${genreText == gen
-                ? "bg-primary text-white shadow-lg shadow-primary/30 border-primary transform -translate-y-0.5"
-                : "bg-gray-100 text-black border-gray-100 hover:bg-white hover:border-primary/30 hover:shadow-md hover:text-primary hover:-translate-y-0.5"
+                ? "bg-primary text-white border-primary transform -translate-y-0.5"
+                : "bg-gray-100 text-black border-gray-100 hover:bg-white hover:border-primary/30 hover:text-primary hover:-translate-y-0.5"
               }
               `}
           >
@@ -299,7 +299,7 @@ export default function SpotifyDashboard({ showTab = true }) {
       </div>
       {
         artistCategories.length > 0 && (
-          <div ref={playlistRef} className="scroll-mt-32 col-span-full px-2 pt-4 pb-3 text-[11px] sm:text-[12px] font-bold text-gray-500 uppercase tracking-wider flex items-center justify-between">
+          <div ref={playlistRef} className="scroll-mt-32 col-span-full px-2 pt-4 pb-3 text-[11px] sm:text-[12px] font-black text-black uppercase tracking-wider flex items-center justify-between">
             <span>{genreText === "ลูกทุ่ง" ? "เพลย์ลิสต์แนะนำ" : `เพลย์ลิสต์ ${genreText}`}</span>
             <span className="text-[10px] font-normal text-gray-400 bg-gray-50 px-3 py-1 rounded-full">อัพเดทล่าสุด</span>
           </div>
@@ -393,7 +393,7 @@ export default function SpotifyDashboard({ showTab = true }) {
         artist && artist.length > 0 && (
           <div
             ref={songlistRef}
-            className="scroll-mt-32 col-span-full px-2 pt-6 pb-4 text-[11px] sm:text-[12px] font-bold text-gray-500 uppercase tracking-wider flex items-center justify-between border-t border-gray-100"
+            className="scroll-mt-32 col-span-full px-2 pt-6 pb-4 text-[11px] sm:text-[12px] font-black text-black uppercase tracking-wider flex items-center justify-between border-t border-gray-100"
           >
             <div className="flex items-center gap-3">
               <div className="w-1.5 h-6 bg-primary rounded-full"></div>
@@ -446,7 +446,7 @@ export default function SpotifyDashboard({ showTab = true }) {
                   </div>
                 </figure>
                 <div className="p-2 gap-y-0.5 flex-1 flex flex-col relative">
-                  <h2 className="font-medium text-[11px] sm:text-[12px] line-clamp-2 flex-1 text-gray-800 leading-snug">
+                  <h2 className="font-bold text-[11px] sm:text-[12px] line-clamp-2 flex-1 text-black leading-snug">
                     {video.title || video.name}
                   </h2>
                   <p className="text-[9px] text-gray-500 truncate">
