@@ -9,6 +9,7 @@ interface UserType {
   role?: string | null;
   tier?: string | null;
   displayName?: string | null;
+  photoURL?: string | null;
 }
 
 interface AuthContextProps {
@@ -64,6 +65,7 @@ export const AuthContextProvider = ({
         role: storeUser.role,
         tier: storeUser.membership?.type,
         displayName: storeUser.displayName,
+        photoURL: storeUser.photoURL,
       });
     } else {
       setUser(null);

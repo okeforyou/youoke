@@ -109,9 +109,16 @@ export default function BottomNavigation() {
             <span className="loading loading-spinner loading-sm"></span>
           ) : (
             <div className="relative">
-              <UserCircleIcon className="w-6 h-6 pointer-events-none" />
+              {user.photoURL ? (
+                <div className="w-6 h-6 rounded-full overflow-hidden ring-1 ring-primary/20 bg-muted">
+                  <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
+                </div>
+              ) : (
+                <UserCircleIcon className="w-6 h-6 pointer-events-none" />
+              )}
+
               {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white">
+                <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white z-10">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
