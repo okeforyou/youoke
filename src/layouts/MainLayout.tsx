@@ -557,10 +557,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                     <div className="lg:hidden flex flex-col bg-white border-b border-gray-100 shadow-sm relative z-20">
                                         <SidebarControls castMode={castMode} />
                                     </div>
-                                    <header className="lg:hidden flex flex-col bg-white border-b border-gray-100 sticky top-0 z-[110] px-3 py-3 shadow-sm">
+                                    <header className="lg:hidden flex flex-col bg-white border-b border-gray-100 sticky top-0 z-[110] px-3 py-2 shadow-sm">
                                         <div className="flex items-center gap-2.5">
                                             {/* Search Input Box */}
-                                            <div className="flex-1 relative flex items-center bg-gray-50 border border-gray-200 rounded-2xl px-4 h-11 transition-all focus-within:bg-white focus-within:border-black/10 shadow-sm">
+                                            <div className="flex-1 relative flex items-center bg-gray-50 border border-gray-200 rounded-2xl px-4 h-10 transition-all focus-within:bg-white focus-within:border-black/10 shadow-sm">
                                                 <Search className="h-4.5 w-4.5 text-gray-400 shrink-0" />
                                                 <DebounceInput
                                                     minLength={2}
@@ -586,7 +586,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                             </div>
 
                                             {/* Mode Switch (Song/Karaoke) */}
-                                            <div className="flex bg-gray-100 p-1 rounded-2xl border border-gray-200 shadow-inner shrink-0 h-11 items-center">
+                                            <div className="flex bg-gray-100 p-1 rounded-2xl border border-gray-200 shadow-inner shrink-0 h-10 items-center">
                                                 <button
                                                     onClick={() => setIsKaraoke(false)}
                                                     className={clsx(
@@ -619,7 +619,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                     }
                                                 }}
                                                 className={clsx(
-                                                    "w-11 h-11 flex items-center justify-center rounded-2xl shrink-0 shadow-sm active:scale-95 transition-all relative border border-transparent",
+                                                    "w-10 h-10 flex items-center justify-center rounded-2xl shrink-0 shadow-sm active:scale-95 transition-all relative border border-transparent",
                                                     isQueueOpen ? "bg-primary/10 text-primary border-primary/20" : "bg-gray-200 text-gray-700"
                                                 )}
                                             >

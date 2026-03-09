@@ -122,19 +122,19 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             <div className="absolute inset-0 bg-[#f4f4f5]/95 backdrop-blur-xl border-b border-gray-200/50" />
 
             {/* Horizontal Controls Row - Full Width with depth */}
-            <div className="relative flex items-center justify-between px-2 h-[72px]">
+            <div className="relative flex items-center justify-between px-2 h-[56px]">
                 {controlItems.map((item, index) => (
                     <button
                         key={index}
                         onClick={item.onClick}
-                        className="flex flex-col items-center justify-center flex-1 gap-1 group transition-all active:scale-95"
+                        className="flex items-center justify-center flex-1 h-full group transition-all active:scale-95"
                     >
                         <div className={clsx(
-                            "p-2 rounded-xl transition-all duration-300 relative",
+                            "p-2.5 rounded-xl transition-all duration-300 relative",
                             item.active ? (item.label === "ยกเลิก" ? "bg-red-500 text-white shadow-lg scale-105" : "text-primary bg-white shadow-md scale-105") : "text-black group-hover:text-black"
                         )}>
                             <item.icon
-                                size={20}
+                                size={22}
                                 strokeWidth={item.active ? 2.5 : 2}
                                 className={clsx(
                                     "transition-all duration-300",
@@ -145,14 +145,15 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                 <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse border-2 border-white shadow-sm"></span>
                             )}
                         </div>
-                        <span className={clsx(
-                            "text-[10px] font-medium transition-colors duration-200",
-                            item.active && item.label === "ยกเลิก" ? "text-red-600 font-bold" : (item.active ? "text-primary font-bold" : "text-black/60")
-                        )}>
-                            {item.label}
-                        </span>
                     </button>
                 ))}
+            </div>
+            {/* Optional Progress Bar (Thin line at bottom) */}
+            <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gray-200/50">
+                <div
+                    className="h-full bg-primary transition-all duration-1000"
+                    style={{ width: `${progressPercent}%` }}
+                />
             </div>
         </div>
     );
