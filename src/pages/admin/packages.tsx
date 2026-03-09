@@ -225,12 +225,30 @@ export default function PackagesPage() {
         popular: packages.filter(p => p.isPopular).length
     };
 
-    // Helper to extract feature list from JSON object for display
+    // Helper to extract feature list from JSON object for display with stable ordering
     const getFeaturesList = (features: any): string[] => {
         if (!features || typeof features !== 'object') return [];
-        return Object.entries(features)
-            .filter(([_, value]) => value === true) // Only show boolean true features
-            .map(([key]) => key.replace(/([A-Z])/g, ' $1').trim()); // UncamelCase
+
+        const orderedFeatures: string[] = [];
+        const predefinedLabels = PREDEFINED_FEATURES.map(pf => pf.label);
+
+        // 1. Add predefined features in their fixed order if they are enabled
+        PREDEFINED_FEATURES.forEach(pf => {
+            if (features[pf.label] === true) {
+                orderedFeatures.push(pf.label);
+            }
+        });
+
+        // 2. Add any custom features (not in predefined list) that are enabled
+        Object.entries(features).forEach(([key, value]) => {
+            if (value === true && !predefinedLabels.includes(key)) {
+                // Formatting: if it's a camelCase key, prettify it, otherwise keep as is
+                const label = key.includes(' ') ? key : key.replace(/([A-Z])/g, ' $1').trim();
+                orderedFeatures.push(label);
+            }
+        });
+
+        return orderedFeatures;
     };
 
     return (
