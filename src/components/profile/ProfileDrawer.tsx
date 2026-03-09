@@ -167,37 +167,42 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                             </div>
                                         ) : (
                                             <>
-                                                {/* Profile Info */}
-                                                <div className="px-6 py-8 flex flex-col items-center text-center">
-                                                    <div className="avatar mb-4 relative">
-                                                        <div className="w-24 h-24 rounded-full ring-4 ring-primary/20 p-1 bg-white">
+                                                {/* Compact Profile Header */}
+                                                <div className="px-6 py-5 flex items-center gap-4 bg-gray-50/50 border-b border-gray-100 mb-6">
+                                                    <div className="relative">
+                                                        <div className="w-16 h-16 rounded-2xl ring-2 ring-white shadow-sm overflow-hidden bg-white flex items-center justify-center text-primary font-black text-2xl">
                                                             {(profile?.photoURL || user.photoURL) ? (
                                                                 <img
                                                                     src={profile?.photoURL || user.photoURL || ""}
-                                                                    alt={profile?.displayName || user.displayName || "User"}
-                                                                    className="rounded-full object-cover w-full h-full"
+                                                                    alt="Avatar"
+                                                                    className="w-full h-full object-cover"
                                                                 />
                                                             ) : (
-                                                                <div className="w-full h-full rounded-full bg-primary flex items-center justify-center text-white text-4xl font-bold">
-                                                                    {(profile?.displayName || user.displayName || user.email || "U").charAt(0).toUpperCase()}
-                                                                </div>
+                                                                (profile?.displayName || user.displayName || user.email || "U").charAt(0).toUpperCase()
                                                             )}
                                                         </div>
-                                                        {/* Edit Badge (Optional, not in screenshot but common) */}
-                                                        {/* <button className="absolute bottom-0 right-0 bg-white rounded-full p-1.5 shadow-md border border-gray-100 hover:bg-gray-50">
-                                                            <PencilIcon className="w-4 h-4 text-gray-600" />
-                                                        </button> */}
+                                                        {isAdmin && (
+                                                            <div className="absolute -bottom-1 -right-1 bg-red-600 text-white text-[8px] font-black px-1.5 py-0.5 rounded-lg shadow-sm border border-white">
+                                                                ADMIN
+                                                            </div>
+                                                        )}
                                                     </div>
 
-                                                    <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                                                        {profile?.displayName || user.displayName || user.email?.split('@')[0] || "YouOke User"}
-                                                        {isAdmin &&
-                                                            <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold uppercase">Admin</span>
-                                                        }
-                                                    </h2>
-                                                    <p className="text-sm text-gray-500 mt-1">{profile?.email || user.email}</p>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h2 className="text-base font-bold text-gray-900 truncate flex items-center gap-1.5">
+                                                            {profile?.displayName || user.displayName || "YouOke User"}
+                                                            {isPremium && !isAdmin && <SparklesIcon className="w-3.5 h-3.5 text-yellow-500" />}
+                                                        </h2>
+                                                        <p className="text-xs text-gray-500 truncate mb-1.5">{profile?.email || user.email}</p>
 
-                                                    {/* Music Service Badges Removed per request */}
+                                                        <Link
+                                                            href="/profile/edit"
+                                                            onClick={onClose}
+                                                            className="inline-flex items-center gap-1 text-[10px] font-bold text-primary bg-primary/5 px-2 py-0.5 rounded-full hover:bg-primary/10 transition-colors"
+                                                        >
+                                                            <UserCircleIcon className="w-3 h-3" /> แก้ไขโปรไฟล์
+                                                        </Link>
+                                                    </div>
                                                 </div>
 
                                                 {/* Integrated Membership & Store Section */}
