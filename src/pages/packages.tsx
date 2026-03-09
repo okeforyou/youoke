@@ -133,104 +133,122 @@ export default function PackagesPage() {
             <main className="max-w-6xl mx-auto px-4 py-8 md:px-8">
                 {/* Hero Section */}
                 <div className="text-center mb-12">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-bold mb-4">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-black tracking-widest mb-4 uppercase">
                         <Star className="w-3.5 h-3.5 fill-primary" />
-                        PREMIUM PASS
+                        Premium Pass
                     </div>
-                    <h2 className="text-3xl md:text-4xl font-black mb-4">ปลดล็อกขีดจำกัดความสนุก</h2>
-                    <p className="text-muted-foreground text-sm md:text-base max-w-xl mx-auto leading-relaxed">
-                        สัมผัสประสบการณ์ร้องคาราโอเกะแบบโปร ด้วยฟีเจอร์ที่ออกแบบมาเพื่อความสะดวกสบายและอรรถรสสูงสุด
+                    <h2 className="text-4xl md:text-5xl font-black mb-4 tracking-tight text-foreground italic">ปลดล็อกขีดจำกัดความสนุก</h2>
+                    <p className="text-muted-foreground text-sm md:text-base max-w-xl mx-auto leading-relaxed font-medium">
+                        สัมผัสประสบการณ์ร้องคาราโอเกะแบบมืออาชีพ ด้วยฟีเจอร์ที่ออกแบบมาเพื่อความสะดวกสบายและอรรถรสสูงสุด
                     </p>
                 </div>
 
                 {/* Features Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
                     {KILLER_FEATURES.map((feature, i) => (
-                        <div key={i} className="bg-card border rounded-2xl p-4 md:p-6 shadow-sm flex flex-col items-center text-center group hover:border-primary/50 transition-all duration-300">
+                        <div key={i} className="bg-card border rounded-[2rem] p-6 shadow-sm flex flex-col items-center text-center group hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 transition-all duration-500">
                             <div className={cn(
-                                "w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg mb-4 group-hover:scale-110 transition-transform duration-300",
+                                "w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-xl mb-4 group-hover:scale-110 transition-transform duration-500",
                                 feature.color
                             )}>
-                                <feature.icon className="w-6 h-6" />
+                                <feature.icon className="w-7 h-7" />
                             </div>
-                            <h3 className="font-bold text-sm md:text-base mb-1">{feature.title}</h3>
-                            <p className="text-[10px] md:text-xs text-muted-foreground leading-tight">{feature.desc}</p>
+                            <h3 className="font-bold text-[13px] md:text-base mb-1 tracking-tight">{feature.title}</h3>
+                            <p className="text-[10px] md:text-xs text-muted-foreground leading-tight font-medium">{feature.desc}</p>
                         </div>
                     ))}
                 </div>
 
                 {/* Pricing Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {packages.map((pkg) => {
-                        // Extract feature labels if it's an object, or use as is if it's an array
-                        const featuresList = pkg.features
-                            ? (Array.isArray(pkg.features)
-                                ? pkg.features
-                                : Object.entries(pkg.features)
-                                    .filter(([_, enabled]) => enabled === true)
-                                    .map(([label]) => label))
-                            : ["ร้องเพลงได้ไม่จำกัด"];
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {packages
+                        .filter(pkg => !pkg.id.toLowerCase().includes('test')) // Filter out test packages
+                        .map((pkg) => {
+                            // Extract feature labels if it's an object, or use as is if it's an array
+                            const featuresList = pkg.features
+                                ? (Array.isArray(pkg.features)
+                                    ? pkg.features
+                                    : Object.entries(pkg.features)
+                                        .filter(([_, enabled]) => enabled === true)
+                                        .map(([label]) => label))
+                                : ["ร้องเพลงได้ไม่จำกัด"];
 
-                        return (
-                            <div
-                                key={pkg.id}
-                                className={cn(
-                                    "relative bg-card border-2 rounded-3xl p-8 flex flex-col transition-all duration-300 hover:-translate-y-2",
-                                    pkg.isPopular
-                                        ? "border-primary shadow-xl shadow-primary/10"
-                                        : "border-border shadow-md"
-                                )}
-                            >
-                                {pkg.isPopular && (
-                                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-xs font-black uppercase tracking-widest shadow-lg">
-                                        ยอดนิยม
-                                    </div>
-                                )}
-
-                                <div className="mb-6">
-                                    <h3 className="text-xl font-bold mb-2">{pkg.name}</h3>
-                                    <div className="flex items-baseline gap-1">
-                                        <span className="text-4xl font-black">฿{pkg.price.toLocaleString()}</span>
-                                        <span className="text-muted-foreground text-sm">/ {pkg.durationDays} วัน</span>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-4 mb-8 flex-1">
-                                    {featuresList.map((f, i) => (
-                                        <div key={i} className="flex items-start gap-3 text-sm">
-                                            <div className="mt-1 bg-green-500/10 rounded-full p-0.5">
-                                                <Check className="w-3.5 h-3.5 text-green-500" />
-                                            </div>
-                                            <span className="text-foreground/80 font-medium">{f}</span>
+                            return (
+                                <div
+                                    key={pkg.id}
+                                    className={cn(
+                                        "relative bg-card border rounded-[3rem] p-10 flex flex-col transition-all duration-500 group overflow-hidden",
+                                        pkg.isPopular
+                                            ? "border-primary/50 shadow-[0_24px_50px_rgba(var(--primary-rgb),0.15)] ring-1 ring-primary/20"
+                                            : "border-border shadow-sm hover:shadow-2xl hover:shadow-primary/5"
+                                    )}
+                                >
+                                    {pkg.isPopular && (
+                                        <div className="absolute top-0 right-0 bg-primary text-white px-8 py-2 rounded-bl-[2rem] text-[10px] font-black uppercase tracking-[0.2em] shadow-lg z-10 italic">
+                                            Popular
                                         </div>
-                                    ))}
-                                </div>
+                                    )}
 
-                                <div className="space-y-4">
-                                    <button
-                                        onClick={() => handleBuy(pkg)}
-                                        className={cn(
-                                            "w-full h-12 rounded-2xl flex items-center justify-center gap-2 font-bold transition-all active:scale-95",
-                                            pkg.isPopular
-                                                ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20"
-                                                : "bg-muted hover:bg-muted/80"
-                                        )}
-                                    >
-                                        <QrCode className="w-5 h-5" />
-                                        ซื้อพรีเมียม (PromptPay)
-                                    </button>
+                                    <div className="mb-8">
+                                        <div className="flex items-center gap-4 mb-6">
+                                            <div className={cn(
+                                                "w-14 h-14 rounded-2xl flex items-center justify-center transition-transform duration-500 group-hover:scale-110",
+                                                pkg.isPopular ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                                            )}>
+                                                <Star className={cn("w-7 h-7", pkg.isPopular ? "fill-primary" : "")} />
+                                            </div>
+                                            <div>
+                                                <h3 className="text-2xl font-black tracking-tighter italic">{pkg.name}</h3>
+                                                <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">{pkg.durationDays} วัน พรีเมียม</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-baseline gap-1">
+                                            <span className="text-6xl font-black tracking-tighter italic">฿{pkg.price.toLocaleString()}</span>
+                                            <span className="text-muted-foreground font-bold text-xs uppercase opacity-40">บาท</span>
+                                        </div>
+                                    </div>
 
-                                    <button
-                                        onClick={() => handleManualTransfer(pkg)}
-                                        className="w-full text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center gap-2 py-2"
-                                    >
-                                        <Upload className="w-4 h-4" />
-                                        โอนเงิน / แนบสลิป
-                                    </button>
+                                    <div className="space-y-4 mb-12 flex-1 relative z-10">
+                                        {featuresList.map((f, i) => (
+                                            <div key={i} className="flex items-start gap-4 text-sm group/item">
+                                                <div className="mt-0.5 bg-primary/10 rounded-full p-1 group-hover/item:bg-primary/20 transition-colors">
+                                                    <Check className="w-3.5 h-3.5 text-primary" />
+                                                </div>
+                                                <span className="text-foreground/80 font-bold group-hover/item:text-foreground transition-colors line-clamp-1">{f}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="space-y-4 relative z-10">
+                                        <button
+                                            onClick={() => handleBuy(pkg)}
+                                            className={cn(
+                                                "w-full h-14 rounded-[1.5rem] flex items-center justify-center gap-3 font-black text-sm tracking-tight transition-all active:scale-95 shadow-lg",
+                                                pkg.isPopular
+                                                    ? "bg-primary text-white hover:bg-primary/90 shadow-primary/20"
+                                                    : "bg-foreground text-background hover:bg-foreground/90"
+                                            )}
+                                        >
+                                            <QrCode className="w-5 h-5" />
+                                            เลือกแผนสมัคสมาชิก
+                                        </button>
+
+                                        <button
+                                            onClick={() => handleManualTransfer(pkg)}
+                                            className="w-full text-xs font-black text-muted-foreground/60 hover:text-primary transition-colors flex items-center justify-center gap-2 py-2 group/btn"
+                                        >
+                                            <Upload className="w-4 h-4 group-hover/btn:-translate-y-1 transition-transform" />
+                                            โอนเงิน / แนบสลิป
+                                        </button>
+                                    </div>
+
+                                    {/* Deco Gradients */}
+                                    {pkg.isPopular && (
+                                        <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-primary/5 rounded-full blur-[80px]" />
+                                    )}
                                 </div>
-                            </div>
-                        );
-                    })}
+                            );
+                        })}
                 </div>
             </main>
 
