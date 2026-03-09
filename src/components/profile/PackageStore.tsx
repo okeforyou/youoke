@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { collection, query, getDocs, orderBy } from "firebase/firestore";
 import { db } from "@/firebase";
-import { Check, Star, Loader2, Upload, QrCode } from "lucide-react";
+import { Check, Star, Loader2, Upload, QrCode, ChevronLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/modules/auth/useAuthStore";
 import { UploadSlipModal } from "./UploadSlipModal";
@@ -93,70 +93,50 @@ export const PackageStore = () => {
                 <p className="text-sm text-muted-foreground mt-1">ปลดล็อคฟีเจอร์พรีเมียม ร้องเพลงได้ไม่จำกัด!</p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-3">
                 {packages.map((pkg) => (
                     <div
                         key={pkg.id}
                         className={cn(
-                            "relative overflow-hidden rounded-xl border bg-card p-5 shadow-sm transition-all hover:bg-muted/50 hover:shadow-md cursor-pointer group flex flex-col",
-                            pkg.isPopular ? "border-primary/50 ring-1 ring-primary/20" : "border-border"
+                            "relative overflow-hidden rounded-2xl border bg-muted/30 p-4 transition-all hover:bg-muted/50 hover:border-primary/30 cursor-pointer group flex items-center justify-between",
+                            pkg.isPopular ? "border-primary/20 bg-primary/5 shadow-sm" : "border-border"
                         )}
-                        onClick={() => handleBuy(pkg)} // Click card to buy
+                        onClick={() => router.push('/packages')}
                     >
-                        {pkg.isPopular && (
-                            <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-[9px] font-bold px-2 py-1 rounded-bl-lg shadow-sm z-10 uppercase tracking-wide">
-                                Popular
+                        <div className="flex items-center gap-4">
+                            <div className={cn(
+                                "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
+                                pkg.isPopular ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground"
+                            )}>
+                                <Star className={cn("w-5 h-5", pkg.isPopular ? "fill-primary-foreground" : "")} />
                             </div>
-                        )}
-
-                        <div className="mb-4">
-                            <h4 className="font-bold text-base text-foreground group-hover:text-primary transition-colors line-clamp-1">{pkg.name}</h4>
-                            <div className="flex items-baseline gap-1 mt-1">
-                                <span className="text-2xl font-bold text-foreground">{pkg.price.toLocaleString()}</span>
-                                <span className="text-xs text-muted-foreground">บาท</span>
-                            </div>
-                            <div className="inline-flex items-center rounded-md bg-secondary/50 px-2 py-0.5 text-[10px] font-medium text-secondary-foreground mt-2">
-                                {pkg.durationDays} วัน
-                            </div>
-                        </div>
-
-                        <div className="space-y-2 mb-4 flex-1">
-                            {pkg.features && pkg.features.length > 0 ? (
-                                pkg.features.slice(0, 3).map((feature, i) => (
-                                    <div key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
-                                        <Check className="w-3.5 h-3.5 text-green-500 shrink-0 mt-0.5" />
-                                        <span className="line-clamp-2 leading-tight">{feature}</span>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="text-xs text-muted-foreground italic flex items-center gap-2">
-                                    <Check className="w-3.5 h-3.5 text-green-500" /> ร้องเพลงได้ไม่จำกัด
+                            <div>
+                                <h4 className="font-bold text-sm text-foreground flex items-center gap-2">
+                                    {pkg.name}
+                                    {pkg.isPopular && (
+                                        <span className="text-[8px] bg-primary/20 text-primary px-1.5 py-0.5 rounded-full uppercase tracking-tighter">Popular</span>
+                                    )}
+                                </h4>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                    <span className="text-xs font-medium text-foreground">฿{pkg.price.toLocaleString()}</span>
+                                    <span className="text-[10px] text-muted-foreground">• {pkg.durationDays} วัน</span>
                                 </div>
-                            )}
+                            </div>
                         </div>
-
-                        <div className="space-y-2 mt-auto">
-                            <button
-                                onClick={(e) => { e.stopPropagation(); handleBuy(pkg); }}
-                                className={cn(
-                                    "w-full rounded-lg text-xs font-bold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 h-9 px-3 flex items-center justify-center gap-2",
-                                    pkg.isPopular
-                                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                                        : "bg-primary/10 text-primary hover:bg-primary/20"
-                                )}>
-                                <QrCode className="w-4 h-4" /> สแกนจ่าย (PromptPay)
-                            </button>
-
-                            <button
-                                onClick={(e) => { e.stopPropagation(); handleManualTransfer(pkg); }}
-                                className="w-full h-7 text-[10px] text-muted-foreground hover:text-foreground flex items-center justify-center gap-1 hover:bg-muted rounded-lg transition-colors"
-                            >
-                                <Upload className="w-3 h-3" /> โอนเงิน / แนบสลิป
-                            </button>
+                        <div className="text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                            ดูรายละเอียด
+                            <ChevronLeft className="w-3 h-3 rotate-180" />
                         </div>
                     </div>
                 ))}
             </div>
+
+            <button
+                onClick={() => router.push('/packages')}
+                className="w-full mt-6 py-3 rounded-2xl border-2 border-dashed border-primary/20 hover:border-primary/50 text-xs font-bold text-primary transition-all hover:bg-primary/5 flex items-center justify-center gap-2"
+            >
+                <QrCode className="w-4 h-4" /> ดูฟีเจอร์พรีเมียมทั้งหมดและชำระเงิน
+            </button>
 
             <UploadSlipModal
                 isOpen={showUploadModal}
