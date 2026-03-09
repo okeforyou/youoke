@@ -93,59 +93,48 @@ export const PackageStore = () => {
                 <p className="text-sm text-muted-foreground mt-1">ปลดล็อคฟีเจอร์พรีเมียม ร้องเพลงได้ไม่จำกัด!</p>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2">
                 {packages
                     .filter(pkg => !pkg.id.toLowerCase().includes('test')) // Filter out test packages
-                    .map((pkg) => (
-                        <div
-                            key={pkg.id}
-                            className={cn(
-                                "group relative overflow-hidden rounded-[1.5rem] border p-4 transition-all duration-300 hover:shadow-xl hover:shadow-primary/10 cursor-pointer flex items-center gap-4",
-                                pkg.isPopular
-                                    ? "bg-gradient-to-r from-primary/5 to-purple-500/5 border-primary/30 ring-1 ring-primary/10"
-                                    : "bg-card hover:bg-muted/40 border-border hover:border-primary/20"
-                            )}
-                            onClick={() => router.push('/packages')}
-                        >
-                            {/* Icon / Brand Circle */}
-                            <div className={cn(
-                                "w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 group-hover:scale-110 shadow-sm",
-                                pkg.isPopular
-                                    ? "bg-gradient-to-br from-primary to-purple-600 text-white shadow-primary/20"
-                                    : "bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary"
-                            )}>
-                                <Star className={cn("w-5 h-5", pkg.isPopular ? "fill-white" : "group-hover:fill-primary")} />
-                            </div>
+                    .map((pkg) => {
+                        // Color logic
+                        const isFree = pkg.price === 0;
+                        const isAnnual = pkg.durationDays >= 365 && pkg.durationDays < 9999;
+                        const isPermanent = pkg.durationDays >= 9999;
 
-                            {/* Info Section */}
-                            <div className="flex-1 min-w-0 flex items-center justify-between">
-                                <div className="flex flex-col min-w-0">
-                                    <h4 className="font-black text-[15px] tracking-tight text-foreground group-hover:text-primary transition-colors flex items-center gap-2">
-                                        {pkg.name}
-                                        {pkg.isPopular && (
-                                            <span className="text-[7px] font-black bg-primary text-white px-2 py-0.5 rounded-full uppercase tracking-widest italic shadow-sm">Best Choice</span>
-                                        )}
-                                    </h4>
-                                    <div className="flex items-center gap-2 mt-0.5">
-                                        <span className="text-sm font-black italic bg-gradient-to-br from-foreground to-foreground/60 bg-clip-text text-transparent">฿{pkg.price.toLocaleString()}</span>
-                                        <span className="text-[11px] font-bold text-muted-foreground/50 uppercase tracking-tighter shrink-0 select-none">
-                                            • {pkg.durationDays} วัน
-                                        </span>
+                        let accentClass = "bg-blue-500";
+                        if (isFree) accentClass = "bg-slate-400";
+                        if (isAnnual) accentClass = "bg-purple-500";
+                        if (isPermanent) accentClass = "bg-amber-500";
+
+                        return (
+                            <div
+                                key={pkg.id}
+                                className={cn(
+                                    "group relative overflow-hidden rounded-xl border p-2.5 transition-all duration-200 hover:bg-muted/50 cursor-pointer flex items-center justify-between",
+                                    pkg.isPopular ? "border-primary/40 bg-primary/[0.03]" : "border-border"
+                                )}
+                                onClick={() => router.push('/packages')}
+                            >
+                                <div className="flex items-center gap-3 overflow-hidden ml-1">
+                                    <div className={cn("w-1 h-5 rounded-full shrink-0", accentClass)} />
+                                    <div className="flex items-center gap-2 overflow-hidden">
+                                        <h4 className="font-extrabold text-[13px] text-foreground tracking-tight shrink-0 italic">{pkg.name}</h4>
+                                        <span className="text-muted-foreground/30 text-[10px] shrink-0">|</span>
+                                        <span className="text-[14px] font-black italic text-foreground shrink-0 leading-none">฿{pkg.price.toLocaleString()}</span>
+                                        <span className="text-[10px] font-bold text-muted-foreground shrink-0 leading-none opacity-50 select-none">({pkg.durationDays} วัน)</span>
                                     </div>
                                 </div>
 
-                                {/* Action Arrow */}
-                                <div className="w-8 h-8 rounded-full border border-border flex items-center justify-center group-hover:border-primary/50 group-hover:bg-primary group-hover:text-white transition-all duration-300 shrink-0">
-                                    <ChevronLeft className="w-4 h-4 rotate-180" />
+                                <div className="flex items-center gap-2 mr-1">
+                                    {pkg.isPopular && (
+                                        <span className="text-[7px] font-black bg-primary text-white px-1.5 py-0.5 rounded-md uppercase tracking-widest italic shrink-0">BEST Choice</span>
+                                    )}
+                                    <ChevronLeft className="w-4 h-4 rotate-180 text-muted-foreground group-hover:text-primary transition-colors" />
                                 </div>
                             </div>
-
-                            {/* Subtle Deco */}
-                            {pkg.isPopular && (
-                                <div className="absolute -top-4 -right-4 w-12 h-12 bg-primary/10 rounded-full blur-xl group-hover:scale-150 transition-transform duration-700" />
-                            )}
-                        </div>
-                    ))}
+                        );
+                    })}
             </div>
 
             <button
