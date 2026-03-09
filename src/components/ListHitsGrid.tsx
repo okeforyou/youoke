@@ -37,7 +37,7 @@ export default function ListHitsGrid() {
 
     return (
         <div className="pt-2 px-4 pb-24">
-            <h2 className="text-[17px] font-bold mb-6 flex items-center gap-2 text-gray-800 dark:text-white">
+            <h2 className="text-[17px] font-bold mb-6 flex items-center gap-2 text-black dark:text-white">
                 เพลงฮิตติดกระแส (Thailand Top 50)
             </h2>
 

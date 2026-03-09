@@ -55,7 +55,7 @@ export default function ListCommunityPlaylists({ onPlay }: ListCommunityPlaylist
     return (
         <div className="pb-10">
             <div className="px-6 pt-2 pb-6">
-                <h2 className="text-[17px] font-black text-gray-900 flex items-center gap-2">
+                <h2 className="text-[17px] font-black text-black flex items-center gap-2">
                     <FireIcon className="w-5 h-5 text-orange-500" />
                     ฮิตติดชาร์ต (Community Hits)
                 </h2>

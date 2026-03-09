@@ -407,7 +407,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
       {/* Header */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-6 py-8 sm:py-10">
         <div className="text-center md:text-left">
-          <h1 className="text-[20px] font-black text-gray-900 tracking-tight leading-none mb-2">คลังเพลย์ลิสต์</h1>
+          <h1 className="text-[20px] font-black text-black tracking-tight leading-none mb-2">คลังเพลย์ลิสต์</h1>
           <p className="text-gray-500 text-[12px] font-medium">แหล่งรวมความบันเทิงที่คุณสร้างสรรค์เองได้</p>
         </div>
 
@@ -494,7 +494,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
                 <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-6 shadow-sm">
                   <RectangleStackIcon className="w-8 h-8 text-gray-300" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900">ยังไม่มีเพลย์ลิสต์</h3>
+                <h3 className="text-xl font-bold text-black">ยังไม่มีเพลย์ลิสต์</h3>
                 <p className="text-gray-500 mt-2 mb-8 max-w-sm text-sm">เริ่มสร้างคอลเลกชันเพลงโปรดของคุณได้ง่ายๆ แค่กดปุ่มสร้างด้านล่าง</p>
                 {activeIndex === 1 && (
                   <button onClick={openCreateModal} className="btn btn-primary rounded-full px-8 text-white shadow-lg shadow-primary/20">
@@ -553,7 +553,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
                 {formData.isPrivate ? <LockClosedIcon className="w-6 h-6" /> : <GlobeAltIcon className="w-6 h-6" />}
               </div>
               <div>
-                <div className="font-bold text-gray-900">{formData.isPrivate ? "ส่วนตัว (Private)" : "สาธารณะ (Public)"}</div>
+                <div className="font-bold text-black">{formData.isPrivate ? "ส่วนตัว (Private)" : "สาธารณะ (Public)"}</div>
                 <div className="text-xs text-gray-500 font-medium mt-0.5">{formData.isPrivate ? "เห็นเฉพาะคุณเท่านั้น" : "ทุกคนสามารถค้นหาเจอ"}</div>
               </div>
             </div>
@@ -591,7 +591,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
             </div>
             {/* Title & Info */}
             <div className="flex-1 min-w-0">
-              <h2 className="text-[15px] font-black text-gray-900 leading-tight mb-1 truncate">{selectedItem?.name}</h2>
+              <h2 className="text-[15px] font-black text-black leading-tight mb-1 truncate">{selectedItem?.name}</h2>
               <div className="flex items-center gap-2 text-[10px] text-gray-500 font-medium font-mono">
                 <span className="bg-gray-100 px-2 py-0.5 rounded text-gray-600">{selectedItem?.playlists?.length || 0} เพลง</span>
                 <span>•</span>
@@ -629,7 +629,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
                     </div>
 
                     <div className="flex-1 min-w-0 pr-4">
-                      <p className="text-[13px] font-bold text-gray-900 truncate group-hover:text-primary transition-colors leading-tight mb-0.5">{v.title}</p>
+                      <p className="text-[13px] font-bold text-black truncate group-hover:text-primary transition-colors leading-tight mb-0.5">{v.title}</p>
                       <p className="text-[10px] text-gray-500 truncate">{v.author}</p>
                     </div>
 

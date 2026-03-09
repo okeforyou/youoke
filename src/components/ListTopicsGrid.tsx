@@ -3,7 +3,6 @@ import axios from "axios";
 import { PlayIcon, ChevronLeftIcon } from "@heroicons/react/24/solid";
 import { usePlayerStore } from "../modules/player/stores/usePlayerStore";
 import { useUIStore } from "../stores/useUIStore";
-import Alert from "./Alert";
 import { YOUTUBE_GENRES } from "../data/genres"; // Keep as fallback
 
 interface ExploreSection {
@@ -68,7 +67,6 @@ export default function ListTopicsGrid({ showTab = true }) {
   useEffect(() => {
     const fetchExplore = async () => {
       try {
-        // setIsLoading(true); // Don't block UI with loading state initially
         const res = await axios.get('/api/explore');
         if (res.data.sections && res.data.sections.length > 0) {
           setExploreSections(res.data.sections);
@@ -114,28 +112,12 @@ export default function ListTopicsGrid({ showTab = true }) {
         if (typeof window !== 'undefined') {
           window.history.pushState({ view: 'playlist' }, '');
         }
-
-        // Do NOT change useFallback, so we can return to it
       }
     } catch (e) {
       console.error("Failed to load playlist", e);
       alert("ไม่สามารถโหลดรายชื่อเพลงได้ครับ");
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  // Use Fallback (Static Genres) if Dynamic fails
-  const genresToRender = useFallback ? YOUTUBE_GENRES.map(g => ({
-    playlistId: "",
-    ...g
-  })) : [];
-
-  const handleHybridClick = (item: any) => {
-    if (item.query) {
-      handleQuerySearch(item.query);
-    } else {
-      handlePlaylistClick(item.playlistId, item.title);
     }
   };
 
@@ -156,7 +138,7 @@ export default function ListTopicsGrid({ showTab = true }) {
       }
     } catch (e) {
       console.error(e);
-      alert("ค้นหาไม่เจอครับ - กรุณาลองใหม่อีกครั้ง");
+      alert("ค้นหาไม่เจอครับ - กรุณาลองใหมีกครั้ง");
     } finally {
       setIsLoading(false);
     }
@@ -181,30 +163,30 @@ export default function ListTopicsGrid({ showTab = true }) {
           <div className="flex items-center gap-2 mb-4 px-2">
             {detailSections && (
               <button onClick={() => setDetailSections(null)} className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors">
-                <ChevronLeftIcon className="w-5 h-5 text-gray-800" />
+                <ChevronLeftIcon className="w-5 h-5 text-black" />
               </button>
             )}
-            <h2 className="text-xl font-bold text-gray-800">{section.title}</h2>
+            <h2 className="text-xl font-bold text-black">{section.title}</h2>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {section.items.map((item) => (
               <div
-                key={item.playlistId}
+                key={item.playlistId || item.videoId}
                 onClick={() => {
                   if (item.isSong && item.videoId) {
-                    // If it's a song, Play it!
                     usePlayerStore.getState().addToQueue({
                       videoId: item.videoId,
                       title: item.title,
                       author: item.author || "Unknown",
-                      thumbnail: item.thumbnail
+                      thumbnail: item.thumbnail,
+                      id: item.videoId,
+                      sourceType: 'youtube'
                     });
                     usePlayerStore.getState().playNext();
                     import('../stores/useUIStore').then(({ useUIStore }) => {
                       useUIStore.getState().setQueueOpen(true);
                     });
                   } else {
-                    // It's a playlist/genre, drill down
                     handlePlaylistClick(item.playlistId, item.title)
                   }
                 }}
@@ -213,6 +195,7 @@ export default function ListTopicsGrid({ showTab = true }) {
                 <img
                   src={item.thumbnail?.replace('mqdefault', 'hqdefault') || `https://i.ytimg.com/vi/mqdefault.jpg`}
                   className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                  loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
 
@@ -230,7 +213,7 @@ export default function ListTopicsGrid({ showTab = true }) {
       {/* Fallback View (Static Genres) */}
       {useFallback && !detailSections && (
         <div>
-          <h2 className="text-xl font-bold text-gray-800 mb-4 px-2 flex items-center gap-2">
+          <h2 className="text-xl font-bold text-black mb-4 px-2 flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-primary">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 19.5v-6h6v6" />
             </svg>
@@ -240,15 +223,13 @@ export default function ListTopicsGrid({ showTab = true }) {
             {YOUTUBE_GENRES.map((genre: any) => (
               <div
                 key={genre.query}
-                onClick={() => {
-                  handleQuerySearch(genre.query);
-                }}
-                className={`relative h-32 rounded-xl cursor-pointer overflow-hidden shadow-lg bg-gradient-to-br ${genre.color || 'from-gray-700'} to-black`}
+                onClick={() => handleQuerySearch(genre.query)}
+                className="relative h-28 rounded-2xl cursor-pointer overflow-hidden bg-gray-100 border border-gray-100 hover:border-primary transition-all duration-300 group"
               >
-                <div className="absolute inset-0 bg-black/20 hover:bg-black/40 transition-colors" />
-                <div className="absolute top-3 left-3">
-                  <h3 className="text-white font-bold text-lg">{genre.title}</h3>
-                  <p className="text-white/80 text-xs">{genre.description}</p>
+                <div className="absolute inset-0 bg-black/5 group-hover:bg-black/10 transition-colors" />
+                <div className="absolute top-4 left-4">
+                  <h3 className="text-black font-black text-lg group-hover:text-primary transition-colors">{genre.title}</h3>
+                  <p className="text-gray-500 text-xs font-medium uppercase tracking-wider">{genre.description}</p>
                 </div>
               </div>
             ))}
