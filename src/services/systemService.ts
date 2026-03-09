@@ -12,10 +12,11 @@ const DEFAULT_CONFIG: AppConfig = {
 
 /**
  * Service to fetch global application configuration from Firestore.
+ * Reads from the same 'settings/default' document used by the Admin ConfigPage.
  */
 export const SystemService = {
     /**
-     * Get global app settings from Firestore configs/app_settings document
+     * Get guest limit from the admin-managed config at settings/default -> tv.guestSongLimit
      */
     getAppConfig: async (): Promise<AppConfig> => {
         try {
@@ -24,13 +25,14 @@ export const SystemService = {
                 return DEFAULT_CONFIG;
             }
 
-            const configRef = doc(db, "configs", "app_settings");
+            const configRef = doc(db, "settings", "default");
             const configSnap = await getDoc(configRef);
 
             if (configSnap.exists()) {
                 const data = configSnap.data();
+                const guestLimit = data?.tv?.guestSongLimit;
                 return {
-                    guestLimit: typeof data.guestLimit === 'number' ? data.guestLimit : DEFAULT_CONFIG.guestLimit,
+                    guestLimit: typeof guestLimit === 'number' ? guestLimit : DEFAULT_CONFIG.guestLimit,
                 };
             }
 
