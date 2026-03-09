@@ -15,11 +15,14 @@ import { useAuth } from "@/context/AuthContext";
 import { usePlayerStore } from '../modules/player/stores/usePlayerStore'
 import { useUIStore } from '../stores/useUIStore'
 
+import { useNotificationCount } from '@/hooks/useNotificationCount'
+
 export default function BottomNavigation() {
   const { activeIndex, setActiveIndex } = usePlayerStore();
   const { user } = useAuth();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const unreadCount = useNotificationCount();
 
   // Helper function to handle navigation to home page with active index
   const navigateToHome = (index: number) => {
@@ -98,14 +101,21 @@ export default function BottomNavigation() {
       ) : (
         <button
           type="button"
-          className={`flex flex-col items-center justify-center gap-1 min-h-[64px] text-primary p-2 ${isAccountPage ? "active" : ""}`}
+          className={`flex flex-col items-center justify-center gap-1 min-h-[64px] text-primary p-2 relative ${isAccountPage ? "active" : ""}`}
           onClick={() => useUIStore.getState().setProfileOpen(true)}
           disabled={isPending}
         >
           {isPending ? (
             <span className="loading loading-spinner loading-sm"></span>
           ) : (
-            <UserCircleIcon className="w-6 h-6 pointer-events-none" />
+            <div className="relative">
+              <UserCircleIcon className="w-6 h-6 pointer-events-none" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </div>
           )}
           <span className="btm-nav-label pointer-events-none">บัญชี</span>
         </button>

@@ -107,23 +107,50 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
                                 <button onClick={onClose}><X className="w-5 h-5" /></button>
                             </div>
 
-                            {/* Bank Details */}
-                            <div className="bg-muted/30 p-4 rounded-xl mb-4 border border-border/50">
-                                <p className="text-sm text-muted-foreground mb-2">โอนเงินเข้าบัญชี:</p>
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center text-white font-bold text-xs">KBank</div>
-                                    <div>
-                                        <p className="font-bold text-foreground">{bankInfo.bank}</p>
-                                        <p className="text-xs text-muted-foreground">{bankInfo.accName}</p>
+                            {/* Payment Info Section */}
+                            <div className="bg-muted/30 p-5 rounded-2xl mb-6 border border-border/50 shadow-inner">
+                                <div className="text-center mb-5">
+                                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">สแกนเพื่อชำระเงิน (PromptPay)</p>
+
+                                    {/* Static PromptPay QR */}
+                                    <div className="bg-white p-4 rounded-2xl inline-block shadow-lg border-2 border-primary/10 relative group">
+                                        <img
+                                            src={`https://promptpay.io/${config.payment?.promptPay?.id || config.payment?.bankAccount?.accountNumber}/${pkg?.price}.png`}
+                                            alt="PromptPay QR"
+                                            className="w-48 h-48 mx-auto"
+                                        />
+                                        <div className="mt-2 flex items-center justify-center gap-2">
+                                            <div className="w-6 h-4 bg-[#003d6b] rounded-sm flex items-center justify-center text-[8px] font-bold text-white">Prompt</div>
+                                            <div className="w-6 h-4 bg-[#f7a600] rounded-sm flex items-center justify-center text-[8px] font-bold text-white">Pay</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-4">
+                                        <p className="text-xl font-black text-primary">฿{pkg?.price.toLocaleString()}</p>
+                                        <p className="text-[10px] text-muted-foreground mt-1">ชื่อบัญชี: {bankInfo.accName}</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center justify-between bg-background p-2 rounded border border-border">
-                                    <span className="font-mono font-bold text-lg text-primary">{bankInfo.accNo}</span>
-                                    <button className="text-muted-foreground hover:text-foreground"><Copy className="w-4 h-4" /></button>
-                                </div>
-                                <div className="mt-3 flex justify-between text-sm">
-                                    <span>ยอดชำระ:</span>
-                                    <span className="font-bold text-red-500">{pkg?.price.toLocaleString()} บาท</span>
+
+                                <div className="space-y-3 border-t border-border/50 pt-4">
+                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">โอนผ่านเลขบัญชี:</p>
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary font-bold text-xs ring-1 ring-primary/20">BANK</div>
+                                        <div className="flex-1">
+                                            <p className="font-bold text-sm text-foreground">{bankInfo.bank}</p>
+                                            <div className="flex items-center justify-between">
+                                                <span className="font-mono text-base font-black text-foreground tracking-wider">{bankInfo.accNo}</span>
+                                                <button
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText(bankInfo.accNo);
+                                                        alert("คัดลอกเลขบัญชีแล้ว!");
+                                                    }}
+                                                    className="p-1.5 hover:bg-primary/10 rounded-lg text-primary transition-colors"
+                                                >
+                                                    <Copy className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
