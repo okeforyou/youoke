@@ -111,18 +111,24 @@ export const PackageStore = () => {
                             <div
                                 key={pkg.id}
                                 className={cn(
-                                    "group relative overflow-hidden rounded-xl border p-2.5 transition-all duration-200 hover:bg-muted/50 cursor-pointer flex items-center justify-between",
-                                    pkg.isPopular ? "border-primary/40 bg-primary/[0.03]" : "border-border"
+                                    "group relative overflow-hidden rounded-2xl border p-4 mb-2 transition-all duration-200 hover:bg-muted/50 cursor-pointer flex items-center justify-between",
+                                    pkg.isPopular ? "border-primary/40 bg-primary/[0.03]" : "border-border shadow-sm"
                                 )}
                                 onClick={() => router.push('/packages')}
                             >
-                                <div className="flex items-center gap-3 overflow-hidden ml-1">
-                                    <div className={cn("w-1 h-5 rounded-full shrink-0", accentClass)} />
-                                    <div className="flex items-center gap-2 overflow-hidden">
-                                        <h4 className="font-extrabold text-[13px] text-foreground tracking-tight shrink-0 italic">{pkg.name}</h4>
-                                        <span className="text-muted-foreground/30 text-[10px] shrink-0">|</span>
-                                        <span className="text-[14px] font-black italic text-foreground shrink-0 leading-none">฿{pkg.price.toLocaleString()}</span>
-                                        <span className="text-[10px] font-bold text-muted-foreground shrink-0 leading-none opacity-50 select-none">({pkg.durationDays} วัน)</span>
+                                <div className="flex items-center gap-4 overflow-hidden ml-1">
+                                    {/* Color Indicator Vertical Bar */}
+                                    <div className={cn("w-1.5 h-8 rounded-full shrink-0", accentClass)} />
+
+                                    <div className="flex items-center gap-3 overflow-hidden">
+                                        <h4 className="font-bold text-[15px] text-foreground tracking-tight shrink-0">{pkg.name}</h4>
+                                        <span className="text-muted-foreground/30 text-xs shrink-0">|</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-lg font-black text-foreground shrink-0 leading-none">฿{pkg.price.toLocaleString()}</span>
+                                            <span className="text-xs font-semibold text-muted-foreground shrink-0 leading-none opacity-60">
+                                                ({pkg.durationDays} วัน)
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
 
