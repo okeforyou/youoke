@@ -54,7 +54,7 @@ const Modal: ForwardRefRenderFunction<ModalHandler, IModalProps> = (
         }}
       >
         <div
-          className={`modal-box relative p-0 max-w-lg w-full flex flex-col max-h-[85vh] ${transparent ? "bg-transparent shadow-none overflow-visible" : "bg-white shadow-2xl overflow-hidden"}`}
+          className={`modal-box relative p-0 max-w-lg w-[92%] sm:w-full flex flex-col max-h-[85vh] ${transparent ? "bg-transparent shadow-none overflow-visible" : "bg-white shadow-2xl overflow-hidden"}`}
           style={{ borderRadius: transparent ? '0' : '32px' }} // Force border radius
           onClick={(e) => e.stopPropagation()}
         >
