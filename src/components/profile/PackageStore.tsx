@@ -94,41 +94,45 @@ export const PackageStore = () => {
             </div>
 
             <div className="space-y-3">
-                {packages.map((pkg) => (
-                    <div
-                        key={pkg.id}
-                        className={cn(
-                            "relative overflow-hidden rounded-2xl border bg-muted/30 p-4 transition-all hover:bg-muted/50 hover:border-primary/30 cursor-pointer group flex items-center justify-between",
-                            pkg.isPopular ? "border-primary/20 bg-primary/5 shadow-sm" : "border-border"
-                        )}
-                        onClick={() => router.push('/packages')}
-                    >
-                        <div className="flex items-center gap-4">
-                            <div className={cn(
-                                "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
-                                pkg.isPopular ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground"
-                            )}>
-                                <Star className={cn("w-5 h-5", pkg.isPopular ? "fill-primary-foreground" : "")} />
-                            </div>
-                            <div>
-                                <h4 className="font-bold text-sm text-foreground flex items-center gap-2">
-                                    {pkg.name}
+                {packages
+                    .filter(pkg => !pkg.id.toLowerCase().includes('test')) // Filter out test packages
+                    .map((pkg) => (
+                        <div
+                            key={pkg.id}
+                            className={cn(
+                                "relative overflow-hidden rounded-2xl border bg-card p-3.5 transition-all hover:bg-muted/50 hover:border-primary/30 cursor-pointer group flex items-center justify-between",
+                                pkg.isPopular ? "border-primary/20 bg-primary/[0.02] shadow-sm" : "border-border"
+                            )}
+                            onClick={() => router.push('/packages')}
+                        >
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <div className={cn(
+                                    "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                                    pkg.isPopular ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary"
+                                )}>
+                                    <Star className={cn("w-4.5 h-4.5", pkg.isPopular ? "fill-primary-foreground" : "")} />
+                                </div>
+                                <div className="flex items-center gap-2 overflow-hidden flex-1">
+                                    <h4 className="font-bold text-[13px] text-foreground shrink-0">{pkg.name}</h4>
+                                    <span className="text-muted-foreground/30 text-[10px] shrink-0">•</span>
+                                    <div className="flex items-center gap-1.5 min-w-0">
+                                        <span className="text-[13px] font-black text-primary shrink-0">฿{pkg.price.toLocaleString()}</span>
+                                        <span className="text-[11px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full shrink-0">
+                                            {pkg.durationDays} วัน
+                                        </span>
+                                    </div>
                                     {pkg.isPopular && (
-                                        <span className="text-[8px] bg-primary/20 text-primary px-1.5 py-0.5 rounded-full uppercase tracking-tighter">Popular</span>
+                                        <div className="ml-auto bg-primary/10 text-primary text-[8px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider shrink-0 hidden sm:block">
+                                            BEST
+                                        </div>
                                     )}
-                                </h4>
-                                <div className="flex items-center gap-2 mt-0.5">
-                                    <span className="text-xs font-medium text-foreground">฿{pkg.price.toLocaleString()}</span>
-                                    <span className="text-[10px] text-muted-foreground">• {pkg.durationDays} วัน</span>
                                 </div>
                             </div>
+                            <div className="ml-2 text-muted-foreground/30 group-hover:text-primary transition-colors">
+                                <ChevronLeft className="w-4 h-4 rotate-180" />
+                            </div>
                         </div>
-                        <div className="text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                            ดูรายละเอียด
-                            <ChevronLeft className="w-3 h-3 rotate-180" />
-                        </div>
-                    </div>
-                ))}
+                    ))}
             </div>
 
             <button
