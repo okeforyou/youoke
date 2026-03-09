@@ -598,13 +598,20 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                 )}
                                             </div>
 
-                                            {/* Mode Switch (Song/Karaoke) */}
-                                            <div className="flex bg-gray-100 p-1 rounded-2xl border border-gray-200 shadow-inner shrink-0 h-10 items-center">
+                                            {/* Mode Switch (Song/Karaoke) - Animated Sliding Style */}
+                                            <div className="relative flex bg-gray-100 p-1 rounded-2xl border border-gray-200 shadow-inner shrink-0 h-10 w-[84px] items-center">
+                                                {/* Sliding Background */}
+                                                <div
+                                                    className={clsx(
+                                                        "absolute h-8 w-9 bg-white rounded-xl shadow-sm transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
+                                                        isKaraoke ? "translate-x-9" : "translate-x-0"
+                                                    )}
+                                                />
                                                 <button
                                                     onClick={() => setIsKaraoke(false)}
                                                     className={clsx(
-                                                        "w-9 h-9 flex items-center justify-center rounded-xl transition-all duration-300",
-                                                        !isKaraoke ? "bg-white text-primary shadow-md scale-105" : "text-black scale-100"
+                                                        "relative flex-1 h-8 flex items-center justify-center rounded-xl transition-all duration-300 z-10",
+                                                        !isKaraoke ? "text-primary scale-105" : "text-black/40"
                                                     )}
                                                 >
                                                     <Music size={16} />
@@ -612,15 +619,15 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                 <button
                                                     onClick={() => setIsKaraoke(true)}
                                                     className={clsx(
-                                                        "w-9 h-9 flex items-center justify-center rounded-xl transition-all duration-300",
-                                                        isKaraoke ? "bg-white text-primary shadow-md scale-105" : "text-black scale-100"
+                                                        "relative flex-1 h-8 flex items-center justify-center rounded-xl transition-all duration-300 z-10",
+                                                        isKaraoke ? "text-primary scale-105" : "text-black/40"
                                                     )}
                                                 >
                                                     <Mic2 size={16} />
                                                 </button>
                                             </div>
 
-                                            {/* Queue Button */}
+                                            {/* Queue Button - Depth/Shadow Effect */}
                                             <button
                                                 onClick={() => {
                                                     if (isQueueOpen && !isPlayerHidden) {
@@ -632,11 +639,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                     }
                                                 }}
                                                 className={clsx(
-                                                    "w-10 h-10 flex items-center justify-center rounded-2xl shrink-0 shadow-sm active:scale-95 transition-all relative border border-transparent",
-                                                    isQueueOpen ? "bg-primary/10 text-primary border-primary/20" : "bg-gray-200 text-gray-700"
+                                                    "w-10 h-10 flex items-center justify-center rounded-2xl shrink-0 transition-all duration-200 relative border",
+                                                    isQueueOpen
+                                                        ? "bg-gray-100 text-primary border-black/5 shadow-[inset_2px_2px_4px_rgba(0,0,0,0.05),inset_-1px_-1px_2px_rgba(255,255,255,0.8)] scale-95"
+                                                        : "bg-white text-gray-700 border-gray-100 shadow-[2px_2px_8px_rgba(0,0,0,0.06),-2px_-2px_8px_rgba(255,255,255,0.9)] hover:shadow-md active:scale-95"
                                                 )}
                                             >
-                                                <ListMusic className="w-5 h-5" />
+                                                <ListMusic className={clsx("w-5 h-5 transition-transform", isQueueOpen && "scale-90")} />
                                                 {queue.length > 0 && (queue.length - (currentIndex + 1)) > 0 && (
                                                     <div className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-black h-4.5 min-w-[18px] px-1 rounded-full flex items-center justify-center border-2 border-white shadow-sm">
                                                         {queue.length - (currentIndex + 1)}
