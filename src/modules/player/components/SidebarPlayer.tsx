@@ -212,10 +212,31 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                     const firstHit = results[0];
                     console.log("✅ Resolved:", firstHit.title, firstHit.videoId);
 
-                    // Update Store Entry (Optional but good for UI)
-                    // But strictly we just need to load it into player
-                    if (playerRef.current) {
-                        playerRef.current.loadVideoById(firstHit.videoId);
+                    // ✅ RESOLVE & SYNC: Update the store so UniversalPlayer can mount the YouTube IFrame
+                    const playerStore = usePlayerStore.getState();
+                    const { queue, currentIndex, currentSource: latestSource } = playerStore;
+
+                    // 🛡️ Safety: Only update if we are still on the same search item
+                    if (latestSource === currentSource && queue[currentIndex]) {
+                        const newQueue = [...queue];
+                        newQueue[currentIndex] = {
+                            ...newQueue[currentIndex],
+                            videoId: firstHit.videoId,
+                            sourceType: 'youtube', // Ensure it's marked as youtube for UniversalPlayer
+                            thumbnail: firstHit.videoThumbnails?.[0]?.url || `https://i.ytimg.com/vi/${firstHit.videoId}/mqdefault.jpg`
+                        };
+
+                        // Update store immediately to trigger YouTube mount and persistent state
+                        playerStore.setPlayerState({
+                            queue: newQueue,
+                            currentVideo: newQueue[currentIndex],
+                            currentSource: firstHit.videoId,
+                            isPlaying: true // Ensure it plays after resolving
+                        });
+
+                        console.log("🎯 Store Updated with Resolved ID:", firstHit.videoId);
+                    } else {
+                        console.warn("⏳ Search resolved but user already moved to next song or source changed.");
                     }
                 } else {
                     console.warn("❌ No results found for:", query);
