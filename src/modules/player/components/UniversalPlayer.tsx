@@ -167,8 +167,9 @@ export const UniversalPlayer: React.FC<UniversalPlayerProps> = ({
     };
 
     // Use currentSource as videoId for standard React-YouTube management
-    // But only if it looks like a valid YouTube ID (no search prefix)
-    const activeVideoId = (currentVideo?.sourceType === 'youtube' && currentSource && !currentSource.startsWith('search:'))
+    // Default sourceType to 'youtube' if not set (backward compat for old Firestore data)
+    const effectiveSourceType = currentVideo?.sourceType || 'youtube';
+    const activeVideoId = (effectiveSourceType === 'youtube' && currentSource && !currentSource.startsWith('search:'))
         ? currentSource
         : undefined;
 

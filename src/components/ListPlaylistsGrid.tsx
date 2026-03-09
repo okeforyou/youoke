@@ -282,7 +282,9 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
 
           return {
             ...item,
+            id: item.videoId!, // Ensure id matches videoId for setCurrentIndex source resolution
             videoId: item.videoId,
+            sourceType: 'youtube' as const, // CRITICAL: Must be set for UniversalPlayer to mount YouTube iframe
             title: item.title,
             author: item.author || "Unknown",
             thumbnail: `https://i.ytimg.com/vi/${item.videoId}/mqdefault.jpg`,
