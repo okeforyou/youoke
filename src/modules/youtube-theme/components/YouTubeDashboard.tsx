@@ -1,13 +1,13 @@
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery, keepPreviousData } from "@tanstack/react-query";
 import axios from "axios";
-import { Loader2, Music, Search, X, Mic, ArrowLeft, Play, ListMusic, PlusCircle, PlayCircle } from "lucide-react";
+import { Loader2, ArrowLeft, Search, Music } from "lucide-react";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment, useRef } from "react";
 import { usePlayerStore } from "../../../modules/player/stores/usePlayerStore";
 import { useUIStore } from "../../../stores/useUIStore";
 import { useRouter } from "next/router";
 
-// Types
+// Types matching YouTube API
 interface YTItem {
     id: string;
     title: string;
@@ -21,23 +21,18 @@ interface YTShelf {
     items: YTItem[];
 }
 
+// API Fetchers
 const fetchExplore = async () => {
     const { data } = await axios.get("/api/explore");
     return data;
 };
 
-const fetchSearch = async (query: string, filter: string = 'SONG', isKaraokeMode: boolean = false): Promise<YTItem[]> => {
+const fetchSearch = async (query: string, isKaraokeMode: boolean = false): Promise<YTItem[]> => {
     if (!query) return [];
-
-    // TRANSPARENT KARAOKE LOGIC:
-    // If Global Karaoke Mode is ON, we append "karaoke" effectively here,
-    // keeping the UI "searchTerm" clean (just the song title).
     let finalQuery = query;
     if (isKaraokeMode && !finalQuery.toLowerCase().includes('karaoke')) {
         finalQuery += " karaoke";
     }
-
-    // MODULE: YouTube Theme Dedicated API
     const { data } = await axios.get(`/api/modules/youtube/search?q=${encodeURIComponent(finalQuery)}`);
     return data.data || [];
 };
@@ -49,90 +44,87 @@ const fetchPlaylist = async (id: string, type: string = 'playlist') => {
 };
 
 export default function YouTubeDashboard() {
-    const { addToQueue, searchTerm, isKaraoke } = usePlayerStore(); // Global Search State
+    const { addToQueue, searchTerm, isKaraoke, setSearchTerm } = usePlayerStore();
     const [debouncedTerm, setDebouncedTerm] = useState("");
     const [activePlaylist, setActivePlaylist] = useState<YTItem | null>(null);
-    const [searchFilter, setSearchFilter] = useState("SONG");
+    const [selectedShelfIndex, setSelectedShelfIndex] = useState(0);
 
-    // Debounce Logic
+    const router = useRouter();
+    const playlistRef = useRef<HTMLDivElement>(null);
+    const songlistRef = useRef<HTMLDivElement>(null);
+
+    // URL-Driven State matching SpotifyDashboard
+    const genreText = (router.query.genre as string) || "แนะนำ";
+    const tagId = (router.query.playlist as string) || "";
+
+    // Sync UI State with URL
+    useEffect(() => {
+        if (tagId && !activePlaylist) {
+            // Find in explore data if possible or set placeholder
+            setActivePlaylist({ id: tagId, title: "กำลังโหลด...", type: 'playlist' });
+        } else if (!tagId && activePlaylist) {
+            setActivePlaylist(null);
+        }
+    }, [tagId]);
+
+    // Update URL when changing genre/playlist
+    const setGenreInUrl = (text: string) => {
+        const { search, ...rest } = router.query;
+        router.push({
+            pathname: router.pathname,
+            query: { ...rest, genre: text, playlist: undefined }
+        }, undefined, { shallow: true });
+        setSearchTerm('');
+        setSelectedShelfIndex(0); // Reset shelf index to let effect find matching shelf
+    };
+
+    const setPlaylistInUrl = (item: YTItem) => {
+        setSearchTerm('');
+        router.push({
+            pathname: router.pathname,
+            query: { ...router.query, playlist: item.id }
+        }, undefined, { shallow: true });
+        setActivePlaylist(item);
+    };
+
+    // Debounce Logic for Search
     useEffect(() => {
         const timer = setTimeout(() => {
             setDebouncedTerm(searchTerm);
-        }, 600); // 600ms debounce
+        }, 600);
         return () => clearTimeout(timer);
     }, [searchTerm]);
 
     const isSearching = !!debouncedTerm;
 
-    // Scroll to top when search results appear or change
-    useEffect(() => {
-        if (isSearching) {
-            const mainContent = document.getElementById("main-content");
-            if (mainContent) {
-                mainContent.scrollTo({ top: 0, behavior: 'instant' });
-            }
-        }
-    }, [debouncedTerm, searchFilter, isSearching]);
-
-    // --- History & Back Navigation Logic ---
-    const router = useRouter();
-
-    // --- History & Back Navigation Logic (Router Based) ---
-    useEffect(() => {
-        // 1. Sync State with URL
-        if (router.query.view !== 'playlist' && activePlaylist) {
-            setActivePlaylist(null);
-        }
-
-        // 2. Clear Search if URL param is empty? 
-        // Or simpler: If we are 'home' (no search, no playlist), we are good.
-        // We will just use router.back() for everything.
-
-        // Handle In-App Back Button
-        if (activePlaylist) {
-            useUIStore.getState().setBackAction(() => router.back());
-        } else if (searchTerm) {
-            useUIStore.getState().setBackAction(() => {
-                usePlayerStore.setState({ searchTerm: '' });
-                // Also clear query param if we implemented it, but for now just clear state.
-            });
-        } else {
-            useUIStore.getState().setBackAction(null);
-        }
-
-    }, [router.query, activePlaylist, searchTerm]);
-
-    // Push State when opening Playlist
-    const openPlaylist = (item: YTItem) => {
-        setActivePlaylist(item);
-        // Use shallow routing to update URL without full reload
-        router.push(
-            {
-                pathname: router.pathname,
-                query: { ...router.query, view: 'playlist', id: item.id }
-            },
-            undefined,
-            { shallow: true }
-        );
-    };
-
-
-    // Explore Query (Pause when searching)
+    // Explore Query
     const exploreQuery = useQuery({
         queryKey: ["youtube-explore"],
         queryFn: fetchExplore,
         staleTime: 1000 * 60 * 5,
-        retry: 1,
-        // Don't fully disable, just don't refetch if searching to keep cache
-        enabled: !isSearching && !activePlaylist
+        enabled: !isSearching
     });
+
+    const shelves: YTShelf[] = exploreQuery.data?.data || [];
+
+    // Sync selectedShelfIndex with genreText
+    useEffect(() => {
+        if (shelves.length > 0) {
+            if (genreText === "แนะนำ") {
+                setSelectedShelfIndex(1); // Usually first category after Top Artists
+            } else {
+                const index = shelves.findIndex(s => s.title.includes(genreText));
+                if (index !== -1) setSelectedShelfIndex(index);
+                else setSelectedShelfIndex(1);
+            }
+        }
+    }, [genreText, shelves]);
 
     // Search Query
     const searchQuery = useQuery({
-        queryKey: ["youtube-search", debouncedTerm, searchFilter, isKaraoke],
-        queryFn: () => fetchSearch(debouncedTerm, searchFilter, isKaraoke),
+        queryKey: ["youtube-search", debouncedTerm, isKaraoke],
+        queryFn: () => fetchSearch(debouncedTerm, isKaraoke),
         enabled: isSearching,
-        retry: 1,
         placeholderData: keepPreviousData
     });
 
@@ -140,455 +132,185 @@ export default function YouTubeDashboard() {
     const playlistQuery = useQuery({
         queryKey: ["youtube-playlist", activePlaylist?.id],
         queryFn: () => fetchPlaylist(activePlaylist!.id, activePlaylist!.type),
-        enabled: !!activePlaylist,
-        staleTime: 1000 * 60 * 30 // Cache for 30 mins
+        enabled: !!activePlaylist && !!activePlaylist.id,
+        staleTime: 1000 * 60 * 30
     });
 
-    // Determine Logic State
-    const isLoading = isSearching ? searchQuery.isLoading : exploreQuery.isLoading;
-    const isError = isSearching ? searchQuery.isError : exploreQuery.isError;
-    const error = isSearching ? searchQuery.error : exploreQuery.error;
-
-    // Data Handling
-    const shelves: YTShelf[] = exploreQuery.data?.data || [];
     const searchResults: YTItem[] = searchQuery.data || [];
+    const playlistItems: YTItem[] = playlistQuery.data?.items || [];
 
-    // Helper to clean title for better search
-    const cleanTitle = (title: string) => {
-        return title
-            .replace(/[\(\[\{].*?[\)\]\}]/g, '') // Remove brackets (...) [...] {...}
-            // Remove everything after pipe | or dash - (often separates title from garbage, BUT careful with Artist - Title)
-            // Let's be safer: just remove specific keywords and pipes at the end
-            .replace(/\|.*$/g, '')
-            .replace(/Official\s+MV/gi, '')
-            .replace(/Official\s+Video/gi, '')
-            .replace(/Music\s+Video/gi, '')
-            .replace(/Lyric\s+Video/gi, '')
-            .replace(/\s+/g, ' ') // Collapse spaces
-            .trim();
-    };
-
-    // Helper to detect collections/compilations
-    const isCompilation = (title: string) => {
-        const keywords = ['รวมเพลง', 'full album', 'อัลบั้มเต็ม', 'compilation', 'playlist', 'รวมฮิต', 'nonstop', 'non-stop', 'medley', 'long play', 'mix', 'ชั่วโมง', 'hour', 'collection'];
-        const lower = title.toLowerCase();
-        return keywords.some(k => lower.includes(k));
-    };
-
-    const handleItemClick = async (item: YTItem) => {
-        if (item.type === 'playlist' || item.type === 'album') {
-            openPlaylist(item);
-        } else {
-            // KARAOKE LOGIC
-            console.log(`🎵 Item Clicked: "${item.title}" | isKaraoke: ${isKaraoke}`);
-
-            if (isKaraoke) {
-                // Skip if it looks like a compilation
-                const isComp = isCompilation(item.title);
-
-                if (isComp) {
-                    console.log(`🎤 Karaoke Skipped: "${item.title}" looks like a compilation. Playing original.`);
+    // Back Button Logic exactly like SpotifyDashboard
+    useEffect(() => {
+        if (activePlaylist || isSearching) {
+            useUIStore.getState().setBackAction(() => {
+                if (activePlaylist) {
+                    const { playlist, ...rest } = router.query;
+                    router.push({ pathname: router.pathname, query: rest }, undefined, { shallow: true });
+                    setActivePlaylist(null);
                 } else {
-                    // INSTANT SEARCH REDIRECT (Spotify Style)
-                    const cleanedTitle = cleanTitle(item.title);
-
-                    // We set the UI to the CLEAN Title (e.g. "Song Name")
-                    // The API hook (fetchSearch) will detect `isKaraoke` and append "karaoke" transparently.
-                    // This keeps the UI clean and matches User Experience from Spotify Theme.
-
-                    console.log(`🚀 Karaoke Instant Redirect (Clean): "${cleanedTitle}"`);
-
-                    setSearchFilter('VIDEO');
-                    usePlayerStore.setState({ searchTerm: cleanedTitle });
-                    return; // Stop here.
+                    setSearchTerm("");
                 }
-            }
+            });
+        } else {
+            useUIStore.getState().setBackAction(null);
+        }
+    }, [activePlaylist, isSearching, router.query]);
 
+    const handleItemClick = (item: YTItem) => {
+        if (item.type === 'playlist' || (item.type === 'video' && !item.id)) {
+            setPlaylistInUrl(item);
+        } else {
             addToQueue({
                 id: item.id,
                 videoId: item.id,
                 title: item.title,
-                author: item.subtitle || 'Unknown',
+                author: item.subtitle || 'YouTube',
                 sourceType: 'youtube',
                 thumbnail: item.thumbnail
             } as any);
         }
     };
 
-    const handleBack = () => {
-        router.back();
-    };
+    // Spotify-style Card Renderer
+    const renderCard = (item: YTItem, index: number, isArtist: boolean = false) => (
+        <Fragment key={(item.id || item.title) + index}>
+            <div
+                className={`group relative cursor-pointer overflow-hidden ${isArtist ? 'rounded-2xl' : 'rounded-3xl'} shadow-sm hover:shadow-2xl hover:shadow-red-600/10 hover:-translate-y-1 transition-all duration-300 isolate bg-gray-100 w-full aspect-square`}
+                onClick={() => isArtist ? setSearchTerm(item.title) : handleItemClick(item)}
+            >
+                <Image
+                    src={item.thumbnail?.replace('w120-h120', 'w400-h400') || (isArtist ? "/assets/avatar.jpeg" : "/icon-cover.png")}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    alt={item.title}
+                    unoptimized
+                />
+                <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-90 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
-    const handleClearSearch = () => {
-        usePlayerStore.setState({ searchTerm: '' });
-    };
-
-    const handlePlayPlaylist = (items: YTItem[]) => {
-        const videos = items.map(item => ({
-            id: item.id,
-            videoId: item.id,
-            title: item.title,
-            author: item.subtitle,
-            sourceType: 'youtube',
-            thumbnail: item.thumbnail
-        }));
-        addToQueue(videos as any);
-    };
-
-    // PLAYLIST VIEW
-    if (activePlaylist) {
-        const pItems = playlistQuery.data?.items || [];
-        const pLoading = playlistQuery.isLoading;
-        const pError = playlistQuery.error;
-
-        return (
-            <div className="pb-24 animate-in fade-in slide-in-from-right duration-300 min-h-screen bg-white">
-                {/* Header with Back Button */}
-                <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-md p-4 border-b border-gray-100 flex items-center gap-4 shadow-sm">
-                    <button onClick={handleBack} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                        <ArrowLeft className="w-6 h-6 text-gray-700" />
-                    </button>
-                    <h2 className="text-lg font-bold truncate flex-1 text-black">{activePlaylist.title}</h2>
-                </div>
-
-
-                {/* Hero Section */}
-                <div className="p-4 md:p-6 flex flex-col md:flex-row gap-4 items-center md:items-start border-b border-gray-50">
-                    <div className="relative w-40 h-40 md:w-56 md:h-56 rounded-xl overflow-hidden shadow-xl shrink-0 group">
-                        <Image
-                            src={activePlaylist.thumbnail?.replace('w120-h120', 'w400-h400') || '/assets/cover-placeholder.png'}
-                            fill
-                            className="object-cover"
-                            alt={activePlaylist.title}
-                            unoptimized
-                        />
-                        {/* Play All Overlay Button */}
-                        {!pLoading && pItems.length > 0 && (
-                            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer" onClick={() => handlePlayPlaylist(pItems)}>
-                                <PlayCircle className="w-14 h-14 text-white drop-shadow-lg transform scale-90 group-hover:scale-100 transition-transform" />
-                            </div>
-                        )}
-                    </div>
-                    <div className="text-center md:text-left flex-1 space-y-3">
-                        <div>
-                            <span className="px-2.5 py-0.5 bg-red-50 text-red-600 rounded-full text-[10px] font-bold uppercase tracking-wider mb-2 inline-block">
-                                {activePlaylist.type === 'album' ? 'Album' : 'Playlist'}
-                            </span>
-                            <h1 className="text-sm md:text-lg font-bold text-black leading-tight">{activePlaylist.title}</h1>
-                        </div>
-                        <p className="text-gray-500 text-sm font-medium">{activePlaylist.subtitle}</p>
-
-                        {!pLoading && pItems.length > 0 && (
-                            <button
-                                onClick={() => handlePlayPlaylist(pItems)}
-                                className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-red-200 transition-all transform active:scale-95"
-                            >
-                                <Play className="w-5 h-5" fill="currentColor" />
-                                เล่นทั้งหมด ({pItems.length} เพลง)
-                            </button>
-                        )}
+                {/* Play Hint */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                    <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-lg transform scale-50 group-hover:scale-100 transition-transform">
+                        <svg className="w-5 h-5 text-white fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                     </div>
                 </div>
 
-                {/* Song List */}
-                <div className="p-4 md:p-8 max-w-5xl mx-auto">
-                    {pLoading && (
-                        <div className="space-y-4">
-                            {[...Array(5)].map((_, i) => (
-                                <div key={i} className="flex gap-4 p-4 rounded-xl bg-gray-50 animate-pulse">
-                                    <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
-                                    <div className="flex-1 space-y-2 py-1">
-                                        <div className="h-4 bg-gray-200 rounded w-1/3"></div>
-                                        <div className="h-3 bg-gray-200 rounded w-1/4"></div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-
-                    {pError && (
-                        <div className="p-8 text-center text-red-500 bg-red-50 rounded-2xl">
-                            <p>ไม่สามารถโหลดข้อมูลเพลย์ลิสต์ได้</p>
-                            <p className="text-xs mt-2 opacity-70">{(pError as any).message}</p>
-                        </div>
-                    )}
-
-                    {!pLoading && !pError && (
-                        <div className="space-y-1">
-                            {pItems.map((item: any, index: number) => {
-                                const isComp = isCompilation(item.title);
-                                const isKaraokeItem = isKaraoke && !isComp;
-
-                                return (
-                                    <div
-                                        key={item.id + index}
-                                        onClick={() => handleItemClick(item)}
-                                        className={`group flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 cursor-pointer transition-colors border border-transparent hover:border-gray-100 ${isKaraokeItem ? 'hover:bg-red-50' : ''}`}
-                                    >
-                                        <span className="w-6 text-center text-gray-400 font-mono text-sm group-hover:hidden">{index + 1}</span>
-                                        <span className={`w-6 text-center hidden group-hover:block ${isKaraokeItem ? 'text-red-600' : 'text-red-600'}`}>
-                                            {isKaraokeItem ? <Mic className="w-4 h-4 ml-1" /> : <Play className="w-4 h-4 ml-1" fill="currentColor" />}
-                                        </span>
-
-                                        <div className="relative w-12 h-12 shrink-0 rounded-lg overflow-hidden bg-gray-200">
-                                            <Image src={item.thumbnail?.replace('w120-h120', 'w400-h400') || '/assets/cover-placeholder.png'} fill className="object-cover" alt="" unoptimized />
-                                            {isKaraokeItem && (
-                                                <div className="absolute inset-0 bg-red-900/10 flex items-center justify-center">
-                                                    <Mic className="w-6 h-6 text-white drop-shadow-md" />
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <div className="flex-1 min-w-0">
-                                            <h4 className={`font-bold text-black truncate transition-colors ${isKaraokeItem ? 'group-hover:text-red-600' : 'group-hover:text-red-600'}`}>
-                                                {item.title}
-                                            </h4>
-                                            <p className={`text-sm truncate flex items-center gap-1 ${isKaraokeItem ? 'text-red-500 font-medium' : 'text-gray-500'}`}>
-                                                {isKaraokeItem ? (
-                                                    <>
-                                                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
-                                                        พร้อมค้นหาคาราโอเกะ
-                                                    </>
-                                                ) : item.subtitle}
-                                            </p>
-                                        </div>
-
-                                        {isKaraokeItem && (
-                                            <span className="px-2 py-1 bg-red-100 text-red-600 text-[10px] font-bold rounded-md whitespace-nowrap hidden md:inline-block">
-                                                KARAOKE MODE
-                                            </span>
-                                        )}
-
-                                        {!isKaraokeItem && (
-                                            <div className="text-xs text-gray-400 font-mono mr-2">
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        addToQueue({
-                                                            id: item.id,
-                                                            videoId: item.id,
-                                                            title: item.title,
-                                                            author: item.subtitle,
-                                                            sourceType: 'youtube',
-                                                            thumbnail: item.thumbnail
-                                                        } as any);
-                                                    }}
-                                                    className="p-2 hover:bg-gray-200 rounded-full transition-colors text-gray-400 hover:text-gray-900"
-                                                >
-                                                    <PlusCircle className="w-5 h-5" />
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
+                <div className="absolute inset-0 p-3 flex flex-col justify-end items-start z-10 pointer-events-none">
+                    <h2 className="text-white font-bold text-[11px] sm:text-[12px] leading-tight line-clamp-2 drop-shadow-md transform translate-y-0.5 group-hover:translate-y-0 transition-transform">
+                        {item.title}
+                    </h2>
+                    {!isArtist && item.subtitle && (
+                        <p className="text-[9px] text-gray-300 truncate mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {item.subtitle}
+                        </p>
                     )}
                 </div>
             </div>
-        );
-    }
-
-    // --- RENDER HELPERS (Spotify Theme Style) ---
-    const renderArtistShelf = (shelf: YTShelf) => (
-        <div key={shelf.title} className="space-y-4">
-            <div className="px-2 pt-2 text-[13px] font-black text-black uppercase tracking-wider flex items-center gap-2">
-                {shelf.title}
-            </div>
-            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 pb-6 px-2">
-                {shelf.items.map((artist, i) => (
-                    <div
-                        key={artist.id + i}
-                        className="group relative cursor-pointer overflow-hidden rounded-2xl shadow-sm hover:shadow-2xl hover:shadow-red-600/10 hover:-translate-y-1 transition-all duration-300 isolate bg-gray-100 w-full aspect-square"
-                        onClick={() => usePlayerStore.setState({ searchTerm: artist.title })}
-                    >
-                        <Image
-                            src={artist.thumbnail?.replace('w120-h120', 'w400-h400') || '/assets/avatar.jpeg'}
-                            fill
-                            alt={artist.title}
-                            className="object-cover transition-transform duration-700 group-hover:scale-110"
-                            unoptimized
-                        />
-                        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-90 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-lg transform scale-50 group-hover:scale-100 transition-transform">
-                                <Play className="w-4 h-4 text-white fill-current ml-0.5" />
-                            </div>
-                        </div>
-                        <div className="absolute inset-0 p-3 flex flex-col justify-end items-start z-10 pointer-events-none">
-                            <h2 className="text-white font-bold text-[11px] sm:text-[12px] leading-tight line-clamp-1 drop-shadow-md transform translate-y-0.5 group-hover:translate-y-0 transition-transform text-left">
-                                {artist.title}
-                            </h2>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-
-    const renderPlaylistShelf = (shelf: YTShelf) => (
-        <div key={shelf.title} className="space-y-4">
-            <div className="px-2 pt-4 pb-3 text-[13px] font-black text-black uppercase tracking-wider flex items-center justify-between border-t border-gray-100 mt-2">
-                <span>{shelf.title}</span>
-                <span className="text-[10px] font-normal text-gray-400 bg-gray-50 px-3 py-1 rounded-full border border-gray-100">YouTube Music</span>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-4 px-2 pb-10">
-                {shelf.items.map((cat, i) => (
-                    <div
-                        key={cat.id + i}
-                        onClick={() => handleItemClick(cat)}
-                        className="relative w-full aspect-square rounded-3xl overflow-hidden cursor-pointer shadow-sm hover:shadow-2xl hover:shadow-red-600/10 transition-all duration-500 hover:-translate-y-1.5 group bg-gray-100"
-                    >
-                        <Image
-                            src={cat.thumbnail?.replace('w120-h120', 'w400-h400') || "/icon-cover.png"}
-                            alt={cat.title}
-                            fill
-                            className="object-cover transition-transform duration-700 group-hover:scale-105"
-                            unoptimized
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-90 transition-opacity" />
-                        <div className="absolute inset-0 p-4 flex flex-col justify-between">
-                            <div className="self-end opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-x-2 group-hover:translate-x-0">
-                                <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg">
-                                    {cat.type === 'video' ? <Play className="w-4 h-4 text-white fill-current" /> : <ListMusic className="w-5 h-5 text-white" />}
-                                </div>
-                            </div>
-                            <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                                <span className="text-white font-bold text-[11px] sm:text-[13px] drop-shadow-md line-clamp-2 leading-tight">
-                                    {cat.title}
-                                </span>
-                                <div className="h-1 w-12 bg-red-600 rounded-full mt-2 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-100 origin-left scale-x-0 group-hover:scale-x-100" />
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div>
+        </Fragment>
     );
 
     return (
         <div className="pb-24 animate-in fade-in duration-500 min-h-screen bg-white">
-            {/* Search Header */}
-            {isSearching && (
-                <div className="w-full bg-white px-4 py-3 border-b border-gray-100 flex items-center gap-3 shadow-sm mb-4 sticky top-0 z-40">
-                    <button onClick={handleClearSearch} className="p-2 hover:bg-gray-100 rounded-full transition-colors group">
-                        <ArrowLeft className="w-5 h-5 text-gray-500 group-hover:text-red-600" />
-                    </button>
-                    <div>
-                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">ค้นพบใน YouTube</p>
-                        <h2 className="text-base font-bold text-black line-clamp-1">"{searchTerm}"</h2>
-                    </div>
-                </div>
-            )}
-
-            {/* Filter Chips */}
-            {isSearching && (
-                <div className="px-4 pb-4 flex gap-2 overflow-x-auto scrollbar-hide">
-                    {['SONG', 'VIDEO', 'ALBUM', 'PLAYLIST'].map((type) => (
-                        <button
-                            key={type}
-                            onClick={() => setSearchFilter(type)}
-                            className={`px-5 py-1.5 rounded-full text-[12px] font-bold whitespace-nowrap transition-all border ${searchFilter === type
-                                ? 'bg-red-600 text-white border-red-600 shadow-lg shadow-red-100'
-                                : 'bg-gray-100 text-gray-600 border-gray-100 hover:bg-white hover:border-red-200'
-                                }`}
-                        >
-                            {type === 'SONG' ? 'เพลง' : type === 'VIDEO' ? 'วิดีโอ' : type === 'ALBUM' ? 'อัลบั้ม' : 'เพลย์ลิสต์'}
+            {isSearching ? (
+                <>
+                    <div className="bg-white px-4 py-4 border-b border-gray-100 sticky top-0 z-40 flex items-center gap-4">
+                        <button onClick={() => setSearchTerm("")} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                            <ArrowLeft className="w-5 h-5 text-black" />
                         </button>
-                    ))}
-                </div>
-            )}
-
-            <div className="px-2">
-                {isLoading && (
-                    <div className="flex justify-center items-center h-64">
-                        <Loader2 className="w-8 h-8 text-red-600 animate-spin" />
+                        <div>
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">ค้นหาใน YouTube</p>
+                            <h2 className="text-base font-black text-black line-clamp-1">"{searchTerm}"</h2>
+                        </div>
                     </div>
-                )}
 
-                {isError && (
-                    <div className="text-center py-20 bg-red-50 rounded-3xl mx-2">
-                        <X className="w-12 h-12 text-red-500 mx-auto mb-4" />
-                        <h3 className="text-lg font-bold text-black mb-1">ไม่สามารถเข้าถึงข้อมูลได้</h3>
-                        <p className="text-sm text-gray-500">{(error as any).message}</p>
-                    </div>
-                )}
-
-                {/* Search Results in Legacy Card Style */}
-                {isSearching && !isLoading && !isError && (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-3 pb-24">
-                        {searchResults.length > 0 ? (
-                            searchResults.map((item, index) => (
-                                <div
-                                    key={item.id + index}
-                                    onClick={() => handleItemClick(item)}
-                                    className="group cursor-pointer bg-white rounded-xl border border-gray-100 hover:shadow-xl hover:shadow-red-600/5 transition-all active:scale-[0.98] duration-300 relative overflow-hidden"
-                                >
-                                    <div className="relative aspect-square w-full aspect-square overflow-hidden bg-gray-50">
-                                        <Image
-                                            src={item.thumbnail?.replace('w120-h120', 'w400-h400') || '/assets/avatar.jpeg'}
-                                            fill
-                                            className="object-cover transition-transform duration-700 group-hover:scale-110"
-                                            alt={item.title}
-                                            unoptimized
-                                        />
-                                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                                            <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity scale-90 group-hover:scale-100">
-                                                <Play className="w-5 h-5 text-red-600 fill-red-600 ml-0.5" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="p-2.5 gap-y-0.5 flex flex-col">
-                                        <h2 className="font-bold text-[12px] line-clamp-2 text-black leading-tight group-hover:text-red-600 transition-colors">
-                                            {item.title}
-                                        </h2>
-                                        <p className="text-[10px] text-gray-400 truncate font-medium">
-                                            {item.subtitle}
-                                        </p>
-                                    </div>
-                                </div>
+                    <div className="p-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                        {searchQuery.isLoading ? (
+                            Array.from({ length: 10 }).map((_, i) => (
+                                <div key={i} className="aspect-square rounded-xl bg-gray-100 animate-pulse" />
                             ))
                         ) : (
-                            <div className="col-span-full text-center py-20 text-gray-400">
-                                <Search className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                                <p className="text-sm font-bold">ไม่พบผลลัพธ์ที่ต้องการ</p>
-                            </div>
+                            searchResults.map((item, i) => renderCard({ ...item, type: 'video' }, i))
                         )}
                     </div>
-                )}
+                </>
+            ) : activePlaylist ? (
+                <>
+                    <div className="bg-white px-4 py-4 border-b border-gray-100 sticky top-0 z-40 flex items-center gap-4">
+                        <button onClick={() => {
+                            const { playlist, ...rest } = router.query;
+                            router.push({ pathname: router.pathname, query: rest }, undefined, { shallow: true });
+                            setActivePlaylist(null);
+                        }} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                            <ArrowLeft className="w-5 h-5 text-black" />
+                        </button>
+                        <div>
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">เพลย์ลิสต์</p>
+                            <h2 className="text-base font-black text-black line-clamp-1">{activePlaylist.title}</h2>
+                        </div>
+                    </div>
 
-                {/* Explore Sections (Legacy Layout) */}
-                {!isSearching && !isLoading && !isError && (
-                    <div className="space-y-2">
-                        {shelves && shelves.length > 0 ? (
-                            shelves.map((shelf, shelfIndex) => {
-                                if (!shelf || !shelf.items) return null;
-
-                                // Determine if this is an artist shelf
-                                const isArtistShelf =
-                                    (shelf.title && (shelf.title.includes('ศิลปิน') || shelf.title.includes('Artist'))) ||
-                                    shelf.items.some(i => i?.type === 'artist');
-
-                                if (isArtistShelf) {
-                                    return renderArtistShelf(shelf);
-                                }
-                                return renderPlaylistShelf(shelf);
-                            })
+                    <div className="p-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                        {playlistQuery.isLoading ? (
+                            Array.from({ length: 13 }).map((_, i) => (
+                                <div key={i} className="aspect-square rounded-xl bg-gray-100 animate-pulse" />
+                            ))
                         ) : (
-                            <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-                                <Music className="w-12 h-12 mb-4 opacity-10" />
-                                <p className="text-sm font-medium">ไม่พบเนื้อหาในขณะนี้</p>
-                                <button
-                                    onClick={() => exploreQuery.refetch()}
-                                    className="mt-4 px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-full text-xs font-bold transition-colors"
-                                >
-                                    ลองโหลดใหม่อีกครั้ง
-                                </button>
-                            </div>
+                            playlistItems.map((item, i) => renderCard(item, i))
                         )}
                     </div>
-                )}
-            </div>
+                </>
+            ) : (
+                <>
+                    {/* Artist Section (Spotify Style) */}
+                    <div className="px-2 pt-2 pb-2 text-[13px] font-black text-black uppercase tracking-wider flex items-center gap-2">
+                        ศิลปินยอดนิยม
+                    </div>
+                    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 pb-6 px-2">
+                        {exploreQuery.isLoading ? (
+                            Array.from({ length: 5 }).map((_, i) => (
+                                <div key={i} className="aspect-square rounded-2xl bg-gray-100 animate-pulse" />
+                            ))
+                        ) : (
+                            (shelves[0]?.items || []).slice(0, 15).map((artist, i) => renderCard(artist, i, true))
+                        )}
+                    </div>
+
+                    {/* Genre Section (Spotify Style) */}
+                    <div className="px-2 pt-4 pb-3 text-[13px] font-black text-black uppercase tracking-wider border-t border-gray-100 mt-2">
+                        แนวเพลงยอดฮิต
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 px-2 pb-8">
+                        {shelves.slice(1, 15).map((shelf, i) => {
+                            const displayTitle = shelf.title.replace('📂 ', '').replace('👑 ', '').replace('🎵 ', '');
+                            const isSelected = genreText === displayTitle || (genreText === "แนะนำ" && i === 0);
+                            return (
+                                <button
+                                    key={shelf.title + i}
+                                    onClick={() => setGenreInUrl(displayTitle)}
+                                    className={`w-full py-2.5 px-4 rounded-xl text-[12px] font-bold transition-all border ${isSelected ? "bg-black text-white border-black transform -translate-y-0.5 shadow-lg" : "bg-gray-100 text-black border-gray-100 hover:bg-white hover:border-red-600/30"}`}
+                                >
+                                    {displayTitle}
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    {/* Active Content Section (Spotify Style) */}
+                    {shelves[selectedShelfIndex] && (
+                        <>
+                            <div className="px-2 pt-4 pb-3 text-[13px] font-black text-black uppercase tracking-wider flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-1.5 h-6 bg-red-600 rounded-full"></div>
+                                    <span>{shelves[selectedShelfIndex].title}</span>
+                                </div>
+                                <span className="text-[10px] font-normal text-gray-400 bg-gray-50 px-3 py-1 rounded-full border border-gray-100">YouTube Music</span>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 px-4 pb-24">
+                                {shelves[selectedShelfIndex].items.map((cat, i) => renderCard(cat, i))}
+                            </div>
+                        </>
+                    )}
+                </>
+            )}
         </div>
     );
 }
