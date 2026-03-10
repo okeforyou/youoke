@@ -489,8 +489,8 @@ export default function YouTubeDashboard() {
                             key={type}
                             onClick={() => setSearchFilter(type)}
                             className={`px-5 py-1.5 rounded-full text-[12px] font-bold whitespace-nowrap transition-all border ${searchFilter === type
-                                    ? 'bg-red-600 text-white border-red-600 shadow-lg shadow-red-100'
-                                    : 'bg-gray-100 text-gray-600 border-gray-100 hover:bg-white hover:border-red-200'
+                                ? 'bg-red-600 text-white border-red-600 shadow-lg shadow-red-100'
+                                : 'bg-gray-100 text-gray-600 border-gray-100 hover:bg-white hover:border-red-200'
                                 }`}
                         >
                             {type === 'SONG' ? 'เพลง' : type === 'VIDEO' ? 'วิดีโอ' : type === 'ALBUM' ? 'อัลบั้ม' : 'เพลย์ลิสต์'}
@@ -560,12 +560,32 @@ export default function YouTubeDashboard() {
                 {/* Explore Sections (Legacy Layout) */}
                 {!isSearching && !isLoading && !isError && (
                     <div className="space-y-2">
-                        {shelves.map((shelf) => {
-                            if (shelf.title.includes('ศิลปิน') || shelf.items.some(i => i.type === 'artist')) {
-                                return renderArtistShelf(shelf);
-                            }
-                            return renderPlaylistShelf(shelf);
-                        })}
+                        {shelves && shelves.length > 0 ? (
+                            shelves.map((shelf, shelfIndex) => {
+                                if (!shelf || !shelf.items) return null;
+
+                                // Determine if this is an artist shelf
+                                const isArtistShelf =
+                                    (shelf.title && (shelf.title.includes('ศิลปิน') || shelf.title.includes('Artist'))) ||
+                                    shelf.items.some(i => i?.type === 'artist');
+
+                                if (isArtistShelf) {
+                                    return renderArtistShelf(shelf);
+                                }
+                                return renderPlaylistShelf(shelf);
+                            })
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+                                <Music className="w-12 h-12 mb-4 opacity-10" />
+                                <p className="text-sm font-medium">ไม่พบเนื้อหาในขณะนี้</p>
+                                <button
+                                    onClick={() => exploreQuery.refetch()}
+                                    className="mt-4 px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-full text-xs font-bold transition-colors"
+                                >
+                                    ลองโหลดใหม่อีกครั้ง
+                                </button>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
