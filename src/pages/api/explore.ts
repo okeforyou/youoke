@@ -4,34 +4,90 @@ import { scrapeYouTubeSearch, scrapeYouTubePlaylistSearch } from '../../utils/yo
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
-        console.log('[API/Explore] Fetching Data (Rich Thai Content) via Scraper...');
+        console.log('[API/Explore] Fetching Dynamic Music Data (YouTube-First)...');
+        const { scrapeMusicExplore, scrapeMusicCharts, scrapeYouTubePlaylistSearch } = require('../../utils/youtubeScraper');
 
-        console.log('[API/Explore] Using STABLE fallback (YouTube Content Only)');
+        // 1. Fetch Charts (Top Artists & Songs)
+        let topArtists: any[] = [];
+        try {
+            topArtists = await scrapeMusicCharts('TH');
+        } catch (e) {
+            console.warn('[API/Explore] Charts fetch failed, continuing...');
+        }
 
-        // --- STABLE HARDCODED CONTENT (Zero API/Scraper dependencies for 100% Load Success) ---
-        const shelves = [
-            {
-                title: '📂 เพลย์ลิสต์แนะนำ',
-                items: [
-                    { id: 'yt-PLhP79Yv685p_F0uV5zK1YvR4pWJ3_p8N-', playlistId: 'yt-PLhP79Yv685p_F0uV5zK1YvR4pWJ3_p8N-', videoId: undefined, title: 'รวมเพลงไทยฮิต 2025', subtitle: '60 Tracks · YouOke', author: 'YouOke', thumbnail: 'https://i.ytimg.com/vi/uXfXoD-M3M8/hqdefault.jpg', videoCount: '60 Tracks', type: 'playlist' as const, isSong: false },
-                    { id: 'yt-PL7559A5B3D3D3D3D3', playlistId: 'yt-PL7559A5B3D3D3D3D3', videoId: undefined, title: 'แกรมมี่ โกลด์ ฮิตที่สุด', subtitle: '50 Tracks · Grammy Gold', author: 'Grammy Gold', thumbnail: 'https://i.ytimg.com/vi/8U-N7f6Yx7Q/hqdefault.jpg', videoCount: '50 Tracks', type: 'playlist' as const, isSong: false },
-                    { id: 'yt-PLR4t6fJ98k8_J0oW9p1R8e0pW9v8k7y', playlistId: 'yt-PLR4t6fJ98k8_J0oW9p1R8e0pW9v8k7y', videoId: undefined, title: 'ลูกทุ่ง 100 ล้านวิว', subtitle: '40 Tracks · Thai Music', author: 'Thai Music', thumbnail: 'https://i.ytimg.com/vi/q1e_yR1_yR1/hqdefault.jpg', videoCount: '40 Tracks', type: 'playlist' as const, isSong: false }
-                ]
-            },
-            {
-                title: '🔥 เพลงไทยมาแรง 2025',
-                items: [
-                    { id: 'uXfXoD-M3M8', playlistId: undefined, videoId: 'uXfXoD-M3M8', title: 'เพลงไทยฮิต 2025 ล่าสุด', subtitle: 'Thai Music Channel', author: 'Thai Music Channel', thumbnail: 'https://i.ytimg.com/vi/uXfXoD-M3M8/hqdefault.jpg', videoCount: 'Video', type: 'video' as const, isSong: true },
-                    { id: '8U-N7f6Yx7Q', playlistId: undefined, videoId: '8U-N7f6Yx7Q', title: 'T-Pop Hits 2025 ใหม่ล่าสุด', subtitle: 'T-Pop Channel', author: 'T-Pop Channel', thumbnail: 'https://i.ytimg.com/vi/8U-N7f6Yx7Q/hqdefault.jpg', videoCount: 'Video', type: 'video' as const, isSong: true }
-                ]
+        // 2. Fetch Music Explore Feed
+        let exploreSections: any[] = [];
+        try {
+            exploreSections = await scrapeMusicExplore();
+        } catch (e) {
+            console.warn('[API/Explore] Music Explore failed, continuing...');
+        }
+
+        // 3. Construct Shelves
+        const dynamicShelves: any[] = [];
+
+        // Shelf 1: Top Artists (Dynamic)
+        if (topArtists.length > 0) {
+            dynamicShelves.push({
+                title: '👑 ศิลปินยอดฮิต (Thailand)',
+                items: topArtists.slice(0, 12).map((a: any, i: number) => ({
+                    id: `artist-${i}`,
+                    title: a.name,
+                    subtitle: `อันดับ ${a.rank || i + 1}`,
+                    thumbnail: a.imageUrl,
+                    type: 'artist',
+                    isSong: false
+                }))
+            });
+        }
+
+        // Shelf 2: Recommended from Feed
+        exploreSections.forEach(section => {
+            if (section.title && section.items?.length > 0) {
+                dynamicShelves.push({
+                    title: section.title,
+                    items: section.items.slice(0, 12).map((item: any) => ({
+                        id: item.playlistId || item.videoId,
+                        playlistId: item.playlistId,
+                        videoId: item.videoId,
+                        title: item.title,
+                        subtitle: item.author || 'YouTube Music',
+                        thumbnail: item.thumbnail,
+                        type: item.playlistId ? 'playlist' : 'video',
+                        isSong: !!item.videoId
+                    }))
+                });
             }
-        ];
+        });
 
-        // Return both formats for forward-compatibility
+        // Shelf 3: Fallback Genres if empty
+        if (dynamicShelves.length < 2) {
+            const genres = ['ลูกทุ่งฮิต', 'เพื่อชีวิต', 'T-Pop', 'เพลงไทย 2024'];
+            for (const genre of genres) {
+                try {
+                    const results = await scrapeYouTubePlaylistSearch(genre);
+                    if (results.length > 0) {
+                        dynamicShelves.push({
+                            title: `📂 ${genre}`,
+                            items: results.slice(0, 8).map((r: any) => ({
+                                id: r.playlistId,
+                                playlistId: r.playlistId,
+                                title: r.title,
+                                subtitle: r.videoCount,
+                                thumbnail: r.thumbnail,
+                                type: 'playlist',
+                                isSong: false
+                            }))
+                        });
+                    }
+                } catch (err) { }
+            }
+        }
+
         res.status(200).json({
             status: 'success',
-            data: shelves,
-            sections: shelves
+            data: dynamicShelves,
+            sections: dynamicShelves
         });
 
     } catch (error: any) {

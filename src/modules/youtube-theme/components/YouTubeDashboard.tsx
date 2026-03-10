@@ -521,15 +521,14 @@ export default function YouTubeDashboard() {
                                         {shelf.title}
                                     </h2>
                                 </div>
-                                {/* EXPLORE GRID WITH TIGHT GAP */}
                                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
                                     {shelf.items.map((item, index) => (
                                         <div
                                             key={item.id + index}
-                                            onClick={() => handleItemClick(item)}
+                                            onClick={() => item.type === 'artist' ? usePlayerStore.setState({ searchTerm: item.title }) : handleItemClick(item)}
                                             className="group relative bg-white rounded-2xl p-1.5 hover:bg-gray-50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer border border-transparent hover:border-gray-100"
                                         >
-                                            <div className="relative aspect-square w-full rounded-xl overflow-hidden mb-2 shadow-md group-hover:shadow-lg">
+                                            <div className={`relative aspect-square w-full shadow-md group-hover:shadow-lg overflow-hidden mb-2 ${item.type === 'artist' ? 'rounded-full' : 'rounded-xl'}`}>
                                                 <Image
                                                     src={item.thumbnail?.replace('w120-h120', 'w400-h400') || '/assets/cover-placeholder.png'}
                                                     fill
@@ -540,22 +539,24 @@ export default function YouTubeDashboard() {
                                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[1px]">
                                                     <div className="bg-white text-gray-900 p-2.5 rounded-full transform scale-90 group-hover:scale-100 transition-transform shadow-xl">
                                                         {item.type === 'playlist' || item.type === 'album' ?
-                                                            <ListMusic className="w-5 h-5 line-clamp-1" /> :
-                                                            <Play className="w-5 h-5 ml-0.5" fill="currentColor" />
+                                                            <ListMusic className="w-5 h-5" /> :
+                                                            item.type === 'artist' ?
+                                                                <Search className="w-5 h-5" /> :
+                                                                <Play className="w-5 h-5 ml-0.5" fill="currentColor" />
                                                         }
                                                     </div>
                                                 </div>
                                             </div>
-                                            <h3 className="font-bold text-black text-sm truncate group-hover:text-red-600 transition-colors">{item.title}</h3>
-                                            <p className="text-xs text-gray-500 truncate mt-0.5">{item.subtitle}</p>
+                                            <h3 className={`font-bold text-black text-sm truncate group-hover:text-red-600 transition-colors ${item.type === 'artist' ? 'text-center' : ''}`}>{item.title}</h3>
+                                            <p className={`text-xs text-gray-500 truncate mt-0.5 ${item.type === 'artist' ? 'text-center' : ''}`}>{item.subtitle}</p>
                                         </div>
                                     ))}
                                 </div>
                             </section>
                         ))}
-                    </div>
+                    </div >
                 )}
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }
