@@ -14,19 +14,7 @@ interface MusicProviderContainerProps {
  * - Handles access control (Premium Logic) for restricted themes.
  */
 export default function MusicProviderContainer({ showTab = true }: MusicProviderContainerProps) {
-    const { hasModule, isLoading } = useModule('youtube-theme');
-
-    if (isLoading) {
-        return (
-            <div className="flex h-64 w-full items-center justify-center">
-                <span className="loading loading-spinner loading-md text-red-600"></span>
-            </div>
-        );
-    }
-
-    if (!hasModule) {
-        return <PremiumLockOverlay />;
-    }
-
+    // We enforce YouTubeDashboard for everyone now, as it is the primary interface.
+    // Membership logic can be handled inside the dashboard components if needed.
     return <YouTubeDashboard />;
 }

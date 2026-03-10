@@ -506,11 +506,13 @@ export default function YouTubeDashboard() {
                 {/* Explore Shelves (When NOT searching) */}
                 {!isSearching && !isLoading && !isError && (
                     <div className="space-y-12">
-                        {/* Intro Banner (Optional) */}
-                        <div className="bg-gradient-to-r from-red-600 to-red-800 rounded-3xl p-8 text-white shadow-2xl relative overflow-hidden">
-                            <div className="absolute top-0 right-0 -mt-8 -mr-8 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl"></div>
-                            <h1 className="text-3xl md:text-5xl font-black mb-2 relative z-10">YouTube Experience</h1>
-                            <p className="text-red-100 font-medium relative z-10">สำรวจเพลงไทยยอดนิยม ลูกทุ่ง อินดี้ และอีกมากมาย</p>
+                        <div className="bg-gradient-to-br from-red-600 via-red-700 to-black rounded-3xl p-8 md:p-12 text-white shadow-2xl relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 -mt-12 -mr-12 w-80 h-80 bg-red-400 opacity-20 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
+                            <div className="relative z-10 flex flex-col gap-2">
+                                <span className="text-red-200 text-xs font-bold uppercase tracking-[0.2em]">New Dashboard</span>
+                                <h1 className="text-4xl md:text-6xl font-black mb-2 tracking-tight">YouOKE Discovery</h1>
+                                <p className="text-red-100 text-sm md:text-lg font-medium opacity-90 max-w-lg">ค้นพบเพลงใหม่ๆ ศิลปินยอดฮิต และเพลงคาราโอเกะที่กำลังมาแรงที่สุด</p>
+                            </div>
                         </div>
 
                         {shelves.map((shelf, shelfIndex) => (

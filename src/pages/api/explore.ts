@@ -1,35 +1,26 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import axios from 'axios';
-import { scrapeYouTubeSearch, scrapeYouTubePlaylistSearch } from '../../utils/youtubeScraper';
+import { scrapeMusicExplore, scrapeMusicCharts, scrapeYouTubePlaylistSearch } from '../../utils/youtubeScraper';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
         console.log('[API/Explore] Fetching Dynamic Music Data (YouTube-First)...');
-        const { scrapeMusicExplore, scrapeMusicCharts, scrapeYouTubePlaylistSearch } = require('../../utils/youtubeScraper');
 
-        // 1. Fetch Charts (Top Artists & Songs)
-        let topArtists: any[] = [];
-        try {
-            topArtists = await scrapeMusicCharts('TH');
-        } catch (e) {
-            console.warn('[API/Explore] Charts fetch failed, continuing...');
-        }
+        // Parallel fetch for speed
+        const [topArtistsResult, exploreSectionsResult] = await Promise.allSettled([
+            scrapeMusicCharts('TH'),
+            scrapeMusicExplore()
+        ]);
 
-        // 2. Fetch Music Explore Feed
-        let exploreSections: any[] = [];
-        try {
-            exploreSections = await scrapeMusicExplore();
-        } catch (e) {
-            console.warn('[API/Explore] Music Explore failed, continuing...');
-        }
+        const topArtists = topArtistsResult.status === 'fulfilled' ? topArtistsResult.value : [];
+        const exploreSections = exploreSectionsResult.status === 'fulfilled' ? exploreSectionsResult.value : [];
 
-        // 3. Construct Shelves
+        // 1. Construct Shelves
         const dynamicShelves: any[] = [];
 
-        // Shelf 1: Top Artists (Dynamic)
+        // Shelf 1: Top Artists (Circular Design)
         if (topArtists.length > 0) {
             dynamicShelves.push({
-                title: '👑 ศิลปินยอดฮิต (Thailand)',
+                title: '👑 ศิลปินยอดฮิต (Top Artists)',
                 items: topArtists.slice(0, 12).map((a: any, i: number) => ({
                     id: `artist-${i}`,
                     title: a.name,
@@ -41,8 +32,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             });
         }
 
-        // Shelf 2: Recommended from Feed
-        exploreSections.forEach(section => {
+        // Shelf 2: From Explore Sections (Playlists/Videos)
+        exploreSections.forEach((section: any) => {
             if (section.title && section.items?.length > 0) {
                 dynamicShelves.push({
                     title: section.title,
@@ -60,7 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
         });
 
-        // Shelf 3: Fallback Genres if empty
+        // Shelf 3: Emergency Fallback if still empty
         if (dynamicShelves.length < 2) {
             const genres = ['ลูกทุ่งฮิต', 'เพื่อชีวิต', 'T-Pop', 'เพลงไทย 2024'];
             for (const genre of genres) {
