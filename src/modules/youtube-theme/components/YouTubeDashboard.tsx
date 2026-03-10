@@ -171,15 +171,44 @@ export default function YouTubeDashboard() {
         }
     };
 
-    // Spotify-style Card Renderer
-    const renderCard = (item: YTItem, index: number, isArtist: boolean = false) => (
+    // Circular Artist Card (Spotify Style)
+    const renderArtistCard = (item: YTItem, index: number) => (
         <Fragment key={(item.id || item.title) + index}>
             <div
-                className={`group relative cursor-pointer overflow-hidden ${isArtist ? 'rounded-2xl' : 'rounded-3xl'} shadow-sm hover:shadow-2xl hover:shadow-red-600/10 hover:-translate-y-1 transition-all duration-300 isolate bg-gray-100 w-full aspect-square`}
-                onClick={() => isArtist ? setSearchTerm(item.title) : handleItemClick(item)}
+                className="group flex flex-col items-center gap-3 cursor-pointer transition-all duration-300"
+                onClick={() => setSearchTerm(item.title)}
+            >
+                <div className="relative w-full aspect-square rounded-full overflow-hidden shadow-sm hover:shadow-xl hover:shadow-red-600/20 hover:-translate-y-1 transition-all duration-300 isolate bg-gray-100">
+                    <Image
+                        src={item.thumbnail?.replace('w120-h120', 'w400-h400') || "/assets/avatar.jpeg"}
+                        fill
+                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                        alt={item.title}
+                        unoptimized
+                    />
+                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors pointer-events-none" />
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                        <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20">
+                            <svg className="w-5 h-5 text-white fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                        </div>
+                    </div>
+                </div>
+                <h2 className="text-black font-bold text-[11px] sm:text-[12px] leading-tight line-clamp-1 text-center group-hover:text-red-600 transition-colors px-1">
+                    {item.title}
+                </h2>
+            </div>
+        </Fragment>
+    );
+
+    // Spotify-style Card Renderer (Squared)
+    const renderCard = (item: YTItem, index: number) => (
+        <Fragment key={(item.id || item.title) + index}>
+            <div
+                className="group relative cursor-pointer overflow-hidden rounded-3xl shadow-sm hover:shadow-2xl hover:shadow-red-600/10 hover:-translate-y-1 transition-all duration-300 isolate bg-gray-100 w-full aspect-square"
+                onClick={() => handleItemClick(item)}
             >
                 <Image
-                    src={item.thumbnail?.replace('w120-h120', 'w400-h400') || (isArtist ? "/assets/avatar.jpeg" : "/icon-cover.png")}
+                    src={item.thumbnail?.replace('w120-h120', 'w400-h400') || "/icon-cover.png"}
                     fill
                     className="object-cover transition-transform duration-700 group-hover:scale-110"
                     alt={item.title}
@@ -198,7 +227,7 @@ export default function YouTubeDashboard() {
                     <h2 className="text-white font-bold text-[11px] sm:text-[12px] leading-tight line-clamp-2 drop-shadow-md transform translate-y-0.5 group-hover:translate-y-0 transition-transform">
                         {item.title}
                     </h2>
-                    {!isArtist && item.subtitle && (
+                    {item.subtitle && (
                         <p className="text-[9px] text-gray-300 truncate mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             {item.subtitle}
                         </p>
@@ -260,21 +289,22 @@ export default function YouTubeDashboard() {
                 </>
             ) : (
                 <>
-                    {/* Artist Section (Spotify Style) - Dynamically find the artist shelf */}
-                    {(() => {
-                        const artistShelf = shelves.find(s => s.title.includes('ศิลปิน') || s.items.some(i => i.type === 'artist'));
-                        if (!artistShelf) return null;
-                        return (
-                            <>
-                                <div className="px-2 pt-2 pb-2 text-[13px] font-black text-black uppercase tracking-wider flex items-center gap-2">
-                                    {artistShelf.title.replace('👑 ', '')}
-                                </div>
-                                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 pb-6 px-2">
-                                    {artistShelf.items.slice(0, 15).map((artist, i) => renderCard(artist, i, true))}
-                                </div>
-                            </>
-                        );
-                    })()}
+                    {/* Artist Section (Spotify Style Circle) */}
+                    <div className="px-2 pt-2 pb-2 text-[13px] font-black text-black uppercase tracking-wider flex items-center gap-2">
+                        ศิลปินยอดนิยม
+                    </div>
+                    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 pb-6 px-2">
+                        {(() => {
+                            const artistItems = shelves.find(s => s.title.includes('ศิลปิน'))?.items || [
+                                { id: 'a1', title: 'Bodyslam', thumbnail: 'https://lh3.googleusercontent.com/y88l39q72qP-u1P5n5y5n5y5n5y5n5y5n5y5n5y5n5y5n5y5n5y5' },
+                                { id: 'a2', title: 'Three Man Down', thumbnail: 'https://lh3.googleusercontent.com/y88l39q72qP-u1P5n5y5n5y5n5y5n5y5n5y5n5y5n5y5n5y5n5y5' },
+                                { id: 'a3', title: 'Tilly Birds', thumbnail: 'https://lh3.googleusercontent.com/y88l39q72qP-u1P5n5y5n5y5n5y5n5y5n5y5n5y5n5y5n5y5n5y5' },
+                                { id: 'a4', title: 'Paper Planes', thumbnail: 'https://lh3.googleusercontent.com/y88l39q72qP-u1P5n5y5n5y5n5y5n5y5n5y5n5y5n5y5n5y5n5y5' },
+                                { id: 'a5', title: 'หนุ่ม กะลา', thumbnail: 'https://lh3.googleusercontent.com/y88l39q72qP-u1P5n5y5n5y5n5y5n5y5n5y5n5y5n5y5n5y5n5y5' }
+                            ];
+                            return artistItems.slice(0, 15).map((artist, i) => renderArtistCard(artist, i));
+                        })()}
+                    </div>
 
                     {/* Genre Section (Spotify Style) */}
                     <div className="px-2 pt-4 pb-3 text-[13px] font-black text-black uppercase tracking-wider border-t border-gray-100 mt-2">
