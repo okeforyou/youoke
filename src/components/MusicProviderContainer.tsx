@@ -14,26 +14,19 @@ interface MusicProviderContainerProps {
  * - Handles access control (Premium Logic) for restricted themes.
  */
 export default function MusicProviderContainer({ showTab = true }: MusicProviderContainerProps) {
-    const musicTheme = useUIStore((state) => state.musicTheme);
     const { hasModule, isLoading } = useModule('youtube-theme');
 
-    // Strategy: YouTube Theme
-    if (musicTheme === 'youtube') {
-        if (isLoading) {
-            return (
-                <div className="flex h-64 w-full items-center justify-center">
-                    <span className="loading loading-spinner loading-md text-red-600"></span>
-                </div>
-            );
-        }
-
-        if (!hasModule) {
-            return <PremiumLockOverlay />;
-        }
-
-        return <YouTubeDashboard />;
+    if (isLoading) {
+        return (
+            <div className="flex h-64 w-full items-center justify-center">
+                <span className="loading loading-spinner loading-md text-red-600"></span>
+            </div>
+        );
     }
 
-    // Strategy: Spotify Theme (Default)
-    return <SpotifyDashboard showTab={showTab} />;
+    if (!hasModule) {
+        return <PremiumLockOverlay />;
+    }
+
+    return <YouTubeDashboard />;
 }
