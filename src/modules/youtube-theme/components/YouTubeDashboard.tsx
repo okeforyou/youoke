@@ -171,35 +171,6 @@ export default function YouTubeDashboard() {
         }
     };
 
-    // Circular Artist Card (Spotify Style)
-    const renderArtistCard = (item: YTItem, index: number) => (
-        <Fragment key={(item.id || item.title) + index}>
-            <div
-                className="group flex flex-col items-center gap-3 cursor-pointer transition-all duration-300"
-                onClick={() => setSearchTerm(item.title)}
-            >
-                <div className="relative w-full aspect-square rounded-full overflow-hidden shadow-sm hover:shadow-xl hover:shadow-red-600/20 hover:-translate-y-1 transition-all duration-300 isolate bg-gray-100">
-                    <Image
-                        src={item.thumbnail?.replace('w120-h120', 'w400-h400') || "/assets/avatar.jpeg"}
-                        fill
-                        className="object-cover transition-transform duration-700 group-hover:scale-110"
-                        alt={item.title}
-                        unoptimized
-                    />
-                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors pointer-events-none" />
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                        <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20">
-                            <svg className="w-5 h-5 text-white fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                        </div>
-                    </div>
-                </div>
-                <h2 className="text-black font-bold text-[11px] sm:text-[12px] leading-tight line-clamp-1 text-center group-hover:text-red-600 transition-colors px-1">
-                    {item.title}
-                </h2>
-            </div>
-        </Fragment>
-    );
-
     // Spotify-style Card Renderer (Squared)
     const renderCard = (item: YTItem, index: number) => (
         <Fragment key={(item.id || item.title) + index}>
@@ -238,10 +209,10 @@ export default function YouTubeDashboard() {
     );
 
     return (
-        <div className="pb-24 animate-in fade-in duration-500 min-h-screen bg-white">
+        <>
             {isSearching ? (
-                <>
-                    <div className="bg-white px-4 py-4 border-b border-gray-100 sticky top-0 z-40 flex items-center gap-4">
+                <div className="col-span-full animate-in fade-in duration-300">
+                    <div className="bg-white/80 backdrop-blur-md px-4 py-4 border-b border-gray-100 sticky top-0 z-40 flex items-center gap-4 -mx-2">
                         <button onClick={() => setSearchTerm("")} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                             <ArrowLeft className="w-5 h-5 text-black" />
                         </button>
@@ -251,19 +222,19 @@ export default function YouTubeDashboard() {
                         </div>
                     </div>
 
-                    <div className="p-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                    <div className="p-2 grid grid-cols-2 lg:grid-cols-5 gap-4 mt-4">
                         {searchQuery.isLoading ? (
                             Array.from({ length: 10 }).map((_, i) => (
-                                <div key={i} className="aspect-square rounded-xl bg-gray-100 animate-pulse" />
+                                <div key={i} className="aspect-square rounded-3xl bg-gray-100 animate-pulse" />
                             ))
                         ) : (
-                            searchResults.map((item, i) => renderCard({ ...item, type: 'video' }, i))
+                            searchResults.map((item, i) => renderCard(item, i))
                         )}
                     </div>
-                </>
+                </div>
             ) : activePlaylist ? (
-                <>
-                    <div className="bg-white px-4 py-4 border-b border-gray-100 sticky top-0 z-40 flex items-center gap-4">
+                <div className="col-span-full animate-in slide-in-from-right duration-300">
+                    <div className="bg-white/80 backdrop-blur-md px-4 py-4 border-b border-gray-100 sticky top-0 z-40 flex items-center gap-4 -mx-2">
                         <button onClick={() => {
                             const { playlist, ...rest } = router.query;
                             router.push({ pathname: router.pathname, query: rest }, undefined, { shallow: true });
@@ -277,40 +248,66 @@ export default function YouTubeDashboard() {
                         </div>
                     </div>
 
-                    <div className="p-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                    <div className="p-2 grid grid-cols-2 lg:grid-cols-5 gap-4 mt-4">
                         {playlistQuery.isLoading ? (
-                            Array.from({ length: 13 }).map((_, i) => (
-                                <div key={i} className="aspect-square rounded-xl bg-gray-100 animate-pulse" />
+                            Array.from({ length: 10 }).map((_, i) => (
+                                <div key={i} className="aspect-square rounded-3xl bg-gray-100 animate-pulse" />
                             ))
                         ) : (
                             playlistItems.map((item, i) => renderCard(item, i))
                         )}
                     </div>
-                </>
+                </div>
             ) : (
-                <>
-                    {/* Artist Section (Spotify Style Circle) */}
-                    <div className="px-2 pt-2 pb-2 text-[13px] font-black text-black uppercase tracking-wider flex items-center gap-2">
+                <div className="col-span-full contents animate-in fade-in duration-500">
+                    {/* 1. Artist Section (Spotify Dashboard L213-277) */}
+                    <div className="col-span-full px-2 pt-2 pb-2 text-[13px] font-black text-black uppercase tracking-wider flex items-center gap-2">
                         ศิลปินยอดนิยม
                     </div>
-                    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 pb-6 px-2">
+                    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 col-span-full pb-6 px-2">
                         {(() => {
                             const artistItems = shelves.find(s => s.title.includes('ศิลปิน'))?.items || [
-                                { id: 'a1', title: 'Bodyslam', thumbnail: 'https://lh3.googleusercontent.com/y88l39q72qP-u1P5n5y5n5y5n5y5n5y5n5y5n5y5n5y5n5y5n5y5' },
-                                { id: 'a2', title: 'Three Man Down', thumbnail: 'https://lh3.googleusercontent.com/y88l39q72qP-u1P5n5y5n5y5n5y5n5y5n5y5n5y5n5y5n5y5n5y5' },
-                                { id: 'a3', title: 'Tilly Birds', thumbnail: 'https://lh3.googleusercontent.com/y88l39q72qP-u1P5n5y5n5y5n5y5n5y5n5y5n5y5n5y5n5y5n5y5' },
-                                { id: 'a4', title: 'Paper Planes', thumbnail: 'https://lh3.googleusercontent.com/y88l39q72qP-u1P5n5y5n5y5n5y5n5y5n5y5n5y5n5y5n5y5n5y5' },
-                                { id: 'a5', title: 'หนุ่ม กะลา', thumbnail: 'https://lh3.googleusercontent.com/y88l39q72qP-u1P5n5y5n5y5n5y5n5y5n5y5n5y5n5y5n5y5n5y5' }
+                                { id: 'a1', title: 'Bodyslam', thumbnail: '/assets/avatar.jpeg' },
+                                { id: 'a2', title: 'Three Man Down', thumbnail: '/assets/avatar.jpeg' },
+                                { id: 'a3', title: 'Tilly Birds', thumbnail: '/assets/avatar.jpeg' },
+                                { id: 'a4', title: 'Paper Planes', thumbnail: '/assets/avatar.jpeg' },
+                                { id: 'a5', title: 'หนุ่ม กะลา', thumbnail: '/assets/avatar.jpeg' }
                             ];
-                            return artistItems.slice(0, 15).map((artist, i) => renderArtistCard(artist, i));
+                            return artistItems.slice(0, 15).map((artist, i) => (
+                                <Fragment key={artist.id + i}>
+                                    <div
+                                        className="group relative cursor-pointer overflow-hidden rounded-2xl shadow-sm hover:shadow-2xl hover:shadow-red-600/10 hover:-translate-y-1 transition-all duration-300 isolate bg-gray-100 w-full aspect-square"
+                                        onClick={() => setSearchTerm(artist.title)}
+                                    >
+                                        <Image
+                                            src={artist.thumbnail?.replace('w120-h120', 'w400-h400') || "/assets/avatar.jpeg"}
+                                            fill
+                                            className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                            alt={artist.title}
+                                            unoptimized
+                                        />
+                                        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-90 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                            <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-lg transform scale-50 group-hover:scale-100 transition-transform">
+                                                <svg className="w-5 h-5 text-white fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                                            </div>
+                                        </div>
+                                        <div className="absolute inset-0 p-3 flex flex-col justify-end items-start z-10 pointer-events-none">
+                                            <h2 className="text-white font-bold text-[11px] sm:text-[12px] leading-tight line-clamp-1 drop-shadow-md transform translate-y-0.5 group-hover:translate-y-0 transition-transform text-left">
+                                                {artist.title}
+                                            </h2>
+                                        </div>
+                                    </div>
+                                </Fragment>
+                            ));
                         })()}
                     </div>
 
-                    {/* Genre Section (Spotify Style) */}
-                    <div className="px-2 pt-4 pb-3 text-[13px] font-black text-black uppercase tracking-wider border-t border-gray-100 mt-2">
+                    {/* 2. Genre Section (Spotify Dashboard L280-301) */}
+                    <div className="col-span-full px-2 pt-4 pb-3 text-[13px] font-black text-black uppercase tracking-wider flex items-center gap-2 border-t border-gray-100 mt-2">
                         แนวเพลงยอดฮิต
                     </div>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 px-2 pb-8">
+                    <div className="col-span-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 px-2 pb-8">
                         {shelves.filter(s => !s.title.includes('ศิลปิน')).slice(0, 15).map((shelf, i) => {
                             const displayTitle = shelf.title.replace('📂 ', '').replace('👑 ', '').replace('🎵 ', '');
                             const isSelected = genreText === displayTitle || (genreText === "แนะนำ" && i === 0);
@@ -318,7 +315,7 @@ export default function YouTubeDashboard() {
                                 <button
                                     key={shelf.title + i}
                                     onClick={() => setGenreInUrl(displayTitle)}
-                                    className={`w-full py-2.5 px-4 rounded-xl text-[12px] font-bold transition-all border ${isSelected ? "bg-black text-white border-black transform -translate-y-0.5 shadow-lg" : "bg-gray-100 text-black border-gray-100 hover:bg-white hover:border-red-600/30"}`}
+                                    className={`w-full py-2 px-4 rounded-xl text-[12px] font-bold transition-all duration-300 border ${isSelected ? "bg-black text-white border-primary transform -translate-y-0.5 shadow-lg" : "bg-gray-100 text-black border-gray-100 hover:bg-white hover:border-red-600/30"}`}
                                 >
                                     {displayTitle}
                                 </button>
@@ -326,23 +323,53 @@ export default function YouTubeDashboard() {
                         })}
                     </div>
 
-                    {/* Active Content Section (Spotify Style) */}
+                    {/* 3. Content Shelf (Spotify Dashboard L303-372) */}
                     {shelves[selectedShelfIndex] && (
-                        <>
-                            <div className="px-2 pt-4 pb-3 text-[13px] font-black text-black uppercase tracking-wider flex items-center justify-between">
+                        <div className="col-span-full contents">
+                            <div className="col-span-full px-2 pt-4 pb-3 text-[11px] sm:text-[12px] font-black text-black uppercase tracking-wider flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <div className="w-1.5 h-6 bg-red-600 rounded-full"></div>
                                     <span>{shelves[selectedShelfIndex].title}</span>
                                 </div>
                                 <span className="text-[10px] font-normal text-gray-400 bg-gray-50 px-3 py-1 rounded-full border border-gray-100">YouTube Music</span>
                             </div>
-                            <div className="grid grid-cols-2 md:grid-cols-5 gap-6 px-4 pb-24">
-                                {shelves[selectedShelfIndex].items.map((cat, i) => renderCard(cat, i))}
+                            <div className="col-span-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 px-4 pb-24">
+                                {shelves[selectedShelfIndex].items.map((cat, i) => (
+                                    <div
+                                        key={cat.id + i}
+                                        onClick={() => handleItemClick(cat)}
+                                        className="relative w-full aspect-square rounded-3xl overflow-hidden cursor-pointer shadow-sm hover:shadow-2xl hover:shadow-red-600/10 transition-all duration-500 hover:-translate-y-1.5 group bg-gray-100"
+                                    >
+                                        <Image
+                                            src={cat.thumbnail?.replace('w120-h120', 'w400-h400') || "/icon-cover.png"}
+                                            alt={cat.title}
+                                            fill
+                                            className="object-cover transition-transform duration-700 group-hover:scale-105"
+                                            unoptimized
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-90 transition-opacity" />
+
+                                        {/* Content Overlay */}
+                                        <div className="absolute inset-0 p-6 flex flex-col justify-between">
+                                            <div className="self-end opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-x-2 group-hover:translate-x-0">
+                                                <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center">
+                                                    <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+                                                </div>
+                                            </div>
+                                            <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                                                <span className="text-white font-bold text-[11px] sm:text-[12px] drop-shadow-md line-clamp-2 leading-tight">
+                                                    {cat.title}
+                                                </span>
+                                                <div className="h-1 w-12 bg-red-600 rounded-full mt-2 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-100 origin-left scale-x-0 group-hover:scale-x-100" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
-                        </>
+                        </div>
                     )}
-                </>
+                </div>
             )}
-        </div>
+        </>
     );
 }
