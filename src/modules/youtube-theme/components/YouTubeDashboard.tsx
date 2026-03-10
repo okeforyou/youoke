@@ -10,6 +10,8 @@ import { useRouter } from "next/router";
 // Types matching YouTube API
 interface YTItem {
     id: string;
+    playlistId?: string;
+    videoId?: string;
     title: string;
     subtitle?: string;
     thumbnail?: string;
@@ -157,12 +159,14 @@ export default function YouTubeDashboard() {
     }, [activePlaylist, isSearching, router.query]);
 
     const handleItemClick = (item: YTItem) => {
-        if (item.type === 'playlist' || (item.type === 'video' && !item.id)) {
-            setPlaylistInUrl(item);
+        const targetId = item.playlistId || item.id;
+        if (item.type === 'playlist' || (item.type === 'video' && !item.id && item.playlistId)) {
+            setPlaylistInUrl({ ...item, id: targetId });
         } else {
+            const finalVideoId = item.videoId || item.id;
             addToQueue({
-                id: item.id,
-                videoId: item.id,
+                id: finalVideoId,
+                videoId: finalVideoId,
                 title: item.title,
                 author: item.subtitle || 'YouTube',
                 sourceType: 'youtube',
