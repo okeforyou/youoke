@@ -1,70 +1,57 @@
 import { NextApiRequest, NextApiResponse } from 'next';
+import axios from 'axios';
 import { scrapeYouTubeSearch, scrapeYouTubePlaylistSearch } from '../../utils/youtubeScraper';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
         console.log('[API/Explore] Fetching Data (Rich Thai Content) via Scraper...');
 
-        // CATEGORY CONFIGURATION (Thai Content Focus)
-        const VIDEO_CATEGORIES = [
-            { query: 'เพลงไทยฮิตล่าสุด 2025', title: '🔥 เพลงไทยมาแรง 2025' },
-            { query: 'รวมเพลงลูกทุ่งยอดฮิต 100 ล้านวิว', title: '🌾 ลูกทุ่งยอดนิยม' },
-            { query: 'T-Pop Hits 2025 เพลงไทยล่าสุด', title: '🎤 T-Pop ฮิตติดชาร์ต' },
-            { query: 'เพลงร็อกไทย ยอดนิยม', title: '🎸 ร็อกไทยหัวใจสิงห์' },
-            { query: 'เพลงเพื่อชีวิต ฮิตตลอดกาล ไทย', title: '🐃 เพื่อชีวิตตำนาน' },
-            { query: 'เพลงแดนซ์ไทย สายย่อ 2025', title: '🕺 แดนซ์สายย่อ' }
+        // CATEGORY CONFIGURATION (Spotify Playlist IDs for 100% Stability)
+        const FEATURE_PLAYLISTS = [
+            { id: '37i9dQZF1DWV74QYI4O5Hn', title: '📂 เพลย์ลิสต์แนะนำ' },
+            { id: '37i9dQZF1DX9T6iQvEUpU2', title: '🌾 ลูกทุ่งยอดนิยม' },
+            { id: '37i9dQZF1DWW9pDk3S4u2B', title: '🎤 T-Pop ฮิตติดชาร์ต' },
+            { id: '37i9dQZF1DXdb8Fv0l7p1C', title: '🎸 ร็อกไทยหัวใจสิงห์' },
+            { id: '37i9dQZF1DX96S38v6E1V1', title: '🕺 แดนซ์สายย่อ' }
         ];
 
-        const PLAYLIST_CATEGORIES = [
-            { query: 'รวมเพลงไทยฮิต ยอดนิยม 2025', title: '📂 เพลย์ลิสต์แนะนำ' },
-            { query: 'รวมเพลงไทยเก่า ยุค 90s', title: '📼 ย้อนวันวาน 90s' },
-            { query: 'รวมเพลงเศร้าไทย 2025 อกหัก', title: '💔 เพลงเศร้าเหงาจับใจ' }
-        ];
+        console.log(`[API/Explore] Fetching ${FEATURE_PLAYLISTS.length} Featured Playlists via Spotify...`);
 
-        console.log(`[API/Explore] Fetching ${VIDEO_CATEGORIES.length} Video & ${PLAYLIST_CATEGORIES.length} Playlist Categories...`);
+        const { searchSpotifyPlaylists } = require('../../../modules/spotify-theme/services/api');
+        const { getAccessToken } = require('../../../modules/spotify-theme/services/auth');
+        const token = await getAccessToken();
 
-        // Parallel Fetch
-        const [videoResults, playlistResults] = await Promise.all([
-            Promise.all(VIDEO_CATEGORIES.map(cat =>
-                scrapeYouTubeSearch(cat.query).catch(() => [])
-            )),
-            Promise.all(PLAYLIST_CATEGORIES.map(cat =>
-                scrapeYouTubePlaylistSearch(cat.query).catch(() => [])
-            ))
-        ]);
+        // Parallel Fetch Spotify Metadata
+        const playlistResults = await Promise.all(
+            FEATURE_PLAYLISTS.map(async (cat) => {
+                try {
+                    const res = await axios.get(`https://api.spotify.com/v1/playlists/${cat.id}`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    const data = res.data;
+                    return {
+                        title: cat.title,
+                        items: (data.tracks?.items || []).slice(0, 15).filter((item: any) => item.track).map((item: any) => ({
+                            id: `sp-${item.track.id}`,
+                            playlistId: undefined,
+                            videoId: undefined, // Needs search
+                            title: item.track.name,
+                            subtitle: item.track.artists?.map((a: any) => a.name).join(', ') || 'Various',
+                            author: item.track.artists?.[0]?.name || 'Spotify',
+                            thumbnail: item.track.album?.images?.[0]?.url || '',
+                            videoCount: 'Spotify Track',
+                            type: 'video', // Treatment as video for playback
+                            isSong: true
+                        }))
+                    };
+                } catch (e) {
+                    console.warn(`[API/Explore] Failed to fetch playlist ${cat.id}`);
+                    return null;
+                }
+            })
+        );
 
-        // Helper to map items (Compatibility between YouTubeDashboard and ListTopicsGrid)
-        const mapItems = (items: any[], type: 'video' | 'playlist') => items.map((item: any) => {
-            const rawId = item.videoId || item.playlistId;
-            const prefixedId = rawId?.startsWith('yt-') ? rawId : `yt-${rawId}`;
-
-            return {
-                id: prefixedId,
-                playlistId: type === 'playlist' ? prefixedId : undefined,
-                videoId: type === 'video' ? rawId : undefined,
-                title: item.title,
-                subtitle: type === 'playlist' ? `${item.videoCount} · ${item.author}` : (item.author || 'YouTube'),
-                author: item.author || 'YouTube',
-                thumbnail: type === 'playlist' ? item.thumbnail : (item.videoThumbnails?.[0]?.url || ''),
-                videoCount: type === 'playlist' ? item.videoCount : 'Video',
-                type: type,
-                isSong: type === 'video'
-            };
-        });
-
-        // Construct Shelves
-        let shelves = [
-            // Featured Playlists First
-            ...PLAYLIST_CATEGORIES.map((cat, i) => ({
-                title: cat.title,
-                items: mapItems(playlistResults[i] || [], 'playlist').slice(0, 15)
-            })),
-            // Then Video Shelves
-            ...VIDEO_CATEGORIES.map((cat, i) => ({
-                title: cat.title,
-                items: mapItems(videoResults[i] || [], 'video').slice(0, 15)
-            }))
-        ].filter(shelf => shelf.items.length > 0);
+        let shelves = playlistResults.filter(s => s !== null && s.items.length > 0);
 
         // --- STABLE FALLBACK (Spotitube V1 Restoration) ---
         // If all dynamic results failed (scrapers blocked on Vercel), return high-quality hardcoded content

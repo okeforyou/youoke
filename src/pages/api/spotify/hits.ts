@@ -10,10 +10,20 @@ import { Single } from "../../../types";
  * Uses curated "Thailand Top 50" playlist
  * Updates automatically when playlist is updated
  */
+// Simple Cache Map for Hits
+const hitsCache = { data: null as any, timestamp: 0 };
+const CACHE_DURATION = 15 * 60 * 1000; // 15 Minutes
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  // Check Cache
+  if (hitsCache.data && Date.now() - hitsCache.timestamp < CACHE_DURATION) {
+    console.log("⚡ Serving Trending Hits from Cache");
+    return res.status(200).json(hitsCache.data);
+  }
+
   try {
     const accessToken = await getAccessToken().catch((err) => {
       console.warn("⚠️ Spotify not configured or failed to get token:", err.message);
@@ -96,6 +106,10 @@ export default async function handler(
       status: "success",
       singles: topHits,
     };
+
+    // Cache results
+    hitsCache.data = topics;
+    hitsCache.timestamp = Date.now();
 
     res.status(200).json(topics);
   } catch (error) {

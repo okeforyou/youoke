@@ -18,11 +18,22 @@ const GENRE_QUERY_MAP: Record<string, string> = {
     "ริทึมแอนด์บลูส์": "เพลง R&B ไทย ฮิต ยอดนิยม"
 };
 
+// Simple Cache Map
+const searchCache = new Map<string, { data: any, timestamp: number }>();
+const CACHE_DURATION = 10 * 60 * 1000; // 10 Minutes
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const { q } = req.query;
 
     if (!q) {
         return res.status(400).json({ error: "Query 'q' is required" });
+    }
+
+    const cacheKey = typeof q === 'string' ? q : JSON.stringify(q);
+    const cached = searchCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+        console.log(`⚡ Serving Search results for "${q}" from Cache`);
+        return res.status(200).json(cached.data);
     }
 
     try {
@@ -93,6 +104,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (results.length === 0) {
             return res.status(200).json([]);
         }
+
+        // Cache successful results
+        searchCache.set(cacheKey, { data: results, timestamp: Date.now() });
 
         return res.status(200).json(results);
 
