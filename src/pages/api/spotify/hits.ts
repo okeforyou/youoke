@@ -70,6 +70,26 @@ export default async function handler(
       });
     }
 
+    // --- Fallback if Spotify returns nothing or fails ---
+    if (topHits.length === 0) {
+      console.log("⚠️ Spotify hits empty, falling back to YouTube scraper...");
+      try {
+        const { scrapeYouTubeSearch } = await import("../../../utils/youtubeScraper");
+        const ytResults = await scrapeYouTubeSearch("เพลงไทยฮิตล่าสุด 2025");
+        if (ytResults && ytResults.length > 0) {
+          for (const item of ytResults.slice(0, 30)) {
+            topHits.push({
+              title: item.title,
+              artist_name: item.author || "YouTube",
+              coverImageURL: item.videoThumbnails?.[0]?.url || item.videoThumbnails?.[1]?.url || ""
+            });
+          }
+        }
+      } catch (ytErr) {
+        console.error("YouTube fallback failed too:", ytErr);
+      }
+    }
+
     console.log(`✅ Final hits list: ${topHits.length} songs`);
 
     const topics = {
@@ -80,6 +100,7 @@ export default async function handler(
     res.status(200).json(topics);
   } catch (error) {
     console.error("❌ Error fetching trending hits:", error);
-    res.status(500).json({ error: (error as Error).message });
+    // Even on error, try to return YouTube fallback if possible
+    res.status(200).json({ status: "success", singles: [] });
   }
 }

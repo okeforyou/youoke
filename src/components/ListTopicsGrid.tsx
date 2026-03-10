@@ -68,8 +68,9 @@ export default function ListTopicsGrid({ showTab = true }) {
     const fetchExplore = async () => {
       try {
         const res = await axios.get('/api/explore');
-        if (res.data.sections && res.data.sections.length > 0) {
-          setExploreSections(res.data.sections);
+        const sections = res.data.sections || res.data.data;
+        if (sections && sections.length > 0) {
+          setExploreSections(sections);
         } else {
           setUseFallback(true);
         }

@@ -9,7 +9,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const VIDEO_CATEGORIES = [
             { query: 'เพลงไทยฮิตล่าสุด 2025', title: '🔥 เพลงไทยมาแรง 2025' },
             { query: 'รวมเพลงลูกทุ่งยอดฮิต 100 ล้านวิว', title: '🌾 ลูกทุ่งยอดนิยม' },
-            { query: 'T-Pop Hits 2025 เพลงไทย', title: '🎤 T-Pop ฮิตติดชาร์ต' },
+            { query: 'T-Pop Hits 2025 เพลงไทยล่าสุด', title: '🎤 T-Pop ฮิตติดชาร์ต' },
             { query: 'เพลงร็อกไทย ยอดนิยม', title: '🎸 ร็อกไทยหัวใจสิงห์' },
             { query: 'เพลงเพื่อชีวิต ฮิตตลอดกาล ไทย', title: '🐃 เพื่อชีวิตตำนาน' },
             { query: 'เพลงแดนซ์ไทย สายย่อ 2025', title: '🕺 แดนซ์สายย่อ' }
@@ -33,49 +33,46 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             ))
         ]);
 
-        // Helper to map video items
-        const mapVideos = (items: any[]) => items.map((item: any) => ({
+        // Helper to map items (Compatibility between YouTubeDashboard and ListTopicsGrid)
+        const mapItems = (items: any[], type: 'video' | 'playlist') => items.map((item: any) => ({
+            id: item.videoId || item.playlistId,
+            playlistId: item.playlistId,
+            videoId: item.videoId,
             title: item.title,
-            subtitle: item.author || 'YouTube',
-            thumbnail: item.videoThumbnails?.[0]?.url || item.videoThumbnails?.[1]?.url || '',
-            id: item.videoId,
-            type: 'video'
+            subtitle: type === 'playlist' ? `${item.videoCount} · ${item.author}` : (item.author || 'YouTube'),
+            author: item.author || 'YouTube',
+            thumbnail: type === 'playlist' ? item.thumbnail : (item.videoThumbnails?.[0]?.url || ''),
+            videoCount: type === 'playlist' ? item.videoCount : 'Video',
+            type: type,
+            isSong: type === 'video'
         }));
 
-        // Helper to map playlist items
-        const mapPlaylists = (items: any[]) => items.map((item: any) => ({
-            title: item.title,
-            subtitle: `${item.videoCount} · ${item.author}`,
-            thumbnail: item.thumbnail,
-            id: item.playlistId,
-            type: 'playlist'
-        }));
-
-        // Construct Shelves (Mix Playlists and Videos)
+        // Construct Shelves
         const shelves = [
             // Featured Playlists First
             ...PLAYLIST_CATEGORIES.map((cat, i) => ({
                 title: cat.title,
-                items: mapPlaylists(playlistResults[i] || []).slice(0, 15)
+                items: mapItems(playlistResults[i] || [], 'playlist').slice(0, 15)
             })),
             // Then Video Shelves
             ...VIDEO_CATEGORIES.map((cat, i) => ({
                 title: cat.title,
-                items: mapVideos(videoResults[i] || []).slice(0, 15)
+                items: mapItems(videoResults[i] || [], 'video').slice(0, 15)
             }))
         ].filter(shelf => shelf.items.length > 0);
 
+        // Return both 'data' (for YouTubeDashboard) and 'sections' (for ListTopicsGrid)
         res.status(200).json({
             status: 'success',
-            data: shelves
+            data: shelves,
+            sections: shelves
         });
 
     } catch (error: any) {
         console.error('[API/Explore] CRITICAL ERROR:', error);
-        res.status(200).json({
+        res.status(500).json({
             status: 'error',
-            message: error.message || 'Unknown Error',
-            debug_info: error.toString() + (error.stack ? `\n${error.stack}` : '')
+            message: error.message || 'Unknown Error'
         });
     }
 }

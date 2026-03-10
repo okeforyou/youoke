@@ -35,10 +35,11 @@ const GENRES = [
 export default function SpotifyDashboard({ showTab = true }) {
   const router = useRouter();
   const { config } = useSystemConfig();
-  const genres = (config?.ui?.genres || GENRES).filter(g => g !== "เพลงไทย" && g !== "ทั้งหมด");
+  const rawGenres = (config?.ui?.genres || GENRES).filter(g => g !== "เพลงไทย" && g !== "ทั้งหมด");
+  const genres = ["แนะนำ", ...rawGenres];
 
   // URL-Driven State or Fallback to Default
-  const genreText = (router.query.genre as string) || "ลูกทุ่ง";
+  const genreText = (router.query.genre as string) || "แนะนำ";
   const tagId = (router.query.playlist as string) || "";
 
   console.log("🔍 SpotifyDashboard Render:", {
@@ -96,7 +97,7 @@ export default function SpotifyDashboard({ showTab = true }) {
 
   // When default Top Artists load
   useEffect(() => {
-    if (tempTopArtistsData && (genreText === "ลูกทุ่ง" || topArtistsData.artistCategories.length === 0)) {
+    if (tempTopArtistsData && (genreText === "แนะนำ" || genreText === "ลูกทุ่ง" || topArtistsData.artistCategories.length === 0)) {
       console.log("📦 SpotifyDashboard: Populating topArtistsData", tempTopArtistsData.artistCategories.length);
       setTopArtistsData(tempTopArtistsData);
     }
@@ -126,7 +127,7 @@ export default function SpotifyDashboard({ showTab = true }) {
       return (lastPage?.artistCategories?.length === 20) ? allPages.length + 1 : undefined;
     },
     initialPageParam: 1,
-    enabled: genreText !== "เพลงไทย",
+    enabled: genreText !== "เพลงไทย" && genreText !== "แนะนำ",
   });
 
   // Flatten pages for display
@@ -151,8 +152,8 @@ export default function SpotifyDashboard({ showTab = true }) {
   const topArtists = tempTopArtistsData?.artist || [];
 
   // Fallback: If genrePlaylists is empty AND we are loading, don't fall back to default.
-  // Only fall back to topArtistsData for the DEFAULT genre ("ลูกทุ่ง").
-  const isGenreDefault = genreText === "เพลงไทย" || genreText === "ลูกทุ่ง";
+  // Special Handling for Default Genres
+  const isGenreDefault = genreText === "เพลงไทย" || genreText === "แนะนำ";
   const artistCategories = isGenreDefault
     ? (topArtistsData?.artistCategories || [])
     : genrePlaylists; // Show only genre-specific results (empty = empty, loading = skeleton)
