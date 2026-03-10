@@ -10,8 +10,10 @@ import {
     ArrowRightOnRectangleIcon,
     ChevronRightIcon,
     MusicalNoteIcon,
-    PlayCircleIcon
+    PlayCircleIcon,
+    ServerIcon
 } from '@heroicons/react/24/outline';
+import { useUIStore } from '../../stores/useUIStore';
 import { useSystem } from '../../core/container/SystemContext'; // DI Container
 import Link from 'next/link';
 import { getUserProfile } from '../../services/userService';
@@ -20,6 +22,7 @@ import { MembershipCard } from './MembershipCard';
 import { PackageStore } from './PackageStore';
 import { NotificationList } from './NotificationList';
 import { GuestCard } from './GuestCard';
+import { cn } from '@/lib/utils';
 import { auth } from '@/firebase';
 
 interface ProfileDrawerProps {
@@ -33,6 +36,7 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
     const router = useRouter();
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(false);
+    const { musicTheme, setMusicTheme } = useUIStore();
 
     useEffect(() => {
         if (isOpen && user?.uid) {
@@ -240,6 +244,49 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                                     <div>
                                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 px-2">เลือกแพ็กเกจ</p>
                                                         <PackageStore />
+                                                    </div>
+
+                                                    {/* Player Theme Selection */}
+                                                    <div>
+                                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 px-2">เซิร์ฟเวอร์เครื่องเล่น</p>
+                                                        <div className="grid grid-cols-2 gap-2 px-1">
+                                                            <button
+                                                                onClick={() => {
+                                                                    setMusicTheme('youtube');
+                                                                    onClose();
+                                                                    if (router.pathname !== '/') router.push('/');
+                                                                }}
+                                                                className={cn(
+                                                                    "flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all gap-2",
+                                                                    musicTheme === 'youtube'
+                                                                        ? "bg-primary/5 border-primary text-primary shadow-sm"
+                                                                        : "bg-white border-gray-100 text-gray-400 hover:border-gray-200"
+                                                                )}
+                                                            >
+                                                                <PlayCircleIcon className="w-8 h-8" />
+                                                                <span className="text-[11px] font-black uppercase">YouTube (แนะนำ)</span>
+                                                            </button>
+
+                                                            <button
+                                                                onClick={() => {
+                                                                    setMusicTheme('spotify');
+                                                                    onClose();
+                                                                    if (router.pathname !== '/') router.push('/');
+                                                                }}
+                                                                className={cn(
+                                                                    "flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all gap-2",
+                                                                    musicTheme === 'spotify'
+                                                                        ? "bg-[#1DB954]/5 border-[#1DB954] text-[#1DB954] shadow-sm"
+                                                                        : "bg-white border-gray-100 text-gray-400 hover:border-gray-200"
+                                                                )}
+                                                            >
+                                                                <MusicalNoteIcon className="w-8 h-8" />
+                                                                <span className="text-[11px] font-black uppercase">Spotify (เดิม)</span>
+                                                            </button>
+                                                        </div>
+                                                        <p className="mt-3 px-2 text-[10px] text-gray-400 leading-relaxed font-medium">
+                                                            * แนะนำใช้ YouTube สำหรับความเสถียรสูงสุดในการโหลดรูปปกและเพลย์ลิสต์
+                                                        </p>
                                                     </div>
 
                                                     {/* Menu List (Simplified) */}
