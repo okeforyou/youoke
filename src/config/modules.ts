@@ -26,7 +26,7 @@ export const MODULES: ModuleDefinition[] = [
         icon: MusicalNoteIcon,
         version: '1.2.0',
         category: 'music',
-        pricing: { tier: 'paid', priceTHB: 50, billingPeriod: 'monthly' }
+        pricing: { tier: 'free', priceTHB: 0, billingPeriod: 'one-time' }
     },
     {
         id: 'remote-control',

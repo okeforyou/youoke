@@ -82,7 +82,7 @@ export const useUIStore = create<UIState>((set) => ({
     isFullscreen: false,
     setFullscreen: (fullscreen) => set({ isFullscreen: fullscreen }),
 
-    musicTheme: 'spotify',
+    musicTheme: 'youtube',
     setMusicTheme: (theme) => set({ musicTheme: theme }),
 
     isCastingLocal: false,

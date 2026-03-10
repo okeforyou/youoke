@@ -19,7 +19,7 @@ export const useSystemThemeSync = () => {
 
     useEffect(() => {
         if (!loading && config && config.player) {
-            const defaultProvider = config.player.defaultProvider || 'spotify';
+            const defaultProvider = config.player.defaultProvider || 'youtube';
 
             // Only sync if the current theme is different from the default
             // AND we haven't synced yet (On Mount)
