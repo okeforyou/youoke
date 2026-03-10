@@ -18,40 +18,49 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         console.log(`[API/Explore] Fetching ${FEATURE_PLAYLISTS.length} Featured Playlists via Spotify...`);
 
         const { searchSpotifyPlaylists } = require('../../../modules/spotify-theme/services/api');
-        const { getAccessToken } = require('../../../modules/spotify-theme/services/auth');
-        const token = await getAccessToken();
+        let token = null;
+        try {
+            token = await getAccessToken();
+        } catch (authErr) {
+            console.warn('[API/Explore] Spotify Auth failed:', authErr);
+        }
 
-        // Parallel Fetch Spotify Metadata
-        const playlistResults = await Promise.all(
-            FEATURE_PLAYLISTS.map(async (cat) => {
-                try {
-                    const res = await axios.get(`https://api.spotify.com/v1/playlists/${cat.id}`, {
-                        headers: { Authorization: `Bearer ${token}` }
-                    });
-                    const data = res.data;
-                    return {
-                        title: cat.title,
-                        items: (data.tracks?.items || []).slice(0, 15).filter((item: any) => item.track).map((item: any) => ({
-                            id: `sp-${item.track.id}`,
-                            playlistId: undefined,
-                            videoId: undefined, // Needs search
-                            title: item.track.name,
-                            subtitle: item.track.artists?.map((a: any) => a.name).join(', ') || 'Various',
-                            author: item.track.artists?.[0]?.name || 'Spotify',
-                            thumbnail: item.track.album?.images?.[0]?.url || '',
-                            videoCount: 'Spotify Track',
-                            type: 'video', // Treatment as video for playback
-                            isSong: true
-                        }))
-                    };
-                } catch (e) {
-                    console.warn(`[API/Explore] Failed to fetch playlist ${cat.id}`);
-                    return null;
-                }
-            })
-        );
+        // Parallel Fetch Spotify Metadata (Only if token exists)
+        let playlistResults = [];
+        if (token) {
+            playlistResults = await Promise.all(
+                FEATURE_PLAYLISTS.map(async (cat) => {
+                    try {
+                        const res = await axios.get(`https://api.spotify.com/v1/playlists/${cat.id}`, {
+                            headers: { Authorization: `Bearer ${token}` }
+                        });
+                        const data = res.data;
+                        return {
+                            title: cat.title,
+                            items: (data.tracks?.items || []).slice(0, 15).filter((item: any) => item.track).map((item: any) => ({
+                                id: `sp-${item.track.id}`,
+                                playlistId: undefined,
+                                videoId: undefined, // Needs search
+                                title: item.track.name,
+                                subtitle: item.track.artists?.map((a: any) => a.name).join(', ') || 'Various',
+                                author: item.track.artists?.[0]?.name || 'Spotify',
+                                thumbnail: item.track.album?.images?.[0]?.url || '',
+                                videoCount: 'Spotify Track',
+                                type: 'video', // Treatment as video for playback
+                                isSong: true
+                            }))
+                        };
+                    } catch (e) {
+                        console.warn(`[API/Explore] Failed to fetch playlist ${cat.id}`);
+                        return null;
+                    }
+                })
+            );
+        } else {
+            console.warn('[API/Explore] No Spotify Token available, bypassing external fetch.');
+        }
 
-        let shelves = playlistResults.filter(s => s !== null && s.items.length > 0);
+        let shelves = playlistResults.filter((s: any) => s !== null && s.items.length > 0);
 
         // --- STABLE FALLBACK (Spotitube V1 Restoration) ---
         // If all dynamic results failed (scrapers blocked on Vercel), return high-quality hardcoded content
