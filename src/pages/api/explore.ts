@@ -18,6 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         console.log(`[API/Explore] Fetching ${FEATURE_PLAYLISTS.length} Featured Playlists via Spotify...`);
 
         const { searchSpotifyPlaylists } = require('../../../modules/spotify-theme/services/api');
+        const { getAccessToken } = require('../../../modules/spotify-theme/services/auth');
         let token = null;
         try {
             token = await getAccessToken();
