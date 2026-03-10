@@ -260,26 +260,28 @@ export default function YouTubeDashboard() {
                 </>
             ) : (
                 <>
-                    {/* Artist Section (Spotify Style) */}
-                    <div className="px-2 pt-2 pb-2 text-[13px] font-black text-black uppercase tracking-wider flex items-center gap-2">
-                        ศิลปินยอดนิยม
-                    </div>
-                    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 pb-6 px-2">
-                        {exploreQuery.isLoading ? (
-                            Array.from({ length: 5 }).map((_, i) => (
-                                <div key={i} className="aspect-square rounded-2xl bg-gray-100 animate-pulse" />
-                            ))
-                        ) : (
-                            (shelves[0]?.items || []).slice(0, 15).map((artist, i) => renderCard(artist, i, true))
-                        )}
-                    </div>
+                    {/* Artist Section (Spotify Style) - Dynamically find the artist shelf */}
+                    {(() => {
+                        const artistShelf = shelves.find(s => s.title.includes('ศิลปิน') || s.items.some(i => i.type === 'artist'));
+                        if (!artistShelf) return null;
+                        return (
+                            <>
+                                <div className="px-2 pt-2 pb-2 text-[13px] font-black text-black uppercase tracking-wider flex items-center gap-2">
+                                    {artistShelf.title.replace('👑 ', '')}
+                                </div>
+                                <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 pb-6 px-2">
+                                    {artistShelf.items.slice(0, 15).map((artist, i) => renderCard(artist, i, true))}
+                                </div>
+                            </>
+                        );
+                    })()}
 
                     {/* Genre Section (Spotify Style) */}
                     <div className="px-2 pt-4 pb-3 text-[13px] font-black text-black uppercase tracking-wider border-t border-gray-100 mt-2">
                         แนวเพลงยอดฮิต
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 px-2 pb-8">
-                        {shelves.slice(1, 15).map((shelf, i) => {
+                        {shelves.filter(s => !s.title.includes('ศิลปิน')).slice(0, 15).map((shelf, i) => {
                             const displayTitle = shelf.title.replace('📂 ', '').replace('👑 ', '').replace('🎵 ', '');
                             const isSelected = genreText === displayTitle || (genreText === "แนะนำ" && i === 0);
                             return (
@@ -304,7 +306,7 @@ export default function YouTubeDashboard() {
                                 </div>
                                 <span className="text-[10px] font-normal text-gray-400 bg-gray-50 px-3 py-1 rounded-full border border-gray-100">YouTube Music</span>
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 px-4 pb-24">
+                            <div className="grid grid-cols-2 md:grid-cols-5 gap-6 px-4 pb-24">
                                 {shelves[selectedShelfIndex].items.map((cat, i) => renderCard(cat, i))}
                             </div>
                         </>

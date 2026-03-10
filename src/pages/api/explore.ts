@@ -82,6 +82,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // ABSOLUTE SANE FALLBACK (Hardcoded just in case everything above fails miserably)
         if (dynamicShelves.length === 0) {
             console.log('[API/Explore] CRITICAL: All scrapers failed. Using hardcoded survival fallback.');
+
+            // Add artists fallback
+            dynamicShelves.push({
+                title: '👑 ศิลปินยอดนิยม',
+                items: [
+                    { id: 'artist-1', title: 'Bodyslam', subtitle: 'วงร็อกยอดนิยม', thumbnail: 'https://lh3.googleusercontent.com/a-/ALV-EMjIay...', type: 'artist' },
+                    { id: 'artist-2', title: 'Three Man Down', subtitle: 'ป็อปร็อกมาแรง', thumbnail: 'https://lh3.googleusercontent.com/a-/ALV-EM...', type: 'artist' },
+                    { id: 'artist-3', title: 'Tilly Birds', subtitle: 'อินดี้ป็อป', thumbnail: 'https://lh3.googleusercontent.com/a-/ALV-EM...', type: 'artist' },
+                    { id: 'artist-4', title: 'Paper Planes', subtitle: 'ร็อกวัยรุ่น', thumbnail: 'https://lh3.googleusercontent.com/a-/ALV-EM...', type: 'artist' },
+                    { id: 'artist-5', title: 'หนุ่ม กะลา', subtitle: 'เพลงร็อกกินใจ', thumbnail: 'https://lh3.googleusercontent.com/a-/ALV-EM...', type: 'artist' }
+                ]
+            });
+
             dynamicShelves.push({
                 title: '📂 หมวดหมู่แนะนำ',
                 items: [
