@@ -506,9 +506,34 @@ export interface YouTubePlaylistResult {
 }
 
 /**
- * Scrape YouTube Playlist Search Results
- * Uses sp=EgIQAw%3D%3D to filter for playlists
+ * Deep search for playlist items inytInitialData
  */
+function findPlaylistItems(obj: any, results: YouTubePlaylistResult[] = [], seenIds = new Set<string>()) {
+  if (!obj || typeof obj !== 'object') return results;
+
+  if (obj.playlistRenderer || obj.gridPlaylistRenderer) {
+    const renderer = obj.playlistRenderer || obj.gridPlaylistRenderer;
+    const playlistId = renderer.playlistId;
+    if (playlistId && !seenIds.has(playlistId)) {
+      seenIds.add(playlistId);
+      results.push({
+        playlistId,
+        title: renderer.title?.simpleText || renderer.title?.runs?.[0]?.text || "Unknown",
+        author: renderer.shortBylineText?.runs?.[0]?.text || renderer.longBylineText?.runs?.[0]?.text || "Unknown Author",
+        videoCount: renderer.videoCountText?.simpleText || renderer.videoCountText?.runs?.[0]?.text || "0",
+        thumbnail: renderer.thumbnail?.thumbnails?.[0]?.url || renderer.thumbnails?.[0]?.url || renderer.thumbnails?.[0]?.thumbnails?.[0]?.url || ""
+      });
+    }
+  }
+
+  for (const key in obj) {
+    if (typeof obj[key] === 'object') {
+      findPlaylistItems(obj[key], results, seenIds);
+    }
+  }
+  return results;
+}
+
 /**
  * Scrape YouTube Playlist Search Results
  * Uses sp=EgIQAw%3D%3D to filter for playlists
@@ -527,6 +552,7 @@ export async function scrapeYouTubePlaylistSearch(
       headers: {
         'User-Agent': getRandomUserAgent(),
         'Accept-Language': 'en-US,en;q=0.9,th;q=0.8',
+        'Cookie': 'CONSENT=YES+cb.20210328-17-p0.en+FX+417; SOCS=CAESEwgDEgk1NzY3NDIwMzQaAmenIAEaBgiA_LyaBg;'
       },
       signal: controller.signal,
     });
@@ -537,54 +563,13 @@ export async function scrapeYouTubePlaylistSearch(
     const html = await response.text();
     const ytInitialData = extractYtInitialData(html);
 
-    if (!ytInitialData) throw new Error('Could not find ytInitialData');
-
-    // Find contents array in search results
-    let contents = ytInitialData?.contents?.twoColumnSearchResultsRenderer?.primaryContents?.sectionListRenderer?.contents;
-
-    // Fallback: Check for mobile or other layouts
-    if (!contents) {
-      contents = ytInitialData?.contents?.richGridRenderer?.contents;
+    if (!ytInitialData) {
+      if (html.includes("Before you continue")) throw new Error("Blocked by Consent Page");
+      throw new Error('Could not find ytInitialData');
     }
 
-    if (!contents || !Array.isArray(contents)) {
-      console.warn("[Scraper] No search contents found for query:", query);
-      return [];
-    }
-
-    const results: YouTubePlaylistResult[] = [];
-
-    // Helper to extract items from section list
-    for (const section of contents) {
-      const items = section.itemSectionRenderer?.contents || [section];
-      for (const item of items) {
-        // Handle RichItemWrapper (for richGridRenderer)
-        const content = item.richItemRenderer?.content || item;
-        const renderer = content.playlistRenderer || content.gridPlaylistRenderer;
-
-        if (!renderer) continue;
-
-        const playlistId = renderer.playlistId;
-        const title = renderer.title?.simpleText || renderer.title?.runs?.[0]?.text || "Unknown";
-        const author = renderer.shortBylineText?.runs?.[0]?.text || renderer.longBylineText?.runs?.[0]?.text || "Unknown Author";
-        const videoCount = renderer.videoCountText?.simpleText || renderer.videoCountText?.runs?.[0]?.text || "0";
-
-        let thumbnail = "";
-        if (renderer.thumbnail?.thumbnails?.[0]?.url) {
-          thumbnail = renderer.thumbnail.thumbnails[0].url;
-        } else if (renderer.thumbnails?.[0]?.thumbnails?.[0]?.url) {
-          thumbnail = renderer.thumbnails[0].thumbnails[0].url;
-        } else if (renderer.thumbnails?.[0]?.url) {
-          thumbnail = renderer.thumbnails[0].url;
-        }
-
-        if (playlistId) {
-          results.push({ playlistId, title, author, videoCount, thumbnail });
-        }
-      }
-    }
-
-    console.log(`[YouTube Scraper] Playlist search for "${query}" found ${results.length} results`);
+    const results = findPlaylistItems(ytInitialData);
+    console.log(`[YouTube Scraper] Playlist search for "${query}" found ${results.length} results via deep search`);
     return results;
 
   } catch (error: any) {

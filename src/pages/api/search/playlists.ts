@@ -52,7 +52,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             console.log(`[API] Attempting YouTube scraper for: ${searchQuery}`);
             const ytResults = await scrapeYouTubePlaylistSearch(searchQuery);
             if (ytResults && ytResults.length > 0) {
-                results = ytResults;
+                results = ytResults.map(item => ({
+                    ...item,
+                    playlistId: item.playlistId.startsWith('yt-') ? item.playlistId : `yt-${item.playlistId}`
+                }));
                 console.log(`[API] YouTube scraper SUCCESS for: ${searchQuery} (${results.length} results)`);
             } else {
                 console.warn(`[API] YouTube scraper EMPTY for: ${searchQuery}`);

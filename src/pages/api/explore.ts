@@ -34,18 +34,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         ]);
 
         // Helper to map items (Compatibility between YouTubeDashboard and ListTopicsGrid)
-        const mapItems = (items: any[], type: 'video' | 'playlist') => items.map((item: any) => ({
-            id: item.videoId || item.playlistId,
-            playlistId: item.playlistId,
-            videoId: item.videoId,
-            title: item.title,
-            subtitle: type === 'playlist' ? `${item.videoCount} · ${item.author}` : (item.author || 'YouTube'),
-            author: item.author || 'YouTube',
-            thumbnail: type === 'playlist' ? item.thumbnail : (item.videoThumbnails?.[0]?.url || ''),
-            videoCount: type === 'playlist' ? item.videoCount : 'Video',
-            type: type,
-            isSong: type === 'video'
-        }));
+        const mapItems = (items: any[], type: 'video' | 'playlist') => items.map((item: any) => {
+            const rawId = item.videoId || item.playlistId;
+            const prefixedId = rawId?.startsWith('yt-') ? rawId : `yt-${rawId}`;
+
+            return {
+                id: prefixedId,
+                playlistId: type === 'playlist' ? prefixedId : undefined,
+                videoId: type === 'video' ? rawId : undefined,
+                title: item.title,
+                subtitle: type === 'playlist' ? `${item.videoCount} · ${item.author}` : (item.author || 'YouTube'),
+                author: item.author || 'YouTube',
+                thumbnail: type === 'playlist' ? item.thumbnail : (item.videoThumbnails?.[0]?.url || ''),
+                videoCount: type === 'playlist' ? item.videoCount : 'Video',
+                type: type,
+                isSong: type === 'video'
+            };
+        });
 
         // Construct Shelves
         const shelves = [
