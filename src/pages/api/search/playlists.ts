@@ -47,46 +47,46 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         let results: any[] = [];
 
-        // 1. Try YouTube Scraper FIRST (More reliable for Thai genres)
+        // 1. Try Spotify FIRST (Most stable on Vercel)
         try {
-            console.log(`[API] Attempting YouTube scraper for: ${searchQuery}`);
-            const ytResults = await scrapeYouTubePlaylistSearch(searchQuery);
-            if (ytResults && ytResults.length > 0) {
-                results = ytResults.map(item => ({
-                    ...item,
-                    playlistId: item.playlistId.startsWith('yt-') ? item.playlistId : `yt-${item.playlistId}`
-                }));
-                console.log(`[API] YouTube scraper SUCCESS for: ${searchQuery} (${results.length} results)`);
+            console.log(`[API] Attempting Spotify search for: ${searchQuery}`);
+            let spotifyResults: any[] = [];
+            spotifyResults = await searchSpotifyPlaylists(searchQuery, limit, offset);
+
+            if (spotifyResults && Array.isArray(spotifyResults) && spotifyResults.length > 0) {
+                results = spotifyResults
+                    .filter((item: any) => item && item.id)
+                    .map((item: any) => ({
+                        playlistId: `sp-${item.id}`,
+                        title: item.name,
+                        thumbnail: item.images?.[0]?.url || "",
+                        author: item.owner?.display_name || "Spotify",
+                        videoCount: item.tracks?.total?.toString() || "playlist"
+                    }));
+                console.log(`[API] Spotify search SUCCESS for: ${searchQuery} (${results.length} results)`);
             } else {
-                console.warn(`[API] YouTube scraper EMPTY for: ${searchQuery}`);
+                console.warn(`[API] Spotify search EMPTY for: ${searchQuery}`);
             }
         } catch (e: any) {
-            console.warn(`[API] YouTube scraper ERROR for ${searchQuery}:`, e.message);
+            console.warn(`[API] Spotify Search ERROR for ${searchQuery}:`, e.message);
         }
 
-        // 2. Fallback to Spotify if YouTube didn't work
+        // 2. Fallback to YouTube Scraper if Spotify didn't work
         if (results.length === 0) {
-            console.log(`[API] Attempting Spotify fallback for: ${searchQuery}`);
+            console.log(`[API] Attempting YouTube Scraper fallback for: ${searchQuery}`);
             try {
-                let spotifyResults: any[] = [];
-                spotifyResults = await searchSpotifyPlaylists(searchQuery, limit, offset);
-
-                if (spotifyResults && Array.isArray(spotifyResults) && spotifyResults.length > 0) {
-                    results = spotifyResults
-                        .filter((item: any) => item && item.id)
-                        .map((item: any) => ({
-                            playlistId: `sp-${item.id}`,
-                            title: item.name,
-                            thumbnail: item.images?.[0]?.url || "",
-                            author: item.owner?.display_name || "Spotify",
-                            videoCount: item.tracks?.total?.toString() || "playlist"
-                        }));
-                    console.log(`[API] Spotify search SUCCESS for: ${searchQuery} (${results.length} results)`);
+                const ytResults = await scrapeYouTubePlaylistSearch(searchQuery);
+                if (ytResults && ytResults.length > 0) {
+                    results = ytResults.map(item => ({
+                        ...item,
+                        playlistId: item.playlistId.startsWith('yt-') ? item.playlistId : `yt-${item.playlistId}`
+                    }));
+                    console.log(`[API] YouTube scraper SUCCESS for: ${searchQuery} (${results.length} results)`);
                 } else {
-                    console.warn(`[API] Spotify search EMPTY for: ${searchQuery}`);
+                    console.warn(`[API] YouTube scraper EMPTY for: ${searchQuery}`);
                 }
             } catch (e: any) {
-                console.warn(`[API] Spotify Search ERROR for ${searchQuery}:`, e.message);
+                console.warn(`[API] YouTube scraper ERROR for ${searchQuery}:`, e.message);
             }
         }
 
