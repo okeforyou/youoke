@@ -168,15 +168,12 @@ export async function scrapeMusicExplore(
  * User agents for rotation (to avoid bot detection)
  */
 const USER_AGENTS = [
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0',
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15',
+  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:122.0) Gecko/20100101 Firefox/122.0'
 ];
 
-/**
- * Get random user agent
- */
 function getRandomUserAgent(): string {
   return USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
 }
@@ -186,7 +183,8 @@ function getRandomUserAgent(): string {
  */
 function extractYtInitialData(html: string): any {
   // Method 1: Try to find ytInitialData in script tags
-  const scriptMatch = html.match(/var ytInitialData = ({.+?});/s);
+  // Using [\s\S] instead of /s flag for ES2017 compatibility
+  const scriptMatch = html.match(/var ytInitialData = ({[\s\S]+?});/);
   if (scriptMatch && scriptMatch[1]) {
     try {
       return JSON.parse(scriptMatch[1]);
@@ -196,7 +194,7 @@ function extractYtInitialData(html: string): any {
   }
 
   // Method 2: Try window["ytInitialData"] format
-  const windowMatch = html.match(/window\["ytInitialData"\] = ({.+?});/s);
+  const windowMatch = html.match(/window\["ytInitialData"\] = ({[\s\S]+?});/);
   if (windowMatch && windowMatch[1]) {
     try {
       return JSON.parse(windowMatch[1]);
@@ -206,7 +204,7 @@ function extractYtInitialData(html: string): any {
   }
 
   // Method 3: Try ytInitialData = format (without var)
-  const directMatch = html.match(/ytInitialData = ({.+?});/s);
+  const directMatch = html.match(/ytInitialData = ({[\s\S]+?});/);
   if (directMatch && directMatch[1]) {
     try {
       return JSON.parse(directMatch[1]);
@@ -511,12 +509,15 @@ export interface YouTubePlaylistResult {
  * Scrape YouTube Playlist Search Results
  * Uses sp=EgIQAw%3D%3D to filter for playlists
  */
+/**
+ * Scrape YouTube Playlist Search Results
+ * Uses sp=EgIQAw%3D%3D to filter for playlists
+ */
 export async function scrapeYouTubePlaylistSearch(
   query: string,
   timeout: number = 10000
 ): Promise<YouTubePlaylistResult[]> {
-  const encodedQuery = encodeURIComponent(query);
-  const url = `https://www.youtube.com/results?search_query=${encodedQuery}&sp=EgIQAw%3D%3D`; // Force type=playlist
+  const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}&sp=EgIQAw%3D%3D`;
 
   try {
     const controller = new AbortController();
@@ -538,22 +539,44 @@ export async function scrapeYouTubePlaylistSearch(
 
     if (!ytInitialData) throw new Error('Could not find ytInitialData');
 
-    const contents = ytInitialData?.contents?.twoColumnSearchResultsRenderer?.primaryContents?.sectionListRenderer?.contents;
-    if (!contents) return [];
+    // Find contents array in search results
+    let contents = ytInitialData?.contents?.twoColumnSearchResultsRenderer?.primaryContents?.sectionListRenderer?.contents;
+
+    // Fallback: Check for mobile or other layouts
+    if (!contents) {
+      contents = ytInitialData?.contents?.richGridRenderer?.contents;
+    }
+
+    if (!contents || !Array.isArray(contents)) {
+      console.warn("[Scraper] No search contents found for query:", query);
+      return [];
+    }
 
     const results: YouTubePlaylistResult[] = [];
 
+    // Helper to extract items from section list
     for (const section of contents) {
-      if (!section.itemSectionRenderer?.contents) continue;
-      for (const item of section.itemSectionRenderer.contents) {
-        const renderer = item.playlistRenderer;
+      const items = section.itemSectionRenderer?.contents || [section];
+      for (const item of items) {
+        // Handle RichItemWrapper (for richGridRenderer)
+        const content = item.richItemRenderer?.content || item;
+        const renderer = content.playlistRenderer || content.gridPlaylistRenderer;
+
         if (!renderer) continue;
 
         const playlistId = renderer.playlistId;
-        const title = renderer.title.simpleText || renderer.title.runs?.[0]?.text || "Unknown";
-        const author = renderer.shortBylineText?.runs?.[0]?.text || "Unknown";
+        const title = renderer.title?.simpleText || renderer.title?.runs?.[0]?.text || "Unknown";
+        const author = renderer.shortBylineText?.runs?.[0]?.text || renderer.longBylineText?.runs?.[0]?.text || "Unknown Author";
         const videoCount = renderer.videoCountText?.simpleText || renderer.videoCountText?.runs?.[0]?.text || "0";
-        const thumbnail = renderer.thumbnails?.[0]?.url || "";
+
+        let thumbnail = "";
+        if (renderer.thumbnail?.thumbnails?.[0]?.url) {
+          thumbnail = renderer.thumbnail.thumbnails[0].url;
+        } else if (renderer.thumbnails?.[0]?.thumbnails?.[0]?.url) {
+          thumbnail = renderer.thumbnails[0].thumbnails[0].url;
+        } else if (renderer.thumbnails?.[0]?.url) {
+          thumbnail = renderer.thumbnails[0].url;
+        }
 
         if (playlistId) {
           results.push({ playlistId, title, author, videoCount, thumbnail });
@@ -561,11 +584,11 @@ export async function scrapeYouTubePlaylistSearch(
       }
     }
 
-    console.log(`[YouTube Scraper] Found ${results.length} playlists for query: ${query}`);
+    console.log(`[YouTube Scraper] Playlist search for "${query}" found ${results.length} results`);
     return results;
 
   } catch (error: any) {
-    console.error("[YouTube Scraper] Playlist search failed:", error.message);
+    console.error(`[YouTube Scraper] Playlist search failed (${query}):`, error.message);
     return [];
   }
 }

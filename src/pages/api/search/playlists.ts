@@ -49,24 +49,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // 1. Try YouTube Scraper FIRST (More reliable for Thai genres)
         try {
+            console.log(`[API] Attempting YouTube scraper for: ${searchQuery}`);
             const ytResults = await scrapeYouTubePlaylistSearch(searchQuery);
             if (ytResults && ytResults.length > 0) {
                 results = ytResults;
-                console.log(`[API] YouTube scraper returned ${results.length} playlists for: ${searchQuery}`);
+                console.log(`[API] YouTube scraper SUCCESS for: ${searchQuery} (${results.length} results)`);
+            } else {
+                console.warn(`[API] YouTube scraper EMPTY for: ${searchQuery}`);
             }
-        } catch (e) {
-            console.warn("[API] YouTube scraper failed, trying Spotify...", e);
+        } catch (e: any) {
+            console.warn(`[API] YouTube scraper ERROR for ${searchQuery}:`, e.message);
         }
 
         // 2. Fallback to Spotify if YouTube didn't work
         if (results.length === 0) {
+            console.log(`[API] Attempting Spotify fallback for: ${searchQuery}`);
             try {
                 let spotifyResults: any[] = [];
-                try {
-                    spotifyResults = await searchSpotifyPlaylists(searchQuery, limit, offset);
-                } catch (err) {
-                    console.warn("Spotify Search Skipped/Failed:", err);
-                }
+                spotifyResults = await searchSpotifyPlaylists(searchQuery, limit, offset);
 
                 if (spotifyResults && Array.isArray(spotifyResults) && spotifyResults.length > 0) {
                     results = spotifyResults
@@ -78,10 +78,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                             author: item.owner?.display_name || "Spotify",
                             videoCount: item.tracks?.total?.toString() || "playlist"
                         }));
-                    console.log(`[API] Spotify search returned ${results.length} playlists`);
+                    console.log(`[API] Spotify search SUCCESS for: ${searchQuery} (${results.length} results)`);
+                } else {
+                    console.warn(`[API] Spotify search EMPTY for: ${searchQuery}`);
                 }
-            } catch (e) {
-                console.warn("[API] Spotify Search failed:", e);
+            } catch (e: any) {
+                console.warn(`[API] Spotify Search ERROR for ${searchQuery}:`, e.message);
             }
         }
 
