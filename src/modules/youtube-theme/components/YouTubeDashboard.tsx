@@ -389,176 +389,186 @@ export default function YouTubeDashboard() {
         );
     }
 
-    return (
-        <div className="pb-24 space-y-6 animate-in fade-in duration-500 min-h-screen">
-            {/* Search Header (New) - Back Button */}
-            {isSearching && (
-                <div className="w-full bg-white px-4 py-3 mx-4 md:mx-8 mt-4 rounded-xl border border-gray-100 flex items-center gap-3 shadow-sm mb-2">
-                    <button
-                        onClick={handleClearSearch}
-                        className="p-2 hover:bg-gray-100 rounded-full transition-colors group flex-shrink-0"
-                        title="ย้อนกลับ"
+    // --- RENDER HELPERS (Spotify Theme Style) ---
+    const renderArtistShelf = (shelf: YTShelf) => (
+        <div key={shelf.title} className="space-y-4">
+            <div className="px-2 pt-2 text-[13px] font-black text-black uppercase tracking-wider flex items-center gap-2">
+                {shelf.title}
+            </div>
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 pb-6 px-2">
+                {shelf.items.map((artist, i) => (
+                    <div
+                        key={artist.id + i}
+                        className="group relative cursor-pointer overflow-hidden rounded-2xl shadow-sm hover:shadow-2xl hover:shadow-red-600/10 hover:-translate-y-1 transition-all duration-300 isolate bg-gray-100 w-full aspect-square"
+                        onClick={() => usePlayerStore.setState({ searchTerm: artist.title })}
                     >
+                        <Image
+                            src={artist.thumbnail?.replace('w120-h120', 'w400-h400') || '/assets/avatar.jpeg'}
+                            fill
+                            alt={artist.title}
+                            className="object-cover transition-transform duration-700 group-hover:scale-110"
+                            unoptimized
+                        />
+                        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-90 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-lg transform scale-50 group-hover:scale-100 transition-transform">
+                                <Play className="w-4 h-4 text-white fill-current ml-0.5" />
+                            </div>
+                        </div>
+                        <div className="absolute inset-0 p-3 flex flex-col justify-end items-start z-10 pointer-events-none">
+                            <h2 className="text-white font-bold text-[11px] sm:text-[12px] leading-tight line-clamp-1 drop-shadow-md transform translate-y-0.5 group-hover:translate-y-0 transition-transform text-left">
+                                {artist.title}
+                            </h2>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+
+    const renderPlaylistShelf = (shelf: YTShelf) => (
+        <div key={shelf.title} className="space-y-4">
+            <div className="px-2 pt-4 pb-3 text-[13px] font-black text-black uppercase tracking-wider flex items-center justify-between border-t border-gray-100 mt-2">
+                <span>{shelf.title}</span>
+                <span className="text-[10px] font-normal text-gray-400 bg-gray-50 px-3 py-1 rounded-full border border-gray-100">YouTube Music</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-4 px-2 pb-10">
+                {shelf.items.map((cat, i) => (
+                    <div
+                        key={cat.id + i}
+                        onClick={() => handleItemClick(cat)}
+                        className="relative w-full aspect-square rounded-3xl overflow-hidden cursor-pointer shadow-sm hover:shadow-2xl hover:shadow-red-600/10 transition-all duration-500 hover:-translate-y-1.5 group bg-gray-100"
+                    >
+                        <Image
+                            src={cat.thumbnail?.replace('w120-h120', 'w400-h400') || "/icon-cover.png"}
+                            alt={cat.title}
+                            fill
+                            className="object-cover transition-transform duration-700 group-hover:scale-105"
+                            unoptimized
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-90 transition-opacity" />
+                        <div className="absolute inset-0 p-4 flex flex-col justify-between">
+                            <div className="self-end opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-x-2 group-hover:translate-x-0">
+                                <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center shadow-lg">
+                                    {cat.type === 'video' ? <Play className="w-4 h-4 text-white fill-current" /> : <ListMusic className="w-5 h-5 text-white" />}
+                                </div>
+                            </div>
+                            <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                                <span className="text-white font-bold text-[11px] sm:text-[13px] drop-shadow-md line-clamp-2 leading-tight">
+                                    {cat.title}
+                                </span>
+                                <div className="h-1 w-12 bg-red-600 rounded-full mt-2 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-100 origin-left scale-x-0 group-hover:scale-x-100" />
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+
+    return (
+        <div className="pb-24 animate-in fade-in duration-500 min-h-screen bg-white">
+            {/* Search Header */}
+            {isSearching && (
+                <div className="w-full bg-white px-4 py-3 border-b border-gray-100 flex items-center gap-3 shadow-sm mb-4 sticky top-0 z-40">
+                    <button onClick={handleClearSearch} className="p-2 hover:bg-gray-100 rounded-full transition-colors group">
                         <ArrowLeft className="w-5 h-5 text-gray-500 group-hover:text-red-600" />
                     </button>
                     <div>
-                        <p className="text-xs text-gray-400 font-medium">ผลการค้นหาสำหรับ</p>
+                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">ค้นพบใน YouTube</p>
                         <h2 className="text-base font-bold text-black line-clamp-1">"{searchTerm}"</h2>
                     </div>
                 </div>
             )}
 
-            {/* Filter Chips (Visible when searching) */}
+            {/* Filter Chips */}
             {isSearching && (
-                <div className="px-4 md:px-8 pt-4 flex gap-2 overflow-x-auto scrollbar-hide pb-2 sticky top-[80px] z-10 bg-white/80 backdrop-blur-sm -mx-4 px-8">
-                    {/* Note: sticky top-80px assuming MainLayout header is ~80px/h-20 */}
+                <div className="px-4 pb-4 flex gap-2 overflow-x-auto scrollbar-hide">
                     {['SONG', 'VIDEO', 'ALBUM', 'PLAYLIST'].map((type) => (
                         <button
                             key={type}
                             onClick={() => setSearchFilter(type)}
-                            className={`px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-colors border ${searchFilter === type
-                                ? 'bg-red-600 text-white border-red-600 transform scale-105'
-                                : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                            className={`px-5 py-1.5 rounded-full text-[12px] font-bold whitespace-nowrap transition-all border ${searchFilter === type
+                                    ? 'bg-red-600 text-white border-red-600 shadow-lg shadow-red-100'
+                                    : 'bg-gray-100 text-gray-600 border-gray-100 hover:bg-white hover:border-red-200'
                                 }`}
                         >
-                            {type === 'SONG' ? 'เพลง' :
-                                type === 'VIDEO' ? 'วิดีโอ' :
-                                    type === 'ALBUM' ? 'อัลบั้ม' : 'เพลย์ลิสต์'}
+                            {type === 'SONG' ? 'เพลง' : type === 'VIDEO' ? 'วิดีโอ' : type === 'ALBUM' ? 'อัลบั้ม' : 'เพลย์ลิสต์'}
                         </button>
                     ))}
                 </div>
             )}
 
-            {/* Content Area */}
-            <div className="px-4 md:px-8">
+            <div className="px-2">
                 {isLoading && (
                     <div className="flex justify-center items-center h-64">
-                        <Loader2 className="w-8 h-8 md:w-12 md:h-12 text-red-600 animate-spin" />
+                        <Loader2 className="w-8 h-8 text-red-600 animate-spin" />
                     </div>
                 )}
 
                 {isError && (
-                    <div className="text-center py-20 bg-red-50 rounded-3xl mx-auto max-w-lg mt-8">
-                        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <X className="w-8 h-8 text-red-500" />
-                        </div>
-                        <h3 className="text-xl font-bold text-black mb-2">เกิดข้อผิดพลาด</h3>
-                        <p className="text-gray-500">{(error as any).message}</p>
+                    <div className="text-center py-20 bg-red-50 rounded-3xl mx-2">
+                        <X className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                        <h3 className="text-lg font-bold text-black mb-1">ไม่สามารถเข้าถึงข้อมูลได้</h3>
+                        <p className="text-sm text-gray-500">{(error as any).message}</p>
                     </div>
                 )}
 
-                {/* Search Results */}
+                {/* Search Results in Legacy Card Style */}
                 {isSearching && !isLoading && !isError && (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-3 pb-24">
                         {searchResults.length > 0 ? (
                             searchResults.map((item, index) => (
                                 <div
                                     key={item.id + index}
                                     onClick={() => handleItemClick(item)}
-                                    className="group relative bg-white rounded-2xl p-4 hover:bg-gray-50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer border border-transparent hover:border-gray-100"
+                                    className="group cursor-pointer bg-white rounded-xl border border-gray-100 hover:shadow-xl hover:shadow-red-600/5 transition-all active:scale-[0.98] duration-300 relative overflow-hidden"
                                 >
-                                    <div className="relative aspect-square w-full rounded-xl overflow-hidden mb-4 shadow-md group-hover:shadow-lg">
+                                    <div className="relative aspect-square w-full aspect-square overflow-hidden bg-gray-50">
                                         <Image
-                                            src={item.thumbnail?.replace('w120-h120', 'w400-h400') || '/assets/cover-placeholder.png'}
+                                            src={item.thumbnail?.replace('w120-h120', 'w400-h400') || '/assets/avatar.jpeg'}
                                             fill
-                                            className={`object-cover transform group-hover:scale-105 transition-transform duration-500 ${item.type === 'artist' ? 'rounded-full' : ''}`}
+                                            className="object-cover transition-transform duration-700 group-hover:scale-110"
                                             alt={item.title}
                                             unoptimized
                                         />
-
-                                        {/* Hover Play Button */}
-                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
-                                            <div className="bg-red-600 text-white p-3 rounded-full transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 shadow-xl">
-                                                {item.type === 'playlist' || item.type === 'album' ?
-                                                    <ListMusic className="w-6 h-6" fill="currentColor" /> :
-                                                    <Play className="w-6 h-6 ml-1" fill="currentColor" />
-                                                }
+                                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                                            <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity scale-90 group-hover:scale-100">
+                                                <Play className="w-5 h-5 text-red-600 fill-red-600 ml-0.5" />
                                             </div>
                                         </div>
                                     </div>
-
-                                    <div className="space-y-1">
-                                        <h3 className="font-bold text-black truncate leading-tight group-hover:text-red-600 transition-colors">
+                                    <div className="p-2.5 gap-y-0.5 flex flex-col">
+                                        <h2 className="font-bold text-[12px] line-clamp-2 text-black leading-tight group-hover:text-red-600 transition-colors">
                                             {item.title}
-                                        </h3>
-                                        <div className="flex items-center gap-2 text-sm text-gray-500 font-medium">
-                                            <span className={`px-2 py-0.5 rounded text-[10px] bg-gray-100 uppercase tracking-wider ${item.type === 'video' ? 'text-blue-600 bg-blue-50' :
-                                                item.type === 'song' ? 'text-green-600 bg-green-50' :
-                                                    item.type === 'album' ? 'text-purple-600 bg-purple-50' :
-                                                        'text-orange-600 bg-orange-50'
-                                                }`}>
-                                                {item.type || 'Song'}
-                                            </span>
-                                            <span className="truncate flex-1">{item.subtitle}</span>
-                                        </div>
+                                        </h2>
+                                        <p className="text-[10px] text-gray-400 truncate font-medium">
+                                            {item.subtitle}
+                                        </p>
                                     </div>
                                 </div>
                             ))
                         ) : (
                             <div className="col-span-full text-center py-20 text-gray-400">
                                 <Search className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                                <p>ไม่พบผลลัพธ์สำหรับ "{debouncedTerm}"</p>
+                                <p className="text-sm font-bold">ไม่พบผลลัพธ์ที่ต้องการ</p>
                             </div>
                         )}
                     </div>
                 )}
 
-                {/* Explore Shelves (When NOT searching) */}
+                {/* Explore Sections (Legacy Layout) */}
                 {!isSearching && !isLoading && !isError && (
-                    <div className="space-y-12">
-                        <div className="bg-gradient-to-br from-red-600 via-red-700 to-black rounded-3xl p-8 md:p-12 text-white shadow-2xl relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 -mt-12 -mr-12 w-80 h-80 bg-red-400 opacity-20 rounded-full blur-3xl group-hover:scale-110 transition-transform duration-700"></div>
-                            <div className="relative z-10 flex flex-col gap-2">
-                                <span className="text-red-200 text-xs font-bold uppercase tracking-[0.2em]">New Dashboard</span>
-                                <h1 className="text-4xl md:text-6xl font-black mb-2 tracking-tight">YouOKE Discovery</h1>
-                                <p className="text-red-100 text-sm md:text-lg font-medium opacity-90 max-w-lg">ค้นพบเพลงใหม่ๆ ศิลปินยอดฮิต และเพลงคาราโอเกะที่กำลังมาแรงที่สุด</p>
-                            </div>
-                        </div>
-
-                        {shelves.map((shelf, shelfIndex) => (
-                            <section key={shelfIndex} className="space-y-6">
-                                <div className="flex items-center justify-between">
-                                    <h2 className="text-2xl font-bold text-black flex items-center gap-3">
-                                        <span className="w-1.5 h-8 bg-red-600 rounded-full"></span>
-                                        {shelf.title}
-                                    </h2>
-                                </div>
-                                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4">
-                                    {shelf.items.map((item, index) => (
-                                        <div
-                                            key={item.id + index}
-                                            onClick={() => item.type === 'artist' ? usePlayerStore.setState({ searchTerm: item.title }) : handleItemClick(item)}
-                                            className="group relative bg-white rounded-2xl p-1.5 hover:bg-gray-50 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer border border-transparent hover:border-gray-100"
-                                        >
-                                            <div className={`relative aspect-square w-full shadow-md group-hover:shadow-lg overflow-hidden mb-2 ${item.type === 'artist' ? 'rounded-full' : 'rounded-xl'}`}>
-                                                <Image
-                                                    src={item.thumbnail?.replace('w120-h120', 'w400-h400') || '/assets/cover-placeholder.png'}
-                                                    fill
-                                                    className="object-cover transform group-hover:scale-105 transition-transform duration-500"
-                                                    alt={item.title}
-                                                    unoptimized
-                                                />
-                                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[1px]">
-                                                    <div className="bg-white text-gray-900 p-2.5 rounded-full transform scale-90 group-hover:scale-100 transition-transform shadow-xl">
-                                                        {item.type === 'playlist' || item.type === 'album' ?
-                                                            <ListMusic className="w-5 h-5" /> :
-                                                            item.type === 'artist' ?
-                                                                <Search className="w-5 h-5" /> :
-                                                                <Play className="w-5 h-5 ml-0.5" fill="currentColor" />
-                                                        }
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <h3 className={`font-bold text-black text-sm truncate group-hover:text-red-600 transition-colors ${item.type === 'artist' ? 'text-center' : ''}`}>{item.title}</h3>
-                                            <p className={`text-xs text-gray-500 truncate mt-0.5 ${item.type === 'artist' ? 'text-center' : ''}`}>{item.subtitle}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </section>
-                        ))}
-                    </div >
+                    <div className="space-y-2">
+                        {shelves.map((shelf) => {
+                            if (shelf.title.includes('ศิลปิน') || shelf.items.some(i => i.type === 'artist')) {
+                                return renderArtistShelf(shelf);
+                            }
+                            return renderPlaylistShelf(shelf);
+                        })}
+                    </div>
                 )}
-            </div >
-        </div >
+            </div>
+        </div>
     );
 }
