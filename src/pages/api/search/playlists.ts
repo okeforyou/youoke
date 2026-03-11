@@ -32,7 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: "Query 'q' is required" });
     }
 
-    let searchQuery = q as string;
+    const searchQuery = q as string;
 
     // 1. Check Firestore Cache (music_cache/youtube_home) for highly common genres
     if (adminFirestore) {
@@ -45,6 +45,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     console.log(`📡 Serving Search results for "${searchQuery}" from Firestore Cache`);
                     return res.status(200).json(cacheData.genres[searchQuery]);
                 }
+                
+                // Fuzzy matching for genres (e.g. "ลูกทุ่ง" matches "ลูกทุ่งยอดนิยม")
+                const genreKeys = Object.keys(cacheData?.genres || {});
+                const match = genreKeys.find(k => k.includes(searchQuery) || searchQuery.includes(k));
+                if (match && cacheData?.genres) {
+                    console.log(`📡 Serving Fuzzy Search results for "${searchQuery}" (matched ${match}) from Firestore Cache`);
+                    return res.status(200).json(cacheData.genres[match]);
+                }
             }
         } catch (e) {
             console.warn('[API/Playlists] Firestore cache check failed, falling back to live search');
@@ -54,23 +62,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const cacheKey = searchQuery;
     const cached = searchCache.get(cacheKey);
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-        console.log(`⚡ Serving Search results for "${searchQuery}" from Cache`);
+        console.log(`⚡ Serving Search results for "${searchQuery}" from Memory Cache`);
         return res.status(200).json(cached.data);
     }
 
     try {
+        let finalQuery = searchQuery;
+
         // Use mapped query if available, otherwise enhance with keywords
-        if (GENRE_QUERY_MAP[searchQuery]) {
-            searchQuery = GENRE_QUERY_MAP[searchQuery];
+        if (GENRE_QUERY_MAP[finalQuery]) {
+            finalQuery = GENRE_QUERY_MAP[finalQuery];
         } else {
             const thaiGenreKeywords = ["ลูกทุ่ง", "ลูกกรุง", "เพื่อชีวิต", "หมอลำ", "อีสาน", "ปักษ์ใต้", "ร็อก", "ป็อป", "เพลงไทย"];
-            if (thaiGenreKeywords.some(k => searchQuery.includes(k))) {
-                if (!searchQuery.includes("ไทย")) searchQuery += " ไทย";
-                if (!searchQuery.includes("ฮิต")) searchQuery += " ฮิต";
+            if (thaiGenreKeywords.some(k => finalQuery.includes(k))) {
+                if (!finalQuery.includes("ไทย")) finalQuery += " ไทย";
+                if (!finalQuery.includes("ฮิต")) finalQuery += " ฮิต";
             }
         }
 
-        console.log(`[API] Searching playlists for: ${searchQuery} (Page: ${req.query.page || 1})`);
+        console.log(`[API] Searching playlists for: ${finalQuery} (Page: ${req.query.page || 1})`);
 
         const page = Number(req.query.page) || 1;
         const limit = 20;
