@@ -37,32 +37,38 @@ export default async function handler(
       return res.status(200).json(cached.data);
     }
 
-    // Check for YouTube Playlist (Hybrid Mode)
-    if (playlistId.startsWith('yt-')) {
-      console.log(`[API] Fetching YouTube Playlist: ${playlistId}`);
+    // Check for YouTube Playlist (Hybrid Mode or Raw YT ID)
+    const isYoutube = playlistId.startsWith('yt-') || 
+                      playlistId.startsWith('PL') || 
+                      playlistId.startsWith('VL') || 
+                      playlistId.startsWith('RD') ||
+                      playlistId.length > 25; // YouTube IDs are usually longer than Spotify IDs
+
+    if (isYoutube) {
+      console.log(`[API] Fetching YouTube Playlist (InnerTube): ${playlistId}`);
       const ytId = playlistId.replace('yt-', '');
 
-      // Dynamic Import to avoid top-level await/module issues if any
-      const { scrapeYouTubePlaylistVideos } = require('../../../../utils/youtubeScraper');
-
-      const videos = await scrapeYouTubePlaylistVideos(ytId);
-
+      const { Innertube } = require('youtubei.js');
+      const youtube = await Innertube.create();
+      
+      const playlist = await youtube.music.getPlaylist(ytId);
+      
       const artists = {
         status: "success",
         playlist: {
           id: playlistId,
-          name: "YouTube Playlist", // We might want to fetch title, but for now simple
-          description: "Tracks from YouTube",
-          imageUrl: videos[0]?.videoThumbnails?.[1]?.url || "", // Use first video thumb
-          owner: "YouTube"
+          name: playlist.header?.title?.toString() || "YouTube Playlist",
+          description: playlist.header?.description?.toString() || "Tracks from YouTube",
+          imageUrl: playlist.header?.thumbnails?.[0]?.url || "",
+          owner: playlist.header?.author?.name || "YouTube Music"
         },
-        artist: videos.map((v: any) => ({
-          id: v.videoId,
-          title: v.title,
-          artist_name: v.author,
-          coverImageURL: v.videoThumbnails?.[1]?.url || v.videoThumbnails?.[0]?.url || "",
-          imageUrl: v.videoThumbnails?.[1]?.url || v.videoThumbnails?.[0]?.url || "",
-        }))
+        artist: playlist.contents?.map((v: any) => ({
+          id: v.id,
+          title: v.title?.toString() || "Unknown",
+          artist_name: v.author?.name || "Unknown Artist",
+          coverImageURL: v.thumbnails?.[0]?.url || "",
+          imageUrl: v.thumbnails?.[0]?.url || "",
+        })) || []
       };
 
       // Cache
