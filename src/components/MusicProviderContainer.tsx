@@ -14,7 +14,6 @@ interface MusicProviderContainerProps {
  * - Handles access control (Premium Logic) for restricted themes.
  */
 export default function MusicProviderContainer({ showTab = true }: MusicProviderContainerProps) {
-    // We enforce YouTubeDashboard for everyone now, as it is the primary interface.
-    // Membership logic can be handled inside the dashboard components if needed.
-    return <YouTubeDashboard />;
+    // Restored Spotify Dashboard as the primary interface, backed by cached data
+    return <SpotifyDashboard />;
 }

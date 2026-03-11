@@ -1,78 +1,99 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { scrapeMusicCharts, scrapeYouTubePlaylistSearch } from "../../../../utils/youtubeScraper";
+import { adminFirestore } from "../../../../firebase-admin";
 import { Artist, ArtistCategory, GetTopArtists } from "../../../../types";
 
+// Simple Memory Cache (in addition to Firestore)
 let cachedData: GetTopArtists | null = null;
 let lastFetch: number = 0;
-const CACHE_DURATION = 60 * 60 * 1000; // 1 Hour
+const CACHE_DURATION = 5 * 60 * 1000; // 5 Minutes in memory
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<GetTopArtists | { error: string }>
 ) {
-  // Check Cache
+  // Check Memory Cache
   if (cachedData && Date.now() - lastFetch < CACHE_DURATION && !req.query.nocache) {
     return res.status(200).json(cachedData);
   }
 
+  // Stable Sane Fallback so Dashboard never breaks
+  const FALLBACK_DATA: GetTopArtists = {
+      status: "success", 
+      artist: [
+          { name: "Bodyslam", imageUrl: "/assets/avatar.jpeg" },
+          { name: "Three Man Down", imageUrl: "/assets/avatar.jpeg" },
+          { name: "Tilly Birds", imageUrl: "/assets/avatar.jpeg" },
+          { name: "Paper Planes", imageUrl: "/assets/avatar.jpeg" },
+          { name: "หนุ่ม กะลา", imageUrl: "/assets/avatar.jpeg" }
+      ], 
+      artistCategories: [
+          { tag_id: 'yt-PL3y_Bf6-jFq8pD_7vW9A9Z6E-A_7Z-', tag_name: 'ลูกทุ่งฮิต', imageUrl: 'https://i.ytimg.com/vi/uXfXoD-M3M8/hqdefault.jpg' },
+          { tag_id: 'yt-PLhP79Yv685p_F0uV5zK1YvR4pWJ3_p8N-', tag_name: 'เพลงไทยยอดฮิต', imageUrl: 'https://i.ytimg.com/vi/uXfXoD-M3M8/hqdefault.jpg' }
+      ] 
+  };
+
   try {
-    console.log('[API/Artists] Fetching Dynamic Data...');
-
-    // 1. Fetch Top Artists from YouTube Music Charts
-    let artistList: Artist[] = [];
-    try {
-      const charts = await scrapeMusicCharts('TH');
-      if (charts.length > 0) {
-        artistList = charts.slice(0, 20).map(a => ({
-          name: a.name,
-          imageUrl: a.imageUrl
-        }));
-      }
-    } catch (e) {
-      console.warn('[API/Artists] Charts failed, using fallback');
+    if (!adminFirestore) {
+       console.warn('[API/Artists] Admin Firebase not initialized, sending fallback data.');
+       return res.status(200).json(FALLBACK_DATA);
     }
 
-    // 2. High-Quality Thai Categories (Now Dynamic-ish)
-    const genres = [
-      { name: "ลูกทุ่งยอดนิยม", query: "ลูกทุ่งฮิต 2024" },
-      { name: "T-Pop Hits", query: "T-Pop ใหม่" },
-      { name: "ร็อกไทยยอดนิยม", query: "ร็อกไทยฮิต" },
-      { name: "อินดี้มาแรง", query: "เพลงอินดี้ใหม่" },
-      { name: "เพื่อชีวิต", query: "เพลงเพื่อชีวิต" }
-    ];
+    const docSnapshot = await adminFirestore.collection('music_cache').doc('youtube_home').get();
+    
+    if (docSnapshot.exists) {
+        const data = docSnapshot.data();
+        
+        // Transform cached data into what SpotifyDashboard expects
+        const artistList: Artist[] = data?.topArtists?.map((a: any) => ({
+             name: a.name || a.title,
+             imageUrl: a.thumbnail || a.imageUrl || "/assets/avatar.jpeg"
+        })) || [];
 
-    const artistCategories: ArtistCategory[] = [];
-
-    // For categories, we fetch the first playlist for each genre
-    for (const genre of genres.slice(0, 5)) {
-      try {
-        const results = await scrapeYouTubePlaylistSearch(genre.query);
-        if (results.length > 0) {
-          artistCategories.push({
-            tag_id: `yt-${results[0].playlistId}`,
-            tag_name: genre.name,
-            imageUrl: results[0].thumbnail
-          });
+        // Build categories dynamically from the 'genres' object in cache
+        const artistCategories: ArtistCategory[] = [];
+        if (data?.genres) {
+            Object.keys(data.genres).forEach(genreName => {
+                const playlists = data.genres[genreName];
+                if (playlists && playlists.length > 0) {
+                     // Get the first playlist item to represent the category
+                     artistCategories.push({
+                         tag_id: `yt-${playlists[0].playlistId || playlists[0].id}`,
+                         tag_name: genreName,
+                         imageUrl: playlists[0].thumbnail || 'https://i.ytimg.com/vi/uXfXoD-M3M8/hqdefault.jpg'
+                     });
+                }
+            });
         }
-      } catch (err) { }
+
+        // Add additional hardcoded reliable genres that will trigger playlist searches
+        const standardGenres = ["ลูกทุ่งยอดนิยม", "T-Pop Hits", "ร็อกไทย", "อินดี้มาแรง", "เพื่อชีวิต"];
+        standardGenres.forEach(genre => {
+             if (!artistCategories.find(c => c.tag_name === genre)) {
+                 artistCategories.push({
+                     tag_id: `genre-${genre}`, // Identifier for frontend to know to search
+                     tag_name: genre,
+                     imageUrl: 'https://i.ytimg.com/vi/uXfXoD-M3M8/hqdefault.jpg'
+                 });
+             }
+        });
+
+        const artistsResp: GetTopArtists = {
+           status: "success",
+           artist: artistList.length > 0 ? artistList : FALLBACK_DATA.artist,
+           artistCategories: artistCategories.length > 0 ? artistCategories : FALLBACK_DATA.artistCategories
+        };
+
+        cachedData = artistsResp;
+        lastFetch = Date.now();
+        return res.status(200).json(artistsResp);
+    } else {
+        console.warn("Cache document does not exist, using fallback");
+        return res.status(200).json(FALLBACK_DATA);
     }
-
-    const artistsResp: GetTopArtists = {
-      status: "success",
-      artist: artistList,
-      artistCategories: artistCategories.length > 0 ? artistCategories : [
-        // Safety fallback if scraping fails entirely
-        { tag_id: "yt-PLhP79Yv685p_F0uV5zK1YvR4pWJ3_p8N-", tag_name: "เพลงไทยยอดฮิต", imageUrl: "https://i.ytimg.com/vi/uXfXoD-M3M8/hqdefault.jpg" }
-      ],
-    };
-
-    cachedData = artistsResp;
-    lastFetch = Date.now();
-    res.status(200).json(artistsResp);
 
   } catch (error: any) {
     console.error("❌ API Error:", error.message);
     if (cachedData) return res.status(200).json(cachedData);
-    res.status(200).json({ status: "success", artist: [], artistCategories: [] });
+    return res.status(200).json(FALLBACK_DATA);
   }
 }

@@ -1,10 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { searchSpotifyPlaylists } from "../../../modules/spotify-theme/services/api";
 import { scrapeYouTubePlaylistSearch } from "../../../utils/youtubeScraper";
+import { adminFirestore } from "../../../firebase-admin";
 
 // Genre-to-query mapping: produce high-quality playlist results for Thai genre keywords
 const GENRE_QUERY_MAP: Record<string, string> = {
     "ลูกทุ่ง": "รวมเพลงลูกทุ่งยอดฮิต 100 ล้านวิว",
+    "ลูกทุ่งยอดนิยม": "รวมเพลงลูกทุ่งยอดฮิต 100 ล้านวิว",
     "ลูกกรุง": "รวมเพลงลูกกรุง ฮิตตลอดกาล เพราะๆ",
     "เพื่อชีวิต": "รวมเพลงเพื่อชีวิต ฮิตตลอดกาล คาราบาว พงษ์สิทธิ์",
     "คันทรี": "เพลงคันทรี่ไทย ฮิต ลูกทุ่งอินเตอร์",
@@ -12,6 +14,7 @@ const GENRE_QUERY_MAP: Record<string, string> = {
     "อีสาน": "รวมเพลงอีสาน ฮิต ยอดนิยม มาแรง",
     "ปักษ์ใต้": "รวมเพลงใต้ ยอดนิยม ฮิตตลอดกาล",
     "ป็อป": "เพลงป็อปไทย ฮิต 2025 T-Pop",
+    "T-Pop Hits": "เพลงป็อปไทย ฮิต 2025 T-Pop",
     "ป็อปร็อก": "เพลงป็อปร็อกไทย ฮิต รวมเพลงดัง",
     "ฮาร์ดร็อก": "เพลงร็อกไทย ฮาร์ดร็อก ยอดนิยม",
     "ร็อกแอนด์โรล": "เพลงร็อกไทย ร็อกแอนด์โรล ฮิต",
@@ -29,16 +32,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: "Query 'q' is required" });
     }
 
-    const cacheKey = typeof q === 'string' ? q : JSON.stringify(q);
+    let searchQuery = q as string;
+
+    // 1. Check Firestore Cache (music_cache/youtube_home) for highly common genres
+    if (adminFirestore) {
+        try {
+            const cacheDoc = await adminFirestore.collection('music_cache').doc('youtube_home').get();
+            if (cacheDoc.exists) {
+                const cacheData = cacheDoc.data();
+                // Check if this query exists as a pre-scraped genre
+                if (cacheData?.genres && cacheData.genres[searchQuery]) {
+                    console.log(`📡 Serving Search results for "${searchQuery}" from Firestore Cache`);
+                    return res.status(200).json(cacheData.genres[searchQuery]);
+                }
+            }
+        } catch (e) {
+            console.warn('[API/Playlists] Firestore cache check failed, falling back to live search');
+        }
+    }
+
+    const cacheKey = searchQuery;
     const cached = searchCache.get(cacheKey);
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-        console.log(`⚡ Serving Search results for "${q}" from Cache`);
+        console.log(`⚡ Serving Search results for "${searchQuery}" from Cache`);
         return res.status(200).json(cached.data);
     }
 
     try {
-        let searchQuery = q as string;
-
         // Use mapped query if available, otherwise enhance with keywords
         if (GENRE_QUERY_MAP[searchQuery]) {
             searchQuery = GENRE_QUERY_MAP[searchQuery];
