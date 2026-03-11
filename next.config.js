@@ -32,6 +32,7 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  transpilePackages: ['youtubei.js'],
 }
 
 const withPWA = require('next-pwa')({
