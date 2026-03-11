@@ -1,105 +1,68 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { scrapeMusicExplore, scrapeMusicCharts, scrapeYouTubePlaylistSearch } from '../../utils/youtubeScraper';
+import { scrapeYouTubePlaylistSearch } from '../../utils/youtubeScraper';
+
+const CURATED_THAI_ARTISTS = [
+    { name: 'Bodyslam', image: '/assets/avatar.jpeg' },
+    { name: 'Three Man Down', image: '/assets/avatar.jpeg' },
+    { name: 'Tilly Birds', image: '/assets/avatar.jpeg' },
+    { name: 'Paper Planes', image: '/assets/avatar.jpeg' },
+    { name: 'หนุ่ม กะลา', image: '/assets/avatar.jpeg' },
+    { name: 'Cocktail', image: '/assets/avatar.jpeg' },
+    { name: 'Potato', image: '/assets/avatar.jpeg' },
+    { name: 'Lombok', image: '/assets/avatar.jpeg' },
+    { name: 'Jeff Satur', image: '/assets/avatar.jpeg' },
+    { name: 'INK WARUNTORN', image: '/assets/avatar.jpeg' }
+];
+
+const STABLE_GENRES = ['ลูกทุ่งฮิต', 'เพลงไทย 2024', 'เพื่อชีวิต', 'ร็อกไทย', 'สตริงฮิต'];
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
-        console.log('[API/Explore] Fetching Dynamic Music Data (YouTube-First)...');
+        console.log('[API/Explore] Fetching Curated & Stable Music Data...');
 
-        // Parallel fetch for speed
-        const results = await Promise.allSettled([
-            scrapeMusicCharts('TH'),
-            scrapeMusicExplore()
-        ]);
-
-        const topArtists = results[0].status === 'fulfilled' ? results[0].value : [];
-        const exploreSections = results[1].status === 'fulfilled' ? results[1].value : [];
-
-        console.log(`[API/Explore] Charts count: ${topArtists.length}, Explore count: ${exploreSections.length}`);
-
-        // 1. Construct Shelves
         const dynamicShelves: any[] = [];
 
-        // Shelf 1: Top Artists (Circular Design)
-        if (topArtists.length > 0) {
-            dynamicShelves.push({
-                title: '👑 ศิลปินยอดฮิต (Top Artists)',
-                items: topArtists.slice(0, 15).map((a: any, i: number) => ({
-                    id: `artist-${i}`,
-                    title: a.name,
-                    subtitle: `อันดับ ${a.rank || i + 1}`,
-                    thumbnail: a.imageUrl,
-                    type: 'artist',
-                    isSong: false
-                }))
-            });
-        }
+        // 1. Curated Top Artists (100% Stable)
+        dynamicShelves.push({
+            title: '👑 ศิลปินยอดฮิต (Curated)',
+            items: CURATED_THAI_ARTISTS.map((a, i) => ({
+                id: `artist-${i}`,
+                title: a.name,
+                subtitle: 'ศิลปินยอดนิยม',
+                thumbnail: a.image,
+                type: 'artist',
+                isSong: false
+            }))
+        });
 
-        // Shelf 2: From Explore Sections (Playlists/Videos)
-        exploreSections.forEach((section: any) => {
-            if (section.title && section.items?.length > 0) {
+        // 2. Stable Genre-based Playlists
+        // We fetch a few high-quality ones to ensure we always have content
+        const genrePromises = STABLE_GENRES.slice(0, 3).map(genre => scrapeYouTubePlaylistSearch(genre));
+        const genreResults = await Promise.allSettled(genrePromises);
+
+        genreResults.forEach((result, index) => {
+            if (result.status === 'fulfilled' && result.value.length > 0) {
                 dynamicShelves.push({
-                    title: section.title,
-                    items: section.items.slice(0, 15).map((item: any) => ({
-                        id: item.playlistId || item.videoId,
-                        playlistId: item.playlistId,
-                        videoId: item.videoId,
-                        title: item.title,
-                        subtitle: item.author || 'YouTube Music',
-                        thumbnail: item.thumbnail,
-                        type: item.playlistId ? 'playlist' : 'video',
-                        isSong: !!item.videoId
+                    title: `📂 ${STABLE_GENRES[index]}`,
+                    items: result.value.slice(0, 10).map((r: any) => ({
+                        id: r.playlistId,
+                        playlistId: r.playlistId,
+                        title: r.title,
+                        subtitle: r.videoCount || 'Playlist',
+                        thumbnail: r.thumbnail,
+                        type: 'playlist',
+                        isSong: false
                     }))
                 });
             }
         });
 
-        // Shelf 3: Emergency Fallback if still empty or low on content
+        // 3. Fallback if empty (Absolute Survival)
         if (dynamicShelves.length < 2) {
-            console.log('[API/Explore] Content low, triggering genre fallback...');
-            const genres = ['ลูกทุ่งฮิต', 'เพลงไทย 2024', 'เพื่อชีวิต', 'ร็อกไทย'];
-            for (const genre of genres) {
-                try {
-                    const results = await scrapeYouTubePlaylistSearch(genre);
-                    if (results.length > 0) {
-                        dynamicShelves.push({
-                            title: `📂 ${genre}`,
-                            items: results.slice(0, 10).map((r: any) => ({
-                                id: r.playlistId,
-                                playlistId: r.playlistId,
-                                title: r.title,
-                                subtitle: r.videoCount,
-                                thumbnail: r.thumbnail,
-                                type: 'playlist',
-                                isSong: false
-                            }))
-                        });
-                    }
-                } catch (err) { }
-                if (dynamicShelves.length >= 4) break; // Don't overdo it
-            }
-        }
-
-        // ABSOLUTE SANE FALLBACK (Hardcoded just in case everything above fails miserably)
-        if (dynamicShelves.length === 0) {
-            console.log('[API/Explore] CRITICAL: All scrapers failed. Using hardcoded survival fallback.');
-
-            // Add artists fallback
             dynamicShelves.push({
-                title: '👑 ศิลปินยอดนิยม',
-                items: [
-                    { id: 'artist-1', title: 'Bodyslam', subtitle: 'วงร็อกยอดนิยม', thumbnail: 'https://lh3.googleusercontent.com/a-/ALV-EMjIay...', type: 'artist' },
-                    { id: 'artist-2', title: 'Three Man Down', subtitle: 'ป็อปร็อกมาแรง', thumbnail: 'https://lh3.googleusercontent.com/a-/ALV-EM...', type: 'artist' },
-                    { id: 'artist-3', title: 'Tilly Birds', subtitle: 'อินดี้ป็อป', thumbnail: 'https://lh3.googleusercontent.com/a-/ALV-EM...', type: 'artist' },
-                    { id: 'artist-4', title: 'Paper Planes', subtitle: 'ร็อกวัยรุ่น', thumbnail: 'https://lh3.googleusercontent.com/a-/ALV-EM...', type: 'artist' },
-                    { id: 'artist-5', title: 'หนุ่ม กะลา', subtitle: 'เพลงร็อกกินใจ', thumbnail: 'https://lh3.googleusercontent.com/a-/ALV-EM...', type: 'artist' }
-                ]
-            });
-
-            dynamicShelves.push({
-                title: '📂 หมวดหมู่แนะนำ',
+                title: '📂 หมวดหมู่แนะนำ (Fallback)',
                 items: [
                     { id: 'yt-PLhP79Yv685p_F0uV5zK1YvR4pWJ3_p8N-', playlistId: 'PLhP79Yv685p_F0uV5zK1YvR4pWJ3_p8N-', title: 'เพลงไทยยอดฮิต', subtitle: 'รวมเพลงดังที่สุด', thumbnail: 'https://i.ytimg.com/vi/uXfXoD-M3M8/hqdefault.jpg', type: 'playlist', isSong: false },
-                    { id: 'yt-PL3y_Bf6-jFq8pD_7vW9A9Z6E-A_7Z-', playlistId: 'PL3y_Bf6-jFq8pD_7vW9A9Z6E-A_7Z-', title: 'ลูกทุ่งมหานคร', subtitle: 'ฮิตติดหู', thumbnail: 'https://i.ytimg.com/vi/uXfXoD-M3M8/hqdefault.jpg', type: 'playlist', isSong: false }
                 ]
             });
         }

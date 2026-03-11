@@ -113,9 +113,13 @@ export default function YouTubeDashboard() {
     useEffect(() => {
         if (shelves.length > 0) {
             if (genreText === "แนะนำ") {
-                setSelectedShelfIndex(1); // Usually first category after Top Artists
+                setSelectedShelfIndex(1); // Usually first curated genre shelf
             } else {
-                const index = shelves.findIndex(s => s.title.includes(genreText));
+                // Find shelf by title (ignoring icons)
+                const index = shelves.findIndex(s => {
+                    const cleanTitle = s.title.replace(/👑|📂|🎵/g, '').trim();
+                    return cleanTitle.includes(genreText);
+                });
                 if (index !== -1) setSelectedShelfIndex(index);
                 else setSelectedShelfIndex(1);
             }
@@ -156,14 +160,32 @@ export default function YouTubeDashboard() {
         } else {
             useUIStore.getState().setBackAction(null);
         }
-    }, [activePlaylist, isSearching, router.query]);
+    }, [activePlaylist, isSearching, router.query, setSearchTerm]);
 
     const handleItemClick = (item: YTItem) => {
+        console.log("🎯 YouTubeDashboard: handleItemClick:", item);
+
+        // Use ID fields according to what's available
         const targetId = item.playlistId || item.id;
+
+        if (item.type === 'artist') {
+            // Artist -> Trigger Search
+            setSearchTerm(item.title);
+            return;
+        }
+
         if (item.type === 'playlist' || (item.type === 'video' && !item.id && item.playlistId)) {
+            // Playlist -> Deep View
             setPlaylistInUrl({ ...item, id: targetId });
         } else {
+            // Video -> Play
             const finalVideoId = item.videoId || item.id;
+            if (!finalVideoId || finalVideoId.startsWith('artist-')) {
+                // Fallback for artist items that might have been misclicked
+                setSearchTerm(item.title);
+                return;
+            }
+
             addToQueue({
                 id: finalVideoId,
                 videoId: finalVideoId,
@@ -264,27 +286,28 @@ export default function YouTubeDashboard() {
                 </div>
             ) : (
                 <div className="col-span-full contents animate-in fade-in duration-500">
-                    {/* 1. Artist Section (Spotify Dashboard L213-277) */}
+                    {/* 1. Artist Section (Curated from API) */}
                     <div className="col-span-full px-2 pt-2 pb-2 text-[13px] font-black text-black uppercase tracking-wider flex items-center gap-2">
                         ศิลปินยอดนิยม
                     </div>
                     <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 col-span-full pb-6 px-2">
                         {(() => {
-                            const artistItems = shelves.find(s => s.title.includes('ศิลปิน'))?.items || [
-                                { id: 'a1', title: 'Bodyslam', thumbnail: '/assets/avatar.jpeg' },
-                                { id: 'a2', title: 'Three Man Down', thumbnail: '/assets/avatar.jpeg' },
-                                { id: 'a3', title: 'Tilly Birds', thumbnail: '/assets/avatar.jpeg' },
-                                { id: 'a4', title: 'Paper Planes', thumbnail: '/assets/avatar.jpeg' },
-                                { id: 'a5', title: 'หนุ่ม กะลา', thumbnail: '/assets/avatar.jpeg' }
+                            const artistShelf = shelves.find(s => s.title.includes('ศิลปิน'));
+                            const artistItems = artistShelf?.items || [
+                                { id: 'a1', title: 'Bodyslam', thumbnail: '/assets/avatar.jpeg', type: 'artist' },
+                                { id: 'a2', title: 'Three Man Down', thumbnail: '/assets/avatar.jpeg', type: 'artist' },
+                                { id: 'a3', title: 'Tilly Birds', thumbnail: '/assets/avatar.jpeg', type: 'artist' },
+                                { id: 'a4', title: 'Paper Planes', thumbnail: '/assets/avatar.jpeg', type: 'artist' },
+                                { id: 'a5', title: 'หนุ่ม กะลา', thumbnail: '/assets/avatar.jpeg', type: 'artist' }
                             ];
                             return artistItems.slice(0, 15).map((artist, i) => (
                                 <Fragment key={artist.id + i}>
                                     <div
                                         className="group relative cursor-pointer overflow-hidden rounded-2xl shadow-sm hover:shadow-2xl hover:shadow-red-600/10 hover:-translate-y-1 transition-all duration-300 isolate bg-gray-100 w-full aspect-square"
-                                        onClick={() => setSearchTerm(artist.title)}
+                                        onClick={() => handleItemClick(artist)}
                                     >
                                         <Image
-                                            src={artist.thumbnail?.replace('w120-h120', 'w400-h400') || "/assets/avatar.jpeg"}
+                                            src={artist.thumbnail || "/assets/avatar.jpeg"}
                                             fill
                                             className="object-cover transition-transform duration-700 group-hover:scale-110"
                                             alt={artist.title}
@@ -307,21 +330,21 @@ export default function YouTubeDashboard() {
                         })()}
                     </div>
 
-                    {/* 2. Genre Section (Spotify Dashboard L280-301) */}
+                    {/* 2. Genre Section (Navigation) */}
                     <div className="col-span-full px-2 pt-4 pb-3 text-[13px] font-black text-black uppercase tracking-wider flex items-center gap-2 border-t border-gray-100 mt-2">
                         แนวเพลงยอดฮิต
                     </div>
                     <div className="col-span-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 px-2 pb-8">
                         {shelves.filter(s => !s.title.includes('ศิลปิน')).slice(0, 15).map((shelf, i) => {
-                            const displayTitle = shelf.title.replace('📂 ', '').replace('👑 ', '').replace('🎵 ', '');
-                            const isSelected = genreText === displayTitle || (genreText === "แนะนำ" && i === 0);
+                            const cleanTitle = shelf.title.replace(/👑|📂|🎵/g, '').trim();
+                            const isSelected = genreText === cleanTitle || (genreText === "แนะนำ" && i === 0);
                             return (
                                 <button
                                     key={shelf.title + i}
-                                    onClick={() => setGenreInUrl(displayTitle)}
+                                    onClick={() => setGenreInUrl(cleanTitle)}
                                     className={`w-full py-2 px-4 rounded-xl text-[12px] font-bold transition-all duration-300 border ${isSelected ? "bg-black text-white border-primary transform -translate-y-0.5 shadow-lg" : "bg-gray-100 text-black border-gray-100 hover:bg-white hover:border-red-600/30"}`}
                                 >
-                                    {displayTitle}
+                                    {cleanTitle}
                                 </button>
                             );
                         })}
