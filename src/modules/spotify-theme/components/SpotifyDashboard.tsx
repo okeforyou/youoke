@@ -324,9 +324,69 @@ export default function SpotifyDashboard({ showTab = true }) {
         </div>
       )}
 
-      {/* Playlists: Premium Cards */}
+      {/* Recommended Rows (Shelves) - InnerTune Style */}
+      {isGenreDefault && !isLoadTopArtists && (tempTopArtistsData as any)?.genres && (
+        <div className="col-span-full space-y-8 pb-10">
+          {Object.entries((tempTopArtistsData as any).genres).map(([genre, playlists]: [string, any]) => (
+            <div key={genre} className="space-y-4">
+              <div className="px-2 flex items-center justify-between">
+                <h3 className="text-[14px] font-black text-black uppercase tracking-wider">{genre}</h3>
+                <button 
+                  onClick={() => setGenreText(genre)}
+                  className="text-[10px] font-bold text-primary hover:underline"
+                >
+                  ดูทั้งหมด
+                </button>
+              </div>
+              
+              {/* Horizontal Scroll Row */}
+              <div className="flex overflow-x-auto gap-4 px-2 pb-4 no-scrollbar snap-x touch-pan-x">
+                {playlists.map((cat: any) => (
+                  <div
+                    key={cat.id || cat.playlistId}
+                    onClick={() => {
+                      setTagId(cat.playlistId || cat.id);
+                      setShouldScrollToSongs(true);
+                      if (typeof window !== 'undefined') {
+                        window.history.pushState({ view: 'singer_playlist' }, '');
+                      }
+                    }}
+                    className="flex-shrink-0 w-[160px] sm:w-[180px] snap-start group cursor-pointer"
+                  >
+                    <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-xl transition-all duration-300">
+                      <Image
+                        src={cat.thumbnail || cat.imageUrl || "/icon-cover.png"}
+                        alt={cat.title}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-110"
+                        unoptimized
+                      />
+                      <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors" />
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                         <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20">
+                            <svg className="w-5 h-5 text-white fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                         </div>
+                      </div>
+                    </div>
+                    <div className="mt-2 px-1">
+                      <p className="text-[12px] font-bold text-black line-clamp-1 leading-tight group-hover:text-primary transition-colors">
+                        {cat.title}
+                      </p>
+                      <p className="text-[10px] text-gray-400 line-clamp-1 mt-0.5">
+                        {cat.author}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Playlists: Premium Cards (Grid View for secondary levels or fallback) */}
       {
-        !isLoadTopArtists && artistCategories.length > 0 && (
+        !isGenreDefault && !isLoadTopArtists && artistCategories.length > 0 && (
           <div className="col-span-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 xl:grid-cols-5 gap-6 px-4 pb-10">
             {artistCategories.map((cat) => (
               <div

@@ -11,7 +11,8 @@ const nextConfig = {
       'wrapped-images.spotifycdn.com',
       'profile.line-scdn.net',
       'lh3.googleusercontent.com',
-      'yt3.ggpht.com'
+      'yt3.googleusercontent.com',
+      'lh3.googleusercontent.com'
     ],
   },
   env: {

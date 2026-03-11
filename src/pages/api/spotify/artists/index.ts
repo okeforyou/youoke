@@ -77,15 +77,16 @@ export default async function handler(
              }
         });
 
-        const artistsResp: GetTopArtists = {
+        const artistsResp: GetTopArtists & { genres?: Record<string, any[]> } = {
            status: "success",
            artist: artistList.length > 0 ? artistList : FALLBACK_DATA.artist,
-           artistCategories: artistCategories.length > 0 ? artistCategories : FALLBACK_DATA.artistCategories
+           artistCategories: artistCategories.length > 0 ? artistCategories : FALLBACK_DATA.artistCategories,
+           genres: data?.genres || {}
         };
 
-        cachedData = artistsResp;
+        cachedData = artistsResp as any;
         lastFetch = Date.now();
-        return res.status(200).json(artistsResp);
+        return res.status(200).json(artistsResp as any);
     } else {
         console.warn("Cache document does not exist, using fallback");
         return res.status(200).json(FALLBACK_DATA);
