@@ -148,6 +148,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             message: 'Music cache updated with high-quality InnerTube data',
             stats: {
                 artists: topArtists.length,
+                artist_names: topArtists.map((a: any) => a.name),
+                raw_artist_length: topArtists.length,
                 genres_count: Object.keys(genreData).length,
                 genres_cached: Object.keys(genreData)
             }
