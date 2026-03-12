@@ -69,20 +69,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             console.warn('⚠️ Error fetching charts, attempting search fallback:', (e as Error).message);
         }
 
-        // Priority 3: Emergency Fallback - Broad Search
-        if (topArtists.length === 0) {
-            console.log('🚨 Attempting Emergency Search Fallback for Artists (GMM Grammy)...');
-            try {
-                const search = await youtube.music.search('GMM Grammy', { type: 'artist' });
-                if (search.artists && search.artists.contents) {
-                    topArtists = search.artists.contents.map((a: any) => ({
-                        name: a.name || a.title?.toString() || a.title || 'Unknown',
-                        imageUrl: a.thumbnails?.[0]?.url || a.thumbnail?.[0]?.url || ''
-                    })).filter((a: any) => a.name !== 'Unknown').slice(0, 20);
-                    console.log(`✅ Found ${topArtists.length} artists via Search.`);
+        // Priority 3: Guaranteed Fetching via Targeted Search
+        if (topArtists.length < 5) {
+            console.log('🚨 Fetching Targeted Artists for Guaranteed Results...');
+            const FAMOUS_ARTISTS = [
+                'Bodyslam', 'Three Man Down', 'Tilly Birds', 'Paper Planes', 
+                'หนุ่ม กะลา', 'Cocktail', 'Potato', 'Jeff Satur', 'Ink Waruntorn',
+                'Bowkylion', 'Safeplanet', 'Tattoo Colour'
+            ];
+            
+            const targetedArtists: any[] = [];
+            for (const name of FAMOUS_ARTISTS) {
+                try {
+                    const search = await youtube.music.search(name, { type: 'artist' });
+                    const artist = search.artists?.contents?.[0];
+                    if (artist) {
+                        targetedArtists.push({
+                            name: artist.name || name,
+                            imageUrl: artist.thumbnails?.[0]?.url || ''
+                        });
+                    }
+                } catch (e) {
+                    console.warn(`Failed to fetch artist: ${name}`);
                 }
-            } catch (searchErr) {
-                console.error('❌ Absolute failure in artist fetching:', (searchErr as Error).message);
+                if (targetedArtists.length >= 10) break;
+            }
+            
+            if (targetedArtists.length > 0) {
+                topArtists = targetedArtists;
+                console.log(`✅ Guaranteed Fetch: ${topArtists.length} artists.`);
             }
         }
 
