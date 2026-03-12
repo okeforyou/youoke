@@ -87,7 +87,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     id: item.playlistId || item.id,
                     playlistId: item.playlistId || item.id,
                     title: item.title,
-                    subtitle: item.author || (isLongPlay(item.title) ? 'โหมดฟังยาวๆ' : 'YouTube Music'),
+                    subtitle: (item.author && item.author !== "Unknown Artist") ? item.author : (isLongPlay(item.title) ? 'โหมดฟังยาวๆ' : 'YouTube Music'),
                     thumbnail: item.thumbnail,
                     type: 'playlist',
                     isLongPlay: isLongPlay(item.title),

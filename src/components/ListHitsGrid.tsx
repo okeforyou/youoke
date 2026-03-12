@@ -17,8 +17,8 @@ export default function ListHitsGrid() {
     const hits = hitsData?.singles || [];
 
     const handleClick = (hit: Single) => {
-        // Switch to Search Mode via URL so history is preserved
-        const query = `${hit.title} ${hit.artist_name}`;
+        const artist = (hit.artist_name && hit.artist_name !== "Unknown Artist") ? hit.artist_name : "";
+        const query = `${hit.title} ${artist}`.trim();
         router.push({
             pathname: router.pathname,
             query: { ...router.query, search: query }

@@ -104,7 +104,8 @@ export default function ListRecommendedPlaylists() {
     const handlePlaySong = (song: any) => {
         let cleanTitle = song.title || "";
         cleanTitle = cleanTitle.replace(/\(Official.*?\)/gi, '').replace(/\[Official.*?\]/gi, '').trim();
-        const query = `${cleanTitle} ${song.artist_name || ""}`.trim();
+        const artist = (song.artist_name && song.artist_name !== "Unknown Artist") ? song.artist_name : "";
+        const query = `${cleanTitle} ${artist}`.trim();
         setSearchTerm(query);
         router.push({ pathname: '/', query: { search: query } });
     };

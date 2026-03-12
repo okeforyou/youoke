@@ -202,7 +202,7 @@ export default function ListTopicsGrid({ showTab = true }) {
 
                 <div className="absolute bottom-3 left-3 right-3">
                   <h3 className="text-white font-thin text-[10px] line-clamp-2">{item.title}</h3>
-                  <p className="text-white/70 text-[9px] mt-1 font-thin opacity-80">{item.videoCount || "Playlist"}</p>
+                  {/* Removed uploader/count info */}
                 </div>
                 <PlayIcon className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 text-white opacity-0 group-hover:opacity-100 transition-all drop-shadow-lg" />
               </div>

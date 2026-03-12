@@ -414,11 +414,8 @@ export default function SpotifyDashboard({ showTab = true }) {
                       </div>
                     </div>
                     <div className="mt-2 px-1 text-center">
-                      <p className="text-[12px] font-bold text-black line-clamp-1 leading-tight group-hover:text-primary transition-colors">
+                      <p className="text-[12px] font-bold text-black line-clamp-2 leading-tight group-hover:text-primary transition-colors">
                         {cat.title}
-                      </p>
-                      <p className="text-[10px] text-gray-400 line-clamp-1 mt-0.5">
-                        {cat.author}
                       </p>
                     </div>
                   </div>
@@ -547,7 +544,8 @@ export default function SpotifyDashboard({ showTab = true }) {
                 <div
                   className="group cursor-pointer bg-white rounded-2xl p-2.5 border border-gray-100 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 flex flex-col h-full transition-all active:scale-[0.97] duration-300 relative overflow-hidden"
                   onClick={() => {
-                    const baseQuery = video.title ? `${video.title} ${video.artist_name || ""}` : video.name;
+                    const artist = (video.artist_name && video.artist_name !== "Unknown Artist") ? video.artist_name : "";
+                    const baseQuery = video.title ? `${video.title} ${artist}` : video.name;
                     const cleanedQuery = cleanSearchQuery(baseQuery);
                     
                     setSearchTerm(cleanedQuery);

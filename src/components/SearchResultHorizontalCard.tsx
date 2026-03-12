@@ -50,9 +50,7 @@ export default function SearchResultHorizontalCard({
           <h2 className="font-semibold text-sm leading-tight line-clamp-2 text-gray-900 pr-6">
             {video.title}
           </h2>
-          <p className="text-xs text-gray-700 truncate mt-1 font-medium">
-            {video.author}
-          </p>
+          {/* Removed author/uploader info */}
 
           {/* Add to Playlist Button */}
           {onAddToPlaylist && (
