@@ -64,9 +64,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 'คาราโอเกะยาวๆ', 'เพลงรวม', 'best of', 'ฮิตยาวๆ',
                 'เมดเล่ย์', 'Nonstop', 'Non-stop', 'แผ่นเดียวจบ',
                 'ยาวไป', 'ยาวๆไป', 'คัดเน้นๆ', 'รวมฮิต', 'รวมเพลงฮิต',
-                '2 ชั่วโมง', '3 ชั่วโมง', 'จัดเต็ม', 'ชุดพิเศษ'
+                '2 ชั่วโมง', '3 ชั่วโมง', 'จัดเต็ม', 'ชุดพิเศษ', 'ชุดเล็ก',
+                'ยาวจัดเต็ม', 'ฮิตที่สุด', 'เพลงเก่า', 'เพลงใหม่', 'ลูกทุ่งยอดฮิต'
             ];
-            return keywords.some(k => title.toLowerCase().includes(k));
+            // If title contains any exclusion keyword, it's a long play/mixed content
+            return keywords.some(k => title.toLowerCase().includes(k.toLowerCase()));
         };
 
         // 4. Add Recommended Shelves (Curated & Categorized)

@@ -25,6 +25,21 @@ const GENRE_QUERY_MAP: Record<string, string> = {
 const searchCache = new Map<string, { data: any, timestamp: number }>();
 const CACHE_DURATION = 10 * 60 * 1000; // 10 Minutes
 
+// Keywords to exclude mixed/long content
+const EXCLUSION_KEYWORDS = [
+    'รวมเพลง', 'ฟังยาวๆ', 'medley', 'non stop', 'ต่อเนื่อง', 
+    '1 ชั่วโมง', 'ยาวๆ', 'full album', 'mix', 'ชุดใหญ่', 
+    'คาราโอเกะยาวๆ', 'เพลงรวม', 'best of', 'ฮิตยาวๆ',
+    'เมดเล่ย์', 'Nonstop', 'Non-stop', 'แผ่นเดียวจบ',
+    'ยาวไป', 'ยาวๆไป', 'คัดเน้นๆ', 'รวมฮิต', 'รวมเพลงฮิต',
+    '2 ชั่วโมง', '3 ชั่วโมง', 'จัดเต็ม', 'ชุดพิเศษ', 'ชุดเล็ก',
+    'ยาวจัดเต็ม'
+];
+
+const isMixedContent = (title: string) => {
+    return EXCLUSION_KEYWORDS.some(k => title.toLowerCase().includes(k.toLowerCase()));
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const { q } = req.query;
 
@@ -131,14 +146,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
         }
 
-        if (results.length === 0) {
+        // Filter out mixed/long content before returning
+        const filteredResults = results.filter(item => !isMixedContent(item.title));
+
+        if (filteredResults.length === 0) {
             return res.status(200).json([]);
         }
 
         // Cache successful results
-        searchCache.set(cacheKey, { data: results, timestamp: Date.now() });
+        searchCache.set(cacheKey, { data: filteredResults, timestamp: Date.now() });
 
-        return res.status(200).json(results);
+        return res.status(200).json(filteredResults);
 
     } catch (error: any) {
         console.error(`[API] Playlist search failed: ${error.message}`);
