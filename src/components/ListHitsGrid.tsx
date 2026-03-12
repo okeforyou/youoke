@@ -46,10 +46,10 @@ export default function ListHitsGrid() {
                     <div
                         key={`${hit.title}-${index}`}
                         onClick={() => handleClick(hit)}
-                        className="group relative cursor-pointer bg-white dark:bg-gray-900 rounded-2xl p-2.5 border border-gray-100 hover:border-primary/20 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+                        className="group relative cursor-pointer flex flex-col h-full transition-all duration-300 hover:-translate-y-1 overflow-hidden"
                     >
                         {/* Cover Image Container */}
-                        <div className="relative aspect-square rounded-xl overflow-hidden">
+                        <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-50 shadow-sm group-hover:shadow-md transition-shadow">
                             <img
                                 src={hit.coverImageURL}
                                 alt={hit.title}
