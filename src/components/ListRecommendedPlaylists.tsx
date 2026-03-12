@@ -187,24 +187,11 @@ export default function ListRecommendedPlaylists() {
                 <div className="space-y-10 mt-4">
                     {genreShelves.map((shelf: any, i: number) => (
                         <div key={i} className="space-y-4">
-                            <div className="px-6 flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <div className={`p-1.5 rounded-lg ${shelf.mode === 'listening' ? 'bg-blue-50 text-blue-500' : 'bg-primary/10 text-primary'}`}>
-                                        {shelf.mode === 'listening' ? <MusicalNoteIcon className="w-4 h-4" /> : <MicrophoneIcon className="w-4 h-4" />}
-                                    </div>
-                                    <h3 className="text-[14px] font-black text-black uppercase tracking-tight">
-                                        {shelf.title}
-                                    </h3>
-                                </div>
-                                {shelf.mode === 'listening' && (
-                                    <span className="text-[10px] font-bold text-blue-500 bg-blue-50 px-2 py-1 rounded-full flex items-center gap-1">
-                                        <MusicalNoteIcon className="w-3 h-3" />
-                                        โหมดฟังนิ่งๆ
-                                    </span>
-                                )}
+                            <div className="px-5">
+                                <h3 className="text-[14px] font-black text-black uppercase tracking-wider">{shelf.title}</h3>
                             </div>
 
-                            <div className="flex overflow-x-auto gap-4 px-6 pb-4 no-scrollbar snap-x scroll-smooth touch-pan-x w-full">
+                            <div className="flex overflow-x-auto gap-4 px-5 pb-4 no-scrollbar snap-x touch-pan-x w-full">
                                 {shelf.items.map((item: any, j: number) => (
                                     <div 
                                         key={j} 
@@ -212,40 +199,27 @@ export default function ListRecommendedPlaylists() {
                                             setSelectedPlaylist({ 
                                                 tag_id: item.playlistId, 
                                                 tag_name: item.title, 
-                                                imageUrl: item.thumbnail,
-                                                isLongPlay: item.isLongPlay 
+                                                imageUrl: item.thumbnail 
                                             } as any);
                                             router.push({ pathname: router.pathname, query: { ...router.query, view: 'rec_playlist', id: item.playlistId || item.id } }, undefined, { shallow: true });
                                         }}
-                                        className="flex-shrink-0 w-[160px] sm:w-[200px] group cursor-pointer snap-start"
+                                        className="flex-shrink-0 w-[140px] sm:w-[180px] group cursor-pointer snap-start"
                                     >
-                                        <div className={`relative aspect-square rounded-3xl overflow-hidden bg-gray-100 shadow-sm border border-gray-100 group-hover:shadow-2xl transition-all duration-500 group-hover:-translate-y-1 ${item.isLongPlay ? 'group-hover:shadow-blue-500/10' : 'group-hover:shadow-primary/10'}`}>
-                                            <Image src={item.thumbnail?.replace('w120-h120', 'w400-h400') || "/icon-cover.png"} fill className="object-cover transition-transform duration-700 group-hover:scale-105" unoptimized alt={item.title || "Playlist Cover"} />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80 group-hover:opacity-60" />
-                                            
-                                            {/* Badge Overlay */}
-                                            <div className="absolute top-3 left-3 z-30 flex gap-1">
-                                                {item.isLongPlay ? (
-                                                    <div className="bg-blue-600/90 backdrop-blur-md text-white p-1.5 rounded-xl shadow-lg border border-white/10">
-                                                        <MusicalNoteIcon className="w-4 h-4" />
-                                                    </div>
-                                                ) : (
-                                                    <div className="bg-primary/90 backdrop-blur-md text-white p-1.5 rounded-xl shadow-lg border border-white/10">
-                                                        <MicrophoneIcon className="w-4 h-4" />
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-xl scale-75 group-hover:scale-100 transition-transform">
-                                                    <PlayIcon className="w-6 h-6 text-white" />
-                                                </div>
-                                            </div>
-                                            <div className="absolute inset-x-0 bottom-0 p-4">
-                                                <p className="text-white font-bold text-[12px] line-clamp-2 drop-shadow-lg leading-tight">{item.title}</p>
-                                            </div>
+                                        <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 shadow-sm border border-gray-100 group-hover:shadow-xl transition-all duration-300">
+                                            <Image 
+                                                src={item.thumbnail?.replace('w120-h120', 'w400-h400') || "/icon-cover.png"} 
+                                                fill 
+                                                className="object-cover transition-transform duration-500 group-hover:scale-110" 
+                                                unoptimized 
+                                                alt={item.title || "Playlist Cover"} 
+                                            />
+                                            <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors" />
                                         </div>
-                                        <p className="mt-2 text-[10px] text-gray-400 font-medium px-1 truncate">{item.subtitle}</p>
+                                        <div className="mt-2.5 px-0.5">
+                                            <p className="text-[12px] font-bold text-black line-clamp-2 leading-tight group-hover:text-primary transition-colors">
+                                                {item.title}
+                                            </p>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
