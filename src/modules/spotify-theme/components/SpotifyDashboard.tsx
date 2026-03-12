@@ -214,20 +214,20 @@ export default function SpotifyDashboard({ showTab = true }) {
       {/* Conditionally render Playlist Detail OR Home Content */}
       {tagId && artist ? (
         <div className="col-span-full animate-in fade-in slide-in-from-top-4 duration-500">
-          {/* Playlist Header (Premium Banner) */}
-          <div className="relative w-full h-[250px] sm:h-[320px] mb-8 group overflow-hidden rounded-3xl mx-2">
+          {/* Playlist Header (Compact Banner) */}
+          <div className="relative w-full h-[140px] sm:h-[180px] mb-6 group overflow-hidden rounded-3xl mx-2 shadow-sm border border-gray-100">
              <Image 
                 src={playlistInfo?.imageUrl || artist[0]?.imageUrl || "/icon-cover.png"} 
                 alt={playlistInfo?.name || "Playlist"}
                 fill 
-                className="object-cover scale-105 blur-2xl opacity-40 brightness-50"
+                className="object-cover scale-105 blur-2xl opacity-30 brightness-50"
                 unoptimized
              />
-             <div className="absolute inset-0 bg-gradient-to-t from-gray-50 via-gray-50/80 to-transparent" />
+             <div className="absolute inset-0 bg-white/20 backdrop-blur-[2px]" />
              
-             <div className="absolute inset-0 p-6 sm:p-10 flex flex-col sm:flex-row items-end gap-6">
-                {/* Square Cover */}
-                <div className="relative w-32 h-32 sm:w-48 sm:h-48 flex-shrink-0 rounded-2xl overflow-hidden shadow-2xl ring-1 ring-white/20">
+             <div className="absolute inset-0 p-4 sm:p-6 flex items-center gap-4 sm:gap-6">
+                {/* Square Cover (Smaller) */}
+                <div className="relative w-20 h-20 sm:w-32 sm:h-32 flex-shrink-0 rounded-2xl overflow-hidden shadow-xl ring-1 ring-black/5 bg-white">
                    <Image 
                       src={playlistInfo?.imageUrl || artist[0]?.imageUrl || "/icon-cover.png"} 
                       alt={playlistInfo?.name}
@@ -237,31 +237,32 @@ export default function SpotifyDashboard({ showTab = true }) {
                    />
                 </div>
                 
-                {/* Header Text */}
-                <div className="flex-1 space-y-2 pb-2">
+                {/* Header Text (Compact) */}
+                <div className="flex-1 space-y-1 sm:space-y-2">
                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/80">เพลย์ลิสต์</p>
-                   <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-black leading-none line-clamp-2">
+                   <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-black leading-tight line-clamp-1">
                       {playlistInfo?.name || "รายการเพลง"}
                    </h1>
-                   <div className="flex items-center gap-2 text-[12px] text-gray-400 font-medium">
+                   <div className="flex items-center gap-2 text-[11px] text-gray-400 font-medium">
                       <span className="text-black font-bold">{playlistInfo?.owner || "YouOke"}</span>
                       <span>•</span>
                       <span>{artist.length} เพลง</span>
                    </div>
                 </div>
 
-                {/* Return Button */}
-                <div className="absolute top-6 right-6">
-                   <button 
-                      onClick={() => setTagId("")}
-                      className="bg-white/80 backdrop-blur-md hover:bg-white text-black px-4 py-2 rounded-full text-xs font-bold shadow-sm flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
-                   >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
-                      </svg>
-                      กลับไปยังหนัาแรก
-                   </button>
-                </div>
+             {/* Return Button (Top Right) */}
+             <div className="absolute top-4 right-4">
+                <button 
+                   onClick={() => setTagId("")}
+                   className="bg-white/90 backdrop-blur-md hover:bg-white text-black w-8 h-8 sm:w-auto sm:px-4 sm:py-2 rounded-full text-xs font-bold shadow-sm flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95"
+                   title="กลับไปยังหน้าแรก"
+                >
+                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
+                   </svg>
+                   <span className="hidden sm:inline">กลับไปหน้าแรก</span>
+                </button>
+             </div>
              </div>
           </div>
         </div>
@@ -469,25 +470,6 @@ export default function SpotifyDashboard({ showTab = true }) {
         )
       }
 
-      {/* Load More Button */}
-      {
-        genreText !== "เพลงไทย" && hasNextPage && (
-          <div className="col-span-full flex justify-center pb-8">
-            <button
-              onClick={() => fetchNextPage()}
-              disabled={isFetchingNextPage}
-              className="px-8 py-3 bg-white border border-gray-200 hover:border-primary/50 hover:text-primary hover:shadow-lg text-gray-500 rounded-full text-sm font-bold transition-all disabled:opacity-50 flex items-center gap-2 transform active:scale-95"
-            >
-              {isFetchingNextPage ? (
-                <>
-                  <span className="loading loading-spinner loading-xs"></span>
-                  กำลังโหลด...
-                </>
-              ) : "โหลดเพิ่มเติม"}
-            </button>
-          </div>
-        )
-      }
 
       {/* Loading Skeletons */}
       {
