@@ -10,29 +10,41 @@ const GENRES_TO_CACHE = [
     "ป็อป", "ป็อปร็อก", "ร็อกไทย", "อินดี้ไทย", "เพลงไทยใหม่ๆ", "T-Pop"
 ];
 
-// Mapping English names to Thai for consistency as per user request
+// Mapping common names/aliases to Thai for consistency as per user request
 const THAI_NAME_MAP: Record<string, string> = {
-    'Bodyslam': 'บอดี้สแลม',
-    'Three Man Down': 'ทรี แมน ดาวน์',
-    'Tilly Birds': 'ทิลลี่ เบิร์ดส',
-    'Paper Planes': 'เปเปอร์ เพลนส์',
-    'Cocktail': 'ค็อกเทล',
-    'Potato': 'โปเตโต้',
-    'Jeff Satur': 'เจฟ ซาเตอร์',
-    'Ink Waruntorn': 'อิ้งค์ วรันธร',
-    'Bowkylion': 'โบกี้ไลอ้อน',
-    'Safeplanet': 'เซฟแพลนเน็ต',
-    'Tattoo Colour': 'แทททู คัลเลอร์',
-    'Big Ass': 'บิ๊กแอส',
-    'Loso': 'โลโซ',
-    'Labanoon': 'ลาบานูน',
-    'Palmy': 'ปาล์มมี่',
-    'Da Endorphine': 'ดา เอ็นโดรฟิน',
-    'Klear': 'เคลียร์',
+    'bodyslam': 'บอดี้สแลม',
+    'three man down': 'ทรี แมน ดาวน์',
+    'tilly birds': 'ทิลลี่ เบิร์ดส',
+    'paper planes': 'เปเปอร์ เพลนส์',
+    'cocktail': 'ค็อกเทล',
+    'potato': 'โปเตโต้',
+    'jeff satur': 'เจฟ ซาเตอร์',
+    'ink waruntorn': 'อิ้งค์ วรันธร',
+    'bowkylion': 'โบกี้ไลอ้อน',
+    'safeplanet': 'เซฟแพลนเน็ต',
+    'tattoo colour': 'แทททู คัลเลอร์',
+    'big ass': 'บิ๊กแอส',
+    'loso': 'โลโซ',
+    'labanoon': 'ลาบานูน',
+    'palmy': 'ปาล์มมี่',
+    'da endorphine': 'ดา เอ็นโดรฟิน',
+    'klear': 'เคลียร์',
     '25hours': 'ทเวนตี้ไฟว์อาวเวอร์ส',
-    'Paradox': 'พาราด็อกซ์',
-    'Mild': 'มายด์',
-    'Slot Machine': 'สล็อตแมชชีน'
+    'paradox': 'พาราด็อกซ์',
+    'mild': 'มายด์',
+    'slot machine': 'สล็อตแมชชีน',
+    'num kala': 'หนุ่ม กะลา',
+    'numkala': 'หนุ่ม กะลา',
+    'm.i.a.': 'M.I.A.', // Keep international
+    'f.hero': 'ฟักกลิ้ง ฮีโร่',
+    'milli': 'มิลลิ',
+    'youngohm': 'ยังโอม'
+};
+
+const getThaiName = (name: string): string => {
+    if (!name) return 'Unknown';
+    const normalized = name.toLowerCase().trim();
+    return THAI_NAME_MAP[normalized] || name;
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -69,9 +81,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             
             if (artistsShelf && artistsShelf.contents) {
                 topArtists = artistsShelf.contents.map((a: any) => {
-                    const name = a.title?.toString() || a.name?.toString() || 'Unknown';
+                    const rawName = a.title?.toString() || a.name?.toString() || 'Unknown';
                     return {
-                        name: THAI_NAME_MAP[name] || name,
+                        name: getThaiName(rawName),
                         imageUrl: a.thumbnails?.[0]?.url?.replace('w120-h120', 'w500-h500') || ''
                     };
                 }).filter((a: any) => a.name !== 'Unknown').slice(0, 20);
@@ -87,9 +99,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 });
                 if (chartsShelf && chartsShelf.contents) {
                     topArtists = chartsShelf.contents.map((a: any) => {
-                        const name = a.title?.toString() || a.name?.toString() || 'Unknown';
+                        const rawName = a.title?.toString() || a.name?.toString() || 'Unknown';
                         return {
-                            name: THAI_NAME_MAP[name] || name,
+                            name: getThaiName(rawName),
                             imageUrl: a.thumbnails?.[0]?.url || ''
                         };
                     }).filter((a: any) => a.name !== 'Unknown').slice(0, 20);
@@ -115,9 +127,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     const search = await youtube.music.search(query, { type: 'artist' });
                     const artist = search.artists?.contents?.[0];
                     if (artist) {
-                        const name = artist.name || artist.title?.toString() || query;
+                        const rawName = artist.name || artist.title?.toString() || query;
                         targetedArtists.push({
-                            name: THAI_NAME_MAP[name] || name,
+                            name: getThaiName(rawName),
                             imageUrl: artist.thumbnails?.[0]?.url || ''
                         });
                     }
