@@ -154,9 +154,9 @@ export default function ListRecommendedPlaylists() {
                             <div 
                                 key={i} 
                                 onClick={() => handlePlaySong(song)} 
-                                className="group cursor-pointer bg-white rounded-2xl p-2.5 border border-gray-100 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 flex flex-col h-full transition-all duration-300 active:scale-[0.98]"
+                                className="group cursor-pointer bg-white rounded-2xl border border-gray-100 hover:border-primary/20 hover:shadow-2xl hover:shadow-primary/5 flex flex-col h-full transition-all duration-300 active:scale-[0.98] overflow-hidden"
                             >
-                                <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-50 mb-3">
+                                <div className="relative aspect-video flex-shrink-0 bg-gray-50 overflow-hidden">
                                     <Image 
                                         src={song.coverImageURL || "/icon-cover.png"} 
                                         fill 
@@ -170,8 +170,8 @@ export default function ListRecommendedPlaylists() {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="px-1 flex-1">
-                                    <h3 className="font-bold text-[12px] sm:text-[13px] line-clamp-2 text-black leading-tight group-hover:text-primary transition-colors">
+                                <div className="p-3 flex-1 flex flex-col justify-center">
+                                    <h3 className="font-bold text-[12px] sm:text-[13px] line-clamp-2 text-black leading-tight group-hover:text-primary transition-colors text-center">
                                         {song.title}
                                     </h3>
                                 </div>
