@@ -66,9 +66,12 @@ export default function ListHitsGrid() {
 
                         {/* Info Section */}
                         <div className="mt-3 px-1">
-                            <h3 className="text-black dark:text-white font-bold text-[12px] line-clamp-2 leading-snug text-center group-hover:text-primary transition-colors">
+                            <h3 className="text-black dark:text-white font-bold text-[12px] line-clamp-2 leading-snug text-left group-hover:text-primary transition-colors">
                                 {hit.title}
                             </h3>
+                            <p className="text-[10px] text-gray-400 mt-1 line-clamp-1 text-left">
+                                {(hit.artist_name && hit.artist_name !== "Unknown Artist") ? hit.artist_name : "ศิลปิน"}
+                            </p>
                         </div>
                     </div>
                 ))}

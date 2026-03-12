@@ -58,7 +58,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // 3. Helper to distinguish Singing vs Listening
         const isLongPlay = (title: string) => {
-            const keywords = ['รวมเพลง', 'ฟังยาวๆ', 'medley', 'non stop', 'ต่อเนื่อง', '1 ชั่วโมง', 'ยาวๆ', 'full album', 'mix'];
+            const keywords = [
+                'รวมเพลง', 'ฟังยาวๆ', 'medley', 'non stop', 'ต่อเนื่อง', 
+                '1 ชั่วโมง', 'ยาวๆ', 'full album', 'mix', 'ชุดใหญ่', 
+                'คาราโอเกะยาวๆ', 'เพลงรวม', 'best of', 'ฮิตยาวๆ'
+            ];
             return keywords.some(k => title.toLowerCase().includes(k));
         };
 

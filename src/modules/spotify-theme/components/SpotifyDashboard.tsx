@@ -277,52 +277,45 @@ export default function SpotifyDashboard({ showTab = true }) {
                 {getSkeletonItems(10).map((s, i) => (
                   <div
                     key={s + i}
-                    className="card bg-gray-100 animate-pulse w-full aspect-square rounded-2xl"
-                  ></div>
+                    className="flex flex-col gap-3"
+                  >
+                    <div className="w-full aspect-square rounded-full bg-gray-100 animate-pulse" />
+                    <div className="h-4 w-3/4 bg-gray-100 rounded animate-pulse" />
+                  </div>
                 ))}
               </>
             )}
-            {topArtists?.slice(0, 15).map((artist, i) => {
-              return (
+            {topArtists?.slice(0, 15).map((artist, i) => (
                 <Fragment key={artist.name + i}>
                   <div
-                    className="group relative cursor-pointer overflow-hidden rounded-2xl shadow-sm hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1 transition-all duration-300 isolate bg-gray-100 w-full"
+                    className="group flex flex-col gap-3 cursor-pointer"
                     onClick={() => {
-                    const cleanedName = cleanSearchQuery(artist.name);
-                    setSearchTerm(cleanedName);
-                  }}
+                      const cleanedName = cleanSearchQuery(artist.name);
+                      setSearchTerm(cleanedName);
+                    }}
                   >
-                    <div className="relative w-full aspect-square">
+                    <div className="relative w-full aspect-square rounded-full overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-xl transition-all duration-300 group-hover:-translate-y-1">
                       <Image
-                        src={artist.imageUrl}
+                        src={artist.imageUrl || "/assets/avatar.jpeg"}
                         priority={i < 5}
                         alt={artist.name}
                         unoptimized
-                        layout="fill"
+                        fill
                         className="object-cover transition-transform duration-700 group-hover:scale-110"
-                        onLoad={(ev) =>
-                          ev.currentTarget.classList.remove("animate-pulse")
-                        }
                         onErrorCapture={(ev) => {
                           ev.currentTarget.src = "/assets/avatar.jpeg";
                         }}
                       />
-                      <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-90 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-lg transform scale-50 group-hover:scale-100 transition-transform">
-                          <svg className="w-5 h-5 text-white fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                        </div>
-                      </div>
-                      <div className="absolute inset-0 p-3 flex flex-col justify-end items-start z-10 pointer-events-none">
-                        <h2 className="text-white font-bold text-[11px] sm:text-[12px] leading-tight line-clamp-1 drop-shadow-md transform translate-y-0.5 group-hover:translate-y-0 transition-transform text-left">
-                          {artist.name}
-                        </h2>
-                      </div>
+                    </div>
+                    <div className="px-1">
+                      <h2 className="text-black font-bold text-[12px] sm:text-[13px] line-clamp-1 group-hover:text-primary transition-colors text-left">
+                        {artist.name}
+                      </h2>
+                      <p className="text-[10px] text-gray-400 font-medium text-left">ศิลปิน</p>
                     </div>
                   </div>
                 </Fragment>
-              );
-            })}
+            ))}
           </div>
 
           <div className="col-span-full px-2 pt-4 pb-3 text-[13px] font-black text-black uppercase tracking-wider flex items-center gap-2 border-t border-gray-100 mt-2">
@@ -413,8 +406,8 @@ export default function SpotifyDashboard({ showTab = true }) {
                          </div>
                       </div>
                     </div>
-                    <div className="mt-2 px-1 text-center">
-                      <p className="text-[12px] font-bold text-black line-clamp-2 leading-tight group-hover:text-primary transition-colors">
+                    <div className="mt-2 px-1">
+                      <p className="text-[12px] font-bold text-black line-clamp-2 leading-tight group-hover:text-primary transition-colors text-left">
                         {cat.title}
                       </p>
                     </div>
@@ -537,47 +530,48 @@ export default function SpotifyDashboard({ showTab = true }) {
       {/* Song List Grid - Premium Clean Cards */}
       {tagId && artist && (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-4 col-span-full px-4 pb-32">
-          {artist.map((item, i) => {
+          {artist.map((item: any, i: number) => {
             const video = item as any;
             return (
               <Fragment key={video.id || video.name + i}>
                 <div
                   className="group cursor-pointer bg-white rounded-2xl p-2.5 border border-gray-100 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 flex flex-col h-full transition-all active:scale-[0.97] duration-300 relative overflow-hidden"
                   onClick={() => {
-                    const artist = (video.artist_name && video.artist_name !== "Unknown Artist") ? video.artist_name : "";
-                    const baseQuery = video.title ? `${video.title} ${artist}` : video.name;
-                    const cleanedQuery = cleanSearchQuery(baseQuery);
-                    
-                    setSearchTerm(cleanedQuery);
+                    const artistName = (video.artist_name && video.artist_name !== "Unknown Artist") ? video.artist_name : "";
+                    const query = `${video.title} ${artistName}`.trim();
+                    setSearchTerm(query);
+                    setShouldScrollToSongs(false);
                     router.push({
                       pathname: router.pathname,
-                      query: { ...router.query, search: cleanedQuery }
-                    }, undefined, { shallow: true });
+                      query: { ...router.query, search: query }
+                    });
                   }}
                 >
-                  <figure className="relative w-full aspect-square flex-shrink-0 bg-gray-50 rounded-xl overflow-hidden mb-3">
+                  <div className="relative aspect-square rounded-xl overflow-hidden bg-gray-50 mb-3">
                     <Image
-                      src={video.imageUrl || "/icon-cover.png"}
+                      src={video.coverImageURL || "/icon-cover.png"}
                       priority={i < 10}
-                      alt={video.title || video.name}
+                      alt={video.title}
+                      fill
                       unoptimized
-                      layout="fill"
                       className="object-cover transition-transform duration-500 group-hover:scale-110"
                       onErrorCapture={(ev) => {
                         ev.currentTarget.src = "/icon-cover.png";
                       }}
                     />
-                    {/* Play Overlay */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
-                      <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300">
-                        <svg className="w-5 h-5 text-white ml-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+                    <div className="absolute inset-x-0 bottom-0 p-2 flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center shadow-lg">
+                        <svg className="w-4 h-4 text-white fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                       </div>
                     </div>
-                  </figure>
+                  </div>
                   <div className="px-1 flex-1">
-                    <h2 className="font-bold text-[12px] sm:text-[13px] line-clamp-2 text-black leading-snug group-hover:text-primary transition-colors text-center">
+                    <h3 className="font-bold text-[12px] sm:text-[13px] line-clamp-2 text-black leading-snug group-hover:text-primary transition-colors text-left">
                       {video.title || video.name}
-                    </h2>
+                    </h3>
+                    <p className="text-[10px] text-gray-400 mt-1 line-clamp-1 text-left">
+                      {(video.artist_name && video.artist_name !== "Unknown Artist") ? video.artist_name : "YouTube Music"}
+                    </p>
                   </div>
                 </div>
               </Fragment>

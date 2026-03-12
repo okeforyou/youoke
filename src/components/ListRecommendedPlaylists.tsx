@@ -172,9 +172,10 @@ export default function ListRecommendedPlaylists() {
                                     </div>
                                 </div>
                                 <div className="px-1 flex-1">
-                                    <h3 className="font-bold text-[12px] sm:text-[13px] line-clamp-2 text-black leading-snug group-hover:text-primary transition-colors text-center">
+                                    <h3 className="font-bold text-[12px] sm:text-[13px] line-clamp-2 text-black leading-snug group-hover:text-primary transition-colors text-left">
                                         {song.title}
                                     </h3>
+                                    <p className="text-[10px] text-gray-400 mt-1 text-left">{song.artist_name || 'YouTube Music'}</p>
                                 </div>
                             </div>
                         ))
@@ -233,10 +234,11 @@ export default function ListRecommendedPlaylists() {
                                             />
                                             <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors" />
                                         </div>
-                                        <div className="mt-2.5 px-1 text-center">
-                                            <p className="text-[12px] font-bold text-black line-clamp-2 leading-tight group-hover:text-primary transition-colors">
+                                        <div className="mt-2.5 px-1">
+                                            <p className="text-[12px] font-bold text-black line-clamp-2 leading-tight group-hover:text-primary transition-colors text-left">
                                                 {item.title}
                                             </p>
+                                            <p className="text-[10px] text-gray-400 mt-1 text-left">{item.subtitle}</p>
                                         </div>
                                     </div>
                                 ))}
