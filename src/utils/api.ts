@@ -114,9 +114,11 @@ export const cleanSearchQuery = (query: string): string => {
   // 2. Remove "Unknown Artist" and other common standalone noise
   cleaned = cleaned.replace(/Unknown Artist/gi, "");
   cleaned = cleaned.replace(/Official (Music Video|Audio|MV|Video|Lyric|Video)/gi, "");
+  cleaned = cleaned.replace(/ไม่มีโฆษณา/g, "");
   
-  // 3. Remove hashtags (e.g., #karaoke #คาราโอเกะ)
-  cleaned = cleaned.replace(/#\w+/g, "");
+  // 3. Remove hashtags (including Thai characters like #ไม่มีโฆษณา)
+  // \S matches anything that is not a whitespace character
+  cleaned = cleaned.replace(/#[^\s#]+/g, "");
 
   // 4. Remove common separators that often appear at the end or around noise
   cleaned = cleaned.replace(/\s*[\-\|:;,\._]+\s*/g, " ");
