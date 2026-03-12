@@ -75,7 +75,7 @@ export default async function handler(
           artist: (playlist.contents || playlist.videos || []).map((v: any) => ({
             id: v.id || v.videoId,
             title: v.title?.toString() || "Unknown",
-            artist_name: (v.author?.name || v.author || "Unknown Artist")?.toString(),
+            artist_name: (v.author?.name || v.author || v.short_byline_text?.toString() || "Unknown Artist")?.toString(),
             coverImageURL: v.thumbnails?.[0]?.url || "",
             imageUrl: v.thumbnails?.[0]?.url || "",
           })).filter((v: any) => !!v.id) || []
