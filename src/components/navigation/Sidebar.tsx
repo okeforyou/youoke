@@ -39,32 +39,35 @@ export const Sidebar = memo(() => {
 
     return (
         <aside className={clsx(
-            "hidden lg:flex flex-col shrink-0 z-30 bg-white border-r border-gray-200 transition-all duration-300 ease-in-out",
+            "hidden lg:flex flex-col shrink-0 z-30 bg-white border-r border-gray-200 transition-all duration-300 ease-in-out relative",
             isSidebarCollapsed ? "w-[80px]" : "w-[260px]"
         )}>
+            {/* Collapse Toggle Button - Positioned exactly on the border */}
+            <button 
+                onClick={() => setSidebarCollapsed(!isSidebarCollapsed)}
+                className={clsx(
+                    "absolute top-8 -right-3.5 w-7 h-7 bg-white border border-gray-200 rounded-full shadow-sm hover:shadow-md text-gray-400 hover:text-primary flex items-center justify-center transition-all duration-300 z-50 hover:scale-110 active:scale-95",
+                    isSidebarCollapsed ? "rotate-180" : ""
+                )}
+                title={isSidebarCollapsed ? "ขยายเมนู" : "ยุบเมนู"}
+            >
+                <ChevronLeft className="w-4 h-4" />
+            </button>
+
             {/* Sidebar Header */}
             <div className={clsx(
                 "h-20 flex items-center shrink-0 z-40 transition-all duration-300",
                 isSidebarCollapsed ? "px-0 justify-center" : "px-6"
             )}>
-                <div className="flex items-center gap-3 relative group">
+                <div className="flex items-center gap-3">
                     <img
                         src="https://okeforyou.com/wp-content/uploads/2023/07/icon-192.png"
                         alt="Logo"
-                        className="w-10 h-10 rounded-xl shadow-sm object-cover"
-                    />
-                    
-                    {/* Collapse Toggle Button - Subtle on Logo hover or always visible? Let's make it always visible but clean */}
-                    <button 
-                        onClick={() => setSidebarCollapsed(!isSidebarCollapsed)}
                         className={clsx(
-                            "absolute -right-12 top-1/2 -translate-y-1/2 p-2 bg-white border border-gray-100 rounded-full shadow-sm hover:text-primary transition-all duration-300 hover:scale-110 z-50",
-                            isSidebarCollapsed ? "rotate-180 -right-4" : ""
+                            "rounded-xl shadow-sm object-cover transition-all duration-300",
+                            isSidebarCollapsed ? "w-10 h-10" : "w-11 h-11"
                         )}
-                        title={isSidebarCollapsed ? "ขยายเมนู" : "ยุบเมนู"}
-                    >
-                        <ChevronLeft className="w-4 h-4" />
-                    </button>
+                    />
                 </div>
             </div>
 
@@ -267,13 +270,18 @@ export const Sidebar = memo(() => {
                     ) : (
                         <Link href="/login" 
                             className={clsx(
-                                "flex items-center rounded-xl bg-white border border-gray-200 text-gray-700 font-bold shadow-sm hover:shadow-md hover:border-primary/20 hover:text-primary transition-all group",
-                                isSidebarCollapsed ? "justify-center p-3" : "gap-3 px-4 py-3 justify-center"
+                                "flex items-center rounded-xl bg-white border border-gray-200 text-gray-700 font-bold shadow-sm hover:shadow-md hover:border-primary/20 hover:text-primary transition-all group mx-auto",
+                                isSidebarCollapsed ? "w-12 h-12 justify-center" : "gap-3 px-4 py-3 justify-center w-full"
                             )}
                             title={isSidebarCollapsed ? "เข้าสู่ระบบ" : ""}
                         >
-                            <div className="p-1 bg-gray-100 rounded-md group-hover:bg-primary/10 transition-colors"><Key className="w-4 h-4" /></div>
-                            <span className={clsx("transition-all duration-300", isSidebarCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100")}>
+                            <div className={clsx(
+                                "flex items-center justify-center transition-colors",
+                                isSidebarCollapsed ? "p-0" : "p-1 bg-gray-100 rounded-md group-hover:bg-primary/10"
+                            )}>
+                                <Key className={clsx(isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4")} />
+                            </div>
+                            <span className={clsx("transition-all duration-300 overflow-hidden whitespace-nowrap", isSidebarCollapsed ? "w-0 opacity-0" : "w-auto opacity-100")}>
                                 เข้าสู่ระบบ
                             </span>
                         </Link>
