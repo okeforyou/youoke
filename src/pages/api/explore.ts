@@ -56,62 +56,76 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }))
         });
 
-        // 3. Add Recommended Genre Shelves (Mixed Cache + Live)
-        const genreTitles = Object.keys(cachedGenres).length > 0 
-            ? Object.keys(cachedGenres) 
-            : STABLE_GENRES;
+        // 3. Helper to distinguish Singing vs Listening
+        const isLongPlay = (title: string) => {
+            const keywords = ['รวมเพลง', 'ฟังยาวๆ', 'medley', 'non stop', 'ต่อเนื่อง', '1 ชั่วโมง', 'ยาวๆ', 'full album', 'mix'];
+            return keywords.some(k => title.toLowerCase().includes(k));
+        };
 
-        // Priority Genres for the "Recommended" section
-        const priorityGenres = ['T-Pop', 'ป็อป', 'รวมเพลงดังมาแรง', 'เพลงไทยใหม่ๆ', 'ป็อปร็อก', 'อินดี้ไทย'];
+        // 4. Add Recommended Shelves (Curated & Categorized)
+        const genreTitles = Object.keys(cachedGenres).length > 0 ? Object.keys(cachedGenres) : STABLE_GENRES;
+        const priorityGenres = ['T-Pop', 'ป็อป', 'รวมเพลงดังมาแรง', 'เพลงไทยใหม่ๆ', 'ป็อปร็อก', 'อินดี้ไทย', 'ลูกทุ่ง'];
         const sortedGenres = Array.from(new Set([...priorityGenres.filter(g => genreTitles.includes(g)), ...genreTitles]));
 
-        for (let i = 0; i < sortedGenres.slice(0, 10).length; i++) {
-            const genre = sortedGenres[i];
-            let items = [];
-            
+        // Separate items for Singing vs Listening
+        const singingShelves = [];
+        const listeningItems = [];
+
+        for (const genre of sortedGenres.slice(0, 15)) {
+            let rawItems = [];
             if (cachedGenres[genre]) {
-                items = cachedGenres[genre].map((r: any) => ({
-                    id: r.playlistId,
-                    playlistId: r.playlistId,
-                    title: r.title,
-                    subtitle: r.author || 'YouTube Music',
-                    thumbnail: r.thumbnail,
-                    type: 'playlist',
-                    isSong: false
-                }));
+                rawItems = cachedGenres[genre];
             } else {
-                // Live Fallback if this genre isn't in cache
                 try {
-                    const liveResults = await scrapeYouTubePlaylistSearch(genre);
-                    items = liveResults.slice(0, 10).map((r: any) => ({
-                        id: r.playlistId,
-                        playlistId: r.playlistId,
-                        title: r.title,
-                        subtitle: r.videoCount || 'Playlist',
-                        thumbnail: r.thumbnail,
-                        type: 'playlist',
-                        isSong: false
-                    }));
-                } catch (e) {
-                    continue; // Skip if live fetch fails
+                    rawItems = await scrapeYouTubePlaylistSearch(genre);
+                } catch (e) { continue; }
+            }
+
+            const singingItems = [];
+            for (const item of rawItems) {
+                const mappedItem = {
+                    id: item.playlistId || item.id,
+                    playlistId: item.playlistId || item.id,
+                    title: item.title,
+                    subtitle: item.author || (isLongPlay(item.title) ? 'โหมดฟังยาวๆ' : 'YouTube Music'),
+                    thumbnail: item.thumbnail,
+                    type: 'playlist',
+                    isLongPlay: isLongPlay(item.title),
+                    isSong: false
+                };
+
+                if (mappedItem.isLongPlay) {
+                    listeningItems.push(mappedItem);
+                } else {
+                    singingItems.push(mappedItem);
                 }
             }
 
-            if (items.length > 0) {
-                // Use a special title for the first genre if it's a priority one
-                let shelfTitle = `📂 ${genre}`;
-                if (i === 0 && priorityGenres.includes(genre)) {
-                    shelfTitle = `✨ เพลงแนะนำสำหรับคุณ (${genre})`;
-                }
-
-                dynamicShelves.push({
-                    title: shelfTitle,
-                    items: items
+            if (singingItems.length > 0) {
+                singingShelves.push({
+                    title: `🎤 ${genre} (สำหรับร้อง)`,
+                    items: singingItems.slice(0, 10),
+                    mode: 'singing'
                 });
             }
         }
 
-        // 4. Absolute Survival Fallback
+        // Add 3-4 Singing Shelves first
+        dynamicShelves.push(...singingShelves.slice(0, 5));
+
+        // Add "Listening Lounge" (Long Plays) as a discovery row
+        if (listeningItems.length > 0) {
+            dynamicShelves.push({
+                title: '🎧 โหมดฟังยาวๆ (Medley & Long Play)',
+                items: Array.from(new Map(listeningItems.map(item => [item.id, item])).values()).slice(0, 12), // Deduplicate
+                mode: 'listening'
+            });
+        }
+
+        // Add remaining singing shelves
+        dynamicShelves.push(...singingShelves.slice(5));
+
+        // 5. Final Response & Fallback
         if (dynamicShelves.length < 2) {
             dynamicShelves.push({
                 title: '📂 หมวดหมู่แนะนำ (Fallback)',
