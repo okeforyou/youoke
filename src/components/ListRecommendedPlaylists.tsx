@@ -2,7 +2,7 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeftIcon, PlayIcon, ArrowPathIcon, FolderPlusIcon } from "@heroicons/react/24/solid";
+import { ChevronLeftIcon, PlayIcon, ArrowPathIcon, FolderPlusIcon, MicrophoneIcon, MusicalNoteIcon } from "@heroicons/react/24/solid";
 import { searchPlaylists, getArtists, getSkeletonItems } from "../utils/api";
 import { usePlayerStore } from "../modules/player/stores/usePlayerStore";
 import { Video } from "../modules/player/types";
@@ -188,19 +188,23 @@ export default function ListRecommendedPlaylists() {
                     {genreShelves.map((shelf: any, i: number) => (
                         <div key={i} className="space-y-4">
                             <div className="px-6 flex items-center justify-between">
-                                <h3 className="text-[14px] font-black text-black uppercase tracking-wider flex items-center gap-2">
-                                    <span className={`w-1.5 h-5 rounded-full ${shelf.mode === 'listening' ? 'bg-blue-500' : 'bg-primary'}`} />
-                                    {shelf.title}
-                                </h3>
+                                <div className="flex items-center gap-2">
+                                    <div className={`p-1.5 rounded-lg ${shelf.mode === 'listening' ? 'bg-blue-50 text-blue-500' : 'bg-primary/10 text-primary'}`}>
+                                        {shelf.mode === 'listening' ? <MusicalNoteIcon className="w-4 h-4" /> : <MicrophoneIcon className="w-4 h-4" />}
+                                    </div>
+                                    <h3 className="text-[14px] font-black text-black uppercase tracking-tight">
+                                        {shelf.title}
+                                    </h3>
+                                </div>
                                 {shelf.mode === 'listening' && (
-                                    <span className="text-[10px] font-bold text-blue-500 bg-blue-50 px-2 py-0.5 rounded-full flex items-center gap-1">
-                                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" /></svg>
+                                    <span className="text-[10px] font-bold text-blue-500 bg-blue-50 px-2 py-1 rounded-full flex items-center gap-1">
+                                        <MusicalNoteIcon className="w-3 h-3" />
                                         โหมดฟังนิ่งๆ
                                     </span>
                                 )}
                             </div>
 
-                            <div className="flex overflow-x-auto gap-4 px-6 pb-4 no-scrollbar snap-x scroll-smooth">
+                            <div className="flex overflow-x-auto gap-4 px-6 pb-4 no-scrollbar snap-x scroll-smooth touch-pan-x w-full">
                                 {shelf.items.map((item: any, j: number) => (
                                     <div 
                                         key={j} 
@@ -220,14 +224,14 @@ export default function ListRecommendedPlaylists() {
                                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80 group-hover:opacity-60" />
                                             
                                             {/* Badge Overlay */}
-                                            <div className="absolute top-3 left-3 flex gap-1">
+                                            <div className="absolute top-3 left-3 z-30 flex gap-1">
                                                 {item.isLongPlay ? (
-                                                    <div className="bg-blue-600/90 backdrop-blur-md text-white p-1.5 rounded-xl shadow-lg">
-                                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" /></svg>
+                                                    <div className="bg-blue-600/90 backdrop-blur-md text-white p-1.5 rounded-xl shadow-lg border border-white/10">
+                                                        <MusicalNoteIcon className="w-4 h-4" />
                                                     </div>
                                                 ) : (
-                                                    <div className="bg-primary/90 backdrop-blur-md text-white p-1.5 rounded-xl shadow-lg">
-                                                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
+                                                    <div className="bg-primary/90 backdrop-blur-md text-white p-1.5 rounded-xl shadow-lg border border-white/10">
+                                                        <MicrophoneIcon className="w-4 h-4" />
                                                     </div>
                                                 )}
                                             </div>

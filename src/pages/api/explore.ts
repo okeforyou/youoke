@@ -103,7 +103,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
             if (singingItems.length > 0) {
                 singingShelves.push({
-                    title: `🎤 ${genre} (สำหรับร้อง)`,
+                    title: genre,
                     items: singingItems.slice(0, 10),
                     mode: 'singing'
                 });
@@ -116,7 +116,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // Add "Listening Lounge" (Long Plays) as a discovery row
         if (listeningItems.length > 0) {
             dynamicShelves.push({
-                title: '🎧 โหมดฟังยาวๆ (Medley & Long Play)',
+                title: 'โหมดฟังยาวๆ (Medley & Long Play)',
                 items: Array.from(new Map(listeningItems.map(item => [item.id, item])).values()).slice(0, 12), // Deduplicate
                 mode: 'listening'
             });
