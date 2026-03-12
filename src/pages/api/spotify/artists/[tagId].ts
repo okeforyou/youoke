@@ -18,8 +18,6 @@ export default async function handler(
     let { tagId } = req.query;
     if (Array.isArray(tagId)) tagId = tagId[0];
 
-    const accessToken = await getAccessToken();
-
     let playlistId = tagId;
     // Strip sp- prefix if present (added by search/playlists.ts)
     if (playlistId && playlistId.startsWith('sp-')) {
@@ -94,6 +92,7 @@ export default async function handler(
     }
 
     // Fetching the specific playlist by ID (Spotify)
+    const accessToken = await getAccessToken();
     const playlistResponse = await axios.get(
       `https://api.spotify.com/v1/playlists/${playlistId}`,
       {
