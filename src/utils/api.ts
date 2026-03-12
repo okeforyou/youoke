@@ -107,26 +107,28 @@ export const cleanSearchQuery = (query: string): string => {
   let cleaned = query;
   
   // 1. Remove common noise tags in brackets or parentheses
-  // Added: Live, Version, Karaoke, HD, Full
-  cleaned = cleaned.replace(/\((Official|Lyric|MV|Audio|Music|Video|HD|Cover|Full|Remastered|Original|Live|Karaoke|Version).*?\)/gi, "");
-  cleaned = cleaned.replace(/\[(Official|Lyric|MV|Audio|Music|Video|HD|Cover|Full|Remastered|Original|Live|Karaoke|Version).*?\]/gi, "");
+  // Added 'by' to handle [by Artist Name] or (by Artist Name)
+  cleaned = cleaned.replace(/\((Official|Lyric|MV|Audio|Music|Video|HD|Cover|Full|Remastered|Original|Live|Karaoke|Version|by).*?\)/gi, "");
+  cleaned = cleaned.replace(/\[(Official|Lyric|MV|Audio|Music|Video|HD|Cover|Full|Remastered|Original|Live|Karaoke|Version|by).*?\]/gi, "");
   
   // 2. Remove "Unknown Artist" and other common standalone noise
   cleaned = cleaned.replace(/Unknown Artist/gi, "");
   cleaned = cleaned.replace(/Official (Music Video|Audio|MV|Video|Lyric|Video)/gi, "");
   
-  // 3. Remove common separators that often appear at the end or around noise
+  // 3. Remove hashtags (e.g., #karaoke #คาราโอเกะ)
+  cleaned = cleaned.replace(/#\w+/g, "");
+
+  // 4. Remove common separators that often appear at the end or around noise
   cleaned = cleaned.replace(/\s*[\-\|:;,\._]+\s*/g, " ");
 
-  // 4. Deduplicate words (if Artist is in Title and also appended)
-  // e.g., "Bodyslam - อกหัก Bodyslam" -> "Bodyslam อกหัก"
+  // 5. Deduplicate words (if Artist is in Title and also appended)
   const words = cleaned.split(/\s+/);
   const uniqueWords = words.filter((word, index) => {
     return words.indexOf(word) === index;
   });
   cleaned = uniqueWords.join(" ");
   
-  // 5. Final cleanup
+  // 6. Final cleanup
   cleaned = cleaned.replace(/\s+/g, " ").trim();
   
   return cleaned;
