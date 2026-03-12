@@ -10,6 +10,31 @@ const GENRES_TO_CACHE = [
     "ป็อป", "ป็อปร็อก", "ร็อกไทย", "อินดี้ไทย", "เพลงไทยใหม่ๆ", "T-Pop"
 ];
 
+// Mapping English names to Thai for consistency as per user request
+const THAI_NAME_MAP: Record<string, string> = {
+    'Bodyslam': 'บอดี้สแลม',
+    'Three Man Down': 'ทรี แมน ดาวน์',
+    'Tilly Birds': 'ทิลลี่ เบิร์ดส',
+    'Paper Planes': 'เปเปอร์ เพลนส์',
+    'Cocktail': 'ค็อกเทล',
+    'Potato': 'โปเตโต้',
+    'Jeff Satur': 'เจฟ ซาเตอร์',
+    'Ink Waruntorn': 'อิ้งค์ วรันธร',
+    'Bowkylion': 'โบกี้ไลอ้อน',
+    'Safeplanet': 'เซฟแพลนเน็ต',
+    'Tattoo Colour': 'แทททู คัลเลอร์',
+    'Big Ass': 'บิ๊กแอส',
+    'Loso': 'โลโซ',
+    'Labanoon': 'ลาบานูน',
+    'Palmy': 'ปาล์มมี่',
+    'Da Endorphine': 'ดา เอ็นโดรฟิน',
+    'Klear': 'เคลียร์',
+    '25hours': 'ทเวนตี้ไฟว์อาวเวอร์ส',
+    'Paradox': 'พาราด็อกซ์',
+    'Mild': 'มายด์',
+    'Slot Machine': 'สล็อตแมชชีน'
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const authHeader = req.headers.authorization;
     if (authHeader !== `Bearer ${CRON_SECRET}` && req.query.key !== CRON_SECRET) {
@@ -43,10 +68,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             });
             
             if (artistsShelf && artistsShelf.contents) {
-                topArtists = artistsShelf.contents.map((a: any) => ({
-                    name: a.title?.toString() || a.name?.toString() || 'Unknown',
-                    imageUrl: a.thumbnails?.[0]?.url?.replace('w120-h120', 'w500-h500') || ''
-                })).filter((a: any) => a.name !== 'Unknown').slice(0, 20);
+                topArtists = artistsShelf.contents.map((a: any) => {
+                    const name = a.title?.toString() || a.name?.toString() || 'Unknown';
+                    return {
+                        name: THAI_NAME_MAP[name] || name,
+                        imageUrl: a.thumbnails?.[0]?.url?.replace('w120-h120', 'w500-h500') || ''
+                    };
+                }).filter((a: any) => a.name !== 'Unknown').slice(0, 20);
                 console.log(`✅ Found ${topArtists.length} artists from Charts.`);
             }
 
@@ -58,10 +86,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     return title.includes('Artist') || title.includes('ศิลปิน') || title.includes('ยอดนิยม');
                 });
                 if (chartsShelf && chartsShelf.contents) {
-                    topArtists = chartsShelf.contents.map((a: any) => ({
-                        name: a.title?.toString() || a.name?.toString() || 'Unknown',
-                        imageUrl: a.thumbnails?.[0]?.url || ''
-                    })).filter((a: any) => a.name !== 'Unknown').slice(0, 20);
+                    topArtists = chartsShelf.contents.map((a: any) => {
+                        const name = a.title?.toString() || a.name?.toString() || 'Unknown';
+                        return {
+                            name: THAI_NAME_MAP[name] || name,
+                            imageUrl: a.thumbnails?.[0]?.url || ''
+                        };
+                    }).filter((a: any) => a.name !== 'Unknown').slice(0, 20);
                     console.log(`✅ Found ${topArtists.length} artists from Explore.`);
                 }
             }
@@ -73,26 +104,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (topArtists.length < 5) {
             console.log('🚨 Fetching Targeted Artists for Guaranteed Results...');
             const FAMOUS_ARTISTS = [
-                'Bodyslam', 'Three Man Down', 'Tilly Birds', 'Paper Planes', 
-                'หนุ่ม กะลา', 'Cocktail', 'Potato', 'Jeff Satur', 'Ink Waruntorn',
-                'Bowkylion', 'Safeplanet', 'Tattoo Colour'
+                'บอดี้สแลม', 'ทรี แมน ดาวน์', 'ทิลลี่ เบิร์ดส', 'เปเปอร์ เพลนส์', 
+                'หนุ่ม กะลา', 'ค็อกเทล', 'โปเตโต้', 'เจฟ ซาเตอร์', 'อิ้งค์ วรันธร',
+                'โบกี้ไลอ้อน', 'เซฟแพลนเน็ต', 'แทททู คัลเลอร์', 'ลาบานูน', 'บิ๊กแอส'
             ];
             
             const targetedArtists: any[] = [];
-            for (const name of FAMOUS_ARTISTS) {
+            for (const query of FAMOUS_ARTISTS) {
                 try {
-                    const search = await youtube.music.search(name, { type: 'artist' });
+                    const search = await youtube.music.search(query, { type: 'artist' });
                     const artist = search.artists?.contents?.[0];
                     if (artist) {
+                        const name = artist.name || artist.title?.toString() || query;
                         targetedArtists.push({
-                            name: artist.name || name,
+                            name: THAI_NAME_MAP[name] || name,
                             imageUrl: artist.thumbnails?.[0]?.url || ''
                         });
                     }
                 } catch (e) {
-                    console.warn(`Failed to fetch artist: ${name}`);
+                    console.warn(`Failed to fetch artist: ${query}`);
                 }
-                if (targetedArtists.length >= 10) break;
+                if (targetedArtists.length >= 12) break;
             }
             
             if (targetedArtists.length > 0) {
