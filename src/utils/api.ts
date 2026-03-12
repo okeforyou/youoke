@@ -106,32 +106,58 @@ export const cleanSearchQuery = (query: string): string => {
   
   let cleaned = query;
   
-  // 1. Remove common noise tags in brackets or parentheses
-  // Added 'by' to handle [by Artist Name] or (by Artist Name)
-  cleaned = cleaned.replace(/\((Official|Lyric|MV|Audio|Music|Video|HD|Cover|Full|Remastered|Original|Live|Karaoke|Version|by).*?\)/gi, "");
-  cleaned = cleaned.replace(/\[(Official|Lyric|MV|Audio|Music|Video|HD|Cover|Full|Remastered|Original|Live|Karaoke|Version|by).*?\]/gi, "");
+  // 1. Aggressive Bracket Removal (Multiple passes for nested ones)
+  for (let i = 0; i < 3; i++) {
+    cleaned = cleaned.replace(/\[.*?\]/g, " ");
+    cleaned = cleaned.replace(/\(.*?\)/g, " ");
+    cleaned = cleaned.replace(/\{.*?\}/g, " ");
+  }
   
-  // 2. Remove "Unknown Artist" and other common standalone noise
-  cleaned = cleaned.replace(/Unknown Artist/gi, "");
-  cleaned = cleaned.replace(/Official (Music Video|Audio|MV|Video|Lyric|Video)/gi, "");
-  cleaned = cleaned.replace(/ไม่มีโฆษณา/g, "");
+  // 2. Remove URLs or things that look like them
+  cleaned = cleaned.replace(/https?:\/\/\S+/gi, " ");
   
-  // 3. Remove hashtags (including Thai characters like #ไม่มีโฆษณา)
-  // \S matches anything that is not a whitespace character
-  cleaned = cleaned.replace(/#[^\s#]+/g, "");
+  // 3. Keep only Thai, English, Numbers and Spaces (Immediate Symbol Stripping)
+  // This removes #, [, ], -, |, etc.
+  cleaned = cleaned.replace(/[^a-zA-Z0-9\u0E00-\u0E7F\s]/g, " ");
+  
+  // 4. Split into words and filter noise
+  const noiseWords = new Set([
+     "official", "music", "video", "audio", "mv", "lyric", "hd", "4k", "full", 
+     "remastered", "original", "live", "karaoke", "version", "cover", "by", 
+     "unknown", "artist", "ไม่มีโฆษณา", "gdm", "เอางรี้", "อัขระพิเศษ",
+     "channel", "subscribe", "sub", "karaoke", "คาราโอเกะ", "ศิลปิน", "เพลง"
+  ]);
 
-  // 4. Remove common separators that often appear at the end or around noise
-  cleaned = cleaned.replace(/\s*[\-\|:;,\._]+\s*/g, " ");
+  const words = cleaned.split(/\s+/).filter(word => {
+    const lowerWord = word.toLowerCase();
+    
+    // Skip if it's in noise list
+    if (noiseWords.has(lowerWord)) return false;
+    
+    // Skip if it's a mix of numbers and letters (often codes/IDs)
+    if (/[a-zA-Z]/.test(word) && /[0-9]/.test(word)) return false;
+    
+    // Skip very short English words (often noise like 'th', 'a', 'to')
+    if (/^[a-z]{1,2}$/i.test(word) && !noiseWords.has(lowerWord)) {
+        // We keep it if it might be part of a title, but usually 1-2 char english is noise
+        // Let's be cautious and keep for now unless it's known noise
+    }
 
-  // 5. Deduplicate words (if Artist is in Title and also appended)
-  const words = cleaned.split(/\s+/);
-  const uniqueWords = words.filter((word, index) => {
-    return words.indexOf(word) === index;
+    return word.length > 0;
   });
-  cleaned = uniqueWords.join(" ");
+
+  // 5. Deduplicate words (Case insensitive)
+  const seen = new Set<string>();
+  const finalWords: string[] = [];
   
-  // 6. Final cleanup
-  cleaned = cleaned.replace(/\s+/g, " ").trim();
-  
-  return cleaned;
+  for (const word of words) {
+    const lower = word.toLowerCase();
+    if (!seen.has(lower)) {
+      seen.add(lower);
+      finalWords.push(word);
+    }
+  }
+
+  // 6. Final Join
+  return finalWords.join(" ").trim();
 };
