@@ -154,9 +154,9 @@ export default function ListRecommendedPlaylists() {
                             <div 
                                 key={i} 
                                 onClick={() => handlePlaySong(song)} 
-                                className="group cursor-pointer bg-white rounded-2xl border border-gray-100 hover:border-primary/20 hover:shadow-2xl hover:shadow-primary/5 flex flex-col h-full transition-all duration-300 active:scale-[0.98] overflow-hidden"
+                                className="group cursor-pointer bg-white rounded-2xl p-2.5 border border-gray-100 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 flex flex-col h-full transition-all duration-300 active:scale-[0.98]"
                             >
-                                <div className="relative aspect-video flex-shrink-0 bg-gray-50 overflow-hidden">
+                                <div className="relative aspect-square rounded-xl overflow-hidden bg-gray-50 mb-3">
                                     <Image 
                                         src={song.coverImageURL || "/icon-cover.png"} 
                                         fill 
@@ -170,8 +170,8 @@ export default function ListRecommendedPlaylists() {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="p-3 flex-1 flex flex-col justify-center">
-                                    <h3 className="font-bold text-[12px] sm:text-[13px] line-clamp-2 text-black leading-tight group-hover:text-primary transition-colors text-center">
+                                <div className="px-1 flex-1">
+                                    <h3 className="font-bold text-[12px] sm:text-[13px] line-clamp-2 text-black leading-snug group-hover:text-primary transition-colors text-center">
                                         {song.title}
                                     </h3>
                                 </div>
@@ -222,7 +222,7 @@ export default function ListRecommendedPlaylists() {
                                         }}
                                         className="flex-shrink-0 w-[140px] sm:w-[180px] group cursor-pointer snap-start"
                                     >
-                                        <div className="relative aspect-video rounded-2xl overflow-hidden bg-gray-100 shadow-sm border border-gray-100 group-hover:shadow-xl transition-all duration-300">
+                                        <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 shadow-sm border border-gray-100 group-hover:shadow-xl transition-all duration-300">
                                             <Image 
                                                 src={item.thumbnail?.replace('w120-h120', 'w400-h400') || "/icon-cover.png"} 
                                                 fill 
@@ -232,7 +232,7 @@ export default function ListRecommendedPlaylists() {
                                             />
                                             <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors" />
                                         </div>
-                                        <div className="mt-2.5 px-0.5">
+                                        <div className="mt-2.5 px-1 text-center">
                                             <p className="text-[12px] font-bold text-black line-clamp-2 leading-tight group-hover:text-primary transition-colors">
                                                 {item.title}
                                             </p>

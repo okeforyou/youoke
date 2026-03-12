@@ -46,38 +46,29 @@ export default function ListHitsGrid() {
                     <div
                         key={`${hit.title}-${index}`}
                         onClick={() => handleClick(hit)}
-                        className="group relative cursor-pointer bg-white dark:bg-gray-900 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+                        className="group relative cursor-pointer bg-white dark:bg-gray-900 rounded-2xl p-2.5 border border-gray-100 hover:border-primary/20 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
                     >
                         {/* Cover Image Container */}
-                        <div className="relative aspect-video overflow-hidden">
+                        <div className="relative aspect-square rounded-xl overflow-hidden">
                             <img
                                 src={hit.coverImageURL}
                                 alt={hit.title}
                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                 loading="lazy"
                             />
-
-                            {/* Gradient Overlay (Always visible but stronger on hover) */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80 group-hover:opacity-100 transition-opacity" />
-
-                            {/* Icon Overlay */}
-                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-                                <div className="bg-white/20 backdrop-blur-md p-3 rounded-full shadow-lg transform scale-50 group-hover:scale-100 transition-transform">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6 text-white">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                                    </svg>
+                            {/* Play Overlay */}
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+                                    <PlayIcon className="w-5 h-5 text-white ml-0.5" />
                                 </div>
                             </div>
                         </div>
 
                         {/* Info Section */}
-                        <div className="absolute bottom-0 inset-x-0 p-4 text-left">
-                            <h3 className="text-white font-bold text-[12px] line-clamp-1 leading-tight mb-1 group-hover:text-primary transition-colors">
+                        <div className="mt-3 px-1">
+                            <h3 className="text-black dark:text-white font-bold text-[12px] line-clamp-2 leading-snug text-center group-hover:text-primary transition-colors">
                                 {hit.title}
                             </h3>
-                            <p className="text-gray-300 text-[10px] line-clamp-1 font-medium">
-                                {hit.artist_name}
-                            </p>
                         </div>
                     </div>
                 ))}

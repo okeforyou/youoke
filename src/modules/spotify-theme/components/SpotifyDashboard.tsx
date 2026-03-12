@@ -545,7 +545,7 @@ export default function SpotifyDashboard({ showTab = true }) {
             return (
               <Fragment key={video.id || video.name + i}>
                 <div
-                  className="group cursor-pointer bg-white rounded-2xl border border-gray-100 hover:border-primary/20 hover:shadow-2xl hover:shadow-primary/5 flex flex-col h-full transition-all active:scale-[0.97] duration-300 relative overflow-hidden"
+                  className="group cursor-pointer bg-white rounded-2xl p-2.5 border border-gray-100 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 flex flex-col h-full transition-all active:scale-[0.97] duration-300 relative overflow-hidden"
                   onClick={() => {
                     const baseQuery = video.title ? `${video.title} ${video.artist_name || ""}` : video.name;
                     const cleanedQuery = cleanSearchQuery(baseQuery);
@@ -557,7 +557,7 @@ export default function SpotifyDashboard({ showTab = true }) {
                     }, undefined, { shallow: true });
                   }}
                 >
-                  <figure className="relative w-full aspect-video flex-shrink-0 bg-gray-50 overflow-hidden">
+                  <figure className="relative w-full aspect-square flex-shrink-0 bg-gray-50 rounded-xl overflow-hidden mb-3">
                     <Image
                       src={video.imageUrl || "/icon-cover.png"}
                       priority={i < 10}
@@ -576,8 +576,8 @@ export default function SpotifyDashboard({ showTab = true }) {
                       </div>
                     </div>
                   </figure>
-                  <div className="p-3 flex-1 flex flex-col justify-center">
-                    <h2 className="font-bold text-[12px] sm:text-[13px] line-clamp-2 text-black leading-tight group-hover:text-primary transition-colors text-center">
+                  <div className="px-1 flex-1">
+                    <h2 className="font-bold text-[12px] sm:text-[13px] line-clamp-2 text-black leading-snug group-hover:text-primary transition-colors text-center">
                       {video.title || video.name}
                     </h2>
                   </div>
