@@ -35,16 +35,34 @@ const THAI_NAME_MAP: Record<string, string> = {
     'slot machine': 'สล็อตแมชชีน',
     'num kala': 'หนุ่ม กะลา',
     'numkala': 'หนุ่ม กะลา',
-    'm.i.a.': 'M.I.A.', // Keep international
+    'm.i.a.': 'M.I.A.',
     'f.hero': 'ฟักกลิ้ง ฮีโร่',
     'milli': 'มิลลิ',
-    'youngohm': 'ยังโอม'
+    'youngohm': 'ยังโอม',
+    'urboytj': 'ยัวร์บอยทีเจ',
+    'the toys': 'เดอะ ทอยส์',
+    'atom chanagun': 'อะตอม ชนกันต์',
+    'scrape': 'สเกรป',
+    'scrubb': 'สครับบ์',
+    'polycat': 'โพลีแคท',
+    'whal & dolph': 'วาฬ แอนด์ ดอล์ฟ',
+    'violette wautier': 'วิโอเลต วอเทียร์',
+    'phum viphurit': 'ภูมิ วิภูริศ'
 };
 
 const getThaiName = (name: string): string => {
     if (!name) return 'Unknown';
-    const normalized = name.toLowerCase().trim();
-    return THAI_NAME_MAP[normalized] || name;
+    // Remove dots, special chars, and normalize whitespace (including \u00A0)
+    const clean = name.replace(/[.\s\u00A0]+/g, ' ').trim().toLowerCase();
+    
+    // Exact match on cleaned name
+    if (THAI_NAME_MAP[clean]) return THAI_NAME_MAP[clean];
+    
+    // Secondary check: remove all spaces for aggressive matching
+    const noSpace = clean.replace(/\s+/g, '');
+    if (THAI_NAME_MAP[noSpace]) return THAI_NAME_MAP[noSpace];
+    
+    return name;
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
