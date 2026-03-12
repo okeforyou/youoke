@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { scrapeYouTubePlaylistSearch } from '../../utils/youtubeScraper';
+import { adminFirestore } from '../../firebase-admin';
 
 const CURATED_THAI_ARTISTS = [
     { name: 'Bodyslam', image: '/assets/avatar.jpeg' },
@@ -18,18 +19,37 @@ const STABLE_GENRES = ['ลูกทุ่งฮิต', 'เพลงไทย 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
-        console.log('[API/Explore] Fetching Curated & Stable Music Data...');
+        console.log('[API/Explore] Fetching Dynamic Dashboard Data...');
 
         const dynamicShelves: any[] = [];
 
-        // 1. Curated Top Artists (100% Stable)
+        // 1. Fetch from Firestore Cache if available
+        let topArtistsFromCache = [];
+        try {
+            if (adminFirestore) {
+                const doc = await adminFirestore.collection('music_cache').doc('youtube_home').get();
+                if (doc.exists) {
+                    const cacheData = doc.data();
+                    if (cacheData?.topArtists && cacheData.topArtists.length > 0) {
+                        topArtistsFromCache = cacheData.topArtists;
+                        console.log(`✅ Loaded ${topArtistsFromCache.length} artists from cache.`);
+                    }
+                }
+            }
+        } catch (cacheErr) {
+            console.warn('[Explore API] Cache Read Failed, using fallback artists.');
+        }
+
+        // 2. Add Top Artists Shelf
+        const artistsToDisplay = topArtistsFromCache.length > 0 ? topArtistsFromCache : CURATED_THAI_ARTISTS;
+        
         dynamicShelves.push({
-            title: '👑 ศิลปินยอดฮิต (Curated)',
-            items: CURATED_THAI_ARTISTS.map((a, i) => ({
+            title: topArtistsFromCache.length > 0 ? '👑 ศิลปินยอดนิยม' : '👑 ศิลปินยอดฮิต (Curated)',
+            items: artistsToDisplay.map((a: any, i: number) => ({
                 id: `artist-${i}`,
-                title: a.name,
+                title: a.name || a.title,
                 subtitle: 'ศิลปินยอดนิยม',
-                thumbnail: a.image,
+                thumbnail: a.imageUrl || a.image,
                 type: 'artist',
                 isSong: false
             }))

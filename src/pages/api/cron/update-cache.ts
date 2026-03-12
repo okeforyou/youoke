@@ -29,21 +29,59 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         console.log('✅ InnerTube Connected.');
 
         // 2. Fetch Top Charts (Artists)
-        console.log('Fetching Music Charts...');
+        console.log('Fetching Music Charts (TH)...');
         let topArtists: any[] = [];
         try {
-            // InnerTube often provides charts via browse or specifically music.getExplore
-            const explore = await youtube.music.getExplore();
-            // We search for a shelf that might look like Top Artists
-            const chartsShelf = explore.sections.find(s => s.title?.toString()?.includes('Artist') || s.title?.toString()?.includes('ศิลปิน'));
-            if (chartsShelf && chartsShelf.contents) {
-                topArtists = chartsShelf.contents.map(a => ({
-                    name: a.title?.toString() || 'Unknown',
-                    imageUrl: (a as any).thumbnails?.[0]?.url || ''
-                })).slice(0, 20);
+            // Priority 1: Official Music Charts for Thailand
+            const charts = await youtube.music.getCharts('TH');
+            const artistsShelf = charts.sections.find((s: any) => {
+                const title = s.title?.toString()?.toLowerCase() || '';
+                return title.includes('artist') || title.includes('ศิลปิน') || title.includes('top') || title.includes('ยอดนิยม');
+            });
+            
+            if (artistsShelf && artistsShelf.contents) {
+                topArtists = artistsShelf.contents.map((a: any) => ({
+                    name: a.title?.toString() || a.name?.toString() || 'Unknown',
+                    imageUrl: a.thumbnails?.[0]?.url?.replace('w120-h120', 'w500-h500') || ''
+                })).filter((a: any) => a.name !== 'Unknown').slice(0, 20);
+                console.log(`✅ Found ${topArtists.length} artists from Charts.`);
+            }
+
+            // Priority 2: Fallback to Explore if Charts didn't work
+            if (topArtists.length === 0) {
+                const explore = await youtube.music.getExplore();
+                const chartsShelf = explore.sections.find((s: any) => {
+                    const title = s.title?.toString() || '';
+                    return title.includes('Artist') || title.includes('ศิลปิน') || title.includes('ยอดนิยม');
+                });
+                if (chartsShelf && chartsShelf.contents) {
+                    topArtists = chartsShelf.contents.map((a: any) => ({
+                        name: a.title?.toString() || a.name?.toString() || 'Unknown',
+                        imageUrl: a.thumbnails?.[0]?.url || ''
+                    })).filter((a: any) => a.name !== 'Unknown').slice(0, 20);
+                    console.log(`✅ Found ${topArtists.length} artists from Explore.`);
+                }
             }
         } catch (e) {
-            console.warn('⚠️ Error fetching charts via Explore, continuing with empty charts:', (e as Error).message);
+            console.warn('⚠️ Error fetching charts, attempting search fallback:', (e as Error).message);
+        }
+
+        // Priority 3: Emergency Fallback - Broad Search
+        if (topArtists.length === 0) {
+            console.log('🚨 Attempting Emergency Search Fallback for Artists...');
+            try {
+                // Search for "Thai Popular Artists" which usually gives a good list
+                const search = await youtube.music.search('ศิลปินไทยยอดนิยม', { type: 'artist' });
+                if (search.artists && search.artists.contents.length > 0) {
+                    topArtists = search.artists.contents.map((a: any) => ({
+                        name: a.name || a.title?.toString() || 'Unknown',
+                        imageUrl: (a as any).thumbnails?.[0]?.url || (a as any).thumbnail?.[0]?.url || ''
+                    })).filter((a: any) => a.name !== 'Unknown').slice(0, 20);
+                    console.log(`✅ Found ${topArtists.length} artists via Search.`);
+                }
+            } catch (searchErr) {
+                console.error('❌ Absolute failure in artist fetching:', (searchErr as Error).message);
+            }
         }
 
         // 3. Fetch Genre Playlists using Search (highly reliable)
@@ -56,7 +94,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 const search = await youtube.music.search(genre, { type: 'playlist' });
                 
                 if (search.playlists && search.playlists.contents.length > 0) {
-                    genreData[genre] = search.playlists.contents.map(p => ({
+                    genreData[genre] = search.playlists.contents.map((p: any) => ({
                         playlistId: p.id,
                         title: p.title?.toString() || 'Unknown',
                         thumbnail: (p as any).thumbnails?.[0]?.url || '',
