@@ -286,7 +286,7 @@ export default function SpotifyDashboard({ showTab = true }) {
             {topArtists?.slice(0, 15).map((artist, i) => (
                 <Fragment key={artist.name + i}>
                   <div
-                    className="group relative cursor-pointer overflow-hidden rounded-2xl shadow-sm hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1 transition-all duration-300 isolate bg-gray-100 w-full"
+                    className="group relative cursor-pointer bg-white rounded-2xl p-2.5 border border-gray-100 hover:border-primary/20 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
                     onClick={() => {
                       const cleanedName = cleanSearchQuery(artist.name);
                       setSearchTerm(cleanedName);
@@ -522,7 +522,7 @@ export default function SpotifyDashboard({ showTab = true }) {
             return (
               <Fragment key={video.id || video.name + i}>
                 <div
-                  className="group cursor-pointer flex flex-col h-full transition-all active:scale-[0.97] duration-300 relative overflow-hidden"
+                  className="group cursor-pointer bg-white rounded-2xl p-2.5 border border-gray-100 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 flex flex-col h-full transition-all active:scale-[0.97] duration-300 relative overflow-hidden"
                   onClick={() => {
                     const artistName = (video.artist_name && video.artist_name !== "Unknown Artist") ? video.artist_name : "";
                     const query = `${video.title} ${artistName}`.trim();
@@ -534,7 +534,7 @@ export default function SpotifyDashboard({ showTab = true }) {
                     });
                   }}
                 >
-                  <div className="relative aspect-[1.6/1] rounded-xl overflow-hidden bg-gray-50 mb-3 shadow-sm group-hover:shadow-md transition-shadow">
+                  <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-50 mb-3 shadow-sm group-hover:shadow-md transition-shadow">
                     <Image
                       src={video.coverImageURL || "/icon-cover.png"}
                       priority={i < 10}
