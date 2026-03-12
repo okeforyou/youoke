@@ -25,19 +25,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // 1. Fetch from Firestore Cache if available
         let topArtistsFromCache = [];
+        let cachedGenres: Record<string, any[]> = {};
+        
         try {
             if (adminFirestore) {
                 const doc = await adminFirestore.collection('music_cache').doc('youtube_home').get();
                 if (doc.exists) {
                     const cacheData = doc.data();
-                    if (cacheData?.topArtists && cacheData.topArtists.length > 0) {
-                        topArtistsFromCache = cacheData.topArtists;
-                        console.log(`✅ Loaded ${topArtistsFromCache.length} artists from cache.`);
-                    }
+                    if (cacheData?.topArtists) topArtistsFromCache = cacheData.topArtists;
+                    if (cacheData?.genres) cachedGenres = cacheData.genres;
+                    console.log(`✅ Loaded cache (Artists: ${topArtistsFromCache.length}, Genres: ${Object.keys(cachedGenres).length})`);
                 }
             }
         } catch (cacheErr) {
-            console.warn('[Explore API] Cache Read Failed, using fallback artists.');
+            console.warn('[Explore API] Cache Read Failed, using live fallback.');
         }
 
         // 2. Add Top Artists Shelf
@@ -55,16 +56,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }))
         });
 
-        // 2. Stable Genre-based Playlists
-        // We fetch a few high-quality ones to ensure we always have content
-        const genrePromises = STABLE_GENRES.slice(0, 3).map(genre => scrapeYouTubePlaylistSearch(genre));
-        const genreResults = await Promise.allSettled(genrePromises);
+        // 3. Add Recommended Genre Shelves (Mixed Cache + Live)
+        const genreTitles = Object.keys(cachedGenres).length > 0 
+            ? Object.keys(cachedGenres) 
+            : STABLE_GENRES;
 
-        genreResults.forEach((result, index) => {
-            if (result.status === 'fulfilled' && result.value.length > 0) {
-                dynamicShelves.push({
-                    title: `📂 ${STABLE_GENRES[index]}`,
-                    items: result.value.slice(0, 10).map((r: any) => ({
+        // Priority Genres for the "Recommended" section
+        const priorityGenres = ['T-Pop', 'ป็อป', 'รวมเพลงดังมาแรง', 'เพลงไทยใหม่ๆ', 'ป็อปร็อก', 'อินดี้ไทย'];
+        const sortedGenres = Array.from(new Set([...priorityGenres.filter(g => genreTitles.includes(g)), ...genreTitles]));
+
+        for (let i = 0; i < sortedGenres.slice(0, 10).length; i++) {
+            const genre = sortedGenres[i];
+            let items = [];
+            
+            if (cachedGenres[genre]) {
+                items = cachedGenres[genre].map((r: any) => ({
+                    id: r.playlistId,
+                    playlistId: r.playlistId,
+                    title: r.title,
+                    subtitle: r.author || 'YouTube Music',
+                    thumbnail: r.thumbnail,
+                    type: 'playlist',
+                    isSong: false
+                }));
+            } else {
+                // Live Fallback if this genre isn't in cache
+                try {
+                    const liveResults = await scrapeYouTubePlaylistSearch(genre);
+                    items = liveResults.slice(0, 10).map((r: any) => ({
                         id: r.playlistId,
                         playlistId: r.playlistId,
                         title: r.title,
@@ -72,12 +91,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                         thumbnail: r.thumbnail,
                         type: 'playlist',
                         isSong: false
-                    }))
+                    }));
+                } catch (e) {
+                    continue; // Skip if live fetch fails
+                }
+            }
+
+            if (items.length > 0) {
+                // Use a special title for the first genre if it's a priority one
+                let shelfTitle = `📂 ${genre}`;
+                if (i === 0 && priorityGenres.includes(genre)) {
+                    shelfTitle = `✨ เพลงแนะนำสำหรับคุณ (${genre})`;
+                }
+
+                dynamicShelves.push({
+                    title: shelfTitle,
+                    items: items
                 });
             }
-        });
+        }
 
-        // 3. Fallback if empty (Absolute Survival)
+        // 4. Absolute Survival Fallback
         if (dynamicShelves.length < 2) {
             dynamicShelves.push({
                 title: '📂 หมวดหมู่แนะนำ (Fallback)',
