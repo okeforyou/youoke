@@ -37,10 +37,23 @@ const EXCLUSION_KEYWORDS = [
 ];
 
 const isMixedContent = (title: string, thumbnail?: string, videoCount?: string, id?: string) => {
-    // Priority 1: Clear indicators for SINGING (Artists/Individual tracks)
-    if (thumbnail?.includes('mosaic.scdn.co')) return false; 
-    if (id?.startsWith('RD')) return false; 
-    if (videoCount?.toLowerCase().includes('mix')) return false;
+    const lowerTitle = title.toLowerCase();
+    
+    // 1. Check for Mosaic Thumbnails (Strong Singing Indicator)
+    if (thumbnail?.includes('mosaic.scdn.co') && !lowerTitle.includes('ชั่วโมง') && !lowerTitle.includes('long play')) {
+        return false; 
+    }
+
+    // 2. PRIMARY FILTER: Check Keywords aggressively (as requested for 'รวมเพลง')
+    if (EXCLUSION_KEYWORDS.some(k => lowerTitle.includes(k.toLowerCase()))) {
+        return true; 
+    }
+    
+    // 3. Check for Single Video Contents (Medley videos)
+    if (videoCount?.includes('1 video') || videoCount === '1') return true;
+    
+    // 4. Check for Mixes and High Video Counts (Collection of separate tracks)
+    if (id?.startsWith('RD') || videoCount?.toLowerCase().includes('mix')) return false;
     
     if (videoCount) {
         const countMatch = videoCount.match(/(\d+)/);
@@ -50,11 +63,7 @@ const isMixedContent = (title: string, thumbnail?: string, videoCount?: string, 
         }
     }
 
-    // Priority 2: Clear indicators for LISTENING (Long Play/Medleys)
-    const hasKeyword = EXCLUSION_KEYWORDS.some(k => title.toLowerCase().includes(k.toLowerCase()));
-    if (videoCount?.includes('1 video') || videoCount === '1') return true;
-    
-    return hasKeyword;
+    return false;
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {

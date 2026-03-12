@@ -59,21 +59,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // 3. Helper to distinguish Singing vs Listening
         const isLongPlay = (title: string, thumbnail?: string, videoCount?: string, id?: string) => {
-            // Priority 1: Clear indicators for SINGING (Artists/Individual tracks)
-            if (thumbnail?.includes('mosaic.scdn.co')) return false; // Spotify mosaic is always a collection
-            if (id?.startsWith('RD')) return false; // YouTube Mix is a collection of individual songs
-            if (videoCount?.toLowerCase().includes('mix')) return false;
-            
-            // If it has a substantial number of tracks, it's definitely a singing playlist
-            if (videoCount) {
-                const countMatch = videoCount.match(/(\d+)/);
-                if (countMatch) {
-                    const count = parseInt(countMatch[1]);
-                    if (count > 2) return false; 
-                }
-            }
-
-            // Priority 2: Clear indicators for LISTENING (Long Play/Medleys)
+            const lowerTitle = title.toLowerCase();
             const keywords = [
                 'รวมเพลง', 'ฟังยาวๆ', 'medley', 'non stop', 'ต่อเนื่อง', 
                 '1 ชั่วโมง', 'ยาวๆ', 'full album', 'mix', 'ชุดใหญ่', 
@@ -83,12 +69,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 '2 ชั่วโมง', '3 ชั่วโมง', 'จัดเต็ม', 'ชุดพิเศษ', 'ชุดเล็ก',
                 'ยาวจัดเต็ม', 'ฮิตที่สุด', 'เพลงเก่า', 'เพลงใหม่', 'ลูกทุ่งยอดฮิต'
             ];
-            const hasKeyword = keywords.some(k => title.toLowerCase().includes(k.toLowerCase()));
             
-            // If it's a single video appearing as a playlist, it's almost certainly a medley video
+            // 1. Check for Mosaic Thumbnails (Strong Singing Indicator)
+            // But if it explicitly says long durations, it's still listening
+            if (thumbnail?.includes('mosaic.scdn.co') && !lowerTitle.includes('ชั่วโมง') && !lowerTitle.includes('long play')) {
+                return false; 
+            }
+
+            // 2. PRIMARY FILTER: Check Keywords aggressively (as requested for 'รวมเพลง')
+            if (keywords.some(k => lowerTitle.includes(k.toLowerCase()))) {
+                return true; 
+            }
+            
+            // 3. Check for Single Video Contents (Medley videos)
             if (videoCount?.includes('1 video') || videoCount === '1') return true;
             
-            return hasKeyword;
+            // 4. Check for Mixes and High Video Counts (Collection of separate tracks)
+            if (id?.startsWith('RD') || videoCount?.toLowerCase().includes('mix')) return false;
+            
+            if (videoCount) {
+                const countMatch = videoCount.match(/(\d+)/);
+                if (countMatch) {
+                    const count = parseInt(countMatch[1]);
+                    if (count > 2) return false; 
+                }
+            }
+
+            return false;
         };
 
         // 4. Add Recommended Shelves (Curated & Categorized)
