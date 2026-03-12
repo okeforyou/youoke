@@ -155,9 +155,9 @@ export default function ListRecommendedPlaylists() {
                             <div 
                                 key={i} 
                                 onClick={() => handlePlaySong(song)} 
-                                className="group cursor-pointer bg-white rounded-2xl p-2.5 border border-gray-100 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 flex flex-col h-full transition-all duration-300 active:scale-[0.98]"
+                                className="group cursor-pointer bg-white rounded-xl border border-gray-100 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 flex flex-col h-full transition-all duration-300 active:scale-[0.98] overflow-hidden"
                             >
-                                <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-50 mb-3 shadow-sm group-hover:shadow-md transition-shadow">
+                                <div className="relative aspect-video overflow-hidden bg-gray-50 flex-shrink-0">
                                     <Image 
                                         src={song.coverImageURL || "/icon-cover.png"} 
                                         fill 
@@ -171,11 +171,13 @@ export default function ListRecommendedPlaylists() {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="px-1 flex-1">
-                                    <h3 className="font-bold text-[12px] sm:text-[13px] line-clamp-2 text-black leading-snug group-hover:text-primary transition-colors text-left">
+                                <div className="p-2 sm:p-3 flex-1 flex flex-col justify-center">
+                                    <h3 className="text-[12px] sm:text-[13px] font-bold text-black line-clamp-2 leading-tight group-hover:text-primary transition-colors text-left">
                                         {song.title}
                                     </h3>
-                                    <p className="text-[10px] text-gray-400 mt-1 text-left">{song.artist_name || 'YouTube Music'}</p>
+                                    <p className="text-[10px] text-gray-400 mt-1 line-clamp-1 text-left">
+                                        {song.artist_name || "YouTube Music"}
+                                    </p>
                                 </div>
                             </div>
                         ))

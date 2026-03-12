@@ -286,7 +286,7 @@ export default function SpotifyDashboard({ showTab = true }) {
             {topArtists?.slice(0, 15).map((artist, i) => (
                 <Fragment key={artist.name + i}>
                   <div
-                    className="group relative cursor-pointer bg-white rounded-2xl p-2.5 border border-gray-100 hover:border-primary/20 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+                    className="group relative cursor-pointer overflow-hidden rounded-2xl shadow-sm hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1 transition-all duration-300 isolate bg-gray-100 w-full"
                     onClick={() => {
                       const cleanedName = cleanSearchQuery(artist.name);
                       setSearchTerm(cleanedName);
@@ -522,7 +522,7 @@ export default function SpotifyDashboard({ showTab = true }) {
             return (
               <Fragment key={video.id || video.name + i}>
                 <div
-                  className="group cursor-pointer bg-white rounded-2xl p-2.5 border border-gray-100 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 flex flex-col h-full transition-all active:scale-[0.97] duration-300 relative overflow-hidden"
+                  className="group cursor-pointer bg-white rounded-xl border border-gray-100 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 flex flex-col h-full transition-all active:scale-[0.97] duration-300 relative overflow-hidden"
                   onClick={() => {
                     const artistName = (video.artist_name && video.artist_name !== "Unknown Artist") ? video.artist_name : "";
                     const query = `${video.title} ${artistName}`.trim();
@@ -534,7 +534,7 @@ export default function SpotifyDashboard({ showTab = true }) {
                     });
                   }}
                 >
-                  <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-50 mb-3 shadow-sm group-hover:shadow-md transition-shadow">
+                  <div className="relative aspect-video overflow-hidden bg-gray-50 flex-shrink-0">
                     <Image
                       src={video.coverImageURL || "/icon-cover.png"}
                       priority={i < 10}
@@ -546,14 +546,15 @@ export default function SpotifyDashboard({ showTab = true }) {
                         ev.currentTarget.src = "/icon-cover.png";
                       }}
                     />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
                     <div className="absolute inset-x-0 bottom-0 p-2 flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
                       <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center shadow-lg">
                         <svg className="w-4 h-4 text-white fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                       </div>
                     </div>
                   </div>
-                  <div className="px-1 flex-1">
-                    <h3 className="font-bold text-[12px] sm:text-[13px] line-clamp-2 text-black leading-snug group-hover:text-primary transition-colors text-left">
+                  <div className="p-2 sm:p-3 flex-1 flex flex-col justify-center">
+                    <h3 className="font-bold text-[12px] sm:text-[13px] line-clamp-2 text-black leading-tight group-hover:text-primary transition-colors text-left">
                       {video.title || video.name}
                     </h3>
                     <p className="text-[10px] text-gray-400 mt-1 line-clamp-1 text-left">

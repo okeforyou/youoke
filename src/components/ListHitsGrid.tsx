@@ -46,10 +46,10 @@ export default function ListHitsGrid() {
                     <div
                         key={`${hit.title}-${index}`}
                         onClick={() => handleClick(hit)}
-                        className="group relative cursor-pointer bg-white rounded-2xl p-2.5 border border-gray-100 hover:border-primary/20 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+                        className="group relative cursor-pointer bg-white rounded-xl border border-gray-100 hover:border-primary/20 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden flex flex-col h-full"
                     >
-                        {/* Cover Image Container */}
-                        <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-50 shadow-sm group-hover:shadow-md transition-shadow">
+                        {/* Cover Image Container (Full Bleed) */}
+                        <div className="relative aspect-video overflow-hidden bg-gray-50 flex-shrink-0">
                             <img
                                 src={hit.coverImageURL}
                                 alt={hit.title}
@@ -64,13 +64,13 @@ export default function ListHitsGrid() {
                             </div>
                         </div>
 
-                        {/* Info Section */}
-                        <div className="mt-3 px-1">
-                            <h3 className="text-black dark:text-white font-bold text-[12px] line-clamp-2 leading-snug text-left group-hover:text-primary transition-colors">
+                        {/* Text Content (Padded) */}
+                        <div className="p-2 sm:p-3 flex-1 flex flex-col justify-center">
+                            <h3 className="text-black dark:text-white font-bold text-[12px] sm:text-[13px] line-clamp-2 leading-tight group-hover:text-primary transition-colors text-left uppercase">
                                 {hit.title}
                             </h3>
                             <p className="text-[10px] text-gray-400 mt-1 line-clamp-1 text-left">
-                                {(hit.artist_name && hit.artist_name !== "Unknown Artist") ? hit.artist_name : "ศิลปิน"}
+                                {(hit.artist_name && hit.artist_name !== "Unknown Artist") ? hit.artist_name : "YouTube Music"}
                             </p>
                         </div>
                     </div>
