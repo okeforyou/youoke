@@ -576,15 +576,10 @@ export default function SpotifyDashboard({ showTab = true }) {
                       </div>
                     </div>
                   </figure>
-                  <div className="px-1 flex-1 flex flex-col justify-between">
-                    <div>
-                        <h2 className="font-bold text-[12px] sm:text-[13px] line-clamp-2 text-black leading-snug group-hover:text-primary transition-colors">
-                        {video.title || video.name}
-                        </h2>
-                        <p className="text-[10px] text-gray-500 line-clamp-1 mt-1 font-medium">
-                        {video.artist_name || "Unknown Artist"}
-                        </p>
-                    </div>
+                  <div className="px-1 flex-1">
+                    <h2 className="font-bold text-[12px] sm:text-[13px] line-clamp-2 text-black leading-snug group-hover:text-primary transition-colors">
+                      {video.title || video.name}
+                    </h2>
                   </div>
                 </div>
               </Fragment>

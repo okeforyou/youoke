@@ -170,15 +170,10 @@ export default function ListRecommendedPlaylists() {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="px-1 flex-1 flex flex-col justify-between">
-                                    <div>
-                                        <h3 className="font-bold text-[12px] sm:text-[13px] line-clamp-2 text-black leading-tight group-hover:text-primary transition-colors">
-                                            {song.title}
-                                        </h3>
-                                        <p className="text-[10px] text-gray-500 line-clamp-1 mt-1 font-medium">
-                                            {song.artist_name || "ศิลปิน"}
-                                        </p>
-                                    </div>
+                                <div className="px-1 flex-1">
+                                    <h3 className="font-bold text-[12px] sm:text-[13px] line-clamp-2 text-black leading-tight group-hover:text-primary transition-colors">
+                                        {song.title}
+                                    </h3>
                                 </div>
                             </div>
                         ))
