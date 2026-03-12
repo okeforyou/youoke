@@ -58,7 +58,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
 
         // 3. Helper to distinguish Singing vs Listening
-        const isLongPlay = (title: string) => {
+        const isLongPlay = (title: string, thumbnail?: string, videoCount?: string, id?: string) => {
+            // Priority 1: Clear indicators for SINGING (Artists/Individual tracks)
+            if (thumbnail?.includes('mosaic.scdn.co')) return false; // Spotify mosaic is always a collection
+            if (id?.startsWith('RD')) return false; // YouTube Mix is a collection of individual songs
+            if (videoCount?.toLowerCase().includes('mix')) return false;
+            
+            // If it has a substantial number of tracks, it's definitely a singing playlist
+            if (videoCount) {
+                const countMatch = videoCount.match(/(\d+)/);
+                if (countMatch) {
+                    const count = parseInt(countMatch[1]);
+                    if (count > 2) return false; 
+                }
+            }
+
+            // Priority 2: Clear indicators for LISTENING (Long Play/Medleys)
             const keywords = [
                 'รวมเพลง', 'ฟังยาวๆ', 'medley', 'non stop', 'ต่อเนื่อง', 
                 '1 ชั่วโมง', 'ยาวๆ', 'full album', 'mix', 'ชุดใหญ่', 
@@ -68,8 +83,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 '2 ชั่วโมง', '3 ชั่วโมง', 'จัดเต็ม', 'ชุดพิเศษ', 'ชุดเล็ก',
                 'ยาวจัดเต็ม', 'ฮิตที่สุด', 'เพลงเก่า', 'เพลงใหม่', 'ลูกทุ่งยอดฮิต'
             ];
-            // If title contains any exclusion keyword, it's a long play/mixed content
-            return keywords.some(k => title.toLowerCase().includes(k.toLowerCase()));
+            const hasKeyword = keywords.some(k => title.toLowerCase().includes(k.toLowerCase()));
+            
+            // If it's a single video appearing as a playlist, it's almost certainly a medley video
+            if (videoCount?.includes('1 video') || videoCount === '1') return true;
+            
+            return hasKeyword;
         };
 
         // 4. Add Recommended Shelves (Curated & Categorized)
@@ -97,10 +116,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     id: item.playlistId || item.id,
                     playlistId: item.playlistId || item.id,
                     title: item.title,
-                    subtitle: (item.author && item.author !== "Unknown Artist") ? item.author : (isLongPlay(item.title) ? 'โหมดฟังยาวๆ' : 'YouTube Music'),
+                    subtitle: (item.author && item.author !== "Unknown Artist") ? item.author : (isLongPlay(item.title, item.thumbnail, item.videoCount, item.playlistId) ? 'โหมดฟังยาวๆ' : 'YouTube Music'),
                     thumbnail: item.thumbnail,
                     type: 'playlist',
-                    isLongPlay: isLongPlay(item.title),
+                    isLongPlay: isLongPlay(item.title, item.thumbnail, item.videoCount, item.playlistId),
                     isSong: false
                 };
 

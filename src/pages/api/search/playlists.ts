@@ -36,8 +36,25 @@ const EXCLUSION_KEYWORDS = [
     'ยาวจัดเต็ม'
 ];
 
-const isMixedContent = (title: string) => {
-    return EXCLUSION_KEYWORDS.some(k => title.toLowerCase().includes(k.toLowerCase()));
+const isMixedContent = (title: string, thumbnail?: string, videoCount?: string, id?: string) => {
+    // Priority 1: Clear indicators for SINGING (Artists/Individual tracks)
+    if (thumbnail?.includes('mosaic.scdn.co')) return false; 
+    if (id?.startsWith('RD')) return false; 
+    if (videoCount?.toLowerCase().includes('mix')) return false;
+    
+    if (videoCount) {
+        const countMatch = videoCount.match(/(\d+)/);
+        if (countMatch) {
+            const count = parseInt(countMatch[1]);
+            if (count > 2) return false; 
+        }
+    }
+
+    // Priority 2: Clear indicators for LISTENING (Long Play/Medleys)
+    const hasKeyword = EXCLUSION_KEYWORDS.some(k => title.toLowerCase().includes(k.toLowerCase()));
+    if (videoCount?.includes('1 video') || videoCount === '1') return true;
+    
+    return hasKeyword;
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -150,10 +167,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         let filteredResults = [];
         if (type === 'listening') {
             // ONLY include mixed content
-            filteredResults = results.filter(item => isMixedContent(item.title));
+            filteredResults = results.filter(item => isMixedContent(item.title, item.thumbnail, item.videoCount, item.playlistId));
         } else {
             // STRICTLY EXCLUDE mixed/long content for Singing mode
-            filteredResults = results.filter(item => !isMixedContent(item.title));
+            filteredResults = results.filter(item => !isMixedContent(item.title, item.thumbnail, item.videoCount, item.playlistId));
         }
 
         if (filteredResults.length === 0) {
