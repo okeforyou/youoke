@@ -144,19 +144,41 @@ export default function ListRecommendedPlaylists() {
                         <FolderPlusIcon className="w-4 h-4" /> <span>{isImporting ? "กำลังบันทึก..." : "บันทึกลิสต์"}</span>
                     </button>
                 </div>
-                <div className="p-4 space-y-2 pb-32">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-5 pb-32">
                     {isLoadTracks ? (
-                        getSkeletonItems(8).map(i => <div key={i} className="flex gap-4 h-12 bg-gray-50 rounded-xl animate-pulse" />)
+                        getSkeletonItems(10).map(i => (
+                            <div key={i} className="aspect-square bg-gray-50 rounded-2xl animate-pulse" />
+                        ))
                     ) : (
                         tracksData?.artist?.map((song: any, i: number) => (
-                            <div key={i} onClick={() => handlePlaySong(song)} className="flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 cursor-pointer group">
-                                <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-gray-100 shrink-0">
-                                    <Image src={song.coverImageURL || "/icon-cover.png"} fill className="object-cover" unoptimized alt={song.title || "Song Cover"} />
-                                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100"><PlayIcon className="w-6 h-6 text-white" /></div>
+                            <div 
+                                key={i} 
+                                onClick={() => handlePlaySong(song)} 
+                                className="group cursor-pointer bg-white rounded-2xl p-2.5 border border-gray-100 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 flex flex-col h-full transition-all duration-300 active:scale-[0.98]"
+                            >
+                                <div className="relative aspect-square rounded-xl overflow-hidden bg-gray-50 mb-3">
+                                    <Image 
+                                        src={song.coverImageURL || "/icon-cover.png"} 
+                                        fill 
+                                        className="object-cover transition-transform duration-500 group-hover:scale-110" 
+                                        unoptimized 
+                                        alt={song.title || "Song Cover"} 
+                                    />
+                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                                        <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+                                            <PlayIcon className="w-5 h-5 text-white ml-0.5" />
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                    <h3 className="font-bold text-[13px] text-gray-900 truncate">{song.title}</h3>
-                                    <p className="text-[10px] text-gray-500 truncate">{song.artist_name}</p>
+                                <div className="px-1 flex-1 flex flex-col justify-between">
+                                    <div>
+                                        <h3 className="font-bold text-[12px] sm:text-[13px] line-clamp-2 text-black leading-tight group-hover:text-primary transition-colors">
+                                            {song.title}
+                                        </h3>
+                                        <p className="text-[10px] text-gray-500 line-clamp-1 mt-1 font-medium">
+                                            {song.artist_name || "ศิลปิน"}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         ))
