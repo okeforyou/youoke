@@ -48,32 +48,49 @@ export default async function handler(
       console.log(`[API] Fetching YouTube Playlist (InnerTube): ${playlistId}`);
       const ytId = playlistId.replace('yt-', '');
 
-      const { Innertube } = require('youtubei.js');
-      const youtube = await Innertube.create();
-      
-      const playlist = await youtube.music.getPlaylist(ytId);
-      
-      const artists = {
-        status: "success",
-        playlist: {
-          id: playlistId,
-          name: playlist.header?.title?.toString() || "YouTube Playlist",
-          description: playlist.header?.description?.toString() || "Tracks from YouTube",
-          imageUrl: playlist.header?.thumbnails?.[0]?.url || "",
-          owner: playlist.header?.author?.name || "YouTube Music"
-        },
-        artist: playlist.contents?.map((v: any) => ({
-          id: v.id,
-          title: v.title?.toString() || "Unknown",
-          artist_name: v.author?.name || "Unknown Artist",
-          coverImageURL: v.thumbnails?.[0]?.url || "",
-          imageUrl: v.thumbnails?.[0]?.url || "",
-        })) || []
-      };
+      try {
+        const { Innertube } = require('youtubei.js');
+        const youtube = await Innertube.create();
+        
+        let playlist: any;
+        try {
+          // Try Music API first (Optimized for YTM)
+          playlist = await youtube.music.getPlaylist(ytId);
+        } catch (musicError) {
+          console.warn(`[API] Music Playlist fetch failed for ${ytId}, trying Main YouTube API...`);
+          // Fallback to Main YouTube API (Some playlists are standard YT lists)
+          playlist = await youtube.getPlaylist(ytId);
+        }
+        
+        if (!playlist || !playlist.contents) {
+          throw new Error("Playlist not found or empty");
+        }
 
-      // Cache
-      playlistCache.set(playlistId, { data: artists, timestamp: Date.now() });
-      return res.status(200).json(artists);
+        const artists = {
+          status: "success",
+          playlist: {
+            id: playlistId,
+            name: playlist.header?.title?.toString() || playlist.title || "YouTube Playlist",
+            description: (playlist.header?.description || playlist.description)?.toString() || "Tracks from YouTube",
+            imageUrl: playlist.header?.thumbnails?.[0]?.url || playlist.thumbnails?.[0]?.url || "",
+            owner: (playlist.header?.author?.name || playlist.author?.name)?.toString() || "YouTube Music"
+          },
+          artist: (playlist.contents || playlist.videos || []).map((v: any) => ({
+            id: v.id || v.videoId,
+            title: v.title?.toString() || "Unknown",
+            artist_name: (v.author?.name || v.author || "Unknown Artist")?.toString(),
+            coverImageURL: v.thumbnails?.[0]?.url || "",
+            imageUrl: v.thumbnails?.[0]?.url || "",
+          })).filter((v: any) => !!v.id) || []
+        };
+
+        // Cache
+        playlistCache.set(playlistId, { data: artists, timestamp: Date.now() });
+        return res.status(200).json(artists);
+      } catch (innerError: any) {
+        console.error(`❌ InnerTube Error for ${ytId}:`, innerError.message);
+        throw innerError; // Rethrow to let the main handler catch it
+      }
     }
 
     // Fetching the specific playlist by ID (Spotify)
