@@ -201,27 +201,34 @@ export default function YouTubeDashboard() {
     const renderCard = (item: YTItem, index: number) => (
         <Fragment key={(item.id || item.title) + index}>
             <div
-                className="group flex flex-col h-full bg-white rounded-2xl border border-gray-100 hover:border-primary/20 hover:shadow-xl transition-all duration-300 active:scale-[0.98] overflow-hidden cursor-pointer"
+                className="group relative cursor-pointer overflow-hidden rounded-3xl shadow-sm hover:shadow-2xl hover:shadow-red-600/10 hover:-translate-y-1 transition-all duration-300 isolate bg-gray-100 w-full aspect-square"
                 onClick={() => handleItemClick(item)}
             >
-                <div className="relative aspect-video flex-shrink-0 bg-gray-50 overflow-hidden">
-                    <Image
-                        src={item.thumbnail?.replace('w120-h120', 'w400-h400') || "/icon-cover.png"}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-110"
-                        alt={item.title}
-                        unoptimized
-                    />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
-                        <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300">
-                            <svg className="w-5 h-5 text-white ml-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-                        </div>
+                <Image
+                    src={item.thumbnail?.replace('w120-h120', 'w400-h400') || "/icon-cover.png"}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    alt={item.title}
+                    unoptimized
+                />
+                <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-90 group-hover:opacity-100 transition-opacity pointer-events-none" />
+
+                {/* Play Hint */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                    <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-lg transform scale-50 group-hover:scale-100 transition-transform">
+                        <svg className="w-5 h-5 text-white fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                     </div>
                 </div>
-                <div className="p-3 flex-1 flex flex-col justify-center">
-                    <h2 className="font-bold text-[12px] sm:text-[13px] line-clamp-2 text-black leading-snug group-hover:text-primary transition-colors text-center">
+
+                <div className="absolute inset-0 p-3 flex flex-col justify-end items-start z-10 pointer-events-none">
+                    <h2 className="text-white font-bold text-[11px] sm:text-[12px] leading-tight line-clamp-2 drop-shadow-md transform translate-y-0.5 group-hover:translate-y-0 transition-transform">
                         {item.title}
                     </h2>
+                    {item.subtitle && (
+                        <p className="text-[9px] text-gray-300 truncate mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {item.subtitle}
+                        </p>
+                    )}
                 </div>
             </div>
         </Fragment>
@@ -244,7 +251,7 @@ export default function YouTubeDashboard() {
                     <div className="p-2 grid grid-cols-2 lg:grid-cols-5 gap-4 mt-4">
                         {searchQuery.isLoading ? (
                             Array.from({ length: 10 }).map((_, i) => (
-                                <div key={i} className="aspect-video rounded-2xl bg-gray-100 animate-pulse" />
+                                <div key={i} className="aspect-square rounded-3xl bg-gray-100 animate-pulse" />
                             ))
                         ) : (
                             searchResults.map((item, i) => renderCard(item, i))
@@ -270,7 +277,7 @@ export default function YouTubeDashboard() {
                     <div className="p-2 grid grid-cols-2 lg:grid-cols-5 gap-4 mt-4">
                         {playlistQuery.isLoading ? (
                             Array.from({ length: 10 }).map((_, i) => (
-                                <div key={i} className="aspect-video rounded-2xl bg-gray-100 animate-pulse" />
+                                <div key={i} className="aspect-square rounded-3xl bg-gray-100 animate-pulse" />
                             ))
                         ) : (
                             playlistItems.map((item, i) => renderCard(item, i))
@@ -296,25 +303,24 @@ export default function YouTubeDashboard() {
                             return artistItems.slice(0, 15).map((artist, i) => (
                                 <Fragment key={artist.id + i}>
                                     <div
-                                        className="group flex flex-col h-full bg-white rounded-2xl border border-gray-100 hover:border-primary/20 hover:shadow-xl transition-all duration-300 active:scale-[0.98] overflow-hidden cursor-pointer"
+                                        className="group relative cursor-pointer overflow-hidden rounded-2xl shadow-sm hover:shadow-2xl hover:shadow-red-600/10 hover:-translate-y-1 transition-all duration-300 isolate bg-gray-100 w-full aspect-square"
                                         onClick={() => handleItemClick(artist)}
                                     >
-                                        <div className="relative aspect-video flex-shrink-0 bg-gray-50 overflow-hidden">
-                                            <Image
-                                                src={artist.thumbnail || "/assets/avatar.jpeg"}
-                                                fill
-                                                className="object-cover transition-transform duration-500 group-hover:scale-110"
-                                                alt={artist.title}
-                                                unoptimized
-                                            />
-                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
-                                                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300">
-                                                    <svg className="w-5 h-5 text-white ml-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-                                                </div>
+                                        <Image
+                                            src={artist.thumbnail || "/assets/avatar.jpeg"}
+                                            fill
+                                            className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                            alt={artist.title}
+                                            unoptimized
+                                        />
+                                        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-90 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                            <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-lg transform scale-50 group-hover:scale-100 transition-transform">
+                                                <svg className="w-5 h-5 text-white fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                                             </div>
                                         </div>
-                                        <div className="p-3 flex-1 flex flex-col justify-center">
-                                            <h2 className="font-bold text-[12px] sm:text-[13px] line-clamp-2 text-black leading-snug group-hover:text-primary transition-colors text-center">
+                                        <div className="absolute inset-0 p-3 flex flex-col justify-end items-start z-10 pointer-events-none">
+                                            <h2 className="text-white font-bold text-[11px] sm:text-[12px] leading-tight line-clamp-1 drop-shadow-md transform translate-y-0.5 group-hover:translate-y-0 transition-transform text-left">
                                                 {artist.title}
                                             </h2>
                                         </div>
@@ -359,26 +365,30 @@ export default function YouTubeDashboard() {
                                     <div
                                         key={cat.id + i}
                                         onClick={() => handleItemClick(cat)}
-                                        className="group flex flex-col h-full bg-white rounded-2xl border border-gray-100 hover:border-primary/20 hover:shadow-xl transition-all duration-300 active:scale-[0.98] overflow-hidden cursor-pointer"
+                                        className="relative w-full aspect-square rounded-3xl overflow-hidden cursor-pointer shadow-sm hover:shadow-2xl hover:shadow-red-600/10 transition-all duration-500 hover:-translate-y-1.5 group bg-gray-100"
                                     >
-                                        <div className="relative aspect-video flex-shrink-0 bg-gray-50 overflow-hidden">
-                                            <Image
-                                                src={cat.thumbnail?.replace('w120-h120', 'w400-h400') || "/icon-cover.png"}
-                                                alt={cat.title}
-                                                fill
-                                                className="object-cover transition-transform duration-500 group-hover:scale-110"
-                                                unoptimized
-                                            />
-                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
-                                                <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300">
-                                                    <svg className="w-5 h-5 text-white ml-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+                                        <Image
+                                            src={cat.thumbnail?.replace('w120-h120', 'w400-h400') || "/icon-cover.png"}
+                                            alt={cat.title}
+                                            fill
+                                            className="object-cover transition-transform duration-700 group-hover:scale-105"
+                                            unoptimized
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-90 transition-opacity" />
+
+                                        {/* Content Overlay */}
+                                        <div className="absolute inset-0 p-6 flex flex-col justify-between">
+                                            <div className="self-end opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-x-2 group-hover:translate-x-0">
+                                                <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center">
+                                                    <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div className="p-3 flex-1 flex flex-col justify-center">
-                                            <h2 className="font-bold text-[12px] sm:text-[13px] line-clamp-2 text-black leading-snug group-hover:text-primary transition-colors text-center">
-                                                {cat.title}
-                                            </h2>
+                                            <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                                                <span className="text-white font-bold text-[11px] sm:text-[12px] drop-shadow-md line-clamp-2 leading-tight">
+                                                    {cat.title}
+                                                </span>
+                                                <div className="h-1 w-12 bg-red-600 rounded-full mt-2 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-100 origin-left scale-x-0 group-hover:scale-x-100" />
+                                            </div>
                                         </div>
                                     </div>
                                 ))}

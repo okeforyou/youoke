@@ -163,19 +163,16 @@ export default function ListTopicsGrid({ showTab = true }) {
         <div key={idx} className="mb-8">
           <div className="flex items-center gap-2 mb-4 px-2">
             {detailSections && (
-              <button 
-                onClick={() => setDetailSections(null)} 
-                className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors"
-              >
+              <button onClick={() => setDetailSections(null)} className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition-colors">
                 <ChevronLeftIcon className="w-5 h-5 text-black" />
               </button>
             )}
             <h2 className="text-xl font-bold text-black">{section.title}</h2>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {section.items.map((item, i) => (
+            {section.items.map((item) => (
               <div
-                key={item.playlistId || (item.videoId ? item.videoId + i : i)}
+                key={item.playlistId || item.videoId}
                 onClick={() => {
                   if (item.isSong && item.videoId) {
                     usePlayerStore.getState().addToQueue({
@@ -194,24 +191,20 @@ export default function ListTopicsGrid({ showTab = true }) {
                     handlePlaylistClick(item.playlistId, item.title)
                   }
                 }}
-                className="group cursor-pointer"
+                className="relative aspect-square rounded-xl cursor-pointer overflow-hidden shadow-lg hover:shadow-xl transition-all hover:scale-105 group bg-gray-900"
               >
-                <div className="relative aspect-video rounded-xl overflow-hidden shadow-lg bg-gray-900 border border-gray-100">
-                  <img
-                    src={item.thumbnail?.replace('mqdefault', 'hqdefault') || `https://i.ytimg.com/vi/mqdefault.jpg`}
-                    className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity group-hover:scale-110 duration-500"
-                    loading="lazy"
-                    alt={item.title}
-                  />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
-                    <PlayIcon className="w-10 h-10 text-white opacity-0 group-hover:opacity-100 transition-all drop-shadow-lg" />
-                  </div>
+                <img
+                  src={item.thumbnail?.replace('mqdefault', 'hqdefault') || `https://i.ytimg.com/vi/mqdefault.jpg`}
+                  className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+
+                <div className="absolute bottom-3 left-3 right-3">
+                  <h3 className="text-white font-thin text-[10px] line-clamp-2">{item.title}</h3>
+                  {/* Removed uploader/count info */}
                 </div>
-                <div className="mt-2 px-1">
-                  <h3 className="text-black font-bold text-[11px] sm:text-[12px] line-clamp-2 text-center group-hover:text-primary transition-colors">
-                    {item.title}
-                  </h3>
-                </div>
+                <PlayIcon className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 text-white opacity-0 group-hover:opacity-100 transition-all drop-shadow-lg" />
               </div>
             ))}
           </div>
@@ -220,7 +213,7 @@ export default function ListTopicsGrid({ showTab = true }) {
 
       {/* Fallback View (Static Genres) */}
       {useFallback && !detailSections && (
-        <div className="mt-8">
+        <div>
           <h2 className="text-xl font-bold text-black mb-4 px-2 flex items-center gap-2">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-primary">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 19.5v-6h6v6" />

@@ -49,7 +49,7 @@ export default function PlaylistCard({
         >
             {/* Cover Image - Unified Premium Card Style */}
             {/* Fixed: White Background + Border to prevent "Gray Circle" visual glitch */}
-            <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-white shadow-sm group-hover:shadow-xl transition-all duration-500 ease-out group-hover:-translate-y-1.5 isolation-isolate group-hover:border-primary/20">
+            <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-white shadow-sm group-hover:shadow-xl transition-all duration-500 ease-out group-hover:-translate-y-1.5 isolation-isolate border-2 border-gray-100 group-hover:border-primary/20">
 
                 {/* Fallback Background (Visible if image missing/error) */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 text-gray-400">

@@ -148,16 +148,16 @@ export default function ListRecommendedPlaylists() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-5 pb-32">
                     {isLoadTracks ? (
                         getSkeletonItems(10).map(i => (
-                            <div key={i} className="aspect-video bg-gray-50 rounded-2xl animate-pulse" />
+                            <div key={i} className="aspect-square bg-gray-50 rounded-2xl animate-pulse" />
                         ))
                     ) : (
                         tracksData?.artist?.map((song: any, i: number) => (
                             <div 
                                 key={i} 
                                 onClick={() => handlePlaySong(song)} 
-                                className="group cursor-pointer bg-white rounded-2xl border border-gray-100 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 flex flex-col h-full transition-all duration-300 active:scale-[0.98] overflow-hidden"
+                                className="group cursor-pointer bg-white rounded-2xl p-2.5 border border-gray-100 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 flex flex-col h-full transition-all duration-300 active:scale-[0.98]"
                             >
-                                <div className="relative aspect-video flex-shrink-0 bg-gray-50">
+                                <div className="relative aspect-square rounded-xl overflow-hidden bg-gray-50 mb-3">
                                     <Image 
                                         src={song.coverImageURL || "/icon-cover.png"} 
                                         fill 
@@ -171,7 +171,7 @@ export default function ListRecommendedPlaylists() {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="p-3 flex-1 flex flex-col justify-center">
+                                <div className="px-1 flex-1">
                                     <h3 className="font-bold text-[12px] sm:text-[13px] line-clamp-2 text-black leading-snug group-hover:text-primary transition-colors text-center">
                                         {song.title}
                                     </h3>
@@ -193,15 +193,11 @@ export default function ListRecommendedPlaylists() {
             </div>
 
             {isLoadExplore ? (
-                <div className="space-y-12 p-6">
-                    {[1, 2].map(i => (
+                <div className="space-y-8 p-6">
+                    {[1, 2, 3].map(i => (
                         <div key={i} className="space-y-4">
-                            <div className="h-4 w-32 bg-gray-100 rounded animate-pulse" />
-                            <div className="flex gap-4 overflow-hidden">
-                                {[1, 2, 3, 4, 5].map(j => (
-                                    <div key={j} className="flex-shrink-0 w-[140px] sm:w-[180px] aspect-video bg-gray-50 rounded-2xl animate-pulse" />
-                                ))}
-                            </div>
+                            <div className="h-6 w-32 bg-gray-100 rounded animate-pulse" />
+                            <div className="flex gap-4 overflow-hidden"><div className="w-48 h-48 bg-gray-100 rounded-2xl animate-pulse" /></div>
                         </div>
                     ))}
                 </div>
@@ -227,7 +223,7 @@ export default function ListRecommendedPlaylists() {
                                         }}
                                         className="flex-shrink-0 w-[140px] sm:w-[180px] group cursor-pointer snap-start"
                                     >
-                                        <div className="relative aspect-video rounded-2xl overflow-hidden bg-gray-100 shadow-sm border border-gray-100 group-hover:shadow-xl transition-all duration-300">
+                                        <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 shadow-sm border border-gray-100 group-hover:shadow-xl transition-all duration-300">
                                             <Image 
                                                 src={item.thumbnail?.replace('w120-h120', 'w400-h400') || "/icon-cover.png"} 
                                                 fill 

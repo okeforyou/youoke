@@ -5,7 +5,7 @@ import { useShallow } from 'zustand/react/shallow';
 
 // Dynamic imports moved here
 const MusicProviderContainer = dynamic(() => import("../MusicProviderContainer"), {
-    loading: () => <div className="grid grid-cols-6 gap-4 p-4">{[...Array(12)].map((_, i) => <div key={i} className="aspect-video bg-gray-100 rounded-2xl animate-pulse" />)}</div>,
+    loading: () => <div className="grid grid-cols-6 gap-4 p-4">{[...Array(12)].map((_, i) => <div key={i} className="aspect-square bg-gray-100 rounded-2xl animate-pulse" />)}</div>,
     ssr: false,
 });
 const ListTopicsGrid = dynamic(() => import("../ListTopicsGrid"), {
@@ -17,19 +17,19 @@ const SearchResultGrid = dynamic(() => import("../SearchResultGrid"), {
     ssr: false,
 });
 const ListPlaylistsGrid = dynamic(() => import("../ListPlaylistsGrid"), {
-    loading: () => <div className="grid grid-cols-5 gap-4 p-4">{[...Array(5)].map((_, i) => <div key={i} className="aspect-video bg-gray-100 rounded-2xl animate-pulse" />)}</div>,
+    loading: () => <div className="grid grid-cols-5 gap-4 p-4">{[...Array(5)].map((_, i) => <div key={i} className="aspect-square bg-gray-100 rounded-2xl animate-pulse" />)}</div>,
     ssr: false,
 });
 const ListRecommendedPlaylists = dynamic(() => import("../ListRecommendedPlaylists"), {
-    loading: () => <div className="grid grid-cols-5 gap-4 p-4">{[...Array(10)].map((_, i) => <div key={i} className="aspect-video bg-gray-100 rounded-2xl animate-pulse" />)}</div>,
+    loading: () => <div className="grid grid-cols-5 gap-4 p-4">{[...Array(10)].map((_, i) => <div key={i} className="aspect-square bg-gray-100 rounded-2xl animate-pulse" />)}</div>,
     ssr: false,
 });
 const ListCommunityPlaylists = dynamic(() => import("../ListCommunityPlaylists"), {
-    loading: () => <div className="grid grid-cols-5 gap-4 p-4">{[...Array(5)].map((_, i) => <div key={i} className="aspect-video bg-gray-100 rounded-2xl animate-pulse" />)}</div>,
+    loading: () => <div className="grid grid-cols-5 gap-4 p-4">{[...Array(5)].map((_, i) => <div key={i} className="aspect-square bg-gray-100 rounded-2xl animate-pulse" />)}</div>,
     ssr: false,
 });
 const ListHitsGrid = dynamic(() => import("../ListHitsGrid"), {
-    loading: () => <div className="grid grid-cols-5 gap-4 p-4">{[...Array(10)].map((_, i) => <div key={i} className="aspect-video bg-gray-100 rounded-2xl animate-pulse" />)}</div>,
+    loading: () => <div className="grid grid-cols-5 gap-4 p-4">{[...Array(10)].map((_, i) => <div key={i} className="aspect-square bg-gray-100 rounded-2xl animate-pulse" />)}</div>,
     ssr: false,
 });
 
