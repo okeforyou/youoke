@@ -157,7 +157,7 @@ export default function ListRecommendedPlaylists() {
                                 onClick={() => handlePlaySong(song)} 
                                 className="group cursor-pointer flex flex-col h-full transition-all duration-300 active:scale-[0.98]"
                             >
-                                <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-50 mb-3 shadow-sm group-hover:shadow-md transition-shadow">
+                                <div className="relative aspect-[1.6/1] rounded-xl overflow-hidden bg-gray-50 mb-3 shadow-sm group-hover:shadow-md transition-shadow">
                                     <Image 
                                         src={song.coverImageURL || "/icon-cover.png"} 
                                         fill 

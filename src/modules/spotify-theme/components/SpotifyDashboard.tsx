@@ -552,7 +552,7 @@ export default function SpotifyDashboard({ showTab = true }) {
                     });
                   }}
                 >
-                  <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-50 mb-3 shadow-sm group-hover:shadow-md transition-shadow">
+                  <div className="relative aspect-[1.6/1] rounded-xl overflow-hidden bg-gray-50 mb-3 shadow-sm group-hover:shadow-md transition-shadow">
                     <Image
                       src={video.coverImageURL || "/icon-cover.png"}
                       priority={i < 10}

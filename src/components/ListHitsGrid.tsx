@@ -49,7 +49,7 @@ export default function ListHitsGrid() {
                         className="group relative cursor-pointer flex flex-col h-full transition-all duration-300 hover:-translate-y-1 overflow-hidden"
                     >
                         {/* Cover Image Container */}
-                        <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-50 shadow-sm group-hover:shadow-md transition-shadow">
+                        <div className="relative aspect-[1.6/1] rounded-xl overflow-hidden bg-gray-50 shadow-sm group-hover:shadow-md transition-shadow">
                             <img
                                 src={hit.coverImageURL}
                                 alt={hit.title}
