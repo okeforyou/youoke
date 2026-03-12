@@ -43,6 +43,9 @@ interface UIState {
 
     castMode: 'none' | 'smarttv' | 'webmonitor' | 'dual' | 'google';
     setCastMode: (mode: 'none' | 'smarttv' | 'webmonitor' | 'dual' | 'google') => void;
+
+    isSidebarCollapsed: boolean;
+    setSidebarCollapsed: (collapsed: boolean) => void;
 }
 
 
@@ -90,4 +93,7 @@ export const useUIStore = create<UIState>((set) => ({
 
     castMode: 'none',
     setCastMode: (mode) => set({ castMode: mode }),
+
+    isSidebarCollapsed: false,
+    setSidebarCollapsed: (collapsed) => set({ isSidebarCollapsed: collapsed }),
 }));
