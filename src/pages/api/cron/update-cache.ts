@@ -71,14 +71,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // Priority 3: Emergency Fallback - Broad Search
         if (topArtists.length === 0) {
-            console.log('🚨 Attempting Emergency Search Fallback for Artists...');
+            console.log('🚨 Attempting Emergency Search Fallback for Artists (GMM Grammy)...');
             try {
-                // Search for "Thai Popular Artists" which usually gives a good list
-                const search = await youtube.music.search('ศิลปินไทยยอดนิยม', { type: 'artist' });
-                if (search.artists && search.artists.contents.length > 0) {
+                const search = await youtube.music.search('GMM Grammy', { type: 'artist' });
+                if (search.artists && search.artists.contents) {
                     topArtists = search.artists.contents.map((a: any) => ({
-                        name: a.name || a.title?.toString() || 'Unknown',
-                        imageUrl: (a as any).thumbnails?.[0]?.url || (a as any).thumbnail?.[0]?.url || ''
+                        name: a.name || a.title?.toString() || a.title || 'Unknown',
+                        imageUrl: a.thumbnails?.[0]?.url || a.thumbnail?.[0]?.url || ''
                     })).filter((a: any) => a.name !== 'Unknown').slice(0, 20);
                     console.log(`✅ Found ${topArtists.length} artists via Search.`);
                 }
