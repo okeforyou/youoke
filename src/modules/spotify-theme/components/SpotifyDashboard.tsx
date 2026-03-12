@@ -17,6 +17,7 @@ import {
 import JooxError from "../../../components/JooxError";
 import { useSystemConfig } from "../../../hooks/useSystemConfig";
 import { useUIStore } from "../../../stores/useUIStore";
+import { Headphones, Library } from "lucide-react";
 
 const GENRES = [
   "ลูกทุ่ง",
@@ -33,7 +34,7 @@ const GENRES = [
   "ริทึมแอนด์บลูส์",
 ];
 
-export default function SpotifyDashboard({ showTab = true }) {
+export default function SpotifyDashboard({ showTab = true, mode = 'default' }: { showTab?: boolean, mode?: 'default' | 'listening' }) {
   const router = useRouter();
   const { config } = useSystemConfig();
   const rawGenres = (config?.ui?.genres || GENRES).filter(g => g !== "เพลงไทย" && g !== "ทั้งหมด" && g !== "แนะนำ");
@@ -90,8 +91,8 @@ export default function SpotifyDashboard({ showTab = true }) {
   const songlistRef = useRef<HTMLDivElement>(null);
 
   const { data: tempTopArtistsData, isLoading: isLoadTopArtists } = useQuery({
-    queryKey: ["getTopArtists", "v2"], // Force cache refresh for V2 logic
-    queryFn: getTopArtists,
+    queryKey: ["getTopArtists", "v2", mode], // Include mode in cache key
+    queryFn: () => getTopArtists(mode),
     retry: false,
     refetchInterval: 0,
   });
@@ -121,8 +122,8 @@ export default function SpotifyDashboard({ showTab = true }) {
     isLoading: isLoadingGenre,
     refetch
   } = useInfiniteQuery({
-    queryKey: ["searchPlaylists", genreText],
-    queryFn: ({ pageParam = 1 }) => searchPlaylists(genreText || "เพลงไทย", pageParam),
+    queryKey: ["searchPlaylists", genreText, mode],
+    queryFn: ({ pageParam = 1 }) => searchPlaylists(genreText || "เพลงไทย", pageParam, mode),
     getNextPageParam: (lastPage, allPages) => {
       // If last page has 20 items, there's likely more. 
       return (lastPage?.artistCategories?.length === 20) ? allPages.length + 1 : undefined;
@@ -268,9 +269,28 @@ export default function SpotifyDashboard({ showTab = true }) {
         </div>
       ) : (
         <>
-          <div className="col-span-full px-2 pt-2 pb-2 text-[13px] font-black text-black uppercase tracking-wider flex items-center gap-2">
-            ศิลปินยอดนิยม
-          </div>
+          {/* Mode Header (Conditional) */}
+          {!tagId && mode === 'listening' && (
+            <div className="col-span-full px-4 pt-4 pb-2">
+                <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-6 rounded-3xl border border-primary/5 flex items-center gap-4 shadow-sm">
+                    <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
+                        <Headphones className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                        <h2 className="text-xl font-black text-black leading-tight">โหมดฟังยาวๆ</h2>
+                        <p className="text-xs text-gray-500 font-medium mt-1">รวมเพลย์ลิสต์เพลงยาว เมดเล่ย์ และ Non-stop สำหรับฟังต่อเนื่อง</p>
+                    </div>
+                </div>
+            </div>
+          )}
+
+          {mode !== 'listening' && (
+            <>
+              <div className="col-span-full px-2 pt-2 pb-2 text-[13px] font-black text-black uppercase tracking-wider flex items-center gap-2">
+                ศิลปินยอดนิยม
+              </div>
+            </>
+          )}
 
           <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 col-span-full pb-6 px-2">
             {isLoadTopArtists && (
@@ -283,7 +303,7 @@ export default function SpotifyDashboard({ showTab = true }) {
                 ))}
               </>
             )}
-            {topArtists?.slice(0, 15).map((artist, i) => (
+            {mode !== 'listening' && topArtists?.slice(0, 15).map((artist, i) => (
                 <Fragment key={artist.name + i}>
                   <div
                     className="group relative cursor-pointer overflow-hidden rounded-2xl shadow-sm hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1 transition-all duration-300 isolate bg-gray-100 w-full"

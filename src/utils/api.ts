@@ -57,8 +57,17 @@ export const getSearchResult = async ({
 export const getSkeletonItems = (length: number) =>
   Array.from({ length }).map((_, i) => i);
 
-export const getTopArtists = async () => {
-  const res = await apiClient.get<GetTopArtists>("/api/spotify/artists/");
+export const getExploreData = async (mode: 'default' | 'listening' = 'default') => {
+  const res = await apiClient.get<{ data: any[] }>("/api/explore", {
+    params: { mode }
+  });
+  return res.data;
+};
+
+export const getTopArtists = async (mode: 'default' | 'listening' = 'default') => {
+  const res = await apiClient.get<GetTopArtists>("/api/spotify/artists/", {
+    params: { mode }
+  });
   return res.data;
 };
 
@@ -74,13 +83,14 @@ export const getHitSingles = async () => {
 
 export const searchPlaylists = async (
   query: string,
-  page: number = 1
+  page: number = 1,
+  type: 'default' | 'listening' = 'default'
 ): Promise<SearchPlaylists> => {
   // Use the new reliable Spotify-backed endpoint
   const response = await apiClient.get<any[]>(
     "/api/search/playlists",
     {
-      params: { q: query, page },
+      params: { q: query, page, type },
     }
   );
 

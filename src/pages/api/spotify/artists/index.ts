@@ -11,8 +11,10 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<GetTopArtists | { error: string }>
 ) {
-  // Check Memory Cache
-  if (cachedData && Date.now() - lastFetch < CACHE_DURATION && !req.query.nocache) {
+  const mode = req.query.mode as string || 'default';
+  
+  // Check Memory Cache (Per mode)
+  if (cachedData && Date.now() - lastFetch < CACHE_DURATION && !req.query.nocache && (cachedData as any).mode === mode) {
     return res.status(200).json(cachedData);
   }
 
@@ -33,6 +35,19 @@ export default async function handler(
   };
 
   try {
+    const isLongPlay = (title: string) => {
+        const keywords = [
+            'รวมเพลง', 'ฟังยาวๆ', 'medley', 'non stop', 'ต่อเนื่อง', 
+            '1 ชั่วโมง', 'ยาวๆ', 'full album', 'mix', 'ชุดใหญ่', 
+            'คาราโอเกะยาวๆ', 'เพลงรวม', 'best of', 'ฮิตยาวๆ',
+            'เมดเล่ย์', 'Nonstop', 'Non-stop', 'แผ่นเดียวจบ',
+            'ยาวไป', 'ยาวๆไป', 'คัดเน้นๆ', 'รวมฮิต', 'รวมเพลงฮิต',
+            '2 ชั่วโมง', '3 ชั่วโมง', 'จัดเต็ม', 'ชุดพิเศษ', 'ชุดเล็ก',
+            'ยาวจัดเต็ม', 'ฮิตที่สุด', 'เพลงเก่า', 'เพลงใหม่', 'ลูกทุ่งยอดฮิต'
+        ];
+        return keywords.some(k => title.toLowerCase().includes(k.toLowerCase()));
+    };
+
     if (!adminFirestore) {
        console.warn('[API/Artists] Admin Firebase not initialized, sending fallback data.');
        return res.status(200).json(FALLBACK_DATA);
@@ -51,16 +66,26 @@ export default async function handler(
 
         // Build categories dynamically from the 'genres' object in cache
         const artistCategories: ArtistCategory[] = [];
+        const filteredGenres: Record<string, any[]> = {};
+
         if (data?.genres) {
             Object.keys(data.genres).forEach(genreName => {
                 const playlists = data.genres[genreName];
                 if (playlists && playlists.length > 0) {
-                     // Get the first playlist item to represent the category
-                     artistCategories.push({
-                         tag_id: `yt-${playlists[0].playlistId || playlists[0].id}`,
-                         tag_name: genreName,
-                         imageUrl: playlists[0].thumbnail || 'https://i.ytimg.com/vi/uXfXoD-M3M8/hqdefault.jpg'
-                     });
+                     // Filter playlists based on mode
+                     const singingPlaylists = playlists.filter((p: any) => !isLongPlay(p.title));
+                     const listeningPlaylists = playlists.filter((p: any) => isLongPlay(p.title));
+
+                     const itemsToUse = mode === 'listening' ? listeningPlaylists : singingPlaylists;
+                     
+                     if (itemsToUse.length > 0) {
+                         filteredGenres[genreName] = itemsToUse;
+                         artistCategories.push({
+                             tag_id: `yt-${itemsToUse[0].playlistId || itemsToUse[0].id}`,
+                             tag_name: genreName,
+                             imageUrl: itemsToUse[0].thumbnail || 'https://i.ytimg.com/vi/uXfXoD-M3M8/hqdefault.jpg'
+                         });
+                     }
                 }
             });
         }
@@ -77,11 +102,12 @@ export default async function handler(
              }
         });
 
-        const artistsResp: GetTopArtists & { genres?: Record<string, any[]> } = {
+        const artistsResp: GetTopArtists & { genres?: Record<string, any[]>, mode?: string } = {
            status: "success",
            artist: artistList.length > 0 ? artistList : FALLBACK_DATA.artist,
            artistCategories: artistCategories.length > 0 ? artistCategories : FALLBACK_DATA.artistCategories,
-           genres: data?.genres || {}
+           genres: filteredGenres,
+           mode
         };
 
         cachedData = artistsResp as any;

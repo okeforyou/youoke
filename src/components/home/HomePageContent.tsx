@@ -53,6 +53,7 @@ export const HomePageContent = memo(() => {
         case 2: return <ListRecommendedPlaylists />; // "แนะนำ" -> Recommended Playlists
         case 3: return <ListHitsGrid />; // "มาแรง" -> Hit Singles
         case 4: return <ListPlaylistsGrid defaultTab={1} />;
+        case 5: return <MusicProviderContainer showTab={false} mode="listening" />;
         default: return <MusicProviderContainer showTab={false} />;
     }
 });

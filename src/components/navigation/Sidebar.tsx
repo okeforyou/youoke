@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { memo, useState } from 'react';
 import clsx from 'clsx';
-import { Home, Star, Flame, Library, MessageCircle, Shield, LogOut, Key, Grid, Lock, PlusCircle, ChevronLeft } from 'lucide-react';
+import { Home, Star, Flame, Library, MessageCircle, Shield, LogOut, Key, Grid, Lock, PlusCircle, ChevronLeft, Headphones } from 'lucide-react';
 import { UserGroupIcon } from '@heroicons/react/24/outline'; // Import Heroicon for Party
 import { useSystem } from '../../core/container/SystemContext'; // DI Container
 import ProfileDrawer from '../profile/ProfileDrawer';
@@ -140,6 +140,20 @@ export const Sidebar = memo(() => {
                     <Library className={clsx("w-[22px] h-[22px]", (router.pathname === '/' && activeIndex === 4) ? "text-white" : "text-black")} /> 
                     <span className={clsx("transition-all duration-300 whitespace-nowrap", isSidebarCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100")}>
                         เพลย์ลิสต์
+                    </span>
+                </button>
+
+                <button onClick={() => handleNav(5, 'listening')} 
+                    className={clsx(
+                        "w-full flex items-center transition-all font-bold duration-300 text-sm italic",
+                        isSidebarCollapsed ? "justify-center p-3 rounded-xl" : "gap-3 px-4 py-3 rounded-2xl",
+                        (router.pathname === '/' && activeIndex === 5) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-black hover:bg-gray-100/50 hover:text-black"
+                    )}
+                    title={isSidebarCollapsed ? "ฟังยาวๆ" : ""}
+                >
+                    <Headphones className={clsx("w-[22px] h-[22px]", (router.pathname === '/' && activeIndex === 5) ? "text-white" : "text-black")} /> 
+                    <span className={clsx("transition-all duration-300 whitespace-nowrap", isSidebarCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100")}>
+                        ฟังยาวๆ
                     </span>
                 </button>
 

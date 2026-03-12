@@ -6,6 +6,7 @@ import { PremiumLockOverlay } from "./common/PremiumLockOverlay";
 
 interface MusicProviderContainerProps {
     showTab?: boolean;
+    mode?: 'default' | 'listening';
 }
 
 /**
@@ -13,7 +14,7 @@ interface MusicProviderContainerProps {
  * - Acts as the switch between different Music Providers (Themes).
  * - Handles access control (Premium Logic) for restricted themes.
  */
-export default function MusicProviderContainer({ showTab = true }: MusicProviderContainerProps) {
+export default function MusicProviderContainer({ showTab = true, mode = 'default' }: MusicProviderContainerProps) {
     // Restored Spotify Dashboard as the primary interface, backed by cached data
-    return <SpotifyDashboard />;
+    return <SpotifyDashboard mode={mode} />;
 }

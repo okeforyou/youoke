@@ -41,7 +41,7 @@ const isMixedContent = (title: string) => {
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    const { q } = req.query;
+    const { q, type } = req.query; // type can be 'listening' or 'default'
 
     if (!q) {
         return res.status(400).json({ error: "Query 'q' is required" });
@@ -146,8 +146,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
         }
 
-        // Filter out mixed/long content before returning
-        const filteredResults = results.filter(item => !isMixedContent(item.title));
+        // Filter results based on requested type
+        let filteredResults = [];
+        if (type === 'listening') {
+            // ONLY include mixed content
+            filteredResults = results.filter(item => isMixedContent(item.title));
+        } else {
+            // STRICTLY EXCLUDE mixed/long content for Singing mode
+            filteredResults = results.filter(item => !isMixedContent(item.title));
+        }
 
         if (filteredResults.length === 0) {
             return res.status(200).json([]);

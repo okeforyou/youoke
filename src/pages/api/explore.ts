@@ -22,6 +22,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         console.log('[API/Explore] Fetching Dynamic Dashboard Data...');
 
         const dynamicShelves: any[] = [];
+        const mode = req.query.mode as string || 'default'; // 'default' (singing) or 'listening'
 
         // 1. Fetch from Firestore Cache if available
         let topArtistsFromCache = [];
@@ -77,8 +78,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const sortedGenres = Array.from(new Set([...priorityGenres.filter(g => genreTitles.includes(g)), ...genreTitles]));
 
         // Separate items for Singing vs Listening
-        const singingShelves = [];
-        const listeningItems = [];
+        const singingShelves: any[] = [];
+        const listeningItems: any[] = [];
 
         for (const genre of sortedGenres.slice(0, 15)) {
             let rawItems = [];
@@ -119,20 +120,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
         }
 
-        // Add 3-4 Singing Shelves first
-        dynamicShelves.push(...singingShelves.slice(0, 5));
+        // Primary Logic: Filter based on requested mode
+        if (mode === 'listening') {
+            // "Listening Lounge" (Long Plays) as the ONLY shelves in listening mode
+            if (listeningItems.length > 0) {
+                // Group listening items into meaningful shelves or just one big discovery row
+                dynamicShelves.push({
+                    title: '🎧 โหมดฟังยาวๆ (Medley & Long Play)',
+                    items: Array.from(new Map(listeningItems.map(item => [item.id, item])).values()).slice(0, 50),
+                    mode: 'listening'
+                });
 
-        // Add "Listening Lounge" (Long Plays) as a discovery row
-        if (listeningItems.length > 0) {
-            dynamicShelves.push({
-                title: 'โหมดฟังยาวๆ (Medley & Long Play)',
-                items: Array.from(new Map(listeningItems.map(item => [item.id, item])).values()).slice(0, 12), // Deduplicate
-                mode: 'listening'
-            });
+                // Also add some themed long-play shelves if we have enough items
+                const genres = ['ลูกทุ่งรวมฮิต', 'เพื่อชีวิตรวมฮิต', 'เพลงไทยรวมฮิต'];
+                genres.forEach(g => {
+                    const filtered = listeningItems.filter(item => item.title.includes(g.replace('รวมฮิต', ''))).slice(0, 10);
+                    if (filtered.length > 0) {
+                        dynamicShelves.push({ title: `🎵 ${g}`, items: filtered, mode: 'listening' });
+                    }
+                });
+            }
+        } else {
+            // SINGING MODE (Default Dashboard)
+            // Add 3-4 Singing Shelves first
+            dynamicShelves.push(...singingShelves.slice(0, 8)); // increased to show more curated content
+            
+            // Add remaining singing shelves
+            dynamicShelves.push(...singingShelves.slice(8));
         }
-
-        // Add remaining singing shelves
-        dynamicShelves.push(...singingShelves.slice(5));
 
         // 5. Final Response & Fallback
         if (dynamicShelves.length < 2) {
