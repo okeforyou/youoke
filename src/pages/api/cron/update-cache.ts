@@ -24,9 +24,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
         console.log('🚀 [CRON] Starting InnerTube-powered Caching Job...');
 
-        // 1. Initialize InnerTube
-        const youtube = await Innertube.create();
-        console.log('✅ InnerTube Connected.');
+        // 1. Initialize InnerTube with region/lang for TH data
+        const youtube = await Innertube.create({
+            region: 'TH',
+            language: 'th'
+        });
+        console.log('✅ InnerTube Connected with region: TH, lang: th.');
 
         // 2. Fetch Top Charts (Artists)
         console.log('Fetching Music Charts (TH)...');
