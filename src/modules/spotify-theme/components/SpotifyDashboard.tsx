@@ -150,7 +150,7 @@ export default function SpotifyDashboard({ showTab = true }) {
 
   const { setSearchTerm } = usePlayerStore();
 
-  const topArtists = tempTopArtistsData?.artist || [];
+  const topArtists = (tempTopArtistsData?.artist || []).filter((a: any) => a.name && !a.name.toLowerCase().includes("unknown artist"));
 
   // Fallback: If genrePlaylists is empty AND we are loading, don't fall back to default.
   // Special Handling for Default Genres
@@ -277,7 +277,7 @@ export default function SpotifyDashboard({ showTab = true }) {
                 {getSkeletonItems(10).map((s, i) => (
                   <div
                     key={s + i}
-                    className="card bg-gray-100 animate-pulse w-full aspect-square rounded-2xl"
+                    className="card bg-gray-100 animate-pulse w-full aspect-video rounded-2xl"
                   ></div>
                 ))}
               </>
@@ -292,7 +292,7 @@ export default function SpotifyDashboard({ showTab = true }) {
                     setSearchTerm(cleanedName);
                   }}
                   >
-                    <div className="relative w-full aspect-square">
+                    <div className="relative w-full aspect-video">
                       <Image
                         src={artist.imageUrl}
                         priority={i < 5}
@@ -361,7 +361,7 @@ export default function SpotifyDashboard({ showTab = true }) {
       {!isGenreDefault && isLoadingGenre && artistCategories.length === 0 && (
         <div className="col-span-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 px-4 pb-8">
           {Array.from({ length: 10 }).map((_, i) => (
-            <div key={i} className="aspect-square rounded-3xl bg-gray-100 animate-pulse" />
+            <div key={i} className="aspect-video rounded-3xl bg-gray-100 animate-pulse" />
           ))}
         </div>
       )}
@@ -398,7 +398,7 @@ export default function SpotifyDashboard({ showTab = true }) {
                     }}
                     className="flex-shrink-0 w-[140px] sm:w-[180px] snap-start group cursor-pointer"
                   >
-                    <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-xl transition-all duration-300">
+                    <div className="relative aspect-video rounded-2xl overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-xl transition-all duration-300">
                       <Image
                         src={cat.thumbnail || cat.imageUrl || "/icon-cover.png"}
                         alt={cat.title}
@@ -437,33 +437,30 @@ export default function SpotifyDashboard({ showTab = true }) {
                   setTagId(cat.tag_id);
                 }}
                 className={`
-                    relative w-full aspect-square rounded-3xl overflow-hidden cursor-pointer shadow-sm hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 hover:-translate-y-1.5 group bg-gray-100
+                    group flex flex-col h-full bg-white rounded-2xl border border-gray-100 hover:border-primary/20 hover:shadow-xl transition-all duration-300 active:scale-[0.98] overflow-hidden cursor-pointer
                     ${tagId == cat.tag_id ? "ring-4 ring-offset-2 ring-primary" : ""}
                  `}
               >
-                <Image
-                  src={cat.imageUrl || "/icon-cover.png"}
-                  alt={cat.tag_name}
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  onError={(e) => { e.currentTarget.src = "/icon-cover.png"; }}
-                  unoptimized
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-90 transition-opacity" />
-
-                {/* Content Overlay */}
-                <div className="absolute inset-0 p-6 flex flex-col justify-between">
-                  <div className="self-end opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-x-2 group-hover:translate-x-0">
-                    <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center">
-                      <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+                <div className="relative aspect-video flex-shrink-0 bg-gray-50 overflow-hidden">
+                  <Image
+                    src={cat.imageUrl || "/icon-cover.png"}
+                    alt={cat.tag_name}
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    onError={(e) => { e.currentTarget.src = "/icon-cover.png"; }}
+                    unoptimized
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+                      <svg className="w-5 h-5 text-white ml-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
                     </div>
                   </div>
-                  <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                    <span className="text-white font-bold text-[11px] sm:text-[12px] drop-shadow-md line-clamp-2 leading-tight">
-                      {cat.tag_name}
-                    </span>
-                    <div className="h-1 w-12 bg-primary rounded-full mt-2 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-100 origin-left scale-x-0 group-hover:scale-x-100" />
-                  </div>
+                </div>
+                
+                <div className="p-3 flex-1 flex flex-col justify-center">
+                  <h2 className="font-bold text-[12px] sm:text-[13px] line-clamp-2 text-black leading-snug group-hover:text-primary transition-colors text-center">
+                    {cat.tag_name}
+                  </h2>
                 </div>
               </div>
             ))}
@@ -497,7 +494,7 @@ export default function SpotifyDashboard({ showTab = true }) {
           <>
             <div className="col-span-full grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 px-2">
               {getSkeletonItems(8).map((s) => (
-                <div key={s} className="h-48 bg-gray-100 rounded-3xl animate-pulse" />
+                <div key={s} className="aspect-video bg-gray-50 rounded-2xl animate-pulse" />
               ))}
             </div>
           </>
@@ -542,7 +539,7 @@ export default function SpotifyDashboard({ showTab = true }) {
             return (
               <Fragment key={video.id || video.name + i}>
                 <div
-                  className="group cursor-pointer bg-white rounded-2xl p-2.5 border border-gray-100 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 flex flex-col h-full transition-all active:scale-[0.97] duration-300 relative overflow-hidden"
+                  className="group cursor-pointer bg-white rounded-2xl border border-gray-100 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 flex flex-col h-full transition-all active:scale-[0.97] duration-300 relative overflow-hidden"
                   onClick={() => {
                     const artist = (video.artist_name && video.artist_name !== "Unknown Artist") ? video.artist_name : "";
                     const baseQuery = video.title ? `${video.title} ${artist}` : video.name;
@@ -555,7 +552,7 @@ export default function SpotifyDashboard({ showTab = true }) {
                     }, undefined, { shallow: true });
                   }}
                 >
-                  <figure className="relative w-full aspect-square flex-shrink-0 bg-gray-50 rounded-xl overflow-hidden mb-3">
+                  <figure className="relative w-full aspect-video flex-shrink-0 bg-gray-50 overflow-hidden">
                     <Image
                       src={video.imageUrl || "/icon-cover.png"}
                       priority={i < 10}
@@ -574,7 +571,7 @@ export default function SpotifyDashboard({ showTab = true }) {
                       </div>
                     </div>
                   </figure>
-                  <div className="px-1 flex-1">
+                  <div className="p-3 flex-1 flex flex-col justify-center">
                     <h2 className="font-bold text-[12px] sm:text-[13px] line-clamp-2 text-black leading-snug group-hover:text-primary transition-colors text-center">
                       {video.title || video.name}
                     </h2>

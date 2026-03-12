@@ -62,9 +62,9 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
 
             {/* Card Content - V1 Style with red border on hover (No Gray, No Shadow) */}
             <div className="flex-1 flex items-center gap-4 rounded-xl border border-gray-300 transition-all overflow-hidden hover:border-primary bg-white">
-                {/* Thumbnail - Flush with the card's left side (Enlarged) */}
+                {/* Thumbnail - Full Bleed 16:9 style for Queue */}
                 <div
-                    className="relative w-36 h-20 flex-shrink-0 bg-black cursor-pointer group/thumb"
+                    className="relative w-28 sm:w-32 aspect-video flex-shrink-0 bg-gray-50 cursor-pointer group/thumb"
                     onClick={() => onPlay(actualIndex)}
                 >
                     <Image
@@ -84,12 +84,10 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
 
                 {/* Info */}
                 <div className="flex-1 min-w-0 py-3 cursor-pointer" onClick={() => onPlay(actualIndex)}>
-                    <h4 className="text-[14px] font-black text-black line-clamp-1 leading-snug mb-0.5">
+                    <h4 className="text-[14px] font-black text-black line-clamp-1 leading-snug text-center">
                         {video.title}
                     </h4>
-                    <p className="text-[11px] text-gray-500 truncate font-medium">
-                        {video.author}
-                    </p>
+                    {/* Removed author/uploader info */}
                 </div>
 
                 {/* Remove Button - Inside the card (Gray to Red logic) */}

@@ -29,7 +29,7 @@ export default function ListHitsGrid() {
         return (
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4">
                 {[...Array(10)].map((_, i) => (
-                    <div key={i} className="aspect-square bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
+                    <div key={i} className="aspect-video bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
                 ))}
             </div>
         );
@@ -46,10 +46,10 @@ export default function ListHitsGrid() {
                     <div
                         key={`${hit.title}-${index}`}
                         onClick={() => handleClick(hit)}
-                        className="group relative cursor-pointer bg-white dark:bg-gray-900 rounded-2xl p-2.5 border border-gray-100 hover:border-primary/20 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+                        className="group relative cursor-pointer bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 hover:border-primary/20 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden flex flex-col h-full"
                     >
                         {/* Cover Image Container */}
-                        <div className="relative aspect-square rounded-xl overflow-hidden">
+                        <div className="relative aspect-video flex-shrink-0 overflow-hidden">
                             <img
                                 src={hit.coverImageURL}
                                 alt={hit.title}
@@ -65,7 +65,7 @@ export default function ListHitsGrid() {
                         </div>
 
                         {/* Info Section */}
-                        <div className="mt-3 px-1">
+                        <div className="p-3 flex-1 flex items-center justify-center">
                             <h3 className="text-black dark:text-white font-bold text-[12px] line-clamp-2 leading-snug text-center group-hover:text-primary transition-colors">
                                 {hit.title}
                             </h3>

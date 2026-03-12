@@ -192,10 +192,9 @@ export default function SearchResultGrid({
           {renderList?.map((rcm, i) => {
             return !rcm ? null : (
               <Fragment key={rcm.videoId}>
-                {/* The button to open modal */}
                 <div className="group h-full" onClick={() => onClick(rcm)}>
-                  <div className="card rounded-lg overflow-hidden bg-white border border-gray-100 hover:shadow-sm cursor-pointer flex flex-col h-full transition-transform active:scale-[0.98] duration-100 relative">
-                    <figure className="relative w-full aspect-video flex-shrink-0">
+                  <div className="card rounded-2xl overflow-hidden bg-white border border-gray-100 hover:shadow-xl cursor-pointer flex flex-col h-full transition-all duration-300 active:scale-[0.98] relative">
+                    <figure className="relative w-full aspect-video flex-shrink-0 bg-gray-50">
                       <Image
                         src={
                           rcm.videoThumbnails?.find((t) => t.quality === "medium")?.url ||
@@ -206,26 +205,25 @@ export default function SearchResultGrid({
                         alt={rcm.title}
                         unoptimized
                         layout="fill"
-                        className="animate-pulse bg-gray-400 object-cover"
+                        className="animate-pulse bg-gray-400 object-cover group-hover:scale-110 transition-transform duration-500"
                         onLoad={(ev) => ev.currentTarget.classList.remove("animate-pulse")}
                       />
-                      {/* Play Overlay (Visible on Touch/Hover) */}
-                      <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                        <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
-                          <span className="text-black font-bold">▶</span>
+                      {/* Play Overlay */}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+                          <span className="text-white font-bold ml-0.5">▶</span>
                         </div>
                       </div>
                     </figure>
-                    <div className="card-body p-2 gap-y-0.5 flex-1 flex flex-col relative pr-8">
-                      <h2 className="font-medium text-xs sm:text-[13px] line-clamp-2 flex-1 text-gray-800 leading-snug">
+                    <div className="card-body p-3 flex-1 flex flex-col items-center justify-center relative">
+                      <h2 className="font-bold text-[12px] sm:text-[13px] line-clamp-2 text-black leading-snug text-center group-hover:text-primary transition-colors">
                         {rcm.title}
                       </h2>
-                      {/* Removed author/uploader info */}
 
                       {/* Add to Playlist Button for Grid */}
                       <button
                         onClick={(e) => handleAddToPlaylist(e, rcm)}
-                        className="absolute right-1 top-2 w-7 h-7 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:bg-primary hover:text-white transition-colors hover:shadow-md z-10"
+                        className="absolute right-1 bottom-1 w-7 h-7 flex items-center justify-center rounded-full bg-gray-50/50 text-gray-400 hover:bg-primary hover:text-white transition-colors z-10"
                         title="เพิ่มลงเพลย์ลิสต์"
                       >
                         <ListPlus className="w-4 h-4" />
