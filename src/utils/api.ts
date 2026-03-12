@@ -96,3 +96,38 @@ export const searchPlaylists = async (
     artistCategories
   };
 };
+
+/**
+ * Cleans a search query by removing common YouTube noise and clutter
+ * like (Official MV), [Lyric], Unknown Artist, etc.
+ */
+export const cleanSearchQuery = (query: string): string => {
+  if (!query) return "";
+  
+  let cleaned = query;
+  
+  // 1. Remove common noise tags in brackets or parentheses
+  // Added: Live, Version, Karaoke, HD, Full
+  cleaned = cleaned.replace(/\((Official|Lyric|MV|Audio|Music|Video|HD|Cover|Full|Remastered|Original|Live|Karaoke|Version).*?\)/gi, "");
+  cleaned = cleaned.replace(/\[(Official|Lyric|MV|Audio|Music|Video|HD|Cover|Full|Remastered|Original|Live|Karaoke|Version).*?\]/gi, "");
+  
+  // 2. Remove "Unknown Artist" and other common standalone noise
+  cleaned = cleaned.replace(/Unknown Artist/gi, "");
+  cleaned = cleaned.replace(/Official (Music Video|Audio|MV|Video|Lyric|Video)/gi, "");
+  
+  // 3. Remove common separators that often appear at the end or around noise
+  cleaned = cleaned.replace(/\s*[\-\|:;,\._]+\s*/g, " ");
+
+  // 4. Deduplicate words (if Artist is in Title and also appended)
+  // e.g., "Bodyslam - อกหัก Bodyslam" -> "Bodyslam อกหัก"
+  const words = cleaned.split(/\s+/);
+  const uniqueWords = words.filter((word, index) => {
+    return words.indexOf(word) === index;
+  });
+  cleaned = uniqueWords.join(" ");
+  
+  // 5. Final cleanup
+  cleaned = cleaned.replace(/\s+/g, " ").trim();
+  
+  return cleaned;
+};

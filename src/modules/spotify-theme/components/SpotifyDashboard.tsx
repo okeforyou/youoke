@@ -12,6 +12,7 @@ import {
   getSkeletonItems,
   getTopArtists,
   searchPlaylists,
+  cleanSearchQuery,
 } from "../../../utils/api";
 import JooxError from "../../../components/JooxError";
 import { useSystemConfig } from "../../../hooks/useSystemConfig";
@@ -287,8 +288,9 @@ export default function SpotifyDashboard({ showTab = true }) {
                   <div
                     className="group relative cursor-pointer overflow-hidden rounded-2xl shadow-sm hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1 transition-all duration-300 isolate bg-gray-100 w-full"
                     onClick={() => {
-                      setSearchTerm(artist.name);
-                    }}
+                    const cleanedName = cleanSearchQuery(artist.name);
+                    setSearchTerm(cleanedName);
+                  }}
                   >
                     <div className="relative w-full aspect-square">
                       <Image
@@ -518,8 +520,9 @@ export default function SpotifyDashboard({ showTab = true }) {
                 onClick={() => {
                    // Play first song logic if needed
                    if (artist[0]) {
-                      const query = artist[0].title ? `${artist[0].title} ${artist[0].artist_name}` : artist[0].name;
-                      setSearchTerm(query);
+                      const baseQuery = artist[0].title ? `${artist[0].title} ${artist[0].artist_name}` : artist[0].name;
+                      const cleanedQuery = cleanSearchQuery(baseQuery);
+                      setSearchTerm(cleanedQuery);
                    }
                 }}
               >
@@ -544,11 +547,13 @@ export default function SpotifyDashboard({ showTab = true }) {
                 <div
                   className="group cursor-pointer bg-white rounded-2xl p-2.5 border border-gray-100 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 flex flex-col h-full transition-all active:scale-[0.97] duration-300 relative overflow-hidden"
                   onClick={() => {
-                    const query = video.title ? `${video.title} ${video.artist_name}` : video.name;
-                    setSearchTerm(query);
+                    const baseQuery = video.title ? `${video.title} ${video.artist_name || ""}` : video.name;
+                    const cleanedQuery = cleanSearchQuery(baseQuery);
+                    
+                    setSearchTerm(cleanedQuery);
                     router.push({
                       pathname: router.pathname,
-                      query: { ...router.query, search: query }
+                      query: { ...router.query, search: cleanedQuery }
                     }, undefined, { shallow: true });
                   }}
                 >
