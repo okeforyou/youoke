@@ -36,11 +36,11 @@ const GENRES = [
 export default function SpotifyDashboard({ showTab = true }) {
   const router = useRouter();
   const { config } = useSystemConfig();
-  const rawGenres = (config?.ui?.genres || GENRES).filter(g => g !== "เพลงไทย" && g !== "ทั้งหมด");
-  const genres = ["แนะนำ", ...rawGenres];
+  const rawGenres = (config?.ui?.genres || GENRES).filter(g => g !== "เพลงไทย" && g !== "ทั้งหมด" && g !== "แนะนำ");
+  const genres = [...rawGenres];
 
-  // URL-Driven State or Fallback to Default
-  const genreText = (router.query.genre as string) || "แนะนำ";
+  // URL-Driven State or Fallback to Default (Empty or search)
+  const genreText = (router.query.genre as string) || "";
   const tagId = (router.query.playlist as string) || "";
 
   console.log("🔍 SpotifyDashboard Render:", {
@@ -154,7 +154,7 @@ export default function SpotifyDashboard({ showTab = true }) {
 
   // Fallback: If genrePlaylists is empty AND we are loading, don't fall back to default.
   // Special Handling for Default Genres
-  const isGenreDefault = genreText === "เพลงไทย" || genreText === "แนะนำ";
+  const isGenreDefault = genreText === "เพลงไทย" || !genreText;
   const artistCategories = isGenreDefault
     ? (topArtistsData?.artistCategories || [])
     : genrePlaylists; // Show only genre-specific results (empty = empty, loading = skeleton)
@@ -277,24 +277,21 @@ export default function SpotifyDashboard({ showTab = true }) {
                 {getSkeletonItems(10).map((s, i) => (
                   <div
                     key={s + i}
-                    className="flex flex-col gap-3"
-                  >
-                    <div className="w-full aspect-square rounded-full bg-gray-100 animate-pulse" />
-                    <div className="h-4 w-3/4 bg-gray-100 rounded animate-pulse" />
-                  </div>
+                    className="card bg-gray-100 animate-pulse w-full aspect-square rounded-2xl"
+                  ></div>
                 ))}
               </>
             )}
             {topArtists?.slice(0, 15).map((artist, i) => (
                 <Fragment key={artist.name + i}>
                   <div
-                    className="group flex flex-col gap-3 cursor-pointer"
+                    className="group relative cursor-pointer overflow-hidden rounded-2xl shadow-sm hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1 transition-all duration-300 isolate bg-gray-100 w-full"
                     onClick={() => {
                       const cleanedName = cleanSearchQuery(artist.name);
                       setSearchTerm(cleanedName);
                     }}
                   >
-                    <div className="relative w-full aspect-square rounded-full overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-xl transition-all duration-300 group-hover:-translate-y-1">
+                    <div className="relative w-full aspect-square">
                       <Image
                         src={artist.imageUrl || "/assets/avatar.jpeg"}
                         priority={i < 5}
@@ -302,16 +299,24 @@ export default function SpotifyDashboard({ showTab = true }) {
                         unoptimized
                         fill
                         className="object-cover transition-transform duration-700 group-hover:scale-110"
+                        onLoad={(ev) =>
+                          ev.currentTarget.classList.remove("animate-pulse")
+                        }
                         onErrorCapture={(ev) => {
                           ev.currentTarget.src = "/assets/avatar.jpeg";
                         }}
                       />
-                    </div>
-                    <div className="px-1">
-                      <h2 className="text-black font-bold text-[12px] sm:text-[13px] line-clamp-1 group-hover:text-primary transition-colors text-left">
-                        {artist.name}
-                      </h2>
-                      <p className="text-[10px] text-gray-400 font-medium text-left">ศิลปิน</p>
+                      <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-90 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-lg transform scale-50 group-hover:scale-100 transition-transform">
+                          <svg className="w-5 h-5 text-white fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                        </div>
+                      </div>
+                      <div className="absolute inset-0 p-3 flex flex-col justify-end items-start z-10 pointer-events-none">
+                        <h2 className="text-white font-bold text-[11px] sm:text-[12px] leading-tight line-clamp-1 drop-shadow-md transform translate-y-0.5 group-hover:translate-y-0 transition-transform text-left">
+                          {artist.name}
+                        </h2>
+                      </div>
                     </div>
                   </div>
                 </Fragment>
@@ -366,8 +371,8 @@ export default function SpotifyDashboard({ showTab = true }) {
         </div>
       )}
 
-      {/* Recommended Rows (Shelves) - InnerTune Style (Only on Home) */}
-      {!tagId && isGenreDefault && !isLoadTopArtists && (tempTopArtistsData as any)?.genres && (
+      {/* Recommended Rows (Shelves) - Disabled as per user request to keep home clean */}
+      {!tagId && genreText === "แนะนำ" && !isLoadTopArtists && (tempTopArtistsData as any)?.genres && (
         <div className="col-span-full space-y-8 pb-10">
           {Object.entries((tempTopArtistsData as any).genres).map(([genre, playlists]: [string, any]) => (
             <div key={genre} className="space-y-4">

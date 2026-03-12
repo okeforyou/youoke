@@ -61,7 +61,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             const keywords = [
                 'รวมเพลง', 'ฟังยาวๆ', 'medley', 'non stop', 'ต่อเนื่อง', 
                 '1 ชั่วโมง', 'ยาวๆ', 'full album', 'mix', 'ชุดใหญ่', 
-                'คาราโอเกะยาวๆ', 'เพลงรวม', 'best of', 'ฮิตยาวๆ'
+                'คาราโอเกะยาวๆ', 'เพลงรวม', 'best of', 'ฮิตยาวๆ',
+                'เมดเล่ย์', 'Nonstop', 'Non-stop', 'แผ่นเดียวจบ',
+                'ยาวไป', 'ยาวๆไป', 'คัดเน้นๆ', 'รวมฮิต', 'รวมเพลงฮิต',
+                '2 ชั่วโมง', '3 ชั่วโมง', 'จัดเต็ม', 'ชุดพิเศษ'
             ];
             return keywords.some(k => title.toLowerCase().includes(k));
         };
