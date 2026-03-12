@@ -1,5 +1,5 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import axios from "axios";
+import { Innertube } from 'youtubei.js';
 
 import { getAccessToken } from "../../../../modules/spotify-theme/services/auth";
 
@@ -47,7 +47,6 @@ export default async function handler(
       const ytId = playlistId.replace('yt-', '');
 
       try {
-        const { Innertube } = require('youtubei.js');
         const youtube = await Innertube.create();
         
         let playlist: any;
