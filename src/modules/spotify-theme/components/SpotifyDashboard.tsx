@@ -321,13 +321,13 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                            onClick={() => setSearchTerm(cleanSearchQuery(artist.name.split(' (')[0]))} 
                            className="group cursor-pointer"
                          >
-                        <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-50 flex items-center justify-center shadow-sm border border-gray-100 group-hover:shadow-md group-hover:border-primary/20 transition-all">
+                         <div className="relative aspect-square rounded-full overflow-hidden bg-gray-50 flex items-center justify-center shadow-sm border border-gray-100 group-hover:shadow-md group-hover:border-primary/20 transition-all mx-auto w-[90%]">
                             <Image 
                                src={artist.imageUrl || `/api/spotify/artists/image?name=${encodeURIComponent(artist.name.split(' (')[0])}`} 
                                alt={artist.name} fill className="object-cover transition-transform duration-500 group-hover:scale-110" 
                                unoptimized
                             />
-                        </div>
+                         </div>
                         <p className="mt-1.5 px-0.5 text-[9px] sm:text-[11px] font-bold text-black text-center group-hover:text-primary transition-colors line-clamp-2 leading-tight h-[24px] sm:h-[32px] flex items-start justify-center italic-sm">{artist.name.split(' (')[0]}</p>
                       </div>
                     ))}
