@@ -1,5 +1,4 @@
-import axios from "axios";
-import { getAccessToken } from "../../../../modules/spotify-theme/services/auth";
+import { scrapeYouTubeSearch } from "../../../../utils/youtubeScraper";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(
@@ -13,46 +12,27 @@ export default async function handler(
   }
 
   try {
-    const accessToken = await getAccessToken();
+    // Search for the artist on YouTube 
+    // We add "official music" to get better quality profile-like thumbnails from official channels
+    const searchQuery = `${name} official music`;
+    const results = await scrapeYouTubeSearch(searchQuery);
 
-    // Clean name: "บอดี้สแลม (Bodyslam)" -> "Bodyslam" (prefer English for Spotify search as it's more reliable)
-    // Actually, let's try Thai first, but clean it.
-    let searchQuery = (name as string);
-    if (searchQuery.includes('(')) {
-        // Extract English part if exists, e.g. "บอดี้สแลม (Bodyslam)" -> "Bodyslam"
-        const match = searchQuery.match(/\((.*?)\)/);
-        if (match && match[1]) {
-            searchQuery = match[1];
-        } else {
-            searchQuery = searchQuery.split('(')[0].trim();
-        }
+    // Try to find a channel thumbnail or a high-quality video thumbnail
+    if (results && results.length > 0) {
+      // YouTube scraper returns video thumbnails. We pick the best quality one.
+      const firstResult = results[0];
+      const imageUrl = firstResult.videoThumbnails?.find(t => t.quality === 'high' || t.quality === 'maxres')?.url 
+                      || firstResult.videoThumbnails?.[0]?.url;
+
+      if (imageUrl) {
+        return res.redirect(imageUrl);
+      }
     }
 
-    // Step 1: Search for artist to get their image
-    const searchResponse = await axios.get("https://api.spotify.com/v1/search", {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-      params: {
-        q: searchQuery,
-        type: "artist",
-        limit: 1,
-      },
-    });
-
-    const artist = searchResponse.data.artists.items[0];
-    const imageUrl = artist?.images?.[0]?.url;
-
-    if (imageUrl) {
-      // Redirect to the actual Spotify image URL
-      return res.redirect(imageUrl);
-    } else {
-      // Fallback to a placeholder if no image found
-      return res.redirect("/assets/avatar.jpeg");
-    }
+    // Fallback to placeholder if nothing found
+    return res.redirect("/assets/avatar.jpeg");
   } catch (error) {
-    console.error("❌ Artist Image API Error:", (error as Error).message);
-    // Fallback on error
+    console.error("❌ Artist Image API Error (YouTube Fallback):", (error as Error).message);
     return res.redirect("/assets/avatar.jpeg");
   }
 }
