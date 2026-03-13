@@ -284,8 +284,8 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                         className={`group relative overflow-hidden rounded-xl aspect-[1.8/1] min-h-[72px] sm:min-h-[80px] cursor-pointer shadow-sm hover:shadow-md transition-all bg-gradient-to-br ${cat.gradient}`}
                       >
                          <div className="absolute inset-0 p-2 flex flex-col justify-end sm:p-2.5">
-                            <h3 className="text-[10px] min-[375px]:text-[11px] sm:text-[13px] md:text-[14px] font-bold text-white leading-[1.1] sm:leading-tight drop-shadow-sm line-clamp-2 break-words text-left">{cat.title}</h3>
-                            <p className="text-[8px] sm:text-[9px] font-medium text-white/80 mt-0.5 drop-shadow-sm text-left">{cat.artists.length} ศิลปิน</p>
+                            <h3 className="text-[9px] min-[320px]:text-[10px] min-[375px]:text-[11px] sm:text-[13px] md:text-[14px] font-bold text-white leading-[1.0] sm:leading-tight drop-shadow-sm line-clamp-2 break-words text-left">{cat.title}</h3>
+                            <p className="text-[7px] sm:text-[9px] font-medium text-white/80 mt-0.5 drop-shadow-sm text-left">{cat.artists.length} ศิลปิน</p>
                          </div>
                          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all">
                             <ChevronRight className="w-3.5 h-3.5 text-white" />
@@ -328,7 +328,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                                unoptimized
                             />
                         </div>
-                        <p className="mt-2 px-1 text-[10px] sm:text-[11px] font-bold text-black text-center group-hover:text-primary transition-colors line-clamp-2 leading-tight h-[28px] sm:h-[32px] flex items-start justify-center italic-sm">{artist.name.split(' (')[0]}</p>
+                        <p className="mt-1.5 px-0.5 text-[9px] sm:text-[11px] font-bold text-black text-center group-hover:text-primary transition-colors line-clamp-2 leading-tight h-[24px] sm:h-[32px] flex items-start justify-center italic-sm">{artist.name.split(' (')[0]}</p>
                       </div>
                     ))}
                   </div>

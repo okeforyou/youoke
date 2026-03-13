@@ -365,16 +365,6 @@ export async function scrapeYouTubeArtistProfile(
         return bestMatch.profile;
     }
     
-    // Method 3: If still no channel, search for generic video thumbnail of that artist
-    const searchResults = await scrapeYouTubeSearch(name, timeout);
-    if (searchResults.length > 0) {
-        return {
-            name: name,
-            thumbnail: searchResults[0].videoThumbnails[0].url,
-            channelId: ""
-        };
-    }
-
     return null;
   } catch (error) {
     return null;

@@ -17,24 +17,25 @@ export default async function handler(
     const englishNameMatch = (name as string).match(/\((.*?)\)/);
     const englishName = englishNameMatch ? englishNameMatch[1] : artistName;
 
-    // Phase 1: Prioritize YouTube Official / Music Profile (Try both Thai and English for best match)
-    const namesForYT = [artistName];
-    if (englishName !== artistName) namesForYT.push(englishName);
-    
-    for (const query of namesForYT) {
-        if (!query) continue;
-        const profile = await scrapeYouTubeArtistProfile(query);
-        if (profile && profile.thumbnail) {
-            return res.redirect(profile.thumbnail);
-        }
-    }
-
-    // Phase 2: Try Joox / Sanook (Fallback)
+    // Phase 1: Try Joox / Sanook (EXCELLENT curated press photos for Thai Artists)
     try {
       const jooxResp = await axios.get(`https://api-jooxtt.sanook.com/openjoox/v1/search/all?keyword=${encodeURIComponent(artistName)}&country=th&lang=th`, { timeout: 2000 });
       const jooxArtist = jooxResp.data?.artists?.items?.[0];
       if (jooxArtist && jooxArtist.images?.[0]?.url) {
         return res.redirect(jooxArtist.images[0].url);
+      }
+    } catch (e) {}
+
+    // Phase 2: Try Wikipedia (High quality, neutral, sustainable)
+    try {
+      const namesToTry = [englishName, artistName];
+      for (const query of namesToTry) {
+          if (!query) continue;
+          // Try English Wikipedia first (usually has higher res images)
+          const wikiResp = await axios.get(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`, { timeout: 1500 });
+          if (wikiResp.data?.originalimage?.source) {
+              return res.redirect(wikiResp.data.originalimage.source);
+          }
       }
     } catch (e) {}
 
@@ -45,20 +46,26 @@ export default async function handler(
         if (!query) continue;
         const deezerResp = await axios.get(`https://api.deezer.com/search/artist?q=${encodeURIComponent(query)}`, { timeout: 2000 });
         const artist = deezerResp.data?.data?.[0];
-        if (artist && artist.picture_big) {
+        // Only use if the name is a very close match
+        if (artist && artist.picture_big && artist.name.toLowerCase().includes(query.toLowerCase().split(' ')[0])) {
           return res.redirect(artist.picture_big);
         }
       }
     } catch (e) {}
 
-    // Phase 4: Try iTunes Search API
+    // Phase 4: YouTube Official / Music Profile (Very Strict Fallback)
+    const profile = await scrapeYouTubeArtistProfile(artistName);
+    if (profile && profile.thumbnail) {
+        return res.redirect(profile.thumbnail);
+    }
+
+    // Last Resort: Google Image Search (via iTunes/Song Search API as a proxy for relevance)
     try {
-      const itunesResp = await axios.get(`https://itunes.apple.com/search?term=${encodeURIComponent(artistName)}&entity=musicArtist&limit=1`, { timeout: 2000 });
-      const itunesArtist = itunesResp.data?.results?.[0];
-      if (itunesArtist) {
-          // try to get better resolution if possible
-          return res.redirect(itunesArtist.artworkUrl100 || "");
-      }
+        const itunesResp = await axios.get(`https://itunes.apple.com/search?term=${encodeURIComponent(artistName)}&entity=musicArtist&limit=1`, { timeout: 2000 });
+        const itunesArtist = itunesResp.data?.results?.[0];
+        if (itunesArtist && itunesArtist.artworkUrl100) {
+            return res.redirect(itunesArtist.artworkUrl100.replace('100x100bb', '600x600bb'));
+        }
     } catch (e) {}
 
     // Last Resort: Default Avatar
