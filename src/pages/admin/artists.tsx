@@ -151,136 +151,137 @@ const ArtistManagementPage = () => {
 
                 {view === 'artists' ? (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Left Panel: Search & List */}
-                    <div className="lg:col-span-1 flex flex-col gap-4">
-                        <div className="relative">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                            <input 
-                                type="text"
-                                placeholder="ค้นหาชื่อศิลปิน..."
-                                className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
+                        {/* Left Panel: Search & List */}
+                        <div className="lg:col-span-1 flex flex-col gap-4">
+                            <div className="relative">
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <input 
+                                    type="text"
+                                    placeholder="ค้นหาชื่อศิลปิน..."
+                                    className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="bg-white border border-gray-100 rounded-[24px] overflow-hidden shadow-sm h-[600px] flex flex-col">
+                                <div className="p-4 border-b border-gray-50 flex justify-between items-center">
+                                    <span className="text-sm font-bold text-gray-400 uppercase tracking-wider">รายชื่อศิลปิน ({filteredArtists.length})</span>
+                                </div>
+                                <div className="flex-1 overflow-y-auto">
+                                    {filteredArtists.map((artist) => {
+                                        const hasOverride = !!overrides[artist.name.split(' (')[0].trim()];
+                                        return (
+                                            <div 
+                                                key={artist.name}
+                                                onClick={() => handleSelectArtist(artist)}
+                                                className={`p-4 flex items-center gap-3 cursor-pointer transition-all border-l-4 ${
+                                                    selectedArtist?.name === artist.name 
+                                                        ? "bg-primary/5 border-primary" 
+                                                        : "hover:bg-gray-50 border-transparent"
+                                                }`}
+                                            >
+                                                <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-100 border border-gray-100 flex-shrink-0">
+                                                    <Image 
+                                                        src={`/api/spotify/artists/image?name=${encodeURIComponent(artist.name)}`}
+                                                        alt="" fill className="object-cover" unoptimized
+                                                    />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-bold text-gray-900 truncate">{artist.name}</p>
+                                                    {hasOverride && <span className="text-[10px] text-green-500 font-bold uppercase">Custom Image</span>}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
                         </div>
 
-                        <div className="bg-white border border-gray-100 rounded-[24px] overflow-hidden shadow-sm h-[600px] flex flex-col">
-                            <div className="p-4 border-b border-gray-50 flex justify-between items-center">
-                                <span className="text-sm font-bold text-gray-400 uppercase tracking-wider">รายชื่อศิลปิน ({filteredArtists.length})</span>
-                            </div>
-                            <div className="flex-1 overflow-y-auto">
-                                {filteredArtists.map((artist) => {
-                                    const hasOverride = !!overrides[artist.name.split(' (')[0].trim()];
-                                    return (
-                                        <div 
-                                            key={artist.name}
-                                            onClick={() => handleSelectArtist(artist)}
-                                            className={`p-4 flex items-center gap-3 cursor-pointer transition-all border-l-4 ${
-                                                selectedArtist?.name === artist.name 
-                                                    ? "bg-primary/5 border-primary" 
-                                                    : "hover:bg-gray-50 border-transparent"
-                                            }`}
-                                        >
-                                            <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gray-100 border border-gray-100 flex-shrink-0">
+                        {/* Right Panel: Editor */}
+                        <div className="lg:col-span-2">
+                            {selectedArtist ? (
+                                <div className="bg-white border border-gray-100 rounded-[32px] p-8 shadow-sm flex flex-col h-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                    <div className="flex justify-between items-start mb-8">
+                                        <div className="flex items-center gap-4">
+                                            <div className="relative w-20 h-20 rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 shadow-sm">
                                                 <Image 
-                                                    src={`/api/spotify/artists/image?name=${encodeURIComponent(artist.name)}`}
-                                                    alt="" fill className="object-cover" unoptimized
+                                                    src={imageUrl || `/api/spotify/artists/image?name=${encodeURIComponent(selectedArtist.name)}`}
+                                                    alt={selectedArtist.name} fill className="object-cover" unoptimized
                                                 />
                                             </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-bold text-gray-900 truncate">{artist.name}</p>
-                                                {hasOverride && <span className="text-[10px] text-green-500 font-bold uppercase">Custom Image</span>}
+                                            <div>
+                                                <h2 className="text-2xl font-bold text-gray-900">{selectedArtist.name}</h2>
+                                                <p className="text-gray-400 text-sm">จัดการรูปภาพหน้าปกเฉพาะของศิลปินคนนี้</p>
                                             </div>
                                         </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    </div>
+                                        {overrides[selectedArtist.name.split(' (')[0].trim()] && (
+                                            <button 
+                                                onClick={handleDelete}
+                                                disabled={saving}
+                                                className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                                                title="ลบข้อมูลการตั้งค่าเดิม"
+                                            >
+                                                <Trash2 className="w-6 h-6" />
+                                            </button>
+                                        )}
+                                    </div>
 
-                    {/* Right Panel: Editor */}
-                    <div className="lg:col-span-2">
-                        {selectedArtist ? (
-                            <div className="bg-white border border-gray-100 rounded-[32px] p-8 shadow-sm flex flex-col h-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <div className="flex justify-between items-start mb-8">
-                                    <div className="flex items-center gap-4">
-                                        <div className="relative w-20 h-20 rounded-2xl overflow-hidden bg-gray-50 border border-gray-100 shadow-sm">
-                                            <Image 
-                                                src={imageUrl || `/api/spotify/artists/image?name=${encodeURIComponent(selectedArtist.name)}`}
-                                                alt={selectedArtist.name} fill className="object-cover" unoptimized
-                                            />
-                                        </div>
+                                    <div className="space-y-6">
                                         <div>
-                                            <h2 className="text-2xl font-bold text-gray-900">{selectedArtist.name}</h2>
-                                            <p className="text-gray-400 text-sm">จัดการรูปภาพหน้าปกเฉพาะของศิลปินคนนี้</p>
+                                            <label className="block text-sm font-bold text-gray-700 mb-2">Image URL (Override)</label>
+                                            <div className="relative">
+                                                <ImageIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                                <input 
+                                                    type="text"
+                                                    placeholder="https://... หรือปล่อยว่างเพื่อใช้จากระบบอัตโนมัติ"
+                                                    className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none transition-all font-mono text-sm"
+                                                    value={imageUrl}
+                                                    onChange={(e) => setImageUrl(e.target.value)}
+                                                />
+                                            </div>
+                                            <p className="text-[11px] text-gray-400 mt-2 px-1 italic">หารูปจาก JOOX, Sanook หรือ Pinterest แล้วนำ Link มาวางที่นี่เพื่อคุณภาพงานที่พรีเมียมที่สุด</p>
+                                        </div>
+
+                                        {message && (
+                                            <div className={`p-4 rounded-2xl flex items-center gap-3 animate-in fade-in zoom-in duration-300 ${
+                                                message.type === 'success' ? "bg-green-50 text-green-700 border border-green-100" : "bg-red-50 text-red-700 border border-red-100"
+                                            }`}>
+                                                {message.type === 'success' ? <CheckCircle2 className="w-5 h-5 flex-shrink-0" /> : <AlertCircle className="w-5 h-5 flex-shrink-0" />}
+                                                <span className="text-sm font-bold">{message.text}</span>
+                                            </div>
+                                        )}
+
+                                        <div className="pt-4 mt-auto">
+                                            <button 
+                                                onClick={handleSave}
+                                                disabled={saving}
+                                                className="w-full py-4 bg-primary text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-primary-focus transition-all shadow-lg shadow-primary/20 active:scale-[0.98] disabled:opacity-50"
+                                            >
+                                                <Save className="w-5 h-5" />
+                                                {saving ? "กำลังบันทึก..." : "บันทึกการตั้งค่า"}
+                                            </button>
                                         </div>
                                     </div>
-                                    {overrides[selectedArtist.name.split(' (')[0].trim()] && (
-                                        <button 
-                                            onClick={handleDelete}
-                                            disabled={saving}
-                                            className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                                            title="ลบข้อมูลการตั้งค่าเดิม"
-                                        >
-                                            <Trash2 className="w-6 h-6" />
-                                        </button>
-                                    )}
-                                </div>
-
-                                <div className="space-y-6">
-                                    <div>
-                                        <label className="block text-sm font-bold text-gray-700 mb-2">Image URL (Override)</label>
-                                        <div className="relative">
-                                            <ImageIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                            <input 
-                                                type="text"
-                                                placeholder="https://... หรือปล่อยว่างเพื่อใช้จากระบบอัตโนมัติ"
-                                                className="w-full pl-12 pr-4 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none transition-all font-mono text-sm"
-                                                value={imageUrl}
-                                                onChange={(e) => setImageUrl(e.target.value)}
-                                            />
-                                        </div>
-                                        <p className="text-[11px] text-gray-400 mt-2 px-1 italic">หารูปจาก JOOX, Sanook หรือ Pinterest แล้วนำ Link มาวางที่นี่เพื่อคุณภาพงานที่พรีเมียมที่สุด</p>
-                                    </div>
-
-                                    {message && (
-                                        <div className={`p-4 rounded-2xl flex items-center gap-3 animate-in fade-in zoom-in duration-300 ${
-                                            message.type === 'success' ? "bg-green-50 text-green-700 border border-green-100" : "bg-red-50 text-red-700 border border-red-100"
-                                        }`}>
-                                            {message.type === 'success' ? <CheckCircle2 className="w-5 h-5 flex-shrink-0" /> : <AlertCircle className="w-5 h-5 flex-shrink-0" />}
-                                            <span className="text-sm font-bold">{message.text}</span>
-                                        </div>
-                                    )}
-
-                                    <div className="pt-4 mt-auto">
-                                        <button 
-                                            onClick={handleSave}
-                                            disabled={saving}
-                                            className="w-full py-4 bg-primary text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-primary-focus transition-all shadow-lg shadow-primary/20 active:scale-[0.98] disabled:opacity-50"
-                                        >
-                                            <Save className="w-5 h-5" />
-                                            {saving ? "กำลังบันทึก..." : "บันทึกการตั้งค่า"}
-                                        </button>
+                                    
+                                    <div className="mt-12 p-6 bg-blue-50/50 rounded-2xl border border-blue-100">
+                                        <h4 className="font-bold text-blue-800 text-sm mb-2">💡 เคล็ดลับความยั่งยืน</h4>
+                                        <p className="text-blue-700/70 text-xs leading-relaxed">
+                                            ชื่อศิลปินที่แสดงด้านซ้ายมาจากระบบอัตโนมัติ การตั้งค่าที่นี่จะถูกเก็บไว้เป็นลำดับความสำคัญสูงสุด (Priority 1) 
+                                            แม้ในอนาคต API จาก JOOX จะเปลี่ยนโครงร่าง แต่รูปที่พี่ตั้งไว้ตรงนี้จะไม่หายไปครับ
+                                        </p>
                                     </div>
                                 </div>
-                                
-                                <div className="mt-12 p-6 bg-blue-50/50 rounded-2xl border border-blue-100">
-                                    <h4 className="font-bold text-blue-800 text-sm mb-2">💡 เคล็ดลับความยั่งยืน</h4>
-                                    <p className="text-blue-700/70 text-xs leading-relaxed">
-                                        ชื่อศิลปินที่แสดงด้านซ้ายมาจากระบบอัตโนมัติ การตั้งค่าที่นี่จะถูกเก็บไว้เป็นลำดับความสำคัญสูงสุด (Priority 1) 
-                                        แม้ในอนาคต API จาก JOOX จะเปลี่ยนโครงร่าง แต่รูปที่พี่ตั้งไว้ตรงนี้จะไม่หายไปครับ
-                                    </p>
+                            ) : (
+                                <div className="h-full min-h-[500px] border-2 border-dashed border-gray-100 rounded-[32px] flex flex-col items-center justify-center p-8 text-center bg-gray-50/30">
+                                    <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
+                                        <Search className="w-10 h-10 text-gray-200" />
+                                    </div>
+                                    <h3 className="text-lg font-bold text-gray-400">เลือกศิลปินเพื่อเริ่มจัดการ</h3>
+                                    <p className="text-gray-400 text-sm max-w-xs mt-2">คุณสามารถค้นหาศิลปินได้จากช่องค้นหาด้านซ้ายเพื่อแก้ไขรูปภาพหน้าปกรายบุคคล</p>
                                 </div>
-                            </div>
-                        ) : (
-                            <div className="h-full min-h-[500px] border-2 border-dashed border-gray-100 rounded-[32px] flex flex-col items-center justify-center p-8 text-center bg-gray-50/30">
-                                <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
-                                    <Search className="w-10 h-10 text-gray-200" />
-                                </div>
-                                <h3 className="text-lg font-bold text-gray-400">เลือกศิลปินเพื่อเริ่มจัดการ</h3>
-                                <p className="text-gray-400 text-sm max-w-xs mt-2">คุณสามารถค้นหาศิลปินได้จากช่องค้นหาด้านซ้ายเพื่อแก้ไขรูปภาพหน้าปกรายบุคคล</p>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
                 ) : (
                     <div className="max-w-2xl mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
