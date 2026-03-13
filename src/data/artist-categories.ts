@@ -18,9 +18,9 @@ export const ARTIST_CATEGORIES: ArtistCategory[] = [
     description: 'รวมศิลปินที่กำลังมาแรงและเป็นตำนาน',
     gradient: 'from-orange-500 to-red-600',
     artists: [
-      { name: 'KLEAR' }, { name: 'Cocktail' }, { name: 'Big Ass' }, { name: 'NUM KALA' }, 
-      { name: 'Silly Fools' }, { name: 'ต่าย อรทัย' }, { name: 'Bodyslam' }, { name: 'Potato' }, 
-      { name: 'ดา เอ็นโดรฟิน' }, { name: 'Palmy' }, { name: 'เบิร์ด ธงไชย' }, { name: 'Clash' }
+      { name: 'เคลียร์ (KLEAR)' }, { name: 'ค็อกเทล (Cocktail)' }, { name: 'บิ๊กแอส (Big Ass)' }, { name: 'หนุ่ม กะลา (NUM KALA)' }, 
+      { name: 'ซิลลี่ ฟูลส์ (Silly Fools)' }, { name: 'ต่าย อรทัย' }, { name: 'บอดี้สแลม (Bodyslam)' }, { name: 'โปเตโต้ (Potato)' }, 
+      { name: 'ดา เอ็นโดรฟิน' }, { name: 'ปาล์มมี่ (Palmy)' }, { name: 'เบิร์ด ธงไชย' }, { name: 'แคลช (Clash)' }
     ]
   },
   {
