@@ -188,19 +188,18 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
     <div className="flex flex-col w-full pb-20">
       {/* 1. PLAYLIST DETAIL VIEW */}
       {tagId && artist ? (
-        <div className="col-span-full animate-in fade-in slide-in-from-top-6 duration-700 ease-out">
-          <div className="relative w-full h-[180px] sm:h-[240px] mb-8 group overflow-hidden rounded-[3rem] mx-2 shadow-2xl">
+        <div className="col-span-full animate-in fade-in duration-500">
+          <div className="relative w-full h-[140px] sm:h-[180px] mb-6 group overflow-hidden rounded-2xl mx-2 shadow-sm border border-gray-100 bg-gray-50">
              <Image 
                 src={playlistInfo?.imageUrl || artist[0]?.imageUrl || "/icon-cover.png"} 
                 alt={playlistInfo?.name || "Playlist"}
                 fill 
-                className="object-cover scale-110 blur-3xl opacity-40 brightness-75 group-hover:scale-125 transition-transform duration-[3000ms]"
+                className="object-cover scale-105 blur-2xl opacity-20 brightness-50"
                 unoptimized
              />
-             <div className="absolute inset-0 bg-gradient-to-br from-black/20 via-transparent to-white/10" />
              
-             <div className="absolute inset-0 p-6 sm:p-10 flex items-center gap-6 sm:gap-10">
-                <div className="relative w-28 h-28 sm:w-44 sm:h-44 flex-shrink-0 rounded-[2rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.3)] ring-4 ring-white/20 bg-white group-hover:rotate-1 transition-all duration-700">
+             <div className="absolute inset-0 p-4 sm:p-6 flex items-center gap-4 sm:gap-6">
+                <div className="relative w-20 h-20 sm:w-32 sm:h-32 flex-shrink-0 rounded-xl overflow-hidden shadow-md bg-white">
                    <Image 
                       src={playlistInfo?.imageUrl || artist[0]?.imageUrl || "/icon-cover.png"} 
                       alt={playlistInfo?.name}
@@ -210,76 +209,55 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                    />
                 </div>
                 
-                <div className="flex-1 space-y-2 sm:space-y-4">
-                   <div className="inline-flex items-center gap-2 bg-primary/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
-                        <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white">Music Collection</p>
-                   </div>
-                   <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white leading-tight drop-shadow-lg line-clamp-2">
+                <div className="flex-1 space-y-1">
+                   <p className="text-[10px] font-bold uppercase text-primary">เพลย์ลิสต์</p>
+                   <h1 className="text-xl sm:text-2xl font-bold text-black leading-tight line-clamp-1">
                       {playlistInfo?.name || "รายการเพลง"}
                    </h1>
-                   <div className="flex items-center gap-4 text-xs sm:text-sm text-white/70 font-bold">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-[10px] text-white">OK</div>
-                        <span className="text-white">{playlistInfo?.owner || "YouOke"}</span>
-                      </div>
-                      <span className="opacity-40">•</span>
-                      <span>{artist.length} บทเพลงคุณภาพ</span>
+                   <div className="flex items-center gap-2 text-[11px] text-gray-500 font-medium">
+                      <span className="text-black font-bold">{playlistInfo?.owner || "YouOke"}</span>
+                      <span>•</span>
+                      <span>{artist.length} เพลง</span>
                    </div>
                 </div>
 
-                <div className="absolute top-6 right-8">
+                <div className="absolute top-4 right-4">
                     <button
                         onClick={() => setTagId("")}
-                        className="bg-white/10 hover:bg-white text-white hover:text-black px-6 py-3 rounded-2xl text-xs font-black shadow-2xl flex items-center justify-center gap-3 transition-all duration-500 hover:scale-105 backdrop-blur-2xl border border-white/20 group/btn"
+                        className="bg-white hover:bg-gray-50 text-black px-4 py-2 rounded-xl text-[11px] font-bold shadow-sm border border-gray-100 flex items-center gap-2 transition-all"
                     >
-                        <svg className="w-4 h-4 transition-transform group-hover/btn:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={4} d="M15 19l-7-7 7-7" />
-                        </svg>
-                        <span>ย้อนกลับ</span>
+                        ย้อนกลับ
                     </button>
                 </div>
              </div>
           </div>
 
-          <div className="px-6 mb-6 flex items-center justify-between">
-             <h2 className="text-xl font-black text-black">รายการเพลงทั้งหมด</h2>
-             <div className="h-[1px] flex-1 bg-gray-100 mx-6 opacity-50" />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-6 pb-20">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-3 px-4 pb-20">
             {artist.map((item: any, i: number) => {
                 const video = item as any;
                 return (
                 <div
                     key={video.id || video.name + i}
-                    className="group cursor-pointer bg-white rounded-[2rem] border border-gray-50 hover:border-primary/10 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(244,63,94,0.08)] flex items-center gap-4 p-3 transition-all active:scale-[0.97] duration-500 relative overflow-hidden"
+                    className="group cursor-pointer bg-white rounded-xl border border-gray-100 hover:border-primary/20 hover:shadow-md flex flex-col h-full transition-all active:scale-[0.98] duration-300 relative overflow-hidden"
                     onClick={() => {
                         const artistName = (video.artist_name && video.artist_name !== "Unknown Artist") ? video.artist_name : "";
                         const query = `${video.title} ${artistName}`.trim();
                         setSearchTerm(query);
                     }}
                 >
-                    <div className="relative w-20 h-20 rounded-2xl overflow-hidden bg-gray-50 flex-shrink-0 shadow-sm">
-                        <Image
-                            src={video.coverImageURL || "/icon-cover.png"}
-                            alt={video.title}
-                            fill
-                            unoptimized
-                            className="object-cover transition-transform duration-700 group-hover:scale-115"
-                        />
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition-all duration-300">
-                             <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 transition-all duration-300">
-                                <svg className="w-4 h-4 text-white fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                             </div>
-                        </div>
+                    <div className="relative aspect-video overflow-hidden bg-gray-50 flex-shrink-0">
+                    <Image
+                        src={video.coverImageURL || "/icon-cover.png"}
+                        alt={video.title}
+                        fill
+                        unoptimized
+                        className="object-cover"
+                    />
                     </div>
-                    <div className="flex-1 min-w-0 pr-4">
-                        <h3 className="font-black text-[14px] line-clamp-1 text-black leading-tight group-hover:text-primary transition-colors">{video.title || video.name}</h3>
-                        <p className="text-[11px] text-gray-400 mt-1 font-bold tracking-tight line-clamp-1">{(video.artist_name && video.artist_name !== "Unknown Artist") ? video.artist_name : "YouTube Music"}</p>
+                    <div className="p-2 sm:p-2.5 flex-1">
+                    <h3 className="font-bold text-[12px] line-clamp-2 text-black leading-tight group-hover:text-primary transition-colors text-left">{video.title || video.name}</h3>
+                    <p className="text-[10px] text-gray-400 mt-1 line-clamp-1 text-left">{(video.artist_name && video.artist_name !== "Unknown Artist") ? video.artist_name : "YouTube Music"}</p>
                     </div>
-                    
-                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-l-full opacity-0 group-hover:opacity-100 transition-all duration-300" />
                 </div>
                 );
             })}
@@ -292,51 +270,26 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
             <>
               {/* TIER 1: CATEGORY GRID */}
               {!selectedCategory && (
-                <div className="animate-in fade-in slide-in-from-bottom-6 duration-1000">
-                  <div className="px-6 pt-8 pb-4">
-                    <div className="flex items-center gap-3">
-                        <div className="w-2 h-8 bg-primary rounded-full" />
-                        <div>
-                            <h1 className="text-3xl font-black text-black tracking-tight">สารบัญศิลปิน</h1>
-                            <p className="text-[13px] text-gray-400 font-semibold uppercase tracking-wider mt-0.5">ค้นหาเพลงคาราโอเกะตามสไตล์ที่คุณชอบ</p>
-                        </div>
-                    </div>
+                <div className="animate-in fade-in duration-500">
+                  <div className="px-4 pt-6 pb-2">
+                    <h1 className="text-xl font-bold text-black">สารบัญศิลปิน</h1>
+                    <p className="text-[12px] text-gray-500">เลือกแนวเพลงเพื่อดูรายชื่อศิลปิน</p>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-6 py-6 pb-20">
-                    {ARTIST_CATEGORIES.map((cat, idx) => (
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 px-4 py-4 pb-20">
+                    {ARTIST_CATEGORIES.map((cat) => (
                       <div 
                         key={cat.id} 
                         onClick={() => setCategoryId(cat.id)}
-                        className={`group relative overflow-hidden rounded-[2.5rem] aspect-[1.8/1] cursor-pointer shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.1)] transition-all duration-700 hover:-translate-y-3 bg-gradient-to-br ${cat.gradient} p-[1px]`}
-                        style={{ animationDelay: `${idx * 50}ms` }}
+                        className={`group relative overflow-hidden rounded-2xl aspect-[2/1] cursor-pointer shadow-sm hover:shadow-md transition-all bg-gradient-to-br ${cat.gradient}`}
                       >
-                         <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                         
-                         {/* Abstract Mesh Pattern */}
-                         <div className="absolute top-0 right-0 w-48 h-48 bg-white/20 rounded-full blur-[60px] -mr-20 -mt-20 group-hover:scale-150 transition-transform duration-1000 ease-out" />
-                         <div className="absolute bottom-0 left-0 w-32 h-32 bg-black/10 rounded-full blur-[40px] -ml-16 -mb-16 group-hover:translate-x-10 transition-transform duration-1000" />
-                         
-                         <div className="absolute inset-0 p-8 flex flex-col justify-end z-10">
-                            <h3 className="text-2xl lg:text-3xl font-black text-white leading-tight drop-shadow-sm">{cat.title}</h3>
-                            <div className="flex items-center gap-2 mt-2 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-500 delay-100">
-                                <span className="text-xs font-bold text-white/90 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
-                                    {cat.artists.length} ศิลปิน
-                                </span>
-                                <div className="text-[11px] font-bold text-white/70 uppercase tracking-widest leading-none mt-1">
-                                    Browse Collection
-                                </div>
-                            </div>
+                         <div className="absolute inset-0 p-4 flex flex-col justify-end">
+                            <h3 className="text-lg font-bold text-white leading-tight">{cat.title}</h3>
+                            <p className="text-[10px] font-medium text-white/80 mt-1">{cat.artists.length} ศิลปิน</p>
                          </div>
-
-                         <div className="absolute top-6 right-8 z-10">
-                            <div className="w-12 h-12 bg-white/20 backdrop-blur-xl rounded-2xl flex items-center justify-center border border-white/30 shadow-2xl group-hover:rotate-[360deg] transition-all duration-1000 group-hover:scale-110">
-                                <ChevronRight className="w-6 h-6 text-white" />
-                            </div>
+                         <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all">
+                            <ChevronRight className="w-4 h-4 text-white" />
                          </div>
-
-                         {/* Background Tint */}
-                         <div className="absolute inset-0 bg-black/5" />
                       </div>
                     ))}
                   </div>
@@ -345,45 +298,37 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
 
               {/* TIER 2: ARTIST LIST */}
               {selectedCategory && (
-                <div className="animate-in fade-in slide-in-from-right-8 duration-700 ease-out">
-                  <div className="px-6 pt-8 pb-8 flex items-end justify-between">
-                    <div className="flex items-center gap-6">
-                        <button 
-                            onClick={() => setCategoryId("")} 
-                            className="w-14 h-14 bg-gray-50 border border-gray-100 rounded-[1.5rem] flex items-center justify-center hover:bg-white hover:shadow-xl hover:scale-110 transition-all duration-300 group shadow-sm active:scale-90"
-                        >
-                            <svg className="w-6 h-6 text-black transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
-                            </svg>
-                        </button>
-                        <div>
-                            <h2 className="text-3xl font-black text-black leading-none">{selectedCategory.title}</h2>
-                            <p className="text-[13px] text-gray-400 font-bold mt-2 uppercase tracking-widest">{selectedCategory.artists.length} Professional Artists</p>
-                        </div>
+                <div className="animate-in fade-in duration-500">
+                  <div className="px-4 pt-6 pb-4 flex items-center gap-3">
+                    <button 
+                        onClick={() => setCategoryId("")} 
+                        className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+                    >
+                        <svg className="w-4 h-4 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <div>
+                        <h2 className="text-lg font-bold text-black">{selectedCategory.title}</h2>
+                        <p className="text-[11px] text-gray-400 font-medium">{selectedCategory.artists.length} ศิลปิน</p>
                     </div>
                   </div>
-
-                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-6 gap-y-10 px-6 pb-20">
+                  
+                  <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 px-4 pb-10">
                     {selectedCategory.artists.map((artist, i) => (
                       <div 
                         key={artist.name + i} 
                         onClick={() => setSearchTerm(cleanSearchQuery(artist.name))} 
-                        className="group cursor-pointer flex flex-col items-center"
-                        style={{ animationDelay: `${i * 30}ms` }}
+                        className="group cursor-pointer"
                       >
-                        <div className="relative w-full aspect-square rounded-[2.5rem] overflow-hidden bg-gray-50 shadow-[0_10px_40px_rgba(0,0,0,0.03)] group-hover:shadow-[0_25px_60px_rgba(0,0,0,0.12)] transition-all duration-700 group-hover:-translate-y-4 group-hover:rotate-2">
+                        <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 shadow-sm border border-gray-50 group-hover:shadow-md transition-all">
                            <Image 
                                src={artist.imageUrl || `/api/spotify/artists/image?name=${encodeURIComponent(artist.name)}`} 
-                               alt={artist.name} fill className="object-cover transition-transform duration-1000 group-hover:scale-115 brightness-[0.98] group-hover:brightness-100 grayscale-[0.2] group-hover:grayscale-0" 
+                               alt={artist.name} fill className="object-cover transition-transform duration-500 group-hover:scale-110" 
                                unoptimized
                             />
-                            {/* Subtle Glass Overlay on Hover */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-primary/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                         </div>
-                        <div className="mt-5 text-center px-2">
-                            <p className="text-[15px] font-black text-black group-hover:text-primary transition-colors duration-300 leading-snug line-clamp-1">{artist.name}</p>
-                            <div className="w-0 group-hover:w-full h-1 bg-primary rounded-full mx-auto mt-1 transition-all duration-500 ease-out opacity-0 group-hover:opacity-100" />
-                        </div>
+                        <p className="mt-2 text-[12px] font-bold text-black text-center group-hover:text-primary transition-colors line-clamp-1">{artist.name}</p>
                       </div>
                     ))}
                   </div>
