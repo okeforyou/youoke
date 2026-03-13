@@ -188,8 +188,15 @@ const ArtistManagementPage = () => {
                                                     />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-sm font-bold text-gray-900 truncate">{artist.name}</p>
-                                                    {hasOverride && <span className="text-[10px] text-green-500 font-bold uppercase">Custom Image</span>}
+                                                    <p className="text-sm font-bold text-gray-900 truncate">
+                                                        {artist.name.split(' (')[0]}
+                                                    </p>
+                                                    {artist.name.includes(' (') && (
+                                                        <p className="text-[10px] text-gray-400 truncate">
+                                                            {artist.name.match(/\((.*?)\)/)?.[1]}
+                                                        </p>
+                                                    )}
+                                                    {hasOverride && <p className="text-[9px] text-green-500 font-bold uppercase mt-0.5">Custom Image</p>}
                                                 </div>
                                             </div>
                                         );
@@ -211,8 +218,15 @@ const ArtistManagementPage = () => {
                                                 />
                                             </div>
                                             <div>
-                                                <h2 className="text-2xl font-bold text-gray-900">{selectedArtist.name}</h2>
-                                                <p className="text-gray-400 text-sm">จัดการรูปภาพหน้าปกเฉพาะของศิลปินคนนี้</p>
+                                                <h2 className="text-2xl font-bold text-gray-900">
+                                                    {selectedArtist.name.split(' (')[0]}
+                                                </h2>
+                                                {selectedArtist.name.includes(' (') && (
+                                                    <p className="text-gray-400 text-sm font-medium">
+                                                        {selectedArtist.name.match(/\((.*?)\)/)?.[1]}
+                                                    </p>
+                                                )}
+                                                <p className="text-gray-400 text-[11px] mt-1">จัดการรูปภาพหน้าปกเฉพาะของศิลปินคนนี้</p>
                                             </div>
                                         </div>
                                         {overrides[selectedArtist.name.split(' (')[0].trim()] && (
