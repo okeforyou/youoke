@@ -232,7 +232,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
              </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-3 px-4 pb-20">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 px-4 pb-20">
             {artist.map((item: any, i: number) => {
                 const video = item as any;
                 return (
@@ -363,7 +363,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                   ))}
                </div>
 
-               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 px-4 pb-20">
+               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-4 px-4 pb-20">
                   {(isLoadingGenre && artistCategories.length === 0) ? (
                     getSkeletonItems(10).map(s => <div key={s} className="aspect-square bg-gray-100 rounded-3xl animate-pulse" />)
                   ) : (
@@ -397,7 +397,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                     </div>
                </div>
                
-               <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 px-4 pb-20">
+               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-4 pb-20">
                   {artistCategories.map(cat => (
                     <div key={cat.tag_id} onClick={() => setTagId(cat.tag_id)} className="group cursor-pointer">
                         <div className="relative aspect-video rounded-3xl overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-xl transition-all">
