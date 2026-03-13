@@ -286,7 +286,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                       >
                         <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm group-hover:shadow-md transition-all duration-300">
                           <Image 
-                             src={`/api/spotify/artists/image?name=${encodeURIComponent(artist.name.split(' (')[0])}`}
+                             src={`/api/spotify/artists/image?name=${encodeURIComponent(artist.name)}`}
                              alt={artist.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" unoptimized
                           />
                         </div>
@@ -339,15 +339,15 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                   </div>
                   
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 pb-10">
-                    {selectedCategory.artists.map((artist, i) => (
-                         <div 
-                           key={artist.name + i} 
-                           onClick={() => setSearchTerm(cleanSearchQuery(artist.name.split(' (')[0]))} 
-                           className="group cursor-pointer"
-                         >
-                          <div className="relative aspect-square rounded-2xl overflow-hidden bg-white flex items-center justify-center shadow-sm border border-gray-100 group-hover:shadow-md group-hover:border-primary/20 transition-all">
-                             <Image 
-                                src={artist.imageUrl || `/api/spotify/artists/image?name=${encodeURIComponent(artist.name.split(' (')[0])}`} 
+                     {selectedCategory.artists.map((artist, i) => (
+                          <div 
+                            key={artist.name + i} 
+                            onClick={() => setSearchTerm(cleanSearchQuery(artist.name.split(' (')[0]))} 
+                            className="group cursor-pointer"
+                          >
+                           <div className="relative aspect-square rounded-2xl overflow-hidden bg-white flex items-center justify-center shadow-sm border border-gray-100 group-hover:shadow-md group-hover:border-primary/20 transition-all">
+                              <Image 
+                                 src={artist.imageUrl || `/api/spotify/artists/image?name=${encodeURIComponent(artist.name)}`} 
                                 alt={artist.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" 
                                 unoptimized
                              />
