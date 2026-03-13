@@ -283,9 +283,9 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                         onClick={() => setCategoryId(cat.id)}
                         className={`group relative overflow-hidden rounded-xl aspect-[1.8/1] min-h-[72px] sm:min-h-[80px] cursor-pointer shadow-sm hover:shadow-md transition-all bg-gradient-to-br ${cat.gradient}`}
                       >
-                         <div className="absolute inset-0 p-2.5 flex flex-col justify-end sm:p-3">
-                            <h3 className="text-[11px] min-[375px]:text-[12px] sm:text-[14px] md:text-[15px] font-bold text-white leading-[1.15] sm:leading-tight drop-shadow-sm line-clamp-2 break-words">{cat.title}</h3>
-                            <p className="text-[9px] sm:text-[10px] font-medium text-white/90 mt-0.5 drop-shadow-sm">{cat.artists.length} ศิลปิน</p>
+                         <div className="absolute inset-0 p-2 flex flex-col justify-end sm:p-2.5">
+                            <h3 className="text-[10px] min-[375px]:text-[11px] sm:text-[13px] md:text-[14px] font-bold text-white leading-[1.1] sm:leading-tight drop-shadow-sm line-clamp-2 break-words text-left">{cat.title}</h3>
+                            <p className="text-[8px] sm:text-[9px] font-medium text-white/80 mt-0.5 drop-shadow-sm text-left">{cat.artists.length} ศิลปิน</p>
                          </div>
                          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all">
                             <ChevronRight className="w-3.5 h-3.5 text-white" />
@@ -316,19 +316,19 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                   
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 pb-10">
                     {selectedCategory.artists.map((artist, i) => (
-                      <div 
-                        key={artist.name + i} 
-                        onClick={() => setSearchTerm(cleanSearchQuery(artist.name))} 
-                        className="group cursor-pointer"
-                      >
+                         <div 
+                           key={artist.name + i} 
+                           onClick={() => setSearchTerm(cleanSearchQuery(artist.name.split(' (')[0]))} 
+                           className="group cursor-pointer"
+                         >
                         <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-50 flex items-center justify-center shadow-sm border border-gray-100 group-hover:shadow-md group-hover:border-primary/20 transition-all">
-                           <Image 
-                               src={artist.imageUrl || `/api/spotify/artists/image?name=${encodeURIComponent(artist.name)}`} 
+                            <Image 
+                               src={artist.imageUrl || `/api/spotify/artists/image?name=${encodeURIComponent(artist.name.split(' (')[0])}`} 
                                alt={artist.name} fill className="object-cover transition-transform duration-500 group-hover:scale-110" 
                                unoptimized
                             />
                         </div>
-                        <p className="mt-2 px-1 text-[11px] sm:text-[12px] font-bold text-black text-center group-hover:text-primary transition-colors line-clamp-2 leading-tight h-[30px] sm:h-[34px] flex items-start justify-center">{artist.name}</p>
+                        <p className="mt-2 px-1 text-[10px] sm:text-[11px] font-bold text-black text-center group-hover:text-primary transition-colors line-clamp-2 leading-tight h-[28px] sm:h-[32px] flex items-start justify-center italic-sm">{artist.name.split(' (')[0]}</p>
                       </div>
                     ))}
                   </div>
