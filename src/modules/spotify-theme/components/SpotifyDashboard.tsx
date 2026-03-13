@@ -276,21 +276,21 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                     <p className="text-[12px] text-gray-400">ชื่อที่คุณคุ้นเคยและชื่นชอบ</p>
                   </div>
 
-                  {/* Top Popular Shelf (Horizontal Scroll) */}
-                  <div className="flex overflow-x-auto gap-3.5 px-4 py-3 pb-6 scrollbar-hide no-scrollbar">
-                    {ARTIST_CATEGORIES.find(c => c.id === 'popular')?.artists.slice(0, 15).map((artist, i) => (
+                  {/* Top Popular Grid (Fixed 4 columns like core system) */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 py-3 pb-6">
+                    {ARTIST_CATEGORIES.find(c => c.id === 'popular')?.artists.slice(0, 8).map((artist, i) => (
                       <div 
                         key={artist.name + i}
                         onClick={() => setSearchTerm(cleanSearchQuery(artist.name.split(' (')[0]))}
-                        className="flex-shrink-0 w-[95px] sm:w-[115px] group cursor-pointer text-center"
+                        className="group cursor-pointer flex flex-col items-center"
                       >
-                        <div className="relative aspect-square rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm group-hover:shadow-md transition-all duration-300">
+                        <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm group-hover:shadow-md transition-all duration-300">
                           <Image 
                              src={`/api/spotify/artists/image?name=${encodeURIComponent(artist.name.split(' (')[0])}`}
                              alt={artist.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" unoptimized
                           />
                         </div>
-                        <p className="mt-2 text-[10px] sm:text-[11px] font-bold text-black truncate italic-sm">{artist.name.split(' (')[0]}</p>
+                        <p className="mt-2 text-[10px] sm:text-[11px] font-bold text-black truncate italic-sm text-center w-full">{artist.name.split(' (')[0]}</p>
                       </div>
                     ))}
                   </div>
