@@ -483,49 +483,49 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                       <p className="text-xs text-gray-400 font-medium">กดเลือกแนวเพลงที่ต้องการฟังได้เลยครับ</p>
                    </div>
 
-                   <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 px-4 pb-32">
+                   <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 px-4 pb-32">
                       {[
-                        { id: 'lukthung', title: 'ลูกทุ่ง', color: 'from-orange-500 to-red-600', icon: '👒' },
-                        { id: 'pueachiwit', title: 'เพื่อชีวิต', color: 'from-amber-600 to-yellow-800', icon: '🎸' },
-                        { id: 'string90s', title: 'สตริงยุค 90', color: 'from-indigo-500 to-purple-600', icon: '📀' },
-                        { id: 'morlam', title: 'หมอลำ', color: 'from-pink-500 to-rose-600', icon: '🥁' },
-                        { id: 'hits90s', title: 'รวมเพลงฮิตอมตะ', color: 'from-blue-500 to-cyan-600', icon: '🌟' },
-                        { id: 'international', title: 'สากล', color: 'from-emerald-500 to-teal-700', icon: '🌎' },
+                        { id: 'lukthung', title: 'ลูกทุ่ง', icon: '👒' },
+                        { id: 'pueachiwit', title: 'เพื่อชีวิต', icon: '🎸' },
+                        { id: 'string90s', title: 'สตริงยุค 90', icon: '📀' },
+                        { id: 'morlam', title: 'หมอลำ', icon: '🥁' },
+                        { id: 'hits90s', title: 'รวมเพลงฮิตอมตะ', icon: '🌟' },
+                        { id: 'international', title: 'สากล', icon: '🌎' },
                       ].map((theme) => (
                         <div 
                           key={theme.id}
                           onClick={() => setGenreText(theme.title)}
-                          className={`cursor-pointer p-8 rounded-[2.5rem] bg-gradient-to-br ${theme.color} transition-all hover:scale-[1.03] active:scale-95 shadow-lg relative overflow-hidden group min-h-[140px] flex items-center`}
+                          className="cursor-pointer p-6 rounded-3xl bg-gray-50 border border-gray-100 transition-all hover:bg-gray-100 active:scale-95 shadow-sm flex items-center gap-4 group"
                         >
-                           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                              <span className="text-6xl grayscale group-hover:grayscale-0 transition-all">{theme.icon}</span>
+                           <div className="w-12 h-12 rounded-2xl bg-white border border-gray-100 flex items-center justify-center text-2xl shadow-sm">
+                              {theme.icon}
                            </div>
-                           <h4 className="text-2xl font-black text-white drop-shadow-md relative z-10">{theme.title}</h4>
+                           <h4 className="text-lg font-bold text-gray-800">{theme.title}</h4>
                         </div>
                       ))}
                    </div>
                  </>
                ) : (
-                 <div className="animate-in slide-in-from-right duration-500 px-4">
-                    <div className="flex items-center gap-4 mb-8 pt-4">
+                 <div className="px-4">
+                    <div className="flex items-center gap-4 mb-6 pt-4">
                         <button 
                           onClick={() => {
                               setGenreText("");
                               setSearchTerm("");
                           }}
-                          className="w-10 h-10 bg-white border border-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-50 transition-all"
+                          className="w-10 h-10 bg-white border border-gray-200 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-50 transition-all"
                         >
-                           <ChevronRight className="w-5 h-5 text-black rotate-180" />
+                           <ChevronRight className="w-5 h-5 text-gray-600 rotate-180" />
                         </button>
                         <div>
-                           <h2 className="text-2xl font-black text-black">{genreText || searchTerm}</h2>
-                           <p className="text-xs text-gray-400 font-medium">พบ {stationResults?.length || 0} รายการเพลงยาว</p>
+                           <h2 className="text-xl font-bold text-gray-900">{genreText || searchTerm}</h2>
+                           <p className="text-[11px] text-gray-500 font-medium">รวมเพลงยาว ({stationResults?.length || 0} รายการ)</p>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pb-20">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-20">
                       {isLoadStation ? (
-                        getSkeletonItems(8).map(s => <div key={s} className="aspect-video bg-gray-100 rounded-3xl animate-pulse" />)
+                        getSkeletonItems(8).map(s => <div key={s} className="aspect-video bg-gray-100 rounded-2xl animate-pulse" />)
                       ) : (
                         stationResults?.map(video => (
                             <div key={video.videoId} onClick={() => {
@@ -539,15 +539,12 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                                 } as any;
                                 addToQueue(videoToAdd);
                             }} className="group cursor-pointer">
-                                <div className="relative aspect-video rounded-3xl overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-2xl transition-all duration-500 group-hover:-translate-y-2">
-                                    <Image src={`https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`} alt={video.title} fill className="object-cover transition-transform duration-700 group-hover:scale-110" unoptimized />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-100 transition-opacity" />
-                                    <div className="absolute inset-0 p-5 flex flex-col justify-end">
-                                        <p className="text-white font-black text-sm leading-tight line-clamp-2 drop-shadow-md">{video.title}</p>
+                                <div className="relative aspect-video rounded-2xl overflow-hidden bg-gray-100 border border-gray-100 transition-all group-hover:border-primary/30">
+                                    <Image src={`https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`} alt={video.title} fill className="object-cover" unoptimized />
+                                    <div className="absolute inset-x-0 bottom-0 bg-black/60 p-3">
+                                        <p className="text-white font-bold text-[12px] leading-tight line-clamp-2">{video.title}</p>
                                     </div>
-                                    <div className="absolute top-4 right-4 bg-primary text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
-                                        <Headphones className="w-4 h-4" />
-                                    </div>
+                                    <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                                 </div>
                             </div>
                         ))
