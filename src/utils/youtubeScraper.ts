@@ -218,25 +218,48 @@ export async function scrapeYouTubeMusicArtistProfile(
     if (!ytInitialData) return null;
 
     let profile: YouTubeArtistProfile | null = null;
+    let bestMatch: { profile: YouTubeArtistProfile, score: number } | null = null;
+
+    const calculateScore = (resultName: string, query: string, isOfficial: boolean) => {
+        let score = 0;
+        const normalizedResult = resultName.toLowerCase();
+        const normalizedQuery = query.toLowerCase();
+        
+        if (normalizedResult === normalizedQuery) score += 100;
+        else if (normalizedResult.includes(normalizedQuery) || normalizedQuery.includes(normalizedResult)) score += 50;
+        
+        if (isOfficial) score += 30;
+        return score;
+    };
 
     const findMusicArtist = (obj: any) => {
-      if (profile || !obj || typeof obj !== 'object') return;
+      if (!obj || typeof obj !== 'object') return;
 
       if (obj.musicResponsiveListItemRenderer) {
         const r = obj.musicResponsiveListItemRenderer;
         const pageType = r.navigationEndpoint?.browseEndpoint?.browseEndpointContextSupportedConfigs?.browseEndpointContextMusicConfig?.pageType;
+        const resultName = r.flexColumns?.[0]?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.[0]?.text || "";
         
         // Page types for artists in Music YouTube
         if (pageType === "MUSIC_PAGE_TYPE_ARTIST" || pageType === "MUSIC_PAGE_TYPE_USER_CHANNEL") {
+            const isOfficial = r.badges?.some((b: any) => 
+                b.musicInlineBadgeRenderer?.icon?.iconType === "OFFICIAL_ARTIST" || 
+                b.musicInlineBadgeRenderer?.accessibilityData?.accessibilityData?.label === "Official Artist"
+            );
+            
             const thumb = r.thumbnail?.musicThumbnailRenderer?.thumbnail?.thumbnails?.pop()?.url;
             const highResThumb = thumb ? thumb.replace(/=w\d+-h\d+.*$/, '=w512-h512-c-k-c0x00ffffff-no-rj') : thumb;
             
-            profile = {
-                name: r.flexColumns?.[0]?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.[0]?.text || name,
+            const currentProfile = {
+                name: resultName,
                 thumbnail: highResThumb || "",
                 channelId: r.navigationEndpoint?.browseEndpoint?.browseId || ""
             };
-            return;
+
+            const score = calculateScore(resultName, name, !!isOfficial);
+            if (!bestMatch || score > bestMatch.score) {
+                bestMatch = { profile: currentProfile, score };
+            }
         }
       }
 
@@ -246,7 +269,12 @@ export async function scrapeYouTubeMusicArtistProfile(
     };
 
     findMusicArtist(ytInitialData);
-    return profile;
+    
+    // Only return if it's a decent match (score > 40)
+    if (bestMatch && bestMatch.score > 40) {
+        return bestMatch.profile;
+    }
+    return null;
   } catch (error) {
     return null;
   }
@@ -288,23 +316,42 @@ export async function scrapeYouTubeArtistProfile(
     if (!ytInitialData) return null;
 
     // Search for channelRenderer
-    let profile: YouTubeArtistProfile | null = null;
+    let bestMatch: { profile: YouTubeArtistProfile, score: number } | null = null;
+
+    const calculateScore = (resultName: string, query: string, isVerified: boolean) => {
+        let score = 0;
+        const normalizedResult = resultName.toLowerCase();
+        const normalizedQuery = query.toLowerCase();
+        if (normalizedResult === normalizedQuery) score += 100;
+        else if (normalizedResult.includes(normalizedQuery) || normalizedQuery.includes(normalizedResult)) score += 50;
+        if (isVerified) score += 30;
+        return score;
+    };
 
     const findChannelResult = (obj: any) => {
-      if (profile || !obj || typeof obj !== 'object') return;
+      if (!obj || typeof obj !== 'object') return;
 
       if (obj.channelRenderer) {
         const r = obj.channelRenderer;
+        const resultName = r.title?.simpleText || r.title?.runs?.[0]?.text || "";
+        const isVerified = r.ownerBadges?.some((b: any) => 
+            b.metadataBadgeRenderer?.icon?.iconType === "CHECK_CIRCLE_THICK" || 
+            b.metadataBadgeRenderer?.style === "BADGE_STYLE_TYPE_VERIFIED"
+        );
+        
         const thumb = r.thumbnail?.thumbnails?.[0]?.url;
-        // High-res version trick: replace s88 or s176 with s512
         const highResThumb = thumb ? thumb.replace(/=s\d+.*$/, '=s512-c-k-c0x00ffffff-no-rj') : thumb;
         
-        profile = {
-          name: r.title?.simpleText || r.title?.runs?.[0]?.text || name,
+        const currentProfile = {
+          name: resultName,
           thumbnail: highResThumb || "",
           channelId: r.channelId
         };
-        return;
+
+        const score = calculateScore(resultName, name, !!isVerified);
+        if (!bestMatch || score > bestMatch.score) {
+            bestMatch = { profile: currentProfile, score };
+        }
       }
 
       for (const key in obj) {
@@ -314,19 +361,21 @@ export async function scrapeYouTubeArtistProfile(
 
     findChannelResult(ytInitialData);
     
+    if (bestMatch && bestMatch.score > 40) {
+        return bestMatch.profile;
+    }
+    
     // Method 3: If still no channel, search for generic video thumbnail of that artist
-    if (!profile) {
-        const searchResults = await scrapeYouTubeSearch(name, timeout);
-        if (searchResults.length > 0) {
-            return {
-                name: name,
-                thumbnail: searchResults[0].videoThumbnails[0].url,
-                channelId: ""
-            };
-        }
+    const searchResults = await scrapeYouTubeSearch(name, timeout);
+    if (searchResults.length > 0) {
+        return {
+            name: name,
+            thumbnail: searchResults[0].videoThumbnails[0].url,
+            channelId: ""
+        };
     }
 
-    return profile;
+    return null;
   } catch (error) {
     return null;
   }

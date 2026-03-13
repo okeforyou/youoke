@@ -17,10 +17,16 @@ export default async function handler(
     const englishNameMatch = (name as string).match(/\((.*?)\)/);
     const englishName = englishNameMatch ? englishNameMatch[1] : artistName;
 
-    // Phase 1: Prioritize YouTube Official / Music Profile (Authoritative "Owner" Source)
-    const profile = await scrapeYouTubeArtistProfile(artistName);
-    if (profile && profile.thumbnail) {
-        return res.redirect(profile.thumbnail);
+    // Phase 1: Prioritize YouTube Official / Music Profile (Try both Thai and English for best match)
+    const namesForYT = [artistName];
+    if (englishName !== artistName) namesForYT.push(englishName);
+    
+    for (const query of namesForYT) {
+        const profile = await scrapeYouTubeArtistProfile(query);
+        // scrapeYouTubeArtistProfile now has internal scoring to ensure the profile matches the query
+        if (profile && profile.thumbnail) {
+            return res.redirect(profile.thumbnail);
+        }
     }
 
     // Phase 2: Try Joox / Sanook (Extremely accurate for Thai Artists)
