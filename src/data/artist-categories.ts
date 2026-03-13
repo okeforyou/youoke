@@ -13,6 +13,17 @@ export interface ArtistCategory {
 
 export const ARTIST_CATEGORIES: ArtistCategory[] = [
   {
+    id: 'popular',
+    title: 'ศิลปินยอดฮิต',
+    description: 'รวมศิลปินที่กำลังมาแรงและเป็นตำนาน',
+    gradient: 'from-orange-500 to-red-600',
+    artists: [
+      { name: 'KLEAR' }, { name: 'Cocktail' }, { name: 'Big Ass' }, { name: 'NUM KALA' }, 
+      { name: 'Silly Fools' }, { name: 'ต่าย อรทัย' }, { name: 'Bodyslam' }, { name: 'Potato' }, 
+      { name: 'ดา เอ็นโดรฟิน' }, { name: 'Palmy' }, { name: 'เบิร์ด ธงไชย' }, { name: 'Clash' }
+    ]
+  },
+  {
     id: 'luk-thung',
     title: 'ลูกทุ่งยอดฮิต',
     description: 'รวมที่สุดของขวัญใจมหาชน',
