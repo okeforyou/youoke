@@ -17,43 +17,53 @@ export default async function handler(
     const englishNameMatch = (name as string).match(/\((.*?)\)/);
     const englishName = englishNameMatch ? englishNameMatch[1] : artistName;
 
-    // Phase 1: Try Deezer API (Professional, No-Auth, High-Quality Artist Profiles)
-    // Deezer is excellent for high-res artist avatars without needing an API key
+    // Phase 1: Try Deezer API (Best professional square portraits)
     try {
-      // Try English first, then Thai
       const namesToTry = [englishName, artistName];
       for (const query of namesToTry) {
         const deezerResp = await axios.get(`https://api.deezer.com/search/artist?q=${encodeURIComponent(query)}`, { timeout: 2000 });
         const artist = deezerResp.data?.data?.[0];
-        
-        if (artist && artist.picture_big) {
+        if (artist && artist.picture_big && artist.name.toLowerCase().includes(query.toLowerCase().split(' ')[0])) {
           return res.redirect(artist.picture_big);
         }
       }
-    } catch (deezerErr) {
-      console.warn("⚠️ Deezer search failed, falling back...");
-    }
+    } catch (e) {}
 
-    // Phase 2: Try iTunes Search API (Another great source for clean art)
+    // Phase 2: Try Joox / Sanook (Great for Thai Artists)
     try {
-      const itunesResp = await axios.get(`https://itunes.apple.com/search?term=${encodeURIComponent(artistName)}&entity=musicArtist&limit=1`, { timeout: 3000 });
-      // Note: iTunes artist search sometimes doesn't return an image, so we might search for a song instead
-      if (itunesResp.data?.results?.[0]?.artistLinkUrl) {
-          // If we want to be aggressive, we could search for a song and use that artist's art, 
-          // but let's stick to the fallback chain.
+      // Joox often has better metadata for Thai artists
+      const jooxResp = await axios.get(`https://api-jooxtt.sanook.com/openjoox/v1/search/all?keyword=${encodeURIComponent(artistName)}&country=th&lang=th`, { timeout: 2000 });
+      const jooxArtist = jooxResp.data?.artists?.items?.[0];
+      if (jooxArtist && jooxArtist.images?.[0]?.url) {
+        return res.redirect(jooxArtist.images[0].url);
       }
-    } catch (itErr) {}
+    } catch (e) {}
 
-    // Phase 3: Fallback to YouTube Official Channel Profile
+    // Phase 3: Try iTunes Search API
+    try {
+      const itunesResp = await axios.get(`https://itunes.apple.com/search?term=${encodeURIComponent(artistName)}&entity=musicArtist&limit=1`, { timeout: 2000 });
+      const itunesArtist = itunesResp.data?.results?.[0];
+      // iTunes sometimes doesn't give direct artist image, let's try searching for a song by that artist
+      if (!itunesArtist) {
+          const songResp = await axios.get(`https://itunes.apple.com/search?term=${encodeURIComponent(artistName)}&entity=song&limit=1`, { timeout: 2000 });
+          const song = songResp.data?.results?.[0];
+          if (song && song.artworkUrl100) {
+              // Convert 100x100 to 600x600 for high res
+              return res.redirect(song.artworkUrl100.replace('100x100bb', '600x600bb'));
+          }
+      }
+    } catch (e) {}
+
+    // Phase 4: Fallback to YouTube Official Channel Profile
     const profile = await scrapeYouTubeArtistProfile(artistName);
     if (profile && profile.thumbnail) {
         return res.redirect(profile.thumbnail);
     }
 
-    // Phase 4: Last Resort Placeholder
+    // Last Resort
     return res.redirect("/assets/avatar.jpeg");
   } catch (error) {
-    console.error("❌ Artist Image API Error (Multi-Source Fallback):", (error as Error).message);
+    console.error("❌ Artist Image API Error:", (error as Error).message);
     return res.redirect("/assets/avatar.jpeg");
   }
 }
