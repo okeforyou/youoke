@@ -11,7 +11,8 @@ import {
   Megaphone,
   UserCheck,
   Settings,
-  HardDrive
+  HardDrive,
+  Image as ImageIcon
 } from "lucide-react";
 import AdminLayout from "../layouts/AdminLayout";
 import { StatCard } from "../components/StatCard";
@@ -238,6 +239,16 @@ const AdminDashboard: React.FC = () => {
               </div>
               <div className="text-base font-bold text-gray-900 group-hover:text-blue-700 transition-colors">System Setup</div>
               <div className="text-xs text-gray-500 mt-1.5 leading-relaxed">ตั้งค่าระบบ รูปแบบ การกำหนดค่า</div>
+            </Link>
+
+            {/* Artist Management */}
+            <Link href="/admin/artists"
+              className="group bg-gradient-to-br from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 p-6 rounded-2xl border border-amber-200 transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-1">
+              <div className="flex items-center justify-center w-12 h-12 bg-white rounded-xl mb-4 shadow-sm group-hover:scale-110 transition-transform duration-300 ring-1 ring-amber-100">
+                <ImageIcon className="w-6 h-6 text-orange-500" />
+              </div>
+              <div className="text-base font-bold text-gray-900 group-hover:text-orange-700 transition-colors">Artist Management</div>
+              <div className="text-xs text-gray-500 mt-1.5 leading-relaxed">จัดการรูปศิลปินและข้อมูลหน้าปกจาก IOOX/เวปไซต์</div>
             </Link>
 
             {/* Revenue */}

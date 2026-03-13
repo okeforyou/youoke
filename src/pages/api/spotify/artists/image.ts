@@ -33,13 +33,25 @@ export default async function handler(
 
     // Phase 1: Try Joox / Sanook (EXCELLENT curated press photos for Thai Artists)
     try {
-      const jooxResp = await axios.get(`https://api-jooxtt.sanook.com/openjoox/v1/search/all?keyword=${encodeURIComponent(artistName)}&country=th&lang=th`, { 
-          timeout: 2500,
-          headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36' }
-      });
-      const jooxArtist = jooxResp.data?.artists?.items?.[0];
-      if (jooxArtist && jooxArtist.images?.[0]?.url) {
-        return res.redirect(jooxArtist.images[0].url);
+      const jooxQueries = [artistName, artistName.replace(/ /g, ''), englishName];
+      for (const q of jooxQueries) {
+          if (!q) continue;
+          const jooxResp = await axios.get(`https://api-jooxtt.sanook.com/openjoox/v1/search/all?keyword=${encodeURIComponent(q)}&country=th&lang=th`, { 
+              timeout: 2500,
+              headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36' }
+          });
+          
+          // Try to find an exact artist match first
+          const artists = jooxResp.data?.artists?.items || [];
+          const exactMatch = artists.find((a: any) => 
+            a.name.toLowerCase() === q.toLowerCase() || 
+            a.name.toLowerCase() === artistName.toLowerCase()
+          );
+
+          const artist = exactMatch || artists[0];
+          if (artist && artist.images?.[0]?.url) {
+            return res.redirect(artist.images[0].url);
+          }
       }
     } catch (e) {}
 

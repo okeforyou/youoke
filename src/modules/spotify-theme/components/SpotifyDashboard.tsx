@@ -278,7 +278,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
 
                   {/* Top Popular Grid (Fixed 4 columns like core system) */}
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 py-3 pb-6">
-                    {ARTIST_CATEGORIES.find(c => c.id === 'popular')?.artists.slice(0, 8).map((artist, i) => (
+                    {ARTIST_CATEGORIES.find(c => c.id === 'popular')?.artists.slice(0, 12).map((artist, i) => (
                       <div 
                         key={artist.name + i}
                         onClick={() => setSearchTerm(cleanSearchQuery(artist.name.split(' (')[0]))}
