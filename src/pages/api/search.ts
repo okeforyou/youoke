@@ -1,17 +1,20 @@
 import { scrapeYouTubeSearch } from "../../utils/youtubeScraper";
 
 export default async function handler(req: any, res: any) {
-  const { q } = req.query;
+  const { q, long } = req.query;
   if (!q) return res.status(200).json([]);
 
   // Strategy 1: Direct YouTube scraping (proven to work from Vercel 2026-02-27)
   try {
     const encodedQuery = encodeURIComponent(q as string);
+    // sp=EgIYAg%253D%253D is the filter for videos > 20 minutes (Long)
+    const longFilter = long === 'true' ? '&sp=EgIYAg%253D%253D' : '';
+    const searchUrl = `https://www.youtube.com/results?search_query=${encodedQuery}${longFilter}`;
+    
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-    const response = await fetch(
-      `https://www.youtube.com/results?search_query=${encodedQuery}`,
+    const response = await fetch(searchUrl,
       {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',

@@ -405,7 +405,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         <DebounceInput
                             minLength={2}
                             debounceTimeout={300}
-                            placeholder={isKaraoke ? "ค้นหาคาราโอเกะ..." : "ค้นหาเพลง หรือ ศิลปิน..."}
+                            placeholder={activeIndex === 3 ? "ค้นหาเพลงยาว หรือ รวมเพลง..." : (isKaraoke ? "ค้นหาคาราโอเกะ..." : "ค้นหาเพลง หรือ ศิลปิน...")}
                             className="block w-full pl-14 pr-12 h-12 bg-gray-50/50 hover:bg-gray-100/50 focus:bg-white border border-gray-100 focus:border-primary/20 rounded-2xl leading-5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none transition-all shadow-sm font-medium"
                             value={searchTerm}
                             onChange={(e) => {
@@ -571,7 +571,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                 <DebounceInput
                                                     minLength={2}
                                                     debounceTimeout={300}
-                                                    placeholder={isKaraoke ? "ค้นหาคาราโอเกะ..." : "ค้นหาเพลง หรือ ศิลปิน..."}
+                                                    placeholder={activeIndex === 3 ? "ค้นหาเพลงยาว หรือ รวมเพลง..." : (isKaraoke ? "ค้นหาคาราโอเกะ..." : "ค้นหาเพลง หรือ ศิลปิน...")}
                                                     className="w-full bg-transparent pl-3 pr-2 text-[14px] font-bold text-black placeholder-gray-400 focus:outline-none"
                                                     value={searchTerm}
                                                     onChange={(e) => {

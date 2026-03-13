@@ -13,12 +13,13 @@ import {
   getSkeletonItems,
   getTopArtists,
   searchPlaylists,
+  getSearchResult,
   cleanSearchQuery,
 } from "../../../utils/api";
 import JooxError from "../../../components/JooxError";
 import { useSystemConfig } from "../../../hooks/useSystemConfig";
 import { useUIStore } from "../../../stores/useUIStore";
-import { Headphones, Library, ChevronRight, Grid as GridIcon } from "lucide-react";
+import { Headphones, Library, ChevronRight, Grid as GridIcon, Headphones as HeadphonesIcon } from "lucide-react";
 import { ARTIST_CATEGORIES, ArtistCategory } from "../../../data/artist-categories";
 
 import { collection, getDocs } from "firebase/firestore";
@@ -167,7 +168,19 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
     }
   }, [genreText, refetch, mode]);
 
-  const { setSearchTerm } = usePlayerStore();
+  const { searchTerm, setSearchTerm, addToQueue } = usePlayerStore();
+
+  // Search results for Station Mode (Long Videos)
+  const { data: stationResults, isLoading: isLoadStation } = useQuery({
+    queryKey: ["stationSearch", genreText || searchTerm, mode],
+    queryFn: () => getSearchResult({ 
+        q: (genreText || searchTerm) + " รวมเพลง", 
+        long: true 
+    }),
+    enabled: mode === 'station' && !!(genreText || searchTerm),
+    retry: false,
+  });
+
   const topArtists = tempTopArtistsData?.artist || [];
   const isGenreDefault = genreText === "เพลงไทย" || !genreText;
   const artistCategories = isGenreDefault ? (topArtistsData?.artistCategories || []) : genrePlaylists;
@@ -472,12 +485,12 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
 
                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 px-4 pb-32">
                       {[
-                        { id: 'lukthung', title: 'ลูกทุ่งฟังยาว', color: 'from-orange-500 to-red-600', icon: '👒' },
-                        { id: 'pueachiwit', title: 'เพื่อชีวิตชุดใหญ่', color: 'from-amber-600 to-yellow-800', icon: '🎸' },
+                        { id: 'lukthung', title: 'ลูกทุ่ง', color: 'from-orange-500 to-red-600', icon: '👒' },
+                        { id: 'pueachiwit', title: 'เพื่อชีวิต', color: 'from-amber-600 to-yellow-800', icon: '🎸' },
                         { id: 'string90s', title: 'สตริงยุค 90', color: 'from-indigo-500 to-purple-600', icon: '📀' },
-                        { id: 'morlam', title: 'หมอลำจัดเต็ม', color: 'from-pink-500 to-rose-600', icon: '🥁' },
+                        { id: 'morlam', title: 'หมอลำ', color: 'from-pink-500 to-rose-600', icon: '🥁' },
                         { id: 'hits90s', title: 'รวมเพลงฮิตอมตะ', color: 'from-blue-500 to-cyan-600', icon: '🌟' },
-                        { id: 'international', title: 'สากลฟังเพลิน', color: 'from-emerald-500 to-teal-700', icon: '🌎' },
+                        { id: 'international', title: 'สากล', color: 'from-emerald-500 to-teal-700', icon: '🌎' },
                       ].map((theme) => (
                         <div 
                           key={theme.id}
@@ -496,29 +509,49 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                  <div className="animate-in slide-in-from-right duration-500 px-4">
                     <div className="flex items-center gap-4 mb-8 pt-4">
                         <button 
-                          onClick={() => setGenreText("")}
+                          onClick={() => {
+                              setGenreText("");
+                              setSearchTerm("");
+                          }}
                           className="w-10 h-10 bg-white border border-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-50 transition-all"
                         >
                            <ChevronRight className="w-5 h-5 text-black rotate-180" />
                         </button>
                         <div>
-                           <h2 className="text-2xl font-black text-black">{genreText}</h2>
-                           <p className="text-xs text-gray-400 font-medium">พบ {artistCategories.length} รายการเพลงยาว</p>
+                           <h2 className="text-2xl font-black text-black">{genreText || searchTerm}</h2>
+                           <p className="text-xs text-gray-400 font-medium">พบ {stationResults?.length || 0} รายการเพลงยาว</p>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pb-20">
-                      {artistCategories.map(cat => (
-                        <div key={cat.tag_id} onClick={() => setTagId(cat.tag_id)} className="group cursor-pointer">
-                            <div className="relative aspect-video rounded-3xl overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-2xl transition-all duration-500 group-hover:-translate-y-2">
-                                <Image src={cat.imageUrl || "/icon-cover.png"} alt={cat.tag_name} fill className="object-cover transition-transform duration-700 group-hover:scale-110" unoptimized />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-100 transition-opacity" />
-                                <div className="absolute inset-0 p-5 flex flex-col justify-end">
-                                    <p className="text-white font-black text-sm leading-tight line-clamp-2 drop-shadow-md">{cat.tag_name}</p>
+                      {isLoadStation ? (
+                        getSkeletonItems(8).map(s => <div key={s} className="aspect-video bg-gray-100 rounded-3xl animate-pulse" />)
+                      ) : (
+                        stationResults?.map(video => (
+                            <div key={video.videoId} onClick={() => {
+                                const videoToAdd = {
+                                    id: video.videoId,
+                                    sourceType: 'youtube',
+                                    videoId: video.videoId,
+                                    title: video.title,
+                                    author: video.author,
+                                    thumbnail: undefined,
+                                } as any;
+                                addToQueue(videoToAdd);
+                            }} className="group cursor-pointer">
+                                <div className="relative aspect-video rounded-3xl overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-2xl transition-all duration-500 group-hover:-translate-y-2">
+                                    <Image src={`https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`} alt={video.title} fill className="object-cover transition-transform duration-700 group-hover:scale-110" unoptimized />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-100 transition-opacity" />
+                                    <div className="absolute inset-0 p-5 flex flex-col justify-end">
+                                        <p className="text-white font-black text-sm leading-tight line-clamp-2 drop-shadow-md">{video.title}</p>
+                                    </div>
+                                    <div className="absolute top-4 right-4 bg-primary text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
+                                        <Headphones className="w-4 h-4" />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                      ))}
+                        ))
+                      )}
                     </div>
                  </div>
                )}

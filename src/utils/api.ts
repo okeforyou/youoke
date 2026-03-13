@@ -22,6 +22,7 @@ interface SearchParams {
   region?: string;
   type?: string;
   fields?: string;
+  long?: boolean;
 }
 
 export const getSearchResult = async ({
@@ -30,9 +31,10 @@ export const getSearchResult = async ({
   region = "TH",
   type = "video",
   fields = "title,videoId,author,videoThumbnails",
+  long = false,
 }: SearchParams) => {
   const res = await apiClient.get<SearchResult[]>("/api/search", {
-    params: { q, type, page, region, fields },
+    params: { q, type, page, region, fields, long },
   });
   return res.data;
 };

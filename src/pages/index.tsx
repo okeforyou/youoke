@@ -80,7 +80,7 @@ export default function HomePage() {
   // Reset to search results if typing
   useEffect(() => {
     if (searchTerm) {
-      if (activeIndex !== 0) setActiveIndex(0);
+      if (activeIndex !== 0 && activeIndex !== 3) setActiveIndex(0);
     }
   }, [searchTerm]); // Simplified this dependency chain
 
