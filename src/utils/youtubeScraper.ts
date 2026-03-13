@@ -25,6 +25,12 @@ export interface MusicSection {
   items: YouTubePlaylistResult[];
 }
 
+export interface YouTubeArtistProfile {
+  name: string;
+  thumbnail: string;
+  channelId: string;
+}
+
 /**
  * Scrape YouTube Music Destination (Feed)
  * URL: https://www.youtube.com/feed/music
@@ -176,6 +182,70 @@ const USER_AGENTS = [
 
 function getRandomUserAgent(): string {
   return USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
+}
+
+/**
+ * Scrape YouTube Channel/Artist Profile Thumbnail
+ */
+export async function scrapeYouTubeArtistProfile(
+  name: string,
+  timeout: number = 5000
+): Promise<YouTubeArtistProfile | null> {
+  // Search with sp=EgIQAg%3D%3D to filter for Channels only
+  const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(name)}&sp=EgIQAg%3D%3D`;
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': getRandomUserAgent(),
+        'Accept-Language': 'en-US,en;q=0.9,th;q=0.8',
+        'Cookie': 'CONSENT=YES+cb.20210328-17-p0.en+FX+417; SOCS=CAESEwgDEgk1NzY3NDIwMzQaAmenIAEaBgiA_LyaBg;'
+      },
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) return null;
+    const html = await response.text();
+    const ytInitialData = extractYtInitialData(html);
+
+    if (!ytInitialData) return null;
+
+    // Search for channelRenderer
+    let profile: YouTubeArtistProfile | null = null;
+
+    const findChannelResult = (obj: any) => {
+      if (profile || !obj || typeof obj !== 'object') return;
+
+      if (obj.channelRenderer) {
+        const r = obj.channelRenderer;
+        const thumb = r.thumbnail?.thumbnails?.[0]?.url;
+        // High-res version trick: replace s88 or s176 with s512
+        const highResThumb = thumb ? thumb.replace(/=s\d+.*$/, '=s512-c-k-c0x00ffffff-no-rj') : thumb;
+        
+        profile = {
+          name: r.title?.simpleText || r.title?.runs?.[0]?.text || name,
+          thumbnail: highResThumb || "",
+          channelId: r.channelId
+        };
+        return;
+      }
+
+      for (const key in obj) {
+        if (typeof obj[key] === 'object') findChannelResult(obj[key]);
+      }
+    };
+
+    findChannelResult(ytInitialData);
+    return profile;
+
+  } catch (error) {
+    return null;
+  }
 }
 
 /**

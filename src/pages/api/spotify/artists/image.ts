@@ -1,4 +1,4 @@
-import { scrapeYouTubeSearch } from "../../../../utils/youtubeScraper";
+import { scrapeYouTubeArtistProfile, scrapeYouTubeSearch } from "../../../../utils/youtubeScraper";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(
@@ -12,14 +12,21 @@ export default async function handler(
   }
 
   try {
-    // Search for the artist on YouTube 
-    // We add "official music" to get better quality profile-like thumbnails from official channels
+    // Phase 1: Try to get Official Channel Profile Image (Premium Circular Look)
+    // We clean the name to avoid unnecessary noise for channel search
+    let cleanName = (name as string).split(' (')[0].trim();
+    const profile = await scrapeYouTubeArtistProfile(cleanName);
+
+    if (profile && profile.thumbnail) {
+        // Great! Official profile image found.
+        return res.redirect(profile.thumbnail);
+    }
+
+    // Phase 2: Fallback to video thumbnail if no channel profile found
     const searchQuery = `${name} official music`;
     const results = await scrapeYouTubeSearch(searchQuery);
 
-    // Try to find a channel thumbnail or a high-quality video thumbnail
     if (results && results.length > 0) {
-      // YouTube scraper returns video thumbnails. We pick the best quality one.
       const firstResult = results[0];
       const imageUrl = firstResult.videoThumbnails?.find(t => t.quality === 'high' || t.quality === 'maxres')?.url 
                       || firstResult.videoThumbnails?.[0]?.url;
@@ -29,10 +36,10 @@ export default async function handler(
       }
     }
 
-    // Fallback to placeholder if nothing found
+    // Fallback to placeholder
     return res.redirect("/assets/avatar.jpeg");
   } catch (error) {
-    console.error("❌ Artist Image API Error (YouTube Fallback):", (error as Error).message);
+    console.error("❌ Artist Image API Error (Improved YouTube Source):", (error as Error).message);
     return res.redirect("/assets/avatar.jpeg");
   }
 }
