@@ -276,19 +276,19 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                     <p className="text-[12px] text-gray-500">เลือกแนวเพลงเพื่อดูรายชื่อศิลปิน</p>
                   </div>
                   
-                  <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4 px-3 md:px-4 py-4 pb-20">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 md:gap-4 px-3 md:px-4 py-4 pb-20">
                     {ARTIST_CATEGORIES.map((cat) => (
                       <div 
                         key={cat.id} 
                         onClick={() => setCategoryId(cat.id)}
-                        className={`group relative overflow-hidden rounded-2xl aspect-[2/1] cursor-pointer shadow-sm hover:shadow-md transition-all bg-gradient-to-br ${cat.gradient}`}
+                        className={`group relative overflow-hidden rounded-xl aspect-[1.8/1] cursor-pointer shadow-sm hover:shadow-md transition-all bg-gradient-to-br ${cat.gradient}`}
                       >
-                         <div className="absolute inset-0 p-4 flex flex-col justify-end">
-                            <h3 className="text-lg font-bold text-white leading-tight">{cat.title}</h3>
-                            <p className="text-[10px] font-medium text-white/80 mt-1">{cat.artists.length} ศิลปิน</p>
+                         <div className="absolute inset-0 p-3 flex flex-col justify-end">
+                            <h3 className="text-[13px] sm:text-[15px] font-bold text-white leading-tight line-clamp-2">{cat.title}</h3>
+                            <p className="text-[9px] sm:text-[10px] font-medium text-white/70 mt-0.5">{cat.artists.length} ศิลปิน</p>
                          </div>
-                         <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all">
-                            <ChevronRight className="w-4 h-4 text-white" />
+                         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all">
+                            <ChevronRight className="w-3.5 h-3.5 text-white" />
                          </div>
                       </div>
                     ))}
@@ -309,8 +309,8 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                         </svg>
                     </button>
                     <div>
-                        <h2 className="text-lg font-bold text-black">{selectedCategory.title}</h2>
-                        <p className="text-[11px] text-gray-400 font-medium">{selectedCategory.artists.length} ศิลปิน</p>
+                        <h2 className="text-base sm:text-lg font-bold text-black">{selectedCategory.title}</h2>
+                        <p className="text-[10px] sm:text-[11px] text-gray-400 font-medium">{selectedCategory.artists.length} ศิลปิน</p>
                     </div>
                   </div>
                   
@@ -328,7 +328,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                                unoptimized
                             />
                         </div>
-                        <p className="mt-2 text-[12px] font-bold text-black text-center group-hover:text-primary transition-colors line-clamp-1">{artist.name}</p>
+                        <p className="mt-1.5 text-[11px] sm:text-[12px] font-bold text-black text-center group-hover:text-primary transition-colors line-clamp-1">{artist.name}</p>
                       </div>
                     ))}
                   </div>
