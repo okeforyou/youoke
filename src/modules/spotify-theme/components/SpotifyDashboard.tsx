@@ -272,12 +272,36 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
               {!selectedCategory && (
                 <div className="animate-in fade-in duration-500">
                   <div className="px-4 pt-6 pb-2">
-                    <h1 className="text-xl font-bold text-black">สารบัญศิลปิน</h1>
-                    <p className="text-[12px] text-gray-500">เลือกแนวเพลงเพื่อดูรายชื่อศิลปิน</p>
+                    <h1 className="text-xl font-bold text-black">ศิลปินยอดฮิต</h1>
+                    <p className="text-[12px] text-gray-400">มาแรงที่สุดในขณะนี้</p>
+                  </div>
+
+                  {/* Top Popular Shelf (Horizontal Scroll) */}
+                  <div className="flex overflow-x-auto gap-4 px-4 py-4 pb-6 scrollbar-hide no-scrollbar">
+                    {ARTIST_CATEGORIES.find(c => c.id === 'popular')?.artists.slice(0, 12).map((artist, i) => (
+                      <div 
+                        key={artist.name + i}
+                        onClick={() => setSearchTerm(cleanSearchQuery(artist.name.split(' (')[0]))}
+                        className="flex-shrink-0 w-[80px] sm:w-[100px] group cursor-pointer text-center"
+                      >
+                        <div className="relative aspect-square rounded-full overflow-hidden bg-gray-50 border border-gray-100 shadow-sm group-hover:scale-105 transition-transform duration-300">
+                          <Image 
+                             src={`/api/spotify/artists/image?name=${encodeURIComponent(artist.name.split(' (')[0])}`}
+                             alt={artist.name} fill className="object-cover" unoptimized
+                          />
+                        </div>
+                        <p className="mt-2 text-[10px] sm:text-[11px] font-bold text-black truncate italic-sm">{artist.name.split(' (')[0]}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="px-4 pt-4 pb-2 border-t border-gray-50">
+                    <h1 className="text-xl font-bold text-black">หมวดหมู่ศิลปิน</h1>
+                    <p className="text-[12px] text-gray-400">ค้นตามแนวเพลงที่ต้องการ</p>
                   </div>
                   
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-2.5 md:gap-4 px-3 md:px-4 py-4 pb-20">
-                    {ARTIST_CATEGORIES.map((cat) => (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 py-4 pb-24">
+                    {ARTIST_CATEGORIES.filter(c => c.id !== 'popular').map((cat) => (
                       <div 
                         key={cat.id} 
                         onClick={() => setCategoryId(cat.id)}
@@ -321,14 +345,14 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                            onClick={() => setSearchTerm(cleanSearchQuery(artist.name.split(' (')[0]))} 
                            className="group cursor-pointer"
                          >
-                         <div className="relative aspect-square rounded-full overflow-hidden bg-gray-50 flex items-center justify-center shadow-sm border border-gray-100 group-hover:shadow-md group-hover:border-primary/20 transition-all mx-auto w-[90%]">
+                         <div className="relative aspect-square rounded-full overflow-hidden bg-gray-50 flex items-center justify-center shadow-sm border border-gray-100 group-hover:shadow-md group-hover:border-primary/20 transition-all mx-auto w-[92%]">
                             <Image 
                                src={artist.imageUrl || `/api/spotify/artists/image?name=${encodeURIComponent(artist.name.split(' (')[0])}`} 
-                               alt={artist.name} fill className="object-cover transition-transform duration-500 group-hover:scale-110" 
+                               alt={artist.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" 
                                unoptimized
                             />
                          </div>
-                        <p className="mt-1.5 px-0.5 text-[9px] sm:text-[11px] font-bold text-black text-center group-hover:text-primary transition-colors line-clamp-2 leading-tight h-[24px] sm:h-[32px] flex items-start justify-center italic-sm">{artist.name.split(' (')[0]}</p>
+                        <p className="mt-2.5 px-0.5 text-[10px] sm:text-[11px] font-bold text-black text-center group-hover:text-primary transition-colors line-clamp-2 leading-tight h-[24px] sm:h-[32px] flex items-start justify-center italic-sm">{artist.name.split(' (')[0]}</p>
                       </div>
                     ))}
                   </div>
