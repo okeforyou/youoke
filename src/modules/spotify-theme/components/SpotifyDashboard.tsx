@@ -17,7 +17,8 @@ import {
 import JooxError from "../../../components/JooxError";
 import { useSystemConfig } from "../../../hooks/useSystemConfig";
 import { useUIStore } from "../../../stores/useUIStore";
-import { Headphones, Library } from "lucide-react";
+import { Headphones, Library, ChevronRight, Grid as GridIcon } from "lucide-react";
+import { ARTIST_CATEGORIES, ArtistCategory } from "../../../data/artist-categories";
 
 const GENRES = [
   "ลูกทุ่ง",
@@ -34,50 +35,57 @@ const GENRES = [
   "ริทึมแอนด์บลูส์",
 ];
 
-export default function SpotifyDashboard({ showTab = true, mode = 'default' }: { showTab?: boolean, mode?: 'default' | 'listening' }) {
+export default function SpotifyDashboard({ showTab = true, mode = 'default' }: { showTab?: boolean, mode?: 'default' | 'listening' | 'genres' }) {
   const router = useRouter();
   const { config } = useSystemConfig();
   const rawGenres = (config?.ui?.genres || GENRES).filter(g => g !== "เพลงไทย" && g !== "ทั้งหมด" && g !== "แนะนำ");
   const genres = [...rawGenres];
 
-  // URL-Driven State or Fallback to Default (Empty or search)
   const genreText = (router.query.genre as string) || "";
   const tagId = (router.query.playlist as string) || "";
 
-  console.log("🔍 SpotifyDashboard Render:", {
-    isReady: router.isReady,
-    query: router.query,
-    genreText,
-    tagId
-  });
-
-  // Helper to update URL without reloading
   const setGenreText = (text: string) => {
     const { search, ...rest } = router.query;
     router.push({
       pathname: router.pathname,
-      query: { ...rest, genre: text, playlist: undefined } // clear playlist and search
+      query: { ...rest, genre: text, playlist: undefined }
     }, undefined, { shallow: true });
-    setSearchTerm(''); // Clear store search to prevent index.tsx from forcing search view
+    setSearchTerm('');
     setShouldScrollToPlaylist(true);
   };
 
   const setTagId = (id: string) => {
-    console.log("🎯 SpotifyDashboard: setTagId:", id);
     if (id) {
-      setSearchTerm(''); // Clear search store to ensure we stay on Dashboard tab
+      setSearchTerm('');
       router.push({
         pathname: router.pathname,
         query: { ...router.query, playlist: id }
       }, undefined, { shallow: true });
       setShouldScrollToSongs(true);
     } else {
-      // Clear playlist
       const { playlist, ...rest } = router.query;
       router.push({
         pathname: router.pathname,
         query: rest
       }, undefined, { shallow: true });
+    }
+  };
+
+  const selectedCategoryId = (router.query.category as string) || "";
+  const selectedCategory = ARTIST_CATEGORIES.find(c => c.id === selectedCategoryId);
+
+  const setCategoryId = (id: string) => {
+    if (id) {
+        router.push({
+            pathname: router.pathname,
+            query: { ...router.query, category: id, playlist: undefined }
+        }, undefined, { shallow: true });
+    } else {
+        const { category, ...rest } = router.query;
+        router.push({
+            pathname: router.pathname,
+            query: rest
+        }, undefined, { shallow: true });
     }
   };
 
@@ -91,20 +99,17 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
   const songlistRef = useRef<HTMLDivElement>(null);
 
   const { data: tempTopArtistsData, isLoading: isLoadTopArtists } = useQuery({
-    queryKey: ["getTopArtists", "v2", mode], // Include mode in cache key
+    queryKey: ["getTopArtists", "v2", mode],
     queryFn: () => getTopArtists(mode),
     retry: false,
     refetchInterval: 0,
   });
 
-  // When default Top Artists load
   useEffect(() => {
     if (tempTopArtistsData && (genreText === "แนะนำ" || genreText === "ลูกทุ่ง" || topArtistsData.artistCategories.length === 0)) {
-      console.log("📦 SpotifyDashboard: Populating topArtistsData", tempTopArtistsData.artistCategories.length);
       setTopArtistsData(tempTopArtistsData);
     }
   }, [tempTopArtistsData, genreText, topArtistsData.artistCategories.length]);
-
 
   const { data: artists, isLoading } = useQuery({
     queryKey: ["getArtists", tagId],
@@ -125,52 +130,32 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
     queryKey: ["searchPlaylists", genreText, mode],
     queryFn: ({ pageParam = 1 }) => searchPlaylists(genreText || "เพลงไทย", pageParam, mode),
     getNextPageParam: (lastPage, allPages) => {
-      // If last page has 20 items, there's likely more. 
       return (lastPage?.artistCategories?.length === 20) ? allPages.length + 1 : undefined;
     },
     initialPageParam: 1,
-    enabled: genreText !== "เพลงไทย" && genreText !== "แนะนำ",
+    enabled: (mode === 'genres' || mode === 'listening') && genreText !== "เพลงไทย" && genreText !== "แนะนำ",
   });
 
-  // Flatten pages for display
   const genrePlaylists = playlistData?.pages?.flatMap(page => page.artistCategories) || [];
 
-  // Initial Load Placeholder
   useEffect(() => {
-    if (!topArtistsData.artistCategories.length && tempTopArtistsData) {
-      setTopArtistsData(tempTopArtistsData);
-    }
-  }, []);
-
-  // Trigger search when genre text changes
-  useEffect(() => {
-    if (genreText !== "เพลงไทย") {
+    if (genreText !== "เพลงไทย" && (mode === 'genres' || mode === 'listening')) {
       refetch();
     }
-  }, [genreText, refetch]);
+  }, [genreText, refetch, mode]);
 
   const { setSearchTerm } = usePlayerStore();
-
   const topArtists = tempTopArtistsData?.artist || [];
-
-  // Fallback: If genrePlaylists is empty AND we are loading, don't fall back to default.
-  // Special Handling for Default Genres
   const isGenreDefault = genreText === "เพลงไทย" || !genreText;
-  const artistCategories = isGenreDefault
-    ? (topArtistsData?.artistCategories || [])
-    : genrePlaylists; // Show only genre-specific results (empty = empty, loading = skeleton)
+  const artistCategories = isGenreDefault ? (topArtistsData?.artistCategories || []) : genrePlaylists;
 
   const { artist, playlist: playlistInfo } = (artists as any) || {};
   const [isError, setIsError] = useState(false);
-
-  // State to track if we should scroll (User Action)
   const [shouldScrollToPlaylist, setShouldScrollToPlaylist] = useState(false);
   const [shouldScrollToSongs, setShouldScrollToSongs] = useState(false);
 
-  // Auto-scroll when Playlists (Categories) update
   useEffect(() => {
     if (artistCategories.length > 0 && genreText && shouldScrollToPlaylist) {
-      // Use requestAnimationFrame for smoother and more reliable scroll
       requestAnimationFrame(() => {
         playlistRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
         setShouldScrollToPlaylist(false);
@@ -178,7 +163,6 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
     }
   }, [genreText, artistCategories.length, shouldScrollToPlaylist]);
 
-  // Auto-scroll when Songs (Artists) update
   useEffect(() => {
     if (artist && artist.length > 0 && tagId && shouldScrollToSongs) {
       requestAnimationFrame(() => {
@@ -188,34 +172,23 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
     }
   }, [tagId, artist?.length, shouldScrollToSongs]);
 
-  // Back Button Logic synced with Router
   useEffect(() => {
     if (tagId) {
       useUIStore.getState().setBackAction(() => router.back());
-    } else if (genreText !== "เพลงไทย") {
-      useUIStore.getState().setBackAction(null);
+    } else if (selectedCategoryId) {
+      useUIStore.getState().setBackAction(() => setCategoryId(""));
     } else {
       useUIStore.getState().setBackAction(null);
     }
-  }, [tagId, genreText]);
-
-  const handleGenre = (text: string) => {
-    setGenreText(text);
-  };
-
-  // Legacy support for onClick handlers
-  const setUpdatedGenreText = (text: string) => {
-    setGenreText(text);
-  };
+  }, [tagId, selectedCategoryId]);
 
   return isError ? (
     <JooxError />
   ) : (
-    <>
-      {/* Conditionally render Playlist Detail OR Home Content */}
+    <div className="flex flex-col w-full pb-20">
+      {/* 1. PLAYLIST DETAIL VIEW */}
       {tagId && artist ? (
         <div className="col-span-full animate-in fade-in slide-in-from-top-4 duration-500">
-          {/* Playlist Header (Compact Banner) */}
           <div className="relative w-full h-[140px] sm:h-[180px] mb-6 group overflow-hidden rounded-3xl mx-2 shadow-sm border border-gray-100">
              <Image 
                 src={playlistInfo?.imageUrl || artist[0]?.imageUrl || "/icon-cover.png"} 
@@ -227,7 +200,6 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
              <div className="absolute inset-0 bg-white/20 backdrop-blur-[2px]" />
              
              <div className="absolute inset-0 p-4 sm:p-6 flex items-center gap-4 sm:gap-6">
-                {/* Square Cover (Smaller) */}
                 <div className="relative w-20 h-20 sm:w-32 sm:h-32 flex-shrink-0 rounded-2xl overflow-hidden shadow-xl ring-1 ring-black/5 bg-white">
                    <Image 
                       src={playlistInfo?.imageUrl || artist[0]?.imageUrl || "/icon-cover.png"} 
@@ -238,7 +210,6 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                    />
                 </div>
                 
-                {/* Header Text (Compact) */}
                 <div className="flex-1 space-y-1 sm:space-y-2">
                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/80">เพลย์ลิสต์</p>
                    <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-black leading-tight line-clamp-1">
@@ -251,342 +222,194 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                    </div>
                 </div>
 
-             {/* Return Button (Top Right) */}
-             <div className="absolute top-4 right-4">
-                <button 
-                   onClick={() => setTagId("")}
-                   className="bg-white/90 backdrop-blur-md hover:bg-white text-black w-8 h-8 sm:w-auto sm:px-4 sm:py-2 rounded-full text-xs font-bold shadow-sm flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95"
-                   title="กลับไปยังหน้าแรก"
+                <div className="absolute top-4 right-4">
+                    <button
+                        onClick={() => setTagId("")}
+                        className="bg-white/90 backdrop-blur-md hover:bg-white text-black w-8 h-8 sm:w-auto sm:px-4 sm:py-2 rounded-full text-xs font-bold shadow-sm flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95"
+                    >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
+                        </svg>
+                        <span className="hidden sm:inline">กลับไปหน้าแรก</span>
+                    </button>
+                </div>
+             </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-4 px-4">
+            {artist.map((item: any, i: number) => {
+                const video = item as any;
+                return (
+                <div
+                    key={video.id || video.name + i}
+                    className="group cursor-pointer bg-white rounded-xl border border-gray-100 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 flex flex-col h-full transition-all active:scale-[0.97] duration-300 relative overflow-hidden"
+                    onClick={() => {
+                        const artistName = (video.artist_name && video.artist_name !== "Unknown Artist") ? video.artist_name : "";
+                        const query = `${video.title} ${artistName}`.trim();
+                        setSearchTerm(query);
+                    }}
                 >
-                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
-                   </svg>
-                   <span className="hidden sm:inline">กลับไปหน้าแรก</span>
-                </button>
-             </div>
-             </div>
+                    <div className="relative aspect-video overflow-hidden bg-gray-50 flex-shrink-0">
+                    <Image
+                        src={video.coverImageURL || "/icon-cover.png"}
+                        alt={video.title}
+                        fill
+                        unoptimized
+                        className="object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    </div>
+                    <div className="p-2 sm:p-3 flex-1">
+                    <h3 className="font-bold text-[12px] sm:text-[13px] line-clamp-2 text-black leading-tight group-hover:text-primary transition-colors text-left">{video.title || video.name}</h3>
+                    <p className="text-[10px] text-gray-400 mt-1 line-clamp-1 text-left">{(video.artist_name && video.artist_name !== "Unknown Artist") ? video.artist_name : "YouTube Music"}</p>
+                    </div>
+                </div>
+                );
+            })}
           </div>
         </div>
       ) : (
-        <>
-          {/* Mode Header (Conditional) */}
-          {!tagId && mode === 'listening' && (
-            <div className="col-span-full px-4 pt-4 pb-2">
-                <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-6 rounded-3xl border border-primary/5 flex items-center gap-4 shadow-sm">
-                    <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
-                        <Headphones className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                        <h2 className="text-xl font-black text-black leading-tight">โหมดฟังยาวๆ</h2>
-                        <p className="text-xs text-gray-500 font-medium mt-1">รวมเพลย์ลิสต์เพลงยาว เมดเล่ย์ และ Non-stop สำหรับฟังต่อเนื่อง</p>
-                    </div>
-                </div>
-            </div>
-          )}
-
-          {mode !== 'listening' && (
+        <div className="col-span-full">
+          {/* 2. ARTIST DIRECTORY (MODE: DEFAULT) */}
+          {mode === 'default' && (
             <>
-              <div className="col-span-full px-2 pt-2 pb-2 text-[13px] font-black text-black uppercase tracking-wider flex items-center gap-2">
-                ศิลปินยอดนิยม
-              </div>
+              {/* TIER 1: CATEGORY GRID */}
+              {!selectedCategory && (
+                <div className="animate-in fade-in duration-700">
+                  <div className="px-4 pt-4 pb-2">
+                    <h1 className="text-2xl font-black text-black">สารบัญศิลปิน</h1>
+                    <p className="text-sm text-gray-500 font-medium">ค้นหาเพลงคาราโอเกะตามแนวที่คุณชื่นชอบ</p>
+                  </div>
+                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 px-4 py-8">
+                    {ARTIST_CATEGORIES.map((cat) => (
+                      <div 
+                        key={cat.id} 
+                        onClick={() => setCategoryId(cat.id)}
+                        className={`group relative overflow-hidden rounded-[2.5rem] aspect-[1.8/1] cursor-pointer shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 bg-gradient-to-br ${cat.gradient}`}
+                      >
+                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
+                         <div className="absolute inset-0 p-6 flex flex-col justify-end">
+                            <h3 className="text-xl lg:text-3xl font-black text-white leading-tight">{cat.title}</h3>
+                            <p className="text-xs lg:text-sm font-medium text-white/80 mt-1">{cat.description}</p>
+                         </div>
+                         <div className="absolute top-4 right-6 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-x-4 group-hover:translate-x-0">
+                            <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20">
+                                <ChevronRight className="w-6 h-6 text-white" />
+                            </div>
+                         </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* TIER 2: ARTIST LIST */}
+              {selectedCategory && (
+                <div className="animate-in fade-in slide-in-from-right-4 duration-500">
+                  <div className="px-4 pt-4 pb-6 flex items-center gap-4">
+                    <button onClick={() => setCategoryId("")} className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
+                        <svg className="w-5 h-5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
+                        </svg>
+                    </button>
+                    <div>
+                        <h2 className="text-2xl font-black text-black">{selectedCategory.title}</h2>
+                        <p className="text-sm text-gray-400 font-medium">ศิลปินทั้งหมดในหมวด {selectedCategory.title}</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 px-4 pb-10">
+                    {selectedCategory.artists.map((artist, i) => (
+                      <div key={artist.name + i} onClick={() => setSearchTerm(cleanSearchQuery(artist.name))} className="group cursor-pointer">
+                        <div className="relative aspect-square rounded-3xl overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-2xl transition-all duration-500 group-hover:-translate-y-2">
+                           <Image 
+                              src={artist.imageUrl || `/api/spotify/artists/image?name=${encodeURIComponent(artist.name)}`} 
+                              alt={artist.name} fill className="object-cover transition-transform duration-700 group-hover:scale-110" 
+                              unoptimized
+                            />
+                        </div>
+                        <p className="mt-3 text-sm font-bold text-black text-center group-hover:text-primary transition-colors line-clamp-1">{artist.name}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </>
           )}
 
-          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 col-span-full pb-6 px-2">
-            {isLoadTopArtists && (
-              <>
-                {getSkeletonItems(10).map((s, i) => (
-                  <div
-                    key={s + i}
-                    className="card bg-gray-100 animate-pulse w-full aspect-square rounded-2xl"
-                  ></div>
-                ))}
-              </>
-            )}
-            {mode !== 'listening' && topArtists?.slice(0, 15).map((artist, i) => (
-                <Fragment key={artist.name + i}>
-                  <div
-                    className="group relative cursor-pointer overflow-hidden rounded-2xl shadow-sm hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1 transition-all duration-300 isolate bg-gray-100 w-full"
-                    onClick={() => {
-                      const cleanedName = cleanSearchQuery(artist.name);
-                      setSearchTerm(cleanedName);
-                    }}
-                  >
-                    <div className="relative w-full aspect-square">
-                      <Image
-                        src={artist.imageUrl || "/assets/avatar.jpeg"}
-                        priority={i < 5}
-                        alt={artist.name}
-                        unoptimized
-                        fill
-                        className="object-cover transition-transform duration-700 group-hover:scale-110"
-                        onLoad={(ev) =>
-                          ev.currentTarget.classList.remove("animate-pulse")
-                        }
-                        onErrorCapture={(ev) => {
-                          ev.currentTarget.src = "/assets/avatar.jpeg";
-                        }}
-                      />
-                      <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-90 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-lg transform scale-50 group-hover:scale-100 transition-transform">
-                          <svg className="w-5 h-5 text-white fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+          {/* 3. GENRES / PLAYLISTS (MODE: GENRES) */}
+          {mode === 'genres' && (
+            <div className="animate-in fade-in duration-500">
+               <div className="px-4 pt-4 pb-6">
+                    <div className="bg-gray-900 p-8 rounded-[2.5rem] relative overflow-hidden min-h-[160px] flex flex-col justify-center">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-[80px] -mr-32 -mt-32" />
+                        <h2 className="text-3xl font-black text-white leading-tight">ตู้เพลง / แนวเพลง</h2>
+                        <p className="text-gray-400 mt-2 font-medium">รวมลิสต์เพลงเด็ดแยกตามแนวดนตรีที่จัดไว้ให้คุณ</p>
+                        <div className="absolute bottom-6 right-8 opacity-10">
+                            <GridIcon className="w-20 h-20 text-white" />
                         </div>
-                      </div>
-                      <div className="absolute inset-0 p-3 flex flex-col justify-end items-start z-10 pointer-events-none">
-                        <h2 className="text-white font-bold text-[11px] sm:text-[12px] leading-tight line-clamp-1 drop-shadow-md transform translate-y-0.5 group-hover:translate-y-0 transition-transform text-left">
-                          {artist.name}
-                        </h2>
-                      </div>
                     </div>
-                  </div>
-                </Fragment>
-            ))}
-          </div>
+               </div>
 
-          <div className="col-span-full px-2 pt-4 pb-3 text-[13px] font-black text-black uppercase tracking-wider flex items-center gap-2 border-t border-gray-100 mt-2">
-            แนวเพลงยอดฮิต
-          </div>
+               <div className="px-4 flex flex-wrap gap-2 mb-8">
+                  {genres.map(gen => (
+                    <button 
+                        key={gen} 
+                        onClick={() => handleGenre(gen)}
+                        className={`px-6 py-2.5 rounded-2xl text-xs font-bold transition-all ${genreText === gen ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                    >
+                        {gen}
+                    </button>
+                  ))}
+               </div>
 
-          <div className="col-span-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 px-2 pb-8">
-            {genres?.map((gen) => (
-              <button
-                key={gen}
-                onClick={() => setGenreText(gen)}
-                className={`
-                     w-full py-2 px-4 rounded-xl text-[12px] font-bold transition-all duration-300 border
-                     ${genreText == gen
-                    ? "bg-primary text-white border-primary transform -translate-y-0.5"
-                    : "bg-gray-100 text-black border-gray-100 hover:bg-white hover:border-primary/30 hover:text-primary hover:-translate-y-0.5"
-                  }
-                  `}
-              >
-                {gen}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-      {
-        (artistCategories.length > 0 || (!isGenreDefault && isLoadingGenre)) && (
-          <div ref={playlistRef} className="scroll-mt-32 col-span-full px-2 pt-4 pb-3 text-[11px] sm:text-[12px] font-black text-black uppercase tracking-wider flex items-center justify-between">
-            <span>{isGenreDefault ? "เพลย์ลิสต์แนะนำ" : `เพลย์ลิสต์ ${genreText}`}</span>
-            <span className="text-[10px] font-normal text-gray-400 bg-gray-50 px-3 py-1 rounded-full">อัพเดทล่าสุด</span>
-          </div>
-        )
-      }
-
-      {/* Genre Loading Skeleton */}
-      {!isGenreDefault && isLoadingGenre && artistCategories.length === 0 && (
-        <div className="col-span-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 px-4 pb-8">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <div key={i} className="aspect-square rounded-3xl bg-gray-100 animate-pulse" />
-          ))}
-        </div>
-      )}
-
-      {/* Genre Empty State */}
-      {!isGenreDefault && !isLoadingGenre && artistCategories.length === 0 && (
-        <div className="col-span-full px-4 pb-8 text-center">
-          <p className="text-gray-400 text-sm">ไม่พบเพลย์ลิสต์สำหรับ "{genreText}" กรุณาลองใหม่อีกครั้ง</p>
-        </div>
-      )}
-
-      {/* Recommended Rows (Shelves) - Disabled as per user request to keep home clean */}
-      {!tagId && genreText === "แนะนำ" && !isLoadTopArtists && (tempTopArtistsData as any)?.genres && (
-        <div className="col-span-full space-y-8 pb-10">
-          {Object.entries((tempTopArtistsData as any).genres).map(([genre, playlists]: [string, any]) => (
-            <div key={genre} className="space-y-4">
-              <div className="px-2 flex items-center justify-between">
-                <h3 className="text-[14px] font-black text-black uppercase tracking-wider">{genre}</h3>
-                <button 
-                  onClick={() => setGenreText(genre)}
-                  className="text-[10px] font-bold text-primary hover:underline"
-                >
-                  ดูทั้งหมด
-                </button>
-              </div>
-              
-              {/* Horizontal Scroll Row */}
-              <div className="flex overflow-x-auto gap-4 px-2 pb-4 no-scrollbar snap-x touch-pan-x">
-                {playlists.map((cat: any) => (
-                  <div
-                    key={cat.id || cat.playlistId}
-                    onClick={() => {
-                      setTagId(cat.playlistId || cat.id);
-                    }}
-                    className="flex-shrink-0 w-[140px] sm:w-[180px] snap-start group cursor-pointer"
-                  >
-                    <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-xl transition-all duration-300">
-                      <Image
-                        src={cat.thumbnail || cat.imageUrl || "/icon-cover.png"}
-                        alt={cat.title}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-110"
-                        unoptimized
-                      />
-                      <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors" />
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                         <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20">
-                            <svg className="w-5 h-5 text-white fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                         </div>
-                      </div>
-                    </div>
-                    <div className="mt-2 px-1">
-                      <p className="text-[12px] font-bold text-black line-clamp-2 leading-tight group-hover:text-primary transition-colors text-left">
-                        {cat.title}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 px-4 pb-20">
+                  {(isLoadingGenre && artistCategories.length === 0) ? (
+                    getSkeletonItems(10).map(s => <div key={s} className="aspect-square bg-gray-100 rounded-3xl animate-pulse" />)
+                  ) : (
+                    artistCategories.map(cat => (
+                        <div key={cat.tag_id} onClick={() => setTagId(cat.tag_id)} className="group cursor-pointer">
+                            <div className="relative aspect-square rounded-[2rem] overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-2xl transition-all duration-300 group-hover:-translate-y-2">
+                                <Image src={cat.imageUrl || "/icon-cover.png"} alt={cat.tag_name} fill className="object-cover" unoptimized />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                                <div className="absolute inset-0 p-5 flex flex-col justify-end">
+                                    <p className="text-white font-bold text-sm leading-tight line-clamp-2">{cat.tag_name}</p>
+                                </div>
+                            </div>
+                        </div>
+                    ))
+                  )}
+               </div>
             </div>
-          ))}
+          )}
+
+          {/* 4. LISTENING MODE (MODE: LISTENING) */}
+          {mode === 'listening' && (
+            <div className="animate-in fade-in duration-500">
+               <div className="px-4 pt-4 pb-6">
+                    <div className="bg-gradient-to-br from-primary via-primary/80 to-pink-600 p-8 rounded-[2.5rem] relative overflow-hidden min-h-[160px] flex flex-col justify-center shadow-xl shadow-primary/10">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-white/20 rounded-full blur-[80px] -mr-32 -mt-32" />
+                        <h2 className="text-3xl font-black text-white leading-tight">โหมดฟังยาวๆ</h2>
+                        <p className="text-white/80 mt-2 font-medium">รวมเพลย์ลิสต์เพลงยาว เมดเล่ย์ และ Non-stop</p>
+                        <div className="absolute bottom-6 right-8 opacity-20">
+                            <Headphones className="w-20 h-20 text-white" />
+                        </div>
+                    </div>
+               </div>
+               
+               <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 px-4 pb-20">
+                  {artistCategories.map(cat => (
+                    <div key={cat.tag_id} onClick={() => setTagId(cat.tag_id)} className="group cursor-pointer">
+                        <div className="relative aspect-video rounded-3xl overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-xl transition-all">
+                            <Image src={cat.imageUrl || "/icon-cover.png"} alt={cat.tag_name} fill className="object-cover" unoptimized />
+                            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0" />
+                        </div>
+                        <p className="mt-3 px-2 text-sm font-bold text-black line-clamp-1">{cat.tag_name}</p>
+                    </div>
+                  ))}
+               </div>
+            </div>
+          )}
         </div>
       )}
-
-      {/* Playlists: Premium Cards (Grid View for secondary levels or fallback) - Only on Home/Genre */}
-      {
-        !tagId && !isGenreDefault && !isLoadTopArtists && artistCategories.length > 0 && (
-          <div className="col-span-full grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-5 gap-6 px-4 pb-10">
-            {artistCategories.map((cat) => (
-              <div
-                key={cat.tag_id}
-                onClick={() => {
-                  setTagId(cat.tag_id);
-                }}
-                className={`
-                    relative w-full aspect-square rounded-3xl overflow-hidden cursor-pointer shadow-sm hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 hover:-translate-y-1.5 group bg-gray-100
-                    ${tagId == cat.tag_id ? "ring-4 ring-offset-2 ring-primary" : ""}
-                 `}
-              >
-                <Image
-                  src={cat.imageUrl || "/icon-cover.png"}
-                  alt={cat.tag_name}
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  onError={(e) => { e.currentTarget.src = "/icon-cover.png"; }}
-                  unoptimized
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-90 transition-opacity" />
-
-                {/* Content Overlay */}
-                <div className="absolute inset-0 p-6 flex flex-col justify-between">
-                  <div className="self-end opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-x-2 group-hover:translate-x-0">
-                    <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center">
-                      <svg className="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-                    </div>
-                  </div>
-                  <div className="transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                    <span className="text-white font-bold text-[11px] sm:text-[12px] drop-shadow-md line-clamp-2 leading-tight">
-                      {cat.tag_name}
-                    </span>
-                    <div className="h-1 w-12 bg-primary rounded-full mt-2 opacity-0 group-hover:opacity-100 transition-all duration-500 delay-100 origin-left scale-x-0 group-hover:scale-x-100" />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div >
-        )
-      }
-
-
-      {/* Loading Skeletons */}
-      {
-        isLoading && (
-          <>
-            <div className="col-span-full grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 px-2">
-              {getSkeletonItems(8).map((s) => (
-                <div key={s} className="h-48 bg-gray-100 rounded-3xl animate-pulse" />
-              ))}
-            </div>
-          </>
-        )
-      }
-
-      {/* Song List Header */}
-      {
-        tagId && artist && artist.length > 0 && (
-          <div
-            ref={songlistRef}
-            className="scroll-mt-32 col-span-full px-4 pt-4 pb-4 flex items-center justify-between"
-          >
-            <div className="flex items-center gap-4">
-              <button 
-                className="w-12 h-12 bg-primary rounded-full flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-transform"
-                onClick={() => {
-                   // Play first song logic if needed
-                   if (artist[0]) {
-                      const baseQuery = artist[0].title ? `${artist[0].title} ${artist[0].artist_name}` : artist[0].name;
-                      const cleanedQuery = cleanSearchQuery(baseQuery);
-                      setSearchTerm(cleanedQuery);
-                   }
-                }}
-              >
-                <svg className="w-6 h-6 text-white ml-1" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-              </button>
-              <h2 className="text-[16px] font-black text-black">รายการเพลงทั้งหมด</h2>
-            </div>
-            <span className="text-[11px] font-bold text-gray-400 bg-gray-100 px-3 py-1.5 rounded-full uppercase tracking-wider">
-              {artist.length} tracks
-            </span>
-          </div>
-        )
-      }
-
-      {/* Song List Grid - Premium Clean Cards */}
-      {tagId && artist && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-4 col-span-full px-4 pb-32">
-          {artist.map((item: any, i: number) => {
-            const video = item as any;
-            return (
-              <Fragment key={video.id || video.name + i}>
-                <div
-                  className="group cursor-pointer bg-white rounded-xl border border-gray-100 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 flex flex-col h-full transition-all active:scale-[0.97] duration-300 relative overflow-hidden"
-                  onClick={() => {
-                    const artistName = (video.artist_name && video.artist_name !== "Unknown Artist") ? video.artist_name : "";
-                    const query = `${video.title} ${artistName}`.trim();
-                    setSearchTerm(query);
-                    setShouldScrollToSongs(false);
-                    router.push({
-                      pathname: router.pathname,
-                      query: { ...router.query, search: query }
-                    });
-                  }}
-                >
-                  <div className="relative aspect-video overflow-hidden bg-gray-50 flex-shrink-0">
-                    <Image
-                      src={video.coverImageURL || "/icon-cover.png"}
-                      priority={i < 10}
-                      alt={video.title}
-                      fill
-                      unoptimized
-                      className="object-cover transition-transform duration-500 group-hover:scale-110"
-                      onErrorCapture={(ev) => {
-                        ev.currentTarget.src = "/icon-cover.png";
-                      }}
-                    />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
-                    <div className="absolute inset-x-0 bottom-0 p-2 flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center shadow-lg">
-                        <svg className="w-4 h-4 text-white fill-current ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-2 sm:p-3 flex-1 flex flex-col justify-center">
-                    <h3 className="font-bold text-[12px] sm:text-[13px] line-clamp-2 text-black leading-tight group-hover:text-primary transition-colors text-left">
-                      {video.title || video.name}
-                    </h3>
-                    <p className="text-[10px] text-gray-400 mt-1 line-clamp-1 text-left">
-                      {(video.artist_name && video.artist_name !== "Unknown Artist") ? video.artist_name : "YouTube Music"}
-                    </p>
-                  </div>
-                </div>
-              </Fragment>
-            );
-          })}
-        </div>
-      )}
-    </>
+    </div>
   );
 }

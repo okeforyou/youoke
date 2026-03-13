@@ -6,7 +6,7 @@ import { PremiumLockOverlay } from "./common/PremiumLockOverlay";
 
 interface MusicProviderContainerProps {
     showTab?: boolean;
-    mode?: 'default' | 'listening';
+    mode?: 'default' | 'listening' | 'genres';
 }
 
 /**

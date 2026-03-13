@@ -52,7 +52,7 @@ export const HomePageContent = memo(() => {
         case 1: return <MusicProviderContainer showTab={false} />; // "หน้าแรก" -> Main Dashboard
         case 2: return <ListRecommendedPlaylists />; // "แนะนำ" -> Recommended Playlists
         case 3: return <ListHitsGrid />; // "มาแรง" -> Hit Singles
-        case 4: return <ListPlaylistsGrid defaultTab={1} />;
+        case 4: return <MusicProviderContainer showTab={false} mode="genres" />;
         case 5: return <MusicProviderContainer showTab={false} mode="listening" />;
         default: return <MusicProviderContainer showTab={false} />;
     }
