@@ -185,13 +185,85 @@ function getRandomUserAgent(): string {
 }
 
 /**
+ * Scrape YouTube Music Artist Profile Thumbnail
+ * URL: https://music.youtube.com/search?q=...
+ * Targeted specifically for Music YouTube which has high-quality artist photos
+ */
+export async function scrapeYouTubeMusicArtistProfile(
+  name: string,
+  timeout: number = 5000
+): Promise<YouTubeArtistProfile | null> {
+  const url = `https://music.youtube.com/search?q=${encodeURIComponent(name)}`;
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': getRandomUserAgent(),
+        'Accept-Language': 'en-US,en;q=0.9,th;q=0.8',
+        'X-YouTube-Client-Name': '67',
+        'X-YouTube-Client-Version': '1.20240501.01.00',
+      },
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) return null;
+    const html = await response.text();
+    const ytInitialData = extractYtInitialData(html);
+
+    if (!ytInitialData) return null;
+
+    let profile: YouTubeArtistProfile | null = null;
+
+    const findMusicArtist = (obj: any) => {
+      if (profile || !obj || typeof obj !== 'object') return;
+
+      if (obj.musicResponsiveListItemRenderer) {
+        const r = obj.musicResponsiveListItemRenderer;
+        const pageType = r.navigationEndpoint?.browseEndpoint?.browseEndpointContextSupportedConfigs?.browseEndpointContextMusicConfig?.pageType;
+        
+        // Page types for artists in Music YouTube
+        if (pageType === "MUSIC_PAGE_TYPE_ARTIST" || pageType === "MUSIC_PAGE_TYPE_USER_CHANNEL") {
+            const thumb = r.thumbnail?.musicThumbnailRenderer?.thumbnail?.thumbnails?.pop()?.url;
+            const highResThumb = thumb ? thumb.replace(/=w\d+-h\d+.*$/, '=w512-h512-c-k-c0x00ffffff-no-rj') : thumb;
+            
+            profile = {
+                name: r.flexColumns?.[0]?.musicResponsiveListItemFlexColumnRenderer?.text?.runs?.[0]?.text || name,
+                thumbnail: highResThumb || "",
+                channelId: r.navigationEndpoint?.browseEndpoint?.browseId || ""
+            };
+            return;
+        }
+      }
+
+      for (const key in obj) {
+        if (typeof obj[key] === 'object') findMusicArtist(obj[key]);
+      }
+    };
+
+    findMusicArtist(ytInitialData);
+    return profile;
+  } catch (error) {
+    return null;
+  }
+}
+
+/**
  * Scrape YouTube Channel/Artist Profile Thumbnail
  */
 export async function scrapeYouTubeArtistProfile(
   name: string,
   timeout: number = 5000
 ): Promise<YouTubeArtistProfile | null> {
-  // Search with sp=EgIQAg%3D%3D to filter for Channels only
+  // Method 1: Try Music YouTube Search (Better for artists)
+  const musicProfile = await scrapeYouTubeMusicArtistProfile(name, timeout);
+  if (musicProfile) return musicProfile;
+
+  // Method 2: Standard YouTube Search for Channels
   const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(name)}&sp=EgIQAg%3D%3D`;
 
   try {
@@ -241,8 +313,20 @@ export async function scrapeYouTubeArtistProfile(
     };
 
     findChannelResult(ytInitialData);
-    return profile;
+    
+    // Method 3: If still no channel, search for generic video thumbnail of that artist
+    if (!profile) {
+        const searchResults = await scrapeYouTubeSearch(name, timeout);
+        if (searchResults.length > 0) {
+            return {
+                name: name,
+                thumbnail: searchResults[0].videoThumbnails[0].url,
+                channelId: ""
+            };
+        }
+    }
 
+    return profile;
   } catch (error) {
     return null;
   }
