@@ -281,11 +281,11 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                       <div 
                         key={cat.id} 
                         onClick={() => setCategoryId(cat.id)}
-                        className={`group relative overflow-hidden rounded-xl aspect-[1.8/1] cursor-pointer shadow-sm hover:shadow-md transition-all bg-gradient-to-br ${cat.gradient}`}
+                        className={`group relative overflow-hidden rounded-xl aspect-[1.8/1] min-h-[72px] sm:min-h-[80px] cursor-pointer shadow-sm hover:shadow-md transition-all bg-gradient-to-br ${cat.gradient}`}
                       >
-                         <div className="absolute inset-0 p-3 flex flex-col justify-end">
-                            <h3 className="text-[13px] sm:text-[15px] font-bold text-white leading-tight line-clamp-2">{cat.title}</h3>
-                            <p className="text-[9px] sm:text-[10px] font-medium text-white/70 mt-0.5">{cat.artists.length} ศิลปิน</p>
+                         <div className="absolute inset-0 p-2.5 flex flex-col justify-end sm:p-3">
+                            <h3 className="text-[11px] min-[375px]:text-[12px] sm:text-[14px] md:text-[15px] font-bold text-white leading-[1.15] sm:leading-tight drop-shadow-sm line-clamp-2 break-words">{cat.title}</h3>
+                            <p className="text-[9px] sm:text-[10px] font-medium text-white/90 mt-0.5 drop-shadow-sm">{cat.artists.length} ศิลปิน</p>
                          </div>
                          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all">
                             <ChevronRight className="w-3.5 h-3.5 text-white" />
@@ -321,14 +321,14 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                         onClick={() => setSearchTerm(cleanSearchQuery(artist.name))} 
                         className="group cursor-pointer"
                       >
-                        <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 shadow-sm border border-gray-50 group-hover:shadow-md transition-all">
+                        <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-50 flex items-center justify-center shadow-sm border border-gray-100 group-hover:shadow-md group-hover:border-primary/20 transition-all">
                            <Image 
                                src={artist.imageUrl || `/api/spotify/artists/image?name=${encodeURIComponent(artist.name)}`} 
                                alt={artist.name} fill className="object-cover transition-transform duration-500 group-hover:scale-110" 
                                unoptimized
                             />
                         </div>
-                        <p className="mt-1.5 text-[11px] sm:text-[12px] font-bold text-black text-center group-hover:text-primary transition-colors line-clamp-1">{artist.name}</p>
+                        <p className="mt-2 px-1 text-[11px] sm:text-[12px] font-bold text-black text-center group-hover:text-primary transition-colors line-clamp-2 leading-tight h-[30px] sm:h-[34px] flex items-start justify-center">{artist.name}</p>
                       </div>
                     ))}
                   </div>

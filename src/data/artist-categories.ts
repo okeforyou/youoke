@@ -21,7 +21,7 @@ export const ARTIST_CATEGORIES: ArtistCategory[] = [
       { name: 'มนต์แคน แก่นคูน' }, { name: 'ต่าย อรทัย' }, { name: 'ไผ่ พงศธร' }, { name: 'ลำเพลิน วงศกร' },
       { name: 'เบิ้ล ปทุมราช' }, { name: 'ก้อง ห้วยไร่' }, { name: 'หญิงลี ศรีจุมพล' }, { name: 'ตั๊กแตน ชลดา' },
       { name: 'ก๊อท จักรพันธ์' }, { name: 'ไมค์ ภิรมย์พร' }, { name: 'สุนารี ราชสีมา' }, { name: 'พุ่มพวง ดวงจันทร์' },
-      { name: 'ยอดรัก สลักใจ' }, { name: 'สายยัณห์ สัญญา' }, { name: 'ศิริพร อำไพพงษ์' }, { name: 'จินตหรา พูนลาภ' },
+      { name: 'ยอดรัก สลักใจ' }, { name: 'สายัณห์ สัญญา' }, { name: 'ศิริพร อำไพพงษ์' }, { name: 'จินตหรา พูนลาภ' },
       { name: 'มนต์สิทธิ์ คำสร้อย' }, { name: 'ฝน ธนสุนทร' }, { name: 'รุ่ง สุริยา' }, { name: 'ยิ่งยง ยอดบัวงาม' },
       { name: 'อาภาพร นครสวรรค์' }, { name: 'พี สะเดิด' }, { name: 'ตรี ชัยณรงค์' }, { name: 'เวียง นฤมล' },
       { name: 'เปาวลี พรพิมล' }, { name: 'ข้าวทิพย์ ธิดาดิน' }, { name: 'ศรเพชร ศรสุพรรณ' }, { name: 'สดใส รุ่งโพธิ์ทอง' },
@@ -30,6 +30,12 @@ export const ARTIST_CATEGORIES: ArtistCategory[] = [
       { name: 'เจนนี่ ได้หมดถ้าสดชื่น' }, { name: 'ลิลลี่ ได้หมดถ้าสดชื่น' }, { name: 'อาม ชุติมา' }, { name: 'เนสกาแฟ ศรีนคร' },
       { name: 'ลำไย ไหทองคำ' }, { name: 'ครูสลา คุณวุฒิ' }, { name: 'ชาย เมืองสิงห์' }, { name: 'ผ่องศรี วรนุช' },
       { name: 'ทศพล หิมพานต์' }, { name: 'ศรราม น้ำเพชร' }, { name: 'เปิ้ล ปทุมราช' }, { name: 'บัว กมลทิพย์' },
+      // Added More
+      { name: 'สันติ ดวงสว่าง' }, { name: 'เอกชัย ศรีวิชัย' }, { name: 'พงษ์สิทธิ์ คำภีร์' }, { name: 'หลิว อาจารียา' },
+      { name: 'หญิง ธิติกานต์' }, { name: 'วิรดา วงศ์เทวัญ' }, { name: 'กุ้ง สุธิราช' }, { name: 'แคท รัตกาล' },
+      { name: 'แจ๊ค ธนพล' }, { name: 'รุ่งระวี นิวส์มิวสิค' }, { name: 'นุช วิลาวัลย์' }, { name: 'นุ้ย สุวีณา' },
+      { name: 'ใบเตย อาร์สยาม' }, { name: 'กระแต อาร์สยาม' }, { name: 'บิว กัลยาณี' }, { name: 'แมงปอ ชลธิชา' },
+      { name: 'เอิร์น สุรัตน์ติกานต์' }, { name: 'ดอกอ้อ ทุ่งทอง' }, { name: 'ศร สินชัย' }, { name: 'ก้านตอง ทุ่งเงิน' },
     ]
   },
   {
@@ -47,6 +53,10 @@ export const ARTIST_CATEGORIES: ArtistCategory[] = [
       { name: 'เสียงอิสาน' }, { name: 'ระเบียบวาทะศิลป์' }, { name: 'ประถมบันเทิงศิลป์' }, { name: 'ศิลปินภูไท' },
       { name: 'รัตนศิลป์' }, { name: 'คำผุนร่วมมิตร' }, { name: 'สาวน้อยเพชรบ้านแพง' }, { name: 'อุ๋งอิ๋ง เพชรบ้านแพง' },
       { name: 'ยูกิ เพ็ญผกา' }, { name: 'เพชร สหรัตน์' }, { name: 'บิ๊ก ธิติวุฒิ' }, { name: 'โจอี้ วีระพล' },
+      // Added More
+      { name: 'สมหมายน้อย ดวงเจริญ' }, { name: 'นพดล ดวงพร' }, { name: 'บานเย็น รากแก่น' }, { name: 'แม่นกน้อย อุไรพร' },
+      { name: 'เต๋า ภูศิลป์' }, { name: 'กู่แคน School' }, { name: 'อภิรดี ไอดิน' }, { name: 'สายัณห์ วันรุ่ง' },
+      { name: 'ดาว บ้านดอน' }, { name: 'ดอกรัก ดวงมาลา' }, { name: 'บัวตูม บัวบาน' }, { name: 'เอม อภัสรา' },
     ]
   },
   {
@@ -67,6 +77,12 @@ export const ARTIST_CATEGORIES: ArtistCategory[] = [
       { name: 'Anatomy Rabbit' }, { name: 'Dept' }, { name: 'Mirrr' }, { name: 'Moving and Cut' },
       { name: 'Lipta' }, { name: 'The Parkinson' }, { name: 'MEYOU' }, { name: 'Lazyloxy' },
       { name: 'P-Hot' }, { name: 'F.Hero' }, { name: 'UrboyTJ' }, { name: 'Twopee Southside' },
+      // Added More
+      { name: 'Sarah Salola' }, { name: 'YourMOOD' }, { name: 'Zom Marie' }, { name: 'Oat Pramote' },
+      { name: 'Pop Pongkool' }, { name: 'Singto Numchok' }, { name: 'Klear' }, { name: 'Lipta' },
+      { name: 'No One Else' }, { name: 'Season Five' }, { name: 'Room39' }, { name: 'Mean' },
+      { name: 'Lola' }, { name: 'Violeete Wautier' }, { name: 'Fellow Fellow' }, { name: 'Txrbo' },
+      { name: 'Saran' }, { name: 'SPRITE' }, { name: '1MILL' }, { name: 'Youngohm' },
     ]
   },
   {
@@ -86,6 +102,12 @@ export const ARTIST_CATEGORIES: ArtistCategory[] = [
       { name: 'The Yers' }, { name: 'Lomosonic' }, { name: 'Ebola' }, { name: 'Paper Planes' },
       { name: 'Bomb at Track' }, { name: 'TaitosmitH' }, { name: 'Slot Machine' }, { name: 'Sweet Mullet' },
       { name: '25hours' }, { name: 'Musketeers' }, { name: 'Mild' }, { name: 'Getsunova' }, { name: 'Jetset\'er' },
+      // Added More
+      { name: 'Clash' }, { name: 'I-Zax' }, { name: 'So Cool' }, { name: 'Pancake' },
+      { name: 'Bodyslam' }, { name: 'Silly Fools' }, { name: 'Loso' }, { name: 'Guns N\' Roses' },
+      { name: 'Nuvo' }, { name: 'Y Not 7' }, { name: 'Micro' }, { name: 'Acoustic Rock' },
+      { name: 'Instinct' }, { name: 'Zeal' }, { name: 'Klear' }, { name: 'Retrospect' },
+      { name: 'Lomosonic' }, { name: 'Ebola' }, { name: 'SDF' }, { name: 'No More Tear' },
     ]
   },
   {
@@ -105,6 +127,11 @@ export const ARTIST_CATEGORIES: ArtistCategory[] = [
       { name: 'Dr. Kids' }, { name: 'Bubble Girls' }, { name: 'Zaza' }, { name: 'X3 Super Gang' },
       { name: 'Mr.Team' }, { name: 'Double U' }, { name: 'Seven' }, { name: 'Girl Force' },
       { name: 'D2B' }, { name: 'B2G' }, { name: 'Girly Berry' }, { name: 'Za Za' },
+      // Added More
+      { name: 'ทาทา ยัง' }, { name: 'ทัช ณ ตะกั่วทุ่ง' }, { name: 'แร็พเตอร์' }, { name: 'โดม ปกรณ์ ลัม' },
+      { name: 'อาร์เอส อันปลั๊ก' }, { name: 'คีรีบูน' }, { name: 'อินคา' }, { name: 'นรีกระจ่าง' },
+      { name: 'ปั่น ไพบูลย์เกียรติ' }, { name: 'สุรสีห์ อิทธิกุล' }, { name: 'แหวน ฐิติมา' }, { name: 'พงษ์พัฒน์ วชิรบรรจง' },
+      { name: 'เสือ ธนพล' }, { name: 'อริสมันต์ พงษ์เรืองรอง' }, { name: 'ฟรุตตี้' }, { name: 'แกรนด์เอ็กซ์' },
     ]
   },
   {
@@ -121,6 +148,11 @@ export const ARTIST_CATEGORIES: ArtistCategory[] = [
       { name: 'สิงโต นำโชค' }, { name: 'Kiss Me Five' }, { name: 'XIS' }, { name: 'Candy Mafia' },
       { name: 'G-Twenty' }, { name: 'Olives' }, { name: 'Sugar Eyes' }, { name: 'Neko Jump' },
       { name: 'SWEEP' }, { name: 'Fact U' }, { name: 'Kat-Pat' }, { name: '3.2.1' }, { name: 'Split' },
+      // Added More
+      { name: 'Mila' }, { name: 'Pimmy' }, { name: 'Chilli White Choc' }, { name: 'Siska' },
+      { name: 'Seven Days' }, { name: 'Timethai' }, { name: 'Min' }, { name: 'Jinny' },
+      { name: 'Bie The Ska' }, { name: 'Vamp' }, { name: 'Evo Nine' }, { name: 'Neko Jump' },
+      { name: 'Golf Mike' }, { name: 'B.O.Y' }, { name: 'Ice Sarunyu' }, { name: 'Peck Aof Ice' },
     ]
   },
   {
@@ -136,6 +168,11 @@ export const ARTIST_CATEGORIES: ArtistCategory[] = [
       { name: 'รัดเกล้า อามระดิษ' }, { name: 'วิยะดา โกมารกุล ณ นคร' }, { name: 'เจนนิเฟอร์ คิ้ม' },
       { name: 'โก้ มิสเตอร์แซกแมน' }, { name: 'ชลาทิศ ตันติวุฒิ' }, { name: 'นิวนิว' }, { name: 'ว่าน ธนกฤต' },
       { name: 'โบ สุนิตา' }, { name: 'ปาน ธนพร' }, { name: 'แก้ม วิชญาณี' },
+      // Added More
+      { name: 'ทอม อิศรา' }, { name: 'โรส ศิรินทิพย์' }, { name: 'นท พนายางกูร' }, { name: 'Meyou' },
+      { name: 'Gavin D' }, { name: 'The Toys' }, { name: 'Monik' }, { name: 'Wanyai' },
+      { name: 'แสตมป์ อภิวัชร์' }, { name: 'สิงโต นำโชค' }, { name: 'มาเรียม B5' }, { name: 'ETC.' },
+      { name: 'Boy Peacemaker' }, { name: 'Aof Pongsak' }, { name: 'Peck Palitchoke' }, { name: 'Ton Thanasit' },
     ]
   },
   {
@@ -152,6 +189,11 @@ export const ARTIST_CATEGORIES: ArtistCategory[] = [
       { name: 'หนู มิเตอร์' }, { name: 'หลวงไก่' }, { name: 'บ่าววี' }, { name: 'วิด ไฮเปอร์' }, { name: 'พี สะเดิด' },
       { name: 'ฌามา' }, { name: 'วงกางเกง' }, { name: 'วงพัทลุง' }, { name: 'เต็ม นาวา' }, { name: 'วงพาโล' },
       { name: 'อู๋ พันทาง' }, { name: 'จ๊อบ บรรจบ' }, { name: 'มอร์กะจาย' }, { name: 'สมชาย นิลศรี' },
+      // Added More
+      { name: 'Greasy Cafe' }, { name: 'Desktop Error' }, { name: 'Solitude Is Bliss' }, { name: 'Yellow Fang' },
+      { name: 'T_047' }, { name: 'Khai Kho Nyo' }, { name: 'จุลโหฬาร' }, { name: 'อภิรมย์' },
+      { name: 'Yented' }, { name: 'TELEx TELEXs' }, { name: 'Plastic Plastic' }, { name: 'Phum Viphurit' },
+      { name: 'เล็ก คาราบาว' }, { name: 'เทียรี่ เมฆวัฒนา' }, { name: 'คนด่านเกวียน' }, { name: 'สิบล้อ' },
     ]
   },
   {
@@ -165,6 +207,10 @@ export const ARTIST_CATEGORIES: ArtistCategory[] = [
       { name: 'อรวี สัจจานนท์' }, { name: 'ก๊อท จักรพันธ์' }, { name: 'วินัย จุลบุษปะ' }, { name: 'ศรีไศล สุชาตวุฒิ' },
       { name: 'รวงทอง ทองลั่นธม' }, { name: 'จันทนีย์ อูนากูล' }, { name: 'สุพรรณิกา' }, { name: 'ดาวใจ ไพจิตร' },
       { name: 'อุมาพร บัวพึ่ง' }, { name: 'ทิพวัลย์ ปิ่นภิบาล' }, { name: 'วงจันทร์ ไพโรจน์' },
+      // Added More
+      { name: 'สิทธิพร สุนทรพจน์' }, { name: 'ดนุพล แก้วกาญจน์' }, { name: 'นันทิดา แก้วบัวสาย' }, { name: 'สุชาติ ชวางกูร' },
+      { name: 'ชรัส เฟื่องอารมย์' }, { name: 'ภูสมิง หน่อสวรรค์' }, { name: 'รวิวรรณ จินดา' }, { name: 'แกรนด์เอ็กซ์' },
+      { name: 'แจ้ ดนุพล' }, { name: 'อ้วน วารุณี' }, { name: 'ฝน ธนสุนทร' }, { name: 'นิตยา บุญสูงเนิน' },
     ]
   },
   {
@@ -173,15 +219,20 @@ export const ARTIST_CATEGORIES: ArtistCategory[] = [
     description: 'เพลงฮิตจากฝั่งเอเชีย',
     gradient: 'from-cyan-400 to-blue-600',
     artists: [
-      { name: 'บีทีเอส (BTS)' }, { name: 'แบล็กพิงก์ (BLACKPINK)' }, { name: 'ทไวซ์ (TWICE)' }, { name: 'นิวจีนส์ (NewJeans)' },
-      { name: 'เอสปา (aespa)' }, { name: 'ไอฟ์ (IVE)' }, { name: 'โยอาโซบิ (YOASOBI)' }, { name: 'ลิซ่า (LISA)' },
-      { name: 'แบมแบม (BamBam)' }, { name: 'เอ็กโซ (EXO)' }, { name: 'เกิลส์เจเนอเรชัน (Girls\' Generation)' },
-      { name: 'ไอยู (IU)' }, { name: 'เอนไฮเพน (ENHYPEN)' }, { name: 'สเตรย์คิดส์ (Stray Kids)' },
-      { name: 'เซเว่นทีน (SEVENTEEN)' }, { name: 'เรดเวลเวต (Red Velvet)' }, { name: 'อิทจี (ITZY)' },
-      { name: 'เลเซราฟิม (LE SSERAFIM)' }, { name: 'เอนไฮเพน' }, { name: 'TREASURE' }, { name: 'NCT 127' },
-      { name: 'NCT DREAM' }, { name: 'BABYMONSTER' }, { name: 'STAYC' }, { name: 'NMIXX' }, { name: 'G-IDLE' },
+      { name: 'BTS' }, { name: 'BLACKPINK' }, { name: 'TWICE' }, { name: 'NewJeans' },
+      { name: 'aespa' }, { name: 'IVE' }, { name: 'YOASOBI' }, { name: 'LISA' },
+      { name: 'BamBam' }, { name: 'EXO' }, { name: 'Girls\' Generation' },
+      { name: 'IU' }, { name: 'ENHYPEN' }, { name: 'Stray Kids' },
+      { name: 'SEVENTEEN' }, { name: 'Red Velvet' }, { name: 'ITZY' },
+      { name: 'LE SSERAFIM' }, { name: 'TREASURE' }, { name: 'NCT 127' },
+      { name: 'NCT DREAM' }, { name: 'BABYMONSTER' }, { name: 'STAYC' }, { name: 'NMIXX' }, { name: '(G)I-DLE' },
       { name: 'BIGBANG' }, { name: 'Super Junior' }, { name: 'SHINee' }, { name: '2PM' }, { name: 'Vaundy' },
       { name: 'Kenshi Yonezu' }, { name: 'Fujii Kaze' }, { name: 'Official HIGE DANdism' },
+      // Added More
+      { name: 'ILLIT' }, { name: 'RIIZE' }, { name: 'TWS' }, { name: 'BOYNEXTDOOR' },
+      { name: 'KISS OF LIFE' }, { name: 'ATEEZ' }, { name: 'TXT' }, { name: 'G-Dragon' },
+      { name: 'Taeyeon' }, { name: 'Aimer' }, { name: 'LiSA' }, { name: 'Radwimps' },
+      { name: 'AKB48' }, { name: 'Nogizaka46' }, { name: 'Kenshi Yonezu' }, { name: 'BABYMETAL' },
     ]
   },
   {
@@ -199,6 +250,11 @@ export const ARTIST_CATEGORIES: ArtistCategory[] = [
       { name: 'Miley Cyrus' }, { name: 'Shawn Mendes' }, { name: 'Camila Cabello' }, { name: 'One Direction' },
       { name: 'Imagine Dragons' }, { name: 'Linkin Park' }, { name: 'Queen' }, { name: 'The Beatles' },
       { name: 'Michael Jackson' },
+      // Added More
+      { name: 'Tate McRae' }, { name: 'Benson Boone' }, { name: 'Noah Kahan' }, { name: 'Zach Bryan' },
+      { name: 'Morgan Wallen' }, { name: 'Luke Combs' }, { name: 'Travis Scott' }, { name: 'Future' },
+      { name: 'Metro Boomin' }, { name: 'Playboi Carti' }, { name: 'Lana Del Rey' }, { name: 'Arctic Monkeys' },
+      { name: 'The Neighbourhood' }, { name: 'Cigarettes After Sex' }, { name: 'Guns N\' Roses' }, { name: 'AC/DC' },
     ]
   }
 ];

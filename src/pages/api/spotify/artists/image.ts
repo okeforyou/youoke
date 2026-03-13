@@ -17,19 +17,7 @@ export default async function handler(
     const englishNameMatch = (name as string).match(/\((.*?)\)/);
     const englishName = englishNameMatch ? englishNameMatch[1] : artistName;
 
-    // Phase 1: Prioritize YouTube Official / Music Profile (Try both Thai and English for best match)
-    const namesForYT = [artistName];
-    if (englishName !== artistName) namesForYT.push(englishName);
-    
-    for (const query of namesForYT) {
-        const profile = await scrapeYouTubeArtistProfile(query);
-        // scrapeYouTubeArtistProfile now has internal scoring to ensure the profile matches the query
-        if (profile && profile.thumbnail) {
-            return res.redirect(profile.thumbnail);
-        }
-    }
-
-    // Phase 2: Try Joox / Sanook (Extremely accurate for Thai Artists)
+    // Phase 1: Try Joox / Sanook (EXCELLENT curated press photos for Thai Artists)
     try {
       const jooxResp = await axios.get(`https://api-jooxtt.sanook.com/openjoox/v1/search/all?keyword=${encodeURIComponent(artistName)}&country=th&lang=th`, { timeout: 2000 });
       const jooxArtist = jooxResp.data?.artists?.items?.[0];
@@ -38,10 +26,11 @@ export default async function handler(
       }
     } catch (e) {}
 
-    // Phase 3: Try Deezer API (Professional Square Press Photos)
+    // Phase 2: Try Deezer API (Great for International and large Thai Artists)
     try {
       const namesToTry = [englishName, artistName];
       for (const query of namesToTry) {
+        if (!query) continue;
         const deezerResp = await axios.get(`https://api.deezer.com/search/artist?q=${encodeURIComponent(query)}`, { timeout: 2000 });
         const artist = deezerResp.data?.data?.[0];
         if (artist && artist.picture_big && artist.name.toLowerCase().includes(query.toLowerCase().split(' ')[0])) {
@@ -50,7 +39,7 @@ export default async function handler(
       }
     } catch (e) {}
 
-    // Phase 4: Try iTunes Search API
+    // Phase 3: Try iTunes Search API
     try {
       const itunesResp = await axios.get(`https://itunes.apple.com/search?term=${encodeURIComponent(artistName)}&entity=musicArtist&limit=1`, { timeout: 2000 });
       const itunesArtist = itunesResp.data?.results?.[0];
@@ -62,6 +51,19 @@ export default async function handler(
           }
       }
     } catch (e) {}
+
+    // Phase 4: Prioritize YouTube Official / Music Profile (Fallback)
+    const namesForYT = [artistName];
+    if (englishName !== artistName) namesForYT.push(englishName);
+    
+    for (const query of namesForYT) {
+        if (!query) continue;
+        const profile = await scrapeYouTubeArtistProfile(query);
+        // scrapeYouTubeArtistProfile now has internal scoring to ensure the profile matches the query
+        if (profile && profile.thumbnail) {
+            return res.redirect(profile.thumbnail);
+        }
+    }
 
     // Last Resort: Default Avatar
     return res.redirect("/assets/avatar.jpeg");
