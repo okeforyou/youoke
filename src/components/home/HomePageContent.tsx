@@ -50,10 +50,9 @@ export const HomePageContent = memo(() => {
             usePlayerStore.getState().addToQueue(videoToAdd);
         }} />;
         case 1: return <MusicProviderContainer showTab={false} />; // "หน้าแรก" -> Main Dashboard
-        case 2: return <ListRecommendedPlaylists />; // "แนะนำ" -> Recommended Playlists
-        case 3: return <ListHitsGrid />; // "มาแรง" -> Hit Singles
-        case 4: return <MusicProviderContainer showTab={false} mode="genres" />;
-        case 5: return <MusicProviderContainer showTab={false} mode="listening" />;
+        case 2: return <ListHitsGrid />; // "มาแรง" -> Hit Singles
+        case 3: return <MusicProviderContainer showTab={false} mode="station" />; // "สถานีเพลง"
+        case 4: return <ListPlaylistsGrid />; // "เพลย์ลิสต์" -> My Playlists
         default: return <MusicProviderContainer showTab={false} />;
     }
 });

@@ -39,7 +39,7 @@ const GENRES = [
   "ริทึมแอนด์บลูส์",
 ];
 
-export default function SpotifyDashboard({ showTab = true, mode = 'default' }: { showTab?: boolean, mode?: 'default' | 'listening' | 'genres' }) {
+export default function SpotifyDashboard({ showTab = true, mode = 'default' }: { showTab?: boolean, mode?: 'default' | 'listening' | 'genres' | 'station' }) {
   const router = useRouter();
   const { config } = useSystemConfig();
   const rawGenres = (config?.ui?.genres || GENRES).filter(g => g !== "เพลงไทย" && g !== "ทั้งหมด" && g !== "แนะนำ");
@@ -123,7 +123,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
 
   const { data: tempTopArtistsData, isLoading: isLoadTopArtists } = useQuery({
     queryKey: ["getTopArtists", "v2", mode],
-    queryFn: () => getTopArtists(mode),
+    queryFn: () => getTopArtists(mode === 'station' ? 'listening' : (mode as any)),
     retry: false,
     refetchInterval: 0,
   });
@@ -151,18 +151,18 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
     refetch
   } = useInfiniteQuery({
     queryKey: ["searchPlaylists", genreText, mode],
-    queryFn: ({ pageParam = 1 }) => searchPlaylists(genreText || "เพลงไทย", pageParam, mode),
+    queryFn: ({ pageParam = 1 }) => searchPlaylists(genreText || "เพลงไทย", pageParam, mode === 'station' ? 'listening' : (mode as any)),
     getNextPageParam: (lastPage, allPages) => {
       return (lastPage?.artistCategories?.length === 20) ? allPages.length + 1 : undefined;
     },
     initialPageParam: 1,
-    enabled: (mode === 'genres' || mode === 'listening') && genreText !== "เพลงไทย" && genreText !== "แนะนำ",
+    enabled: (mode === 'genres' || mode === 'listening' || mode === 'station') && genreText !== "เพลงไทย" && genreText !== "แนะนำ",
   });
 
   const genrePlaylists = playlistData?.pages?.flatMap(page => page.artistCategories) || [];
 
   useEffect(() => {
-    if (genreText !== "เพลงไทย" && (mode === 'genres' || mode === 'listening')) {
+    if (genreText !== "เพลงไทย" && (mode === 'genres' || mode === 'listening' || mode === 'station')) {
       refetch();
     }
   }, [genreText, refetch, mode]);
@@ -440,31 +440,97 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
             </div>
           )}
 
-          {/* 4. LISTENING MODE (MODE: LISTENING) */}
-          {mode === 'listening' && (
+          {/* 4. STATION MODE (MODE: STATION) - NEW THEME GRID */}
+          {mode === 'station' && (
             <div className="animate-in fade-in duration-500">
-               <div className="px-4 pt-4 pb-6">
-                    <div className="bg-gradient-to-br from-primary via-primary/80 to-pink-600 p-8 rounded-[2.5rem] relative overflow-hidden min-h-[160px] flex flex-col justify-center shadow-xl shadow-primary/10">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-white/20 rounded-full blur-[80px] -mr-32 -mt-32" />
-                        <h2 className="text-3xl font-black text-white leading-tight">โหมดฟังยาวๆ</h2>
-                        <p className="text-white/80 mt-2 font-medium">รวมเพลย์ลิสต์เพลงยาว เมดเล่ย์ และ Non-stop</p>
-                        <div className="absolute bottom-6 right-8 opacity-20">
-                            <Headphones className="w-20 h-20 text-white" />
+               {!genreText && !tagId ? (
+                 <>
+                   <div className="px-4 pt-4 pb-6">
+                        <div className="bg-gradient-to-br from-indigo-900 via-primary to-rose-900 p-8 rounded-[2.5rem] relative overflow-hidden min-h-[200px] flex flex-col justify-center shadow-2xl shadow-primary/20">
+                            <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-[100px] -mr-40 -mt-40 animate-pulse" />
+                            <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/20 rounded-full blur-[100px] -ml-32 -mb-32" />
+                            
+                            <div className="relative z-10">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="bg-white/20 backdrop-blur-md p-2 rounded-xl">
+                                        <Headphones className="w-6 h-6 text-white" />
+                                    </div>
+                                    <span className="text-white/80 font-black uppercase tracking-[0.2em] text-[10px]">On Air Now</span>
+                                </div>
+                                <h2 className="text-4xl font-black text-white leading-tight mb-2">สถานีเพลง (Non-Stop)</h2>
+                                <p className="text-white/70 max-w-lg font-medium text-sm leading-relaxed">
+                                    เลือกชุดรวมเพลงในธีมที่คุณชอบ ฟังต่อเนื่องยาวๆ ไฟล์เดียวจบ
+                                </p>
+                            </div>
+                        </div>
+                   </div>
+
+                   <div className="px-4 mb-6">
+                      <h3 className="text-lg font-black text-black mb-1">เลือกธีมสถานี</h3>
+                      <p className="text-xs text-gray-400 font-medium">กดเลือกแนวเพลงที่ต้องการฟังได้เลยครับ</p>
+                   </div>
+
+                   <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 px-4 pb-32">
+                      {[
+                        { id: 'lukthung', title: 'ลูกทุ่งฟังยาว', color: 'from-orange-500 to-red-600', icon: '👒' },
+                        { id: 'pueachiwit', title: 'เพื่อชีวิตชุดใหญ่', color: 'from-amber-600 to-yellow-800', icon: '🎸' },
+                        { id: 'string90s', title: 'สตริงยุค 90', color: 'from-indigo-500 to-purple-600', icon: '📀' },
+                        { id: 'morlam', title: 'หมอลำจัดเต็ม', color: 'from-pink-500 to-rose-600', icon: '🥁' },
+                        { id: 'hits90s', title: 'รวมเพลงฮิตอมตะ', color: 'from-blue-500 to-cyan-600', icon: '🌟' },
+                        { id: 'international', title: 'สากลฟังเพลิน', color: 'from-emerald-500 to-teal-700', icon: '🌎' },
+                      ].map((theme) => (
+                        <div 
+                          key={theme.id}
+                          onClick={() => setGenreText(theme.title)}
+                          className={`cursor-pointer p-8 rounded-[2.5rem] bg-gradient-to-br ${theme.color} transition-all hover:scale-[1.03] active:scale-95 shadow-lg relative overflow-hidden group min-h-[140px] flex items-center`}
+                        >
+                           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                              <span className="text-6xl grayscale group-hover:grayscale-0 transition-all">{theme.icon}</span>
+                           </div>
+                           <h4 className="text-2xl font-black text-white drop-shadow-md relative z-10">{theme.title}</h4>
+                        </div>
+                      ))}
+                   </div>
+                 </>
+               ) : (
+                 <div className="animate-in slide-in-from-right duration-500 px-4">
+                    <div className="flex items-center gap-4 mb-8 pt-4">
+                        <button 
+                          onClick={() => setGenreText("")}
+                          className="w-10 h-10 bg-white border border-gray-100 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-50 transition-all"
+                        >
+                           <ChevronRight className="w-5 h-5 text-black rotate-180" />
+                        </button>
+                        <div>
+                           <h2 className="text-2xl font-black text-black">{genreText}</h2>
+                           <p className="text-xs text-gray-400 font-medium">พบ {artistCategories.length} รายการเพลงยาว</p>
                         </div>
                     </div>
-               </div>
-               
-               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-4 pb-20">
-                  {artistCategories.map(cat => (
-                    <div key={cat.tag_id} onClick={() => setTagId(cat.tag_id)} className="group cursor-pointer">
-                        <div className="relative aspect-video rounded-3xl overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-xl transition-all">
-                            <Image src={cat.imageUrl || "/icon-cover.png"} alt={cat.tag_name} fill className="object-cover" unoptimized />
-                            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0" />
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pb-20">
+                      {artistCategories.map(cat => (
+                        <div key={cat.tag_id} onClick={() => setTagId(cat.tag_id)} className="group cursor-pointer">
+                            <div className="relative aspect-video rounded-3xl overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-2xl transition-all duration-500 group-hover:-translate-y-2">
+                                <Image src={cat.imageUrl || "/icon-cover.png"} alt={cat.tag_name} fill className="object-cover transition-transform duration-700 group-hover:scale-110" unoptimized />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-100 transition-opacity" />
+                                <div className="absolute inset-0 p-5 flex flex-col justify-end">
+                                    <p className="text-white font-black text-sm leading-tight line-clamp-2 drop-shadow-md">{cat.tag_name}</p>
+                                </div>
+                            </div>
                         </div>
-                        <p className="mt-3 px-2 text-sm font-bold text-black line-clamp-1">{cat.tag_name}</p>
+                      ))}
                     </div>
-                  ))}
-               </div>
+                 </div>
+               )}
+            </div>
+          )}
+
+          {/* 5. LISTENING MODE (MODE: LISTENING) - DEPRECATED / REDIRECTED */}
+          {mode === 'listening' && (
+            <div className="p-20 text-center">
+               <button onClick={() => router.push({ pathname: '/', query: { tab: 'station' } })} className="bg-primary text-white px-8 py-3 rounded-2xl font-bold">
+                  ไปที่สถานีเพลง
+               </button>
             </div>
           )}
         </div>

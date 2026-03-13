@@ -101,59 +101,45 @@ export const Sidebar = memo(() => {
                     </span>
                 </button>
 
-                <button onClick={() => handleNav(2, 'rec')} 
+                <button onClick={() => handleNav(2, 'trending')} 
                     className={clsx(
                         "w-full flex items-center transition-all font-bold duration-300 text-sm",
                         isSidebarCollapsed ? "justify-center p-3 rounded-xl" : "gap-3 px-4 py-3 rounded-2xl",
                         (router.pathname === '/' && activeIndex === 2) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-black hover:bg-gray-100/50 hover:text-black"
                     )}
-                    title={isSidebarCollapsed ? "แนะนำ" : ""}
-                >
-                    <Star className={clsx("w-[22px] h-[22px]", (router.pathname === '/' && activeIndex === 2) ? "text-white" : "text-black")} /> 
-                    <span className={clsx("transition-all duration-300 whitespace-nowrap", isSidebarCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100")}>
-                        แนะนำ
-                    </span>
-                </button>
-
-                <button onClick={() => handleNav(3, 'trending')} 
-                    className={clsx(
-                        "w-full flex items-center transition-all font-bold duration-300 text-sm",
-                        isSidebarCollapsed ? "justify-center p-3 rounded-xl" : "gap-3 px-4 py-3 rounded-2xl",
-                        (router.pathname === '/' && activeIndex === 3) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-black hover:bg-gray-100/50 hover:text-black"
-                    )}
                     title={isSidebarCollapsed ? "มาแรง" : ""}
                 >
-                    <Flame className={clsx("w-[22px] h-[22px]", (router.pathname === '/' && activeIndex === 3) ? "text-white" : "text-black")} /> 
+                    <Flame className={clsx("w-[22px] h-[22px]", (router.pathname === '/' && activeIndex === 2) ? "text-white" : "text-black")} /> 
                     <span className={clsx("transition-all duration-300 whitespace-nowrap", isSidebarCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100")}>
                         มาแรง
                     </span>
                 </button>
 
-                <button onClick={() => handleNav(4, 'genres')} 
+                <button onClick={() => handleNav(3, 'station')} 
+                    className={clsx(
+                        "w-full flex items-center transition-all font-bold duration-300 text-sm",
+                        isSidebarCollapsed ? "justify-center p-3 rounded-xl" : "gap-3 px-4 py-3 rounded-2xl",
+                        (router.pathname === '/' && activeIndex === 3) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-black hover:bg-gray-100/50 hover:text-black"
+                    )}
+                    title={isSidebarCollapsed ? "สถานีเพลง" : ""}
+                >
+                    <Headphones className={clsx("w-[22px] h-[22px]", (router.pathname === '/' && activeIndex === 3) ? "text-white" : "text-black")} /> 
+                    <span className={clsx("transition-all duration-300 whitespace-nowrap", isSidebarCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100")}>
+                        สถานีเพลง
+                    </span>
+                </button>
+
+                <button onClick={() => handleNav(4, 'playlists')} 
                     className={clsx(
                         "w-full flex items-center transition-all font-bold duration-300 text-sm",
                         isSidebarCollapsed ? "justify-center p-3 rounded-xl" : "gap-3 px-4 py-3 rounded-2xl",
                         (router.pathname === '/' && activeIndex === 4) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-black hover:bg-gray-100/50 hover:text-black"
                     )}
-                    title={isSidebarCollapsed ? "แนวเพลง / ตู้เพลง" : ""}
+                    title={isSidebarCollapsed ? "เพลย์ลิสต์" : ""}
                 >
-                    <Grid className={clsx("w-[22px] h-[22px]", (router.pathname === '/' && activeIndex === 4) ? "text-white" : "text-black")} /> 
+                    <Library className={clsx("w-[22px] h-[22px]", (router.pathname === '/' && activeIndex === 4) ? "text-white" : "text-black")} /> 
                     <span className={clsx("transition-all duration-300 whitespace-nowrap", isSidebarCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100")}>
-                        แนวเพลง / ตู้เพลง
-                    </span>
-                </button>
-
-                <button onClick={() => handleNav(5, 'listening')} 
-                    className={clsx(
-                        "w-full flex items-center transition-all font-bold duration-300 text-sm italic",
-                        isSidebarCollapsed ? "justify-center p-3 rounded-xl" : "gap-3 px-4 py-3 rounded-2xl",
-                        (router.pathname === '/' && activeIndex === 5) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-black hover:bg-gray-100/50 hover:text-black"
-                    )}
-                    title={isSidebarCollapsed ? "ฟังยาวๆ" : ""}
-                >
-                    <Headphones className={clsx("w-[22px] h-[22px]", (router.pathname === '/' && activeIndex === 5) ? "text-white" : "text-black")} /> 
-                    <span className={clsx("transition-all duration-300 whitespace-nowrap", isSidebarCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100")}>
-                        ฟังยาวๆ
+                        เพลย์ลิสต์
                     </span>
                 </button>
 

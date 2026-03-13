@@ -32,8 +32,9 @@ export default function HomePage() {
     // Map query param to index
     const tabMap: Record<string, number> = {
       'home': 1,
-      'rec': 2,
-      'trending': 3,
+      'trending': 2,
+      'station': 3,
+      'playlists': 4,
       'library': 4
     };
 
@@ -67,7 +68,7 @@ export default function HomePage() {
 
       // Restore tab if needed (though the tab effect above should handle it if tab param exists)
       const tab = router.query.tab as string;
-      const tabMap: Record<string, number> = { 'home': 1, 'rec': 2, 'trending': 3, 'library': 4 };
+      const tabMap: Record<string, number> = { 'home': 1, 'trending': 2, 'station': 3, 'playlists': 4, 'library': 4 };
       if (tab && tabMap[tab]) {
         setActiveIndex(tabMap[tab]);
       } else {
