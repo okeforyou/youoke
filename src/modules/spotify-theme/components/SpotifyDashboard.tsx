@@ -459,21 +459,11 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                {!genreText && !tagId ? (
                  <>
                    <div className="px-4 pt-4 pb-6">
-                        <div className="bg-gradient-to-br from-indigo-900 via-primary to-rose-900 p-8 rounded-[2.5rem] relative overflow-hidden min-h-[200px] flex flex-col justify-center shadow-2xl shadow-primary/20">
-                            <div className="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-[100px] -mr-40 -mt-40 animate-pulse" />
-                            <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/20 rounded-full blur-[100px] -ml-32 -mb-32" />
-                            
-                            <div className="relative z-10">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <div className="bg-white/20 backdrop-blur-md p-2 rounded-xl">
-                                        <Headphones className="w-6 h-6 text-white" />
-                                    </div>
-                                    <span className="text-white/80 font-black uppercase tracking-[0.2em] text-[10px]">On Air Now</span>
-                                </div>
-                                <h2 className="text-4xl font-black text-white leading-tight mb-2">สถานีเพลง (Non-Stop)</h2>
-                                <p className="text-white/70 max-w-lg font-medium text-sm leading-relaxed">
-                                    เลือกชุดรวมเพลงในธีมที่คุณชอบ ฟังต่อเนื่องยาวๆ ไฟล์เดียวจบ
-                                </p>
+                        <div className="bg-gray-100 p-8 rounded-[2.5rem] relative overflow-hidden min-h-[140px] flex flex-col justify-center">
+                            <h2 className="text-3xl font-black text-gray-900 leading-tight">สถานีเพลง</h2>
+                            <p className="text-gray-500 mt-2 font-medium">รวมชุดเพลงยาว ฟังต่อเนื่อง สำหรับเปิดทิ้งไว้</p>
+                            <div className="absolute bottom-6 right-8 opacity-5">
+                                <Headphones className="w-20 h-20 text-black" />
                             </div>
                         </div>
                    </div>
@@ -483,24 +473,25 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                       <p className="text-xs text-gray-400 font-medium">กดเลือกแนวเพลงที่ต้องการฟังได้เลยครับ</p>
                    </div>
 
-                   <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 px-4 pb-32">
+                   <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3 px-4 pb-32">
                       {[
-                        { id: 'lukthung', title: 'ลูกทุ่ง', icon: '👒' },
-                        { id: 'pueachiwit', title: 'เพื่อชีวิต', icon: '🎸' },
-                        { id: 'string90s', title: 'สตริงยุค 90', icon: '📀' },
-                        { id: 'morlam', title: 'หมอลำ', icon: '🥁' },
-                        { id: 'hits90s', title: 'รวมเพลงฮิตอมตะ', icon: '🌟' },
-                        { id: 'international', title: 'สากล', icon: '🌎' },
+                        { id: 'lukthung', title: 'ลูกทุ่ง', color: 'bg-orange-600', imageUrl: 'https://images.unsplash.com/photo-1593697909683-bccb1b9e68a4?w=500&q=80' },
+                        { id: 'pueachiwit', title: 'เพื่อชีวิต', color: 'bg-amber-800', imageUrl: 'https://images.unsplash.com/photo-1493225255756-d9584f8606e9?w=500&q=80' },
+                        { id: 'string90s', title: 'สตริงยุค 90', color: 'bg-indigo-700', imageUrl: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500&q=80' },
+                        { id: 'morlam', title: 'หมอลำ', color: 'bg-rose-700', imageUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&q=80' },
+                        { id: 'hits90s', title: 'รวมเพลงฮิตอมตะ', color: 'bg-blue-700', imageUrl: 'https://images.unsplash.com/photo-1459749411177-042180ceea72?w=500&q=80' },
+                        { id: 'international', title: 'สากล', color: 'bg-emerald-800', imageUrl: 'https://images.unsplash.com/photo-1514525253361-b83f859b71c0?w=500&q=80' },
                       ].map((theme) => (
                         <div 
                           key={theme.id}
                           onClick={() => setGenreText(theme.title)}
-                          className="cursor-pointer p-6 rounded-3xl bg-gray-50 border border-gray-100 transition-all hover:bg-gray-100 active:scale-95 shadow-sm flex items-center gap-4 group"
+                          className="relative aspect-[1.618/1] rounded-2xl overflow-hidden bg-gray-200 group cursor-pointer shadow-sm hover:shadow-md transition-all border border-gray-100"
                         >
-                           <div className="w-12 h-12 rounded-2xl bg-white border border-gray-100 flex items-center justify-center text-2xl shadow-sm">
-                              {theme.icon}
+                           <Image src={theme.imageUrl} alt={theme.title} fill className="object-cover transition-transform duration-700 group-hover:scale-105" unoptimized />
+                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-90" />
+                           <div className="absolute inset-0 p-4 flex flex-col justify-end">
+                              <h4 className="text-base sm:text-lg font-bold text-white leading-tight drop-shadow-md">{theme.title}</h4>
                            </div>
-                           <h4 className="text-lg font-bold text-gray-800">{theme.title}</h4>
                         </div>
                       ))}
                    </div>
@@ -523,9 +514,9 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-20">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 pb-20">
                       {isLoadStation ? (
-                        getSkeletonItems(8).map(s => <div key={s} className="aspect-video bg-gray-100 rounded-2xl animate-pulse" />)
+                        getSkeletonItems(8).map(s => <div key={s} className="aspect-square bg-gray-100 rounded-2xl animate-pulse" />)
                       ) : (
                         stationResults?.map(video => (
                             <div key={video.videoId} onClick={() => {
@@ -539,13 +530,12 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                                 } as any;
                                 addToQueue(videoToAdd);
                             }} className="group cursor-pointer">
-                                <div className="relative aspect-video rounded-2xl overflow-hidden bg-gray-100 border border-gray-100 transition-all group-hover:border-primary/30">
-                                    <Image src={`https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`} alt={video.title} fill className="object-cover" unoptimized />
-                                    <div className="absolute inset-x-0 bottom-0 bg-black/60 p-3">
-                                        <p className="text-white font-bold text-[12px] leading-tight line-clamp-2">{video.title}</p>
-                                    </div>
-                                    <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <div className="relative aspect-square rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm group-hover:shadow-md transition-all">
+                                    <Image src={`https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`} alt={video.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" unoptimized />
                                 </div>
+                                <p className="mt-2.5 px-0.5 text-[10px] sm:text-[11px] font-bold text-black text-center group-hover:text-primary transition-colors line-clamp-2 leading-tight h-[24px] sm:h-[32px] flex items-start justify-center italic-sm">
+                                    {video.title}
+                                </p>
                             </div>
                         ))
                       )}
