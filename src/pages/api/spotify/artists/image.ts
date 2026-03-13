@@ -33,13 +33,31 @@ export default async function handler(
 
     // Phase 1: Try JOOX V3 API (Official High-Quality Source - Web Replicated)
     try {
+      // 1a: Fetch Session Keys from Firestore for maximum stability
+      let wmid = process.env.JOOX_WMID;
+      let sessionKey = process.env.JOOX_SESSION_KEY;
+
+      if (adminFirestore && (!wmid || !sessionKey)) {
+          try {
+              const configDoc = await adminFirestore.collection('system_config').doc('joox_api').get();
+              if (configDoc.exists) {
+                  const data = configDoc.data();
+                  wmid = wmid || data?.wmid;
+                  sessionKey = sessionKey || data?.session_key;
+                  if (data?.wmid) console.log(`✅ [ImageAPI] Using Firestore JOOX Auth for ${artistName}`);
+              }
+          } catch (e) {
+              console.warn(`⚠️ [ImageAPI] Firestore config check failed:`, (e as Error).message);
+          }
+      }
+
       const jooxQueries = [artistName, artistName.replace(/ /g, ''), englishName];
       for (const q of jooxQueries) {
           if (!q) continue;
           
-          // Setup Account Headers if available (Fulfills user request for Account API)
-          const cookie = (process.env.JOOX_WMID && process.env.JOOX_SESSION_KEY) 
-            ? `wmid=${process.env.JOOX_WMID}; session_key=${process.env.JOOX_SESSION_KEY};`
+          // Setup Account Headers
+          const cookie = (wmid && sessionKey) 
+            ? `wmid=${wmid}; session_key=${sessionKey};`
             : '';
 
           const jooxResp = await axios.get(`https://cache.api.joox.com/openjoox/v3/search?country=th&lang=th&keyword=${encodeURIComponent(q)}`, { 

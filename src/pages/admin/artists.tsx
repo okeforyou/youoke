@@ -3,7 +3,7 @@ import AdminLayout from "@/features/admin/layouts/AdminLayout";
 import { ARTIST_CATEGORIES, Artist } from "@/data/artist-categories";
 import { Image as ImageIcon, Search, Save, Globe, CheckCircle2, AlertCircle, Trash2 } from "lucide-react";
 import { db } from "@/firebase";
-import { doc, setDoc, getDoc, deleteDoc, collection, getDocs } from "firebase/firestore";
+import { doc, setDoc, getDoc, deleteDoc, collection, getDocs, onSnapshot } from "firebase/firestore";
 import Image from "next/image";
 
 const ArtistManagementPage = () => {
@@ -14,6 +14,12 @@ const ArtistManagementPage = () => {
     const [saving, setSaving] = useState(false);
     const [overrides, setOverrides] = useState<Record<string, string>>({});
     const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
+    const [view, setView] = useState<'artists' | 'settings'>('artists');
+    
+    // JOOX API Config State
+    const [wmid, setWmid] = useState("344612298");
+    const [sessionKey, setSessionKey] = useState("bdfca21030ea3f78b4ccaec564de53cc");
+    const [configSaving, setConfigSaving] = useState(false);
 
     // Get all unique artists from categories
     const allArtists: Artist[] = Array.from(
@@ -36,6 +42,13 @@ const ArtistManagementPage = () => {
                     data[doc.id] = doc.data().imageUrl;
                 });
                 setOverrides(data);
+                
+                // Fetch JOOX Config
+                const configDoc = await getDoc(doc(db, "system_config", "joox_api"));
+                if (configDoc.exists()) {
+                    setWmid(configDoc.data().wmid || "");
+                    setSessionKey(configDoc.data().session_key || "");
+                }
             } catch (error) {
                 console.error("Error fetching overrides:", error);
             } finally {
@@ -89,6 +102,25 @@ const ArtistManagementPage = () => {
         }
     };
 
+    const handleSaveConfig = async () => {
+        setConfigSaving(true);
+        setMessage(null);
+        try {
+            await setDoc(doc(db, "system_config", "joox_api"), {
+                wmid: wmid.trim(),
+                session_key: sessionKey.trim(),
+                updatedAt: new Date().toISOString(),
+                account: "youoke.okeforyous@gmail.com"
+            });
+            setMessage({ text: "บันทึกการตั้งค่าระบบสำเร็จแล้ว", type: 'success' });
+        } catch (error) {
+            console.error("Error saving config:", error);
+            setMessage({ text: "เกิดข้อผิดพลาดในการบันทึกการตั้งค่า", type: 'error' });
+        } finally {
+            setConfigSaving(false);
+        }
+    };
+
     return (
         <AdminLayout>
             <div className="max-w-6xl mx-auto py-8 px-4">
@@ -102,7 +134,23 @@ const ArtistManagementPage = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="flex gap-2 mb-8 p-1 bg-gray-100 w-fit rounded-2xl">
+                    <button 
+                        onClick={() => setView('artists')}
+                        className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${view === 'artists' ? "bg-white shadow-sm text-primary" : "text-gray-500 hover:text-gray-700"}`}
+                    >
+                        รายชื่อศิลปิน
+                    </button>
+                    <button 
+                        onClick={() => setView('settings')}
+                        className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${view === 'settings' ? "bg-white shadow-sm text-primary" : "text-gray-500 hover:text-gray-700"}`}
+                    >
+                        ตั้งค่าระบบ JOOX API
+                    </button>
+                </div>
+
+                {view === 'artists' ? (
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Left Panel: Search & List */}
                     <div className="lg:col-span-1 flex flex-col gap-4">
                         <div className="relative">
@@ -234,7 +282,67 @@ const ArtistManagementPage = () => {
                             </div>
                         )}
                     </div>
-                </div>
+                ) : (
+                    <div className="max-w-2xl mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="bg-white border border-gray-100 rounded-[32px] p-8 shadow-sm">
+                            <h2 className="text-xl font-bold text-gray-900 mb-2">ตั้งค่าการเชื่อมต่อ JOOX</h2>
+                            <p className="text-gray-400 text-sm mb-8">ใส่ค่า WMID และ Session Key จาก Account JOOX เพื่อให้ระบบดึงรูปได้เสถียร 100%</p>
+                            
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-2">WMID</label>
+                                    <input 
+                                        type="text"
+                                        placeholder="เช่น 344612298"
+                                        className="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none transition-all font-mono text-sm"
+                                        value={wmid}
+                                        onChange={(e) => setWmid(e.target.value)}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-gray-700 mb-2">Session Key</label>
+                                    <input 
+                                        type="text"
+                                        placeholder="เช่น bdfca210..."
+                                        className="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary/20 outline-none transition-all font-mono text-sm"
+                                        value={sessionKey}
+                                        onChange={(e) => setSessionKey(e.target.value)}
+                                    />
+                                </div>
+
+                                {message && (
+                                    <div className={`p-4 rounded-2xl flex items-center gap-3 ${
+                                        message.type === 'success' ? "bg-green-50 text-green-700 border border-green-100" : "bg-red-50 text-red-700 border border-red-100"
+                                    }`}>
+                                        {message.type === 'success' ? <CheckCircle2 className="w-5 h-5 flex-shrink-0" /> : <AlertCircle className="w-5 h-5 flex-shrink-0" />}
+                                        <span className="text-sm font-bold">{message.text}</span>
+                                    </div>
+                                )}
+
+                                <div className="pt-4">
+                                    <button 
+                                        onClick={handleSaveConfig}
+                                        disabled={configSaving}
+                                        className="w-full py-4 bg-primary text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-primary-focus transition-all shadow-lg shadow-primary/20 active:scale-[0.98] disabled:opacity-50"
+                                    >
+                                        <Save className="w-5 h-5" />
+                                        {configSaving ? "กำลังบันทึก..." : "อัปเดตการตั้งค่าระบบ"}
+                                    </button>
+                                </div>
+
+                                <div className="mt-8 p-6 bg-amber-50 rounded-2xl border border-amber-100">
+                                    <h4 className="font-bold text-amber-800 text-sm mb-2">⚠️ วิธีหาค่า WMID & Session Key</h4>
+                                    <ul className="text-amber-700/80 text-xs space-y-2 list-disc pl-4">
+                                        <li>เข้าระบบ JOOX.com ใน Browser</li>
+                                        <li>เปิดเครื่องมือ Inspect (F12) และไปที่ Application -{">"} Cookies</li>
+                                        <li>หาคุกกี้ชื่อ <code className="bg-amber-100 px-1 rounded">wmid</code> และ <code className="bg-amber-100 px-1 rounded">session_key</code></li>
+                                        <li>นำมาวางที่นี่แล้วกดบันทึก ระบบจะเริ่มใช้ทันทีครับ</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </AdminLayout>
     );
