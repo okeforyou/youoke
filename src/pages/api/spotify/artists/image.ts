@@ -31,29 +31,57 @@ export default async function handler(
         }
     }
 
-    // Phase 1: Try Joox / Sanook (EXCELLENT curated press photos for Thai Artists)
+    // Phase 1: Try JOOX V3 API (Official High-Quality Source)
     try {
       const jooxQueries = [artistName, artistName.replace(/ /g, ''), englishName];
       for (const q of jooxQueries) {
           if (!q) continue;
-          const jooxResp = await axios.get(`https://api-jooxtt.sanook.com/openjoox/v1/search/all?keyword=${encodeURIComponent(q)}&country=th&lang=th`, { 
-              timeout: 2500,
-              headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36' }
+          const jooxResp = await axios.get(`https://cache.api.joox.com/openjoox/v3/search?country=th&lang=th&keyword=${encodeURIComponent(q)}`, { 
+              timeout: 3000,
+              headers: { 
+                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                  'Referer': 'https://www.joox.com/',
+                  'Origin': 'https://www.joox.com'
+              }
           });
           
-          // Try to find an exact artist match first
-          const artists = jooxResp.data?.artists?.items || [];
-          const exactMatch = artists.find((a: any) => 
-            a.name.toLowerCase() === q.toLowerCase() || 
-            a.name.toLowerCase() === artistName.toLowerCase()
-          );
+          const sectionList = jooxResp.data?.section_list || [];
+          
+          // JOOX V3 Section Types:
+          // 5: Best Match (Artist)
+          // 1: Best Match (General)
+          // 2: Artists
+          const bestMatchSection = sectionList.find((s: any) => s.section_type === 5 || s.section_type === 1);
+          const artistSection = sectionList.find((s: any) => s.section_type === 2);
+          
+          // Search in Best Match first, then Artists section
+          const items = [
+              ...(bestMatchSection?.item_list || []),
+              ...(artistSection?.item_list || [])
+          ];
 
-          const artist = exactMatch || artists[0];
-          if (artist && artist.images?.[0]?.url) {
-            return res.redirect(artist.images[0].url);
+          // Find the best singer match
+          const artistItem = items.find((item: any) => {
+              const name = item.singer?.name || "";
+              return name.toLowerCase() === artistName.toLowerCase() || 
+                     name.toLowerCase() === q.toLowerCase();
+          })?.singer || items[0]?.singer;
+
+          if (artistItem && artistItem.images) {
+              // Prefer 1000px resolution
+              const highRes = artistItem.images.find((img: any) => img.width === 1000 || img.url?.includes('/1000'));
+              const mainImg = highRes || artistItem.images[0];
+              
+              if (mainImg?.url) {
+                  return res.redirect(mainImg.url);
+              } else if (mainImg?.id) {
+                  return res.redirect(`https://image.joox.com/JOOXcover/0/${mainImg.id}/1000`);
+              }
           }
       }
-    } catch (e) {}
+    } catch (e) {
+        console.warn(`⚠️ [ImageAPI] JOOX V3 failed for ${artistName}:`, (e as Error).message);
+    }
 
     // Phase 2: Try Wikipedia (High quality, neutral, sustainable)
     try {
