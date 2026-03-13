@@ -20,6 +20,9 @@ import { useUIStore } from "../../../stores/useUIStore";
 import { Headphones, Library, ChevronRight, Grid as GridIcon } from "lucide-react";
 import { ARTIST_CATEGORIES, ArtistCategory } from "../../../data/artist-categories";
 
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../../../firebase";
+
 const GENRES = [
   "ลูกทุ่ง",
   "ลูกกรุง",
@@ -94,6 +97,25 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
     artist: [],
     status: "success",
   } as GetTopArtists);
+
+  const [artistOverrides, setArtistOverrides] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const fetchOverrides = async () => {
+      if (!db) return;
+      try {
+        const snapshot = await getDocs(collection(db, "artist_images"));
+        const data: Record<string, string> = {};
+        snapshot.forEach(doc => {
+          data[doc.id] = doc.data().imageUrl;
+        });
+        setArtistOverrides(data);
+      } catch (err) {
+        console.warn("Failed to fetch artist overrides:", err);
+      }
+    };
+    fetchOverrides();
+  }, []);
 
   const playlistRef = useRef<HTMLDivElement>(null);
   const songlistRef = useRef<HTMLDivElement>(null);
@@ -278,21 +300,26 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
 
                   {/* Top Popular Grid (Fixed 4 columns like core system) */}
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 py-3 pb-6">
-                    {ARTIST_CATEGORIES.find(c => c.id === 'popular')?.artists.slice(0, 12).map((artist, i) => (
-                      <div 
-                        key={artist.name + i}
-                        onClick={() => setSearchTerm(cleanSearchQuery(artist.name.split(' (')[0]))}
-                        className="group cursor-pointer flex flex-col items-center"
-                      >
-                        <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm group-hover:shadow-md transition-all duration-300">
-                          <Image 
-                             src={`/api/spotify/artists/image?name=${encodeURIComponent(artist.name)}`}
-                             alt={artist.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" unoptimized
-                          />
+                    {ARTIST_CATEGORIES.find(c => c.id === 'popular')?.artists.slice(0, 12).map((artist, i) => {
+                      const cleanName = artist.name.split(' (')[0].trim();
+                      const overrideUrl = artistOverrides[cleanName];
+                      
+                      return (
+                        <div 
+                          key={artist.name + i}
+                          onClick={() => setSearchTerm(cleanSearchQuery(cleanName))}
+                          className="group cursor-pointer flex flex-col items-center"
+                        >
+                          <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm group-hover:shadow-md transition-all duration-300">
+                            <Image 
+                               src={overrideUrl || `/api/spotify/artists/image?name=${encodeURIComponent(artist.name)}`}
+                               alt={artist.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" unoptimized
+                            />
+                          </div>
+                          <p className="mt-2 text-[10px] sm:text-[11px] font-bold text-black truncate italic-sm text-center w-full">{cleanName}</p>
                         </div>
-                        <p className="mt-2 text-[10px] sm:text-[11px] font-bold text-black truncate italic-sm text-center w-full">{artist.name.split(' (')[0]}</p>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   <div className="px-4 pt-4 pb-2 border-t border-gray-50 mt-2">
@@ -339,22 +366,27 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                   </div>
                   
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 pb-10">
-                     {selectedCategory.artists.map((artist, i) => (
-                          <div 
-                            key={artist.name + i} 
-                            onClick={() => setSearchTerm(cleanSearchQuery(artist.name.split(' (')[0]))} 
-                            className="group cursor-pointer"
-                          >
-                           <div className="relative aspect-square rounded-2xl overflow-hidden bg-white flex items-center justify-center shadow-sm border border-gray-100 group-hover:shadow-md group-hover:border-primary/20 transition-all">
-                              <Image 
-                                 src={artist.imageUrl || `/api/spotify/artists/image?name=${encodeURIComponent(artist.name)}`} 
-                                alt={artist.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" 
-                                unoptimized
-                             />
+                    {selectedCategory.artists.map((artist, i) => {
+                      const cleanName = artist.name.split(' (')[0].trim();
+                      const overrideUrl = artistOverrides[cleanName];
+
+                      return (
+                        <div 
+                          key={artist.name + i} 
+                          onClick={() => setSearchTerm(cleanSearchQuery(cleanName))} 
+                          className="group cursor-pointer"
+                        >
+                          <div className="relative aspect-square rounded-2xl overflow-hidden bg-white flex items-center justify-center shadow-sm border border-gray-100 group-hover:shadow-md group-hover:border-primary/20 transition-all">
+                            <Image 
+                               src={artist.imageUrl || overrideUrl || `/api/spotify/artists/image?name=${encodeURIComponent(artist.name)}`} 
+                               alt={artist.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" 
+                               unoptimized
+                            />
                           </div>
-                        <p className="mt-2.5 px-0.5 text-[10px] sm:text-[11px] font-bold text-black text-center group-hover:text-primary transition-colors line-clamp-2 leading-tight h-[24px] sm:h-[32px] flex items-start justify-center italic-sm">{artist.name.split(' (')[0]}</p>
-                      </div>
-                    ))}
+                          <p className="mt-2.5 px-0.5 text-[10px] sm:text-[11px] font-bold text-black text-center group-hover:text-primary transition-colors line-clamp-2 leading-tight h-[24px] sm:h-[32px] flex items-start justify-center italic-sm">{cleanName}</p>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}

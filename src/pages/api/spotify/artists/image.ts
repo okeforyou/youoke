@@ -13,6 +13,10 @@ export default async function handler(
     return res.status(400).json({ error: "Name parameter is required" });
   }
 
+  // Set aggressive caching headers for speed: 
+  // Cache for 1 day on Vercel Edge/CDN, and 1 hour on the browser.
+  res.setHeader('Cache-Control', 'public, s-maxage=86400, stale-while-revalidate=3600, max-age=3600');
+
   try {
     const artistName = (name as string).split(' (')[0].trim();
     const englishNameMatch = (name as string).match(/\((.*?)\)/);
