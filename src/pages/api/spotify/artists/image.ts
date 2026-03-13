@@ -31,56 +31,70 @@ export default async function handler(
         }
     }
 
-    // Phase 1: Try JOOX V3 API (Official High-Quality Source)
+    // Phase 1: Try JOOX V3 API (Official High-Quality Source - Web Replicated)
     try {
       const jooxQueries = [artistName, artistName.replace(/ /g, ''), englishName];
       for (const q of jooxQueries) {
           if (!q) continue;
+          
+          // Setup Account Headers if available (Fulfills user request for Account API)
+          const cookie = (process.env.JOOX_WMID && process.env.JOOX_SESSION_KEY) 
+            ? `wmid=${process.env.JOOX_WMID}; session_key=${process.env.JOOX_SESSION_KEY};`
+            : '';
+
           const jooxResp = await axios.get(`https://cache.api.joox.com/openjoox/v3/search?country=th&lang=th&keyword=${encodeURIComponent(q)}`, { 
-              timeout: 3000,
+              timeout: 4000,
               headers: { 
                   'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                   'Referer': 'https://www.joox.com/',
-                  'Origin': 'https://www.joox.com'
+                  'Origin': 'https://www.joox.com',
+                  'Cookie': cookie,
+                  'Accept': 'application/json, text/plain, */*'
               }
           });
           
           const sectionList = jooxResp.data?.section_list || [];
-          
-          // JOOX V3 Section Types:
-          // 5: Best Match (Artist)
-          // 1: Best Match (General)
-          // 2: Artists
-          const bestMatchSection = sectionList.find((s: any) => s.section_type === 5 || s.section_type === 1);
-          const artistSection = sectionList.find((s: any) => s.section_type === 2);
-          
-          // Search in Best Match first, then Artists section
-          const items = [
-              ...(bestMatchSection?.item_list || []),
-              ...(artistSection?.item_list || [])
-          ];
+          // 5: Best Match Artist, 1: Best Match General, 2: Artists
+          const targetSections = [5, 1, 2];
+          let items: any[] = [];
+          for (const type of targetSections) {
+              const section = sectionList.find((s: any) => s.section_type === type);
+              if (section?.item_list) items = [...items, ...section.item_list];
+          }
 
-          // Find the best singer match
-          const artistItem = items.find((item: any) => {
+          let artistItem = items.find((item: any) => {
               const name = item.singer?.name || "";
               return name.toLowerCase() === artistName.toLowerCase() || 
                      name.toLowerCase() === q.toLowerCase();
           })?.singer || items[0]?.singer;
 
+          // Double check with V2 if V3 results are poor
+          if (!artistItem) {
+              const v2Resp = await axios.get(`https://cache.api.joox.com/openjoox/v2/search_type?country=th&lang=th&key=${encodeURIComponent(q)}&type=2`, { 
+                  timeout: 2000,
+                  headers: { 'Referer': 'https://www.joox.com/' }
+              });
+              artistItem = v2Resp.data?.item_list?.[0];
+          }
+
           if (artistItem && artistItem.images) {
               // Prefer 1000px resolution
               const highRes = artistItem.images.find((img: any) => img.width === 1000 || img.url?.includes('/1000'));
-              const mainImg = highRes || artistItem.images[0];
+              let imgUrl = (highRes || artistItem.images[0])?.url;
               
-              if (mainImg?.url) {
-                  return res.redirect(mainImg.url);
-              } else if (mainImg?.id) {
-                  return res.redirect(`https://image.joox.com/JOOXcover/0/${mainImg.id}/1000`);
+              if (!imgUrl && artistItem.images[0]?.id) {
+                  imgUrl = `https://image.joox.com/JOOXcover/0/${artistItem.images[0].id}/1000`;
+              }
+
+              if (imgUrl) {
+                  // Force resolution suffix replacement for consistent High-Res
+                  const finalUrl = imgUrl.replace(/\/(100|300|640)$/, '/1000');
+                  return res.redirect(finalUrl);
               }
           }
       }
     } catch (e) {
-        console.warn(`⚠️ [ImageAPI] JOOX V3 failed for ${artistName}:`, (e as Error).message);
+        console.warn(`⚠️ [ImageAPI] JOOX detailed search failed for ${artistName}:`, (e as Error).message);
     }
 
     // Phase 2: Try Wikipedia (High quality, neutral, sustainable)
