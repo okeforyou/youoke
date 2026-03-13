@@ -34,6 +34,12 @@ export const ARTIST_CATEGORIES: ArtistCategory[] = [
       { name: 'สายยัณห์ สัญญา' },
       { name: 'ศิริพร อำไพพงษ์' },
       { name: 'จินตหรา พูนลาภ' },
+      { name: 'มนต์สิทธิ์ คำสร้อย' },
+      { name: 'ฝน ธนสุนทร' },
+      { name: 'รุ่ง สุริยา' },
+      { name: 'ยิ่งยง ยอดบัวงาม' },
+      { name: 'อาภาพร นครสวรรค์' },
+      { name: 'พี สะเดิด' },
     ]
   },
   {
@@ -54,6 +60,10 @@ export const ARTIST_CATEGORIES: ArtistCategory[] = [
       { name: 'กระต่าย พรรณนิภา' },
       { name: 'บัวผัน ทังโส' },
       { name: 'ศรีจันทร์ วีสี' },
+      { name: 'เอกพล มนต์ตระการ' },
+      { name: 'ดอกอ้อ ทุ่งทอง' },
+      { name: 'ก้านตอง ทุ่งเงิน' },
+      { name: 'ลาล่า ลูลู่' },
     ]
   },
   {
@@ -77,6 +87,11 @@ export const ARTIST_CATEGORIES: ArtistCategory[] = [
       { name: 'PROXIE' },
       { name: 'อะตอม ชนกันต์ (Atom)' },
       { name: 'วี วิโอเลต (Violette Wautier)' },
+      { name: 'ปาล์มมี่ (Palmy)' },
+      { name: 'แก้ม วิชญาณี (Gam)' },
+      { name: 'ส้ม มารี (Zom Marie)' },
+      { name: 'ลาสต์ ไอดอล (Last Idol)' },
+      { name: 'บีเอ็นเคโฟร์ตีเอต (BNK48)' },
     ]
   },
   {
@@ -100,6 +115,10 @@ export const ARTIST_CATEGORIES: ArtistCategory[] = [
       { name: 'สวีต มัลเล็ต (Sweet Mullet)' },
       { name: 'อินสติงต์ (Instinct)' },
       { name: 'ดา เอ็นโดรฟิน (Da Endorphine)' },
+      { name: 'เอบีนอร์มอล (AB Normal)' },
+      { name: 'แคลช (Clash)' },
+      { name: 'ซีล (Zeal)' },
+      { name: 'พั้นซ์ วรกาญจน์ (Punch)' },
     ]
   },
   {
@@ -123,6 +142,12 @@ export const ARTIST_CATEGORIES: ArtistCategory[] = [
       { name: 'ปุ๊ อัญชลี' },
       { name: 'ติ๊ก ชิโร่' },
       { name: 'ไฮร็อก (Hi-Rock)' },
+      { name: 'อัสนี วสันต์' },
+      { name: 'ไมโคร (Micro)' },
+      { name: 'บิลลี่ โอแกน' },
+      { name: 'หนุ่ย อำพล' },
+      { name: 'มาช่า วัฒนพานิช' },
+      { name: 'แอม เสาวลักษณ์' },
     ]
   },
   {
@@ -135,7 +160,6 @@ export const ARTIST_CATEGORIES: ArtistCategory[] = [
       { name: 'เฟย์ ฟาง แก้ว (FFK)' },
       { name: 'ขนมจีน (Knomjean)' },
       { name: 'หวาย (Waii)' },
-      { name: 'หวาย (Waii)' },
       { name: 'กอล์ฟ-ไมค์ (Golf-Mike)' },
       { name: 'เค-โอติก (K-OTIC)' },
       { name: 'เนโกะ จัมพ์ (Neko Jump)' },
@@ -143,6 +167,10 @@ export const ARTIST_CATEGORIES: ArtistCategory[] = [
       { name: 'ไบรโอนี่ (Briohny)' },
       { name: 'กะลา (Kala)' },
       { name: 'ไอซ์ ศรัณยู' },
+      { name: 'บี-โอ-วาย (B.O.Y)' },
+      { name: 'ชิน ชินวุฒ' },
+      { name: 'กอล์ฟ พิชญะ' },
+      { name: '3.2.1 (ทรี ทู วัน)' },
     ]
   },
   {
@@ -163,6 +191,10 @@ export const ARTIST_CATEGORIES: ArtistCategory[] = [
       { name: 'อิลสลิก (Illslick)' },
       { name: 'ยัวร์บอยทีเจ (UrboyTJ)' },
       { name: 'ไททศมิตร (TaitosmitH)' },
+      { name: 'ดี เจอร์ราร์ด (D Gerrard)' },
+      { name: 'โต้ง ทูพี (Twopee Southside)' },
+      { name: 'ไดมอนด์ (DIAMOND MQT)' },
+      { name: 'สรัล (SARAN)' },
     ]
   },
   {
@@ -184,6 +216,9 @@ export const ARTIST_CATEGORIES: ArtistCategory[] = [
       { name: 'มาลีฮวนน่า' },
       { name: 'พงษ์เทพ กระโดนชำนาญ' },
       { name: 'หงา คาราวาน' },
+      { name: 'ซูซู (Zu Zu)' },
+      { name: 'โฮป (Hope)' },
+      { name: 'แฮมเมอร์ (Hammer)' },
     ]
   },
   {
@@ -202,6 +237,8 @@ export const ARTIST_CATEGORIES: ArtistCategory[] = [
       { name: 'วงดิอิมพอสซิเบิ้ล' },
       { name: 'อรวี สัจจานนท์' },
       { name: 'ก๊อท จักรพันธ์' },
+      { name: 'มรดกสุนทราภรณ์' },
+      { name: 'รวงทอง ทองลั่นธม' },
     ]
   },
   {
@@ -221,6 +258,9 @@ export const ARTIST_CATEGORIES: ArtistCategory[] = [
       { name: 'แบมแบม (BamBam)' },
       { name: 'เอ็กโซ (EXO)' },
       { name: 'เกิลส์เจเนอเรชัน (Girls\' Generation)' },
+      { name: 'ไอยู (IU)' },
+      { name: 'เอนไฮเพน (ENHYPEN)' },
+      { name: 'สเตรย์คิดส์ (Stray Kids)' },
     ]
   },
   {
@@ -241,6 +281,9 @@ export const ARTIST_CATEGORIES: ArtistCategory[] = [
       { name: 'มารูน ไฟว์ (Maroon 5)' },
       { name: 'โคลด์เพลย์ (Coldplay)' },
       { name: 'เลดี้ กาก้า (Lady Gaga)' },
+      { name: 'โอลิเวีย โรดริโก (Olivia Rodrigo)' },
+      { name: 'โพสต์ มาโลน (Post Malone)' },
+      { name: 'โดจา แคต (Doja Cat)' },
     ]
   },
   {
@@ -257,6 +300,8 @@ export const ARTIST_CATEGORIES: ArtistCategory[] = [
       { name: 'ดราก้อนบอล' },
       { name: 'Frozen (Let It Go)' },
       { name: 'Baby Shark' },
+      { name: 'ก.ไก่' },
+      { name: 'แมงมุมลายตัวนั้น' },
     ]
   }
 ];

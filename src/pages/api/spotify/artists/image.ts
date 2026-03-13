@@ -15,13 +15,26 @@ export default async function handler(
   try {
     const accessToken = await getAccessToken();
 
+    // Clean name: "บอดี้สแลม (Bodyslam)" -> "Bodyslam" (prefer English for Spotify search as it's more reliable)
+    // Actually, let's try Thai first, but clean it.
+    let searchQuery = (name as string);
+    if (searchQuery.includes('(')) {
+        // Extract English part if exists, e.g. "บอดี้สแลม (Bodyslam)" -> "Bodyslam"
+        const match = searchQuery.match(/\((.*?)\)/);
+        if (match && match[1]) {
+            searchQuery = match[1];
+        } else {
+            searchQuery = searchQuery.split('(')[0].trim();
+        }
+    }
+
     // Step 1: Search for artist to get their image
     const searchResponse = await axios.get("https://api.spotify.com/v1/search", {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
       params: {
-        q: name,
+        q: searchQuery,
         type: "artist",
         limit: 1,
       },
