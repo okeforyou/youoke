@@ -19,7 +19,7 @@ import {
 import JooxError from "../../../components/JooxError";
 import { useSystemConfig } from "../../../hooks/useSystemConfig";
 import { useUIStore } from "../../../stores/useUIStore";
-import { Headphones, Library, ChevronRight, Grid as GridIcon, Headphones as HeadphonesIcon } from "lucide-react";
+import { Headphones, Library, ChevronRight, Grid as GridIcon, Headphones as HeadphonesIcon, Music, Guitar, Disc, Mic2, Star, Globe } from "lucide-react";
 import { ARTIST_CATEGORIES, ArtistCategory } from "../../../data/artist-categories";
 
 import { collection, getDocs } from "firebase/firestore";
@@ -475,18 +475,23 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
 
                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 pb-32">
                       {[
-                        { id: 'lukthung', title: 'ลูกทุ่ง', gradient: 'from-orange-500 to-red-600' },
-                        { id: 'pueachiwit', title: 'เพื่อชีวิต', gradient: 'from-amber-600 to-yellow-800' },
-                        { id: 'string90s', title: 'สตริงยุค 90', gradient: 'from-indigo-500 to-purple-600' },
-                        { id: 'morlam', title: 'หมอลำ', gradient: 'from-pink-500 to-rose-600' },
-                        { id: 'hits90s', title: 'รวมเพลงฮิตอมตะ', gradient: 'from-blue-500 to-cyan-600' },
-                        { id: 'international', title: 'สากล', gradient: 'from-emerald-500 to-teal-700' },
-                      ].map((theme) => (
+                        { id: 'lukthung', title: 'ลูกทุ่ง', gradient: 'from-orange-500 to-red-600', Icon: Mic2 },
+                        { id: 'pueachiwit', title: 'เพื่อชีวิต', gradient: 'from-amber-600 to-yellow-800', Icon: Guitar },
+                        { id: 'string90s', title: 'สตริงยุค 90', gradient: 'from-indigo-500 to-purple-600', Icon: Disc },
+                        { id: 'morlam', title: 'หมอลำ', gradient: 'from-pink-500 to-rose-600', Icon: Music },
+                        { id: 'hits90s', title: 'รวมเพลงฮิตอมตะ', gradient: 'from-blue-500 to-cyan-600', Icon: Star },
+                        { id: 'international', title: 'สากล', gradient: 'from-emerald-500 to-teal-700', Icon: Globe },
+                      ].map((theme) => {
+                        const Icon = theme.Icon;
+                        return (
                         <div 
                           key={theme.id}
                           onClick={() => setGenreText(theme.title)}
                           className={`group relative overflow-hidden rounded-xl aspect-[1.8/1] min-h-[72px] sm:min-h-[80px] cursor-pointer shadow-sm hover:shadow-md transition-all bg-gradient-to-br ${theme.gradient}`}
                         >
+                           <div className="absolute -bottom-2 -right-2 opacity-20 transform -rotate-12 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
+                             <Icon className="w-16 h-16 sm:w-20 sm:h-20 text-white" />
+                           </div>
                            <div className="absolute inset-0 p-2 flex flex-col justify-end sm:p-2.5">
                               <h3 className="text-[10px] min-[320px]:text-[11px] sm:text-[13px] md:text-[14px] font-bold text-white leading-[1.0] sm:leading-tight drop-shadow-sm line-clamp-2 break-words text-left">{theme.title}</h3>
                            </div>
@@ -494,7 +499,8 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                               <ChevronRight className="w-3.5 h-3.5 text-white" />
                            </div>
                         </div>
-                      ))}
+                        );
+                      })}
                    </div>
                  </>
                ) : (
@@ -515,7 +521,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 pb-20">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 pb-20 overflow-hidden">
                       {isLoadStation ? (
                         getSkeletonItems(8).map(s => <div key={s} className="aspect-video bg-gray-100 rounded-2xl animate-pulse" />)
                       ) : (
@@ -530,11 +536,11 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                                     thumbnail: undefined,
                                 } as any;
                                 addToQueue(videoToAdd);
-                            }} className="group cursor-pointer">
+                            }} className="group cursor-pointer overflow-hidden max-w-full">
                                 <div className="relative aspect-video rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm group-hover:shadow-md transition-all">
                                     <Image src={`https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`} alt={video.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" unoptimized />
                                 </div>
-                                <p className="mt-2.5 px-0.5 text-[10px] sm:text-[11px] font-bold text-black text-center group-hover:text-primary transition-colors line-clamp-1 leading-tight h-[16px] sm:h-[18px] flex items-start justify-center italic-sm">
+                                <p className="mt-2.5 px-0.5 text-[10px] sm:text-[11px] font-bold text-black text-center group-hover:text-primary transition-colors block truncate w-full italic-sm">
                                     {video.title}
                                 </p>
                             </div>
