@@ -9,7 +9,14 @@ export default async function handler(
     return res.status(500).json({ error: "Firestore not initialized" });
   }
 
+  const clear = req.query.clear === 'true';
+
   try {
+    if (clear) {
+      await adminFirestore.collection("system_cache").doc("joox_charts").delete();
+      return res.status(200).json({ success: true, message: "Cache cleared" });
+    }
+
     const doc = await adminFirestore.collection("system_cache").doc("joox_charts").get();
     if (!doc.exists) {
       return res.status(200).json({ exists: false, message: "No joox_charts document found" });
@@ -22,7 +29,8 @@ export default async function handler(
       chartSummary: data?.charts?.map((c: any) => ({
         id: c.id,
         name: c.name,
-        songCount: c.singles?.length || 0
+        songCount: c.singles?.length || 0,
+        debug: c.debug
       }))
     });
   } catch (error: any) {

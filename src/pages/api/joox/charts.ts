@@ -13,7 +13,9 @@ export default async function handler(
       { id: 57, name: "THTOP100 2024" }
     ];
 
-    if (adminFirestore) {
+    const force = req.query.force === 'true';
+
+    if (adminFirestore && !force) {
       try {
         console.log("🔍 Checking Firestore cache for JOOX charts...");
         const cacheDoc = await adminFirestore.collection('system_cache').doc('joox_charts').get();
@@ -53,16 +55,14 @@ export default async function handler(
               'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
               'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
               'Accept-Language': 'th-TH,th;q=0.9,en-US;q=0.8,en;q=0.7',
-              // No Accept-Encoding to avoid gzip/br manually for now
+              'Referer': 'https://www.joox.com/th/charts',
             }
           };
 
           const reqObj = https.request(options, (responseObj: any) => {
-            // Handle redirect
             if ([301, 302, 307, 308].includes(responseObj.statusCode) && responseObj.headers.location) {
               const loc = responseObj.headers.location;
               console.log(`Redirecting chart ${chart.id} to ${loc}`);
-              // Implementation of relative redirect follow could be added here if needed
               return resolve(null); 
             }
 
@@ -82,17 +82,18 @@ export default async function handler(
 
               try {
                 const nextData = JSON.parse(match[1]);
+                const pageProps = nextData?.props?.pageProps;
                 
-                // Try different common paths for track items
-                let items = nextData?.props?.pageProps?.trackList?.tracks?.items;
-                if (!items) items = nextData?.props?.pageProps?.tracks?.items;
-                if (!items) items = nextData?.props?.pageProps?.tracks;
+                // Try multiple paths for items
+                let items = pageProps?.trackList?.tracks?.items || 
+                            pageProps?.tracks?.items || 
+                            pageProps?.tracks || 
+                            pageProps?.initialData?.trackList?.tracks?.items;
+                
                 if (!Array.isArray(items)) items = [];
                 
                 const singles = items.map((song: any) => {
-                  // Fallback for ID as it can be track_id or id
                   const songId = song.id || song.track_id || song.trackId;
-                  
                   const bestImage =
                     song.images?.find((img: any) => img.width === 1000)?.url ||
                     song.images?.[0]?.url ||
@@ -115,8 +116,10 @@ export default async function handler(
                   id: chart.id,
                   name: chart.name,
                   singles,
-                  debug: singles.length > 0 ? 'ok' : 'empty_items',
-                  pathUsed: nextData?.props?.pageProps?.trackList ? 'trackList' : (nextData?.props?.pageProps?.tracks ? 'tracks' : 'none')
+                  debug: {
+                    itemCount: items.length,
+                    foundTracks: singles.length > 0
+                  }
                 });
               } catch (e) {
                  console.error(`JSON Parse/Map error for chart ${chart.id}:`, e);
@@ -140,20 +143,16 @@ export default async function handler(
     const results = await Promise.all(allowedCharts.map(c => fetchChart(c)));
     let finalCharts = results.filter(c => c !== null);
 
-    // CRITICAL: Check if we actually got ANY songs. 
-    // If we got charts but 0 songs total, it's a failure.
     const totalSongs = finalCharts.reduce((sum, c) => sum + (c.singles?.length || 0), 0);
 
     // If fetching failed OR returned 0 songs, try to serve ANY available cache as fallback
     if (totalSongs === 0 && adminFirestore) {
-      console.log("⚠️ Fresh fetch returned 0 songs. Attempting to serve ANY stale cache as fallback...");
       const cacheDoc = await adminFirestore.collection('system_cache').doc('joox_charts').get();
       if (cacheDoc.exists) {
         const data = cacheDoc.data();
         if (data && data.charts && data.charts.length > 0) {
           const cacheTotalSongs = data.charts.reduce((sum: number, c: any) => sum + (c.singles?.length || 0), 0);
           if (cacheTotalSongs > 0) {
-            console.log("🩹 Serving STALE Firestore Cache as emergency fallback");
             res.setHeader("Cache-Control", "no-store");
             return res.status(200).json({ 
                 status: "success", 
@@ -166,7 +165,6 @@ export default async function handler(
       }
     }
 
-    // If new data was fetched AND has actual songs, cache it.
     if (totalSongs > 0) {
       if (adminFirestore) {
         try {
@@ -182,7 +180,6 @@ export default async function handler(
       }
     }
 
-    // Edge caching logic
     if (totalSongs > 0) {
        res.setHeader("Cache-Control", "public, s-maxage=3600, stale-while-revalidate=86400");
     } else {
@@ -192,7 +189,7 @@ export default async function handler(
     res.status(200).json({ 
         status: "success", 
         charts: finalCharts,
-        debug: { totalSongs, chartCount: finalCharts.length }
+        debug: { totalSongs, chartCount: finalCharts.length, forceUsed: force }
     });
   } catch (error: any) {
     console.error("Error fetching JOOX charts:", error);
