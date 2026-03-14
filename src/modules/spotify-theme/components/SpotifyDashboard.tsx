@@ -324,7 +324,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                           onClick={() => setSearchTerm(cleanSearchQuery(cleanName))}
                           className="group cursor-pointer flex flex-col items-center px-1"
                         >
-                          <div className="relative aspect-square w-[85%] rounded-full overflow-hidden bg-white border border-gray-100 shadow-sm group-hover:shadow-md transition-all duration-300">
+                          <div className="relative aspect-square w-[85%] rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm group-hover:shadow-md transition-all duration-300">
                             <Image 
                                src={overrideUrl || `/api/spotify/artists/image?name=${encodeURIComponent(artist.name)}`}
                                alt={artist.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" unoptimized
