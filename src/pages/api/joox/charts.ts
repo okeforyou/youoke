@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import { adminFirestore } from "@/firebase-admin";
 
 export default async function handler(
   req: NextApiRequest,
@@ -11,6 +12,26 @@ export default async function handler(
       { id: 133, name: "อันดับเพลงมาแรง" },
       { id: 57, name: "THTOP100 2024" }
     ];
+
+    if (adminFirestore) {
+      try {
+        const cacheDoc = await adminFirestore.collection('system_cache').doc('joox_charts').get();
+        if (cacheDoc.exists) {
+          const data = cacheDoc.data();
+          if (data && data.updatedAt && data.charts && data.charts.length > 0) {
+            const cacheAge = new Date().getTime() - new Date(data.updatedAt).getTime();
+            // If cache is less than 24 hours old, return it directly to avoid JOOX requests.
+            if (cacheAge < 24 * 60 * 60 * 1000) {
+              console.log("⚡ Serving JOOX charts from Firestore Cache");
+              res.setHeader("Cache-Control", "public, s-maxage=2592000, stale-while-revalidate=86400");
+              return res.status(200).json({ status: "success", charts: data.charts });
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to read Firestore cache:", err);
+      }
+    }
 
     const fetchChart = async (chart: {id: number, name: string}) => {
       try {
@@ -62,6 +83,22 @@ export default async function handler(
 
     const results = await Promise.all(allowedCharts.map(fetchChart));
     const finalCharts = results.filter(c => c !== null);
+
+    // If new data was fetched, cache it to Firestore backend.
+    if (finalCharts.length > 0) {
+      if (adminFirestore) {
+         try {
+             const docRef = adminFirestore.collection('system_cache').doc('joox_charts');
+             await docRef.set({
+                 updatedAt: new Date().toISOString(),
+                 charts: finalCharts
+             });
+             console.log("✅ Cached new JOOX charts to Firestore");
+         } catch (err: any) {
+             console.error("Failed to cache to Firestore:", err.message);
+         }
+      }
+    }
 
     res.setHeader(
       "Cache-Control",
