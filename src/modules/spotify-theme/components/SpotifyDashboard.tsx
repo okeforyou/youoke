@@ -19,7 +19,8 @@ import {
 import JooxError from "../../../components/JooxError";
 import { useSystemConfig } from "../../../hooks/useSystemConfig";
 import { useUIStore } from "../../../stores/useUIStore";
-import { Headphones, Library, ChevronRight, Grid as GridIcon, Headphones as HeadphonesIcon, Music, Guitar, Disc, Mic2, Star, Globe, Heart, Mic, Coffee, Radio } from "lucide-react";
+import { Headphones, Library, ChevronRight, Grid as GridIcon, Headphones as HeadphonesIcon, Music, Guitar, Disc, Mic2, Star, Globe, Heart, Mic, Coffee, Radio, PlayCircle } from "lucide-react";
+import { clsx } from "clsx";
 import { ARTIST_CATEGORIES, ArtistCategory } from "../../../data/artist-categories";
 
 import { collection, getDocs } from "firebase/firestore";
@@ -121,6 +122,13 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
 
   const playlistRef = useRef<HTMLDivElement>(null);
   const songlistRef = useRef<HTMLDivElement>(null);
+  const stationContentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (mode === 'station' && selectedCategoryId && stationContentRef.current) {
+        stationContentRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [selectedCategoryId, mode]);
 
   const { data: tempTopArtistsData, isLoading: isLoadTopArtists } = useQuery({
     queryKey: ["getTopArtists", "v2", mode],
@@ -301,120 +309,115 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
         </div>
       ) : (
         <div className="col-span-full">
-          {/* 2. ARTIST DIRECTORY (MODE: DEFAULT) */}
+          {/* 2. ARTIST DIRECTORY (MODE: DEFAULT) - MASTER PLAN UI */}
           {mode === 'default' && (
-            <>
-              {/* TIER 1: CATEGORY GRID */}
-              {!selectedCategory && (
+            <div className="animate-in fade-in duration-700 pb-20">
+              {/* TIER 1: POPULAR ARTISTS */}
+              {!selectedCategoryId && (
                 <div className="animate-in fade-in duration-500">
                   <div className="px-4 pt-6 pb-2">
                     <h1 className="text-xl font-bold text-black">ศิลปินยอดฮิต</h1>
                     <p className="text-[12px] text-gray-400">ชื่อที่คุณคุ้นเคยและชื่นชอบ</p>
                   </div>
 
-                  {/* Top Popular Grid (Fixed 4 columns like core system) */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 py-3 pb-6">
+                  <div className="grid grid-cols-2 min-[500px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 py-3 pb-8">
                     {ARTIST_CATEGORIES.find(c => c.id === 'popular')?.artists.slice(0, 12).map((artist, i) => {
                       const cleanName = artist.name.split(' (')[0].trim();
                       const overrideUrl = artistOverrides[cleanName];
                       
                       return (
-                        <div 
-                          key={artist.name + i}
-                          onClick={() => setSearchTerm(cleanSearchQuery(cleanName))}
-                          className="group cursor-pointer flex flex-col items-center"
-                        >
-                          <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm group-hover:shadow-md transition-all duration-300">
+                        <div key={artist.name + i} onClick={() => setSearchTerm(cleanSearchQuery(cleanName))} className="group cursor-pointer">
+                          <div className="relative aspect-square rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm group-hover:shadow-md transition-all duration-300">
                             <Image 
                                src={overrideUrl || `/api/spotify/artists/image?name=${encodeURIComponent(artist.name)}`}
                                alt={artist.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" unoptimized
                             />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
                           </div>
-                          <p className="mt-2.5 text-[10px] sm:text-[11px] font-bold text-black truncate italic-sm text-center w-full">{cleanName}</p>
+                          <p className="mt-2.5 text-[10px] sm:text-[11px] font-bold text-black text-center truncate italic-sm w-full group-hover:text-primary transition-colors">{cleanName}</p>
                         </div>
                       );
                     })}
                   </div>
-
-                  <div className="px-4 pt-4 pb-2 border-t border-gray-50 mt-2">
-                    <h1 className="text-xl font-bold text-black">สารบัญศิลปิน</h1>
-                    <p className="text-[12px] text-gray-400">เลือกแนวเพลงเพื่อดูรายชื่อศิลปิน</p>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 py-4 pb-24">
-                    {ARTIST_CATEGORIES.filter(c => c.id !== 'popular').map((cat) => {
-                      const Icon = 
-                        cat.id === 'luk-thung' ? Mic2 :
-                        cat.id === 'mor-lam' ? Music :
-                        cat.id === 'thai-pop' ? Disc :
-                        cat.id === 'rock-thai' ? Guitar :
-                        cat.id === 'retro-hits' ? Star :
-                        cat.id === 'teen-pop' ? Heart :
-                        cat.id === 'rnb-soul-th' ? Mic :
-                        cat.id === 'indie-th' ? Coffee :
-                        cat.id === 'luk-grung' ? Radio :
-                        Globe;
-                        
-                      return (
-                      <div 
-                        key={cat.id} 
-                        onClick={() => setCategoryId(cat.id)}
-                        className={`group relative overflow-hidden rounded-xl aspect-[1.8/1] min-h-[72px] sm:min-h-[80px] cursor-pointer shadow-sm hover:shadow-md transition-all bg-gradient-to-br ${cat.gradient}`}
-                      >
-                         <div className="absolute -bottom-2 -right-2 opacity-20 transform -rotate-12 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
-                           <Icon className="w-16 h-16 sm:w-20 sm:h-20 text-white" />
-                         </div>
-                         <div className="absolute inset-0 p-2 flex flex-col justify-end sm:p-2.5">
-                            <h3 className="text-[10px] min-[320px]:text-[11px] sm:text-[13px] md:text-[14px] font-bold text-white leading-[1.0] sm:leading-tight drop-shadow-sm line-clamp-2 break-words text-left">{cat.title}</h3>
-                            <p className="text-[8px] sm:text-[9px] font-medium text-white/80 mt-0.5 drop-shadow-sm text-left">{cat.artists.length} ศิลปิน</p>
-                         </div>
-                         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all">
-                            <ChevronRight className="w-3.5 h-3.5 text-white" />
-                         </div>
-                      </div>
-                      );
-                    })}
+                  <div className="px-4 py-4 border-t border-gray-50 bg-gray-50/50">
+                    <h2 className="text-base font-bold text-black">ต้องการศิลปินอื่นๆ ?</h2>
+                    <p className="text-[11px] text-gray-400">เลือกหมวดหมู่ด้านล่างเพื่อค้นหาได้เลยครับ</p>
                   </div>
                 </div>
               )}
 
-              {/* TIER 2: ARTIST LIST */}
-              {selectedCategory && (
-                <div className="animate-in fade-in duration-500">
-                  <div className="px-4 pt-6 pb-4 flex items-center gap-3">
-                    <button 
-                        onClick={() => setCategoryId("")} 
-                        className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+              {/* TIER 2: CATEGORY SELECTION (ALWAYS VISIBLE OR BELOW POPULAR) */}
+              <div className="px-4 pt-8 pb-3">
+                <h1 className="text-lg font-black text-black">สารบัญศิลปิน</h1>
+                <p className="text-[11px] text-gray-400 font-medium">แยกตามหมวดหมู่และแนวเพลง</p>
+              </div>
+
+              <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 mb-10">
+                {ARTIST_CATEGORIES.filter(c => c.id !== 'popular').map((cat) => {
+                  const Icon = 
+                    cat.id === 'luk-thung' ? Mic2 :
+                    cat.id === 'mor-lam' ? Music :
+                    cat.id === 'thai-pop' ? Disc :
+                    cat.id === 'rock-thai' ? Guitar :
+                    cat.id === 'retro-hits' ? Star :
+                    cat.id === 'teen-pop' ? Heart :
+                    cat.id === 'rnb-soul-th' ? Mic :
+                    cat.id === 'indie-th' ? Coffee :
+                    cat.id === 'luk-grung' ? Radio :
+                    Globe;
+                  
+                  const isActive = selectedCategoryId === cat.id;
+
+                  return (
+                    <div 
+                      key={cat.id} 
+                      onClick={() => setCategoryId(cat.id === selectedCategoryId ? "" : cat.id)}
+                      className={clsx(
+                        "group relative overflow-hidden rounded-xl aspect-[1.8/1] min-h-[72px] sm:min-h-[80px] cursor-pointer shadow-sm transition-all border-2",
+                        isActive ? "border-primary scale-[1.02] shadow-md ring-4 ring-primary/10" : "border-transparent bg-gradient-to-br " + cat.gradient
+                      )}
                     >
-                        <svg className="w-4 h-4 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" />
-                        </svg>
-                    </button>
-                    <div>
-                        <h2 className="text-base sm:text-lg font-bold text-black">{selectedCategory.title}</h2>
-                        <p className="text-[10px] sm:text-[11px] text-gray-400 font-medium">{selectedCategory.artists.length} ศิลปิน</p>
+                       {!isActive && <div className={clsx("absolute inset-0 bg-gradient-to-br transition-opacity", cat.gradient)} />}
+                       {isActive && <div className={clsx("absolute inset-0 bg-primary/5")} />}
+
+                       <div className="absolute -bottom-2 -right-2 opacity-20 transform -rotate-12 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
+                         <Icon className={clsx("w-16 h-16 sm:w-20 sm:h-20", isActive ? "text-primary" : "text-white")} />
+                       </div>
+                       <div className="absolute inset-0 p-2 flex flex-col justify-end sm:p-2.5">
+                          <h3 className={clsx("text-[10px] min-[320px]:text-[11px] sm:text-[13px] md:text-[14px] font-bold leading-[1.0] sm:leading-tight drop-shadow-sm text-left", isActive ? "text-primary" : "text-white")}>{cat.title}</h3>
+                          <p className={clsx("text-[8px] sm:text-[9px] font-medium mt-0.5 text-left", isActive ? "text-primary/60" : "text-white/80")}>{cat.artists.length} ศิลปิน</p>
+                       </div>
                     </div>
+                  );
+                })}
+              </div>
+
+              {/* TIER 3: INTEGRATED RESULT LIST */}
+              {selectedCategory && (
+                <div ref={songlistRef} className="animate-in slide-in-from-bottom-8 duration-500 scroll-mt-20">
+                  <div className="px-4 pt-8 pb-4 border-t border-gray-100 flex items-center justify-between">
+                    <div>
+                        <h2 className="text-base sm:text-xl font-bold text-black">{selectedCategory.title}</h2>
+                        <p className="text-[10px] sm:text-[11px] text-gray-400 font-medium">รายชื่อศิลปินทั้งหมดในหมวดหมู่นี้</p>
+                    </div>
+                    <button onClick={() => setCategoryId("")} className="text-xs font-bold text-primary hover:underline">ปิดรายการ</button>
                   </div>
                   
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 pb-10">
+                  <div className="grid grid-cols-2 min-[500px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 pb-20">
                     {selectedCategory.artists.map((artist, i) => {
                       const cleanName = artist.name.split(' (')[0].trim();
                       const overrideUrl = artistOverrides[cleanName];
 
                       return (
-                        <div 
-                          key={artist.name + i} 
-                          onClick={() => setSearchTerm(cleanSearchQuery(cleanName))} 
-                          className="group cursor-pointer"
-                        >
-                          <div className="relative aspect-square rounded-2xl overflow-hidden bg-white flex items-center justify-center shadow-sm border border-gray-100 group-hover:shadow-md group-hover:border-primary/20 transition-all">
+                        <div key={artist.name + i} onClick={() => setSearchTerm(cleanSearchQuery(cleanName))} className="group cursor-pointer">
+                          <div className="relative aspect-square rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm group-hover:shadow-md transition-all">
                             <Image 
-                               src={artist.imageUrl || overrideUrl || `/api/spotify/artists/image?name=${encodeURIComponent(artist.name)}`} 
-                               alt={artist.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" 
-                               unoptimized
+                               src={overrideUrl || `/api/spotify/artists/image?name=${encodeURIComponent(artist.name)}`} 
+                               alt={artist.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" unoptimized
                             />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
                           </div>
-                          <p className="mt-2.5 px-0.5 text-[10px] sm:text-[11px] font-bold text-black text-center group-hover:text-primary transition-colors line-clamp-2 leading-tight h-[24px] sm:h-[32px] flex items-start justify-center italic-sm">{cleanName}</p>
+                          <p className="mt-2 text-[10px] sm:text-[11px] font-bold text-black text-center group-hover:text-primary transition-colors italic-sm">{cleanName}</p>
                         </div>
                       );
                     })}
@@ -504,71 +507,73 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                           cat.id === 'luk-grung' ? Radio :
                           Globe;
                           
+                        const isActive = genreText === cat.title;
                         return (
-                        <div 
-                          key={cat.id}
-                          onClick={() => setGenreText(cat.title)}
-                          className={`group relative overflow-hidden rounded-xl aspect-[1.8/1] min-h-[72px] sm:min-h-[80px] cursor-pointer shadow-sm hover:shadow-md transition-all bg-gradient-to-br ${cat.gradient}`}
-                        >
-                           <div className="absolute -bottom-2 -right-2 opacity-20 transform -rotate-12 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
-                             <Icon className="w-16 h-16 sm:w-20 sm:h-20 text-white" />
-                           </div>
-                           <div className="absolute inset-0 p-2 flex flex-col justify-end sm:p-2.5">
-                              <h3 className="text-[10px] min-[320px]:text-[11px] sm:text-[13px] md:text-[14px] font-bold text-white leading-[1.0] sm:leading-tight drop-shadow-sm line-clamp-2 break-words text-left">{cat.title}</h3>
-                           </div>
-                           <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all">
-                              <ChevronRight className="w-3.5 h-3.5 text-white" />
-                           </div>
-                        </div>
+                          <div 
+                            key={cat.id} 
+                            onClick={() => setGenreText(cat.title === genreText ? "" : cat.title)}
+                            className={clsx(
+                              "group relative overflow-hidden rounded-xl aspect-[1.8/1] min-h-[72px] sm:min-h-[80px] cursor-pointer shadow-sm transition-all border-2",
+                              isActive ? "border-primary scale-[1.02] shadow-md ring-4 ring-primary/10" : "border-transparent bg-gradient-to-br " + cat.gradient
+                            )}
+                          >
+                             {!isActive && <div className={clsx("absolute inset-0 bg-gradient-to-br transition-opacity", cat.gradient)} />}
+                             {isActive && <div className={clsx("absolute inset-0 bg-primary/5")} />}
+
+                             <div className="absolute -bottom-2 -right-2 opacity-20 transform -rotate-12 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
+                               <Icon className={clsx("w-16 h-16 sm:w-20 sm:h-20", isActive ? "text-primary" : "text-white")} />
+                             </div>
+                             <div className="absolute inset-0 p-2 flex flex-col justify-end sm:p-2.5">
+                                <h3 className={clsx("text-[10px] min-[320px]:text-[11px] sm:text-[13px] md:text-[14px] font-bold leading-[1.0] sm:leading-tight drop-shadow-sm line-clamp-2 break-words text-left", isActive ? "text-primary" : "text-white")}>{cat.title}</h3>
+                             </div>
+                          </div>
                         );
                       })}
                    </div>
-                 </>
-               ) : (
-                 <div className="px-4">
-                    <div className="flex items-center gap-4 mb-6 pt-4">
-                        <button 
-                          onClick={() => {
-                              setGenreText("");
-                              setSearchTerm("");
-                          }}
-                          className="w-10 h-10 bg-white border border-gray-200 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-50 transition-all"
-                        >
-                           <ChevronRight className="w-5 h-5 text-gray-600 rotate-180" />
-                        </button>
-                        <div>
-                           <h2 className="text-xl font-bold text-gray-900">{genreText || searchTerm}</h2>
-                           <p className="text-[11px] text-gray-500 font-medium">รวมเพลงยาว ({stationResults?.length || 0} รายการ)</p>
-                        </div>
-                    </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-3 md:gap-4 px-3 md:px-4 pb-20 overflow-hidden">
-                      {isLoadStation ? (
-                        getSkeletonItems(8).map(s => <div key={s} className="aspect-video bg-gray-100 rounded-2xl animate-pulse" />)
-                      ) : (
-                        stationResults?.map(video => (
-                            <div key={video.videoId} onClick={() => {
-                                const videoToAdd = {
-                                    id: video.videoId,
-                                    sourceType: 'youtube',
-                                    videoId: video.videoId,
-                                    title: video.title,
-                                    author: video.author,
-                                    thumbnail: undefined,
-                                } as any;
-                                addToQueue(videoToAdd);
-                            }} className="group cursor-pointer overflow-hidden max-w-full">
-                                <div className="relative aspect-video rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm group-hover:shadow-md transition-all">
-                                    <Image src={`https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`} alt={video.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" unoptimized />
-                                </div>
-                                <p className="mt-2.5 px-0.5 text-[10px] sm:text-[11px] font-bold text-black text-center group-hover:text-primary transition-colors block truncate w-full italic-sm">
-                                    {video.title}
-                                </p>
+                   {/* Station Result Content (Master Plan UI) */}
+                   {(genreText || searchTerm) && (
+                     <div ref={stationContentRef} className="animate-in slide-in-from-bottom-8 duration-500 scroll-mt-20 px-4">
+                        <div className="flex items-center justify-between mb-6 pt-8 border-t border-gray-100">
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-900">{genreText || searchTerm}</h2>
+                                <p className="text-[11px] text-gray-500 font-medium">รวมเพลงยาว ({stationResults?.length || 0} รายการ)</p>
                             </div>
-                        ))
-                      )}
-                    </div>
-                 </div>
+                            <button onClick={() => setGenreText("")} className="text-xs font-bold text-primary hover:underline">ปิดรายการ</button>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 min-[500px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 pb-20 overflow-hidden">
+                          {isLoadStation ? (
+                            getSkeletonItems(8).map(s => <div key={s} className="aspect-video bg-gray-100 rounded-2xl animate-pulse" />)
+                          ) : (
+                            stationResults?.map(video => (
+                                <div key={video.videoId} onClick={() => {
+                                    const videoToAdd = {
+                                        id: video.videoId,
+                                        sourceType: 'youtube',
+                                        videoId: video.videoId,
+                                        title: video.title,
+                                        author: video.author,
+                                        thumbnail: undefined,
+                                    } as any;
+                                    addToQueue(videoToAdd);
+                                }} className="group cursor-pointer overflow-hidden max-w-full">
+                                    <div className="relative aspect-video rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm group-hover:shadow-md transition-all">
+                                        <Image src={`https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`} alt={video.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" unoptimized />
+                                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                                          <PlayCircle className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100 transition-all duration-300 drop-shadow-lg" />
+                                        </div>
+                                    </div>
+                                    <p className="mt-2.5 px-0.5 text-[10px] sm:text-[11px] font-bold text-black text-center group-hover:text-primary transition-colors block truncate w-full italic-sm">
+                                        {video.title}
+                                    </p>
+                                </div>
+                            ))
+                          )}
+                        </div>
+                     </div>
+                   )}
+                 </>
                )}
             </div>
           )}
