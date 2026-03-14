@@ -6,14 +6,31 @@ export default async function handler(
   res: NextApiResponse
 ) {
   try {
+    const force = req.query.force === 'true';
+
+    // Allow manual seeding if JOOX blocks Vercel IPs
+    if (req.method === 'POST') {
+      const { charts, secret } = req.body;
+      if (secret !== process.env.FIREBASE_PROJECT_ID) { // Simple secret check using project ID
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
+      if (adminFirestore && Array.isArray(charts) && charts.length > 0) {
+        await adminFirestore.collection('system_cache').doc('joox_charts').set({
+          updatedAt: new Date().toISOString(),
+          charts: charts
+        });
+        return res.status(200).json({ status: "success", message: "Cache seeded manually" });
+      }
+      return res.status(400).json({ error: "Invalid data" });
+    }
+
     const allowedCharts = [
       { id: 42, name: "Thailand Top 100" },
       { id: 128, name: "อันดับเพลงใหม่" },
       { id: 133, name: "อันดับเพลงมาแรง" },
       { id: 57, name: "THTOP100 2024" }
     ];
-
-    const force = req.query.force === 'true';
 
     if (adminFirestore && !force) {
       try {
