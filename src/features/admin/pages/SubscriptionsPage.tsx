@@ -35,6 +35,8 @@ interface Plan {
   features: string[];
   maxRooms: number;
   maxSongsInQueue: number;
+  maxDailySongs: number; // For play limits
+  showAds: boolean;      // Toggle ads
   isActive: boolean;
   isVisible: boolean;
 }
@@ -63,6 +65,8 @@ const SubscriptionsPage: React.FC = () => {
     features: [],
     maxRooms: 1,
     maxSongsInQueue: 10,
+    maxDailySongs: 20,
+    showAds: true,
     isActive: true,
     isVisible: true,
   });
@@ -93,7 +97,7 @@ const SubscriptionsPage: React.FC = () => {
       } catch (err) {
         console.error("Error fetching plans:", err);
         setError("Failed to load plans. Please try again.");
-        toast?.error("Failed to load plans");
+        toast?.addToast("Failed to load plans", "error");
       } finally {
         setIsLoading(false);
       }
@@ -112,6 +116,7 @@ const SubscriptionsPage: React.FC = () => {
 
     setIsSaving(true);
     try {
+      if (!db) return;
       const planRef = doc(db, "plans", editingPlan.id);
       await updateDoc(planRef, {
         displayName: editingPlan.displayName,
@@ -120,16 +125,18 @@ const SubscriptionsPage: React.FC = () => {
         features: editingPlan.features,
         maxRooms: editingPlan.maxRooms,
         maxSongsInQueue: editingPlan.maxSongsInQueue,
+        maxDailySongs: editingPlan.maxDailySongs,
+        showAds: editingPlan.showAds,
         isActive: editingPlan.isActive,
         isVisible: editingPlan.isVisible,
         updatedAt: Timestamp.now(),
       });
 
-      toast?.success("อัปเดตแผนเรียบร้อยแล้ว!");
+      toast?.addToast("อัปเดตแผนเรียบร้อยแล้ว!", "success");
       setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
       console.error("Error updating plan:", error);
-      toast?.error("เกิดข้อผิดพลาดในการอัปเดตแผน");
+      toast?.addToast("เกิดข้อผิดพลาดในการอัปเดตแผน", "error");
     } finally {
       setIsSaving(false);
     }
@@ -138,8 +145,9 @@ const SubscriptionsPage: React.FC = () => {
   const togglePlanStatus = async (plan: Plan, field: "isActive" | "isVisible") => {
     setTogglingPlanId(plan.id);
     try {
+      if (!db) return;
       const planRef = doc(db, "plans", plan.id);
-      const newValue = !plan[field];
+      const newValue = !plan[field as keyof Plan];
       await updateDoc(planRef, {
         [field]: newValue,
         updatedAt: Timestamp.now(),
@@ -148,7 +156,7 @@ const SubscriptionsPage: React.FC = () => {
       setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
       console.error("Error updating plan:", error);
-      toast?.error("เกิดข้อผิดพลาดในการอัปเดตแผน");
+      toast?.addToast("เกิดข้อผิดพลาดในการอัปเดตแผน", "error");
     } finally {
       setTogglingPlanId(null);
     }
@@ -158,7 +166,7 @@ const SubscriptionsPage: React.FC = () => {
     // Prevent deletion of core plans
     const corePlans = ["free", "monthly", "yearly", "lifetime"];
     if (corePlans.includes(plan.id)) {
-      toast?.warning(`ไม่สามารถลบ Plan "${plan.displayName}" ได้ - นี่คือ Plan หลักของระบบ`);
+      toast?.addToast(`ไม่สามารถลบ Plan "${plan.displayName}" ได้ - นี่คือ Plan หลักของระบบ`, "warning");
       return;
     }
 
@@ -168,14 +176,15 @@ const SubscriptionsPage: React.FC = () => {
 
     setIsDeleting(true);
     try {
+      if (!db) return;
       const planRef = doc(db, "plans", plan.id);
       await deleteDoc(planRef);
 
-      toast?.success("ลบ Plan เรียบร้อยแล้ว");
+      toast?.addToast("ลบ Plan เรียบร้อยแล้ว", "success");
       setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
       console.error("Error deleting plan:", error);
-      toast?.error("เกิดข้อผิดพลาดในการลบ Plan");
+      toast?.addToast("เกิดข้อผิดพลาดในการลบ Plan", "error");
     } finally {
       setIsDeleting(false);
     }
@@ -183,12 +192,13 @@ const SubscriptionsPage: React.FC = () => {
 
   const handleCreatePlan = async () => {
     if (!newPlan.name || !newPlan.displayName) {
-      toast?.warning("กรุณากรอก Plan ID และชื่อแสดงผล");
+      toast?.addToast("กรุณากรอก Plan ID และชื่อแสดงผล", "warning");
       return;
     }
 
     setIsCreating(true);
     try {
+      if (!db) return;
       const planRef = doc(db, "plans", newPlan.name);
       await setDoc(planRef, {
         ...newPlan,
@@ -196,11 +206,11 @@ const SubscriptionsPage: React.FC = () => {
         updatedAt: Timestamp.now(),
       });
 
-      toast?.success("สร้างแผนใหม่เรียบร้อยแล้ว!");
+      toast?.addToast("สร้างแผนใหม่เรียบร้อยแล้ว!", "success");
       setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
       console.error("Error creating plan:", error);
-      toast?.error("เกิดข้อผิดพลาดในการสร้างแผน");
+      toast?.addToast("เกิดข้อผิดพลาดในการสร้างแผน", "error");
     } finally {
       setIsCreating(false);
     }
@@ -359,6 +369,16 @@ const SubscriptionsPage: React.FC = () => {
                     <span className="text-gray-600">คิวเพลงสูงสุด (Queue):</span>
                     <span className="font-bold">{plan.maxSongsInQueue}</span>
                   </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">โควต้าเพลงโชว์ (Daily):</span>
+                    <span className="font-bold">{plan.maxDailySongs}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">แสดงโฆษณา:</span>
+                    <span className={plan.showAds ? "text-red-500 font-bold" : "text-green-500 font-bold"}>
+                      {plan.showAds ? "เปิด" : "ปิด"}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Status Badges */}
@@ -468,8 +488,7 @@ const SubscriptionsPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Max Rooms & Songs */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     จำนวนห้องสูงสุด (Max Rooms)
@@ -497,6 +516,22 @@ const SubscriptionsPage: React.FC = () => {
                       setEditingPlan({
                         ...editingPlan,
                         maxSongsInQueue: Number(e.target.value),
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    โควต้าเพลงโชว์ (Daily)
+                  </label>
+                  <input
+                    type="number"
+                    value={editingPlan.maxDailySongs}
+                    onChange={(e) =>
+                      setEditingPlan({
+                        ...editingPlan,
+                        maxDailySongs: Number(e.target.value),
                       })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
@@ -565,6 +600,21 @@ const SubscriptionsPage: React.FC = () => {
                     className="rounded border-gray-300 text-red-500 focus:ring-red-500"
                   />
                   <span className="text-sm text-gray-700">แสดงผล (Visible)</span>
+                </label>
+
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={editingPlan.showAds}
+                    onChange={(e) =>
+                      setEditingPlan({
+                        ...editingPlan,
+                        showAds: e.target.checked,
+                      })
+                    }
+                    className="rounded border-gray-300 text-red-500 focus:ring-red-500"
+                  />
+                  <span className="text-sm text-gray-700">แสดงโฆษณา (Ads)</span>
                 </label>
               </div>
             </div>
@@ -698,11 +748,10 @@ const SubscriptionsPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Max Rooms & Songs */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    จำนวนห้องสูงสุด (Max Rooms)
+                    ห้องสูงสุด (Max Rooms)
                   </label>
                   <input
                     type="number"
@@ -727,6 +776,22 @@ const SubscriptionsPage: React.FC = () => {
                       setNewPlan({
                         ...newPlan,
                         maxSongsInQueue: Number(e.target.value),
+                      })
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    โควต้าเพลงโชว์ (Daily)
+                  </label>
+                  <input
+                    type="number"
+                    value={newPlan.maxDailySongs}
+                    onChange={(e) =>
+                      setNewPlan({
+                        ...newPlan,
+                        maxDailySongs: Number(e.target.value),
                       })
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500"
@@ -795,6 +860,21 @@ const SubscriptionsPage: React.FC = () => {
                     className="rounded border-gray-300 text-red-500 focus:ring-red-500"
                   />
                   <span className="text-sm text-gray-700">แสดงผล (Visible)</span>
+                </label>
+
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={newPlan.showAds}
+                    onChange={(e) =>
+                      setNewPlan({
+                        ...newPlan,
+                        showAds: e.target.checked,
+                      })
+                    }
+                    className="rounded border-gray-300 text-red-500 focus:ring-red-500"
+                  />
+                  <span className="text-sm text-gray-700">แสดงโฆษณา (Ads)</span>
                 </label>
               </div>
             </div>

@@ -1,24 +1,62 @@
 import { useState, useEffect } from 'react';
 import { useSystemConfig } from '../../../hooks/useSystemConfig';
+import { DEFAULT_CONFIG } from '../../../services/systemConfigService';
 import { useAuthStore } from '@/modules/auth/useAuthStore';
 import { useUIStore } from '../../../stores/useUIStore';
 import { usePlayerStore } from '../stores/usePlayerStore';
+import { db } from '../../../firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 export const usePlayerLifecycle = (currentSource: string | null, showDjOverlay: boolean) => {
     const { config } = useSystemConfig();
     const { user } = useAuthStore();
     const { setLimitModalOpen } = useUIStore();
 
-    // Determine Role & Limits
-    const isPremium = user ? (user.isAdmin || (user.membership?.type !== 'free' && user.membership?.status === 'active')) : false;
-    const userRole = isPremium ? 'premium' : 'free';
-    const limits = config?.membership?.[userRole];
-    const maxDuration = limits?.max_duration_sec || 0;
-    const showAds = limits?.show_ads || false; // Default false
-    const maxDailySongs = limits?.max_daily_songs || 0;
-
-    // Track Daily Songs
     const [dailyCount, setDailyCount] = useState(0);
+    const [planLimits, setPlanLimits] = useState<{ maxDailySongs: number, showAds: boolean, maxDuration: number } | null>(null);
+
+    // 🏷️ Role Resolution Logic (Guest vs Free vs Premium)
+    let userRole: string = 'guest';
+    if (user) {
+        userRole = user.membership?.type || 'free';
+    }
+
+    // Load Plan Limits from Database
+    useEffect(() => {
+        const fetchPlan = async () => {
+            if (!db) return;
+            try {
+                const planRef = doc(db, 'plans', userRole);
+                const planSnap = await getDoc(planRef);
+                
+                if (planSnap.exists()) {
+                    const data = planSnap.data();
+                    setPlanLimits({
+                        maxDailySongs: data.maxDailySongs || 0,
+                        showAds: data.showAds ?? true,
+                        maxDuration: data.maxDurationSec || 0
+                    });
+                } else {
+                    // Fallback to System Config / Defaults
+                    const role = (userRole as 'guest' | 'free' | 'premium') || 'guest';
+                    const limits = config?.membership?.[role] || DEFAULT_CONFIG.membership[role] || DEFAULT_CONFIG.membership.guest;
+                    setPlanLimits({
+                        maxDailySongs: limits?.max_daily_songs || 0,
+                        showAds: limits?.show_ads ?? true,
+                        maxDuration: limits?.max_duration_sec || 0
+                    });
+                }
+            } catch (err) {
+                console.error("Error fetching plan limits:", err);
+            }
+        };
+
+        fetchPlan();
+    }, [userRole, db, config]);
+
+    const maxDailySongs = planLimits?.maxDailySongs || 0;
+    const showAds = planLimits?.showAds ?? true;
+    const maxDuration = planLimits?.maxDuration || 0;
 
     // Initial Load
     useEffect(() => {

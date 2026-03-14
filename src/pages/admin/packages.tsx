@@ -38,6 +38,7 @@ interface PackageData {
     description: string;
     price: number;
     durationDays: number;
+    planId?: string; // Link to /plans/{id}
     features: any;
     isActive: boolean;
     isPopular?: boolean;
@@ -60,6 +61,7 @@ const PREDEFINED_FEATURES = [
 
 export default function PackagesPage() {
     const [packages, setPackages] = useState<PackageData[]>([]);
+    const [plans, setPlans] = useState<{ id: string, displayName: string }[]>([]);
     const [loading, setLoading] = useState(true);
     const [editMode, setEditMode] = useState<PackageData | null>(null);
     const [isCreating, setIsCreating] = useState(false);
@@ -72,10 +74,24 @@ export default function PackagesPage() {
         description: '',
         price: 0,
         durationDays: 30,
+        planId: 'premium',
         features: {},
         isActive: true
     });
     const [featuresJson, setFeaturesJson] = useState('{}');
+
+    useEffect(() => {
+        if (!db) return;
+        // Fetch Plans for dropdown
+        const { getDocs, collection } = require('firebase/firestore');
+        getDocs(collection(db, 'plans')).then((snap: any) => {
+            const planList = snap.docs.map((doc: any) => ({
+                id: doc.id,
+                displayName: doc.data().displayName || doc.id
+            }));
+            setPlans(planList);
+        });
+    }, [db]);
 
     useEffect(() => {
         if (!db) {
@@ -179,6 +195,7 @@ export default function PackagesPage() {
                 description: formData.description || "",
                 price: price,
                 durationDays: durationDays,
+                planId: formData.planId || "",
                 features: parsedFeatures || {},
                 isActive: formData.isActive || false,
                 isPopular: formData.isPopular || false,
@@ -446,7 +463,7 @@ export default function PackagesPage() {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-3 gap-4">
                                 <div className="form-control">
                                     <label className="label"><span className="label-text font-medium text-foreground">ราคา (บาท)</span></label>
                                     <input
@@ -464,6 +481,19 @@ export default function PackagesPage() {
                                         value={formData.durationDays}
                                         onChange={e => setFormData({ ...formData, durationDays: Number(e.target.value) })}
                                     />
+                                </div>
+                                <div className="form-control">
+                                    <label className="label"><span className="label-text font-medium text-foreground">แผนสมาชิก</span></label>
+                                    <select 
+                                        className="select select-sm select-bordered bg-muted/30 border-border/50"
+                                        value={formData.planId}
+                                        onChange={e => setFormData({ ...formData, planId: e.target.value })}
+                                    >
+                                        <option value="">-- เลือกแผน --</option>
+                                        {plans.map(p => (
+                                            <option key={p.id} value={p.id}>{p.displayName}</option>
+                                        ))}
+                                    </select>
                                 </div>
                             </div>
 

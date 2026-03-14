@@ -54,6 +54,13 @@ export interface SystemConfig {
     };
 
     membership: {
+        guest: {
+            max_daily_songs: number;
+            max_duration_sec: number;
+            allow_cast: boolean;
+            allow_remote: boolean;
+            show_ads: boolean;
+        };
         free: {
             max_daily_songs: number;
             max_duration_sec: number;
@@ -210,6 +217,13 @@ export const DEFAULT_CONFIG: SystemConfig = {
         }
     },
     membership: {
+        guest: {
+            max_daily_songs: 10,
+            max_duration_sec: 0,
+            allow_cast: false,
+            allow_remote: true,
+            show_ads: true,
+        },
         free: {
             max_daily_songs: 20,
             max_duration_sec: 0,
@@ -314,6 +328,11 @@ export const getSystemConfig = async (): Promise<SystemConfig> => {
             },
             payment: { ...DEFAULT_CONFIG.payment, ...data.payment },
             upsell: { ...DEFAULT_CONFIG.upsell, ...data.upsell },
+            membership: {
+                guest: { ...DEFAULT_CONFIG.membership.guest, ...data.membership?.guest },
+                free: { ...DEFAULT_CONFIG.membership.free, ...data.membership?.free },
+                premium: { ...DEFAULT_CONFIG.membership.premium, ...data.membership?.premium }
+            },
             content: { ...DEFAULT_CONFIG.content, ...data.content }
         };
     }
@@ -373,6 +392,11 @@ export const subscribeToSystemConfig = (callback: (config: SystemConfig) => void
                 recommendations: { ...DEFAULT_CONFIG.recommendations, ...data.recommendations },
                 payment: { ...DEFAULT_CONFIG.payment, ...data.payment },
                 upsell: { ...DEFAULT_CONFIG.upsell, ...data.upsell },
+                membership: {
+                    guest: { ...DEFAULT_CONFIG.membership.guest, ...data.membership?.guest },
+                    free: { ...DEFAULT_CONFIG.membership.free, ...data.membership?.free },
+                    premium: { ...DEFAULT_CONFIG.membership.premium, ...data.membership?.premium }
+                },
                 content: { ...DEFAULT_CONFIG.content, ...data.content }
             });
         } else {

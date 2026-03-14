@@ -55,10 +55,14 @@ export async function approvePayment(
     expiresAt.setDate(now.getDate() + durationDays);
   }
 
-  let membershipType = 'monthly';
-  if (durationDays <= 3) membershipType = 'day_pass';
-  else if (durationDays > 300) membershipType = 'yearly';
-  if (durationDays === 0) membershipType = 'lifetime';
+  let membershipType = pkgSnap.data()?.planId || 'monthly';
+  
+  // Fallback if planId not set on package
+  if (!pkgSnap.data()?.planId) {
+    if (durationDays <= 3) membershipType = 'day_pass';
+    else if (durationDays > 300) membershipType = 'yearly';
+    if (durationDays === 0) membershipType = 'lifetime';
+  }
 
   // 3. Update User Membership (Firestore)
   const userRef = doc(db, USERS_COLLECTION, userId);
@@ -206,4 +210,56 @@ export async function approveModulePayment(
   });
 
   console.log(`Module Payment ${paymentId} approved. User ${userId} got ${moduleId}.`);
+}
+/**
+ * Activate a Free Package (Trial) instantly
+ */
+export async function activateFreePackage(
+  userId: string,
+  packageId: string
+): Promise<void> {
+  if (!db) throw new Error("Firebase not initialized");
+
+  // 1. Get Package Details
+  const pkgRef = doc(db, "packages", packageId);
+  const pkgSnap = await getDoc(pkgRef);
+
+  let durationDays = 1;
+  let pkgName = "Free Trial";
+
+  if (pkgSnap.exists()) {
+    durationDays = pkgSnap.data().durationDays || 1;
+    pkgName = pkgSnap.data().name || pkgName;
+  }
+
+  // 2. Calculate Expiry
+  const now = new Date();
+  const expiresAt = new Date();
+  expiresAt.setDate(now.getDate() + durationDays);
+
+  let membershipType = pkgSnap.data()?.planId || 'trial';
+
+  // 3. Update User
+  const userRef = doc(db, USERS_COLLECTION, userId);
+  await updateDoc(userRef, {
+    membership: {
+      type: membershipType,
+      startedAt: serverTimestamp(),
+      expiresAt: expiresAt,
+      autoRenew: false,
+      activatedBy: 'self'
+    },
+    updatedAt: serverTimestamp()
+  });
+
+  // 4. Notification
+  await addDoc(collection(db, `users/${userId}/notifications`), {
+    title: "สมัครทดลองใช้สำเร็จ!",
+    message: `คุณเริ่มใช้งานแพ็กเกจ "${pkgName}" แล้ว ใช้งานได้ฟรีเป็นเวลา ${durationDays} วัน`,
+    type: 'success',
+    read: false,
+    createdAt: serverTimestamp()
+  });
+
+  console.log(`Free package ${packageId} activated for user ${userId}.`);
 }

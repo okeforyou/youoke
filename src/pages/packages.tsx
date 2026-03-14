@@ -80,11 +80,29 @@ export default function PackagesPage() {
         fetchPackages();
     }, []);
 
-    const handleBuy = (pkg: Package) => {
+    const handleBuy = async (pkg: Package) => {
         if (!user) {
             router.push('/login');
             return;
         }
+
+        if (pkg.price === 0) {
+            // Instant Activation for Free/Trial packages
+            try {
+                setLoading(true);
+                const { activateFreePackage } = await import('@/modules/billing/services/paymentService');
+                await activateFreePackage(user.uid!, pkg.id);
+                alert("ยินดีด้วย! คุณได้รับสิทธิ์ใช้งานพรีเมียมแล้ว (1 วัน)");
+                router.push('/');
+            } catch (error) {
+                console.error("Activation error:", error);
+                alert("เกิดข้อผิดพลาดในการเปิดใช้งาน กรุณาลองใหม่ภายหลัง");
+            } finally {
+                setLoading(false);
+            }
+            return;
+        }
+
         setSelectedPkg(pkg);
         setShowQRModal(true);
     };

@@ -1,7 +1,7 @@
-export type SubscriptionPlan = "free" | "monthly" | "yearly" | "lifetime";
+export type SubscriptionPlan = "free" | "trial" | "day_pass" | "monthly" | "yearly" | "lifetime";
 export type SubscriptionStatus = "active" | "expired" | "pending" | "cancelled";
 export type PaymentStatus = "pending" | "approved" | "rejected";
-export type UserRole = "admin" | "premium" | "free";
+export type UserRole = "admin" | "premium" | "free" | "guest";
 
 export interface Subscription {
   plan: SubscriptionPlan;
@@ -81,33 +81,44 @@ export interface PricingPackage {
 export const DEFAULT_PRICING_PACKAGES: PricingPackage[] = [
   {
     id: "free",
-    name: "ฟรี",
+    name: "ทดลองใช้งานฟรี",
     price: 0,
-    duration: 0,
+    duration: 1,
     features: [
-      "เล่นเพลงไม่จำกัด",
-      "มีโฆษณา",
-      "คุณภาพวิดีโอ 480p",
-      "บันทึก Playlist ได้ 5 รายการ",
+      "ร้องเพลงไม่จำกัด (1 วัน)",
+      "ไม่มีโฆษณา",
+      "ส่งขึ้นจอ TV / Remote ได้",
+      "บันทึก Playlist ได้ไม่จำกัด",
+    ],
+  },
+  {
+    id: "day_pass",
+    name: "บัตรผ่านรายวัน (Day Pass)",
+    price: 19,
+    duration: 1,
+    features: [
+      "ใช้งานได้ 24 ชั่วโมง",
+      "ไม่มีโฆษณา",
+      "ส่งขึ้นจอ TV / Remote ได้",
+      "เหมาะสำหรับจัดปาร์ตี้",
     ],
   },
   {
     id: "monthly",
-    name: "รายเดือน",
+    name: "รายเดือน (Premium)",
     price: 99,
     duration: 30,
     features: [
-      "เล่นเพลงไม่จำกัด",
+      "ใช้งานได้ 30 วัน",
       "ไม่มีโฆษณา",
       "คุณภาพวิดีโอสูงสุด 1080p",
       "บันทึก Playlist ไม่จำกัด",
-      "รองรับ Cast ข้ามอุปกรณ์",
-      "Auto-play Queue",
+      "รองรับ Cast / Remote ครบทุกฟีเจอร์",
     ],
   },
   {
     id: "yearly",
-    name: "รายปี",
+    name: "รายปี (Super Premium)",
     price: 990,
     duration: 365,
     popular: true,
@@ -116,23 +127,22 @@ export const DEFAULT_PRICING_PACKAGES: PricingPackage[] = [
       label: "ประหยัด 198 บาท",
     },
     features: [
-      "ทุกฟีเจอร์แบบรายเดือน",
-      "ประหยัดกว่า 17%",
-      "รองรับ 3 อุปกรณ์พร้อมกัน",
-      "ดาวน์โหลดเพลงฟังออฟไลน์",
+      "ใช้งานได้ 365 วัน",
+      "ประหยัดกว่ารายเดือน 17%",
+      "ซัพพอร์ตพิเศษจากทีมงาน",
+      "อัพเดทฟีเจอร์ใหม่ก่อนใคร",
     ],
   },
   {
     id: "lifetime",
-    name: "ตลอดชีพ",
+    name: "ตลอดชีพ (Ultimate)",
     price: 2990,
     duration: 0,
     features: [
-      "ทุกฟีเจอร์แบบรายปี",
-      "ชำระเพียงครั้งเดียว ใช้ตลอดไป",
+      "จ่ายครั้งเดียว จบ!",
+      "ใช้ได้ตลอดชีพ ไม่ต้องต่ออายุ",
       "รองรับ 5 อุปกรณ์พร้อมกัน",
-      "อัพเดทฟีเจอร์ใหม่ฟรีตลอด",
-      "ไม่ต้องกังวลเรื่องต่ออายุ",
+      "ทุกความสามารถที่มีในระบบ",
     ],
   },
 ];

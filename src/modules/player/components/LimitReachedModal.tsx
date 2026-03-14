@@ -11,24 +11,33 @@ export const LimitReachedModal = () => {
     const { user } = useAuthStore();
     const router = useRouter();
 
-    // Default Max Songs if not found
-    const limits = config?.membership['free'];
+    // 🏷️ Role Resolution Logic (Guest vs Free)
+    let userRole: 'guest' | 'free' = 'guest';
+    if (user) userRole = 'free';
+
+    const limits = config?.membership?.[userRole];
     const maxSongs = limits?.max_daily_songs || 0;
 
     // Configurable Texts (Fallback to defaults)
     const upsell = config?.upsell || {};
     const title = upsell.title || "หมดโควต้าฟังเพลงวันนี้แล้ว";
-    const subtitle = upsell.subtitle || `โควต้าสำหรับแพ็กเกจฟรีคือ ${maxSongs} เพลง/วัน`;
-    const offerText = upsell.offer_text || "ทดลองใช้ Premium ฟรี 1 เดือน!";
+    const subtitle = userRole === 'guest' 
+        ? `โควต้าสำหรับแขกคือ ${maxSongs} เพลง/วัน (เข้าสู่ระบบเพื่อรับสิทธิ์เพิ่ม!)`
+        : upsell.subtitle || `โควต้าสำหรับแพ็กเกจฟรีคือ ${maxSongs} เพลง/วัน`;
+    
+    const offerText = upsell.offer_text || "ทดลองใช้ Premium ฟรี 1 วัน!";
     const offerSubtext = upsell.offer_subtext || "ฟังเพลงไม่อั้น • ไม่มีโฆษณา • คิวเพลงไม่จำกัด";
-    const buttonText = upsell.button_text || "สมัครเลย (ทดลองฟรี)";
+    const buttonText = userRole === 'guest' ? "เข้าสู่ระบบ / สมัครสมาชิก" : (upsell.button_text || "สมัครเลย (ทดลองฟรี 1 วัน)");
 
     const onClose = () => setLimitModalOpen(false);
 
     const onSubscribe = () => {
         setLimitModalOpen(false);
-        // Redirect to packages page
-        router.push('/profile');
+        if (userRole === 'guest') {
+            router.push('/login');
+        } else {
+            router.push('/packages');
+        }
     };
 
     if (!isLimitModalOpen) return null;
