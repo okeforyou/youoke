@@ -40,7 +40,8 @@ export default async function handler(
       }
     }
 
-    const fetchChart = (chart: {id: number, name: string}): Promise<any> => {
+    const fetchChart = (chart: { id: number; name: string }, depth = 0): Promise<any> => {
+      if (depth > 3) return Promise.resolve(null);
       return new Promise((resolve) => {
         try {
           const https = require('https');
@@ -52,10 +53,19 @@ export default async function handler(
               'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
               'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
               'Accept-Language': 'th-TH,th;q=0.9,en-US;q=0.8,en;q=0.7',
+              // No Accept-Encoding to avoid gzip/br manually for now
             }
           };
 
           const reqObj = https.request(options, (responseObj: any) => {
+            // Handle redirect
+            if ([301, 302, 307, 308].includes(responseObj.statusCode) && responseObj.headers.location) {
+              const loc = responseObj.headers.location;
+              console.log(`Redirecting chart ${chart.id} to ${loc}`);
+              // Implementation of relative redirect follow could be added here if needed
+              return resolve(null); 
+            }
+
             let html = '';
             responseObj.on('data', (chunk: any) => { html += chunk; });
             responseObj.on('end', () => {
@@ -65,25 +75,37 @@ export default async function handler(
               }
 
               const match = html.match(/<script id="__NEXT_DATA__".*?>(.*?)<\/script>/);
-              if (!match || !match[1]) return resolve(null);
+              if (!match || !match[1]) {
+                console.error(`No __NEXT_DATA__ found for chart ${chart.id}. HTML length: ${html.length}`);
+                return resolve({ id: chart.id, name: chart.name, singles: [], debug: 'no_v_data', htmlLen: html.length });
+              }
 
               try {
                 const nextData = JSON.parse(match[1]);
-                const items = nextData?.props?.pageProps?.trackList?.tracks?.items || [];
+                
+                // Try different common paths for track items
+                let items = nextData?.props?.pageProps?.trackList?.tracks?.items;
+                if (!items) items = nextData?.props?.pageProps?.tracks?.items;
+                if (!items) items = nextData?.props?.pageProps?.tracks;
+                if (!Array.isArray(items)) items = [];
                 
                 const singles = items.map((song: any) => {
+                  // Fallback for ID as it can be track_id or id
+                  const songId = song.id || song.track_id || song.trackId;
+                  
                   const bestImage =
                     song.images?.find((img: any) => img.width === 1000)?.url ||
                     song.images?.[0]?.url ||
+                    song.album_pic || 
                     "";
 
-                  const artistName = (song.artist_list || [])
+                  const artistName = (song.artist_list || song.artists || [])
                     .map((a: any) => a.name)
                     .join(", ");
 
                   return {
-                    id: song.id,
-                    title: song.name,
+                    id: songId,
+                    title: song.name || song.track_name,
                     artist_name: artistName,
                     coverImageURL: bestImage,
                   };
@@ -93,9 +115,12 @@ export default async function handler(
                   id: chart.id,
                   name: chart.name,
                   singles,
+                  debug: singles.length > 0 ? 'ok' : 'empty_items',
+                  pathUsed: nextData?.props?.pageProps?.trackList ? 'trackList' : (nextData?.props?.pageProps?.tracks ? 'tracks' : 'none')
                 });
               } catch (e) {
-                 resolve(null);
+                 console.error(`JSON Parse/Map error for chart ${chart.id}:`, e);
+                 resolve({ id: chart.id, name: chart.name, singles: [], debug: 'parse_error' });
               }
             });
           });
@@ -112,24 +137,37 @@ export default async function handler(
       });
     };
 
-    const results = await Promise.all(allowedCharts.map(fetchChart));
+    const results = await Promise.all(allowedCharts.map(c => fetchChart(c)));
     let finalCharts = results.filter(c => c !== null);
 
-    // If fetching failed (e.g. blocked or JOOX down), try to serve ANY available cache as fallback
-    if (finalCharts.length === 0 && adminFirestore) {
-      console.log("⚠️ Fresh fetch failed. Attempting to serve ANY stale cache as fallback...");
+    // CRITICAL: Check if we actually got ANY songs. 
+    // If we got charts but 0 songs total, it's a failure.
+    const totalSongs = finalCharts.reduce((sum, c) => sum + (c.singles?.length || 0), 0);
+
+    // If fetching failed OR returned 0 songs, try to serve ANY available cache as fallback
+    if (totalSongs === 0 && adminFirestore) {
+      console.log("⚠️ Fresh fetch returned 0 songs. Attempting to serve ANY stale cache as fallback...");
       const cacheDoc = await adminFirestore.collection('system_cache').doc('joox_charts').get();
       if (cacheDoc.exists) {
         const data = cacheDoc.data();
         if (data && data.charts && data.charts.length > 0) {
-          console.log("🩹 Serving STALE Firestore Cache as emergency fallback");
-          return res.status(200).json({ status: "success", charts: data.charts, fallback: true });
+          const cacheTotalSongs = data.charts.reduce((sum: number, c: any) => sum + (c.singles?.length || 0), 0);
+          if (cacheTotalSongs > 0) {
+            console.log("🩹 Serving STALE Firestore Cache as emergency fallback");
+            res.setHeader("Cache-Control", "no-store");
+            return res.status(200).json({ 
+                status: "success", 
+                charts: data.charts, 
+                fallback: true,
+                staleAt: data.updatedAt 
+            });
+          }
         }
       }
     }
 
-    // If new data was fetched, cache it to Firestore backend.
-    if (finalCharts.length > 0 && finalCharts.some(c => c.singles.length > 0)) {
+    // If new data was fetched AND has actual songs, cache it.
+    if (totalSongs > 0) {
       if (adminFirestore) {
         try {
           const docRef = adminFirestore.collection('system_cache').doc('joox_charts');
@@ -144,19 +182,20 @@ export default async function handler(
       }
     }
 
-    const hasSingles = finalCharts.some(c => c.singles.length > 0);
-    // If we have actual singles data, cache it at Vercel edge for 1 hour.
-    // If not (empty array), do not cache at all, to force refetch next time.
-    if (hasSingles) {
+    // Edge caching logic
+    if (totalSongs > 0) {
        res.setHeader("Cache-Control", "public, s-maxage=3600, stale-while-revalidate=86400");
     } else {
        res.setHeader("Cache-Control", "no-store, max-age=0");
-       console.log("⚠️ Refusing to cache empty dataset at Vercel Edge");
     }
     
-    res.status(200).json({ status: "success", charts: finalCharts });
+    res.status(200).json({ 
+        status: "success", 
+        charts: finalCharts,
+        debug: { totalSongs, chartCount: finalCharts.length }
+    });
   } catch (error: any) {
     console.error("Error fetching JOOX charts:", error);
-    res.status(500).json({ status: "error", message: error.message, stack: error.stack });
+    res.status(500).json({ status: "error", message: error.message });
   }
 }
