@@ -483,7 +483,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 gap-y-10">
             {getSkeletonItems(10).map((i) => (
               <div key={i} className="flex flex-col gap-3">
-                <div className="aspect-square w-full bg-gray-100 rounded-2xl animate-pulse"></div>
+                <div className="aspect-video w-full bg-gray-100 rounded-2xl animate-pulse"></div>
                 <div className="h-4 w-3/4 bg-gray-100 rounded animate-pulse"></div>
                 <div className="h-3 w-1/2 bg-gray-100 rounded animate-pulse"></div>
               </div>

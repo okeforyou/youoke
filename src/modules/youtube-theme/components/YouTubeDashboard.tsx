@@ -201,7 +201,7 @@ export default function YouTubeDashboard() {
     const renderCard = (item: YTItem, index: number) => (
         <Fragment key={(item.id || item.title) + index}>
             <div
-                className="group relative cursor-pointer overflow-hidden rounded-3xl shadow-sm hover:shadow-2xl hover:shadow-red-600/10 hover:-translate-y-1 transition-all duration-300 isolate bg-gray-100 w-full aspect-square"
+                className="group relative cursor-pointer overflow-hidden rounded-3xl shadow-sm hover:shadow-2xl hover:shadow-red-600/10 hover:-translate-y-1 transition-all duration-300 isolate bg-gray-100 w-full aspect-video"
                 onClick={() => handleItemClick(item)}
             >
                 <Image
@@ -251,7 +251,7 @@ export default function YouTubeDashboard() {
                     <div className="p-2 grid grid-cols-2 lg:grid-cols-5 gap-4 mt-4">
                         {searchQuery.isLoading ? (
                             Array.from({ length: 10 }).map((_, i) => (
-                                <div key={i} className="aspect-square rounded-3xl bg-gray-100 animate-pulse" />
+                                <div key={i} className="aspect-video rounded-3xl bg-gray-100 animate-pulse" />
                             ))
                         ) : (
                             searchResults.map((item, i) => renderCard(item, i))
@@ -277,7 +277,7 @@ export default function YouTubeDashboard() {
                     <div className="p-2 grid grid-cols-2 lg:grid-cols-5 gap-4 mt-4">
                         {playlistQuery.isLoading ? (
                             Array.from({ length: 10 }).map((_, i) => (
-                                <div key={i} className="aspect-square rounded-3xl bg-gray-100 animate-pulse" />
+                                <div key={i} className="aspect-video rounded-3xl bg-gray-100 animate-pulse" />
                             ))
                         ) : (
                             playlistItems.map((item, i) => renderCard(item, i))
@@ -303,7 +303,7 @@ export default function YouTubeDashboard() {
                             return artistItems.slice(0, 15).map((artist, i) => (
                                 <Fragment key={artist.id + i}>
                                     <div
-                                        className="group relative cursor-pointer overflow-hidden rounded-2xl shadow-sm hover:shadow-2xl hover:shadow-red-600/10 hover:-translate-y-1 transition-all duration-300 isolate bg-gray-100 w-full aspect-square"
+                                        className="group relative cursor-pointer overflow-hidden rounded-2xl shadow-sm hover:shadow-2xl hover:shadow-red-600/10 hover:-translate-y-1 transition-all duration-300 isolate bg-gray-100 w-full aspect-video"
                                         onClick={() => handleItemClick(artist)}
                                     >
                                         <Image
@@ -365,7 +365,7 @@ export default function YouTubeDashboard() {
                                     <div
                                         key={cat.id + i}
                                         onClick={() => handleItemClick(cat)}
-                                        className="relative w-full aspect-square rounded-3xl overflow-hidden cursor-pointer shadow-sm hover:shadow-2xl hover:shadow-red-600/10 transition-all duration-500 hover:-translate-y-1.5 group bg-gray-100"
+                                        className="relative w-full aspect-video rounded-3xl overflow-hidden cursor-pointer shadow-sm hover:shadow-2xl hover:shadow-red-600/10 transition-all duration-500 hover:-translate-y-1.5 group bg-gray-100"
                                     >
                                         <Image
                                             src={cat.thumbnail?.replace('w120-h120', 'w400-h400') || "/icon-cover.png"}

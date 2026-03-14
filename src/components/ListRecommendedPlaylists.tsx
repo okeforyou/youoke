@@ -148,7 +148,7 @@ export default function ListRecommendedPlaylists() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-5 pb-32">
                     {isLoadTracks ? (
                         getSkeletonItems(10).map(i => (
-                            <div key={i} className="aspect-square bg-gray-50 rounded-2xl animate-pulse" />
+                            <div key={i} className="aspect-video bg-gray-50 rounded-2xl animate-pulse" />
                         ))
                     ) : (
                         tracksData?.artist?.map((song: any, i: number) => (
@@ -224,9 +224,9 @@ export default function ListRecommendedPlaylists() {
                                             } as any);
                                             router.push({ pathname: router.pathname, query: { ...router.query, view: 'rec_playlist', id: item.playlistId || item.id } }, undefined, { shallow: true });
                                         }}
-                                        className="flex-shrink-0 w-[140px] sm:w-[180px] group cursor-pointer snap-start"
+                                        className="flex-shrink-0 w-[160px] sm:w-[220px] group cursor-pointer snap-start"
                                     >
-                                        <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 shadow-sm border border-gray-100 group-hover:shadow-xl transition-all duration-300">
+                                        <div className="relative aspect-video rounded-2xl overflow-hidden bg-gray-100 shadow-sm border border-gray-100 group-hover:shadow-xl transition-all duration-300">
                                             <Image 
                                                 src={item.thumbnail?.replace('w120-h120', 'w400-h400') || "/icon-cover.png"} 
                                                 fill 
