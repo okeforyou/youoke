@@ -473,24 +473,25 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                       <p className="text-xs text-gray-400 font-medium">กดเลือกแนวเพลงที่ต้องการฟังได้เลยครับ</p>
                    </div>
 
-                   <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3 px-4 pb-32">
+                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 pb-32">
                       {[
-                        { id: 'lukthung', title: 'ลูกทุ่ง', color: 'bg-orange-600', imageUrl: 'https://images.unsplash.com/photo-1593697909683-bccb1b9e68a4?w=500&q=80' },
-                        { id: 'pueachiwit', title: 'เพื่อชีวิต', color: 'bg-amber-800', imageUrl: 'https://images.unsplash.com/photo-1493225255756-d9584f8606e9?w=500&q=80' },
-                        { id: 'string90s', title: 'สตริงยุค 90', color: 'bg-indigo-700', imageUrl: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500&q=80' },
-                        { id: 'morlam', title: 'หมอลำ', color: 'bg-rose-700', imageUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&q=80' },
-                        { id: 'hits90s', title: 'รวมเพลงฮิตอมตะ', color: 'bg-blue-700', imageUrl: 'https://images.unsplash.com/photo-1459749411177-042180ceea72?w=500&q=80' },
-                        { id: 'international', title: 'สากล', color: 'bg-emerald-800', imageUrl: 'https://images.unsplash.com/photo-1514525253361-b83f859b71c0?w=500&q=80' },
+                        { id: 'lukthung', title: 'ลูกทุ่ง', gradient: 'from-orange-500 to-red-600' },
+                        { id: 'pueachiwit', title: 'เพื่อชีวิต', gradient: 'from-amber-600 to-yellow-800' },
+                        { id: 'string90s', title: 'สตริงยุค 90', gradient: 'from-indigo-500 to-purple-600' },
+                        { id: 'morlam', title: 'หมอลำ', gradient: 'from-pink-500 to-rose-600' },
+                        { id: 'hits90s', title: 'รวมเพลงฮิตอมตะ', gradient: 'from-blue-500 to-cyan-600' },
+                        { id: 'international', title: 'สากล', gradient: 'from-emerald-500 to-teal-700' },
                       ].map((theme) => (
                         <div 
                           key={theme.id}
                           onClick={() => setGenreText(theme.title)}
-                          className="relative aspect-[1.618/1] rounded-2xl overflow-hidden bg-gray-200 group cursor-pointer shadow-sm hover:shadow-md transition-all border border-gray-100"
+                          className={`group relative overflow-hidden rounded-xl aspect-[1.8/1] min-h-[72px] sm:min-h-[80px] cursor-pointer shadow-sm hover:shadow-md transition-all bg-gradient-to-br ${theme.gradient}`}
                         >
-                           <Image src={theme.imageUrl} alt={theme.title} fill className="object-cover transition-transform duration-700 group-hover:scale-105" unoptimized />
-                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-90" />
-                           <div className="absolute inset-0 p-4 flex flex-col justify-end">
-                              <h4 className="text-base sm:text-lg font-bold text-white leading-tight drop-shadow-md">{theme.title}</h4>
+                           <div className="absolute inset-0 p-2 flex flex-col justify-end sm:p-2.5">
+                              <h3 className="text-[10px] min-[320px]:text-[11px] sm:text-[13px] md:text-[14px] font-bold text-white leading-[1.0] sm:leading-tight drop-shadow-sm line-clamp-2 break-words text-left">{theme.title}</h3>
+                           </div>
+                           <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all">
+                              <ChevronRight className="w-3.5 h-3.5 text-white" />
                            </div>
                         </div>
                       ))}
@@ -516,7 +517,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
 
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 pb-20">
                       {isLoadStation ? (
-                        getSkeletonItems(8).map(s => <div key={s} className="aspect-square bg-gray-100 rounded-2xl animate-pulse" />)
+                        getSkeletonItems(8).map(s => <div key={s} className="aspect-video bg-gray-100 rounded-2xl animate-pulse" />)
                       ) : (
                         stationResults?.map(video => (
                             <div key={video.videoId} onClick={() => {
@@ -530,10 +531,10 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                                 } as any;
                                 addToQueue(videoToAdd);
                             }} className="group cursor-pointer">
-                                <div className="relative aspect-square rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm group-hover:shadow-md transition-all">
+                                <div className="relative aspect-video rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm group-hover:shadow-md transition-all">
                                     <Image src={`https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`} alt={video.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" unoptimized />
                                 </div>
-                                <p className="mt-2.5 px-0.5 text-[10px] sm:text-[11px] font-bold text-black text-center group-hover:text-primary transition-colors line-clamp-2 leading-tight h-[24px] sm:h-[32px] flex items-start justify-center italic-sm">
+                                <p className="mt-2.5 px-0.5 text-[10px] sm:text-[11px] font-bold text-black text-center group-hover:text-primary transition-colors line-clamp-1 leading-tight h-[16px] sm:h-[18px] flex items-start justify-center italic-sm">
                                     {video.title}
                                 </p>
                             </div>
