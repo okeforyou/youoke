@@ -424,7 +424,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                   </div>
                 </div>
               )}
-            </>
+            </div>
           )}
 
           {/* 3. GENRES / PLAYLISTS (MODE: GENRES) */}
@@ -473,10 +473,10 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
             </div>
           )}
 
-          {/* 4. STATION MODE (MODE: STATION) - NEW THEME GRID */}
+          {/* 4. STATION MODE (MODE: STATION) - MASTER PLAN UI */}
           {mode === 'station' && (
-            <div className="animate-in fade-in duration-500">
-               {!genreText && !tagId ? (
+            <div className="animate-in fade-in duration-700 pb-32">
+               {!tagId && (
                  <>
                    <div className="px-4 pt-4 pb-6">
                         <div className="bg-gray-100 p-8 rounded-xl relative overflow-hidden min-h-[140px] flex flex-col justify-center">
