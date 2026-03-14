@@ -83,6 +83,11 @@ export const getHitSingles = async () => {
   return res.data;
 };
 
+export const getJooxCharts = async () => {
+  const res = await apiClient.get<{ status: string, charts: any[] }>("/api/joox/charts");
+  return res.data;
+};
+
 export const searchPlaylists = async (
   query: string,
   page: number = 1,

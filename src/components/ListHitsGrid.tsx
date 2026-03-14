@@ -3,12 +3,13 @@ import { useRouter } from "next/router";
 import Image from "next/image";
 import { useQuery } from "@tanstack/react-query";
 import { BarChart2, ChevronRight, Flame, Sparkles, Star, Trophy, ArrowLeft } from "lucide-react";
-import { getHitSingles } from "../utils/api";
+import { getJooxCharts } from "../utils/api";
 import { Single } from "../types";
 
 const CHART_CATEGORIES = [
   {
     id: "top100",
+    jooxId: 42,
     title: "ฮิตติดชาร์ต อันดับ 1",
     description: "รวมเพลงฮิตที่สุดในตารางตอนนี้",
     gradient: "from-amber-500 to-orange-600",
@@ -16,6 +17,7 @@ const CHART_CATEGORIES = [
   },
   {
     id: "new_releases",
+    jooxId: 128,
     title: "เพลงใหม่มาแรง",
     description: "อัปเดตเพลงใหม่ที่กำลังเป็นกระแส",
     gradient: "from-emerald-500 to-teal-700",
@@ -23,15 +25,17 @@ const CHART_CATEGORIES = [
   },
   {
     id: "trending",
+    jooxId: 133,
     title: "อัปเดตเพลงฮิต",
     description: "เพลงฮิตติดหูที่ใครก็ฟังกัน",
     gradient: "from-rose-500 to-red-700",
     Icon: Flame
   },
   {
-    id: "best2024",
-    title: "ที่สุดแห่งปี 2024",
-    description: "รวบรวมเพลงยอดเยี่ยมแห่งปี",
+    id: "all_time_hits",
+    jooxId: 57,
+    title: "ฮิตตลอดกาล",
+    description: "รวบรวมเพลงฮิตอมตะยอดนิยม",
     gradient: "from-violet-500 to-purple-700",
     Icon: Star
   }
@@ -42,28 +46,20 @@ export default function ListHitsGrid() {
   const [selectedChart, setSelectedChart] = useState<string | null>(null);
 
   const { data: hitsData, isLoading } = useQuery({
-    queryKey: ["hitSingles"],
-    queryFn: getHitSingles,
+    queryKey: ["jooxCharts"],
+    queryFn: getJooxCharts,
     staleTime: 1000 * 60 * 60 * 24, // 24 hours
   });
 
-  const allHits = hitsData?.singles || [];
-
-  // Temporary mock data mapping until the actual JOOX scraper backend is built
   const chartItems = useMemo(() => {
-    switch (selectedChart) {
-      case "top100":
-        return allHits.slice(0, 50);
-      case "new_releases":
-        return [...allHits].reverse().slice(0, 30);
-      case "trending":
-        return [...allHits].sort(() => Math.random() - 0.5).slice(0, 40);
-      case "best2024":
-        return [...allHits].filter((_, i) => i % 2 === 0).slice(0, 30);
-      default:
-        return [];
-    }
-  }, [allHits, selectedChart]);
+    if (!hitsData?.charts || !selectedChart) return [];
+    
+    const category = CHART_CATEGORIES.find(c => c.id === selectedChart);
+    if (!category) return [];
+
+    const jooxChart = hitsData.charts.find((c: any) => c.id === category.jooxId);
+    return jooxChart?.singles || [];
+  }, [hitsData, selectedChart]);
 
   const activeChart = CHART_CATEGORIES.find(c => c.id === selectedChart);
 
@@ -80,12 +76,11 @@ export default function ListHitsGrid() {
     return (
       <div className="animate-in fade-in duration-500">
         <div className="px-4 pt-4 pb-6">
-          <div className="bg-gradient-to-br from-gray-900 to-black p-8 rounded-[2.5rem] relative overflow-hidden min-h-[140px] flex flex-col justify-center shadow-lg">
-             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-[80px] -mr-32 -mt-32" />
-             <h2 className="text-3xl font-black text-white leading-tight">ชาร์ตเพลง</h2>
-             <p className="text-gray-400 mt-2 font-medium">เกาะติดกระแสเพลงฮิต อัปเดตใหม่ล่าสุดตลอดเวลา</p>
-             <div className="absolute bottom-6 right-8 opacity-10">
-                <BarChart2 className="w-20 h-20 text-white" />
+          <div className="bg-gray-100 p-6 sm:p-8 rounded-xl relative overflow-hidden min-h-[140px] flex flex-col justify-center">
+             <h2 className="text-3xl font-black text-gray-900 leading-tight">ชาร์ตเพลง</h2>
+             <p className="text-gray-500 mt-2 font-medium">เกาะติดกระแสเพลงฮิต อัปเดตใหม่ล่าสุดตลอดเวลา</p>
+             <div className="absolute bottom-6 right-8 opacity-5">
+                <BarChart2 className="w-20 h-20 text-black" />
              </div>
           </div>
         </div>
@@ -146,7 +141,7 @@ export default function ListHitsGrid() {
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-3 md:gap-4 px-1">
-            {chartItems.map((hit, index) => (
+            {chartItems.map((hit: Single, index: number) => (
               <div 
                 key={`${hit.title}-${index}`} 
                 onClick={() => handleClick(hit)} 
