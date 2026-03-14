@@ -125,10 +125,14 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
   const stationContentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (mode === 'station' && selectedCategoryId && stationContentRef.current) {
-        stationContentRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (mode === 'station' && genreText) {
+      requestAnimationFrame(() => {
+        if (stationContentRef.current) {
+          stationContentRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
     }
-  }, [selectedCategoryId, mode]);
+  }, [genreText, mode]);
 
   const { data: tempTopArtistsData, isLoading: isLoadTopArtists } = useQuery({
     queryKey: ["getTopArtists", "v2", mode],
