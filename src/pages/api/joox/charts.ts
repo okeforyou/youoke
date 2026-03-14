@@ -10,9 +10,10 @@ export default async function handler(
 
     // Allow manual seeding if JOOX blocks Vercel IPs
     if (req.method === 'POST') {
+      console.log('📥 POST SEED REQUEST RECEIVED');
       const { charts, secret } = req.body;
-      if (secret !== process.env.FIREBASE_PROJECT_ID) { // Simple secret check using project ID
-        return res.status(401).json({ error: "Unauthorized" });
+      if (secret !== 'OKE_SEED_2024') { 
+        return res.status(401).json({ error: "Unauthorized", received: secret });
       }
 
       if (adminFirestore && Array.isArray(charts) && charts.length > 0) {
@@ -20,6 +21,7 @@ export default async function handler(
           updatedAt: new Date().toISOString(),
           charts: charts
         });
+        console.log('✅ Cache seeded manually via POST');
         return res.status(200).json({ status: "success", message: "Cache seeded manually" });
       }
       return res.status(400).json({ error: "Invalid data" });
