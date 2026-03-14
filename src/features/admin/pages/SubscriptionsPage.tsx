@@ -41,6 +41,8 @@ interface Plan {
   isVisible: boolean;
 }
 
+const CORE_PLAN_IDS = ["free", "monthly", "yearly", "lifetime"];
+
 const SubscriptionsPage: React.FC = () => {
   const toast = useToast();
   const [plans, setPlans] = useState<Plan[]>([]);
@@ -77,16 +79,29 @@ const SubscriptionsPage: React.FC = () => {
         if (!db) { setError("Firebase not initialized"); setIsLoading(false); return; }
         const q = query(collection(db, "plans"));
         const querySnapshot = await getDocs(q);
-        const fetchedPlans = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        })) as Plan[];
+        const fetchedPlans = querySnapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            name: data.name || doc.id,
+            displayName: data.displayName || "",
+            price: data.price || 0,
+            currency: data.currency || "THB",
+            duration: data.duration !== undefined ? data.duration : 1,
+            features: data.features || [],
+            maxRooms: data.maxRooms || 1,
+            maxSongsInQueue: data.maxSongsInQueue || 10,
+            maxDailySongs: data.maxDailySongs || 20,
+            showAds: data.showAds ?? true,
+            isActive: data.isActive ?? true,
+            isVisible: data.isVisible ?? true,
+          };
+        }) as Plan[];
 
         // Sort: Core plans first
-        const corePlans = ["free", "monthly", "yearly", "lifetime"];
         fetchedPlans.sort((a, b) => {
-          const indexA = corePlans.indexOf(a.id);
-          const indexB = corePlans.indexOf(b.id);
+          const indexA = CORE_PLAN_IDS.indexOf(a.id);
+          const indexB = CORE_PLAN_IDS.indexOf(b.id);
           if (indexA !== -1 && indexB !== -1) return indexA - indexB;
           if (indexA !== -1) return -1;
           if (indexB !== -1) return 1;
@@ -164,8 +179,7 @@ const SubscriptionsPage: React.FC = () => {
 
   const handleDeletePlan = async (plan: Plan) => {
     // Prevent deletion of core plans
-    const corePlans = ["free", "monthly", "yearly", "lifetime"];
-    if (corePlans.includes(plan.id)) {
+    if (CORE_PLAN_IDS.includes(plan.id)) {
       toast?.addToast(`ไม่สามารถลบ Plan "${plan.displayName}" ได้ - นี่คือ Plan หลักของระบบ`, "warning");
       return;
     }
@@ -436,6 +450,19 @@ const SubscriptionsPage: React.FC = () => {
             </h2>
 
             <div className="space-y-4">
+              {/* Plan ID (Read Only) */}
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-1">
+                  Plan ID (อ้างอิงระบบ - แก้ไขไม่ได้)
+                </label>
+                <input
+                  type="text"
+                  value={editingPlan.id}
+                  disabled
+                  className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-gray-500 cursor-not-allowed"
+                />
+              </div>
+
               {/* Display Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -643,7 +670,7 @@ const SubscriptionsPage: React.FC = () => {
                   ยกเลิก
                 </button>
               </div>
-              {!["free", "monthly", "yearly", "lifetime"].includes(editingPlan.id) && (
+              {!CORE_PLAN_IDS.includes(editingPlan.id) && (
                 <button
                   onClick={() => handleDeletePlan(editingPlan)}
                   disabled={isDeleting}
