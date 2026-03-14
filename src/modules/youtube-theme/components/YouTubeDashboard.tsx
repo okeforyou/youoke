@@ -248,7 +248,7 @@ export default function YouTubeDashboard() {
                         </div>
                     </div>
 
-                    <div className="p-2 grid grid-cols-2 lg:grid-cols-5 gap-4 mt-4">
+                    <div className="p-2 grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
                         {searchQuery.isLoading ? (
                             Array.from({ length: 10 }).map((_, i) => (
                                 <div key={i} className="aspect-video rounded-3xl bg-gray-100 animate-pulse" />
@@ -274,7 +274,7 @@ export default function YouTubeDashboard() {
                         </div>
                     </div>
 
-                    <div className="p-2 grid grid-cols-2 lg:grid-cols-5 gap-4 mt-4">
+                    <div className="p-2 grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
                         {playlistQuery.isLoading ? (
                             Array.from({ length: 10 }).map((_, i) => (
                                 <div key={i} className="aspect-video rounded-3xl bg-gray-100 animate-pulse" />
@@ -290,7 +290,7 @@ export default function YouTubeDashboard() {
                     <div className="col-span-full px-2 pt-2 pb-2 text-[13px] font-black text-black uppercase tracking-wider flex items-center gap-2">
                         ศิลปินยอดนิยม
                     </div>
-                    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 col-span-full pb-6 px-2">
+                    <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 col-span-full pb-6 px-2">
                         {(() => {
                             const artistShelf = shelves.find(s => s.title.includes('ศิลปิน'));
                             const artistItems = artistShelf?.items || [
@@ -334,7 +334,7 @@ export default function YouTubeDashboard() {
                     <div className="col-span-full px-2 pt-4 pb-3 text-[13px] font-black text-black uppercase tracking-wider flex items-center gap-2 border-t border-gray-100 mt-2">
                         แนวเพลงยอดฮิต
                     </div>
-                    <div className="col-span-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 px-2 pb-8">
+                    <div className="col-span-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 px-2 pb-8">
                         {shelves.filter(s => !s.title.includes('ศิลปิน')).slice(0, 15).map((shelf, i) => {
                             const cleanTitle = shelf.title.replace(/👑|📂|🎵/g, '').trim();
                             const isSelected = genreText === cleanTitle || (genreText === "แนะนำ" && i === 0);
@@ -360,7 +360,7 @@ export default function YouTubeDashboard() {
                                 </div>
                                 <span className="text-[10px] font-normal text-gray-400 bg-gray-50 px-3 py-1 rounded-full border border-gray-100">YouTube Music</span>
                             </div>
-                            <div className="col-span-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 px-4 pb-24">
+                            <div className="col-span-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-4 pb-24">
                                 {shelves[selectedShelfIndex].items.map((cat, i) => (
                                     <div
                                         key={cat.id + i}

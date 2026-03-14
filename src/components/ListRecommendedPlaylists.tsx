@@ -145,7 +145,7 @@ export default function ListRecommendedPlaylists() {
                         <FolderPlusIcon className="w-4 h-4" /> <span>{isImporting ? "กำลังบันทึก..." : "บันทึกลิสต์"}</span>
                     </button>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-5 pb-32">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4 p-5 pb-32">
                     {isLoadTracks ? (
                         getSkeletonItems(10).map(i => (
                             <div key={i} className="aspect-video bg-gray-50 rounded-2xl animate-pulse" />

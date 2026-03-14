@@ -94,7 +94,7 @@ export default function HomePage() {
               <HomePageContent />
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
               {[...Array(10)].map((_, i) => (
                 <div key={i} className="aspect-video bg-gray-50 rounded-2xl animate-pulse border border-gray-100"></div>
               ))}

@@ -480,7 +480,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
       {/* Grid Content */}
       <div className="min-h-[400px]">
         {isLoading ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6 gap-y-10">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6 gap-y-10">
             {getSkeletonItems(10).map((i) => (
               <div key={i} className="flex flex-col gap-3">
                 <div className="aspect-video w-full bg-gray-100 rounded-2xl animate-pulse"></div>
@@ -505,7 +505,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
                 )}
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-10">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-x-6 gap-y-10">
                 {playlists.map((item, index) => (
                   <PlaylistCard
                     key={item.id + index + "-v3-force-refresh"}

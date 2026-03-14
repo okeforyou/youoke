@@ -62,7 +62,7 @@ export default function ListCommunityPlaylists({ onPlay }: ListCommunityPlaylist
                 <p className="text-gray-500 text-[12px] mt-1 ml-7">เพลย์ลิสต์ยอดนิยมจากเพื่อนๆ ในชุมชน YouOke</p>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-10 px-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-x-6 gap-y-10 px-6">
                 {loading ? (
                     getSkeletonItems(5).map((i) => (
                         <div key={i} className="flex flex-col gap-3">
