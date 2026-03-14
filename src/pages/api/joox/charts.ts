@@ -5,36 +5,21 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  // Allow manual seeding if JOOX blocks Vercel IPs
+  if (req.method === 'POST') {
+    const { charts, secret } = req.body;
+    if (secret === 'OKE_SEED_2024' && adminFirestore && Array.isArray(charts)) {
+      await adminFirestore.collection('system_cache').doc('joox_charts').set({
+        updatedAt: new Date().toISOString(),
+        charts: charts
+      });
+      return res.status(200).json({ status: "success", seeded: true, count: charts.length });
+    }
+    return res.status(401).json({ status: "error", message: "Unauthorized or invalid data", method: req.method });
+  }
+
   try {
     const force = req.query.force === 'true';
-    const test = req.query.test === 'true';
-    
-    if (test) {
-      return res.status(200).json({ 
-        method: req.method, 
-        hasBody: !!req.body,
-        bodyKeys: Object.keys(req.body || {}),
-        firestore: !!adminFirestore 
-      });
-    }
-
-    // Allow manual seeding if JOOX blocks Vercel IPs
-    if (req.method === 'POST') {
-      const { charts, secret } = req.body;
-      if (secret !== 'OKE_SEED_2024') { 
-        return res.status(401).json({ error: "Unauthorized", received: secret, method: req.method });
-      }
-
-      if (adminFirestore && Array.isArray(charts) && charts.length > 0) {
-        await adminFirestore.collection('system_cache').doc('joox_charts').set({
-          updatedAt: new Date().toISOString(),
-          charts: charts
-        });
-        console.log('✅ Cache seeded manually via POST');
-        return res.status(200).json({ status: "success", message: "Cache seeded manually" });
-      }
-      return res.status(400).json({ error: "Invalid data" });
-    }
 
     const allowedCharts = [
       { id: 42, name: "Thailand Top 100" },
