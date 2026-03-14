@@ -490,7 +490,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                       <p className="text-xs text-gray-400 font-medium">กดเลือกแนวเพลงที่ต้องการฟังได้เลยครับ</p>
                    </div>
 
-                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 pb-32">
+                   <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 pb-32">
                       {ARTIST_CATEGORIES.filter(c => c.id !== 'popular').map((cat) => {
                         const Icon = 
                           cat.id === 'luk-thung' ? Mic2 :
