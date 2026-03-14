@@ -40,52 +40,76 @@ export default async function handler(
       }
     }
 
-    const fetchChart = async (chart: {id: number, name: string}) => {
-      try {
-        const response = await fetch(`https://www.joox.com/th/chart/${chart.id}`, {
-          headers: {
-            "User-Agent":
-              "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-            Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.9,th;q=0.8",
-          },
-        });
-
-        if (!response.ok) return null;
-
-        const html = await response.text();
-        const match = html.match(/<script id="__NEXT_DATA__".*?>(.*?)<\/script>/);
-        if (!match || !match[1]) return null;
-
-        const nextData = JSON.parse(match[1]);
-        const items = nextData?.props?.pageProps?.trackList?.tracks?.items || [];
-        
-        const singles = items.map((song: any) => {
-          const bestImage =
-            song.images?.find((img: any) => img.width === 1000)?.url ||
-            song.images?.[0]?.url ||
-            "";
-
-          const artistName = (song.artist_list || [])
-            .map((a: any) => a.name)
-            .join(", ");
-
-          return {
-            id: song.id,
-            title: song.name,
-            artist_name: artistName,
-            coverImageURL: bestImage,
+    const fetchChart = (chart: {id: number, name: string}): Promise<any> => {
+      return new Promise((resolve) => {
+        try {
+          const https = require('https');
+          const options = {
+            hostname: 'www.joox.com',
+            path: `/th/chart/${chart.id}`,
+            method: 'GET',
+            headers: {
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+              'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+              'Accept-Language': 'th-TH,th;q=0.9,en-US;q=0.8,en;q=0.7',
+            }
           };
-        });
 
-        return {
-          id: chart.id,
-          name: chart.name,
-          singles,
-        };
-      } catch (e) {
-        return null;
-      }
+          const reqObj = https.request(options, (responseObj: any) => {
+            let html = '';
+            responseObj.on('data', (chunk: any) => { html += chunk; });
+            responseObj.on('end', () => {
+              if (responseObj.statusCode !== 200) {
+                console.error(`JOOX HTTP ${responseObj.statusCode} for chart ${chart.id}`);
+                return resolve(null);
+              }
+
+              const match = html.match(/<script id="__NEXT_DATA__".*?>(.*?)<\/script>/);
+              if (!match || !match[1]) return resolve(null);
+
+              try {
+                const nextData = JSON.parse(match[1]);
+                const items = nextData?.props?.pageProps?.trackList?.tracks?.items || [];
+                
+                const singles = items.map((song: any) => {
+                  const bestImage =
+                    song.images?.find((img: any) => img.width === 1000)?.url ||
+                    song.images?.[0]?.url ||
+                    "";
+
+                  const artistName = (song.artist_list || [])
+                    .map((a: any) => a.name)
+                    .join(", ");
+
+                  return {
+                    id: song.id,
+                    title: song.name,
+                    artist_name: artistName,
+                    coverImageURL: bestImage,
+                  };
+                });
+
+                resolve({
+                  id: chart.id,
+                  name: chart.name,
+                  singles,
+                });
+              } catch (e) {
+                 resolve(null);
+              }
+            });
+          });
+
+          reqObj.on('error', (e: any) => {
+            console.error("HTTPS request error:", e);
+            resolve(null);
+          });
+          reqObj.end();
+        } catch (e) {
+          console.error("fetchChart error:", e);
+          resolve(null);
+        }
+      });
     };
 
     const results = await Promise.all(allowedCharts.map(fetchChart));
