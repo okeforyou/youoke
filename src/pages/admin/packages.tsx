@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import AdminLayout from '@/features/admin/layouts/AdminLayout';
 import { db } from '@/firebase';
-import { collection, onSnapshot, doc, updateDoc, setDoc, deleteDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, setDoc, deleteDoc, getDocs, serverTimestamp } from 'firebase/firestore';
 import {
     Package,
     Plus,
@@ -12,25 +12,17 @@ import {
     X,
     Trash2,
     Save,
-    AlertCircle,
-    Clock,
     Search,
     Smartphone,
     Tv,
     Mic2,
-    Music,
-    Ban,
     Library,
     Zap,
-    Heart,
-    Sparkles,
-    Volume2,
     Play,
     Bookmark,
-    ListMusic
+    Ban
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
 
 interface PackageData {
     id: string;
@@ -81,39 +73,74 @@ export default function PackagesPage() {
     const [featuresJson, setFeaturesJson] = useState('{}');
 
     useEffect(() => {
-        if (!db) return;
-        // Fetch Plans for dropdown
-        const { getDocs, collection } = require('firebase/firestore');
-        getDocs(collection(db, 'plans')).then((snap: any) => {
-            const planList = snap.docs.map((doc: any) => ({
-                id: doc.id,
-                displayName: doc.data().displayName || doc.id
-            }));
-            setPlans(planList);
-        });
-    }, [db]);
-
-    useEffect(() => {
+        // Essential: Check if Firebase is ready
         if (!db) {
-            console.log("📊 PackagesPage: db is null, waiting...");
+            console.log("📊 PackagesPage: Waiting for Firestore instance...");
             return;
         }
-        console.log("🔥 Connected to Firebase Project:", db.app.options.projectId);
-        const unsubscribe = onSnapshot(collection(db, 'packages'), (snapshot) => {
-            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as PackageData));
-            data.sort((a, b) => (a.isActive === b.isActive ? a.price - b.price : a.isActive ? -1 : 1));
-            setPackages(data);
-            setLoading(false);
-        });
-        return () => unsubscribe();
+
+        // Diagnostic: Verify DB type to prevent "invalid-argument" error
+        const dbAsAny = db as any;
+        const isValidFirestore = dbAsAny && (dbAsAny.type === 'firestore' || dbAsAny.app || dbAsAny._databaseId);
+        
+        if (!isValidFirestore) {
+            console.error("❌ PackagesPage: db instance is invalid for collection() call", db);
+            return;
+        }
+
+        console.log("🔥 PackagesPage: Connected to project", dbAsAny.app?.options?.projectId);
+
+        let isMounted = true;
+
+        // 1. Fetch Plans for dropdown
+        const fetchPlans = async () => {
+            try {
+                const plansCol = collection(db, 'plans');
+                const snap = await getDocs(plansCol);
+                if (isMounted) {
+                    const planList = snap.docs.map(doc => ({
+                        id: doc.id,
+                        displayName: doc.data().displayName || doc.id
+                    }));
+                    setPlans(planList);
+                }
+            } catch (err) {
+                console.error("❌ PackagesPage: Error fetching plans:", err);
+            }
+        };
+
+        // 2. Subscribe to Packages
+        let unsubscribe = () => {};
+        try {
+            const pkgsCol = collection(db, 'packages');
+            unsubscribe = onSnapshot(pkgsCol, (snapshot) => {
+                if (isMounted) {
+                    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as PackageData));
+                    data.sort((a, b) => (a.isActive === b.isActive ? a.price - b.price : a.isActive ? -1 : 1));
+                    setPackages(data);
+                    setLoading(false);
+                }
+            }, (err) => {
+                console.error("❌ PackagesPage: onSnapshot error:", err);
+                if (isMounted) setLoading(false);
+            });
+        } catch (err) {
+            console.error("❌ PackagesPage: Error setting up listener:", err);
+            if (isMounted) setLoading(false);
+        }
+
+        fetchPlans();
+
+        return () => {
+            isMounted = false;
+            unsubscribe();
+        };
     }, [db]);
 
     const toggleFeature = (feature: string) => {
         try {
             let currentFeatures: Record<string, boolean> = {};
             try { currentFeatures = JSON.parse(featuresJson); } catch (e) { currentFeatures = {}; }
-
-            // Toggle
             if (currentFeatures[feature]) {
                 delete currentFeatures[feature];
             } else {
@@ -138,184 +165,159 @@ export default function PackagesPage() {
         setEditMode(pkg);
         setIsCreating(false);
         setFormData(pkg);
-        setFeaturesJson(JSON.stringify(pkg.features, null, 4));
+        setFeaturesJson(JSON.stringify(pkg.features || {}, null, 4));
     };
 
     const handleCreate = () => {
         setEditMode(null);
         setIsCreating(true);
+        const defaultFeatures = { "HD Audio": true, "Unlimited Songs": true };
         setFormData({
             id: '',
             name: '',
             description: '',
             price: 0,
             durationDays: 30,
-            features: { "HD Audio": true, "Unlimited Songs": true },
+            features: defaultFeatures,
             isActive: true
         });
-        setFeaturesJson(JSON.stringify({ "HD Audio": true, "Unlimited Songs": true }, null, 4));
+        setFeaturesJson(JSON.stringify(defaultFeatures, null, 4));
     };
 
     const handleSave = async () => {
-        // DEBUG: Step 1
-        console.log("handleSave started");
-
         setJsonError('');
         let parsedFeatures = {};
-
-        // 1. Validate JSON
         try {
             parsedFeatures = JSON.parse(featuresJson);
         } catch (e: any) {
             setJsonError('รูปแบบ JSON ไม่ถูกต้อง: ' + e.message);
-            alert("JSON Syntax Error: " + e.message);
             return;
         }
 
+        if (!db) return;
         setLoading(true);
 
         try {
-            // DEBUG: Step 2 - Import
-            const { doc, setDoc, serverTimestamp } = await import('firebase/firestore');
-            const { db } = await import('../../firebase');
-            if (!db) throw new Error("Database not initialized");
-
-            // Generate ID if not provided or clean it
             let finalId = formData.id.trim();
             if (!finalId) {
                 finalId = 'pkg_' + Date.now();
             }
 
-            const price = Number(formData.price) || 0;
-            const durationDays = Number(formData.durationDays) || 0;
-
-            // DEBUG: Step 3 - Prepare Payload
-            const dataToSave = {
+            const payload = {
                 name: formData.name || "Untitled Package",
                 description: formData.description || "",
-                price: price,
-                durationDays: durationDays,
+                price: Number(formData.price) || 0,
+                durationDays: Number(formData.durationDays) || 0,
                 planId: formData.planId || "",
-                features: parsedFeatures || {},
-                isActive: formData.isActive || false,
+                features: parsedFeatures,
+                isActive: formData.isActive,
                 isPopular: formData.isPopular || false,
-                updatedAt: serverTimestamp() // Use server timestamp to be safe
+                updatedAt: serverTimestamp(),
+                createdAt: editMode ? formData.createdAt : serverTimestamp()
             };
 
-            const payload = {
-                ...dataToSave,
-                ...(editMode ? { createdAt: formData.createdAt } : { createdAt: serverTimestamp() })
-            };
-
-            console.log("Saving payload to", finalId, payload);
-
-            // Removed { merge: true } to ensure old keys in features are fully replaced/deleted
             await setDoc(doc(db, 'packages', finalId), payload);
-
-            alert("✅ บันทึกข้อมูลสำเร็จ! (Saved to " + finalId + ")");
+            alert("✅ บันทึกข้อมูลสำเร็จ!");
             setEditMode(null);
             setIsCreating(false);
-
-            if (!editMode) {
-                setFormData({ ...formData, id: '', name: '', description: '', price: 0, durationDays: 30 });
-            }
-
         } catch (e: any) {
-            console.error("Save Error:", e);
-            alert(`❌ Application Error:\n${e.message}\n(Check Console for details)`);
+            console.error("❌ Save Error:", e);
+            alert(`❌ ไม่สามารถบันทึกได้: ${e.message}`);
         } finally {
             setLoading(false);
         }
     };
 
     const handleDelete = async (id: string) => {
+        if (!db) return;
         if (confirm(`คุณต้องการลบแพ็กเกจ ${id} ใช่ไหม?`)) {
-            const { PackageService } = await import('../../services/packageService');
-            await PackageService.deletePackage(id);
+            try {
+                await deleteDoc(doc(db, 'packages', id));
+                alert("ลบแพ็กเกจแล้ว");
+            } catch (e: any) {
+                console.error("Delete Error:", e);
+                alert("เกิดข้อผิดพลาดในการลบ: " + e.message);
+            }
         }
     };
 
-    // Calculate Stats
     const stats = {
         total: packages.length,
         active: packages.filter(p => p.isActive).length,
         popular: packages.filter(p => p.isPopular).length
     };
 
-    // Helper to extract feature list from JSON object for display with stable ordering
     const getFeaturesList = (features: any): string[] => {
         if (!features || typeof features !== 'object') return [];
-
         const orderedFeatures: string[] = [];
         const predefinedLabels = PREDEFINED_FEATURES.map(pf => pf.label);
-
-        // 1. Add predefined features in their fixed order if they are enabled
+        
         PREDEFINED_FEATURES.forEach(pf => {
-            if (features[pf.label] === true) {
-                orderedFeatures.push(pf.label);
-            }
+            if (features[pf.label] === true) orderedFeatures.push(pf.label);
         });
-
-        // 2. Add any custom features (not in predefined list) that are enabled
+        
         Object.entries(features).forEach(([key, value]) => {
             if (value === true && !predefinedLabels.includes(key)) {
-                // Formatting: if it's a camelCase key, prettify it, otherwise keep as is
                 const label = key.includes(' ') ? key : key.replace(/([A-Z])/g, ' $1').trim();
                 orderedFeatures.push(label);
             }
         });
-
+        
         return orderedFeatures;
     };
 
+    if (loading && packages.length === 0) {
+        return (
+            <AdminLayout headerTitle="Package Manager">
+                <div className="flex h-64 items-center justify-center">
+                    <span className="loading loading-spinner loading-lg text-primary"></span>
+                </div>
+            </AdminLayout>
+        );
+    }
+
     return (
         <AdminLayout headerTitle="Package Manager">
-
-            {/* Page Header */}
             <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-foreground">จัดการแพ็กเกจ</h1>
-                    <p className="mt-1 text-muted-foreground">จัดการแผนราคาแบบขายสิทธิ์สมาชิกแบบต่างๆ</p>
+                    <p className="mt-1 text-muted-foreground text-sm">จัดการแผนราคาแบบขายสิทธิ์สมาชิกแบบต่างๆ</p>
                 </div>
-                <div className="flex gap-2">
-                    <button onClick={handleCreate} className="btn bg-primary text-primary-foreground hover:bg-primary/90 gap-2 rounded-lg border-none shadow-sm">
-                        <Plus className="w-4 h-4" /> สร้างแพ็กเกจ
-                    </button>
-                </div>
+                <button onClick={handleCreate} className="btn btn-primary gap-2 rounded-xl">
+                    <Plus className="w-4 h-4" /> สร้างแพ็กเกจ
+                </button>
             </div>
 
-            {/* Stats Cards */}
             <div className="mb-8 grid gap-4 sm:grid-cols-3">
                 <div className="glass-card p-4 flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/20">
-                        <Package className="h-6 w-6 text-primary" />
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/20 text-primary">
+                        <Package className="h-6 w-6" />
                     </div>
                     <div>
-                        <p className="text-2xl font-bold text-foreground">{stats.total}</p>
-                        <p className="text-sm text-muted-foreground">แพ็กเกจทั้งหมด</p>
+                        <p className="text-2xl font-bold">{stats.total}</p>
+                        <p className="text-xs text-muted-foreground uppercase font-bold">แพ็กเกจทั้งหมด</p>
                     </div>
                 </div>
                 <div className="glass-card p-4 flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-success/20">
-                        <Check className="h-6 w-6 text-success" />
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-500/20 text-green-500">
+                        <Check className="h-6 w-6" />
                     </div>
                     <div>
-                        <p className="text-2xl font-bold text-foreground">{stats.active}</p>
-                        <p className="text-sm text-muted-foreground">เปิดขาย</p>
+                        <p className="text-2xl font-bold">{stats.active}</p>
+                        <p className="text-xs text-muted-foreground uppercase font-bold">เปิดขาย</p>
                     </div>
                 </div>
                 <div className="glass-card p-4 flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-warning/20">
-                        <Star className="h-6 w-6 text-warning" />
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/20 text-amber-500">
+                        <Star className="h-6 w-6" />
                     </div>
                     <div>
-                        <p className="text-2xl font-bold text-foreground">{stats.popular}</p>
-                        <p className="text-sm text-muted-foreground">ยอดนิยม</p>
+                        <p className="text-2xl font-bold">{stats.popular}</p>
+                        <p className="text-xs text-muted-foreground uppercase font-bold">ยอดนิยม</p>
                     </div>
                 </div>
             </div>
 
-            {/* Packages Grid */}
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {packages.map((pkg) => {
                     const featureList = getFeaturesList(pkg.features);
@@ -325,85 +327,69 @@ export default function PackagesPage() {
                             pkg.isPopular && "border-primary ring-1 ring-primary/20",
                             !pkg.isActive && "opacity-60 grayscale-[0.5]"
                         )}>
-                            {/* Popular badge */}
                             {pkg.isPopular && (
-                                <div className="absolute -right-8 top-4 rotate-45 bg-primary px-8 py-1 text-xs font-semibold text-primary-foreground shadow-lg z-10">
+                                <div className="absolute -right-8 top-4 rotate-45 bg-primary px-8 py-1 text-xs font-bold text-white shadow-lg z-10">
                                     Popular
                                 </div>
                             )}
 
-                            {/* Header */}
-                            <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-start justify-between mb-6">
                                 <div className="flex items-center gap-3">
                                     <div className={cn(
                                         "flex h-12 w-12 items-center justify-center rounded-xl shrink-0",
-                                        pkg.isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                                        pkg.isActive ? "bg-primary text-white" : "bg-muted text-muted-foreground"
                                     )}>
                                         <Package className="h-6 w-6" />
                                     </div>
                                     <div className="min-w-0">
-                                        <h3 className="font-semibold text-foreground truncate">{pkg.name}</h3>
-                                        <p className="text-xs text-muted-foreground truncate">ID: {pkg.id}</p>
+                                        <h3 className="font-bold text-foreground truncate">{pkg.name}</h3>
+                                        <p className="text-[10px] text-muted-foreground truncate uppercase font-bold">ID: {pkg.id}</p>
                                     </div>
                                 </div>
                                 <div className="dropdown dropdown-end">
                                     <label tabIndex={0} className="btn btn-ghost btn-xs h-8 w-8 p-0 text-muted-foreground hover:text-foreground">
                                         <MoreHorizontal className="h-4 w-4" />
                                     </label>
-                                    <ul tabIndex={0} className="dropdown-content menu p-2 shadow-lg bg-card rounded-xl w-48 z-20 border border-border/50">
-                                        <li>
-                                            <a onClick={() => handleEdit(pkg)} className="gap-2 text-sm">
-                                                <Edit2 className="h-4 w-4" /> แก้ไข
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a onClick={() => handleDelete(pkg.id)} className="gap-2 text-sm text-destructive hover:text-destructive">
-                                                <Trash2 className="h-4 w-4" /> ลบ
-                                            </a>
-                                        </li>
+                                    <ul tabIndex={0} className="dropdown-content menu p-2 shadow-xl bg-card rounded-2xl w-48 z-20 border border-border/50">
+                                        <li><a onClick={() => handleEdit(pkg)} className="gap-2 text-sm"><Edit2 className="h-4 w-4" /> แก้ไข</a></li>
+                                        <li><a onClick={() => handleDelete(pkg.id)} className="gap-2 text-sm text-red-500 hover:text-red-600"><Trash2 className="h-4 w-4" /> ลบ</a></li>
                                     </ul>
                                 </div>
                             </div>
 
-                            {/* Price */}
-                            <div className="mb-4">
+                            <div className="mb-6">
                                 <div className="flex items-baseline gap-1">
-                                    <span className="text-3xl font-bold text-foreground">฿{pkg.price.toLocaleString()}</span>
-                                    <span className="text-muted-foreground text-sm">
-                                        / {pkg.durationDays === 0 ? "ตลอดชีพ" : `${pkg.durationDays}วัน`}
+                                    <span className="text-3xl font-black tracking-tight">฿{pkg.price.toLocaleString()}</span>
+                                    <span className="text-muted-foreground text-xs font-bold">
+                                        / {pkg.durationDays === 0 ? "LIFE" : `${pkg.durationDays}D`}
                                     </span>
                                 </div>
-                                <p className="text-sm text-muted-foreground mt-2 line-clamp-2 h-10">{pkg.description}</p>
+                                <p className="text-xs text-muted-foreground mt-2 line-clamp-2 h-8 font-medium">{pkg.description}</p>
                             </div>
 
-                            {/* Features List */}
                             <div className="mb-6 flex-1">
-                                <p className="text-xs font-semibold text-muted-foreground uppercase mb-3">ฟีเจอร์</p>
-                                <ul className="space-y-2">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-3">Top Features</p>
+                                <ul className="space-y-3">
                                     {featureList.slice(0, 4).map((feature, index) => (
-                                        <li key={index} className="flex items-start gap-2 text-sm">
-                                            <Check className="h-4 w-4 text-success shrink-0 mt-0.5" />
-                                            <span className="text-foreground leading-tight">{feature}</span>
+                                        <li key={index} className="flex items-start gap-2 text-xs font-bold">
+                                            <Check className="h-3.5 w-3.5 text-green-500 shrink-0 mt-0.5" />
+                                            <span className="text-foreground/80 leading-tight">{feature}</span>
                                         </li>
                                     ))}
-                                    {featureList.length === 0 && (
-                                        <li className="text-xs text-muted-foreground italic">No specific features listed</li>
-                                    )}
                                     {featureList.length > 4 && (
-                                        <li className="text-xs text-muted-foreground pl-6">
-                                            +{featureList.length - 4} more
+                                        <li className="text-[10px] text-muted-foreground pl-6 font-bold">
+                                            +{featureList.length - 4} MORE BENEFITS
                                         </li>
                                     )}
                                 </ul>
                             </div>
 
-                            {/* Status Footer */}
-                            <div className="flex items-center justify-between pt-4 border-t border-border/30 mt-auto">
+                            <div className="flex items-center justify-between pt-4 border-t border-border/10 mt-auto">
                                 <span className={cn(
-                                    "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-muted",
-                                    pkg.isActive ? "bg-success/15 text-success" : "bg-muted text-muted-foreground"
+                                    "px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-tighter",
+                                    pkg.isActive ? "bg-green-500/10 text-green-500" : "bg-muted text-muted-foreground"
                                 )}>
-                                    {pkg.isActive ? "เปิดขาย" : "ปิด"}
+                                    {pkg.isActive ? "Live" : "Inactive"}
                                 </span>
                             </div>
                         </div>
@@ -411,85 +397,44 @@ export default function PackagesPage() {
                 })}
             </div>
 
-            {/* Controlled Custom Modal */}
+            {/* Modal */}
             {(editMode || isCreating) && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div
-                        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
-                        onClick={() => { setEditMode(null); setIsCreating(false); }}
-                    />
-
-                    <div className="relative w-full max-w-lg transform overflow-hidden rounded-2xl bg-card shadow-2xl transition-all max-h-[85vh] flex flex-col">
-                        <div className="bg-muted/30 p-6 border-b border-border flex justify-between items-center shrink-0">
-                            <div className="flex flex-col gap-1">
-                                <h3 className="font-bold text-lg text-foreground">
-                                    {editMode ? 'แก้ไขแพ็กเกจ' : 'สร้างแพ็กเกจใหม่'}
-                                </h3>
-                                <p className="text-xs text-muted-foreground">ตั้งค่ารายละเอียดราคาและสิทธิประโยชน์</p>
+                    <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => { setEditMode(null); setIsCreating(false); }} />
+                    <div className="relative w-full max-w-lg transform overflow-hidden rounded-[2rem] bg-card shadow-[0_32px_120px_rgba(0,0,0,0.5)] border border-white/5 flex flex-col max-h-[90vh]">
+                        <div className="p-8 border-b border-border/50 flex justify-between items-center bg-muted/20 shrink-0">
+                            <div>
+                                <h3 className="text-xl font-black tracking-tight">{editMode ? 'แก้ไขแพ็กเกจ' : 'สร้างแพ็กเกจใหม่'}</h3>
+                                <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest mt-1">Package Configuration</p>
                             </div>
-                            <button
-                                onClick={() => { setEditMode(null); setIsCreating(false); }}
-                                className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                            >
-                                <X className="h-5 w-5" />
-                            </button>
+                            <button onClick={() => { setEditMode(null); setIsCreating(false); }} className="rounded-full p-2 hover:bg-muted text-muted-foreground transition-all"><X /></button>
                         </div>
 
-                        <div className="p-6 space-y-4 overflow-y-auto scrollbar-hide">
-                            <style jsx>{`
-                                .scrollbar-hide::-webkit-scrollbar { display: none; }
-                             `}</style>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="form-control">
-                                    <label className="label pt-0"><span className="label-text font-medium text-foreground">รหัส (ID)</span></label>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. basic_monthly"
-                                        className="input input-sm input-bordered bg-muted/30 border-border/50 focus:border-primary"
-                                        value={formData.id}
-                                        disabled={!!editMode}
-                                        onChange={e => setFormData({ ...formData, id: e.target.value })}
-                                    />
+                        <div className="p-8 space-y-6 overflow-y-auto scrollbar-hide">
+                            <div className="grid grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase text-muted-foreground ml-1">รหัส (ID)</label>
+                                    <input type="text" className="w-full bg-muted/40 border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 ring-primary transition-all disabled:opacity-50" value={formData.id} disabled={!!editMode} onChange={e => setFormData({ ...formData, id: e.target.value })} placeholder="basic_monthly" />
                                 </div>
-                                <div className="form-control">
-                                    <label className="label pt-0"><span className="label-text font-medium text-foreground">ชื่อแพ็กเกจ</span></label>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. Basic Plan"
-                                        className="input input-sm input-bordered bg-muted/30 border-border/50 focus:border-primary"
-                                        value={formData.name}
-                                        onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                    />
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase text-muted-foreground ml-1">ชื่อแพ็กเกจ</label>
+                                    <input type="text" className="w-full bg-muted/40 border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 ring-primary transition-all" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Pro Monthly" />
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-3 gap-4">
-                                <div className="form-control">
-                                    <label className="label"><span className="label-text font-medium text-foreground">ราคา (บาท)</span></label>
-                                    <input
-                                        type="number"
-                                        className="input input-sm input-bordered bg-muted/30 border-border/50 focus:border-primary"
-                                        value={formData.price}
-                                        onChange={e => setFormData({ ...formData, price: Number(e.target.value) })}
-                                    />
+                            <div className="grid grid-cols-3 gap-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase text-muted-foreground ml-1">ราคา (฿)</label>
+                                    <input type="number" className="w-full bg-muted/40 border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 ring-primary transition-all" value={formData.price} onChange={e => setFormData({ ...formData, price: Number(e.target.value) })} />
                                 </div>
-                                <div className="form-control">
-                                    <label className="label"><span className="label-text font-medium text-foreground">จำนวนวัน</span></label>
-                                    <input
-                                        type="number"
-                                        className="input input-sm input-bordered bg-muted/30 border-border/50 focus:border-primary"
-                                        value={formData.durationDays}
-                                        onChange={e => setFormData({ ...formData, durationDays: Number(e.target.value) })}
-                                    />
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase text-muted-foreground ml-1">จำนวนวัน</label>
+                                    <input type="number" className="w-full bg-muted/40 border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 ring-primary transition-all" value={formData.durationDays} onChange={e => setFormData({ ...formData, durationDays: Number(e.target.value) })} />
                                 </div>
-                                <div className="form-control">
-                                    <label className="label"><span className="label-text font-medium text-foreground">แผนสมาชิก</span></label>
-                                    <select 
-                                        className="select select-sm select-bordered bg-muted/30 border-border/50"
-                                        value={formData.planId}
-                                        onChange={e => setFormData({ ...formData, planId: e.target.value })}
-                                    >
-                                        <option value="">-- เลือกแผน --</option>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase text-muted-foreground ml-1">แผนสมาชิก</label>
+                                    <select className="w-full bg-muted/40 border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 ring-primary transition-all appearance-none" value={formData.planId} onChange={e => setFormData({ ...formData, planId: e.target.value })}>
+                                        <option value="">เลือกแผน</option>
                                         {plans.map(p => (
                                             <option key={p.id} value={p.id}>{p.displayName}</option>
                                         ))}
@@ -497,120 +442,54 @@ export default function PackagesPage() {
                                 </div>
                             </div>
 
-                            <div className="form-control">
-                                <label className="label"><span className="label-text font-medium text-foreground">รายละเอียด</span></label>
-                                <textarea
-                                    className="textarea textarea-bordered h-20 bg-muted/30 border-border/50 focus:border-primary resize-none text-sm"
-                                    value={formData.description}
-                                    onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                ></textarea>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-muted-foreground ml-1">รายละเอียด</label>
+                                <textarea className="w-full bg-muted/40 border-none rounded-2xl px-4 py-3 text-sm focus:ring-2 ring-primary transition-all h-24 resize-none" value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} placeholder="รายละเอียดแพ็กเกจ..."></textarea>
                             </div>
 
-                            <div className="form-control">
-                                <label className="label"><span className="label-text font-medium text-foreground">ฟีเจอร์ด่วน (Quick Select)</span></label>
+                            <div className="space-y-4">
+                                <label className="text-[10px] font-black uppercase text-muted-foreground ml-1">ฟีเจอร์ด่วน</label>
                                 <div className="grid grid-cols-2 gap-3">
                                     {PREDEFINED_FEATURES.map((feature) => {
                                         const isEnabled = isFeatureEnabled(feature.label);
                                         const Icon = feature.icon;
                                         return (
-                                            <div
-                                                key={feature.id}
-                                                onClick={() => toggleFeature(feature.label)}
-                                                className={cn(
-                                                    "cursor-pointer rounded-xl border p-3 flex items-center gap-3 transition-all select-none active:scale-95 group",
-                                                    isEnabled
-                                                        ? "bg-primary/10 border-primary shadow-sm"
-                                                        : "bg-muted/20 border-border hover:bg-muted/40"
-                                                )}
-                                            >
-                                                <div className={cn(
-                                                    "h-8 w-8 rounded-lg flex items-center justify-center transition-colors",
-                                                    isEnabled ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground group-hover:text-foreground"
-                                                )}>
-                                                    <Icon className="w-5 h-5" />
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <p className={cn("text-xs font-bold leading-tight truncate", isEnabled ? "text-primary" : "text-foreground")}>
-                                                        {feature.label}
-                                                    </p>
-                                                    <p className="text-[10px] text-muted-foreground truncate leading-tight mt-0.5">
-                                                        {feature.description}
-                                                    </p>
-                                                </div>
-                                                {isEnabled && (
-                                                    <div className="bg-primary rounded-full p-0.5">
-                                                        <Check className="w-3 h-3 text-primary-foreground" />
-                                                    </div>
-                                                )}
+                                            <div key={feature.id} onClick={() => toggleFeature(feature.label)} className={cn("cursor-pointer rounded-2xl border-2 p-3 flex items-center gap-3 transition-all", isEnabled ? "bg-primary text-white border-primary shadow-lg shadow-primary/20" : "bg-muted/10 border-transparent hover:bg-muted/30")}>
+                                                <Icon className="w-4 h-4 shrink-0" />
+                                                <span className="text-xs font-black truncate">{feature.label}</span>
                                             </div>
                                         );
                                     })}
                                 </div>
                             </div>
 
-                            <div className="form-control">
-                                <label className="label flex justify-between">
-                                    <span className="label-text font-medium text-foreground">ฟีเจอร์ (JSON Config)</span>
-                                    <span className="text-[10px] text-muted-foreground uppercase tracking-wide">ขั้นสูง</span>
-                                </label>
-                                <textarea
-                                    className={cn(
-                                        "textarea textarea-bordered h-24 font-mono text-xs bg-muted/30 border-border/50 focus:border-primary",
-                                        jsonError ? "border-destructive focus:border-destructive" : ""
-                                    )}
-                                    value={featuresJson}
-                                    onChange={e => setFeaturesJson(e.target.value)}
-                                    placeholder='{ "feature": true }'
-                                ></textarea>
-                                {jsonError && <span className="text-xs text-destructive mt-1">{jsonError}</span>}
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-muted-foreground ml-1">Custom Config (JSON)</label>
+                                <textarea className={cn("w-full bg-muted/40 border-none rounded-2xl px-4 py-3 font-mono text-[10px] h-20 resize-none", jsonError && "ring-2 ring-red-500")} value={featuresJson} onChange={e => setFeaturesJson(e.target.value)}></textarea>
+                                {jsonError && <p className="text-[10px] text-red-500 font-bold uppercase">{jsonError}</p>}
                             </div>
 
-                            <div className="flex items-center gap-6 pt-2">
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        type="checkbox"
-                                        className="toggle toggle-primary toggle-sm"
-                                        checked={formData.isActive}
-                                        onChange={e => setFormData({ ...formData, isActive: e.target.checked })}
-                                    />
-                                    <span className="text-sm font-medium">เปิดใช้งาน</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <input
-                                        type="checkbox"
-                                        className="toggle toggle-warning toggle-sm"
-                                        checked={formData.isPopular || false}
-                                        onChange={e => setFormData({ ...formData, isPopular: e.target.checked })}
-                                    />
-                                    <span className="text-sm font-medium">ป้ายยอดนิยม</span>
-                                </div>
+                            <div className="flex gap-8 py-2">
+                                <label className="flex items-center gap-3 cursor-pointer group">
+                                    <input type="checkbox" className="toggle toggle-primary toggle-sm" checked={formData.isActive} onChange={e => setFormData({ ...formData, isActive: e.target.checked })} />
+                                    <span className="text-[10px] font-black uppercase group-hover:text-primary transition-colors">เปิดขายสาธารณะ</span>
+                                </label>
+                                <label className="flex items-center gap-3 cursor-pointer group">
+                                    <input type="checkbox" className="toggle toggle-warning toggle-sm" checked={formData.isPopular || false} onChange={e => setFormData({ ...formData, isPopular: e.target.checked })} />
+                                    <span className="text-[10px] font-black uppercase group-hover:text-amber-500 transition-colors">แนะนำ/ยอดนิยม</span>
+                                </label>
                             </div>
                         </div>
 
-                        <div className="bg-muted/30 p-4 m-0 border-t border-border/50 flex justify-end gap-3 shrink-0">
-                            <button
-                                className="btn btn-ghost btn-sm"
-                                onClick={() => { setEditMode(null); setIsCreating(false); }}
-                            >
-                                ยกเลิก
-                            </button>
-                            <button
-                                disabled={loading}
-                                onClick={handleSave}
-                                className="btn btn-primary btn-sm text-primary-foreground min-w-[100px]"
-                            >
-                                {loading ? <span className="loading loading-spinner loading-xs"></span> : (
-                                    <>
-                                        <Save className="w-4 h-4 mr-1" /> บันทึก
-                                    </>
-                                )}
+                        <div className="p-8 border-t border-border/50 bg-muted/20 flex justify-end gap-3 shrink-0">
+                            <button className="px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-muted transition-all" onClick={() => { setEditMode(null); setIsCreating(false); }}>ยกเลิก</button>
+                            <button disabled={loading} onClick={handleSave} className="px-8 py-3 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-105 transition-all disabled:opacity-50">
+                                {loading ? "กำลังบันทึก..." : "บันทึกข้อมูล"}
                             </button>
                         </div>
                     </div>
                 </div>
             )}
-
         </AdminLayout>
     );
 }
-
