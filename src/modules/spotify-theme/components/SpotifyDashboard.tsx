@@ -362,7 +362,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                 <p className="text-[11px] text-gray-400 font-medium">แยกตามหมวดหมู่และแนวเพลง</p>
               </div>
 
-              <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 mb-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 mb-4">
                 {ARTIST_CATEGORIES.filter(c => c.id !== 'popular').map((cat) => {
                   const Icon = 
                     cat.id === 'luk-thung' ? Mic2 :
@@ -513,7 +513,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                       <p className="text-xs text-gray-400 font-medium">กดเลือกแนวเพลงที่ต้องการฟังได้เลยครับ</p>
                    </div>
 
-                   <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 mb-4">
+                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 mb-4">
                       {ARTIST_CATEGORIES.filter(c => c.id !== 'popular').map((cat) => {
                         const Icon = 
                           cat.id === 'luk-thung' ? Mic2 :
@@ -572,7 +572,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                             <button onClick={() => setGenreText("")} className="text-xs font-bold text-primary hover:underline">ปิดรายการ</button>
                         </div>
                         
-                        <div className="grid grid-cols-2 min-[400px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 pb-20 overflow-hidden">
+                        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 pb-20 overflow-hidden">
                           {isLoadStation ? (
                             getSkeletonItems(8).map(s => <div key={s} className="aspect-video bg-gray-100 rounded-2xl animate-pulse" />)
                           ) : (
