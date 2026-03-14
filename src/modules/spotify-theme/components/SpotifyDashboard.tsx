@@ -134,6 +134,16 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
     }
   }, [genreText, mode]);
 
+  useEffect(() => {
+    if (mode === 'default' && selectedCategoryId) {
+      requestAnimationFrame(() => {
+        if (songlistRef.current) {
+          songlistRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    }
+  }, [selectedCategoryId, mode]);
+
   const { data: tempTopArtistsData, isLoading: isLoadTopArtists } = useQuery({
     queryKey: ["getTopArtists", "v2", mode],
     queryFn: () => getTopArtists(mode === 'station' ? 'listening' : (mode as any)),
@@ -303,8 +313,8 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                     />
                     </div>
                     <div className="p-2 sm:p-2.5 flex-1">
-                    <h3 className="font-bold text-[12px] line-clamp-2 text-black leading-tight group-hover:text-primary transition-colors text-left">{video.title || video.name}</h3>
-                    <p className="text-[10px] text-gray-400 mt-1 line-clamp-1 text-left">{(video.artist_name && video.artist_name !== "Unknown Artist") ? video.artist_name : "YouTube Music"}</p>
+                      <h3 className="font-bold text-[12px] line-clamp-2 text-black leading-tight group-hover:text-primary transition-colors text-left">{video.title || video.name}</h3>
+                      <p className="text-[10px] text-gray-400 mt-1 line-clamp-1 text-left">{(video.artist_name && video.artist_name !== "Unknown Artist") ? video.artist_name : "YouTube Music"}</p>
                     </div>
                 </div>
                 );
@@ -324,7 +334,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                     <p className="text-[12px] text-gray-400">ชื่อที่คุณคุ้นเคยและชื่นชอบ</p>
                   </div>
 
-                  <div className="grid grid-cols-2 min-[500px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 py-3 pb-8">
+                  <div className="grid grid-cols-2 min-[500px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 py-3">
                     {ARTIST_CATEGORIES.find(c => c.id === 'popular')?.artists.slice(0, 12).map((artist, i) => {
                       const cleanName = artist.name.split(' (')[0].trim();
                       const overrideUrl = artistOverrides[cleanName];
@@ -343,20 +353,16 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                       );
                     })}
                   </div>
-                  <div className="px-4 py-4 border-t border-gray-50 bg-gray-50/50">
-                    <h2 className="text-base font-bold text-black">ต้องการศิลปินอื่นๆ ?</h2>
-                    <p className="text-[11px] text-gray-400">เลือกหมวดหมู่ด้านล่างเพื่อค้นหาได้เลยครับ</p>
-                  </div>
                 </div>
               )}
 
-              {/* TIER 2: CATEGORY SELECTION (ALWAYS VISIBLE OR BELOW POPULAR) */}
-              <div className="px-4 pt-8 pb-3">
+              {/* TIER 2: CATEGORY SELECTION */}
+              <div className="px-4 pt-6 pb-3">
                 <h1 className="text-lg font-black text-black">สารบัญศิลปิน</h1>
                 <p className="text-[11px] text-gray-400 font-medium">แยกตามหมวดหมู่และแนวเพลง</p>
               </div>
 
-              <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 mb-10">
+              <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 mb-4">
                 {ARTIST_CATEGORIES.filter(c => c.id !== 'popular').map((cat) => {
                   const Icon = 
                     cat.id === 'luk-thung' ? Mic2 :
@@ -377,20 +383,29 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                       key={cat.id} 
                       onClick={() => setCategoryId(cat.id === selectedCategoryId ? "" : cat.id)}
                       className={clsx(
-                        "group relative overflow-hidden rounded-xl aspect-[1.8/1] min-h-[72px] sm:min-h-[80px] cursor-pointer shadow-sm transition-all border-2",
-                        isActive ? "border-primary scale-[1.02] shadow-md ring-4 ring-primary/10" : "border-transparent bg-gradient-to-br " + cat.gradient
+                        "group relative overflow-hidden rounded-xl aspect-[1.7/1] min-h-[72px] sm:min-h-[80px] cursor-pointer shadow-sm transition-all border-2",
+                        isActive ? "border-primary scale-[1.02] shadow-md ring-2 ring-primary/20" : "border-transparent bg-white shadow-sm"
                       )}
                     >
-                       {!isActive && <div className={clsx("absolute inset-0 bg-gradient-to-br transition-opacity", cat.gradient)} />}
-                       {isActive && <div className={clsx("absolute inset-0 bg-primary/5")} />}
+                       <div className={clsx(
+                          "absolute inset-0 bg-gradient-to-br transition-opacity duration-300", 
+                          cat.gradient,
+                          isActive ? "opacity-100" : "opacity-90 group-hover:opacity-100"
+                       )} />
 
                        <div className="absolute -bottom-2 -right-2 opacity-20 transform -rotate-12 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
-                         <Icon className={clsx("w-16 h-16 sm:w-20 sm:h-20", isActive ? "text-primary" : "text-white")} />
+                         <Icon className="w-16 h-16 sm:w-20 sm:h-20 text-white" />
                        </div>
                        <div className="absolute inset-0 p-2 flex flex-col justify-end sm:p-2.5">
-                          <h3 className={clsx("text-[10px] min-[320px]:text-[11px] sm:text-[13px] md:text-[14px] font-bold leading-[1.0] sm:leading-tight drop-shadow-sm text-left", isActive ? "text-primary" : "text-white")}>{cat.title}</h3>
-                          <p className={clsx("text-[8px] sm:text-[9px] font-medium mt-0.5 text-left", isActive ? "text-primary/60" : "text-white/80")}>{cat.artists.length} ศิลปิน</p>
+                          <h3 className="text-[10px] min-[320px]:text-[11px] sm:text-[13px] md:text-[14px] font-bold leading-[1.1] sm:leading-tight drop-shadow-md text-white line-clamp-2 text-left">{cat.title}</h3>
+                          <p className="text-[8px] sm:text-[9px] font-medium mt-0.5 text-white/80 text-left">{cat.artists.length} ศิลปิน</p>
                        </div>
+
+                       {isActive && (
+                         <div className="absolute top-2 right-2 bg-white/20 backdrop-blur-md p-1 rounded-full border border-white/30 animate-in zoom-in-50 duration-300">
+                            <PlayCircle className="w-3.5 h-3.5 text-white" />
+                         </div>
+                       )}
                     </div>
                   );
                 })}
@@ -399,7 +414,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
               {/* TIER 3: INTEGRATED RESULT LIST */}
               {selectedCategory && (
                 <div ref={songlistRef} className="animate-in slide-in-from-bottom-8 duration-500 scroll-mt-20">
-                  <div className="px-4 pt-8 pb-4 border-t border-gray-100 flex items-center justify-between">
+                  <div className="px-4 pt-4 pb-4 border-t border-gray-100 flex items-center justify-between">
                     <div>
                         <h2 className="text-base sm:text-xl font-bold text-black">{selectedCategory.title}</h2>
                         <p className="text-[10px] sm:text-[11px] text-gray-400 font-medium">รายชื่อศิลปินทั้งหมดในหมวดหมู่นี้</p>
@@ -431,6 +446,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
             </div>
           )}
 
+
           {/* 3. GENRES / PLAYLISTS (MODE: GENRES) */}
           {mode === 'genres' && (
             <div className="animate-in fade-in duration-500">
@@ -449,7 +465,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                   {genres.map(gen => (
                     <button 
                         key={gen} 
-                        onClick={() => handleGenre(gen)}
+                        onClick={() => setGenreText(gen)}
                         className={`px-6 py-2.5 rounded-2xl text-xs font-bold transition-all ${genreText === gen ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                     >
                         {gen}
