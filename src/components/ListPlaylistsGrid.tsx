@@ -406,11 +406,11 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
 
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 pb-24">
+    <div className="w-full pb-24">
 
       {/* Header */}
       {/* Banner Header */}
-      <div className="pt-4 pb-6">
+      <div className="px-4 pt-4 pb-6">
         <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 sm:p-8 rounded-2xl relative overflow-hidden min-h-[140px] flex flex-col justify-center border border-gray-200/50 shadow-sm">
            <h2 className="text-3xl font-black text-gray-900 leading-tight">คลังเพลย์ลิสต์</h2>
            <p className="text-gray-500 mt-2 font-medium">แหล่งรวมความบันเทิงที่คุณสร้างสรรค์เองได้</p>
@@ -421,7 +421,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
       </div>
 
       {/* Controls: Tabs & Actions */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-6 py-4 mb-6">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-6 px-4 py-4 mb-6">
         {/* Tabs - Animated Switch */}
         {user?.uid ? (
           <div className="relative flex items-center bg-gray-100 rounded-2xl p-1 h-12 w-[240px]">
@@ -488,7 +488,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
       {/* Grid Content */}
       <div className="min-h-[400px]">
         {isLoading ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6 gap-y-10">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6 gap-y-10 px-4">
             {getSkeletonItems(10).map((i) => (
               <div key={i} className="flex flex-col gap-3">
                 <div className="aspect-video w-full bg-gray-100 rounded-2xl animate-pulse"></div>
@@ -500,12 +500,12 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
         ) : (
           <>
             {playlists?.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-gray-100 rounded-3xl bg-gray-50/50">
+              <div className="mx-4 flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-gray-100 rounded-3xl bg-gray-50/50">
                 <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-6 shadow-sm">
                   <RectangleStackIcon className="w-8 h-8 text-gray-300" />
                 </div>
-                <h3 className="text-xl font-bold text-black">ยังไม่มีเพลย์ลิสต์</h3>
-                <p className="text-gray-500 mt-2 mb-8 max-w-sm text-sm">เริ่มสร้างคอลเลกชันเพลงโปรดของคุณได้ง่ายๆ แค่กดปุ่มสร้างด้านล่าง</p>
+                <h3 className="text-xl font-black text-black leading-tight">ยังไม่มีเพลย์ลิสต์</h3>
+                <p className="text-gray-500 mt-2 mb-8 max-w-sm text-sm font-medium">เริ่มสร้างคอลเลกชันเพลงโปรดของคุณได้ง่ายๆ แค่กดปุ่มสร้างด้านล่าง</p>
                 {activeIndex === 1 && (
                   <button onClick={openCreateModal} className="btn btn-primary rounded-full px-8 text-white shadow-lg shadow-primary/20">
                     <PlusIcon className="w-5 h-5 mr-2" /> สร้างเพลย์ลิสต์แรก
@@ -513,7 +513,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
                 )}
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-x-6 gap-y-10">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-x-6 gap-y-10 px-4">
                 {playlists.map((item, index) => (
                   <PlaylistCard
                     key={item.id + index + "-v3-force-refresh"}
