@@ -322,15 +322,15 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                         <div 
                           key={artist.name + i}
                           onClick={() => setSearchTerm(cleanSearchQuery(cleanName))}
-                          className="group cursor-pointer flex flex-col items-center"
+                          className="group cursor-pointer flex flex-col items-center px-1"
                         >
-                          <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm group-hover:shadow-md transition-all duration-300">
+                          <div className="relative aspect-square w-[85%] rounded-full overflow-hidden bg-white border border-gray-100 shadow-sm group-hover:shadow-md transition-all duration-300">
                             <Image 
                                src={overrideUrl || `/api/spotify/artists/image?name=${encodeURIComponent(artist.name)}`}
                                alt={artist.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" unoptimized
                             />
                           </div>
-                          <p className="mt-2 text-[10px] sm:text-[11px] font-bold text-black truncate italic-sm text-center w-full">{cleanName}</p>
+                          <p className="mt-2.5 text-[10px] sm:text-[11px] font-bold text-black truncate italic-sm text-center w-full">{cleanName}</p>
                         </div>
                       );
                     })}
@@ -342,12 +342,28 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                   </div>
                   
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 py-4 pb-24">
-                    {ARTIST_CATEGORIES.filter(c => c.id !== 'popular').map((cat) => (
+                    {ARTIST_CATEGORIES.filter(c => c.id !== 'popular').map((cat) => {
+                      const Icon = 
+                        cat.id === 'luk-thung' ? Mic2 :
+                        cat.id === 'mor-lam' ? Music :
+                        cat.id === 'thai-pop' ? Disc :
+                        cat.id === 'rock-thai' ? Guitar :
+                        cat.id === 'retro-hits' ? Star :
+                        cat.id === 'teen-pop' ? Heart :
+                        cat.id === 'rnb-soul-th' ? Mic :
+                        cat.id === 'indie-th' ? Coffee :
+                        cat.id === 'luk-grung' ? Radio :
+                        Globe;
+                        
+                      return (
                       <div 
                         key={cat.id} 
                         onClick={() => setCategoryId(cat.id)}
                         className={`group relative overflow-hidden rounded-xl aspect-[1.8/1] min-h-[72px] sm:min-h-[80px] cursor-pointer shadow-sm hover:shadow-md transition-all bg-gradient-to-br ${cat.gradient}`}
                       >
+                         <div className="absolute -bottom-2 -right-2 opacity-20 transform -rotate-12 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
+                           <Icon className="w-16 h-16 sm:w-20 sm:h-20 text-white" />
+                         </div>
                          <div className="absolute inset-0 p-2 flex flex-col justify-end sm:p-2.5">
                             <h3 className="text-[10px] min-[320px]:text-[11px] sm:text-[13px] md:text-[14px] font-bold text-white leading-[1.0] sm:leading-tight drop-shadow-sm line-clamp-2 break-words text-left">{cat.title}</h3>
                             <p className="text-[8px] sm:text-[9px] font-medium text-white/80 mt-0.5 drop-shadow-sm text-left">{cat.artists.length} ศิลปิน</p>
@@ -356,7 +372,8 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                             <ChevronRight className="w-3.5 h-3.5 text-white" />
                          </div>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -469,7 +486,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                    </div>
 
                    <div className="px-4 mb-6">
-                      <h3 className="text-lg font-black text-black mb-1">เลือกธีมสถานี</h3>
+                      <h3 className="text-lg font-black text-black mb-1">เลือกสถานีเพลง</h3>
                       <p className="text-xs text-gray-400 font-medium">กดเลือกแนวเพลงที่ต้องการฟังได้เลยครับ</p>
                    </div>
 
@@ -525,7 +542,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 pb-20 overflow-hidden">
+                    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-3 md:gap-4 px-3 md:px-4 pb-20 overflow-hidden">
                       {isLoadStation ? (
                         getSkeletonItems(8).map(s => <div key={s} className="aspect-video bg-gray-100 rounded-2xl animate-pulse" />)
                       ) : (
