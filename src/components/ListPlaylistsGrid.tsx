@@ -131,9 +131,11 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
   useEffect(() => {
     if (!isLoading) {
       if (activeIndex === 1) {
-        setPlaylists(myPlaylist);
+        // Filter out empty playlists for My Playlists
+        setPlaylists(myPlaylist.filter(p => p.playlists && p.playlists.length > 0));
       } else {
-        setPlaylists(latestPlaylists);
+        // Filter out empty playlists for Community/Latest
+        setPlaylists(latestPlaylists.filter(p => p.playlists && p.playlists.length > 0));
       }
     }
   }, [activeIndex, myPlaylist, latestPlaylists, isLoading]);

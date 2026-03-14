@@ -22,7 +22,7 @@ export default function ListCommunityPlaylists({ onPlay }: ListCommunityPlaylist
         staleTime: 1000 * 60 * 60, // 1 hour
     });
 
-    const playlists = playlistsData || [];
+    const playlists = (playlistsData || []).filter(pl => Number(pl.tracksCount || 0) > 0);
 
     const handleLike = async (playlist: CommunityPlaylist) => {
         if (!user) {
