@@ -55,7 +55,9 @@ export const LimitReachedModal = () => {
     const onSubscribe = () => {
         setLimitModalOpen(false);
         if (userRole === 'guest') {
-            router.push('/login');
+            // Send to login but with a hint to show register form if possible, 
+            // or just standard login since social login does both
+            router.push('/login?mode=register');
         } else {
             router.push('/packages');
         }

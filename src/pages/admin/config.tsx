@@ -41,6 +41,17 @@ export default function AdminConfigPage() {
     const [loginTermsLink, setLoginTermsLink] = useState("");
     const [loginPrivacyLink, setLoginPrivacyLink] = useState("");
 
+    // Upsell State
+    const [upsell, setUpsell] = useState(config?.upsell || DEFAULT_CONFIG.upsell);
+
+    useEffect(() => {
+        const handleUpsellChange = (e: any) => {
+            setUpsell(e.detail);
+        };
+        window.addEventListener('upsell-config-change', handleUpsellChange);
+        return () => window.removeEventListener('upsell-config-change', handleUpsellChange);
+    }, []);
+
     useEffect(() => {
         if (!loading && config) {
             setLocalConfig(config);
@@ -81,7 +92,8 @@ export default function AdminConfigPage() {
                         termsLink: loginTermsLink,
                         privacyLink: loginPrivacyLink
                     }
-                }
+                },
+                upsell: upsell
             };
 
             await updateSystemConfig(configToSave);
