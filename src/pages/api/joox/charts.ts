@@ -105,7 +105,7 @@ export default async function handler(
     }
 
     // If new data was fetched, cache it to Firestore backend.
-    if (finalCharts.length > 0) {
+    if (finalCharts.length > 0 && finalCharts.some(c => c.singles.length > 0)) {
       if (adminFirestore) {
         try {
           const docRef = adminFirestore.collection('system_cache').doc('joox_charts');
@@ -120,10 +120,16 @@ export default async function handler(
       }
     }
 
-    res.setHeader(
-      "Cache-Control",
-      "public, s-maxage=2592000, stale-while-revalidate=86400"
-    );
+    const hasSingles = finalCharts.some(c => c.singles.length > 0);
+    // If we have actual singles data, cache it at Vercel edge for 1 hour.
+    // If not (empty array), do not cache at all, to force refetch next time.
+    if (hasSingles) {
+       res.setHeader("Cache-Control", "public, s-maxage=3600, stale-while-revalidate=86400");
+    } else {
+       res.setHeader("Cache-Control", "no-store, max-age=0");
+       console.log("⚠️ Refusing to cache empty dataset at Vercel Edge");
+    }
+    
     res.status(200).json({ status: "success", charts: finalCharts });
   } catch (error: any) {
     console.error("Error fetching JOOX charts:", error);
