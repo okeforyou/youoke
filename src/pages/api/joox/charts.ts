@@ -7,13 +7,22 @@ export default async function handler(
 ) {
   try {
     const force = req.query.force === 'true';
+    const test = req.query.test === 'true';
+    
+    if (test) {
+      return res.status(200).json({ 
+        method: req.method, 
+        hasBody: !!req.body,
+        bodyKeys: Object.keys(req.body || {}),
+        firestore: !!adminFirestore 
+      });
+    }
 
     // Allow manual seeding if JOOX blocks Vercel IPs
     if (req.method === 'POST') {
-      console.log('📥 POST SEED REQUEST RECEIVED');
       const { charts, secret } = req.body;
       if (secret !== 'OKE_SEED_2024') { 
-        return res.status(401).json({ error: "Unauthorized", received: secret });
+        return res.status(401).json({ error: "Unauthorized", received: secret, method: req.method });
       }
 
       if (adminFirestore && Array.isArray(charts) && charts.length > 0) {
