@@ -407,13 +407,19 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 pb-24">
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-6 py-8 sm:py-10">
-        <div className="text-center md:text-left">
-          <h1 className="text-[20px] font-black text-black tracking-tight leading-none mb-2">คลังเพลย์ลิสต์</h1>
-          <p className="text-gray-500 text-[12px] font-medium">แหล่งรวมความบันเทิงที่คุณสร้างสรรค์เองได้</p>
+      {/* Banner Header */}
+      <div className="pt-4 pb-6">
+        <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 sm:p-8 rounded-2xl relative overflow-hidden min-h-[140px] flex flex-col justify-center border border-gray-200/50 shadow-sm">
+           <h2 className="text-3xl font-black text-gray-900 leading-tight">คลังเพลย์ลิสต์</h2>
+           <p className="text-gray-500 mt-2 font-medium">แหล่งรวมความบันเทิงที่คุณสร้างสรรค์เองได้</p>
+           <div className="absolute bottom-6 right-8 opacity-10">
+              <RectangleStackIcon className="w-20 h-20 text-black" />
+           </div>
         </div>
+      </div>
 
-        {/* Tabs */}
+      {/* Controls: Tabs & Actions */}
+      <div className="flex flex-col md:flex-row items-center justify-between gap-6 py-4 mb-6">
         {/* Tabs - Animated Switch */}
         {user?.uid ? (
           <div className="relative flex items-center bg-gray-100 rounded-2xl p-1 h-12 w-[240px]">
