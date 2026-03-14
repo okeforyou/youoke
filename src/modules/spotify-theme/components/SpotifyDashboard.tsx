@@ -476,7 +476,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                {!genreText && !tagId ? (
                  <>
                    <div className="px-4 pt-4 pb-6">
-                        <div className="bg-gray-100 p-8 rounded-[2.5rem] relative overflow-hidden min-h-[140px] flex flex-col justify-center">
+                        <div className="bg-gray-100 p-8 rounded-xl relative overflow-hidden min-h-[140px] flex flex-col justify-center">
                             <h2 className="text-3xl font-black text-gray-900 leading-tight">สถานีเพลง</h2>
                             <p className="text-gray-500 mt-2 font-medium">รวมชุดเพลงยาว ฟังต่อเนื่อง สำหรับเปิดทิ้งไว้</p>
                             <div className="absolute bottom-6 right-8 opacity-5">
