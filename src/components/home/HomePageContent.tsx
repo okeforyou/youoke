@@ -50,7 +50,7 @@ export const HomePageContent = memo(() => {
             usePlayerStore.getState().addToQueue(videoToAdd);
         }} />;
         case 1: return <MusicProviderContainer showTab={false} />; // "หน้าแรก" -> Main Dashboard
-        case 2: return <ListHitsGrid />; // "มาแรง" -> Hit Singles
+        case 2: return <ListHitsGrid />; // "ชาร์ตเพลง" -> Charts
         case 3: return <MusicProviderContainer showTab={false} mode="station" />; // "สถานีเพลง"
         case 4: return <ListPlaylistsGrid />; // "เพลย์ลิสต์" -> My Playlists
         default: return <MusicProviderContainer showTab={false} />;
