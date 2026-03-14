@@ -15,7 +15,8 @@ import {
     ChevronLeft,
     QrCode,
     Upload,
-    Heart
+    Heart,
+    Zap
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/modules/auth/useAuthStore';
@@ -235,17 +236,19 @@ export default function PackagesPage() {
                                                     : "bg-foreground text-background hover:bg-foreground/90"
                                             )}
                                         >
-                                            <QrCode className="w-4.5 h-4.5" />
-                                            สมัครสมาชิกทันที
+                                            {pkg.price === 0 ? <Zap className="w-4.5 h-4.5" /> : <QrCode className="w-4.5 h-4.5" />}
+                                            {pkg.price === 0 ? "รับสิทธิ์ใช้งานฟรี" : "สมัครสมาชิกทันที"}
                                         </button>
 
-                                        <button
-                                            onClick={() => handleManualTransfer(pkg)}
-                                            className="w-full text-[10px] font-black text-muted-foreground/60 hover:text-primary transition-colors flex items-center justify-center gap-2 py-1"
-                                        >
-                                            <Upload className="w-3.5 h-3.5" />
-                                            โอนเงิน / แนบสลิป
-                                        </button>
+                                        {pkg.price > 0 && (
+                                            <button
+                                                onClick={() => handleManualTransfer(pkg)}
+                                                className="w-full text-[10px] font-black text-muted-foreground/60 hover:text-primary transition-colors flex items-center justify-center gap-2 py-1"
+                                            >
+                                                <Upload className="w-3.5 h-3.5" />
+                                                โอนเงิน / แนบสลิป
+                                            </button>
+                                        )}
                                     </div>
 
                                     {pkg.isPopular && (

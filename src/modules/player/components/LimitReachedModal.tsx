@@ -4,6 +4,8 @@ import { useUIStore } from '../../../stores/useUIStore';
 import { useSystemConfig } from '../../../hooks/useSystemConfig';
 import { useAuthStore } from '@/modules/auth/useAuthStore';
 import { useRouter } from 'next/router';
+import { db } from '../../../firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 export const LimitReachedModal = () => {
     const { isLimitModalOpen, setLimitModalOpen } = useUIStore();
@@ -11,12 +13,31 @@ export const LimitReachedModal = () => {
     const { user } = useAuthStore();
     const router = useRouter();
 
-    // 🏷️ Role Resolution Logic (Guest vs Free)
-    let userRole: 'guest' | 'free' = 'guest';
-    if (user) userRole = 'free';
+    // 🏷️ Role Resolution Logic
+    let userRole = 'guest';
+    if (user) userRole = user.membership?.type || 'free';
 
-    const limits = config?.membership?.[userRole];
-    const maxSongs = limits?.max_daily_songs || 0;
+    const [maxSongs, setMaxSongs] = useState(0);
+
+    // Fetch Real Limits from Firestore
+    useEffect(() => {
+        const fetchLimits = async () => {
+            if (!db || !isLimitModalOpen) return;
+            try {
+                const planSnap = await getDoc(doc(db, 'plans', userRole));
+                if (planSnap.exists()) {
+                    setMaxSongs(planSnap.data().maxDailySongs || 0);
+                } else {
+                    // Fallback to config if plan doc doesn't exist
+                    const limits = config?.membership?.[userRole];
+                    setMaxSongs(limits?.max_daily_songs || 0);
+                }
+            } catch (err) {
+                console.error("Error fetching limits for modal:", err);
+            }
+        };
+        fetchLimits();
+    }, [userRole, db, isLimitModalOpen, config]);
 
     // Configurable Texts (Fallback to defaults)
     const upsell = config?.upsell || {};
