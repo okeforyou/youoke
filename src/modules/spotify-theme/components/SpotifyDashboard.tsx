@@ -493,7 +493,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                       <p className="text-xs text-gray-400 font-medium">กดเลือกแนวเพลงที่ต้องการฟังได้เลยครับ</p>
                    </div>
 
-                   <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 pb-32">
+                   <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 mb-4">
                       {ARTIST_CATEGORIES.filter(c => c.id !== 'popular').map((cat) => {
                         const Icon = 
                           cat.id === 'luk-thung' ? Mic2 :
@@ -506,26 +506,36 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                           cat.id === 'indie-th' ? Coffee :
                           cat.id === 'luk-grung' ? Radio :
                           Globe;
-                          
+                        
                         const isActive = genreText === cat.title;
+
                         return (
                           <div 
                             key={cat.id} 
                             onClick={() => setGenreText(cat.title === genreText ? "" : cat.title)}
                             className={clsx(
-                              "group relative overflow-hidden rounded-xl aspect-[1.8/1] min-h-[72px] sm:min-h-[80px] cursor-pointer shadow-sm transition-all border-2",
-                              isActive ? "border-primary scale-[1.02] shadow-md ring-4 ring-primary/10" : "border-transparent bg-gradient-to-br " + cat.gradient
+                              "group relative overflow-hidden rounded-xl aspect-[1.7/1] min-h-[72px] sm:min-h-[80px] cursor-pointer shadow-sm transition-all border-2",
+                              isActive ? "border-primary scale-[1.02] shadow-md ring-2 ring-primary/20" : "border-transparent bg-white shadow-sm"
                             )}
                           >
-                             {!isActive && <div className={clsx("absolute inset-0 bg-gradient-to-br transition-opacity", cat.gradient)} />}
-                             {isActive && <div className={clsx("absolute inset-0 bg-primary/5")} />}
+                             <div className={clsx(
+                                "absolute inset-0 bg-gradient-to-br transition-opacity duration-300", 
+                                cat.gradient,
+                                isActive ? "opacity-100" : "opacity-90 group-hover:opacity-100"
+                             )} />
 
                              <div className="absolute -bottom-2 -right-2 opacity-20 transform -rotate-12 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
-                               <Icon className={clsx("w-16 h-16 sm:w-20 sm:h-20", isActive ? "text-primary" : "text-white")} />
+                               <Icon className="w-16 h-16 sm:w-20 sm:h-20 text-white" />
                              </div>
                              <div className="absolute inset-0 p-2 flex flex-col justify-end sm:p-2.5">
-                                <h3 className={clsx("text-[10px] min-[320px]:text-[11px] sm:text-[13px] md:text-[14px] font-bold leading-[1.0] sm:leading-tight drop-shadow-sm line-clamp-2 break-words text-left", isActive ? "text-primary" : "text-white")}>{cat.title}</h3>
+                                <h3 className="text-[10px] min-[320px]:text-[11px] sm:text-[13px] md:text-[14px] font-bold leading-[1.1] sm:leading-tight drop-shadow-md text-white line-clamp-2 text-left">{cat.title}</h3>
                              </div>
+
+                             {isActive && (
+                               <div className="absolute top-2 right-2 bg-white/20 backdrop-blur-md p-1 rounded-full border border-white/30 animate-in zoom-in-50 duration-300">
+                                  <PlayCircle className="w-3.5 h-3.5 text-white" />
+                               </div>
+                             )}
                           </div>
                         );
                       })}
@@ -534,7 +544,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                    {/* Station Result Content (Master Plan UI) */}
                    {(genreText || searchTerm) && (
                      <div ref={stationContentRef} className="animate-in slide-in-from-bottom-8 duration-500 scroll-mt-20 px-4">
-                        <div className="flex items-center justify-between mb-6 pt-8 border-t border-gray-100">
+                        <div className="flex items-center justify-between mb-6 pt-4 border-t border-gray-100">
                             <div>
                                 <h2 className="text-xl font-bold text-gray-900">{genreText || searchTerm}</h2>
                                 <p className="text-[11px] text-gray-500 font-medium">รวมเพลงยาว ({stationResults?.length || 0} รายการ)</p>
@@ -542,7 +552,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                             <button onClick={() => setGenreText("")} className="text-xs font-bold text-primary hover:underline">ปิดรายการ</button>
                         </div>
                         
-                        <div className="grid grid-cols-2 min-[500px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 pb-20 overflow-hidden">
+                        <div className="grid grid-cols-2 min-[400px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 pb-20 overflow-hidden">
                           {isLoadStation ? (
                             getSkeletonItems(8).map(s => <div key={s} className="aspect-video bg-gray-100 rounded-2xl animate-pulse" />)
                           ) : (
