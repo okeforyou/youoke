@@ -41,7 +41,7 @@ interface Plan {
   isVisible: boolean;
 }
 
-const CORE_PLAN_IDS = ["free", "monthly", "yearly", "lifetime"];
+const CORE_PLAN_IDS = ["guest", "free", "monthly", "yearly", "lifetime"];
 
 const SubscriptionsPage: React.FC = () => {
   const toast = useToast();
