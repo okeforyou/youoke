@@ -105,20 +105,26 @@ export default async function handler(
               const match = html.match(/<script id="__NEXT_DATA__".*?>(.*?)<\/script>/);
               if (!match || !match[1]) {
                 console.error(`No __NEXT_DATA__ found for chart ${chart.id}. HTML length: ${html.length}`);
-                return resolve({ id: chart.id, name: chart.name, singles: [], debug: 'no_v_data', htmlLen: html.length });
+                return resolve({ id: chart.id, name: chart.name, singles: [], debug: 'no_v_data', htmlLen: html.length, snippet: html.substring(0, 200) });
               }
 
               try {
                 const nextData = JSON.parse(match[1]);
-                const pageProps = nextData?.props?.pageProps;
+                const pageProps = nextData?.props?.pageProps || {};
                 
-                // Try multiple paths for items
+                // Deep search for tracks in various possible paths
                 let items = pageProps?.trackList?.tracks?.items || 
                             pageProps?.tracks?.items || 
                             pageProps?.tracks || 
-                            pageProps?.initialData?.trackList?.tracks?.items;
+                            pageProps?.initialData?.trackList?.tracks?.items ||
+                            pageProps?.initialData?.tracks?.items ||
+                            pageProps?.data?.trackList?.tracks?.items ||
+                            [];
                 
-                if (!Array.isArray(items)) items = [];
+                if (!Array.isArray(items)) {
+                   // If still not an array, check if it's wrapped in an object we missed
+                   items = [];
+                }
                 
                 const singles = items.map((song: any) => {
                   const songId = song.id || song.track_id || song.trackId;
@@ -146,7 +152,8 @@ export default async function handler(
                   singles,
                   debug: {
                     itemCount: items.length,
-                    foundTracks: singles.length > 0
+                    pathFound: !!pageProps?.trackList ? 'trackList' : (!!pageProps?.tracks ? 'tracks' : 'none'),
+                    pagePropsKeys: Object.keys(pageProps).slice(0, 15)
                   }
                 });
               } catch (e) {
