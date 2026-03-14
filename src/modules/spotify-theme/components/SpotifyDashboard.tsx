@@ -475,11 +475,11 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
 
                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-4 px-4 pb-20">
                   {(isLoadingGenre && artistCategories.length === 0) ? (
-                    getSkeletonItems(10).map(s => <div key={s} className="aspect-square bg-gray-100 rounded-3xl animate-pulse" />)
+                    getSkeletonItems(10).map(s => <div key={s} className="aspect-video bg-gray-100 rounded-3xl animate-pulse" />)
                   ) : (
                     artistCategories.map(cat => (
                         <div key={cat.tag_id} onClick={() => setTagId(cat.tag_id)} className="group cursor-pointer">
-                            <div className="relative aspect-square rounded-[2rem] overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-2xl transition-all duration-300 group-hover:-translate-y-2">
+                            <div className="relative aspect-video rounded-3xl overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-xl transition-all duration-300 group-hover:-translate-y-1">
                                 <Image src={cat.imageUrl || "/icon-cover.png"} alt={cat.tag_name} fill className="object-cover" unoptimized />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                                 <div className="absolute inset-0 p-5 flex flex-col justify-end">
@@ -499,7 +499,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                {!tagId && (
                  <>
                    <div className="px-4 pt-4 pb-6">
-                        <div className="bg-gray-100 p-8 rounded-xl relative overflow-hidden min-h-[140px] flex flex-col justify-center">
+                        <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 sm:p-8 rounded-2xl relative overflow-hidden min-h-[140px] flex flex-col justify-center border border-gray-200/50 shadow-sm">
                             <h2 className="text-3xl font-black text-gray-900 leading-tight">สถานีเพลง</h2>
                             <p className="text-gray-500 mt-2 font-medium">รวมชุดเพลงยาว ฟังต่อเนื่อง สำหรับเปิดทิ้งไว้</p>
                             <div className="absolute bottom-6 right-8 opacity-5">
