@@ -308,14 +308,41 @@ export const usePlayerStore = create<PlayerStore>()(
             }),
 
             removeFromQueue: (uuid) => set((state) => {
+                const indexToRemove = state.queue.findIndex(item => item.uuid === uuid);
+                if (indexToRemove === -1) return {};
+
                 const newQueue = state.queue.filter(item => item.uuid !== uuid);
-                broadcast({ queue: newQueue });
-                return { queue: newQueue };
+                
+                let newIndex = state.currentIndex;
+                if (indexToRemove < state.currentIndex) {
+                    newIndex--;
+                } else if (indexToRemove === state.currentIndex) {
+                    if (newIndex >= newQueue.length) {
+                        newIndex = Math.max(0, newQueue.length - 1);
+                    }
+                }
+
+                const updates: any = { 
+                    queue: newQueue, 
+                    currentIndex: newIndex,
+                    currentVideo: newQueue[newIndex] || null 
+                };
+
+                broadcast(updates);
+                return updates;
             }),
 
-            reorderQueue: (newQueue) => {
-                set({ queue: newQueue });
-                broadcast({ queue: newQueue });
+            reorderQueue: (newQueue, newIndex) => {
+                const updates: any = { queue: newQueue };
+                if (newIndex !== undefined) {
+                    updates.currentIndex = newIndex;
+                    // Also update sync currentVideo just in case to keep it solid
+                    if (newQueue[newIndex]) {
+                        updates.currentVideo = newQueue[newIndex];
+                    }
+                }
+                set(updates);
+                broadcast(updates);
             },
 
             setCurrentIndex: (index) => set((state) => {
@@ -347,8 +374,14 @@ export const usePlayerStore = create<PlayerStore>()(
 
             playNext: () => {
                 const state = get();
-                if (state.queue.length > 0) {
-                    const newQueue = state.queue.slice(1);
+                const { queue, currentIndex } = state;
+
+                if (queue.length > 0) {
+                    // Determine where to slice from. 
+                    // If we want to consume (vanish model), we remove everything before the NEXT song.
+                    const nextIndex = currentIndex + 1;
+                    const newQueue = queue.slice(nextIndex);
+
                     if (newQueue.length > 0) {
                         const nextVideo = newQueue[0];
 
@@ -362,7 +395,7 @@ export const usePlayerStore = create<PlayerStore>()(
                             source = nextVideo.filePath || nextVideo.id;
                         }
 
-                        console.log(`▶️ Store: Playing Next. Source: ${source}`);
+                        console.log(`▶️ Store: Playing Next (from index ${currentIndex} -> consumed). Next Source: ${source}`);
 
                         const updates = {
                             queue: newQueue,
@@ -370,7 +403,7 @@ export const usePlayerStore = create<PlayerStore>()(
                             currentVideo: nextVideo,
                             currentSource: source,
                             isPlaying: true,
-                            layoutMode: get().layoutMode,
+                            layoutMode: state.layoutMode,
                             currentTime: 0,
                             seekTarget: null,
                             ignoreUpdatesUntil: 0
@@ -378,13 +411,14 @@ export const usePlayerStore = create<PlayerStore>()(
                         set(updates);
                         broadcast(updates);
                     } else {
+                        console.log("🏁 Store: Queue Finished");
                         const updates = {
                             queue: [],
                             currentIndex: 0,
                             currentVideo: null,
                             currentSource: null,
                             isPlaying: false,
-                            layoutMode: get().layoutMode,
+                            layoutMode: state.layoutMode,
                             seekTarget: null,
                             ignoreUpdatesUntil: 0
                         };

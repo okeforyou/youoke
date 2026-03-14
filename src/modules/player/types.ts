@@ -103,7 +103,7 @@ export interface PlayerStore extends PlayerState {
     // Queue Actions
     addToQueue: (video: Video | Video[], autoPlay?: boolean) => void; // Updated signature to support bulk addition
     removeFromQueue: (uuid: string) => void;
-    reorderQueue: (newQueue: QueueItem[]) => void;
+    reorderQueue: (newQueue: QueueItem[], newIndex?: number) => void;
     setCurrentIndex: (index: number) => void;
     playNext: () => void;
     playPrevious: () => void;

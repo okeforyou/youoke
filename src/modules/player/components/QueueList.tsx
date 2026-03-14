@@ -135,16 +135,18 @@ export function QueueList() {
             if (oldIndex !== -1 && newIndex !== -1) {
                 const newQueue = arrayMove(queue, oldIndex, newIndex);
 
-                // Update current index if needed
                 const currentUuid = queue[currentIndex]?.uuid;
-                reorderQueue(newQueue);
+                let newCurrentIndex = currentIndex;
 
                 if (currentUuid) {
-                    const newCurrentIndex = newQueue.findIndex(q => q.uuid === currentUuid);
-                    if (newCurrentIndex !== -1 && newCurrentIndex !== currentIndex) {
-                        setCurrentIndex(newCurrentIndex);
+                    const foundIndex = newQueue.findIndex(q => q.uuid === currentUuid);
+                    if (foundIndex !== -1) {
+                        newCurrentIndex = foundIndex;
                     }
                 }
+
+                // Atomic update: Reorder queue AND update index without triggering side effects like setCurrentIndex does
+                reorderQueue(newQueue, newCurrentIndex);
             }
         }
     };
