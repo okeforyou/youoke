@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Star, Flame, Library, User, ListMusic, Search, Gem } from 'lucide-react';
+import { Home, BarChart2, Headphones, Library, User, ListMusic, Search, Gem } from 'lucide-react';
 import { usePlayerStore } from '../../modules/player/stores/usePlayerStore';
 import { useUIStore } from '../../stores/useUIStore';
 import { useSystem } from '../../core/container/SystemContext';
@@ -22,8 +22,8 @@ export const MobileBottomNav = () => {
 
     const navItems = [
         { id: 1, label: 'หน้าหลัก', icon: Home },
-        { id: 2, label: 'แนะนำ', icon: Star },
-        { id: 3, label: 'มาแรง', icon: Flame },
+        { id: 2, label: 'ชาร์ตเพลง', icon: BarChart2 },
+        { id: 3, label: 'สถานีเพลง', icon: Headphones },
         { id: 4, label: 'เพลย์ลิสต์', icon: Library },
         { id: 5, label: 'บัญชี', icon: User },
     ];
@@ -38,7 +38,7 @@ export const MobileBottomNav = () => {
             setQueueOpen(false); // Close queue when changing main tabs
 
             // Sync with URL like Sidebar
-            const tabMap: Record<number, string> = { 1: 'home', 2: 'rec', 3: 'trending', 4: 'library' };
+            const tabMap: Record<number, string> = { 1: 'home', 2: 'trending', 3: 'station', 4: 'library' };
             router.push({
                 pathname: '/',
                 query: { tab: tabMap[index] }

@@ -66,16 +66,16 @@ export default function BottomNavigation() {
         className={`flex flex-col items-center justify-center gap-1 min-h-[64px] text-primary p-2 ${isHomePage && activeIndex === 2 ? "active" : ""}`}
         onClick={() => navigateToHome(2)}
       >
-        <RectangleStackIcon className="w-6 h-6 pointer-events-none" />
-        <span className="btm-nav-label pointer-events-none">แนะนำ</span>
+        <TrophyIcon className="w-6 h-6 pointer-events-none" />
+        <span className="btm-nav-label pointer-events-none">ชาร์ตเพลง</span>
       </button>
       <button
         type="button"
         className={`flex flex-col items-center justify-center gap-1 min-h-[64px] text-primary p-2 ${isHomePage && activeIndex === 3 ? "active" : ""}`}
         onClick={() => navigateToHome(3)}
       >
-        <TrophyIcon className="w-6 h-6 pointer-events-none" />
-        <span className="btm-nav-label pointer-events-none">มาแรง</span>
+        <MusicalNoteIcon className="w-6 h-6 pointer-events-none" />
+        <span className="btm-nav-label pointer-events-none">สถานีเพลง</span>
       </button>
       <button
         type="button"

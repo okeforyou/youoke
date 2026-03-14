@@ -48,7 +48,7 @@ export default function ListHitsGrid() {
   const { data: hitsData, isLoading } = useQuery({
     queryKey: ["jooxCharts"],
     queryFn: getJooxCharts,
-    staleTime: 1000 * 60 * 60 * 24, // 24 hours
+    staleTime: 1000 * 60 * 60, // 1 hour
   });
 
   const chartItems = useMemo(() => {
@@ -138,6 +138,11 @@ export default function ListHitsGrid() {
              {[...Array(12)].map((_, i) => (
                 <div key={i} className="aspect-video bg-gray-100 rounded-2xl animate-pulse" />
              ))}
+          </div>
+        ) : chartItems.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+             <BarChart2 className="w-12 h-12 mb-4 opacity-20" />
+             <p className="text-sm font-medium">ไม่พบรายการเพลงในขณะนี้ กรุณาลองใหม่ภายหลัง</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-3 md:gap-4 px-1">

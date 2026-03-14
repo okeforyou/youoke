@@ -15,21 +15,28 @@ export default async function handler(
 
     if (adminFirestore) {
       try {
+        console.log("🔍 Checking Firestore cache for JOOX charts...");
         const cacheDoc = await adminFirestore.collection('system_cache').doc('joox_charts').get();
         if (cacheDoc.exists) {
           const data = cacheDoc.data();
-          if (data && data.updatedAt && data.charts && data.charts.length > 0) {
+          if (data && data.updatedAt && Array.isArray(data.charts) && data.charts.length > 0) {
             const cacheAge = new Date().getTime() - new Date(data.updatedAt).getTime();
-            // If cache is less than 24 hours old, return it directly to avoid JOOX requests.
-            if (cacheAge < 24 * 60 * 60 * 1000) {
-              console.log("⚡ Serving JOOX charts from Firestore Cache");
+            
+            // Validate that charts actually have singles
+            const hasSingles = data.charts.some((c: any) => Array.isArray(c.singles) && c.singles.length > 0);
+            
+            // If cache is less than 24 hours old and has valid data, return it.
+            if (cacheAge < 24 * 60 * 60 * 1000 && hasSingles) {
+              console.log("⚡ Serving JOOX charts from Firestore Cache (Last updated:", data.updatedAt, ")");
               res.setHeader("Cache-Control", "public, s-maxage=2592000, stale-while-revalidate=86400");
               return res.status(200).json({ status: "success", charts: data.charts });
+            } else {
+              console.log("⚠️ Cache is stale or empty of singles, fetching fresh data from JOOX...");
             }
           }
         }
       } catch (err) {
-        console.error("Failed to read Firestore cache:", err);
+        console.error("❌ Failed to read Firestore cache:", err);
       }
     }
 
@@ -82,21 +89,34 @@ export default async function handler(
     };
 
     const results = await Promise.all(allowedCharts.map(fetchChart));
-    const finalCharts = results.filter(c => c !== null);
+    let finalCharts = results.filter(c => c !== null);
+
+    // If fetching failed (e.g. blocked or JOOX down), try to serve ANY available cache as fallback
+    if (finalCharts.length === 0 && adminFirestore) {
+      console.log("⚠️ Fresh fetch failed. Attempting to serve ANY stale cache as fallback...");
+      const cacheDoc = await adminFirestore.collection('system_cache').doc('joox_charts').get();
+      if (cacheDoc.exists) {
+        const data = cacheDoc.data();
+        if (data && data.charts && data.charts.length > 0) {
+          console.log("🩹 Serving STALE Firestore Cache as emergency fallback");
+          return res.status(200).json({ status: "success", charts: data.charts, fallback: true });
+        }
+      }
+    }
 
     // If new data was fetched, cache it to Firestore backend.
     if (finalCharts.length > 0) {
       if (adminFirestore) {
-         try {
-             const docRef = adminFirestore.collection('system_cache').doc('joox_charts');
-             await docRef.set({
-                 updatedAt: new Date().toISOString(),
-                 charts: finalCharts
-             });
-             console.log("✅ Cached new JOOX charts to Firestore");
-         } catch (err: any) {
-             console.error("Failed to cache to Firestore:", err.message);
-         }
+        try {
+          const docRef = adminFirestore.collection('system_cache').doc('joox_charts');
+          await docRef.set({
+            updatedAt: new Date().toISOString(),
+            charts: finalCharts
+          });
+          console.log("✅ Cached new JOOX charts to Firestore");
+        } catch (err: any) {
+          console.error("Failed to cache to Firestore:", err.message);
+        }
       }
     }
 
