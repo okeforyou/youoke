@@ -32,6 +32,7 @@ export default function AdminConfigPage() {
     const [localConfig, setLocalConfig] = useState(config);
     const [saving, setSaving] = useState(false);
     const [initializing, setInitializing] = useState(false);
+    const [uploading, setUploading] = useState(false);
     const [activeTab, setActiveTab] = useState<'system' | 'features' | 'player' | 'ui' | 'login' | 'integrations' | 'payment' | 'marketing' | 'tv'>('system');
     const [toast, setToast] = useState('');
     const router = useRouter();
@@ -118,34 +119,46 @@ export default function AdminConfigPage() {
     };
     const removeFeature = (index: number) => setLoginFeatures(loginFeatures.filter((_, i) => i !== index));
     
-    // QR Code Upload Handler
+    // QR Code Upload Handler (Improved Stability)
     const handleQrUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (!file || !storage) return;
-
-        setSaving(true);
+        if (!file) return;
+        
+        console.log('🔥 [Upload] Starting QR upload:', file.name);
+        setUploading(true);
         try {
-            const storageRef = ref(storage, `config/payment/qr-${Date.now()}`);
-            await uploadBytes(storageRef, file);
-            const downloadURL = await getDownloadURL(storageRef);
+            if (!storage) {
+                throw new Error("ระบบสเปซเก็บข้อมูล (Storage) ไม่พร้อมใช้งาน กรุณาลองใหม่ครู่เดียว");
+            }
             
-            setLocalConfig({
-                ...localConfig,
+            const storageRef = ref(storage, `config/payment/qr-${Date.now()}-${file.name}`);
+            const uploadResult = await uploadBytes(storageRef, file);
+            console.log('🔥 [Upload] Bytes uploaded:', uploadResult.metadata.fullPath);
+            
+            const downloadURL = await getDownloadURL(storageRef);
+            console.log('🔥 [Upload] Download URL obtained:', downloadURL);
+            
+            setLocalConfig((prev: any) => ({
+                ...prev,
                 payment: {
-                    ...localConfig.payment!,
+                    ...prev.payment,
                     promptPay: {
-                        ...(localConfig.payment?.promptPay || { name: '', id: '' }),
+                        ...(prev.payment?.promptPay || { name: '', id: '' }),
                         qrImageUrl: downloadURL
                     }
                 }
-            });
-            setToast('อัปโหลดรูปภาพสำเร็จ!');
-            setTimeout(() => setToast(''), 3000);
-        } catch (error) {
-            console.error('Error uploading QR:', error);
-            setToast('เกิดข้อผิดพลาดในการอัปโหลด');
+            }));
+            
+            setToast('อัปโหลดรูปภาพสำเร็จ! อย่าลืมกด "บันทึกการแก้ไข" เพื่อยืนยัน');
+            setTimeout(() => setToast(''), 5000);
+        } catch (error: any) {
+            console.error('❌ [Upload] Error:', error);
+            setToast(`อัปโหลดล้มเหลว: ${error.message || 'โปรดลองอีกครั้ง'}`);
+            setTimeout(() => setToast(''), 4000);
         } finally {
-            setSaving(false);
+            setUploading(false);
+            // reset input
+            e.target.value = '';
         }
     };
 
@@ -765,9 +778,18 @@ export default function AdminConfigPage() {
                                                     value={localConfig.payment?.promptPay?.qrImageUrl ?? ''}
                                                     onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, promptPay: { ...(localConfig.payment?.promptPay || { name: '', id: '' }), qrImageUrl: e.target.value } } })}
                                                 />
-                                                <label className="btn btn-square btn-primary">
-                                                    <Upload className="w-5 h-5" />
-                                                    <input type="file" className="hidden" accept="image/*" onChange={handleQrUpload} />
+                                                <label className={cn(
+                                                    "btn btn-square btn-primary",
+                                                    uploading && "loading"
+                                                )}>
+                                                    {!uploading && <Upload className="w-5 h-5" />}
+                                                    <input 
+                                                        type="file" 
+                                                        className="hidden" 
+                                                        accept="image/*" 
+                                                        onChange={handleQrUpload}
+                                                        disabled={uploading}
+                                                    />
                                                 </label>
                                             </div>
                                         </div>
