@@ -732,23 +732,10 @@ export default function AdminConfigPage() {
                                                 <input
                                                     type="text"
                                                     className="input input-bordered flex-1 font-mono text-xs"
-                                                    placeholder="/img/qr.jpg หรือ อัปโหลดไฟล์..."
+                                                    placeholder="/img/scb-qr.jpg"
                                                     value={localConfig.payment?.promptPay?.qrImageUrl ?? ''}
                                                     onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, promptPay: { ...(localConfig.payment?.promptPay || { name: '', id: '' }), qrImageUrl: e.target.value } } })}
                                                 />
-                                                <label className={cn(
-                                                    "btn btn-square btn-primary",
-                                                    uploading && "loading"
-                                                )}>
-                                                    {!uploading && <Upload className="w-5 h-5" />}
-                                                    <input 
-                                                        type="file" 
-                                                        className="hidden" 
-                                                        accept="image/*" 
-                                                        onChange={handleQrUpload}
-                                                        disabled={uploading}
-                                                    />
-                                                </label>
                                             </div>
                                         </div>
                                     </div>
