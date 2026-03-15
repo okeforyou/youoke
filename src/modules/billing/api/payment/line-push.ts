@@ -19,20 +19,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     try {
         // Construct the LINE Push Message
-        // We use Flex Message or simple Image + Text
+        const messages: any[] = [
+            {
+                type: "text",
+                text: message || "มีรายการแจ้งโอนเงินใหม่"
+            }
+        ];
+
+        // Only add image if URLs are provided
+        if (imageFullsize) {
+            messages.push({
+                type: "image",
+                originalContentUrl: imageFullsize,
+                previewImageUrl: imageThumbnail || imageFullsize
+            });
+        }
+
         const linePayload = {
             to: adminUserId,
-            messages: [
-                {
-                    type: "text",
-                    text: message || "มีรายการแจ้งโอนเงินใหม่"
-                },
-                {
-                    type: "image",
-                    originalContentUrl: imageFullsize,
-                    previewImageUrl: imageThumbnail || imageFullsize
-                }
-            ]
+            messages
         };
 
         await axios.post(

@@ -73,9 +73,23 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
     };
 
     const openLineChat = () => {
-        // Updated to the user's LINE Official Account
-        const lineUrl = "https://line.me/ti/p/@243lercy"; 
+        if (!user || !pkg) return;
+        
+        // Define the pre-filled message for the manual slip submission
+        const message = `แจ้งส่งสลิปครับ\n👤 ชื่อผู้ใช้: ${user.displayName || user.email}\n📦 แพ็กเกจ: ${pkg.name}\n💰 ยอดโอน: ${pkg.price.toLocaleString()} บาท`;
+        
+        // URL for LINE Official Account with pre-filled message
+        // Reference: https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
+        const lineUrl = `https://line.me/R/oaMessage/@243lercy/?${encodeURIComponent(message)}`;
+        
         window.open(lineUrl, '_blank');
+        
+        // Fallback for desktop if the R/ scheme fails
+        setTimeout(() => {
+            if (document.hasFocus()) {
+                 window.open("https://line.me/ti/p/@243lercy", '_blank');
+            }
+        }, 500);
     };
 
     return (
@@ -109,17 +123,15 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
 
                                     {/* QR Image */}
                                     <div className="bg-white p-4 rounded-2xl inline-block shadow-lg border-2 border-primary/10 relative group overflow-hidden">
-                                        {config.payment?.promptPay?.qrImageUrl ? (
-                                            <img
-                                                src={config.payment.promptPay.qrImageUrl}
-                                                alt="Payment QR"
-                                                className="w-48 h-48 mx-auto object-contain"
-                                            />
-                                        ) : (
-                                            <div className="w-48 h-48 flex items-center justify-center text-muted-foreground bg-muted/20">
-                                                <QrCode className="w-12 h-12 opacity-20" />
-                                            </div>
-                                        )}
+                                        <img
+                                            src={qrImage}
+                                            alt="Payment QR"
+                                            className="w-48 h-48 mx-auto object-contain"
+                                            onError={(e) => {
+                                                // Fallback if image fails to load
+                                                (e.target as HTMLImageElement).src = "https://placehold.co/400x400?text=PromptPay+QR";
+                                            }}
+                                        />
                                         <div className="mt-2 flex items-center justify-center gap-2">
                                             <div className="w-8 h-4 bg-[#4e2e7f] rounded-sm flex items-center justify-center text-[7px] font-bold text-white uppercase">{bankInfo.bank.includes('SCB') ? 'SCB' : 'BANK'}</div>
                                             <div className="w-10 h-4 bg-[#003d6b] rounded-sm flex items-center justify-center text-[8px] font-bold text-white">PROMPT</div>

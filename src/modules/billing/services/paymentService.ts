@@ -239,27 +239,32 @@ export async function activateFreePackage(
 
   let membershipType = pkgSnap.data()?.planId || 'trial';
 
-  // 3. Update User
+  // 3. Update User (Use setDoc merge to be robust)
   const userRef = doc(db, USERS_COLLECTION, userId);
-  await updateDoc(userRef, {
-    membership: {
-      type: membershipType,
-      startedAt: serverTimestamp(),
-      expiresAt: expiresAt,
-      autoRenew: false,
-      activatedBy: 'self'
-    },
-    updatedAt: serverTimestamp()
-  });
+  try {
+    await setDoc(userRef, {
+        membership: {
+            type: membershipType,
+            startedAt: serverTimestamp(),
+            expiresAt: expiresAt,
+            autoRenew: false,
+            activatedBy: 'self'
+        },
+        updatedAt: serverTimestamp()
+    }, { merge: true });
 
-  // 4. Notification
-  await addDoc(collection(db, `users/${userId}/notifications`), {
-    title: "สมัครทดลองใช้สำเร็จ!",
-    message: `คุณเริ่มใช้งานแพ็กเกจ "${pkgName}" แล้ว ใช้งานได้ฟรีเป็นเวลา ${durationDays} วัน`,
-    type: 'success',
-    read: false,
-    createdAt: serverTimestamp()
-  });
+    // 4. Notification
+    await addDoc(collection(db, `users/${userId}/notifications`), {
+        title: "สมัครทดลองใช้สำเร็จ!",
+        message: `คุณเริ่มใช้งานแพ็กเกจ "${pkgName}" แล้ว ใช้งานได้ฟรีเป็นเวลา ${durationDays} วัน`,
+        type: 'success',
+        read: false,
+        createdAt: serverTimestamp()
+    });
 
-  console.log(`Free package ${packageId} activated for user ${userId}.`);
+    console.log(`Free package ${packageId} activated for user ${userId}.`);
+  } catch (error) {
+    console.error("Error in activateFreePackage:", error);
+    throw error;
+  }
 }
