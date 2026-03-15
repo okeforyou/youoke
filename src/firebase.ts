@@ -32,7 +32,7 @@ const firebaseConfig = {
     'playokeforyou',
   storageBucket: cleanEnv(process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET) ||
     cleanEnv(process.env.NEXT_PUBLIC_STORAGE_BUCKET) ||
-    'playokeforyou.firebasestorage.app',
+    'playokeforyou.appspot.com', // Try old format first as fallback
   messagingSenderId: cleanEnv(process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID) ||
     cleanEnv(process.env.NEXT_PUBLIC_MESSAGING_SENDER_ID),
   appId: cleanEnv(process.env.NEXT_PUBLIC_FIREBASE_APP_ID) ||
