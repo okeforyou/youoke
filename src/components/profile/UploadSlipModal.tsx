@@ -67,8 +67,8 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
     };
 
     const openLineChat = () => {
-        // You can update this URL in Admin Config or hardcode it
-        const lineUrl = "https://line.me/ti/p/@youoke"; // Placeholder - user can update this
+        // Updated to the user's LINE Official Account
+        const lineUrl = "https://line.me/ti/p/@243lercy"; 
         window.open(lineUrl, '_blank');
     };
 
