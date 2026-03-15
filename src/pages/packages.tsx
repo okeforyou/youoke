@@ -153,7 +153,7 @@ export default function PackagesPage() {
                         Premium Pass
                     </div>
                     <h2 className="text-4xl md:text-5xl font-black mb-4 tracking-tight text-zinc-900 dark:text-white">ปลดล็อกขีดจำกัดความสนุก</h2>
-                    <p className="text-zinc-600 dark:text-zinc-400 text-sm md:text-base max-w-xl mx-auto leading-relaxed font-semibold">
+                    <p className="text-zinc-500 dark:text-zinc-300 text-sm md:text-base max-w-xl mx-auto leading-relaxed font-bold">
                         สัมผัสประสบการณ์ร้องคาราโอเกะแบบมืออาชีพ ด้วยฟีเจอร์ที่ออกแบบมาเพื่อความสะดวกสบายและอรรถรสสูงสุด
                     </p>
                 </div>

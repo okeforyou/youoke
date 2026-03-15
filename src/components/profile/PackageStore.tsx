@@ -102,30 +102,41 @@ export const PackageStore = () => {
                         const isAnnual = pkg.durationDays >= 365 && pkg.durationDays < 9999;
                         const isPermanent = pkg.durationDays >= 9999;
 
-                        let accentClass = "bg-blue-500";
-                        if (isFree) accentClass = "bg-slate-400";
-                        if (isAnnual) accentClass = "bg-purple-500";
-                        if (isPermanent) accentClass = "bg-amber-500";
+                        let accentClass = "bg-blue-600";
+                        let bgClass = "bg-blue-50/50 border-blue-100 dark:bg-blue-900/20 dark:border-blue-800";
+                        if (isFree) {
+                            accentClass = "bg-slate-500";
+                            bgClass = "bg-slate-50 border-slate-200 dark:bg-slate-800/40 dark:border-slate-700";
+                        }
+                        if (isAnnual) {
+                            accentClass = "bg-purple-600";
+                            bgClass = "bg-purple-50 border-purple-100 dark:bg-purple-900/20 dark:border-purple-800";
+                        }
+                        if (isPermanent) {
+                            accentClass = "bg-amber-500";
+                            bgClass = "bg-amber-50 border-amber-100 dark:bg-amber-900/20 dark:border-amber-800";
+                        }
 
                         return (
                             <div
                                 key={pkg.id}
                                 className={cn(
-                                    "group relative overflow-hidden rounded-2xl border p-4 mb-2 transition-all duration-200 hover:bg-muted/50 cursor-pointer flex items-center justify-between",
-                                    pkg.isPopular ? "border-primary/40 bg-primary/[0.03]" : "border-border shadow-sm"
+                                    "group relative overflow-hidden rounded-2xl border p-3.5 mb-2 transition-all duration-200 cursor-pointer flex items-center justify-between",
+                                    bgClass,
+                                    "hover:shadow-md hover:scale-[1.01] active:scale-[0.99]"
                                 )}
                                 onClick={() => router.push('/packages')}
                             >
-                                <div className="flex items-center gap-4 overflow-hidden ml-1">
-                                    {/* Color Indicator Vertical Bar */}
-                                    <div className={cn("w-1.5 h-8 rounded-full shrink-0", accentClass)} />
+                                <div className="flex items-center gap-3.5 overflow-hidden ml-0.5">
+                                    {/* Color Indicator Vertical Bar (Thicker) */}
+                                    <div className={cn("w-2 h-7 rounded-full shrink-0 shadow-sm", accentClass)} />
 
-                                    <div className="flex items-center gap-3 overflow-hidden">
-                                        <h4 className="font-bold text-[15px] text-foreground tracking-tight shrink-0">{pkg.name}</h4>
-                                        <span className="text-muted-foreground/30 text-xs shrink-0">|</span>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-lg font-black text-foreground shrink-0 leading-none">฿{pkg.price.toLocaleString()}</span>
-                                            <span className="text-xs font-semibold text-muted-foreground shrink-0 leading-none opacity-60">
+                                    <div className="flex items-center gap-2.5 overflow-hidden">
+                                        <h4 className="font-bold text-[14px] text-foreground tracking-tight shrink-0">{pkg.name}</h4>
+                                        <span className="opacity-20 text-[10px] shrink-0">|</span>
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-base font-black text-foreground shrink-0 leading-none">฿{pkg.price.toLocaleString()}</span>
+                                            <span className="text-[9px] font-bold text-muted-foreground shrink-0 leading-none opacity-60">
                                                 ({pkg.durationDays} วัน)
                                             </span>
                                         </div>

@@ -155,7 +155,7 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                     <div className="flex h-full flex-col overflow-y-scroll bg-white shadow-2xl relative">
 
                                         {/* Header */}
-                                        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white sticky top-0 z-10">
+                                        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white sticky top-0 z-[110]">
                                             <Dialog.Title className="text-lg font-bold text-gray-900">
                                                 โปรไฟล์ของฉัน
                                             </Dialog.Title>

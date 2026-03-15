@@ -67,7 +67,7 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
         <div className="relative group cursor-pointer w-full" onClick={onUpgrade}>
             {/* Flat Card Content */}
             <div className={cn(
-                "relative rounded-3xl overflow-hidden shadow-2xl p-6 flex flex-col justify-between min-h-[180px] transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-primary/20",
+                "relative rounded-2xl overflow-hidden shadow-xl p-4 flex flex-col justify-between min-h-[140px] transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-primary/20",
                 activeColor,
                 "text-white border border-white/10"
             )}>
@@ -76,15 +76,15 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
 
                 {/* Header */}
                 <div className="relative z-10 flex justify-between items-start">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-white/20 backdrop-blur-md shadow-inner">
-                            {isAdmin ? <Crown className="w-6 h-6" /> : (isLifetime ? <Crown className="w-6 h-6" /> : (isPremium ? <Zap className="w-6 h-6" /> : <Clock className="w-6 h-6" />))}
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-white/20 backdrop-blur-md shadow-inner">
+                            {isAdmin ? <Crown className="w-5 h-5" /> : (isLifetime ? <Crown className="w-5 h-5" /> : (isPremium ? <Zap className="w-5 h-5" /> : <Clock className="w-5 h-5" />))}
                         </div>
                         <div>
-                            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60">
+                            <div className="text-[9px] font-black uppercase tracking-[0.2em] text-white/60">
                                 {labelMembership}
                             </div>
-                            <h3 className="text-xl font-black tracking-tight mt-0.5">
+                            <h3 className="text-base font-black tracking-tight mt-0.5">
                                 {planName}
                             </h3>
                         </div>
@@ -92,14 +92,14 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
                 </div>
 
                 {/* Footer Center Section (Quota) */}
-                <div className="relative z-10 mt-6 mb-2">
+                <div className="relative z-10 mt-4 mb-2">
                     {!isAdmin && (
-                        <div className="space-y-2">
+                        <div className="space-y-1.5">
                             <div className="flex justify-between items-end">
-                                <span className="text-[10px] uppercase font-black tracking-widest text-white/60">โควต้าเพลงวันนี้</span>
-                                <span className="text-xs font-black">{membership?.quota?.used || 0} / {membership?.quota?.daily_limit || 0}</span>
+                                <span className="text-[9px] uppercase font-black tracking-widest text-white/60">โควต้าเพลงวันนี้</span>
+                                <span className="text-[10px] font-black">{membership?.quota?.used || 0} / {membership?.quota?.daily_limit || 0}</span>
                             </div>
-                            <div className="h-2 w-full bg-black/20 rounded-full overflow-hidden p-[1px]">
+                            <div className="h-1.5 w-full bg-black/20 rounded-full overflow-hidden p-[1px]">
                                 <div 
                                     className="h-full rounded-full bg-white transition-all duration-700 shadow-[0_0_10px_rgba(255,255,255,0.5)]"
                                     style={{ width: `${Math.min(((membership?.quota?.used || 0) / (membership?.quota?.daily_limit || 1)) * 100, 100)}%` }}
@@ -111,20 +111,20 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
 
                 <div className="relative z-10 flex justify-between items-end">
                     <div>
-                        <div className="text-[10px] uppercase tracking-widest font-black text-white/50 mb-0.5">วันหมดอายุ</div>
-                        <div className="text-sm font-black tracking-tight">
+                        <div className="text-[9px] uppercase tracking-widest font-black text-white/50 mb-0.5">วันหมดอายุ</div>
+                        <div className="text-xs font-black tracking-tight">
                             {isAdmin ? "สิทธิ์เจ้าของระบบ" : (isLifetime ? "ไม่มีวันหมดอายุ" : (hasActivePlan ? formatDate(safeMembership.expiresAt) : "กรุณาเลือกแพ็กเกจ"))}
                         </div>
                     </div>
                     
                     {!isAdmin && (
                         <div className={cn(
-                            "flex items-center gap-2 px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl backdrop-blur-md",
+                            "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-xl backdrop-blur-md",
                             isPremium
                                 ? "bg-white/90 text-zinc-900 hover:bg-white"
                                 : "bg-zinc-900/40 text-white hover:bg-zinc-900/60 ring-1 ring-white/20 animate-pulse"
                         )}>
-                            {isExpired ? "ต่ออายุ" : (hasActivePlan ? "อัปเกรด" : "เลือกแพ็กเกจ")} <ChevronRight className="w-4 h-4" />
+                            {isExpired ? "ต่ออายุ" : (hasActivePlan ? "อัปเกรด" : "เลือกแพ็กเกจ")} <ChevronRight className="w-3 h-3" />
                         </div>
                     )}
                 </div>
