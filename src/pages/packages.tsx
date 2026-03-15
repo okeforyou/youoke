@@ -228,7 +228,13 @@ export default function PackagesPage() {
 
                                     <div className="space-y-3 relative z-10">
                                         <button
-                                            onClick={() => handleBuy(pkg)}
+                                            onClick={() => {
+                                                if (pkg.price === 0) {
+                                                    handleBuy(pkg);
+                                                } else {
+                                                    handleManualTransfer(pkg);
+                                                }
+                                           }}
                                             className={cn(
                                                 "w-full h-12 rounded-[1.2rem] flex items-center justify-center gap-3 font-black text-sm transition-all active:scale-95 shadow-lg",
                                                 pkg.isPopular
@@ -237,18 +243,8 @@ export default function PackagesPage() {
                                             )}
                                         >
                                             {pkg.price === 0 ? <Zap className="w-5 h-5" /> : <QrCode className="w-5 h-5" />}
-                                            {pkg.price === 0 ? "รับสิทธิ์ใช้งานฟรี" : "สมัครสมาชิกทันที"}
+                                            {pkg.price === 0 ? "รับสิทธิ์ใช้งานฟรี" : "ชำระเงินด้วย QR Code"}
                                         </button>
-
-                                        {pkg.price > 0 && (
-                                            <button
-                                                onClick={() => handleManualTransfer(pkg)}
-                                                className="w-full text-[10px] font-black text-muted-foreground/60 hover:text-primary transition-colors flex items-center justify-center gap-2 py-1"
-                                            >
-                                                <Upload className="w-3.5 h-3.5" />
-                                                โอนเงิน / แนบสลิป
-                                            </button>
-                                        )}
                                     </div>
 
                                     {pkg.isPopular && (

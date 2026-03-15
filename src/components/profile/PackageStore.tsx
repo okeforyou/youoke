@@ -5,7 +5,6 @@ import { Check, Star, Loader2, Upload, QrCode, ChevronLeft } from "lucide-react"
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/modules/auth/useAuthStore";
 import { UploadSlipModal } from "./UploadSlipModal";
-import { OmiseQRModal } from "@/modules/billing/components/OmiseQRModal";
 import { useRouter } from "next/router";
 
 interface Package {
@@ -22,7 +21,6 @@ export const PackageStore = () => {
     const [packages, setPackages] = useState<Package[]>([]);
     const [loading, setLoading] = useState(true);
     const [showUploadModal, setShowUploadModal] = useState(false);
-    const [showQRModal, setShowQRModal] = useState(false);
     const [selectedPkg, setSelectedPkg] = useState<Package | undefined>(undefined);
 
     const { user } = useAuthStore();
@@ -54,15 +52,6 @@ export const PackageStore = () => {
         fetchPackages();
     }, []);
 
-    const handleBuy = (pkg: Package) => {
-        if (!user) {
-            alert("กรุณาเข้าสู่ระบบก่อนซื้อแพ็กเกจ");
-            router.push('/login');
-            return;
-        }
-        setSelectedPkg(pkg);
-        setShowQRModal(true);
-    };
 
     const handleManualTransfer = (pkg: Package) => {
         if (!user) {
@@ -164,12 +153,6 @@ export const PackageStore = () => {
             <UploadSlipModal
                 isOpen={showUploadModal}
                 onClose={() => setShowUploadModal(false)}
-                pkg={selectedPkg}
-            />
-
-            <OmiseQRModal
-                isOpen={showQRModal}
-                onClose={() => setShowQRModal(false)}
                 pkg={selectedPkg}
             />
         </div>

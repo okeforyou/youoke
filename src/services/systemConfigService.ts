@@ -108,10 +108,7 @@ export interface SystemConfig {
         promptPay?: {
             id: string; // Phone or TaxID
             name: string;
-            promptPay?: {
-                id: string; // Phone or TaxID
-                name: string;
-            };
+            qrImageUrl?: string; // Static QR Image URL
         };
     };
 
@@ -263,9 +260,14 @@ export const DEFAULT_CONFIG: SystemConfig = {
     },
     payment: {
         bankAccount: {
-            bankName: "กสิกรไทย (KBank)",
-            accountName: "บจก. ยูโอเกะ (YouOke)",
-            accountNumber: "012-3-45678-9"
+            bankName: "ไทยพาณิชย์ (SCB)",
+            accountName: "บุญยานันทน์ ชูพินิจ",
+            accountNumber: "408-006876-3"
+        },
+        promptPay: {
+            id: "4080068763",
+            name: "บุญยานันทน์ ชูพินิจ",
+            qrImageUrl: "/img/scb-qr.jpg"
         }
     },
     upsell: {

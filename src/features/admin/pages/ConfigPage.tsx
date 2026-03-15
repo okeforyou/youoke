@@ -480,7 +480,7 @@ export default function ConfigPage() {
                                     ข้อความประกาศ (Signage Marquee)
                                 </h3>
                                 <div className="space-y-3">
-                                    {(localConfig.tv?.signageMessages || []).map((msg, index) => (
+                                    {(localConfig.tv?.signageMessages || []).map((msg: string, index: number) => (
                                         <div key={index} className="flex gap-2">
                                             <input
                                                 type="text"
@@ -495,7 +495,7 @@ export default function ConfigPage() {
                                             <button
                                                 className="btn btn-ghost text-red-500 p-2"
                                                 onClick={() => {
-                                                    const newMsgs = (localConfig.tv?.signageMessages || []).filter((_, i) => i !== index);
+                                                    const newMsgs = (localConfig.tv?.signageMessages || []).filter((_: string, i: number) => i !== index);
                                                     setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, signageMessages: newMsgs } });
                                                 }}
                                             >
@@ -599,34 +599,34 @@ export default function ConfigPage() {
                                     <PhotoIcon className="w-5 h-5 text-primary" />
                                     รูปภาพพื้นหลัง (Signage Backgrounds)
                                 </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {(localConfig.tv?.signageImages || []).map((img, index) => (
-                                        <div key={index} className="space-y-2">
-                                            <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden relative border border-gray-100">
-                                                {img ? <img src={img} className="w-full h-full object-cover" /> : <div className="flex items-center justify-center h-full text-gray-300"><PhotoIcon className="w-10 h-10" /></div>}
-                                                <button
-                                                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 shadow-lg"
-                                                    onClick={() => {
-                                                        const newImgs = (localConfig.tv?.signageImages || []).filter((_, i) => i !== index);
-                                                        setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, signageImages: newImgs } });
-                                                    }}
-                                                >
-                                                    <TrashIcon className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                            <input
-                                                type="text"
-                                                placeholder="Image URL..."
-                                                className="input input-bordered input-xs w-full"
-                                                value={img}
-                                                onChange={(e) => {
-                                                    const newImgs = [...(localConfig.tv?.signageImages || [])];
-                                                    newImgs[index] = e.target.value;
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {(localConfig.tv?.signageImages || []).map((img: string, index: number) => (
+                                    <div key={index} className="space-y-2">
+                                        <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden relative border border-gray-100">
+                                            {img ? <img src={img} className="w-full h-full object-cover" /> : <div className="flex items-center justify-center h-full text-gray-300"><PhotoIcon className="w-10 h-10" /></div>}
+                                            <button
+                                                className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 shadow-lg"
+                                                onClick={() => {
+                                                    const newImgs = (localConfig.tv?.signageImages || []).filter((_: string, i: number) => i !== index);
                                                     setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, signageImages: newImgs } });
                                                 }}
-                                            />
+                                            >
+                                                <TrashIcon className="w-4 h-4" />
+                                            </button>
                                         </div>
-                                    ))}
+                                        <input
+                                            type="text"
+                                            placeholder="Image URL..."
+                                            className="input input-bordered input-xs w-full"
+                                            value={img}
+                                            onChange={(e) => {
+                                                const newImgs = [...(localConfig.tv?.signageImages || [])];
+                                                newImgs[index] = e.target.value;
+                                                setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, signageImages: newImgs } });
+                                            }}
+                                        />
+                                    </div>
+                                ))}
                                     <button
                                         className="aspect-video border-2 border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center gap-2 text-gray-400 hover:bg-gray-50 transition-colors"
                                         onClick={() => {
@@ -666,26 +666,85 @@ export default function ConfigPage() {
                     )}
 
                     {activeTab === 'payment' && (
-                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
-                            <h3 className="font-bold">บัญชีธนาคาร (Bank Account)</h3>
-                            <input
-                                className="input input-bordered w-full"
-                                placeholder="ชื่อธนาคาร"
-                                value={localConfig.payment?.bankAccount?.bankName || ''}
-                                onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment, bankAccount: { ...localConfig.payment.bankAccount, bankName: e.target.value } } })}
-                            />
-                            <input
-                                className="input input-bordered w-full"
-                                placeholder="ชื่อบัญชี"
-                                value={localConfig.payment?.bankAccount?.accountName || ''}
-                                onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment, bankAccount: { ...localConfig.payment.bankAccount, accountName: e.target.value } } })}
-                            />
-                            <input
-                                className="input input-bordered w-full font-mono"
-                                placeholder="เลขที่บัญชี"
-                                value={localConfig.payment?.bankAccount?.accountNumber || ''}
-                                onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment, bankAccount: { ...localConfig.payment.bankAccount, accountNumber: e.target.value } } })}
-                            />
+                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+                            <div>
+                                <h3 className="font-bold text-gray-900 pb-2 flex items-center gap-2 border-b mb-4">
+                                    <BanknotesIcon className="w-5 h-5 text-primary" />
+                                    บัญชีธนาคาร (Bank Transfer)
+                                </h3>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="label text-xs font-bold text-gray-500 uppercase">ชื่อธนาคาร</label>
+                                        <input
+                                            className="input input-bordered w-full"
+                                            placeholder="ตัวอย่าง: ไทยพาณิชย์ (SCB)"
+                                            value={localConfig.payment?.bankAccount?.bankName || ''}
+                                            onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment, bankAccount: { ...localConfig.payment.bankAccount, bankName: e.target.value } } })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="label text-xs font-bold text-gray-500 uppercase">ชื่อบัญชี</label>
+                                        <input
+                                            className="input input-bordered w-full"
+                                            placeholder="ชื่อ-นามสกุล เจ้าของบัญชี"
+                                            value={localConfig.payment?.bankAccount?.accountName || ''}
+                                            onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment, bankAccount: { ...localConfig.payment.bankAccount, accountName: e.target.value } } })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="label text-xs font-bold text-gray-500 uppercase">เลขที่บัญชี</label>
+                                        <input
+                                            className="input input-bordered w-full font-mono"
+                                            placeholder="000-0-00000-0"
+                                            value={localConfig.payment?.bankAccount?.accountNumber || ''}
+                                            onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment, bankAccount: { ...localConfig.payment.bankAccount, accountNumber: e.target.value } } })}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="pt-4">
+                                <h3 className="font-bold text-gray-900 pb-2 flex items-center gap-2 border-b mb-4">
+                                    <PuzzlePieceIcon className="w-5 h-5 text-primary" />
+                                    สแกนจ่าย (PromptPay / QR Code)
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="label text-xs font-bold text-gray-500 uppercase">PromptPay ID</label>
+                                            <input
+                                                className="input input-bordered w-full font-mono"
+                                                placeholder="เบอร์โทรศัพท์ หรือ เลขบัตรประชาชน"
+                                                value={localConfig.payment?.promptPay?.id || ''}
+                                                onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment, promptPay: { ...(localConfig.payment?.promptPay || { name: '', id: '' }), id: e.target.value } } })}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="label text-xs font-bold text-gray-500 uppercase">รูปภาพ QR Code (URL)</label>
+                                            <input
+                                                className="input input-bordered w-full font-mono"
+                                                placeholder="/img/your-qr.jpg หรือ https://..."
+                                                value={localConfig.payment?.promptPay?.qrImageUrl || ''}
+                                                onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment, promptPay: { ...(localConfig.payment?.promptPay || { name: '', id: '' }), qrImageUrl: e.target.value } } })}
+                                            />
+                                            <p className="text-[10px] text-gray-400 mt-1 italic">* สามารถใช้รูปภายในระบบ (/img/...) หรือลิ้งค์ภายนอกได้</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="border rounded-2xl p-4 flex flex-col items-center justify-center bg-gray-50 border-dashed">
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase mb-3">ตัวอย่างการแสดงผล</span>
+                                        {localConfig.payment?.promptPay?.qrImageUrl ? (
+                                            <div className="bg-white p-2 rounded-xl shadow-sm border">
+                                                <img src={localConfig.payment.promptPay.qrImageUrl} alt="QR Preview" className="w-32 h-32 object-contain" />
+                                            </div>
+                                        ) : (
+                                            <div className="w-32 h-32 bg-gray-100 rounded-xl flex items-center justify-center text-gray-300">
+                                                <PhotoIcon className="w-8 h-8" />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     )}
 

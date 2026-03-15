@@ -17,7 +17,9 @@ import {
     TrashIcon,
     MegaphoneIcon
 } from '@heroicons/react/24/outline';
-import { Save, AlertCircle, PartyPopper, Trash2, Plus, CheckCircle, Smartphone, Youtube, Disc, PlayCircle } from 'lucide-react';
+import { Save, AlertCircle, PartyPopper, Trash2, Plus, CheckCircle, Smartphone, Youtube, Disc, PlayCircle, Upload } from 'lucide-react';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from '@/firebase';
 import { useRouter } from 'next/router';
 import { cn } from '@/lib/utils';
 import { THAI_FONTS, FONT_SIZES } from '../../data/fonts';
@@ -115,6 +117,37 @@ export default function AdminConfigPage() {
         setLoginFeatures(newFeatures);
     };
     const removeFeature = (index: number) => setLoginFeatures(loginFeatures.filter((_, i) => i !== index));
+    
+    // QR Code Upload Handler
+    const handleQrUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !storage) return;
+
+        setSaving(true);
+        try {
+            const storageRef = ref(storage, `config/payment/qr-${Date.now()}`);
+            await uploadBytes(storageRef, file);
+            const downloadURL = await getDownloadURL(storageRef);
+            
+            setLocalConfig({
+                ...localConfig,
+                payment: {
+                    ...localConfig.payment!,
+                    promptPay: {
+                        ...(localConfig.payment?.promptPay || { name: '', id: '' }),
+                        qrImageUrl: downloadURL
+                    }
+                }
+            });
+            setToast('อัปโหลดรูปภาพสำเร็จ!');
+            setTimeout(() => setToast(''), 3000);
+        } catch (error) {
+            console.error('Error uploading QR:', error);
+            setToast('เกิดข้อผิดพลาดในการอัปโหลด');
+        } finally {
+            setSaving(false);
+        }
+    };
 
     const handleReset = async () => {
         if (!db) return;
@@ -649,76 +682,112 @@ export default function AdminConfigPage() {
                         )}
 
                         {/* ==================== PAYMENT TAB ==================== */}
-                        {activeTab === 'payment' && (
-                            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
-                                    <h3 className="font-bold text-gray-900 border-b pb-2">ข้อมูลบัญชีธนาคาร (โอนเงิน)</h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="form-control">
-                                            <label className="label"><span className="label-text font-bold">ชื่อธนาคาร</span></label>
-                                            <input
-                                                type="text"
-                                                className="input input-bordered w-full"
-                                                placeholder="เช่น กสิกรไทย"
-                                                value={localConfig.payment?.bankAccount?.bankName ?? ''}
-                                                onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, bankAccount: { ...localConfig.payment?.bankAccount!, bankName: e.target.value } } })}
-                                            />
-                                        </div>
-                                        <div className="form-control">
-                                            <label className="label"><span className="label-text font-bold">ชื่อบัญชี</span></label>
-                                            <input
-                                                type="text"
-                                                className="input input-bordered w-full"
-                                                value={localConfig.payment?.bankAccount?.accountName ?? ''}
-                                                onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, bankAccount: { ...localConfig.payment?.bankAccount!, accountName: e.target.value } } })}
-                                            />
-                                        </div>
-                                        <div className="form-control">
-                                            <label className="label"><span className="label-text font-bold">เลขที่บัญชี</span></label>
-                                            <input
-                                                type="text"
-                                                className="input input-bordered w-full font-mono"
-                                                value={localConfig.payment?.bankAccount?.accountNumber ?? ''}
-                                                onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, bankAccount: { ...localConfig.payment?.bankAccount!, accountNumber: e.target.value } } })}
-                                            />
-                                        </div>
-                                        <div className="form-control">
-                                            <label className="label"><span className="label-text font-bold">สาขา (ถ้ามี)</span></label>
-                                            <input
-                                                type="text"
-                                                className="input input-bordered w-full"
-                                                value={localConfig.payment?.bankAccount?.branch ?? ''}
-                                                onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, bankAccount: { ...localConfig.payment?.bankAccount!, branch: e.target.value } } })}
-                                            />
-                                        </div>
+                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+                            <div>
+                                <h3 className="font-bold text-gray-900 pb-2 flex items-center gap-2 border-b mb-4">
+                                    <BanknotesIcon className="w-5 h-5 text-primary" />
+                                    บัญชีธนาคาร (Bank Transfer)
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="form-control">
+                                        <label className="label text-xs font-bold text-gray-500 uppercase">ชื่อธนาคาร</label>
+                                        <input
+                                            type="text"
+                                            className="input input-bordered w-full"
+                                            placeholder="ตัวอย่าง: ไทยพาณิชย์ (SCB)"
+                                            value={localConfig.payment?.bankAccount?.bankName ?? ''}
+                                            onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, bankAccount: { ...localConfig.payment?.bankAccount!, bankName: e.target.value } } })}
+                                        />
+                                    </div>
+                                    <div className="form-control">
+                                        <label className="label text-xs font-bold text-gray-500 uppercase">ชื่อบัญชี</label>
+                                        <input
+                                            type="text"
+                                            className="input input-bordered w-full"
+                                            value={localConfig.payment?.bankAccount?.accountName ?? ''}
+                                            onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, bankAccount: { ...localConfig.payment?.bankAccount!, accountName: e.target.value } } })}
+                                        />
+                                    </div>
+                                    <div className="form-control">
+                                        <label className="label text-xs font-bold text-gray-500 uppercase">เลขที่บัญชี</label>
+                                        <input
+                                            type="text"
+                                            className="input input-bordered w-full font-mono"
+                                            value={localConfig.payment?.bankAccount?.accountNumber ?? ''}
+                                            onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, bankAccount: { ...localConfig.payment?.bankAccount!, accountNumber: e.target.value } } })}
+                                        />
+                                    </div>
+                                    <div className="form-control">
+                                        <label className="label text-xs font-bold text-gray-500 uppercase">สาขา (ถ้ามี)</label>
+                                        <input
+                                            type="text"
+                                            className="input input-bordered w-full"
+                                            value={localConfig.payment?.bankAccount?.branch ?? ''}
+                                            onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, bankAccount: { ...localConfig.payment?.bankAccount!, branch: e.target.value } } })}
+                                        />
                                     </div>
                                 </div>
+                            </div>
 
-                                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
-                                    <h3 className="font-bold text-gray-900 border-b pb-2">PromptPay (ทางเลือก)</h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="pt-4">
+                                <h3 className="font-bold text-gray-900 pb-2 flex items-center gap-2 border-b mb-4">
+                                    <PuzzlePieceIcon className="w-5 h-5 text-primary" />
+                                    สแกนจ่าย (PromptPay / QR Code)
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-4">
                                         <div className="form-control">
-                                            <label className="label"><span className="label-text font-bold">เบอร์โทร / เลขบัตร</span></label>
+                                            <label className="label text-xs font-bold text-gray-500 uppercase">PromptPay ID</label>
                                             <input
                                                 type="text"
                                                 className="input input-bordered w-full font-mono"
+                                                placeholder="เบอร์โทร หรือ เลขบัตร"
                                                 value={localConfig.payment?.promptPay?.id ?? ''}
-                                                onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, promptPay: { ...localConfig.payment?.promptPay!, id: e.target.value, name: localConfig.payment?.promptPay?.name || '' } } })}
+                                                onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, promptPay: { ...(localConfig.payment?.promptPay || { name: '', id: '' }), id: e.target.value } } })}
                                             />
                                         </div>
                                         <div className="form-control">
-                                            <label className="label"><span className="label-text font-bold">ชื่อที่ลงทะเบียน</span></label>
+                                            <label className="label text-xs font-bold text-gray-500 uppercase">ชื่อที่ลงทะเบียน</label>
                                             <input
                                                 type="text"
                                                 className="input input-bordered w-full"
                                                 value={localConfig.payment?.promptPay?.name ?? ''}
-                                                onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, promptPay: { ...localConfig.payment?.promptPay!, name: e.target.value, id: localConfig.payment?.promptPay?.id || '' } } })}
+                                                onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, promptPay: { ...(localConfig.payment?.promptPay || { name: '', id: '' }), name: e.target.value } } })}
                                             />
                                         </div>
+                                        <div>
+                                            <label className="label text-xs font-bold text-gray-500 uppercase">รูปภาพ QR Code</label>
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    className="input input-bordered flex-1 font-mono text-xs"
+                                                    placeholder="/img/qr.jpg หรือ อัปโหลดไฟล์..."
+                                                    value={localConfig.payment?.promptPay?.qrImageUrl ?? ''}
+                                                    onChange={(e) => setLocalConfig({ ...localConfig, payment: { ...localConfig.payment!, promptPay: { ...(localConfig.payment?.promptPay || { name: '', id: '' }), qrImageUrl: e.target.value } } })}
+                                                />
+                                                <label className="btn btn-square btn-primary">
+                                                    <Upload className="w-5 h-5" />
+                                                    <input type="file" className="hidden" accept="image/*" onChange={handleQrUpload} />
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="border rounded-2xl p-4 flex flex-col items-center justify-center bg-gray-50 border-dashed">
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase mb-3">ตัวอย่างการแสดงผล</span>
+                                        {localConfig.payment?.promptPay?.qrImageUrl ? (
+                                            <div className="bg-white p-2 rounded-xl shadow-sm border">
+                                                <img src={localConfig.payment.promptPay.qrImageUrl} alt="QR Preview" className="w-32 h-32 object-contain" />
+                                            </div>
+                                        ) : (
+                                            <div className="w-32 h-32 bg-gray-100 rounded-xl flex items-center justify-center text-gray-300">
+                                                <PhotoIcon className="w-8 h-8" />
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
-                        )}
+                        </div>
 
                         {/* ==================== TV TAB ==================== */}
                         {activeTab === 'tv' && (
@@ -882,7 +951,7 @@ export default function AdminConfigPage() {
                                         <button
                                             className="btn btn-primary btn-outline btn-sm w-full gap-2 border-dashed"
                                             onClick={() => {
-                                                const newAds = [...(localConfig.tv?.ads || []), { type: 'image', url: '', title: '' }];
+                                                const newAds = [...(localConfig.tv?.ads || []), { type: 'image' as const, url: '', title: '' }];
                                                 setLocalConfig({ ...localConfig, tv: { ...localConfig.tv, ads: newAds } });
                                             }}
                                         >
