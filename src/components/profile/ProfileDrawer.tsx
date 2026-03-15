@@ -226,10 +226,13 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                                     <div>
                                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 px-2">บัตรสมาชิก</p>
                                                         <MembershipCard
-                                                            membership={user?.membership || { type: 'free', status: 'active', expiresAt: null }}
-                                                            role={user?.role}
-                                                            onUpgrade={() => { }} // Scroll is handled naturally in single view
-                                                        />
+                                                             membership={user?.membership || { type: 'free', status: 'active', expiresAt: null }}
+                                                             role={user?.role}
+                                                             onUpgrade={() => {
+                                                                 onClose();
+                                                                 router.push('/packages');
+                                                             }}
+                                                         />
                                                     </div>
 
                                                     {/* Notifications */}

@@ -5,7 +5,7 @@ import { useAuthStore } from '@/modules/auth/useAuthStore';
 import { useUIStore } from '../../../stores/useUIStore';
 import { usePlayerStore } from '../stores/usePlayerStore';
 import { db } from '../../../firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 export const usePlayerLifecycle = (currentSource: string | null, showDjOverlay: boolean) => {
     const { config } = useSystemConfig();
@@ -67,39 +67,68 @@ export const usePlayerLifecycle = (currentSource: string | null, showDjOverlay: 
         }
     }, [currentSource]);
 
+    // 🏷️ Quota Enforcement Logic
     useEffect(() => {
-        if (!currentSource || maxDailySongs === 0 || showDjOverlay) return;
+        if (!currentSource || showDjOverlay) return;
 
+        // 1. Determine local source of truth
         const today = new Date().toISOString().split('T')[0];
         const storageKey = `daily_songs_${today}`;
-        const currentCount = parseInt(localStorage.getItem(storageKey) || '0');
+        
+        let currentCount = 0;
+        let limit = maxDailySongs;
 
-        // Update local state
+        if (user) {
+            // Logged in user: use their quota from profile
+            currentCount = user.quota?.used || 0;
+            limit = user.quota?.daily_limit || 0;
+            
+            // If they are on a lifetime or premium plan without specific quota, give them "virtual unlimited"
+            if (userRole === 'lifetime' || userRole === 'premium' || user.role === 'admin') {
+                limit = -1; // Unlimited
+            }
+        } else {
+            // Guest: use local storage
+            currentCount = parseInt(localStorage.getItem(storageKey) || '0');
+        }
+
         setDailyCount(currentCount);
 
-        console.log(`📊 Daily Play Count: ${currentCount} / ${maxDailySongs}`);
+        console.log(`📊 Quota Check: [${userRole}] ${currentCount} / ${limit === -1 ? 'Unlimited' : limit}`);
 
-        if (currentCount >= maxDailySongs) {
-            console.log("⛔ Daily limit reached!");
-            usePlayerStore.setState({ isPlaying: false }); // Stop playback
-            setLimitModalOpen(true); // Trigger Global Modal
+        // 2. Check Limit (Block if zero or reached)
+        // If limit is -1, it's unlimited. If limit is 0, it's blocked.
+        if (limit !== -1 && currentCount >= limit) {
+            console.log("⛔ Daily limit reached! Blocking playback.");
+            usePlayerStore.setState({ isPlaying: false });
+            setLimitModalOpen(true);
             return;
         }
 
-        // Increment count
+        // 3. Increment logic
         const hasCountedKey = `counted_${currentSource}`;
         if (!sessionStorage.getItem(hasCountedKey)) {
             const newCount = currentCount + 1;
+            
+            // Update Local Storage (for guest fallback)
             localStorage.setItem(storageKey, newCount.toString());
             sessionStorage.setItem(hasCountedKey, 'true');
             setDailyCount(newCount);
+
+            // 💾 Update Firestore for logged in users
+            if (user?.uid && db) {
+                console.log(`💾 Syncing Quota to Firestore: ${newCount}`);
+                const userRef = doc(db, 'users', user.uid);
+                setDoc(userRef, {
+                    quota: {
+                        used: newCount,
+                        last_play: today
+                    }
+                }, { merge: true }).catch((err: any) => console.error("Quota sync error:", err));
+            }
         }
 
-    }, [currentSource, maxDailySongs, showDjOverlay, setLimitModalOpen]);
-
-    useEffect(() => {
-        console.log("🔍 SidebarPlayer Limits Updated:", { userRole, maxDuration, showAds, configLoaded: !!config });
-    }, [userRole, maxDuration, showAds, config]);
+    }, [currentSource, maxDailySongs, showDjOverlay, setLimitModalOpen, user, userRole]);
 
     return {
         dailyCount,

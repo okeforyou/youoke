@@ -19,7 +19,7 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
     const safeMembership = membership || { type: 'free', status: 'active', expiresAt: null };
 
     const formatDate = (date: any) => {
-        if (!date) return "ไม่มีวันหมดอายุ";
+        if (!date) return "ไม่มีกำหนดหมดอายุ";
         try {
             if (date.seconds) return new Date(date.seconds * 1000).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
             return new Date(date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
@@ -37,9 +37,17 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
 
     const daysRemaining = getDaysRemaining();
     const isLifetime = safeMembership.type === 'lifetime';
-    const isPremium = safeMembership.type !== 'free';
+    
+    // 🚩 FIX: If it's a new user with type 'free', they haven't picked a plan yet.
+    const hasActivePlan = safeMembership.type !== 'free' || safeMembership.status === 'trial'; 
+    
+    const isPremium = hasActivePlan;
     const isExpired = !isLifetime && daysRemaining !== null && daysRemaining < 0;
     const isAdmin = role === 'admin' || role === 'owner';
+
+    // 🏷️ Display Logic
+    const planName = isAdmin ? "ผู้ดูแลระบบ (ADMIN)" : (isPremium ? (safeMembership.type === 'day_pass' ? "แผนใช้งานฟรี 1 วัน" : "YOUOKE PRO") : "ยังไม่ได้เลือกแพ็กเกจ");
+    const labelMembership = isAdmin ? "สิทธิ์ผู้ดูแลระบบ" : "สิทธิ์การใช้งาน";
 
     return (
         <div className="relative group cursor-pointer w-full" onClick={onUpgrade}>
@@ -74,10 +82,10 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
                         </div>
                         <div>
                             <div className={cn("text-[10px] font-bold uppercase tracking-widest opacity-60", isAdmin ? "text-red-500" : (isPremium ? "text-yellow-500" : "text-gray-500"))}>
-                                {isAdmin ? "SYSTEM ACCESS" : "MEMBERSHIP"}
+                                {labelMembership}
                             </div>
                             <h3 className="text-lg font-bold tracking-tight leading-none mt-0.5">
-                                {isAdmin ? "ADMINISTRATOR" : (isPremium ? "YOUOKE PRO" : "Standard Plan")}
+                                {planName}
                             </h3>
                         </div>
                     </div>
@@ -88,11 +96,11 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
                 {/* Footer */}
                 <div className="relative z-10 flex flex-col gap-3 mt-4">
                     {/* Usage Progress (Only for limited plans) */}
-                    {safeMembership.type !== 'lifetime' && !isAdmin && (
+                    {!isAdmin && (
                         <div className="space-y-1.5">
                             <div className="flex justify-between items-end">
-                                <span className="text-[10px] uppercase font-bold tracking-wider opacity-50">Song Usage</span>
-                                <span className="text-[10px] font-black">{membership?.quota?.used || 0} / {membership?.quota?.daily_limit || 20}</span>
+                                <span className="text-[10px] uppercase font-bold tracking-wider opacity-50">โควต้าเพลงวันนี้</span>
+                                <span className="text-[10px] font-black">{membership?.quota?.used || 0} / {membership?.quota?.daily_limit || 0}</span>
                             </div>
                             <div className="h-1.5 w-full bg-gray-200/20 rounded-full overflow-hidden">
                                 <div 
@@ -103,7 +111,7 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
                                         safeMembership.type === 'yearly' ? "bg-purple-400" :
                                         isPremium ? "bg-yellow-400" : "bg-primary"
                                     )}
-                                    style={{ width: `${Math.min(((membership?.quota?.used || 0) / (membership?.quota?.daily_limit || 20)) * 100, 100)}%` }}
+                                    style={{ width: `${Math.min(((membership?.quota?.used || 0) / (membership?.quota?.daily_limit || 1)) * 100, 100)}%` }}
                                 />
                             </div>
                         </div>
@@ -111,9 +119,9 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
 
                     <div className="flex justify-between items-end">
                         <div>
-                            <div className="text-[10px] uppercase tracking-wider font-semibold opacity-50 mb-0.5">Valid Until</div>
+                            <div className="text-[10px] uppercase tracking-wider font-semibold opacity-50 mb-0.5">วันหมดอายุ</div>
                             <div className="text-sm font-mono font-bold tracking-tight">
-                                {isAdmin ? "SYSTEM OWNER" : (isLifetime ? "LIFETIME" : formatDate(safeMembership.expiresAt))}
+                                {isAdmin ? "สิทธิ์เจ้าของระบบ" : (isLifetime ? "ตลอดชีพ" : (hasActivePlan ? formatDate(safeMembership.expiresAt) : "กรุณาเลือกแพ็กเกจ"))}
                             </div>
                         </div>
                         {!isAdmin && (
@@ -121,14 +129,14 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
                                 "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wide transition-all shadow-sm",
                                 isPremium
                                     ? "bg-white text-black hover:bg-white/90"
-                                    : "bg-black text-white hover:bg-black/80"
+                                    : "bg-black text-white hover:bg-black/80 ring-2 ring-primary/20 animate-bounce"
                             )}>
-                                {isExpired ? "ต่ออายุ" : "อัพเกรด"} <ChevronRight className="w-3 h-3" />
+                                {isExpired ? "ต่ออายุ" : (hasActivePlan ? "อัพเกรด" : "เลือกแพ็กเกจ")} <ChevronRight className="w-3 h-3" />
                             </div>
                         )}
                         {isAdmin && (
                             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wide transition-all shadow-sm bg-red-600 text-white">
-                                FULL CONTROL
+                                ควบคุมระบบทั้งหมด
                             </div>
                         )}
                     </div>
