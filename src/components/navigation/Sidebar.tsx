@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { memo, useState } from 'react';
+import { memo, useState, useEffect } from 'react';
 import clsx from 'clsx';
 import { Home, Star, Flame, Library, MessageCircle, Shield, LogOut, Key, Grid, Lock, PlusCircle, ChevronLeft, Headphones, BarChart2 } from 'lucide-react';
 import { UserGroupIcon } from '@heroicons/react/24/outline'; // Import Heroicon for Party
@@ -19,7 +19,10 @@ export const Sidebar = memo(() => {
     const [isProfileDrawerOpen, setIsProfileDrawerOpen] = useState(false); // State for drawer
 
     // Mounted check to match hydration safety patterns
-    const mounted = true;
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // Helper to handle navigation state
     const handleNav = (index: number, tabName: string) => {
@@ -257,14 +260,18 @@ export const Sidebar = memo(() => {
                                 </div>
                             </div>
                             <button 
-                                onClick={() => { if (confirm('ยืนยันออกจากระบบ?')) { logOut().then(() => router.push('/login')); } }} 
+                                onClick={async () => { 
+                                    if (window.confirm('ยืนยันออกจากระบบ?')) { 
+                                        await logOut(); 
+                                    } 
+                                }} 
                                 className={clsx(
                                     "p-2 text-black hover:bg-red-50 hover:text-red-500 rounded-xl transition-all shrink-0 hover:scale-110",
                                     isSidebarCollapsed ? "w-10 h-10 flex items-center justify-center" : ""
                                 )} 
                                 title="ออกจากระบบ"
                             >
-                                <LogOut className="w-4.5 h-4.5" />
+                                <LogOut className="w-5 h-5" />
                             </button>
                         </div>
                     ) : (

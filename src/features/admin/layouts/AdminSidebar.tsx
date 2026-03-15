@@ -176,9 +176,9 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) 
 
                 <button
                   onClick={async () => {
+                    if (!window.confirm('ยืนยันออกจากระบบ?')) return;
                     try {
                       await logout();
-                      router.push('/login');
                     } catch (e) {
                       console.error("Logout failed", e);
                     }

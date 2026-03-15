@@ -746,7 +746,12 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 {user.photoURL ? <img src={user.photoURL} className="w-10 h-10 rounded-full" /> : <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center text-primary font-bold">{user.email?.[0]}</div>}
                                 <div><p className="text-sm font-bold truncate text-gray-900">{user.displayName}</p><p className="text-[10px] text-gray-500 uppercase font-semibold">{isPremium ? 'สมาชิก Pro' : 'สมาชิกทั่วไป'}</p></div>
                             </div>
-                            <button onClick={() => signOut()} className="p-2 text-gray-400 hover:text-red-500"><LogOut className="w-5 h-5" /></button>
+                            <button 
+                                onClick={() => { if (window.confirm('ยืนยันออกจากระบบ?')) signOut(); }} 
+                                className="p-2 text-gray-400 hover:text-red-500"
+                            >
+                                <LogOut className="w-5 h-5" />
+                            </button>
                         </div>
                     ) : (<Link href="/login" className="flex items-center gap-3 px-3 py-3 rounded-lg bg-white border border-gray-200 text-gray-700 font-medium shadow-sm justify-center"> <Key className="w-5 h-5" /> <span>เข้าสู่ระบบ</span> </Link>)}
                 </div>

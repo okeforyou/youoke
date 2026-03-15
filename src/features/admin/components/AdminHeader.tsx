@@ -21,9 +21,9 @@ export const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
     const router = useRouter();
 
     const handleLogout = async () => {
+        if (!window.confirm('ยืนยันออกจากระบบ?')) return;
         try {
             await logout();
-            router.push('/login');
         } catch (error) {
             console.error("Logout failed", error);
         }

@@ -60,10 +60,10 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
     };
 
     const handleLogout = async () => {
+        if (!window.confirm('ยืนยันออกจากระบบ?')) return;
         try {
             await logOut();
             onClose();
-            router.push('/login');
         } catch (error) {
             console.error(error);
         }
