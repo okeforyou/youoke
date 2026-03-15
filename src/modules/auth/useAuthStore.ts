@@ -15,6 +15,7 @@ import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import nookies from 'nookies';
 import { ref, get as rtdbGet, update as rtdbUpdate } from 'firebase/database';
 import { realtimeDb } from '../../firebase';
+import { createNotification } from '@/services/notificationService';
 
 interface MembershipState {
     type: 'free' | 'day_pass' | 'monthly' | 'yearly' | 'lifetime';

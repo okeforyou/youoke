@@ -37,109 +37,96 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
 
     const daysRemaining = getDaysRemaining();
     const isLifetime = safeMembership.type === 'lifetime';
-    
-    // 🚩 FIX: If it's a new user with type 'free', they haven't picked a plan yet.
     const hasActivePlan = safeMembership.type !== 'free' || safeMembership.status === 'trial'; 
-    
     const isPremium = hasActivePlan;
     const isExpired = !isLifetime && daysRemaining !== null && daysRemaining < 0;
     const isAdmin = role === 'admin' || role === 'owner';
 
     // 🏷️ Display Logic
-    const planName = isAdmin ? "ผู้ดูแลระบบ (ADMIN)" : (isPremium ? (safeMembership.type === 'day_pass' ? "แผนใช้งานฟรี 1 วัน" : "YOUOKE PRO") : "ยังไม่ได้เลือกแพ็กเกจ");
+    const planName = isAdmin ? "ผู้ดูแลระบบ (ADMIN)" : (isPremium ? (safeMembership.type === 'day_pass' ? "แผนใช้งานฟรี 1 วัน" : (safeMembership.type === 'yearly' ? "พรีเมียมรายปี" : "พรีเมียมรายเดือน")) : "ยังไม่ได้เลือกแพ็กเกจ");
     const labelMembership = isAdmin ? "สิทธิ์ผู้ดูแลระบบ" : "สิทธิ์การใช้งาน";
+
+    // 🎨 Color Palette (Matched to PackageStore)
+    const colors = {
+        admin: "bg-rose-600",
+        lifetime: "bg-amber-500",
+        yearly: "bg-purple-600",
+        monthly: "bg-blue-600",
+        free: "bg-slate-500",
+        none: "bg-zinc-800"
+    };
+
+    let activeColor = colors.none;
+    if (isAdmin) activeColor = colors.admin;
+    else if (isLifetime) activeColor = colors.lifetime;
+    else if (safeMembership.type === 'yearly') activeColor = colors.yearly;
+    else if (safeMembership.type === 'monthly') activeColor = colors.monthly;
+    else if (isPremium) activeColor = colors.free;
 
     return (
         <div className="relative group cursor-pointer w-full" onClick={onUpgrade}>
-            {/* Glow Effect */}
+            {/* Flat Card Content */}
             <div className={cn(
-                "absolute -inset-1 rounded-2xl blur opacity-25 transition duration-500 group-hover:opacity-75",
-                isAdmin ? "bg-gradient-to-r from-red-600 to-black" : (isPremium ? "bg-gradient-to-r from-yellow-600 to-red-600" : "bg-gradient-to-r from-gray-600 to-gray-400")
-            )}></div>
-
-            {/* Card Content */}
-            <div className={cn(
-                "relative rounded-xl overflow-hidden shadow-xl border border-white/10 p-5 flex flex-col justify-between min-h-[160px] transition-transform duration-300 group-hover:-translate-y-1",
-                isAdmin
-                    ? "bg-gradient-to-br from-red-900 via-neutral-950 to-black text-white"
-                    : (isPremium
-                        ? "bg-gradient-to-br from-neutral-900 via-neutral-950 to-black text-white"
-                        : "bg-gradient-to-br from-gray-100 via-white to-gray-50 border-gray-200 text-gray-900")
+                "relative rounded-3xl overflow-hidden shadow-2xl p-6 flex flex-col justify-between min-h-[180px] transition-all duration-300 group-hover:-translate-y-1 group-hover:shadow-primary/20",
+                activeColor,
+                "text-white border border-white/10"
             )}>
-                {/* Background Pattern */}
-                <div className="absolute inset-0 opacity-10 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-repeat"></div>
+                {/* Subtle Grain Overlay */}
+                <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
 
                 {/* Header */}
                 <div className="relative z-10 flex justify-between items-start">
-                    <div className="flex items-center gap-3">
-                        <div className={cn(
-                            "w-10 h-10 rounded-lg flex items-center justify-center shadow-md",
-                            isAdmin
-                                ? "bg-gradient-to-br from-red-500 to-red-800 text-white"
-                                : (isPremium ? "bg-gradient-to-br from-yellow-400 to-orange-600 text-white" : "bg-gray-200 text-gray-500")
-                        )}>
-                            {isAdmin ? <Crown className="w-5 h-5" /> : (isLifetime ? <Crown className="w-5 h-5" /> : (isPremium ? <Zap className="w-5 h-5" /> : <Clock className="w-5 h-5" />))}
+                    <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-white/20 backdrop-blur-md shadow-inner">
+                            {isAdmin ? <Crown className="w-6 h-6" /> : (isLifetime ? <Crown className="w-6 h-6" /> : (isPremium ? <Zap className="w-6 h-6" /> : <Clock className="w-6 h-6" />))}
                         </div>
                         <div>
-                            <div className={cn("text-[10px] font-bold uppercase tracking-widest opacity-60", isAdmin ? "text-red-500" : (isPremium ? "text-yellow-500" : "text-gray-500"))}>
+                            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60">
                                 {labelMembership}
                             </div>
-                            <h3 className="text-lg font-bold tracking-tight leading-none mt-0.5">
+                            <h3 className="text-xl font-black tracking-tight mt-0.5">
                                 {planName}
                             </h3>
                         </div>
                     </div>
-                    {isPremium && !isAdmin && <Sparkles className="w-5 h-5 text-yellow-400/80" />}
-                    {isAdmin && <Crown className="w-5 h-5 text-red-500" />}
                 </div>
 
-                {/* Footer */}
-                <div className="relative z-10 flex flex-col gap-3 mt-4">
-                    {/* Usage Progress (Only for limited plans) */}
+                {/* Footer Center Section (Quota) */}
+                <div className="relative z-10 mt-6 mb-2">
                     {!isAdmin && (
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                             <div className="flex justify-between items-end">
-                                <span className="text-[10px] uppercase font-bold tracking-wider opacity-50">โควต้าเพลงวันนี้</span>
-                                <span className="text-[10px] font-black">{membership?.quota?.used || 0} / {membership?.quota?.daily_limit || 0}</span>
+                                <span className="text-[10px] uppercase font-black tracking-widest text-white/60">โควต้าเพลงวันนี้</span>
+                                <span className="text-xs font-black">{membership?.quota?.used || 0} / {membership?.quota?.daily_limit || 0}</span>
                             </div>
-                            <div className="h-1.5 w-full bg-gray-200/20 rounded-full overflow-hidden">
+                            <div className="h-2 w-full bg-black/20 rounded-full overflow-hidden p-[1px]">
                                 <div 
-                                    className={cn(
-                                        "h-full transition-all duration-500",
-                                        safeMembership.type === 'day_pass' ? "bg-green-400" : 
-                                        safeMembership.type === 'monthly' ? "bg-blue-400" :
-                                        safeMembership.type === 'yearly' ? "bg-purple-400" :
-                                        isPremium ? "bg-yellow-400" : "bg-primary"
-                                    )}
+                                    className="h-full rounded-full bg-white transition-all duration-700 shadow-[0_0_10px_rgba(255,255,255,0.5)]"
                                     style={{ width: `${Math.min(((membership?.quota?.used || 0) / (membership?.quota?.daily_limit || 1)) * 100, 100)}%` }}
                                 />
                             </div>
                         </div>
                     )}
+                </div>
 
-                    <div className="flex justify-between items-end">
-                        <div>
-                            <div className="text-[10px] uppercase tracking-wider font-semibold opacity-50 mb-0.5">วันหมดอายุ</div>
-                            <div className="text-sm font-mono font-bold tracking-tight">
-                                {isAdmin ? "สิทธิ์เจ้าของระบบ" : (isLifetime ? "ตลอดชีพ" : (hasActivePlan ? formatDate(safeMembership.expiresAt) : "กรุณาเลือกแพ็กเกจ"))}
-                            </div>
+                <div className="relative z-10 flex justify-between items-end">
+                    <div>
+                        <div className="text-[10px] uppercase tracking-widest font-black text-white/50 mb-0.5">วันหมดอายุ</div>
+                        <div className="text-sm font-black tracking-tight">
+                            {isAdmin ? "สิทธิ์เจ้าของระบบ" : (isLifetime ? "ไม่มีวันหมดอายุ" : (hasActivePlan ? formatDate(safeMembership.expiresAt) : "กรุณาเลือกแพ็กเกจ"))}
                         </div>
-                        {!isAdmin && (
-                            <div className={cn(
-                                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wide transition-all shadow-sm",
-                                isPremium
-                                    ? "bg-white text-black hover:bg-white/90"
-                                    : "bg-black text-white hover:bg-black/80 ring-2 ring-primary/20 animate-bounce"
-                            )}>
-                                {isExpired ? "ต่ออายุ" : (hasActivePlan ? "อัพเกรด" : "เลือกแพ็กเกจ")} <ChevronRight className="w-3 h-3" />
-                            </div>
-                        )}
-                        {isAdmin && (
-                            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wide transition-all shadow-sm bg-red-600 text-white">
-                                ควบคุมระบบทั้งหมด
-                            </div>
-                        )}
                     </div>
+                    
+                    {!isAdmin && (
+                        <div className={cn(
+                            "flex items-center gap-2 px-4 py-2 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-xl backdrop-blur-md",
+                            isPremium
+                                ? "bg-white/90 text-zinc-900 hover:bg-white"
+                                : "bg-zinc-900/40 text-white hover:bg-zinc-900/60 ring-1 ring-white/20 animate-pulse"
+                        )}>
+                            {isExpired ? "ต่ออายุ" : (hasActivePlan ? "อัปเกรด" : "เลือกแพ็กเกจ")} <ChevronRight className="w-4 h-4" />
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

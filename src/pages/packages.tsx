@@ -145,15 +145,15 @@ export default function PackagesPage() {
                 </div>
             </header>
 
-            <main className="max-w-6xl mx-auto px-4 py-8 md:px-8">
+            <main className="max-w-6xl mx-auto px-4 py-8 md:px-8 text-zinc-900 dark:text-zinc-100">
                 {/* Hero Section */}
                 <div className="text-center mb-12">
                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-black tracking-widest mb-4 uppercase">
                         <Star className="w-3.5 h-3.5 fill-primary" />
                         Premium Pass
                     </div>
-                    <h2 className="text-4xl md:text-5xl font-black mb-4 tracking-tight text-foreground">ปลดล็อกขีดจำกัดความสนุก</h2>
-                    <p className="text-muted-foreground text-sm md:text-base max-w-xl mx-auto leading-relaxed font-semibold">
+                    <h2 className="text-4xl md:text-5xl font-black mb-4 tracking-tight text-zinc-900 dark:text-white">ปลดล็อกขีดจำกัดความสนุก</h2>
+                    <p className="text-zinc-600 dark:text-zinc-400 text-sm md:text-base max-w-xl mx-auto leading-relaxed font-semibold">
                         สัมผัสประสบการณ์ร้องคาราโอเกะแบบมืออาชีพ ด้วยฟีเจอร์ที่ออกแบบมาเพื่อความสะดวกสบายและอรรถรสสูงสุด
                     </p>
                 </div>
@@ -203,14 +203,14 @@ export default function PackagesPage() {
                                         </div>
                                     )}
 
-                                    <div className="mb-8 border-b pb-6">
+                                    <div className="mb-8 border-b border-slate-100 dark:border-white/10 pb-6">
                                         <div className="flex items-center justify-between mb-4">
-                                            <h3 className="text-xl font-black tracking-tight">{pkg.name}</h3>
-                                            <span className="text-xs font-bold text-muted-foreground bg-muted px-2 py-1 rounded-full">{pkg.durationDays} วัน</span>
+                                            <h3 className="text-xl font-black tracking-tight text-slate-900 dark:text-white">{pkg.name}</h3>
+                                            <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-lg uppercase tracking-wider">{pkg.durationDays} วัน</span>
                                         </div>
                                         <div className="flex items-baseline gap-1">
-                                            <span className="text-4xl font-black tracking-tighter">฿{pkg.price.toLocaleString()}</span>
-                                            <span className="text-muted-foreground font-bold text-[10px] uppercase opacity-40">บาท</span>
+                                            <span className="text-4xl font-black tracking-tighter text-slate-900 dark:text-white">฿{pkg.price.toLocaleString()}</span>
+                                            <span className="text-slate-400 font-bold text-[10px] uppercase opacity-60">บาท</span>
                                         </div>
                                     </div>
 
@@ -230,13 +230,13 @@ export default function PackagesPage() {
                                         <button
                                             onClick={() => handleBuy(pkg)}
                                             className={cn(
-                                                "w-full h-12 rounded-[1.2rem] flex items-center justify-center gap-2 font-black text-xs transition-all active:scale-95 shadow-lg",
+                                                "w-full h-12 rounded-[1.2rem] flex items-center justify-center gap-3 font-black text-sm transition-all active:scale-95 shadow-lg",
                                                 pkg.isPopular
                                                     ? "bg-primary text-white hover:bg-primary/90 shadow-primary/20"
-                                                    : "bg-foreground text-background hover:bg-foreground/90"
+                                                    : "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 hover:opacity-90 shadow-zinc-200/50 dark:shadow-none"
                                             )}
                                         >
-                                            {pkg.price === 0 ? <Zap className="w-4.5 h-4.5" /> : <QrCode className="w-4.5 h-4.5" />}
+                                            {pkg.price === 0 ? <Zap className="w-5 h-5" /> : <QrCode className="w-5 h-5" />}
                                             {pkg.price === 0 ? "รับสิทธิ์ใช้งานฟรี" : "สมัครสมาชิกทันที"}
                                         </button>
 
