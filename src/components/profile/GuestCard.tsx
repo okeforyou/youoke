@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import { LogIn, Music, Shield, Infinity, User } from 'lucide-react';
+import { LogIn, Music, Shield, Infinity as InfinityIcon, User } from 'lucide-react';
 import { useGuestLimit } from '../../modules/party-system/hooks/useGuestLimit';
 import { SparklesIcon as HeroSparkles } from '@heroicons/react/24/solid';
 
@@ -11,7 +11,7 @@ export const GuestCard = () => {
     const benefits = [
         { icon: Music, text: 'ฟังเพลงไม่จำกัด' },
         { icon: Shield, text: 'ไม่มีโฆษณา' },
-        { icon: Infinity, text: 'บันทึก Playlist ได้' },
+        { icon: InfinityIcon, text: 'บันทึก Playlist ได้' },
     ];
 
     return (
