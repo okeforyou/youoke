@@ -1,3 +1,4 @@
+// Triggering Vercel build after environment variable update
 import axios from 'axios';
 import { useSystemConfig } from '@/hooks/useSystemConfig';
 import { MessageCircle, ExternalLink } from 'lucide-react';
