@@ -171,11 +171,32 @@ export default function LoginPage() {
 
                     <div className="mt-8">
                         <div className="space-y-3">
-                            <button onClick={signInWithLine} disabled={isLoading || lineLoading} className="w-full flex justify-center items-center py-3 px-4 rounded-xl shadow-sm text-sm font-bold text-white bg-[#06C755] hover:bg-[#05b34d] transition-all">
-                                {lineLoading ? <span className="loading loading-spinner" /> : "เข้าสู่ระบบด้วย LINE"}
+                            <button onClick={signInWithLine} disabled={isLoading || lineLoading} className="w-full flex justify-center items-center gap-3 py-3 px-4 rounded-xl shadow-sm text-sm font-bold text-white bg-[#06C755] hover:bg-[#05b34d] transition-all">
+                                {lineLoading ? (
+                                    <span className="loading loading-spinner" />
+                                ) : (
+                                    <>
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M24 10.3c0-4.6-4.6-8.3-10.4-8.3C7.8 2 3.1 5.7 3.1 10.3c0 4.1 3.7 7.5 8.7 8.2.3.1.8.2 1 .5.1.1.2.4.1.6l-.3 1.9c-.1.4-.4 1.5-.4 1.5l3.2-1.9s1.4-.8 2-.7l.1-.1c4.5-1.1 6.5-4.5 6.5-10z"/>
+                                        </svg>
+                                        เข้าสู่ระบบด้วย LINE
+                                    </>
+                                )}
                             </button>
-                            <button onClick={handleGoogleLogin} disabled={isLoading} className="w-full flex justify-center items-center py-3 px-4 border border-gray-200 rounded-xl bg-white text-sm font-bold text-gray-700 hover:bg-gray-50 transition-all">
-                                {isLoading ? <span className="loading loading-spinner" /> : "Google Login"}
+                            <button onClick={handleGoogleLogin} disabled={isLoading} className="w-full flex justify-center items-center gap-3 py-3 px-4 border border-gray-200 rounded-xl bg-white text-sm font-bold text-gray-700 hover:bg-gray-50 transition-all">
+                                {isLoading ? (
+                                    <span className="loading loading-spinner" />
+                                ) : (
+                                    <>
+                                        <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+                                            <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/>
+                                            <path d="M3.964 10.706c-.18-.54-.282-1.117-.282-1.706 0-.589.102-1.166.282-1.706V4.962H.957C.347 6.177 0 7.549 0 9s.347 2.823.957 4.038l3.007-2.332z" fill="#FBBC05"/>
+                                            <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.962L3.964 7.294C4.672 5.167 6.656 3.58 9 3.58z" fill="#EA4335"/>
+                                        </svg>
+                                        Google Login
+                                    </>
+                                )}
                             </button>
                         </div>
 

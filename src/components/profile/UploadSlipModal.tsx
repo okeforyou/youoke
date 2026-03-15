@@ -1,7 +1,12 @@
-// Triggering Vercel build after environment variable update
+import { useState, Fragment } from 'react';
+import { Dialog, Transition } from '@headlessui/react';
+import { X, CheckCircle, AlertCircle, Copy, QrCode, MessageCircle, ExternalLink } from 'lucide-react';
+import { useAuthStore } from '@/modules/auth/useAuthStore';
+import { db } from '@/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import axios from 'axios';
 import { useSystemConfig } from '@/hooks/useSystemConfig';
-import { MessageCircle, ExternalLink } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface UploadSlipModalProps {
     isOpen: boolean;
