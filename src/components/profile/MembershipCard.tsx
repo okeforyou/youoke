@@ -6,6 +6,10 @@ interface MembershipCardProps {
         type: string;
         status: string;
         expiresAt: any;
+        quota?: {
+            used: number;
+            daily_limit: number;
+        }
     };
     role?: string;
     onUpgrade: () => void;
@@ -82,26 +86,52 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
                 </div>
 
                 {/* Footer */}
-                <div className="relative z-10 flex justify-between items-end mt-4">
-                    <div>
-                        <div className="text-[10px] uppercase tracking-wider font-semibold opacity-50 mb-0.5">Valid Until</div>
-                        <div className="text-sm font-mono font-bold tracking-tight">{isAdmin ? "SYSTEM OWNER" : (isLifetime ? "LIFETIME" : formatDate(safeMembership.expiresAt))}</div>
+                <div className="relative z-10 flex flex-col gap-3 mt-4">
+                    {/* Usage Progress (Only for limited plans) */}
+                    {safeMembership.type !== 'lifetime' && !isAdmin && (
+                        <div className="space-y-1.5">
+                            <div className="flex justify-between items-end">
+                                <span className="text-[10px] uppercase font-bold tracking-wider opacity-50">Song Usage</span>
+                                <span className="text-[10px] font-black">{membership?.quota?.used || 0} / {membership?.quota?.daily_limit || 20}</span>
+                            </div>
+                            <div className="h-1.5 w-full bg-gray-200/20 rounded-full overflow-hidden">
+                                <div 
+                                    className={cn(
+                                        "h-full transition-all duration-500",
+                                        safeMembership.type === 'day_pass' ? "bg-green-400" : 
+                                        safeMembership.type === 'monthly' ? "bg-blue-400" :
+                                        safeMembership.type === 'yearly' ? "bg-purple-400" :
+                                        isPremium ? "bg-yellow-400" : "bg-primary"
+                                    )}
+                                    style={{ width: `${Math.min(((membership?.quota?.used || 0) / (membership?.quota?.daily_limit || 20)) * 100, 100)}%` }}
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="flex justify-between items-end">
+                        <div>
+                            <div className="text-[10px] uppercase tracking-wider font-semibold opacity-50 mb-0.5">Valid Until</div>
+                            <div className="text-sm font-mono font-bold tracking-tight">
+                                {isAdmin ? "SYSTEM OWNER" : (isLifetime ? "LIFETIME" : formatDate(safeMembership.expiresAt))}
+                            </div>
+                        </div>
+                        {!isAdmin && (
+                            <div className={cn(
+                                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wide transition-all shadow-sm",
+                                isPremium
+                                    ? "bg-white text-black hover:bg-white/90"
+                                    : "bg-black text-white hover:bg-black/80"
+                            )}>
+                                {isExpired ? "ต่ออายุ" : "อัพเกรด"} <ChevronRight className="w-3 h-3" />
+                            </div>
+                        )}
+                        {isAdmin && (
+                            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wide transition-all shadow-sm bg-red-600 text-white">
+                                FULL CONTROL
+                            </div>
+                        )}
                     </div>
-                    {!isAdmin && (
-                        <div className={cn(
-                            "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wide transition-all shadow-sm",
-                            isPremium
-                                ? "bg-white text-black hover:bg-white/90"
-                                : "bg-black text-white hover:bg-black/80"
-                        )}>
-                            {isExpired ? "ต่ออายุ" : "อัพเกรด"} <ChevronRight className="w-3 h-3" />
-                        </div>
-                    )}
-                    {isAdmin && (
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wide transition-all shadow-sm bg-red-600 text-white">
-                            FULL CONTROL
-                        </div>
-                    )}
                 </div>
             </div>
         </div>

@@ -18,19 +18,26 @@ export const LimitReachedModal = () => {
     if (user) userRole = user.membership?.type || 'free';
 
     const [maxSongs, setMaxSongs] = useState(0);
+    const [upsellLimit, setUpsellLimit] = useState(20);
 
     // Fetch Real Limits from Firestore
     useEffect(() => {
         const fetchLimits = async () => {
             if (!db || !isLimitModalOpen) return;
             try {
+                // 1. Fetch current user role limits
                 const planSnap = await getDoc(doc(db, 'plans', userRole));
                 if (planSnap.exists()) {
                     setMaxSongs(planSnap.data().maxDailySongs || 0);
                 } else {
-                    // Fallback to config if plan doc doesn't exist
                     const limits = config?.membership?.[userRole];
                     setMaxSongs(limits?.max_daily_songs || 0);
+                }
+
+                // 2. Fetch day_pass limits for dynamic upsell message
+                const dayPassSnap = await getDoc(doc(db, 'plans', 'day_pass'));
+                if (dayPassSnap.exists()) {
+                    setUpsellLimit(dayPassSnap.data().maxDailySongs || 20);
                 }
             } catch (err) {
                 console.error("Error fetching limits for modal:", err);
@@ -43,12 +50,12 @@ export const LimitReachedModal = () => {
     const upsell = config?.upsell || {};
     const title = upsell.title || "หมดโควต้าฟังเพลงวันนี้แล้ว";
     const subtitle = userRole === 'guest' 
-        ? `โควต้าสำหรับแขกคือ ${maxSongs} เพลง/วัน (เข้าสู่ระบบเพื่อรับสิทธิ์เพิ่ม!)`
+        ? `โควต้าสำหรับนักร้องทั่วไปคือ ${maxSongs} เพลง/วัน (สมัครสมาชิกเพื่อรับสิทธิ์เพิ่ม!)`
         : upsell.subtitle || `โควต้าสำหรับแพ็กเกจฟรีคือ ${maxSongs} เพลง/วัน`;
     
-    const offerText = upsell.offer_text || "ทดลองใช้ Premium ฟรี 1 วัน!";
-    const offerSubtext = upsell.offer_subtext || "ฟังเพลงไม่อั้น • ไม่มีโฆษณา • คิวเพลงไม่จำกัด";
-    const buttonText = userRole === 'guest' ? "เข้าสู่ระบบ / สมัครสมาชิก" : (upsell.button_text || "สมัครเลย (ทดลองฟรี 1 วัน)");
+    const offerText = upsell.offer_text || `รับสิทธิ์ร้องฟรีเพิ่มเป็น ${upsellLimit} เพลง!`;
+    const offerSubtext = upsell.offer_subtext || "เพียงสมัครสมาชิกเพื่อรับแผนฟรี 1 วัน • เพลงเยอะขึ้น • สนุกได้ต่อเนื่อง";
+    const buttonText = userRole === 'guest' ? "สมัครสมาชิกรับสิทธิ์ฟรี" : (upsell.button_text || "อัปเกรดแผนการใช้งาน");
 
     const onClose = () => setLimitModalOpen(false);
 

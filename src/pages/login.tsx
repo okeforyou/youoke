@@ -40,7 +40,16 @@ export default function LoginPage() {
     useEffect(() => {
         if (!router.isReady || isLoading) return;
         if (user) {
+            // CRITICAL: If new user (just registered) or has no active plan, force packages
+            const isNewUser = !user.membership || user.membership.type === 'free' || !user.membership.startedAt;
+            
             let redirectUrl = (router.query.redirect as string) || '/';
+            
+            if (isNewUser && redirectUrl === '/') {
+                console.log('🚀 [Login] New/Free user detected. Redirecting to Packages.');
+                redirectUrl = '/packages';
+            }
+
             if (redirectUrl === router.asPath) return;
             router.replace(redirectUrl);
         }
