@@ -18,7 +18,7 @@ import {
     MegaphoneIcon
 } from '@heroicons/react/24/outline';
 import { Save, AlertCircle, PartyPopper, Trash2, Plus, CheckCircle, Smartphone, Youtube, Disc, PlayCircle, Upload } from 'lucide-react';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { storage } from '@/firebase';
 import { useRouter } from 'next/router';
 import { cn } from '@/lib/utils';
@@ -119,24 +119,52 @@ export default function AdminConfigPage() {
     };
     const removeFeature = (index: number) => setLoginFeatures(loginFeatures.filter((_, i) => i !== index));
     
-    // QR Code Upload Handler (Improved Stability)
+    // QR Code Upload Handler (Robust with Progress & Timeout)
     const handleQrUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
         
-        console.log('🔥 [Upload] Starting QR upload:', file.name);
+        // Validation: Size < 2MB
+        if (file.size > 2 * 1024 * 1024) {
+            setToast('❌ ขนาดไฟล์ใหญ่เกินไป (จำกัด 2MB)');
+            return;
+        }
+
+        console.log('🔥 [Upload] Starting QR upload:', file.name, 'Size:', file.size);
         setUploading(true);
+        setToast('⏳ กำลังอัปโหลด...');
+
         try {
-            if (!storage) {
-                throw new Error("ระบบสเปซเก็บข้อมูล (Storage) ไม่พร้อมใช้งาน กรุณาลองใหม่ครู่เดียว");
-            }
+            if (!storage) throw new Error("Firebase Storage ไม่พร้อมใช้งาน");
             
             const storageRef = ref(storage, `config/payment/qr-${Date.now()}-${file.name}`);
-            const uploadResult = await uploadBytes(storageRef, file);
-            console.log('🔥 [Upload] Bytes uploaded:', uploadResult.metadata.fullPath);
+            const uploadTask = uploadBytesResumable(storageRef, file);
+
+            // Timeout after 30 seconds
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error("การอัปโหลดใช้เวลานานเกินไป (Timeout)")), 30000)
+            );
+
+            // Wrap task in promise to handle completion/error
+            const uploadPromise = new Promise((resolve, reject) => {
+                uploadTask.on('state_changed', 
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        console.log('🔥 [Upload] Progress:', Math.round(progress) + '%');
+                        if (progress > 0) setToast(`⏳ กำลังอัปโหลด... ${Math.round(progress)}%`);
+                    },
+                    (error) => reject(error),
+                    async () => {
+                        const url = await getDownloadURL(uploadTask.snapshot.ref);
+                        resolve(url);
+                    }
+                );
+            });
+
+            // Race between upload and timeout
+            const downloadURL = await Promise.race([uploadPromise, timeoutPromise]) as string;
             
-            const downloadURL = await getDownloadURL(storageRef);
-            console.log('🔥 [Upload] Download URL obtained:', downloadURL);
+            console.log('🔥 [Upload] Success! URL:', downloadURL);
             
             setLocalConfig((prev: any) => ({
                 ...prev,
@@ -149,15 +177,19 @@ export default function AdminConfigPage() {
                 }
             }));
             
-            setToast('อัปโหลดรูปภาพสำเร็จ! อย่าลืมกด "บันทึกการแก้ไข" เพื่อยืนยัน');
+            setToast('✅ อัปโหลดรูปภาพสำเร็จ! อย่าลืมกด "บันทึกการแก้ไข"');
             setTimeout(() => setToast(''), 5000);
         } catch (error: any) {
             console.error('❌ [Upload] Error:', error);
-            setToast(`อัปโหลดล้มเหลว: ${error.message || 'โปรดลองอีกครั้ง'}`);
-            setTimeout(() => setToast(''), 4000);
+            let msg = "อัปโหลดล้มเหลว";
+            if (error.code === 'storage/unauthorized') msg += " (ไม่มีสิทธิ์เข้าถึง Storage)";
+            else if (error.code === 'storage/canceled') msg += " (ยกเลิกการอัปโหลด)";
+            else msg += `: ${error.message || 'โปรดลองใหม่'}`;
+            
+            setToast(`❌ ${msg}`);
+            setTimeout(() => setToast(''), 6000);
         } finally {
             setUploading(false);
-            // reset input
             e.target.value = '';
         }
     };
