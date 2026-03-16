@@ -1,138 +1,143 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { approvePayment } from '@/modules/billing/services/paymentService';
+import { adminFirestore, adminDb } from '@/firebase-admin';
 import axios from 'axios';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/firebase';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    // This is a GET request because it's triggered by a link in LINE
-    if (req.method !== 'GET') {
-        return res.status(405).send('Method Not Allowed');
-    }
+    if (req.method !== 'GET') return res.status(405).send('Method Not Allowed');
 
     const { paymentId, userId, packageId, token } = req.query;
 
-    // Basic security check (Admin should have a secret token in the URL)
-    // In production, use a proper signed JWT or a shared secret in ENV
-    const expectedToken = process.env.LINE_CHANNEL_ACCESS_TOKEN?.substring(0, 10); // Simple proof of possession
-    if (token !== expectedToken) {
-        return res.status(401).send('Unauthorized: Invalid Approval Token');
-    }
+    if (!adminFirestore) return res.status(500).send('Admin SDK not initialized');
 
-    if (!paymentId || !userId || !packageId) {
-        return res.status(400).send('Missing parameters');
-    }
+    // Security Check
+    const expectedToken = process.env.LINE_CHANNEL_ACCESS_TOKEN?.substring(0, 10);
+    if (token !== expectedToken) return res.status(401).send('Unauthorized');
+
+    if (!paymentId || !userId || !packageId) return res.status(400).send('Missing params');
 
     try {
-        console.log(`🚀 [Admin-LINE] Approving payment ${paymentId} for user ${userId}`);
-        
-        // 1. Approve the payment in Firestore
-        // We use 'admin-line' as the adminUid to trace where it came from
-        await approvePayment(paymentId as string, userId as string, packageId as string, 'admin-line');
+        console.log(`🚀 [Admin-LINE] Server-side Approval for ${paymentId}`);
 
-        // 2. Fetch User Expiry for the notification
-        let expiryText = "ไม่มีกำหนด";
-        if (db) {
-            const userSnap = await getDoc(doc(db, 'users', userId as string));
-            const userData = userSnap.data();
-            const expiresAt = userData?.membership?.expiresAt;
-            if (expiresAt) {
-                const date = expiresAt.toDate ? expiresAt.toDate() : new Date(expiresAt);
-                expiryText = date.toLocaleDateString('th-TH', { 
-                    day: 'numeric', month: 'long', year: 'numeric' 
-                });
-            }
+        // 1. Get Package Info (via Admin SDK)
+        const pkgSnap = await adminFirestore.collection('packages').doc(packageId as string).get();
+        let durationDays = 30;
+        let pkgName = "Premium Package";
+        let planId = 'monthly';
+
+        if (pkgSnap.exists) {
+            const pkgData = pkgSnap.data();
+            durationDays = pkgData?.durationDays || 30;
+            pkgName = pkgData?.name || pkgName;
+            planId = pkgData?.planId || 'monthly';
         }
 
-        // 3. Send Confirmation back to User via LINE (if they are a LINE user)
-        if ((userId as string).startsWith('line:')) {
-            const lineUserId = (userId as string).split(':')[1];
-            const channelAccessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
-            
-            const message = {
-                to: lineUserId,
-                messages: [
-                    {
-                        type: "flex",
-                        altText: "🎉 บัญชีของคุณได้รับการอนุมัติแล้ว!",
-                        contents: {
-                            type: "bubble",
-                            header: {
-                                type: "box",
-                                layout: "vertical",
-                                backgroundColor: "#06C755",
-                                contents: [
-                                    { type: "text", text: "Premium Activated!", color: "#ffffff", weight: "bold", size: "lg" }
-                                ]
-                            },
-                            body: {
-                                type: "box",
-                                layout: "vertical",
-                                contents: [
-                                    { type: "text", text: "ยินดีด้วย! บัญชีของคุณเป็นพรีเมียมแล้ว", weight: "bold", size: "sm" },
-                                    { type: "separator", margin: "md" },
-                                    {
-                                        type: "box", 
-                                        layout: "vertical", 
-                                        margin: "md",
-                                        contents: [
-                                            {
-                                                type: "box", layout: "horizontal", contents: [
-                                                    { type: "text", text: "แพ็กเกจ:", color: "#aaaaaa", size: "xs" },
-                                                    { type: "text", text: packageId as string, size: "xs", align: "end", weight: "bold" }
-                                                ]
-                                            },
-                                            {
-                                                type: "box", layout: "horizontal", contents: [
-                                                    { type: "text", text: "วันหมดอายุ:", color: "#aaaaaa", size: "xs" },
-                                                    { type: "text", text: expiryText, size: "xs", align: "end", color: "#f44336", weight: "bold" }
-                                                ]
-                                            }
-                                        ]
-                                    }
-                                ]
-                            },
-                            footer: {
-                                type: "box",
-                                layout: "vertical",
-                                contents: [
-                                    {
-                                        type: "button",
-                                        style: "primary",
-                                        color: "#06C755",
-                                        action: {
-                                            type: "uri",
-                                            label: "เข้าสู่ระบบเพื่อเริ่มร้องเพลง",
-                                            uri: "https://play.okeforyou.com"
-                                        }
-                                    }
-                                ]
-                            }
-                        }
-                    }
-                ]
-            };
+        // 2. Calculate Expiry
+        const now = new Date();
+        let expiresAt: Date | null = new Date();
+        if (durationDays === 0) expiresAt = null;
+        else expiresAt.setDate(now.getDate() + durationDays);
 
-            await axios.post('https://api.line.me/v2/bot/message/push', message, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${channelAccessToken}`
-                }
+        // 3. Sync Quota from Config (Dynamic)
+        const sysSnap = await adminFirestore.collection('settings').doc('default').get();
+        const sysConfig = sysSnap.data();
+        const maxDailySongs = (sysConfig?.membership as any)?.[planId]?.max_daily_songs || 0;
+
+        // 4. Update Database (Atomic via Admin SDK)
+        const userRef = adminFirestore.collection('users').doc(userId as string);
+        const batch = adminFirestore.batch();
+
+        batch.update(userRef, {
+            membership: {
+                type: planId,
+                status: 'active',
+                startedAt: admin.firestore.FieldValue.serverTimestamp(),
+                expiresAt: expiresAt,
+                lastPaymentId: paymentId
+            },
+            isPremium: true,
+            role: 'premium',
+            tier: planId,
+            quota: {
+                daily_limit: maxDailySongs,
+                used: 0,
+                last_reset: new Date().toISOString()
+            },
+            updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+
+        // Update Payment Proof
+        const payRef = adminFirestore.collection('payment_proofs').doc(paymentId as string);
+        batch.update(payRef, {
+            status: 'approved',
+            processedAt: admin.firestore.FieldValue.serverTimestamp(),
+            processedBy: 'admin-line'
+        });
+
+        // Add Notification
+        const notiRef = userRef.collection('notifications').doc();
+        batch.set(notiRef, {
+            title: "การชำระเงินสำเร็จ!",
+            message: `แพ็กเกจ "${pkgName}" ของคุณใช้งานได้แล้ว ขอให้สนุกกับการร้องเพลง!`,
+            type: 'success',
+            read: false,
+            createdAt: admin.firestore.FieldValue.serverTimestamp()
+        });
+
+        await batch.commit();
+
+        // 5. Sync Realtime DB (Admin SDK)
+        if (adminDb) {
+            await adminDb.ref(`users/${userId}`).update({
+                role: 'premium',
+                tier: planId,
+                'subscription/plan': planId,
+                'subscription/status': 'active',
+                'subscription/startDate': now.toISOString(),
+                'subscription/endDate': expiresAt ? expiresAt.toISOString() : null,
+                'quota/daily_limit': maxDailySongs,
+                'quota/used': 0,
+                'quota/last_reset': new Date().toISOString(),
+                updatedAt: Date.now()
             });
         }
 
-        // Return a pretty success page to the admin
+        // 6. Notify User via LINE
+        if ((userId as string).startsWith('line:')) {
+            const lineUserId = (userId as string).split(':')[1];
+            const expiryText = expiresAt 
+                ? expiresAt.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })
+                : "ไม่มีกำหนด (ตลอดชีพ)";
+
+            await axios.post('https://api.line.me/v2/bot/message/push', {
+                to: lineUserId,
+                messages: [{
+                    type: "flex", altText: "🎉 อนุมัติพรีเมียมแล้ว!",
+                    contents: {
+                        type: "bubble",
+                        header: { type: "box", layout: "vertical", backgroundColor: "#06C755", contents: [{ type: "text", text: "Activated!", color: "#ffffff", weight: "bold" }] },
+                        body: {
+                            type: "box", layout: "vertical", contents: [
+                                { type: "text", text: `ยินดีด้วย! บัญชีของคุณเป็นพรีเมียมแล้ว (${pkgName})`, weight: "bold", size: "sm", wrap: true },
+                                { type: "text", text: `หมดอายุ: ${expiryText}`, size: "xs", color: "#f44336", margin: "md" }
+                            ]
+                        }
+                    }
+                }]
+            }, { headers: { 'Authorization': `Bearer ${process.env.LINE_CHANNEL_ACCESS_TOKEN}` } });
+        }
+
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
         return res.status(200).send(`
             <div style="font-family: sans-serif; text-align: center; padding: 50px;">
                 <h1 style="color: #06C755;">✅ อนุมัติสำเร็จ!</h1>
-                <p>User <b>${userId}</b> ได้รับสิทธิ์พรีเมียมแล้ว</p>
-                <p>ระบบส่งการแจ้งเตือนกลับหา User ใน LINE เรียบร้อย</p>
-                <button onclick="window.close()" style="padding: 10px 20px; background: #eee; border: none; border-radius: 5px; cursor: pointer;">ปิดหน้านี้</button>
+                <p>User <b>${userId}</b> เป็นพรีเมียมแล้ว</p>
+                <button onclick="window.close()" style="padding: 10px 20px; background: #eee; border: none; border-radius: 5px; cursor: pointer;">ปิดหน้าต่างนี้</button>
             </div>
         `);
     } catch (error: any) {
-        console.error("Approval Error:", error);
-        return res.status(500).send(`Error: ${error.message}`);
+        console.error("Critical Approval Error:", error);
+        return res.status(500).send(`Critical Error: ${error.message}`);
     }
 }
+
+import admin from 'firebase-admin'; // Required for FieldValue
