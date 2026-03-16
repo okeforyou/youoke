@@ -1,4 +1,4 @@
-import { db } from "../../../firebase";
+import { db, realtimeDb } from "../../../firebase";
 import {
   collection,
   doc,
@@ -12,6 +12,11 @@ import {
   serverTimestamp,
   addDoc
 } from "firebase/firestore";
+import {
+  ref,
+  update,
+  serverTimestamp as rtdbServerTimestamp
+} from "firebase/database";
 import { PaymentSlip } from "../types"; // Use local module type
 
 // Collection names
@@ -66,17 +71,43 @@ export async function approvePayment(
 
   // 3. Update User Membership (Firestore)
   const userRef = doc(db, USERS_COLLECTION, userId);
+  const membershipData = {
+    type: membershipType,
+    status: 'active',
+    startedAt: serverTimestamp(),
+    expiresAt: expiresAt,
+    autoRenew: false,
+    lastPaymentId: paymentId
+  };
+
   await updateDoc(userRef, {
-    membership: {
-      type: membershipType,
-      status: 'active',
-      startedAt: serverTimestamp(),
-      expiresAt: expiresAt,
-      autoRenew: false,
-      lastPaymentId: paymentId
-    },
+    membership: membershipData,
+    isPremium: true,
+    role: 'premium',
+    tier: membershipType,
     updatedAt: serverTimestamp()
   });
+
+  // 3.5 Sync to Realtime Database
+  if (realtimeDb) {
+    try {
+      const rtdbUserRef = ref(realtimeDb, `users/${userId}`);
+      await update(rtdbUserRef, {
+        role: 'premium',
+        tier: membershipType,
+        subscription: {
+          plan: membershipType,
+          status: 'active',
+          startDate: now.toISOString(),
+          endDate: expiresAt ? expiresAt.toISOString() : null
+        },
+        updatedAt: rtdbServerTimestamp()
+      });
+      console.log("✅ Synced approval to RealtimeDB for user:", userId);
+    } catch (e) {
+      console.error("❌ Failed to sync to RealtimeDB:", e);
+    }
+  }
 
   // 4. Update Payment Status
   const paymentRef = doc(db, PAYMENTS_COLLECTION, paymentId);
@@ -241,17 +272,44 @@ export async function activateFreePackage(
 
   // 3. Update User (Use setDoc merge to be robust)
   const userRef = doc(db, USERS_COLLECTION, userId);
+  const membershipData = {
+    type: membershipType,
+    status: 'active',
+    startedAt: serverTimestamp(),
+    expiresAt: expiresAt,
+    autoRenew: false,
+    activatedBy: 'self'
+  };
+
   try {
     await setDoc(userRef, {
-        membership: {
-            type: membershipType,
-            startedAt: serverTimestamp(),
-            expiresAt: expiresAt,
-            autoRenew: false,
-            activatedBy: 'self'
-        },
+        membership: membershipData,
+        isPremium: true,
+        role: 'premium',
+        tier: membershipType,
         updatedAt: serverTimestamp()
     }, { merge: true });
+
+    // 3.5 Sync to Realtime Database
+    if (realtimeDb) {
+      try {
+        const rtdbUserRef = ref(realtimeDb, `users/${userId}`);
+        await update(rtdbUserRef, {
+          role: 'premium',
+          tier: membershipType,
+          subscription: {
+            plan: membershipType,
+            status: 'active',
+            startDate: now.toISOString(),
+            endDate: expiresAt ? expiresAt.toISOString() : null
+          },
+          updatedAt: rtdbServerTimestamp()
+        });
+        console.log("✅ Synced activation to RealtimeDB for user:", userId);
+      } catch (e) {
+        console.error("❌ Failed to sync to RealtimeDB:", e);
+      }
+    }
 
     // 4. Notification
     await addDoc(collection(db, `users/${userId}/notifications`), {
