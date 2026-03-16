@@ -205,9 +205,17 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
                                     )}
                                 </button>
 
-                                <p className="text-[10px] text-center text-muted-foreground px-4">
-                                    เมื่อกดปุ่ม ระบบจะส่งข้อมูลการจองไปยังทีมงาน 
-                                    และเปิดแอป LINE เพื่อให้ท่านส่งหลักฐานการโอนเงินครับ
+                                <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 flex items-start gap-3">
+                                    <div className="bg-amber-100 rounded-full p-1 text-amber-600">
+                                        <AlertCircle className="w-4 h-4" />
+                                    </div>
+                                    <p className="text-[11px] text-amber-800 font-bold leading-tight">
+                                        สำคัญ: เมื่อแอป LINE เปิดขึ้นมาแล้ว <span className="underline decoration-2">อย่าลืมกดแนบรูปสลิป</span> ส่งในแชทเพื่อยืนยันด้วยนะครับ
+                                    </p>
+                                </div>
+
+                                <p className="text-[10px] text-center text-muted-foreground px-4 italic">
+                                    ระบบจะบันทึกข้อมูลการแจ้งโอนเบื้องต้น และเปิดหน้าแชท LINE ให้อัตโนมัติครับ
                                 </p>
                             </div>
 
