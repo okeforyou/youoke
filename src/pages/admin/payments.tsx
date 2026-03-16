@@ -13,6 +13,7 @@ import {
     ZoomIn,
     ZoomOut,
     X,
+    Trash2,
     CreditCard as IconCard
 } from "lucide-react";
 import { collection, query, orderBy, limit, getDocs, doc, updateDoc, serverTimestamp, getDoc, addDoc, where } from "firebase/firestore";
@@ -117,6 +118,25 @@ export default function AdminOrdersPage() {
         } catch (error) {
             console.error("Rejection failed:", error);
             alert("เกิดข้อผิดพลาดในการปฏิเสธรายการ");
+        } finally {
+            setProcessing(false);
+        }
+    };
+
+    const handleDelete = async (orderId: string) => {
+        if (!confirm("⚠️ คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้ออกจากระบบ? (ไม่สามารถเรียกคืนได้)")) return;
+
+        setProcessing(true);
+        try {
+            const { deleteDoc, doc: firestoreDoc } = await import('firebase/firestore');
+            await deleteDoc(firestoreDoc(db as any, "payment_proofs", orderId));
+            
+            alert("ลบรายการออกจากระบบเรียบร้อยแล้ว");
+            setSelectedOrder(null);
+            fetchOrders();
+        } catch (error) {
+            console.error("Delete failed:", error);
+            alert("เกิดข้อผิดพลาดในการลบรายการ");
         } finally {
             setProcessing(false);
         }
@@ -241,10 +261,23 @@ export default function AdminOrdersPage() {
                                             <p className="text-xs text-muted-foreground font-mono truncate max-w-[100px]">{order.id.slice(0, 8)}...</p>
                                         </div>
                                     </div>
-                                    <span className={cn("inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium", config.bg, config.color)}>
-                                        <StatusIcon size={12} />
-                                        <span className="capitalize">{config.label}</span>
-                                    </span>
+                                    <div className="flex items-center gap-1.5">
+                                        <span className={cn("inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium", config.bg, config.color)}>
+                                            <StatusIcon size={12} />
+                                            <span className="capitalize">{config.label}</span>
+                                        </span>
+                                        {order.status !== 'pending' && (
+                                            <button 
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDelete(order.id);
+                                                }}
+                                                className="p-1 px-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
 
                                 <div className="space-y-3 mb-4 flex-1">
@@ -312,9 +345,18 @@ export default function AdminOrdersPage() {
                                     </h3>
                                     <p className="text-xs text-muted-foreground">ID: {selectedOrder.id}</p>
                                 </div>
-                                <button className="btn btn-circle btn-ghost btn-sm text-muted-foreground" onClick={() => setSelectedOrder(null)}>
-                                    <X size={20} />
-                                </button>
+                                <div className="flex items-center gap-1">
+                                    <button 
+                                        className="btn btn-ghost btn-sm text-muted-foreground hover:text-destructive hover:bg-destructive/10" 
+                                        onClick={() => handleDelete(selectedOrder.id)}
+                                        title="ลบรายการนี้"
+                                    >
+                                        <Trash2 size={18} />
+                                    </button>
+                                    <button className="btn btn-circle btn-ghost btn-sm text-muted-foreground" onClick={() => setSelectedOrder(null)}>
+                                        <X size={20} />
+                                    </button>
+                                </div>
                             </div>
 
                             <div className="p-6 flex-1 overflow-y-auto space-y-6">

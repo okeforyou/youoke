@@ -89,17 +89,14 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
         
         // Define the pre-filled message for the manual slip submission
         const messageBody = [
-            '📢 แจ้งโอนเงินพรีเมียม YouOke 🎤',
-            '',
+            '📢 แจ้งโอนเงินเพื่อเข้าใช้งาน YouOke 🎤',
             `👤 สมาชิก: ${user.displayName || user.email || 'สมาชิก'}`,
             `💎 แพ็กเกจ: ${pkg.name}`,
             `💰 ยอดโอน: ฿${pkg.price.toLocaleString()}`,
             `🆔 รหัสอ้างอิง: ${user.uid.substring(0, 8)}`,
-            '',
             '---------------------------',
             '✅ กรุณา "แนบรูปสลิป" 📸',
-            'ในแชทนี้ เพื่อให้เจ้าหน้าที่ทำการอนุมัติครับ',
-            '---------------------------'
+            'ในแชทนี้ เพื่อทำการอนุมัติการใช้งานครับ'
         ].join('\n');
         
         // URL for LINE Official Account with pre-filled message
