@@ -155,6 +155,18 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
+    // Community Playlists (Public read, admin/owner write)
+    match /community_playlists/{playlistId} {
+      allow read: if true;
+      allow write: if isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.addedBy);
+    }
+
+    // Pricing (Public read, admin write)
+    match /pricing/{planId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     // Default: Deny all others
     match /{document=**} {
       allow read, write: if false;
