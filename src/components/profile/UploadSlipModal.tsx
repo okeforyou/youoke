@@ -35,27 +35,87 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
 
         setSending(true);
         try {
-            // Send Notification to System (Save to DB as pending for Admin verification)
+            let paymentId = "";
+            // 1. Send Notification to System (Save to DB as pending for Admin verification)
             if (db) {
                 const { collection, addDoc, serverTimestamp } = await import('firebase/firestore');
-                await addDoc(collection(db, 'payment_proofs'), {
+                const docRef = await addDoc(collection(db, 'payment_proofs'), {
                     userId: user.uid,
                     userDisplayName: user.displayName || user.email?.split('@')[0],
                     userEmail: user.email,
                     packageId: pkg.id,
                     packageName: pkg.name,
                     amount: pkg.price,
-                    status: 'pending', // Use pending so it shows in 'Waiting Verification' for admin
-                    slipUrl: 'line_manual', // Placeholder since user will send it via LINE
+                    status: 'pending',
+                    slipUrl: 'line_manual',
                     method: 'line_manual',
                     createdAt: serverTimestamp()
                 });
+                paymentId = docRef.id;
             }
 
-            // Send LINE Push Message (Official Account) - Text Only since we can't upload
+            // 2. Send LINE Flex Message to Admin
             try {
+                // Secret token for the approval link (same logic as in the API)
+                const approvalToken = process.env.NEXT_PUBLIC_LINE_CHANNEL_ACCESS_TOKEN?.substring(0, 10) || "";
+                const approveUrl = `${window.location.origin}/api/admin/approve-via-link?paymentId=${paymentId}&userId=${user.uid}&packageId=${pkg.id}&token=${approvalToken}`;
+
+                const flexMessage = {
+                    type: "bubble",
+                    header: {
+                        type: "box",
+                        layout: "vertical",
+                        backgroundColor: "#f4f4f4",
+                        contents: [
+                            { type: "text", text: "💰 แจ้งโอนเงินใหม่ (LINE)", weight: "bold", size: "sm", color: "#666666" }
+                        ]
+                    },
+                    body: {
+                        type: "box",
+                        layout: "vertical",
+                        contents: [
+                            { type: "text", text: user.displayName || user.email || "Unknown User", weight: "bold", size: "lg", color: "#333333" },
+                            {
+                                type: "box", layout: "vertical", margin: "md", spacing: "sm", contents: [
+                                    {
+                                        type: "box", layout: "horizontal", contents: [
+                                            { type: "text", text: "แพ็กเกจ:", color: "#aaaaaa", size: "xs" },
+                                            { type: "text", text: pkg.name, size: "xs", align: "end", color: "#333333" }
+                                        ]
+                                    },
+                                    {
+                                        type: "box", layout: "horizontal", contents: [
+                                            { type: "text", text: "ยอดโอน:", color: "#aaaaaa", size: "xs" },
+                                            { type: "text", text: `฿${pkg.price.toLocaleString()}`, size: "xs", align: "end", color: "#E91E63", weight: "bold" }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    footer: {
+                        type: "box",
+                        layout: "vertical",
+                        spacing: "sm",
+                        contents: [
+                            {
+                                type: "button",
+                                style: "primary",
+                                color: "#06C755",
+                                action: {
+                                    type: "uri",
+                                    label: "✅ อนุมัติทันที",
+                                    uri: approveUrl
+                                }
+                            },
+                            { type: "text", text: "* กรุณารอสลิปจาก User ในแชทก่อนกดอนุมัติ", size: "xxs", color: "#999999", align: "center" }
+                        ]
+                    }
+                };
+
                 await axios.post('/api/payment/line-push', {
-                    message: `💰 การแจ้งโอนเงินใหม่! (รอยืนยันสลิปทาง LINE)\n👤 User: ${user.displayName || user.email}\n📦 Package: ${pkg.name}\n💵 ยอด: ${pkg.price.toLocaleString()} บาท\n\n*ผู้ใช้กำลังจะส่งสลิปให้ทาง LINE แชทครับ*`
+                    message: `💰 การแจ้งโอนเงินจาก ${user.displayName || user.email}`,
+                    flex: flexMessage
                 });
             } catch (notifyError) {
                 console.error("LINE Notify failed:", notifyError);
@@ -78,7 +138,7 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
         if (!user || !pkg) return;
         
         // Define the pre-filled message for the manual slip submission
-        const message = `แจ้งส่งสลิปครับ\n👤 ชื่อผู้ใช้: ${user.displayName || user.email}\n📦 แพ็กเกจ: ${pkg.name}\n💰 ยอดโอน: ${pkg.price.toLocaleString()} บาท`;
+        const message = `แจ้งส่งสลิปการโอนเงินครับ 💰\n👤 ชื่อผู้ใช้: ${user.displayName || user.email}\n📦 แพ็กเกจ: ${pkg.name}\n💰 ยอดโอน: ${pkg.price.toLocaleString()} บาท\n\n(รบกวนแนบรูปสลิปในแชทนี้เพื่อยืนยันด้วยนะครับ)`;
         
         // URL for LINE Official Account with pre-filled message
         // Reference: https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/

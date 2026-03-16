@@ -6,27 +6,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    const { message, imageFullsize, imageThumbnail } = req.body;
+    const { message, imageFullsize, imageThumbnail, flex, to } = req.body;
 
     // Get keys from env
     const channelAccessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
     const adminUserId = process.env.LINE_ADMIN_USER_ID;
 
-    if (!channelAccessToken || !adminUserId) {
+    if (!channelAccessToken) {
         console.warn("LINE Messaging API keys are missing");
         return res.status(500).json({ error: 'Server configuration error' });
     }
 
     try {
         // Construct the LINE Push Message
-        const messages: any[] = [
-            {
+        let messages: any[] = [];
+        
+        if (flex) {
+            messages.push({
+                type: "flex",
+                altText: message || "มีรายการแจ้งโอนเงินใหม่",
+                contents: flex
+            });
+        } else {
+            messages.push({
                 type: "text",
                 text: message || "มีรายการแจ้งโอนเงินใหม่"
-            }
-        ];
+            });
+        }
 
-        // Only add image if URLs are provided
+        // Only add image if URLs are provided and not using flex (or alongside it)
         if (imageFullsize) {
             messages.push({
                 type: "image",
@@ -36,9 +44,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         const linePayload = {
-            to: adminUserId,
+            to: to || adminUserId, // Use provided 'to' or fallback to Admin
             messages
         };
+
+        if (!linePayload.to) {
+            return res.status(400).json({ error: 'No recipient provided' });
+        }
 
         await axios.post(
             'https://api.line.me/v2/bot/message/push',
