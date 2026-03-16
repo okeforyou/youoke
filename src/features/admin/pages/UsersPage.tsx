@@ -151,7 +151,8 @@ export default function UsersPage() {
   // Filter Logic
   const filteredUsers = users.filter((u: any) => {
     const matchesSearch = (u.displayName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (u.email || '').toLowerCase().includes(searchTerm.toLowerCase());
+      (u.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (u.uid || '').includes(searchTerm); // Allow searching by UID
     const isGuest = !u.email;
     if (!showGuests && isGuest) return false;
     return matchesSearch;
@@ -168,6 +169,13 @@ export default function UsersPage() {
     return 'bg-gray-100 text-gray-600 border-gray-200';
   };
 
+  const getLoginProvider = (user: any) => {
+    if (user.provider === 'line' || user.uid?.startsWith('line:')) return 'LINE';
+    if (user.email?.includes('@gmail.com')) return 'Google';
+    if (user.email) return 'Email';
+    return 'Anonymous';
+  };
+
   return (
     <AdminLayout>
       <Head>
@@ -179,7 +187,7 @@ export default function UsersPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">จัดการผู้ใช้ (User Management)</h1>
-            <p className="text-sm text-gray-500">จัดการสมาชิก บทบาท และสถานะการใช้งาน</p>
+            <p className="text-sm text-gray-500">จัดการสมาชิก บทบาท และช่องทางการสมัคร (LINE / Google)</p>
           </div>
           <div className="flex gap-2">
             <button className="btn btn-sm bg-primary text-white border-none gap-2 hover:bg-primary/90">
@@ -194,7 +202,7 @@ export default function UsersPage() {
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="ค้นหาชื่อ หรือ อีเมล..."
+              placeholder="ค้นหาชื่อ, อีเมล หรือ UID (เลขไอดี LINE)..."
               className="input input-sm w-full pl-9 bg-gray-50 border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -202,7 +210,7 @@ export default function UsersPage() {
           </div>
           <div className="flex items-center gap-3">
             <label className="label cursor-pointer gap-2">
-              <span className="label-text text-xs text-gray-600">แสดงผู้เยี่ยมชม (Guests)</span>
+              <span className="label-text text-xs text-gray-600 font-bold">ช่องทาง LINE / Guest</span>
               <input type="checkbox" className="toggle toggle-primary toggle-sm" checked={showGuests} onChange={(e) => setShowGuests(e.target.checked)} />
             </label>
           </div>
@@ -214,8 +222,8 @@ export default function UsersPage() {
             <table className="table w-full">
               <thead className="bg-gray-50 text-gray-500 text-xs uppercase">
                 <tr>
-                  <th className="font-semibold py-3 pl-6">ผู้ใช้งาน</th>
-                  <th className="font-semibold">บทบาท</th>
+                  <th className="font-semibold py-3 pl-6">ผู้ใช้งาน (ชื่อ / ช่องทาง)</th>
+                  <th className="font-semibold">ช่องทางเข้าสู่ระบบ</th>
                   <th className="font-semibold">สถานะสมาชิก</th>
                   <th className="font-semibold text-right pr-6">จัดการ</th>
                 </tr>
@@ -226,62 +234,76 @@ export default function UsersPage() {
                 ) : filteredUsers.length === 0 ? (
                   <tr><td colSpan={4} className="text-center py-12 text-gray-400">ไม่พบข้อมูลผู้ใช้</td></tr>
                 ) : (
-                  filteredUsers.map((user: any) => (
-                    <tr key={user.uid} className="hover:bg-gray-50 transition-colors group border-b last:border-none border-gray-100">
-                      <td className="pl-6">
-                        <div className="flex items-center gap-3">
-                          <div className="avatar placeholder">
-                            <div className="bg-primary/10 text-primary rounded-full w-10 h-10 border border-primary/10 flex items-center justify-center">
-                              <span className="text-sm font-bold">{user.displayName?.charAt(0).toUpperCase() || 'U'}</span>
+                  filteredUsers.map((user: any) => {
+                    const provider = getLoginProvider(user);
+                    return (
+                      <tr key={user.uid} className="hover:bg-gray-50 transition-colors group border-b last:border-none border-gray-100">
+                        <td className="pl-6">
+                          <div className="flex items-center gap-3">
+                            <div className="avatar ring-1 ring-gray-100 rounded-full">
+                              <div className="bg-gray-50 text-gray-400 rounded-full w-10 h-10 flex items-center justify-center overflow-hidden">
+                                {user.photoURL ? (
+                                    <img src={user.photoURL} alt={user.displayName} referrerPolicy="no-referrer" />
+                                ) : (
+                                    <span className="text-sm font-bold text-primary">{user.displayName?.charAt(0).toUpperCase() || 'U'}</span>
+                                )}
+                              </div>
+                            </div>
+                            <div>
+                              <div className="font-bold text-gray-900 flex items-center gap-2">
+                                {user.displayName || (user.uid?.startsWith('line:') ? 'User (LINE)' : 'ผู้เยี่ยมชม (Guest)')}
+                                {user.banned && <span className="badge badge-error badge-xs font-medium text-white">ถูกระงับ</span>}
+                              </div>
+                              <div className="text-[10px] text-gray-500 font-mono mt-0.5 max-w-[150px] truncate" title={user.uid}>
+                                {user.email || user.uid}
+                              </div>
                             </div>
                           </div>
-                          <div>
-                            <div className="font-bold text-gray-900 flex items-center gap-2">
-                              {user.displayName || 'ผู้เยี่ยมชม (Guest)'}
-                              {user.banned && <span className="badge badge-error badge-xs font-medium text-white">ถูกระงับ</span>}
-                            </div>
-                            <div className="text-xs text-gray-500 font-mono">{user.email || 'ไม่มีอีเมล'}</div>
+                        </td>
+                        <td>
+                          <div className={cn(
+                            "badge badge-sm gap-1.5 font-bold border-none",
+                            provider === 'LINE' ? "bg-[#06C755] text-white" : 
+                            provider === 'Google' ? "bg-blue-100 text-blue-700 font-black" : "bg-gray-100 text-gray-600"
+                          )}>
+                            {provider === 'LINE' && <span className="w-1.5 h-1.5 rounded-full bg-white opacity-80" />}
+                            {provider === 'Google' && <span className="w-1.5 h-1.5 rounded-full bg-blue-500 opacity-80" />}
+                            {provider}
                           </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div className={cn("badge badge-sm border-0 gap-1 font-medium", user.role === 'admin' ? "bg-red-50 text-red-600" : "bg-blue-50 text-blue-600")}>
-                          {user.role === 'admin' && <ShieldCheckIcon className="w-3 h-3" />}
-                          {user.role === 'admin' ? 'ผู้ดูแลระบบ' : 'สมาชิกทั่วไป'}
-                        </div>
-                      </td>
-                      <td>
-                        <div className={cn("badge badge-sm border font-medium", getMembershipStyle(user))}>
-                          {user.membership?.status === 'pending' ? 'รอการอนุมัติ' :
-                            user.membership?.status === 'expired' ? 'หมดอายุ' :
-                              user.membership?.type === 'monthly' ? 'รายเดือน' :
-                                user.membership?.type === 'yearly' ? 'รายปี' :
-                                  user.membership?.type === 'lifetime' ? 'ตลอดชีพ' : 'ฟรี'}
-                        </div>
-                        {user.membership?.expiresAt && (
-                          <div className="text-[10px] text-gray-400 mt-1">
-                            หมดอายุ: {new Date(user.membership.expiresAt).toLocaleDateString('th-TH')}
+                        </td>
+                        <td>
+                          <div className={cn("badge badge-sm border font-medium", getMembershipStyle(user))}>
+                            {user.membership?.status === 'pending' ? 'รอการอนุมัติ' :
+                              user.membership?.status === 'expired' ? 'หมดอายุ' :
+                                user.membership?.type === 'monthly' ? 'รายเดือน' :
+                                  user.membership?.type === 'yearly' ? 'รายปี' :
+                                    user.membership?.type === 'lifetime' ? 'ตลอดชีพ' : 'ฟรี'}
                           </div>
-                        )}
-                      </td>
-                      <td className="text-right pr-6">
-                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          {user.membership?.status === 'pending' && (
-                            <div className="flex gap-1">
-                              <button onClick={() => AdminService.approveUserWithTier(user.uid, 'monthly', 'admin').then(fetchUsers)} className="btn btn-xs btn-outline btn-success" title="อนุมัติรายเดือน">Approve Mo</button>
-                              <button onClick={() => AdminService.approveUserWithTier(user.uid, 'yearly', 'admin').then(fetchUsers)} className="btn btn-xs btn-outline btn-success" title="อนุมัติรายปี">Approve Yr</button>
+                          {user.membership?.expiresAt && (
+                            <div className="text-[10px] text-gray-400 mt-1">
+                              หมดอายุ: {new Date(user.membership.expiresAt).toLocaleDateString('th-TH')}
                             </div>
                           )}
-                          <button onClick={() => setSelectedUser(user)} className="btn btn-ghost btn-xs btn-square hover:bg-blue-50 hover:text-blue-600" title="แก้ไข">
-                            <PencilSquareIcon className="w-4 h-4" />
-                          </button>
-                          <button onClick={() => handleBanToggle(user)} className="btn btn-ghost btn-xs btn-square hover:bg-red-50 hover:text-red-600" title={user.banned ? "ปลดระงับ" : "ระงับการใช้งาน"}>
-                            {user.banned ? <CheckCircleIcon className="w-4 h-4 text-green-500" /> : <NoSymbolIcon className="w-4 h-4" />}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                        </td>
+                        <td className="text-right pr-6">
+                          <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {user.membership?.status === 'pending' && (
+                              <div className="flex gap-1">
+                                <button onClick={() => AdminService.approveUserWithTier(user.uid, 'monthly', 'admin').then(fetchUsers)} className="btn btn-xs btn-success text-white" title="อนุมัติรายเดือน">Approve Mo</button>
+                                <button onClick={() => AdminService.approveUserWithTier(user.uid, 'yearly', 'admin').then(fetchUsers)} className="btn btn-xs btn-success text-white" title="อนุมัติรายปี">Approve Yr</button>
+                              </div>
+                            )}
+                            <button onClick={() => setSelectedUser(user)} className="btn btn-ghost btn-xs btn-square hover:bg-blue-50 hover:text-blue-600" title="จัดการสมาชิก">
+                              <PencilSquareIcon className="w-4 h-4" />
+                            </button>
+                            <button onClick={() => handleBanToggle(user)} className="btn btn-ghost btn-xs btn-square hover:bg-red-50 hover:text-red-600" title={user.banned ? "ปลดระงับ" : "ระงับการใช้งาน"}>
+                              {user.banned ? <CheckCircleIcon className="w-4 h-4 text-green-500" /> : <NoSymbolIcon className="w-4 h-4" />}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>

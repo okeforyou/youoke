@@ -35,18 +35,20 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
 
         setSending(true);
         try {
-            // Send Notification to System (Optional: Save to DB as pending)
+            // Send Notification to System (Save to DB as pending for Admin verification)
             if (db) {
-                await addDoc(collection(db, 'payment_notifications'), {
+                const { collection, addDoc, serverTimestamp } = await import('firebase/firestore');
+                await addDoc(collection(db, 'payment_proofs'), {
                     userId: user.uid,
-                    userDisplayName: user.displayName,
+                    userDisplayName: user.displayName || user.email?.split('@')[0],
                     userEmail: user.email,
                     packageId: pkg.id,
                     packageName: pkg.name,
                     amount: pkg.price,
-                    status: 'notified',
-                    createdAt: serverTimestamp(),
-                    method: 'line_manual'
+                    status: 'pending', // Use pending so it shows in 'Waiting Verification' for admin
+                    slipUrl: 'line_manual', // Placeholder since user will send it via LINE
+                    method: 'line_manual',
+                    createdAt: serverTimestamp()
                 });
             }
 

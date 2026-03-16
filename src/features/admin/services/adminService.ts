@@ -89,6 +89,18 @@ export const AdminService = {
     },
 
     /**
+     * Update user profile details (displayName, etc.)
+     */
+    updateUserProfile: async (uid: string, data: Partial<{ displayName: string; role: string }>): Promise<void> => {
+        if (!db) throw new Error("Firestore not initialized");
+        const userRef = doc(db, "users", uid);
+        await updateDoc(userRef, {
+            ...data,
+            updatedAt: new Date()
+        });
+    },
+
+    /**
      * Ban or Unban a user (Firestore)
      */
     updateUserBanStatus: async (uid: string, ban: boolean): Promise<void> => {
@@ -96,7 +108,7 @@ export const AdminService = {
         const userRef = doc(db, "users", uid);
         await updateDoc(userRef, {
             banned: ban,
-            updatedAt: new Date() // Firestore timestamp ideally, but Date works
+            updatedAt: new Date()
         });
     },
 

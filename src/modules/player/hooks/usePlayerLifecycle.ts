@@ -5,7 +5,7 @@ import { useAuthStore } from '@/modules/auth/useAuthStore';
 import { useUIStore } from '../../../stores/useUIStore';
 import { usePlayerStore } from '../stores/usePlayerStore';
 import { db } from '../../../firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 
 export const usePlayerLifecycle = (currentSource: string | null, showDjOverlay: boolean) => {
     const { config } = useSystemConfig();
@@ -19,6 +19,10 @@ export const usePlayerLifecycle = (currentSource: string | null, showDjOverlay: 
     let userRole: string = 'guest';
     if (user) {
         userRole = user.membership?.type || 'free';
+        // Normalize role for plan lookup if needed
+        if (['monthly', 'yearly', 'day_pass', 'trial', 'lifetime'].includes(userRole)) {
+            // userRole = 'premium'; // Uncomment if 'plans' collection uses 'premium' for all
+        }
     }
 
     // Load Plan Limits from Database
@@ -39,6 +43,7 @@ export const usePlayerLifecycle = (currentSource: string | null, showDjOverlay: 
                 } else {
                     // Fallback to System Config / Defaults
                     const role = (userRole as 'guest' | 'free' | 'premium') || 'guest';
+                    // @ts-ignore - Handle dynamic indexing safely
                     const limits = config?.membership?.[role] || DEFAULT_CONFIG.membership[role] || DEFAULT_CONFIG.membership.guest;
                     setPlanLimits({
                         maxDailySongs: limits?.max_daily_songs || 0,
@@ -81,10 +86,16 @@ export const usePlayerLifecycle = (currentSource: string | null, showDjOverlay: 
         if (user) {
             // Logged in user: use their quota from profile
             currentCount = user.quota?.used || 0;
-            limit = user.quota?.daily_limit || 0;
+            limit = user.quota?.daily_limit || maxDailySongs; // Fallback to plan limit
             
-            // If they are on a lifetime or premium plan without specific quota, give them "virtual unlimited"
-            if (userRole === 'lifetime' || userRole === 'premium' || user.role === 'admin') {
+            // 🛡️ UNLIMITED CHECK: If they are on any premium plan or are Admin
+            const isUnlimited = 
+                ['premium', 'monthly', 'yearly', 'lifetime', 'day_pass'].includes(user.membership?.type || '') ||
+                user.role === 'admin' ||
+                user.role === 'owner' ||
+                user.isAdmin;
+
+            if (isUnlimited) {
                 limit = -1; // Unlimited
             }
         } else {
@@ -98,7 +109,7 @@ export const usePlayerLifecycle = (currentSource: string | null, showDjOverlay: 
 
         // 2. Check Limit (Block if zero or reached)
         // If limit is -1, it's unlimited. If limit is 0, it's blocked.
-        if (limit !== -1 && currentCount >= limit) {
+        if (limit !== -1 && currentCount >= limit && limit > 0) {
             console.log("⛔ Daily limit reached! Blocking playback.");
             usePlayerStore.setState({ isPlaying: false });
             setLimitModalOpen(true);
@@ -119,12 +130,12 @@ export const usePlayerLifecycle = (currentSource: string | null, showDjOverlay: 
             if (user?.uid && db) {
                 console.log(`💾 Syncing Quota to Firestore: ${newCount}`);
                 const userRef = doc(db, 'users', user.uid);
-                setDoc(userRef, {
+                updateDoc(userRef, {
                     quota: {
                         used: newCount,
                         last_play: today
                     }
-                }, { merge: true }).catch((err: any) => console.error("Quota sync error:", err));
+                }).catch((err: any) => console.error("Quota sync error:", err));
             }
         }
 
