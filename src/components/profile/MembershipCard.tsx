@@ -114,12 +114,21 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
                         <div className="space-y-1.5">
                             <div className="flex justify-between items-end">
                                 <span className="text-[9px] uppercase font-black tracking-widest text-white/60">โควต้าเพลงวันนี้</span>
-                                <span className="text-[10px] font-black">{membership?.quota?.used || 0} / {membership?.quota?.daily_limit || 0}</span>
+                                <span className="text-[10px] font-black">
+                                    {membership?.quota?.daily_limit === 0 || isLifetime 
+                                        ? "ไม่จำกัด" 
+                                        : `${membership?.quota?.used || 0} / ${membership?.quota?.daily_limit || 0}`
+                                    }
+                                </span>
                             </div>
                             <div className="h-1.5 w-full bg-black/20 rounded-full overflow-hidden p-[1px]">
                                 <div 
                                     className="h-full rounded-full bg-white transition-all duration-700 shadow-[0_0_10px_rgba(255,255,255,0.5)]"
-                                    style={{ width: `${Math.min(((membership?.quota?.used || 0) / (membership?.quota?.daily_limit || 1)) * 100, 100)}%` }}
+                                    style={{ 
+                                        width: (membership?.quota?.daily_limit === 0 || isLifetime) 
+                                            ? '100%' 
+                                            : `${Math.min(((membership?.quota?.used || 0) / (membership?.quota?.daily_limit || 1)) * 100, 100)}%` 
+                                    }}
                                 />
                             </div>
                         </div>
@@ -130,7 +139,7 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
                     <div>
                         <div className="text-[9px] uppercase tracking-widest font-black text-white/50 mb-0.5">วันหมดอายุ</div>
                         <div className="text-xs font-black tracking-tight">
-                            {isAdmin ? "สิทธิ์เจ้าของระบบ" : (isLifetime ? "ไม่มีวันหมดอายุ" : (hasActivePlan ? formatDate(safeMembership.expiresAt) : "กรุณาเลือกแพ็กเกจ"))}
+                            {isAdmin ? "สิทธิ์เจ้าของระบบ" : (isLifetime ? "ใช้งานได้ตลอดชีพ" : (safeMembership.expiresAt ? formatDate(safeMembership.expiresAt) : "กรุณาเลือกแพ็กเกจ"))}
                         </div>
                     </div>
                     

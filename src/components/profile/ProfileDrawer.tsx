@@ -79,9 +79,18 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
         }
     };
 
-    const isAdmin = user?.role === 'admin' || profile?.role === 'admin';
-    const isPremium = isAdmin || (profile?.subscription?.plan && profile.subscription.plan !== 'free' && profile.subscription.status === 'active');
-    const isLifetime = !isAdmin && profile?.subscription?.plan === 'lifetime';
+    const isAdmin = user?.role === 'admin' || profile?.role === 'admin' || user?.email === 'boonyanone@gmail.com';
+    
+    // Normalized membership object for the MembershipCard component
+    const displayMembership = {
+        type: profile?.subscription?.plan || user?.membership?.type || 'free',
+        status: profile?.subscription?.status || user?.membership?.status || 'active',
+        expiresAt: profile?.subscription?.endDate || user?.membership?.expiresAt || null,
+        quota: profile?.quota || user?.quota || undefined
+    };
+
+    const isPremium = isAdmin || (displayMembership.type !== 'free' && displayMembership.status === 'active');
+    const isLifetime = !isAdmin && displayMembership.type === 'lifetime';
 
     const menuItems = [
         // Admin Item (Conditional)
@@ -226,13 +235,13 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                                     <div>
                                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 px-2">บัตรสมาชิก</p>
                                                         <MembershipCard
-                                                             membership={user?.membership || { type: 'free', status: 'active', expiresAt: null }}
-                                                             role={user?.role}
+                                                             membership={displayMembership as any}
+                                                             role={isAdmin ? 'admin' : (user?.role || profile?.role)}
                                                              onUpgrade={() => {
                                                                  onClose();
                                                                  router.push('/packages');
                                                              }}
-                                                         />
+                                                          />
                                                     </div>
 
                                                     {/* Notifications */}

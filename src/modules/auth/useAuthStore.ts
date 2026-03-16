@@ -184,6 +184,11 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                     photoURL: rtdbData?.photoURL || firebaseUser.photoURL || null,
                                     role: 'user',
                                     membership: { ...DEFAULT_MEMBERSHIP, startedAt: serverTimestamp() },
+                                    quota: {
+                                        daily_limit: 5,
+                                        used: 0,
+                                        last_reset: new Date().toISOString()
+                                    },
                                     createdAt: serverTimestamp(),
                                     updatedAt: serverTimestamp(),
                                 };
