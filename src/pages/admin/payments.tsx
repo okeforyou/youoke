@@ -14,6 +14,7 @@ import {
     ZoomOut,
     X,
     Trash2,
+    AlertCircle,
     CreditCard as IconCard
 } from "lucide-react";
 import { collection, query, orderBy, limit, getDocs, doc, updateDoc, serverTimestamp, getDoc, addDoc, where } from "firebase/firestore";
@@ -84,7 +85,12 @@ export default function AdminOrdersPage() {
             const adminUid = useAuthStore.getState().user?.uid || 'admin';
 
             const { approvePayment } = await import('@/modules/billing/services/paymentService');
-            await approvePayment(selectedOrder.id, selectedOrder.userId, selectedOrder.packageId, adminUid);
+            await approvePayment(
+                selectedOrder.id, 
+                selectedOrder.userId, 
+                selectedOrder.packageId || 'free', 
+                adminUid
+            );
 
             alert("อนุมัติรายการและเปิดใช้งานสมาชิกเรียบร้อยแล้ว!");
             setSelectedOrder(null);
@@ -143,9 +149,9 @@ export default function AdminOrdersPage() {
     };
 
     const statusConfig = {
-        pending: { icon: Clock, color: "text-warning", bg: "bg-warning/15", label: "รอตรวจสอบ" },
-        approved: { icon: CheckCircle, color: "text-success", bg: "bg-success/15", label: "อนุมัติแล้ว" },
-        rejected: { icon: XCircle, color: "text-destructive", bg: "bg-destructive/15", label: "ปฏิเสธแล้ว" },
+        pending: { icon: Clock, color: "text-amber-600", bg: "bg-amber-500/10", border: "border-amber-200/50", label: "รอตรวจสอบ" },
+        approved: { icon: CheckCircle, color: "text-emerald-600", bg: "bg-emerald-500/10", border: "border-emerald-200/50", label: "อนุมัติแล้ว" },
+        rejected: { icon: XCircle, color: "text-rose-600", bg: "bg-rose-500/10", border: "border-rose-200/50", label: "ปฏิเสธแล้ว" },
     };
 
     const statusLabels: Record<string, string> = {
@@ -173,56 +179,56 @@ export default function AdminOrdersPage() {
             </div>
 
             {/* Stats */}
-            <div className="mb-8 grid gap-4 grid-cols-2 md:grid-cols-4">
-                <div className="glass-card p-4 flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/50">
-                        <IconCard className="h-6 w-6 text-foreground" />
+            <div className="mb-8 grid gap-4 grid-cols-2 lg:grid-cols-4">
+                <div className="glass-card p-5 flex items-center gap-5 border-l-4 border-l-slate-400">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-500/10 text-slate-600 shadow-inner">
+                        <IconCard className="h-7 w-7" />
                     </div>
                     <div>
-                        <p className="text-2xl font-bold text-foreground">{stats.total}</p>
-                        <p className="text-sm text-muted-foreground">ทั้งหมด</p>
+                        <p className="text-3xl font-black text-foreground leading-none">{stats.total}</p>
+                        <p className="text-[10px] uppercase font-black tracking-widest text-muted-foreground mt-1.5 opacity-60">รายการทั้งหมด</p>
                     </div>
                 </div>
-                <div className="glass-card p-4 flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-warning/20">
-                        <Clock className="h-6 w-6 text-warning" />
+                <div className="glass-card p-5 flex items-center gap-5 border-l-4 border-l-amber-400">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-600 shadow-inner shadow-amber-500/5">
+                        <Clock className="h-7 w-7" />
                     </div>
                     <div>
-                        <p className="text-2xl font-bold text-foreground">{stats.pending}</p>
-                        <p className="text-sm text-muted-foreground">รอตรวจสอบ</p>
+                        <p className="text-3xl font-black text-amber-600 leading-none">{stats.pending}</p>
+                        <p className="text-[10px] uppercase font-black tracking-widest text-amber-600/60 mt-1.5">รอตรวจสอบ</p>
                     </div>
                 </div>
-                <div className="glass-card p-4 flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-success/20">
-                        <CheckCircle className="h-6 w-6 text-success" />
+                <div className="glass-card p-5 flex items-center gap-5 border-l-4 border-l-emerald-400">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 shadow-inner shadow-emerald-500/5">
+                        <CheckCircle className="h-7 w-7" />
                     </div>
                     <div>
-                        <p className="text-2xl font-bold text-foreground">{stats.approved}</p>
-                        <p className="text-sm text-muted-foreground">อนุมัติแล้ว</p>
+                        <p className="text-3xl font-black text-emerald-600 leading-none">{stats.approved}</p>
+                        <p className="text-[10px] uppercase font-black tracking-widest text-emerald-600/60 mt-1.5">อนุมัติแล้ว</p>
                     </div>
                 </div>
-                <div className="glass-card p-4 flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-destructive/20">
-                        <XCircle className="h-6 w-6 text-destructive" />
+                <div className="glass-card p-5 flex items-center gap-5 border-l-4 border-l-rose-400">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-600 shadow-inner shadow-rose-500/5">
+                        <XCircle className="h-7 w-7" />
                     </div>
                     <div>
-                        <p className="text-2xl font-bold text-foreground">{stats.rejected}</p>
-                        <p className="text-sm text-muted-foreground">ปฏิเสธแล้ว</p>
+                        <p className="text-3xl font-black text-rose-600 leading-none">{stats.rejected}</p>
+                        <p className="text-[10px] uppercase font-black tracking-widest text-rose-600/60 mt-1.5">ปฏิเสธแล้ว</p>
                     </div>
                 </div>
             </div>
 
             {/* Filter Tabs */}
-            <div className="mb-6 flex overflow-x-auto pb-2 sm:pb-0 hide-scrollbar">
-                <div className="flex p-1 gap-1 bg-muted/30 rounded-xl border border-border/50">
+            <div className="mb-8 flex overflow-x-auto pb-4 sm:pb-0 hide-scrollbar scroll-smooth">
+                <div className="flex p-1.5 gap-1.5 bg-muted/20 backdrop-blur-md rounded-2xl border border-border/40 shadow-sm">
                     {(['all', 'pending', 'approved', 'rejected'] as const).map(status => (
                         <button
                             key={status}
                             className={cn(
-                                "px-4 py-2 text-sm font-medium rounded-lg transition-all capitalize",
+                                "px-6 py-2.5 text-xs font-black uppercase tracking-widest rounded-xl transition-all duration-300 whitespace-nowrap",
                                 statusFilter === status
-                                    ? "bg-card text-foreground shadow-sm"
-                                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                                    ? "bg-card text-primary shadow-lg border border-primary/10"
+                                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
                             )}
                             onClick={() => setStatusFilter(status)}
                         >
@@ -234,79 +240,105 @@ export default function AdminOrdersPage() {
 
             {/* Grid Layout */}
             {loading ? (
-                <div className="flex justify-center p-20"><span className="loading loading-spinner loading-lg text-primary"></span></div>
+                <div className="flex justify-center p-20">
+                    <span className="loading loading-spinner loading-lg text-primary/40"></span>
+                </div>
             ) : filteredOrders.length === 0 ? (
-                <div className="glass-card p-12 text-center flex flex-col items-center justify-center min-h-[300px]">
-                    <div className="w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center mb-4">
-                        <Search className="h-8 w-8 text-muted-foreground" />
+                <div className="glass-card p-12 text-center flex flex-col items-center justify-center min-h-[400px] border-dashed border-2">
+                    <div className="w-20 h-20 bg-muted/30 rounded-full flex items-center justify-center mb-6">
+                        <Search className="h-10 w-10 text-muted-foreground/40" />
                     </div>
-                    <h3 className="text-lg font-medium text-foreground">ไม่พบรายการสั่งซื้อ</h3>
-                    <p className="text-muted-foreground">ลองปรับตัวกรองสถานะ หรือรอรายการใหม่</p>
+                    <h3 className="text-xl font-bold text-foreground mb-2">ไม่พบรายการสั่งซื้อ</h3>
+                    <p className="text-muted-foreground max-w-xs">ลองปรับตัวกรองสถานะ หรือรอให้มีรายการใหม่แจ้งเข้ามาในระบบครับ</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
                     {filteredOrders.map((order) => {
                         const StatusIcon = statusConfig[order.status as keyof typeof statusConfig]?.icon || Clock;
                         const config = statusConfig[order.status as keyof typeof statusConfig] || statusConfig.pending;
 
                         return (
-                            <div key={order.id} className="glass-card p-5 hover:border-primary/30 transition-all group flex flex-col">
-                                <div className="flex items-start justify-between mb-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center text-primary font-bold border border-primary/10">
-                                            {order.userDisplayName?.charAt(0) || 'U'}
+                            <div key={order.id} className="glass-card relative group flex flex-col p-0 overflow-hidden hover:shadow-2xl hover:shadow-primary/5 transition-all duration-300 border-border/40">
+                                {/* Card Header */}
+                                <div className="p-5 pb-4 border-b border-border/30 bg-muted/10">
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center text-primary font-black text-xl border border-primary/10 shadow-sm shadow-primary/10">
+                                                {order.userDisplayName?.charAt(0) || 'U'}
+                                            </div>
+                                            <div className="min-w-0">
+                                                <h4 className="font-bold text-foreground truncate max-w-[140px] text-lg leading-tight">{order.userDisplayName || 'User'}</h4>
+                                                <p className="text-[10px] text-muted-foreground font-mono truncate tracking-tight uppercase opacity-60">REF: {order.id.slice(0, 8)}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <h4 className="font-medium text-foreground truncate max-w-[120px]">{order.userDisplayName || 'ลูกค้าทั่วไป'}</h4>
-                                            <p className="text-xs text-muted-foreground font-mono truncate max-w-[100px]">{order.id.slice(0, 8)}...</p>
+                                        
+                                        <div className="flex flex-col items-end gap-2">
+                                            <span className={cn(
+                                                "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border", 
+                                                config.bg, config.color, config.border
+                                            )}>
+                                                <StatusIcon size={12} strokeWidth={3} />
+                                                <span>{config.label}</span>
+                                            </span>
+                                            
+                                            {order.status !== 'pending' && (
+                                                <button 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDelete(order.id);
+                                                    }}
+                                                    className="w-7 h-7 flex items-center justify-center text-muted-foreground/40 hover:text-rose-600 hover:bg-rose-500/10 rounded-lg transition-all"
+                                                    title="ลบรายการ"
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <span className={cn("inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium", config.bg, config.color)}>
-                                            <StatusIcon size={12} />
-                                            <span className="capitalize">{config.label}</span>
-                                        </span>
-                                        {order.status !== 'pending' && (
-                                            <button 
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleDelete(order.id);
-                                                }}
-                                                className="p-1 px-1.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md transition-colors"
-                                            >
-                                                <Trash2 size={14} />
-                                            </button>
+                                </div>
+
+                                {/* Card Body */}
+                                <div className="p-5 pt-4 flex-1 space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <p className="text-[9px] uppercase font-black tracking-widest text-muted-foreground opacity-70">แพ็กเกจ</p>
+                                            <p className="font-bold text-sm text-foreground/90 truncate">{order.packageName}</p>
+                                        </div>
+                                        <div className="space-y-1 text-right">
+                                            <p className="text-[9px] uppercase font-black tracking-widest text-muted-foreground opacity-70">ยอดชำระ</p>
+                                            <p className="font-black text-lg text-primary leading-none">฿{order.amount.toLocaleString()}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="pt-3 border-t border-border/20 flex items-center justify-between">
+                                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                                            <Calendar size={12} className="opacity-50" />
+                                            <span className="text-[10px] font-medium leading-none">{formatDate(order.createdAt)}</span>
+                                        </div>
+                                        {order.status === 'rejected' && order.rejectionReason && (
+                                            <div className="flex items-center gap-1 text-rose-500/70" title={order.rejectionReason}>
+                                                <AlertCircle size={12} />
+                                                <span className="text-[10px] font-bold">เหตุผลปฏิเสธ</span>
+                                            </div>
                                         )}
                                     </div>
                                 </div>
 
-                                <div className="space-y-3 mb-4 flex-1">
-                                    <div className="flex justify-between text-sm border-b border-border/30 pb-2">
-                                        <span className="text-muted-foreground">แพ็กเกจ</span>
-                                        <span className="font-medium text-foreground">{order.packageName}</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm border-b border-border/30 pb-2">
-                                        <span className="text-muted-foreground">ยอดชำระ</span>
-                                        <span className="font-bold text-primary">฿{order.amount.toLocaleString()}</span>
-                                    </div>
-                                    <div className="flex justify-between text-sm">
-                                        <span className="text-muted-foreground">วันที่แจ้ง</span>
-                                        <span className="text-right text-foreground">{formatDate(order.createdAt)}</span>
-                                    </div>
+                                {/* Card Footer */}
+                                <div className="p-4 bg-muted/5">
+                                    <button
+                                        onClick={() => setSelectedOrder(order)}
+                                        className={cn(
+                                            "w-full h-11 rounded-xl flex items-center justify-center gap-2 font-bold text-sm transition-all active:scale-[0.98]",
+                                            order.status === 'pending'
+                                                ? "bg-primary text-white shadow-lg shadow-primary/20 hover:brightness-110"
+                                                : "bg-[#06C755]/10 text-[#06C755] hover:bg-[#06C755]/20"
+                                        )}
+                                    >
+                                        <Eye size={18} strokeWidth={2.5} />
+                                        <span>{order.status === 'pending' ? "ตรวจสอบสลิปทันที" : "ดูรายละเอียดรายการ"}</span>
+                                    </button>
                                 </div>
-
-                                <button
-                                    onClick={() => setSelectedOrder(order)}
-                                    className={cn(
-                                        "btn btn-sm w-full gap-2 transition-all",
-                                        order.status === 'pending'
-                                            ? "btn-outline border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground"
-                                            : "btn-ghost border-border/50 text-muted-foreground"
-                                    )}
-                                >
-                                    <Eye size={16} />
-                                    {order.status === 'pending' ? "ตรวจสอบสลิป" : "ดูรายละเอียด"}
-                                </button>
                             </div>
                         );
                     })}
@@ -337,62 +369,69 @@ export default function AdminOrdersPage() {
                         </div>
 
                         {/* Details Side (Right) */}
-                        <div className="w-full lg:w-[400px] bg-card flex flex-col border-l border-border h-full max-h-[50vh] lg:max-h-full">
-                            <div className="p-6 border-b border-border flex justify-between items-center">
+                        <div className="w-full lg:w-[450px] bg-card flex flex-col border-l border-border/40 h-full max-h-[60vh] lg:max-h-full">
+                            <div className="p-7 border-b border-border/40 flex justify-between items-center bg-muted/5">
                                 <div>
-                                    <h3 className="font-bold text-lg flex items-center gap-2 text-foreground">
-                                        <CreditCard size={18} className="text-primary" /> ตรวจสอบรายการ
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Payment Verification</p>
+                                    <h3 className="font-black text-2xl text-foreground !leading-none mb-1">
+                                        ตรวจสอบรายการ
                                     </h3>
-                                    <p className="text-xs text-muted-foreground">ID: {selectedOrder.id}</p>
+                                    <p className="text-[10px] text-muted-foreground font-mono opacity-50 tracking-tighter">REF: {selectedOrder.id}</p>
                                 </div>
-                                <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-2">
                                     <button 
-                                        className="btn btn-ghost btn-sm text-muted-foreground hover:text-destructive hover:bg-destructive/10" 
+                                        className="h-10 w-10 flex items-center justify-center rounded-xl text-muted-foreground/50 hover:text-rose-600 hover:bg-rose-500/10 transition-all border border-transparent hover:border-rose-200/50" 
                                         onClick={() => handleDelete(selectedOrder.id)}
                                         title="ลบรายการนี้"
                                     >
-                                        <Trash2 size={18} />
+                                        <Trash2 size={20} />
                                     </button>
-                                    <button className="btn btn-circle btn-ghost btn-sm text-muted-foreground" onClick={() => setSelectedOrder(null)}>
-                                        <X size={20} />
+                                    <button className="h-10 w-10 flex items-center justify-center rounded-xl bg-muted/50 text-muted-foreground hover:bg-muted transition-all" onClick={() => setSelectedOrder(null)}>
+                                        <X size={22} />
                                     </button>
                                 </div>
                             </div>
 
-                            <div className="p-6 flex-1 overflow-y-auto space-y-6">
+                            <div className="p-7 flex-1 overflow-y-auto space-y-8 scrollbar-thin scrollbar-thumb-muted-foreground/10">
                                 {/* Customer Profile */}
-                                <div className="flex items-center gap-4 p-4 bg-muted/30 rounded-xl border border-border/50">
-                                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
+                                <div className="flex items-center gap-5 p-5 bg-gradient-to-br from-primary/5 to-secondary/5 rounded-3xl border border-primary/10 shadow-inner">
+                                    <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-primary/20">
                                         {selectedOrder.userDisplayName?.charAt(0) || 'U'}
                                     </div>
                                     <div className="min-w-0">
-                                        <div className="font-semibold text-foreground truncate">{selectedOrder.userDisplayName || 'ลูกค้าทั่วไป'}</div>
-                                        <div className="text-xs text-muted-foreground font-mono truncate">{selectedOrder.userId}</div>
+                                        <div className="font-black text-xl text-foreground truncate leading-tight">{selectedOrder.userDisplayName || 'ลูกค้าทั่วไป'}</div>
+                                        <div className="text-[10px] text-muted-foreground font-mono truncate opacity-60 mt-1 uppercase">UID: {selectedOrder.userId}</div>
                                     </div>
                                 </div>
 
                                 {/* Transaction Details */}
-                                <div className="space-y-4">
-                                    <h4 className="text-xs uppercase font-bold text-muted-foreground tracking-wider">ข้อมูลการโอน</h4>
-                                    <div className="space-y-3 text-sm">
-                                        <div className="flex justify-between py-2 border-b border-border/30">
-                                            <span className="text-muted-foreground">แพ็กเกจ</span>
-                                            <span className="font-medium">{selectedOrder.packageName}</span>
+                                <div className="space-y-5">
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-px flex-1 bg-border/40"></div>
+                                        <h4 className="text-[11px] uppercase font-black text-muted-foreground tracking-[0.2em] whitespace-nowrap">ข้อมูลการโอน</h4>
+                                        <div className="h-px flex-1 bg-border/40"></div>
+                                    </div>
+                                    
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center py-1">
+                                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">แพ็กเกจ</span>
+                                            <span className="font-black text-foreground text-lg">{selectedOrder.packageName}</span>
                                         </div>
-                                        <div className="flex justify-between py-2 border-b border-border/30">
-                                            <span className="text-muted-foreground">ยอดเงิน</span>
-                                            <span className="font-bold text-primary text-lg">฿{selectedOrder.amount.toLocaleString()}</span>
+                                        <div className="flex justify-between items-center py-4 bg-primary/5 px-4 rounded-2xl border border-primary/10">
+                                            <span className="text-xs font-bold text-primary uppercase tracking-widest">ยอดเงินสุทธิ</span>
+                                            <span className="font-black text-primary text-3xl tracking-tighter">฿{selectedOrder.amount.toLocaleString()}</span>
                                         </div>
-                                        <div className="flex justify-between py-2 border-b border-border/30">
-                                            <span className="text-muted-foreground">วันที่เวลา</span>
-                                            <span>{formatDate(selectedOrder.createdAt)}</span>
+                                        <div className="flex justify-between items-center py-1">
+                                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">วันที่เวลา</span>
+                                            <span className="font-bold text-foreground">{formatDate(selectedOrder.createdAt)}</span>
                                         </div>
-                                        <div className="flex justify-between py-2">
-                                            <span className="text-muted-foreground">สถานะ</span>
+                                        <div className="flex justify-between items-center py-1">
+                                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">สถานะปัจจุบัน</span>
                                             <span className={cn(
-                                                "px-2 py-0.5 rounded-full text-xs font-medium capitalize",
+                                                "px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border transition-colors shadow-sm",
                                                 statusConfig[selectedOrder.status as keyof typeof statusConfig]?.bg || "bg-muted",
-                                                statusConfig[selectedOrder.status as keyof typeof statusConfig]?.color || "text-muted-foreground"
+                                                statusConfig[selectedOrder.status as keyof typeof statusConfig]?.color || "text-muted-foreground",
+                                                statusConfig[selectedOrder.status as keyof typeof statusConfig]?.border || "border-border"
                                             )}>
                                                 {statusConfig[selectedOrder.status as keyof typeof statusConfig]?.label || selectedOrder.status}
                                             </span>
@@ -401,36 +440,39 @@ export default function AdminOrdersPage() {
                                 </div>
 
                                 {selectedOrder.rejectionReason && (
-                                    <div className="bg-destructive/10 text-destructive p-3 rounded-lg text-sm border border-destructive/20">
-                                        <span className="font-bold block mb-1">สาเหตุที่ปฏิเสธ:</span>
-                                        {selectedOrder.rejectionReason}
+                                    <div className="bg-rose-500/5 text-rose-600 p-5 rounded-3xl text-sm border border-rose-500/10 flex gap-4 items-start shadow-inner">
+                                        <AlertCircle className="shrink-0 w-5 h-5 mt-0.5 opacity-60" />
+                                        <div>
+                                            <span className="text-[10px] font-black uppercase tracking-widest block mb-2 opacity-60">เหตุผลที่ปฏิเสธ</span>
+                                            <p className="font-bold leading-relaxed">{selectedOrder.rejectionReason}</p>
+                                        </div>
                                     </div>
                                 )}
                             </div>
 
                             {/* Actions Footer */}
-                            <div className="p-6 border-t border-border bg-muted/10 mt-auto">
+                            <div className="p-7 border-t border-border/40 bg-muted/5 mt-auto">
                                 {selectedOrder.status === 'pending' ? (
-                                    <div className="grid grid-cols-2 gap-3">
+                                    <div className="grid grid-cols-2 gap-4">
                                         <button
                                             onClick={handleReject}
                                             disabled={processing}
-                                            className="btn btn-outline btn-error w-full hover:btn-error"
+                                            className="h-14 rounded-2xl flex items-center justify-center gap-2 font-black uppercase tracking-widest text-xs border-2 border-rose-500/20 text-rose-600 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all active:scale-95 disabled:opacity-50"
                                         >
-                                            <XCircle size={18} /> ปฏิเสธ
+                                            <XCircle size={18} strokeWidth={2.5} /> ปฏิเสธ
                                         </button>
                                         <button
                                             onClick={handleApprove}
                                             disabled={processing}
-                                            className="btn btn-primary w-full text-primary-foreground shadow-lg shadow-primary/20"
+                                            className="h-14 rounded-2xl flex items-center justify-center gap-2 font-black uppercase tracking-widest text-xs bg-primary text-white shadow-xl shadow-primary/20 hover:brightness-110 transition-all active:scale-95 disabled:opacity-50"
                                         >
-                                            {processing ? <span className="loading loading-spinner"></span> : <CheckCircle size={18} />}
+                                            {processing ? <span className="loading loading-spinner loading-sm"></span> : <CheckCircle size={18} strokeWidth={2.5} />}
                                             อนุมัติทันที
                                         </button>
                                     </div>
                                 ) : (
-                                    <button className="btn btn-outline w-full border-border text-muted-foreground hover:bg-muted" onClick={() => setSelectedOrder(null)}>
-                                        ปิดหน้าต่าง
+                                    <button className="h-14 w-full rounded-2xl bg-muted text-foreground font-black uppercase tracking-widest text-xs hover:bg-muted/80 transition-all active:scale-[0.98]" onClick={() => setSelectedOrder(null)}>
+                                        ปิดหน้าต่างตรวจสอบ
                                     </button>
                                 )}
                             </div>
