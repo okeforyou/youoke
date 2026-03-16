@@ -54,68 +54,18 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
                 paymentId = docRef.id;
             }
 
-            // 2. Send LINE Flex Message to Admin
+            // 2. Send LINE Notification (Flex Message for Admin)
             try {
-                // Secret token for the approval link (same logic as in the API)
-                const approvalToken = process.env.NEXT_PUBLIC_LINE_CHANNEL_ACCESS_TOKEN?.substring(0, 10) || "";
-                const approveUrl = `${window.location.origin}/api/admin/approve-via-link?paymentId=${paymentId}&userId=${user.uid}&packageId=${pkg.id}&token=${approvalToken}`;
-
-                const flexMessage = {
-                    type: "bubble",
-                    header: {
-                        type: "box",
-                        layout: "vertical",
-                        backgroundColor: "#f4f4f4",
-                        contents: [
-                            { type: "text", text: "💰 แจ้งโอนเงินใหม่ (LINE)", weight: "bold", size: "sm", color: "#666666" }
-                        ]
-                    },
-                    body: {
-                        type: "box",
-                        layout: "vertical",
-                        contents: [
-                            { type: "text", text: user.displayName || user.email || "Unknown User", weight: "bold", size: "lg", color: "#333333" },
-                            {
-                                type: "box", layout: "vertical", margin: "md", spacing: "sm", contents: [
-                                    {
-                                        type: "box", layout: "horizontal", contents: [
-                                            { type: "text", text: "แพ็กเกจ:", color: "#aaaaaa", size: "xs" },
-                                            { type: "text", text: pkg.name, size: "xs", align: "end", color: "#333333" }
-                                        ]
-                                    },
-                                    {
-                                        type: "box", layout: "horizontal", contents: [
-                                            { type: "text", text: "ยอดโอน:", color: "#aaaaaa", size: "xs" },
-                                            { type: "text", text: `฿${pkg.price.toLocaleString()}`, size: "xs", align: "end", color: "#E91E63", weight: "bold" }
-                                        ]
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    footer: {
-                        type: "box",
-                        layout: "vertical",
-                        spacing: "sm",
-                        contents: [
-                            {
-                                type: "button",
-                                style: "primary",
-                                color: "#06C755",
-                                action: {
-                                    type: "uri",
-                                    label: "✅ อนุมัติทันที",
-                                    uri: approveUrl
-                                }
-                            },
-                            { type: "text", text: "* กรุณารอสลิปจาก User ในแชทก่อนกดอนุมัติ", size: "xxs", color: "#999999", align: "center" }
-                        ]
-                    }
-                };
-
                 await axios.post('/api/payment/line-push', {
-                    message: `💰 การแจ้งโอนเงินจาก ${user.displayName || user.email}`,
-                    flex: flexMessage
+                    message: `💰 แจ้งโอนเงินจาก ${user.displayName || user.email}`,
+                    approvalData: {
+                        paymentId,
+                        userId: user.uid,
+                        userDisplayName: user.displayName || user.email,
+                        packageId: pkg.id,
+                        packageName: pkg.name,
+                        amount: pkg.price
+                    }
                 });
             } catch (notifyError) {
                 console.error("LINE Notify failed:", notifyError);
