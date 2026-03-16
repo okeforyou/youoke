@@ -16,6 +16,7 @@ interface MembershipCardProps {
 }
 
 export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardProps) => {
+
     const safeMembership = membership || { type: 'free', status: 'active', expiresAt: null };
 
     const formatDate = (date: any) => {
@@ -37,13 +38,29 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
 
     const daysRemaining = getDaysRemaining();
     const isLifetime = safeMembership.type === 'lifetime';
-    const hasActivePlan = safeMembership.type !== 'free' || safeMembership.status === 'trial'; 
+    const isTrial = safeMembership.status === 'trial' || safeMembership.type === 'trial' || (safeMembership.type === 'free' && safeMembership.status === 'active');
+    const hasActivePlan = safeMembership.type !== 'free' || safeMembership.status === 'active' || safeMembership.status === 'trial'; 
     const isPremium = hasActivePlan;
     const isExpired = !isLifetime && daysRemaining !== null && daysRemaining < 0;
     const isAdmin = role === 'admin' || role === 'owner';
 
     // 🏷️ Display Logic
-    const planName = isAdmin ? "ผู้ดูแลระบบ (ADMIN)" : (isPremium ? (safeMembership.type === 'day_pass' ? "แผนใช้งานฟรี 1 วัน" : (safeMembership.type === 'yearly' ? "พรีเมียมรายปี" : "พรีเมียมรายเดือน")) : "ยังไม่ได้เลือกแพ็กเกจ");
+    const getPlanName = () => {
+        if (isAdmin) return "ผู้ดูแลระบบ (ADMIN)";
+        if (isLifetime) return "พรีเมียมตลอดชีพ (LIFETIME)";
+        if (!isPremium && safeMembership.status !== 'active' && safeMembership.status !== 'trial') return "ยังไม่ได้เลือกแพ็กเกจ";
+        
+        switch (safeMembership.type) {
+            case 'day_pass': return "แพ็กเกจ 1 วัน (DAY PASS)";
+            case 'yearly': return "พรีเมียมรายปี (YEARLY)";
+            case 'monthly': return "พรีเมียมรายเดือน (MONTHLY)";
+            case 'trial': return "ทดลองใช้งานฟรี (FREE TRIAL)";
+            case 'free': return "ใช้งานฟรี (FREE)";
+            default: return "สมาชิกพรีเมียม";
+        }
+    };
+
+    const planName = getPlanName();
     const labelMembership = isAdmin ? "สิทธิ์ผู้ดูแลระบบ" : "สิทธิ์การใช้งาน";
 
     // 🎨 Color Palette (Matched to PackageStore)
