@@ -88,18 +88,30 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
         if (!user || !pkg) return;
         
         // Define the pre-filled message for the manual slip submission
-        const message = `แจ้งส่งสลิปการโอนเงินครับ 💰\n👤 ชื่อผู้ใช้: ${user.displayName || user.email}\n📦 แพ็กเกจ: ${pkg.name}\n💰 ยอดโอน: ${pkg.price.toLocaleString()} บาท\n\n(รบกวนแนบรูปสลิปในแชทนี้เพื่อยืนยันด้วยนะครับ)`;
+        const messageBody = [
+            '📢 แจ้งโอนเงินพรีเมียม YouOke 🎤',
+            '',
+            `👤 สมาชิก: ${user.displayName || user.email || 'สมาชิก'}`,
+            `💎 แพ็กเกจ: ${pkg.name}`,
+            `💰 ยอดโอน: ฿${pkg.price.toLocaleString()}`,
+            `🆔 รหัสอ้างอิง: ${user.uid.substring(0, 8)}`,
+            '',
+            '---------------------------',
+            '✅ กรุณา "แนบรูปสลิป" 📸',
+            'ในแชทนี้ เพื่อให้เจ้าหน้าที่ทำการอนุมัติครับ',
+            '---------------------------'
+        ].join('\n');
         
         // URL for LINE Official Account with pre-filled message
-        // Reference: https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
-        const lineUrl = `https://line.me/R/oaMessage/@243lercy/?${encodeURIComponent(message)}`;
+        const lineOaId = process.env.NEXT_PUBLIC_LINE_OA_ID || "@243lercy";
+        const lineUrl = `https://line.me/R/oaMessage/${lineOaId}/?${encodeURIComponent(messageBody)}`;
         
         window.open(lineUrl, '_blank');
         
         // Fallback for desktop if the R/ scheme fails
         setTimeout(() => {
             if (document.hasFocus()) {
-                 window.open("https://line.me/ti/p/@243lercy", '_blank');
+                 window.open(`https://line.me/ti/p/${lineOaId}`, '_blank');
             }
         }, 500);
     };
