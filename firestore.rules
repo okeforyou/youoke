@@ -45,6 +45,12 @@ service cloud.firestore {
       allow create: if isOwner(userId);
       allow update: if isOwner(userId) || isDbAdmin();
       allow delete: if isAdmin();
+
+      // Notifications Sub-collection
+      match /notifications/{notificationId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if isOwner(userId) || isAdmin();
+      }
     }
 
     // =========================================================================
@@ -56,6 +62,13 @@ service cloud.firestore {
       allow get: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
       allow list: if isAdmin();
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    // Payment Notifications (Manual Notification)
+    match /payment_notifications/{notifId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
       allow update, delete: if isAdmin();
     }
     
