@@ -143,9 +143,9 @@ export default function AdminOrdersPage() {
     };
 
     const statusConfig = {
-        pending: { icon: Clock, color: "text-amber-500", bg: "bg-amber-50", border: "border-amber-100", label: "รอตรวจสอบ" },
-        approved: { icon: CheckCircle, color: "text-emerald-500", bg: "bg-emerald-50", border: "border-emerald-100", label: "อนุมัติแล้ว" },
-        rejected: { icon: XCircle, color: "text-rose-500", bg: "bg-rose-50", border: "border-rose-100", label: "ปฏิเสธแล้ว" },
+        pending: { icon: Clock, color: "text-amber-500", bg: "bg-amber-50", border: "border-amber-200", label: "รอตรวจสอบ", dot: "bg-amber-500" },
+        approved: { icon: CheckCircle, color: "text-emerald-500", bg: "bg-emerald-50", border: "border-emerald-200", label: "อนุมัติแล้ว", dot: "bg-emerald-500" },
+        rejected: { icon: XCircle, color: "text-rose-500", bg: "bg-rose-50", border: "border-rose-200", label: "ปฏิเสธแล้ว", dot: "bg-rose-500" },
     };
 
     const statusLabels: Record<string, string> = {
@@ -174,61 +174,71 @@ export default function AdminOrdersPage() {
 
             {/* Stats Items */}
             <div className="mb-8 grid gap-4 grid-cols-2 lg:grid-cols-4">
-                <div className="bg-white border border-border p-4 rounded-xl flex items-center gap-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-50 text-slate-400">
-                        <IconCard className="h-5 w-5" />
+                <div className="bg-white border border-slate-200 p-6 rounded-2xl flex items-center gap-5 shadow-sm">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-500">
+                        <IconCard size={24} />
                     </div>
                     <div>
-                        <p className="text-xl font-bold text-foreground leading-none">{stats.total}</p>
-                        <p className="text-[10px] text-muted-foreground mt-1 uppercase font-bold tracking-wider">ทั้งหมด</p>
+                        <p className="text-3xl font-bold text-slate-800 leading-none">{stats.total}</p>
+                        <p className="text-sm text-slate-500 mt-1">รายการทั้งหมด</p>
                     </div>
                 </div>
-                <div className="bg-white border border-border p-4 rounded-xl flex items-center gap-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50 text-amber-500">
-                        <Clock className="h-5 w-5" />
+                <div className="bg-white border border-slate-200 p-6 rounded-2xl flex items-center gap-5 shadow-sm">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-500">
+                        <CheckCircle size={24} />
                     </div>
                     <div>
-                        <p className="text-xl font-bold text-amber-500 leading-none">{stats.pending}</p>
-                        <p className="text-[10px] text-muted-foreground mt-1 uppercase font-bold tracking-wider">รอตรวจสอบ</p>
+                        <p className="text-3xl font-bold text-slate-800 leading-none">{stats.approved}</p>
+                        <p className="text-sm text-slate-500 mt-1">อนุมัติแล้ว</p>
                     </div>
                 </div>
-                <div className="bg-white border border-border p-4 rounded-xl flex items-center gap-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-500">
-                        <CheckCircle className="h-5 w-5" />
+                <div className="bg-white border border-slate-200 p-6 rounded-2xl flex items-center gap-5 shadow-sm">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-500">
+                        <Clock size={24} />
                     </div>
                     <div>
-                        <p className="text-xl font-bold text-emerald-500 leading-none">{stats.approved}</p>
-                        <p className="text-[10px] text-muted-foreground mt-1 uppercase font-bold tracking-wider">อนุมัติแล้ว</p>
+                        <p className="text-3xl font-bold text-slate-800 leading-none">{stats.pending}</p>
+                        <p className="text-sm text-slate-500 mt-1">รอตรวจสอบ</p>
                     </div>
                 </div>
-                <div className="bg-white border border-border p-4 rounded-xl flex items-center gap-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-50 text-rose-500">
-                        <XCircle className="h-5 w-5" />
+                <div className="bg-white border border-slate-200 p-6 rounded-2xl flex items-center gap-5 shadow-sm">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-500">
+                        <XCircle size={24} />
                     </div>
                     <div>
-                        <p className="text-xl font-bold text-rose-500 leading-none">{stats.rejected}</p>
-                        <p className="text-[10px] text-muted-foreground mt-1 uppercase font-bold tracking-wider">ปฏิเสธแล้ว</p>
+                        <p className="text-3xl font-bold text-slate-800 leading-none">{stats.rejected}</p>
+                        <p className="text-sm text-slate-500 mt-1">ปฏิเสธแล้ว</p>
                     </div>
                 </div>
             </div>
 
             {/* Filter Tabs */}
-            <div className="mb-8 flex overflow-x-auto pb-4 sm:pb-0 hide-scrollbar cursor-default">
-                <div className="flex p-1 bg-slate-100 rounded-lg border border-border">
+            <div className="mb-8 flex items-center justify-between gap-4">
+                <div className="flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200">
                     {(['all', 'pending', 'approved', 'rejected'] as const).map(status => (
                         <button
                             key={status}
                             className={cn(
-                                "px-4 py-1.5 text-xs font-bold rounded-md transition-all whitespace-nowrap",
+                                "px-6 py-2 text-sm font-bold rounded-lg transition-all whitespace-nowrap",
                                 statusFilter === status
-                                    ? "bg-white text-primary shadow-sm border border-slate-200"
-                                    : "text-muted-foreground hover:text-foreground"
+                                    ? "bg-white text-rose-500 shadow-sm"
+                                    : "text-slate-500 hover:text-slate-800"
                             )}
                             onClick={() => setStatusFilter(status)}
                         >
                             {statusLabels[status]}
                         </button>
                     ))}
+                </div>
+                <div className="flex-1 max-w-sm hidden sm:block">
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                        <input 
+                            type="text" 
+                            placeholder="ค้นหารายการ..."
+                            className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20"
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -247,60 +257,73 @@ export default function AdminOrdersPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {filteredOrders.map((order) => {
                         const config = statusConfig[order.status as keyof typeof statusConfig] || statusConfig.pending;
-                        const StatusIcon = config.icon;
 
                         return (
-                            <div key={order.id} className="bg-white border border-border rounded-xl flex flex-col overflow-hidden hover:border-slate-300 transition-colors">
-                                <div className="p-4 border-b border-slate-50 flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 font-bold border border-slate-200 text-sm">
+                            <div key={order.id} className="bg-white border border-slate-100 rounded-2xl flex flex-col overflow-hidden hover:border-rose-200 transition-all shadow-sm group">
+                                <div className="p-5 border-b border-slate-50 flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="h-12 w-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 font-bold border border-slate-200">
                                             {order.userDisplayName?.charAt(0) || 'U'}
                                         </div>
-                                        <div>
-                                            <h4 className="font-bold text-foreground truncate max-w-[120px] text-sm">{order.userDisplayName || 'User'}</h4>
-                                            <p className="text-[10px] text-muted-foreground font-mono">ID: {order.id.slice(0, 8)}</p>
+                                        <div className="min-w-0">
+                                            <h4 className="font-bold text-slate-800 truncate text-base leading-tight">{order.userDisplayName || 'User'}</h4>
+                                            <p className="text-[11px] text-slate-400 font-medium">#{order.id.slice(0, 8)}</p>
                                         </div>
                                     </div>
-                                    <span className={cn(
-                                        "inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold border", 
-                                        config.bg, config.color, config.border
-                                    )}>
-                                        <StatusIcon size={12} />
-                                        {config.label}
-                                    </span>
-                                </div>
-
-                                <div className="p-4 flex-1 space-y-2 text-sm">
-                                    <div className="flex justify-between">
-                                        <span className="text-muted-foreground">แพ็กเกจ</span>
-                                        <span className="font-bold text-foreground">{order.packageName}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-muted-foreground">ยอดเงิน</span>
-                                        <span className="font-bold text-primary">฿{order.amount.toLocaleString()}</span>
-                                    </div>
-                                    <div className="pt-2 flex justify-between items-center text-[10px] text-muted-foreground">
-                                        <span>{formatDate(order.createdAt)}</span>
-                                        <button 
-                                            onClick={() => handleDelete(order.id)}
-                                            className="text-slate-300 hover:text-rose-500 transition-colors"
-                                        >
-                                            <Trash2 size={14} />
-                                        </button>
+                                    <div className="flex flex-col items-end gap-1.5">
+                                        <span className={cn(
+                                            "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border", 
+                                            config.bg, config.color, config.border
+                                        )}>
+                                            <span className={cn("w-1.5 h-1.5 rounded-full", config.dot)}></span>
+                                            {config.label.toUpperCase()}
+                                        </span>
                                     </div>
                                 </div>
 
-                                <div className="p-3 border-t border-slate-50">
+                                <div className="p-5 flex-1 space-y-4">
+                                    <div className="grid grid-cols-2 gap-4 text-sm">
+                                        <div className="space-y-1">
+                                            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">แพ็กเกจ</span>
+                                            <p className="font-bold text-slate-700">{order.packageName}</p>
+                                        </div>
+                                        <div className="space-y-1 text-right">
+                                            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">ยอดโอน</span>
+                                            <p className="font-bold text-rose-500 text-lg leading-none">฿{order.amount.toLocaleString()}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="pt-4 border-t border-slate-50 flex justify-between items-center text-[11px]">
+                                        <span className="text-slate-400 font-medium">{formatDate(order.createdAt)}</span>
+                                        <div className="flex items-center gap-2">
+                                            <button 
+                                                onClick={() => handleDelete(order.id)}
+                                                className="text-slate-300 hover:text-rose-500 transition-colors p-1"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="px-5 pb-5">
                                     <button
                                         onClick={() => setSelectedOrder(order)}
                                         className={cn(
-                                            "w-full py-2 rounded-lg font-bold text-xs transition-all",
+                                            "w-full py-2.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2",
                                             order.status === 'pending'
-                                                ? "bg-primary text-white hover:bg-primary/90"
-                                                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                                ? "bg-rose-500 text-white hover:bg-rose-600 shadow-md shadow-rose-200 active:scale-[0.98]"
+                                                : "bg-slate-50 text-slate-500 hover:bg-slate-100"
                                         )}
                                     >
-                                        ตรวจสอบสลิป
+                                        {order.status === 'pending' ? (
+                                            <>
+                                                <Eye size={16} />
+                                                <span>ตรวจสอบสลิป</span>
+                                            </>
+                                        ) : (
+                                            <span>ดูรายละเอียด</span>
+                                        )}
                                     </button>
                                 </div>
                             </div>
@@ -374,7 +397,7 @@ export default function AdminOrdersPage() {
                                         <button 
                                             onClick={handleApprove}
                                             disabled={processing}
-                                            className="w-full py-3 bg-primary text-white rounded-lg font-bold text-sm hover:brightness-110 disabled:opacity-50"
+                                            className="w-full py-3 bg-rose-500 text-white rounded-lg font-bold text-sm hover:bg-rose-600 shadow-md shadow-rose-200 disabled:opacity-50 transition-all"
                                         >
                                             {processing ? "กำลังอนุมัติ..." : "อนุมัติรายการ"}
                                         </button>
