@@ -176,33 +176,39 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
 
                             <div className="space-y-3">
                                 <button
-                                    onClick={openLineChat}
-                                    className="w-full btn bg-[#06C755] hover:bg-[#05b14c] border-none text-white flex items-center justify-center gap-2 h-14 rounded-2xl shadow-lg shadow-green-500/10 active:scale-95 transition-all"
-                                >
-                                    <MessageCircle className="w-5 h-5" />
-                                    <span className="font-bold">ส่งสลิปผ่าน LINE (แนะนำ)</span>
-                                    <ExternalLink className="w-3.5 h-3.5 opacity-50" />
-                                </button>
-
-                                <button
-                                    onClick={handleNotifyAdmin}
+                                    onClick={async () => {
+                                        await handleNotifyAdmin();
+                                        openLineChat();
+                                    }}
                                     disabled={sending || sent}
                                     className={cn(
-                                        "w-full btn btn-outline border-primary/20 hover:bg-primary/5 text-primary rounded-2xl h-12 flex items-center justify-center gap-2 transition-all",
-                                        sent && "bg-green-50 text-green-600 border-green-200 hover:bg-green-50"
+                                        "w-full btn h-16 rounded-2xl flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 shadow-lg",
+                                        sent 
+                                            ? "bg-green-50 text-green-600 border-green-200" 
+                                            : "bg-[#06C755] hover:bg-[#05b14c] border-none text-white shadow-green-500/20"
                                     )}
                                 >
-                                    {sending ? (
-                                        <span className="loading loading-spinner loading-xs"></span>
-                                    ) : sent ? (
-                                        <CheckCircle className="w-5 h-5" />
-                                    ) : (
-                                        <AlertCircle className="w-5 h-5" />
+                                    <div className="flex items-center gap-2">
+                                        {sending ? (
+                                            <span className="loading loading-spinner loading-sm"></span>
+                                        ) : sent ? (
+                                            <CheckCircle className="w-6 h-6" />
+                                        ) : (
+                                            <MessageCircle className="w-6 h-6" />
+                                        )}
+                                        <span className="text-lg font-black">
+                                            {sent ? "แจ้งระบบสำเร็จแล้ว" : "โอนแล้ว แจ้งส่งสลิปผ่าน LINE"}
+                                        </span>
+                                    </div>
+                                    {!sent && !sending && (
+                                        <span className="text-[10px] opacity-80 font-bold uppercase tracking-tight">ระบบจะบันทึกข้อมูลและเปิดหน้าแชท LINE อัตโนมัติ</span>
                                     )}
-                                    <span className="font-bold">
-                                        {sent ? "แจ้งระบบสำเร็จแล้ว" : "แจ้งระบบว่าชำระแล้ว"}
-                                    </span>
                                 </button>
+
+                                <p className="text-[10px] text-center text-muted-foreground px-4">
+                                    เมื่อกดปุ่ม ระบบจะส่งข้อมูลการจองไปยังทีมงาน 
+                                    และเปิดแอป LINE เพื่อให้ท่านส่งหลักฐานการโอนเงินครับ
+                                </p>
                             </div>
 
                         </Dialog.Panel>
