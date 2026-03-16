@@ -138,7 +138,7 @@ export default function PackagesPage() {
             <header className="sticky top-0 z-30 w-full border-b bg-background/80 backdrop-blur-md px-4 py-4 md:px-8">
                 <div className="max-w-6xl mx-auto flex items-center gap-4">
                     <button
-                        onClick={() => router.back()}
+                        onClick={() => router.push('/')}
                         className="p-2 hover:bg-muted rounded-full transition-colors"
                     >
                         <ChevronLeft className="w-6 h-6" />

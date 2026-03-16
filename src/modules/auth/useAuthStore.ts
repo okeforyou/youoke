@@ -430,7 +430,7 @@ export const useAuthStore = create<UserState & AuthActions>()(
 
                 const lineAuthUrl = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&scope=profile%20openid%20email`;
 
-                window.location.href = lineAuthUrl;
+                window.location.replace(lineAuthUrl);
             },
 
             signInWithCustomToken: async (token: string) => {
