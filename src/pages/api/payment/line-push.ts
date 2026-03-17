@@ -62,7 +62,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                                         ]},
                                         { type: "box", layout: "horizontal", contents: [
                                             { type: "text", text: "🆔 รหัสอ้างอิง:", color: "#666666", size: "sm" },
-                                            { type: "text", text: safeId, size: "sm", align: "end", color: "#999999", fontStyle: "italic" }
+                                            { type: "text", text: safeId, size: "sm", align: "end", color: "#999999" }
                                         ]}
                                     ]
                                 },
