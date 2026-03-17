@@ -31,33 +31,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 type: "bubble",
                 header: {
                     type: "box", layout: "vertical", backgroundColor: "#f4f4f4",
-                    contents: [{ type: "text", text: "💰 การแจ้งโอนเงินใหม่! (รอยืนยันสลิปทาง LINE)", weight: "bold", size: "sm", color: "#666666" }]
+                    contents: [{ type: "text", text: "💰 แจ้งโอนเงินใหม่ (LINE)", weight: "bold", size: "sm", color: "#666666" }]
                 },
                 body: {
                     type: "box", layout: "vertical", contents: [
-                        { type: "text", text: `👤 User: ${approvalData.userDisplayName || "Unknown"}`, weight: "bold", size: "md", color: "#333333" },
+                        { type: "text", text: approvalData.userDisplayName || "Unknown User", weight: "bold", size: "lg", color: "#333333" },
                         {
                             type: "box", layout: "vertical", margin: "md", spacing: "sm", contents: [
                                 { type: "box", layout: "horizontal", contents: [
-                                    { type: "text", text: "📦 Package:", color: "#aaaaaa", size: "xs" },
+                                    { type: "text", text: "แพ็กเกจ:", color: "#aaaaaa", size: "xs" },
                                     { type: "text", text: packageName, size: "xs", align: "end", color: "#333333" }
                                 ]},
                                 { type: "box", layout: "horizontal", contents: [
-                                    { type: "text", text: "💵 ยอด:", color: "#aaaaaa", size: "xs" },
-                                    { type: "text", text: `${amount.toLocaleString()} บาท`, size: "xs", align: "end", color: "#F43F5E", weight: "bold" }
+                                    { type: "text", text: "ยอดโอน:", color: "#aaaaaa", size: "xs" },
+                                    { type: "text", text: `฿${amount.toLocaleString()}`, size: "xs", align: "end", color: "#E91E63", weight: "bold" }
                                 ]}
                             ]
-                        },
-                        { type: "text", text: "*ผู้ใช้กำลังจะส่งสลิปให้ทาง LINE แชทครับ*", size: "xxs", color: "#999999", margin: "md", align: "center" }
+                        }
                     ]
                 },
                 footer: {
                     type: "box", layout: "vertical", spacing: "sm", contents: [
                         {
-                            type: "button", style: "primary", color: "#F43F5E",
-                            action: { type: "uri", label: "✅ อนุมัติการใช้งาน", uri: approveUrl }
+                            type: "button", style: "primary", color: "#06C755",
+                            action: { type: "uri", label: "✅ อนุมัติทันที", uri: approveUrl }
                         },
-                        { type: "text", text: "(สำหรับผู้ดูแลระบบเท่านั้น)", size: "xxs", color: "#cccccc", align: "center" }
+                        { type: "text", text: "* กรุณารอสลิปจาก User ในแชทก่อนกดอนุมัติ", size: "xxs", color: "#999999", align: "center" }
                     ]
                 }
             };

@@ -87,15 +87,15 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
     const openLineChat = () => {
         if (!user || !pkg) return;
         
-        // Define the pre-filled message exactly as user requested
+        // Define the pre-filled message for the manual slip submission
         const messageBody = [
             '📢 แจ้งโอนเงินเพื่อเข้าใช้งาน YouOke 🎤',
             `👤 สมาชิก: ${user.displayName || user.email || 'สมาชิก'}`,
             `💎 แพ็กเกจ: ${pkg.name}`,
             `💰 ยอดโอน: ฿${pkg.price.toLocaleString()}`,
-            `🆔 รหัสอ้างอิง: ${user.uid ? user.uid.substring(0, 8) : 'NEW'}`,
+            `🆔 รหัสอ้างอิง: ${user.uid.substring(0, 8)}`,
             '---------------------------',
-            '✅ กรุณา "แนบรูปสลิป" 📸 ',
+            '✅ กรุณา "แนบรูปสลิป" 📸',
             'ในแชทนี้ เพื่อทำการอนุมัติการใช้งานครับ'
         ].join('\n');
         
