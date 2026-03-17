@@ -108,34 +108,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const userLineId = userId?.startsWith('line:') ? userId.split(':')[1] : to;
 
         // --- Execute Pushes ---
-        
-        // 1. Testing Case: Admin is the same as User (Send both for preview)
-        if (adminUserId && userLineId === adminUserId) {
+
+        // 1. Push to Admin (The green box with Approval Button)
+        if (adminUserId) {
             await axios.post('https://api.line.me/v2/bot/message/push', {
                 to: adminUserId,
-                messages: [
-                    { type: "flex", altText: "📢 ฝั่งลูกค้าเห็นแบบนี้", contents: userFlex },
-                    { type: "flex", altText: "📢 ฝั่ง Admin เห็นแบบนี้ (มีปุ่ม)", contents: adminFlex }
-                ]
+                messages: [{ 
+                    type: "flex", 
+                    altText: "💰 แจ้งโอนเงินใหม่: " + safeName, 
+                    contents: adminFlex 
+                }]
             }, { headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${channelAccessToken}` } });
-        } 
-        // 2. Production Case: Different Users
-        else {
-            if (adminUserId) {
-                await axios.post('https://api.line.me/v2/bot/message/push', {
-                    to: adminUserId,
-                    messages: [{ type: "flex", altText: "💰 แจ้งโอนใหม่จาก " + safeName, contents: adminFlex }]
-                }, { headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${channelAccessToken}` } });
-            }
-            if (userLineId) {
-                await axios.post('https://api.line.me/v2/bot/message/push', {
-                    to: userLineId,
-                    messages: [{ type: "flex", altText: "📢 แจ้งโอนเงิน YouOke", contents: userFlex }]
-                }, { headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${channelAccessToken}` } });
-            }
+        }
+        
+        // 2. Push to User (The green box WITHOUT button)
+        // Note: If Admin is testing with their own ID, they will get this too, 
+        // but as a separate, clean receipt message.
+        if (userLineId && userLineId !== adminUserId) {
+            await axios.post('https://api.line.me/v2/bot/message/push', {
+                to: userLineId,
+                messages: [{ 
+                    type: "flex", 
+                    altText: "📢 รายละเอียดการแจ้งโอนเงิน YouOke", 
+                    contents: userFlex 
+                }]
+            }, { headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${channelAccessToken}` } });
         }
 
-        console.log(`✅ Notifications sent.`);
+        console.log(`✅ LINE Notifications pushed.`);
         return res.status(200).json({ success: true });
 
     } catch (error: any) {
