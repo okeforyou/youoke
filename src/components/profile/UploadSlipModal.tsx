@@ -180,13 +180,32 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
                                     </div>
                                 </div>
 
-                                <div className="mt-4 flex items-center gap-2 text-[10px] text-zinc-500 bg-zinc-100/50 dark:bg-zinc-800/50 p-3 rounded-lg border border-zinc-200/50 dark:border-zinc-700/50">
-                                    <MessageCircle className="w-4 h-4 text-[#06C755] shrink-0" />
-                                    <span>โอนเงินเสร็จแล้ว กดปุ่มด้านล่างเพื่อส่งสลิปผ่านทาง LINE เพื่อเปิดใช้งานทันที</span>
+                                <div className="mt-4 space-y-2">
+                                    <div className="flex items-center gap-2 text-[10px] font-bold text-amber-600 bg-amber-50 p-2 rounded-lg border border-amber-100">
+                                        <AlertCircle className="w-3 h-3 shrink-0" />
+                                        <span>กรุณาเพิ่มเพื่อน LINE เพื่อใช้ยืนยันตนและรอคิวอนุมัติ</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-[10px] text-zinc-500 bg-zinc-100/50 dark:bg-zinc-800/50 p-3 rounded-lg border border-zinc-200/50 dark:border-zinc-700/50">
+                                        <MessageCircle className="w-4 h-4 text-[#06C755] shrink-0" />
+                                        <span>ขั้นตอน: 1.กดเพิ่มเพื่อน -> 2.แจ้งระบบ -> 3.แนบสลิปในแชท</span>
+                                    </div>
                                 </div>
                             </div>
 
                             <div className="space-y-3">
+                                {/* Step 1: Add Friend (Button style to look mandatory) */}
+                                <a 
+                                    href="https://line.me/ti/p/@243lercy" 
+                                    target="_blank" 
+                                    rel="noreferrer"
+                                    className="w-full border-2 border-dashed border-[#06C755] rounded-2xl py-2 flex items-center justify-center gap-2 hover:bg-[#06C755]/5 transition-colors group"
+                                >
+                                    <div className="bg-[#06C755] text-white p-1 rounded-full group-hover:scale-110 transition-transform">
+                                        <CheckCircle className="w-3 h-3" />
+                                    </div>
+                                    <span className="text-xs font-bold text-[#06C755]">คลิกที่นี่เพื่อเพิ่มเพื่อน @YouOke (จำเป็น)</span>
+                                </a>
+
                                 <button
                                     onClick={async () => {
                                         await handleNotifyAdmin();
@@ -209,26 +228,22 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
                                             <MessageCircle className="w-6 h-6" />
                                         )}
                                         <span className="text-lg font-black">
-                                            {sent ? "แจ้งระบบสำเร็จแล้ว" : "โอนแล้ว แจ้งส่งสลิปผ่าน LINE"}
+                                            {sent ? "แจ้งระบบสำเร็จแล้ว" : "โอนแล้ว แจ้งส่งสลิปทาง LINE"}
                                         </span>
                                     </div>
                                     {!sent && !sending && (
-                                        <span className="text-[10px] opacity-80 font-bold uppercase tracking-tight">ระบบจะบันทึกข้อมูลและเปิดหน้าแชท LINE อัตโนมัติ</span>
+                                        <span className="text-[10px] opacity-80 font-bold uppercase tracking-tight">ระบบจะแจ้ง Admin และพาไปหน้าแชทเพื่อส่งสลิป</span>
                                     )}
                                 </button>
 
-                                <div className="bg-amber-50 border border-amber-100 rounded-xl p-3 flex items-start gap-3">
-                                    <div className="bg-amber-100 rounded-full p-1 text-amber-600">
-                                        <AlertCircle className="w-4 h-4" />
+                                <div className="bg-zinc-50 border border-zinc-100 rounded-xl p-3 flex items-start gap-3">
+                                    <div className="bg-zinc-200 rounded-full p-1 text-zinc-600">
+                                        <AlertCircle className="w-3 h-3" />
                                     </div>
-                                    <p className="text-[11px] text-amber-800 font-bold leading-tight">
-                                        สำคัญ: เมื่อแอป LINE เปิดขึ้นมาแล้ว <span className="underline decoration-2">อย่าลืมกดแนบรูปสลิป</span> ส่งในแชทเพื่อยืนยันด้วยนะครับ
+                                    <p className="text-[10px] text-zinc-600 font-bold leading-tight">
+                                        หมายเหตุ: ระบบจะอนุมัติการใช้งาน <span className="text-[#06C755]">เฉพาะผู้ใช้งานที่เพิ่มเพื่อน</span> และส่งรูปหลักฐานใน LINE เท่านั้นครับ
                                     </p>
                                 </div>
-
-                                <p className="text-[10px] text-center text-muted-foreground px-4 italic">
-                                    ระบบจะบันทึกข้อมูลการแจ้งโอนเบื้องต้น และเปิดหน้าแชท LINE ให้อัตโนมัติครับ
-                                </p>
                             </div>
 
                         </Dialog.Panel>
