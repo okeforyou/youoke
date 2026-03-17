@@ -34,24 +34,44 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || `https://${req.headers.host}`;
         const approveUrl = `${baseUrl}/api/admin/approve-via-link?paymentId=${paymentId}&userId=${userId}&packageId=${packageId}&token=${token}`;
 
-        // Prepare User Message (Plain text version for client)
-        const userMessage = [
-            '📢 แจ้งโอนเงิน YouOke (ฝั่งลูกค้า) 🎤',
-            `👤 สมาชิก: ${safeName}`,
-            `💎 แพ็กเกจ: ${packageName}`,
-            `💰 ยอดโอน: ฿${safeAmount}`,
-            `🆔 รหัสอ้างอิง: ${safeId}`,
-            '---------------------------',
-            '✅ กรุณา "แนบรูปสลิปโอนเงิน" 📸',
-            'ในแชทนี้ เพื่อรอนายสถานีอนุมัติครับ'
-        ].join('\n');
+        // --- A. USER FLEX (Green, NO Button) ---
+        const userFlex = {
+            type: "bubble",
+            header: {
+                type: "box", layout: "vertical", backgroundColor: "#06C755",
+                contents: [{ type: "text", text: "📢 แจ้งโอนเงิน YouOke 🎤", weight: "bold", size: "sm", color: "#ffffff", align: "center" }]
+            },
+            body: {
+                type: "box", layout: "vertical", spacing: "md", contents: [
+                    { type: "text", text: "👤 สมาชิก: " + safeName, weight: "bold", size: "md", color: "#333333" },
+                    {
+                        type: "box", layout: "vertical", spacing: "sm", contents: [
+                            { type: "box", layout: "horizontal", contents: [
+                                { type: "text", text: "💎 แพ็กเกจ:", color: "#666666", size: "sm" },
+                                { type: "text", text: packageName || "-", size: "sm", align: "end", color: "#333333", weight: "bold" }
+                            ]},
+                            { type: "box", layout: "horizontal", contents: [
+                                { type: "text", text: "💰 ยอดโอน:", color: "#666666", size: "sm" },
+                                { type: "text", text: `฿${safeAmount}`, size: "sm", align: "end", color: "#06C755", weight: "bold" }
+                            ]},
+                            { type: "box", layout: "horizontal", contents: [
+                                { type: "text", text: "🆔 รหัสอ้างอิง:", color: "#666666", size: "sm" },
+                                { type: "text", text: safeId, size: "sm", align: "end", color: "#999999" }
+                            ]}
+                        ]
+                    },
+                    { type: "separator", margin: "md" },
+                    { type: "text", text: "✅ กรุณา \"แนบรูปสลิปโอนเงิน\" 📸\nในแชทนี้ เพื่อรอนายสถานีอนุมัติครับ", size: "xs", color: "#666666", wrap: true, align: "center" }
+                ]
+            }
+        };
 
-        // Prepare Admin Flex (Beautiful Green Box for Admin)
+        // --- B. ADMIN FLEX (Green, WITH Button) ---
         const adminFlex = {
             type: "bubble",
             header: {
                 type: "box", layout: "vertical", backgroundColor: "#06C755",
-                contents: [{ type: "text", text: "📢 มีรายการแจ้งโอนเงินใหม่ (Admin) 🎤", weight: "bold", size: "sm", color: "#ffffff", align: "center" }]
+                contents: [{ type: "text", text: "📢 รายการแจ้งโอนเงินใหม่ (Admin) 🎤", weight: "bold", size: "sm", color: "#ffffff", align: "center" }]
             },
             body: {
                 type: "box", layout: "vertical", spacing: "md", contents: [
@@ -89,33 +109,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // --- Execute Pushes ---
         
-        // 1. If Admin is the same as User (Testing Mode), send BOTH to the same ID
+        // 1. Testing Case: Admin is the same as User (Send both for preview)
         if (adminUserId && userLineId === adminUserId) {
             await axios.post('https://api.line.me/v2/bot/message/push', {
                 to: adminUserId,
                 messages: [
-                    { type: "text", text: userMessage },
-                    { type: "flex", altText: "📢 แจ้งโอนเงินใหม่: " + safeName, contents: adminFlex }
-                ],
-                notificationDisabled: false
+                    { type: "flex", altText: "📢 ฝั่งลูกค้าเห็นแบบนี้", contents: userFlex },
+                    { type: "flex", altText: "📢 ฝั่ง Admin เห็นแบบนี้ (มีปุ่ม)", contents: adminFlex }
+                ]
             }, { headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${channelAccessToken}` } });
         } 
-        // 2. Normal Flow: Separate User and Admin
+        // 2. Production Case: Different Users
         else {
-            // Push to Admin
             if (adminUserId) {
                 await axios.post('https://api.line.me/v2/bot/message/push', {
                     to: adminUserId,
-                    messages: [{ type: "flex", altText: "📢 แจ้งโอนใหม่จาก " + safeName, contents: adminFlex }],
-                    notificationDisabled: false
+                    messages: [{ type: "flex", altText: "💰 แจ้งโอนใหม่จาก " + safeName, contents: adminFlex }]
                 }, { headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${channelAccessToken}` } });
             }
-            // Push to User
             if (userLineId) {
                 await axios.post('https://api.line.me/v2/bot/message/push', {
                     to: userLineId,
-                    messages: [{ type: "text", text: userMessage }],
-                    notificationDisabled: false
+                    messages: [{ type: "flex", altText: "📢 แจ้งโอนเงิน YouOke", contents: userFlex }]
                 }, { headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${channelAccessToken}` } });
             }
         }
