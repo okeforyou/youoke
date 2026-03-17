@@ -30,33 +30,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             finalFlex = {
                 type: "bubble",
                 header: {
-                    type: "box", layout: "vertical", backgroundColor: "#f4f4f4",
-                    contents: [{ type: "text", text: "💰 แจ้งโอนเงินใหม่ (LINE)", weight: "bold", size: "sm", color: "#666666" }]
+                    type: "box", layout: "vertical", backgroundColor: "#ef4444",
+                    contents: [{ type: "text", text: "📢 แจ้งโอนเงินเข้าใช้งาน YouOke 🎤", weight: "bold", size: "sm", color: "#ffffff", align: "center" }]
                 },
                 body: {
-                    type: "box", layout: "vertical", contents: [
-                        { type: "text", text: approvalData.userDisplayName || "Unknown User", weight: "bold", size: "lg", color: "#333333" },
+                    type: "box", layout: "vertical", spacing: "md", contents: [
+                        { type: "text", text: "👤 สมาชิก: " + (approvalData.userDisplayName || "ไม่ระบุชื่อ"), weight: "bold", size: "md", color: "#333333" },
                         {
-                            type: "box", layout: "vertical", margin: "md", spacing: "sm", contents: [
+                            type: "box", layout: "vertical", spacing: "sm", contents: [
                                 { type: "box", layout: "horizontal", contents: [
-                                    { type: "text", text: "แพ็กเกจ:", color: "#aaaaaa", size: "xs" },
-                                    { type: "text", text: packageName, size: "xs", align: "end", color: "#333333" }
+                                    { type: "text", text: "💎 แพ็กเกจ:", color: "#666666", size: "sm" },
+                                    { type: "text", text: packageName, size: "sm", align: "end", color: "#333333", weight: "bold" }
                                 ]},
                                 { type: "box", layout: "horizontal", contents: [
-                                    { type: "text", text: "ยอดโอน:", color: "#aaaaaa", size: "xs" },
-                                    { type: "text", text: `฿${amount.toLocaleString()}`, size: "xs", align: "end", color: "#E91E63", weight: "bold" }
+                                    { type: "text", text: "💰 ยอดโอน:", color: "#666666", size: "sm" },
+                                    { type: "text", text: `฿${amount.toLocaleString()}`, size: "sm", align: "end", color: "#ef4444", weight: "bold" }
+                                ]},
+                                { type: "box", layout: "horizontal", contents: [
+                                    { type: "text", text: "🆔 รหัสอ้างอิง:", color: "#666666", size: "sm" },
+                                    { type: "text", text: paymentId.substring(0, 8).toUpperCase(), size: "sm", align: "end", color: "#999999", fontStyle: "italic" }
                                 ]}
                             ]
-                        }
+                        },
+                        { type: "separator", margin: "md" },
+                        { type: "text", text: "✅ กรุณา \"แนบรูปสลิป\" ในแชทนี้\nเพื่อทำการตรวจสอบและอนุมัติครับ", size: "xs", color: "#666666", wrap: true, align: "center" }
                     ]
                 },
                 footer: {
                     type: "box", layout: "vertical", spacing: "sm", contents: [
                         {
-                            type: "button", style: "primary", color: "#06C755",
-                            action: { type: "uri", label: "✅ อนุมัติทันที", uri: approveUrl }
-                        },
-                        { type: "text", text: "* กรุณารอสลิปจาก User ในแชทก่อนกดอนุมัติ", size: "xxs", color: "#999999", align: "center" }
+                            type: "button", style: "primary", color: "#ef4444",
+                            action: { type: "uri", label: "กดเพื่ออนุมัติใช้งาน", uri: approveUrl }
+                        }
                     ]
                 }
             };
