@@ -249,106 +249,108 @@ export default function AdminOrdersPage() {
             {/* Main Content */}
             {loading ? (
                 <div className="flex justify-center p-20">
-                    <span className="loading loading-spinner text-rose-500/20"></span>
+                    <span className="loading loading-spinner text-primary/20"></span>
                 </div>
             ) : filteredOrders.length === 0 ? (
-                <div className="bg-white border border-dashed border-slate-200 p-20 text-center flex flex-col items-center justify-center rounded-2xl">
-                    <div className="h-20 w-20 rounded-full bg-slate-50 flex items-center justify-center mb-6">
-                        <Search className="h-10 w-10 text-slate-200" />
+                <div className="glass-card p-20 text-center flex flex-col items-center justify-center">
+                    <div className="h-20 w-20 rounded-full bg-muted/30 flex items-center justify-center mb-6">
+                        <Search className="h-10 w-10 text-muted-foreground/30" />
                     </div>
-                    <h3 className="text-xl font-bold text-slate-800 mb-2">ไม่พบรายการสั่งซื้อ</h3>
-                    <p className="text-slate-500 max-w-xs text-sm">ลองปรับตัวกรองสถานะ หรือรอให้มีรายการใหม่แจ้งเข้ามาในระบบครับ</p>
+                    <h3 className="text-xl font-bold text-foreground mb-2">ไม่พบรายการสั่งซื้อ</h3>
+                    <p className="text-muted-foreground max-w-xs text-sm">ลองปรับตัวกรองสถานะ หรือรอให้มีรายการใหม่แจ้งเข้ามาในระบบครับ</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
-                    {filteredOrders.map((order) => {
-                        const config = statusConfig[order.status as keyof typeof statusConfig] || statusConfig.pending;
-                        const StatusIcon = config.icon || Clock;
+                <div className="glass-card overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead>
+                                <tr className="border-b border-border/50 bg-muted/30">
+                                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest text-muted-foreground">ผู้สั่งซื้อ</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-widest text-muted-foreground">แพ็กเกจ</th>
+                                    <th className="px-6 py-4 text-center text-xs font-bold uppercase tracking-widest text-muted-foreground">สถานะ</th>
+                                    <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-widest text-muted-foreground">ยอดชำระ</th>
+                                    <th className="px-6 py-4 text-center text-xs font-bold uppercase tracking-widest text-muted-foreground">วันที่แจ้ง</th>
+                                    <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-widest text-muted-foreground">จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border/30">
+                                {filteredOrders.map((order) => {
+                                    const config = statusConfig[order.status as keyof typeof statusConfig] || statusConfig.pending;
+                                    const StatusIcon = config.icon || Clock;
 
-                        return (
-                            <div key={order.id} className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300 flex flex-col group">
-                                {/* Card Header */}
-                                <div className="p-5 pb-4 border-b border-slate-50 bg-slate-50/30">
-                                    <div className="flex items-start justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className="h-12 w-12 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-500 font-black text-xl border border-rose-100 shadow-sm shadow-rose-100/50">
-                                                {order.userDisplayName?.charAt(0) || 'U'}
-                                            </div>
-                                            <div className="min-w-0">
-                                                <h4 className="font-bold text-slate-800 truncate max-w-[140px] leading-tight">{order.userDisplayName || 'User'}</h4>
-                                                <p className="text-[10px] text-slate-400 font-mono truncate tracking-tight uppercase opacity-70 mt-0.5">REF: {order.id.slice(0, 8)}</p>
-                                            </div>
-                                        </div>
-                                        
-                                        <div className="flex flex-col items-end gap-2">
-                                            <div className={cn(
-                                                "flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black border uppercase tracking-wider",
-                                                config.bg, config.color, config.border
-                                            )}>
-                                                <StatusIcon size={12} strokeWidth={3} />
-                                                <span>{config.label}</span>
-                                            </div>
-                                            {order.status === 'pending' && (
-                                                <button 
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleDelete(order.id);
-                                                    }}
-                                                    className="w-7 h-7 flex items-center justify-center text-slate-200 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
-                                                    title="ลบรายการ"
-                                                >
-                                                    <Trash2 size={14} />
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Card Body */}
-                                <div className="p-5 flex-1 flex flex-col">
-                                    <div className="mb-4">
-                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">แพ็กเกจ</p>
-                                        <h5 className="text-sm font-black text-slate-700 underline decoration-rose-500/20 underline-offset-4 decoration-2">
-                                            {order.packageName}
-                                        </h5>
-                                    </div>
-
-                                    <div className="mt-auto flex items-end justify-between">
-                                        <div>
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">ยอดชำระ</p>
-                                            <p className="text-2xl font-black text-slate-800">
-                                                <span className="text-xs font-bold mr-0.5 opacity-50 text-rose-500">฿</span>
-                                                {order.amount.toLocaleString()}
-                                            </p>
-                                        </div>
-                                        <div className="text-right">
-                                            <div className="flex items-center justify-end gap-1.5 text-slate-400 mb-1">
-                                                <Clock size={12} className="opacity-50" />
-                                                <span className="text-[10px] font-bold tracking-tight">{formatDate(order.createdAt).split(' ')[0]}</span>
-                                            </div>
-                                            <p className="text-[9px] font-bold text-slate-300">{formatDate(order.createdAt).split(' ')[1]}</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Action Bar */}
-                                <div className="p-5 pt-0 mt-2">
-                                    <button 
-                                        onClick={() => setSelectedOrder(order)}
-                                        className={cn(
-                                            "w-full h-11 rounded-xl flex items-center justify-center gap-2 font-black uppercase tracking-tighter text-xs transition-all active:scale-[0.98] shadow-sm",
-                                            order.status === 'pending'
-                                                ? "bg-rose-500 text-white shadow-rose-200 hover:bg-rose-600"
-                                                : "bg-slate-100 text-slate-500 hover:bg-slate-200"
-                                        )}
-                                    >
-                                        <Eye size={16} strokeWidth={2.5} />
-                                        <span>{order.status === 'pending' ? "ตรวจสอบและอนุมัติ" : "ดูรายละเอียด"}</span>
-                                    </button>
-                                </div>
-                            </div>
-                        );
-                    })}
+                                    return (
+                                        <tr key={order.id} className="hover:bg-muted/20 transition-colors group">
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 text-foreground font-black border border-border/40 overflow-hidden shadow-sm">
+                                                        {order.userDisplayName?.charAt(0) || 'U'}
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-bold text-foreground text-sm">{order.userDisplayName || 'Unknown User'}</p>
+                                                        <p className="text-[10px] text-muted-foreground font-mono opacity-60">REF: {order.id.slice(0, 8).toUpperCase()}</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="inline-flex px-2.5 py-0.5 bg-muted/50 text-foreground rounded-lg text-xs font-bold border border-border/30">
+                                                    {order.packageName}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex justify-center">
+                                                    <span className={cn(
+                                                        "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black border uppercase tracking-widest shadow-sm",
+                                                        config.bg === "bg-amber-50" ? "bg-amber-500/10 text-amber-600 border-amber-500/20" : 
+                                                        config.bg === "bg-emerald-50" ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" : 
+                                                        "bg-rose-500/10 text-rose-600 border-rose-500/20"
+                                                    )}>
+                                                        <StatusIcon size={12} strokeWidth={3} />
+                                                        {config.label}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <span className="font-black text-foreground text-base">฿{order.amount.toLocaleString()}</span>
+                                            </td>
+                                            <td className="px-6 py-4 text-center">
+                                                <div className="flex flex-col items-center">
+                                                    <span className="text-[10px] font-bold text-muted-foreground tracking-tight">{formatDate(order.createdAt).split(' ')[0]}</span>
+                                                    <span className="text-[9px] text-muted-foreground/60">{formatDate(order.createdAt).split(' ')[1]}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <div className="flex items-center justify-end gap-2">
+                                                    <button 
+                                                        onClick={() => setSelectedOrder(order)}
+                                                        className={cn(
+                                                            "h-8 px-4 rounded-lg flex items-center justify-center gap-2 font-black uppercase tracking-tighter text-[10px] transition-all active:scale-[0.95] shadow-sm",
+                                                            order.status === 'pending'
+                                                                ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                                                                : "bg-muted text-muted-foreground hover:bg-muted/80"
+                                                        )}
+                                                    >
+                                                        <Eye size={14} strokeWidth={2.5} />
+                                                        ตรวจสอบ
+                                                    </button>
+                                                    {order.status === 'pending' && (
+                                                        <button 
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleDelete(order.id);
+                                                            }}
+                                                            className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-all"
+                                                        >
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             )}
 
