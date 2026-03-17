@@ -46,13 +46,8 @@ export default function AdminOrdersPage() {
     };
 
     useEffect(() => {
-        console.log("🛠️ AdminOrdersPage: Initial Mount");
         fetchOrders();
     }, []);
-
-    useEffect(() => {
-        console.log("🛠️ AdminOrdersPage: State Change", { loading, ordersCount: orders.length, statusFilter, hasSelected: !!selectedOrder });
-    }, [loading, orders, statusFilter, selectedOrder]);
 
     // Filter Logic
     const filteredOrders = statusFilter === 'all'
@@ -74,10 +69,9 @@ export default function AdminOrdersPage() {
         return new Date(timestamp.seconds * 1000).toLocaleString('th-TH');
     };
 
-    const handleApprove = async (e?: React.MouseEvent) => {
-        if (e) e.stopPropagation();
+    const handleApprove = async () => {
         if (!selectedOrder) return;
-        if (!window.confirm(`คุณยืนยันที่จะ "อนุมัติ" รายการแจ้งโอนของ ${selectedOrder.userDisplayName || 'User'} หรือไม่?`)) return;
+        if (!confirm(`คุณยืนยันที่จะ "อนุมัติ" รายการแจ้งโอนของ ${selectedOrder.userDisplayName || 'User'} หรือไม่?`)) return;
 
         setProcessing(true);
         try {
@@ -104,10 +98,9 @@ export default function AdminOrdersPage() {
         }
     };
 
-    const handleReject = async (e?: React.MouseEvent) => {
-        if (e) e.stopPropagation();
+    const handleReject = async () => {
         if (!selectedOrder) return;
-        const reason = window.prompt("ระบุเหตุผลที่ปฏิเสธ (ไม่บังคับ):", "หลักฐานไม่ถูกต้อง / ไม่พบยอดเงิน");
+        const reason = prompt("ระบุเหตุผลที่ปฏิเสธ (ไม่บังคับ):", "หลักฐานไม่ถูกต้อง / ไม่พบยอดเงิน");
         if (reason === null) return;
 
         setProcessing(true);
@@ -349,25 +342,14 @@ export default function AdminOrdersPage() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={(e) => {
                     if (e.target === e.currentTarget) setSelectedOrder(null)
                 }}>
-                    <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-xl shadow-xl overflow-hidden flex flex-col md:row-span-1 lg:flex-row border border-border" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-xl shadow-xl overflow-hidden flex flex-col md:row-span-1 lg:flex-row border border-border">
                         {/* Image side */}
                         <div className="flex-1 bg-slate-900 flex items-center justify-center p-4 relative min-h-[300px]">
-                            {selectedOrder.slipUrl && selectedOrder.slipUrl !== 'line_manual' ? (
-                                <img
-                                    src={selectedOrder.slipUrl}
-                                    alt="Slip"
-                                    className="max-w-full max-h-full object-contain rounded shadow-lg"
-                                    onError={(e) => {
-                                        (e.target as HTMLImageElement).src = "https://placehold.co/400x600?text=Invalid+Image+URL";
-                                    }}
-                                />
-                            ) : (
-                                <div className="text-center text-slate-400">
-                                    <IconCard size={48} className="mx-auto mb-4 opacity-20" />
-                                    <p className="text-sm">ไม่มีรูปภาพสลิป (แจ้งโอนผ่าน LINE)</p>
-                                    <p className="text-[10px] opacity-50 mt-1">ID: {selectedOrder.id}</p>
-                                </div>
-                            )}
+                            <img
+                                src={selectedOrder.slipUrl}
+                                alt="Slip"
+                                className="max-w-full max-h-full object-contain rounded shadow-lg"
+                            />
                         </div>
 
                         {/* Details side */}
@@ -419,14 +401,14 @@ export default function AdminOrdersPage() {
                                 {selectedOrder.status === 'pending' ? (
                                     <>
                                         <button 
-                                            onClick={(e) => handleApprove(e)}
+                                            onClick={handleApprove}
                                             disabled={processing}
                                             className="w-full py-4 bg-rose-500 text-white rounded-2xl font-bold text-sm hover:bg-rose-600 shadow-lg shadow-rose-200 disabled:opacity-50 transition-all active:scale-95"
                                         >
                                             {processing ? "กำลังประมวลผล..." : "อนุมัติรายการทันที"}
                                         </button>
                                         <button 
-                                            onClick={(e) => handleReject(e)}
+                                            onClick={handleReject}
                                             disabled={processing}
                                             className="w-full py-4 border border-slate-200 text-slate-400 rounded-2xl font-bold text-sm hover:bg-white hover:text-rose-500 hover:border-rose-200 transition-all disabled:opacity-50"
                                         >

@@ -55,19 +55,7 @@ export const AuthContextProvider = ({
     isLoading
   } = useAuthStore();
 
-  const [user, setUser] = useState<UserType | null>(() => {
-    if (storeUser) {
-      return {
-        email: storeUser.email,
-        uid: storeUser.uid,
-        role: storeUser.role,
-        tier: storeUser.membership?.type,
-        displayName: storeUser.displayName,
-        photoURL: storeUser.photoURL,
-      };
-    }
-    return null;
-  });
+  const [user, setUser] = useState<UserType | null>(null);
 
   useEffect(() => {
     if (storeUser) {

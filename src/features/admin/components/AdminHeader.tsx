@@ -20,8 +20,7 @@ export const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
     const { user, logout } = useAuth();
     const router = useRouter();
 
-    const handleLogout = async (e: React.MouseEvent) => {
-        e.stopPropagation();
+    const handleLogout = async () => {
         if (!window.confirm('ยืนยันออกจากระบบ?')) return;
         try {
             await logout();
