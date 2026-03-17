@@ -30,21 +30,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             finalFlex = {
                 type: "bubble",
                 header: {
-                    type: "box", layout: "vertical", backgroundColor: "#f4f4f4",
-                    contents: [{ type: "text", text: "💰 แจ้งโอนเงินใหม่ (LINE)", weight: "bold", size: "sm", color: "#666666" }]
+                    type: "box", layout: "vertical", backgroundColor: "#333333",
+                    contents: [{ type: "text", text: "🔧 ADMIN: รายการแจ้งโอน", weight: "bold", size: "sm", color: "#ffffff" }]
                 },
                 body: {
                     type: "box", layout: "vertical", contents: [
                         { type: "text", text: approvalData.userDisplayName || "Unknown User", weight: "bold", size: "lg", color: "#333333" },
+                        { type: "text", text: `UID: ${userId.substring(0, 10)}...`, size: "xs", color: "#999999", margin: "xs" },
                         {
                             type: "box", layout: "vertical", margin: "md", spacing: "sm", contents: [
                                 { type: "box", layout: "horizontal", contents: [
                                     { type: "text", text: "แพ็กเกจ:", color: "#aaaaaa", size: "xs" },
-                                    { type: "text", text: packageName, size: "xs", align: "end", color: "#333333" }
+                                    { type: "text", text: packageName, size: "xs", align: "end", color: "#333333", weight: "bold" }
                                 ]},
                                 { type: "box", layout: "horizontal", contents: [
-                                    { type: "text", text: "ยอดโอน:", color: "#aaaaaa", size: "xs" },
-                                    { type: "text", text: `฿${amount.toLocaleString()}`, size: "xs", align: "end", color: "#E91E63", weight: "bold" }
+                                    { type: "text", text: "ยอดเงิน:", color: "#aaaaaa", size: "xs" },
+                                    { type: "text", text: `฿${amount.toLocaleString()}`, size: "sm", align: "end", color: "#F43F5E", weight: "black" }
                                 ]}
                             ]
                         }
@@ -53,10 +54,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 footer: {
                     type: "box", layout: "vertical", spacing: "sm", contents: [
                         {
-                            type: "button", style: "primary", color: "#06C755",
-                            action: { type: "uri", label: "✅ อนุมัติทันที", uri: approveUrl }
+                            type: "button", style: "primary", color: "#F43F5E",
+                            action: { type: "uri", label: "✅ อนุมัติการใช้งาน", uri: approveUrl }
                         },
-                        { type: "text", text: "* กรุณารอสลิปจาก User ในแชทก่อนกดอนุมัติ", size: "xxs", color: "#999999", align: "center" }
+                        { type: "text", text: "(ปุ่มเฉพาะ Admin เท่านั้น)", size: "xxs", color: "#cccccc", align: "center" },
+                        { type: "text", text: "* กรุณาเช็กสลิปในแชท OA ก่อนกด", size: "xs", color: "#ff9800", align: "center", margin: "md", weight: "bold" }
                     ]
                 }
             };

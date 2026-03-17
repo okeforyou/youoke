@@ -87,30 +87,33 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
     const openLineChat = () => {
         if (!user || !pkg) return;
         
-        // Define the pre-filled message for the manual slip submission
+        // Define the pre-filled message exactly as user requested
         const messageBody = [
             '📢 แจ้งโอนเงินเพื่อเข้าใช้งาน YouOke 🎤',
             `👤 สมาชิก: ${user.displayName || user.email || 'สมาชิก'}`,
             `💎 แพ็กเกจ: ${pkg.name}`,
             `💰 ยอดโอน: ฿${pkg.price.toLocaleString()}`,
-            `🆔 รหัสอ้างอิง: ${user.uid.substring(0, 8)}`,
+            `🆔 รหัสอ้างอิง: ${user.uid ? user.uid.substring(0, 8) : 'NEW'}`,
             '---------------------------',
-            '✅ กรุณา "แนบรูปสลิป" 📸',
+            '✅ กรุณา "แนบรูปสลิป" 📸 ',
             'ในแชทนี้ เพื่อทำการอนุมัติการใช้งานครับ'
         ].join('\n');
         
-        // URL for LINE Official Account with pre-filled message
-        const lineOaId = process.env.NEXT_PUBLIC_LINE_OA_ID || "@243lercy";
-        const lineUrl = `https://line.me/R/oaMessage/${lineOaId}/?${encodeURIComponent(messageBody)}`;
+        // Ensure LINE OA ID doesn't have @ for the scheme URL
+        const rawLineOaId = process.env.NEXT_PUBLIC_LINE_OA_ID || "@243lercy";
+        const cleanId = rawLineOaId.replace('@', '');
+        
+        // Official OA Message URL scheme
+        const lineUrl = `https://line.me/R/oaMessage/${cleanId}/?${encodeURIComponent(messageBody)}`;
         
         window.open(lineUrl, '_blank');
         
-        // Fallback for desktop if the R/ scheme fails
+        // Fallback or explicit Add Friend if message scheme fails
         setTimeout(() => {
             if (document.hasFocus()) {
-                 window.open(`https://line.me/ti/p/${lineOaId}`, '_blank');
+                 window.open(`https://line.me/ti/p/${rawLineOaId.startsWith('@') ? rawLineOaId : '@' + rawLineOaId}`, '_blank');
             }
-        }, 500);
+        }, 800);
     };
 
     return (
