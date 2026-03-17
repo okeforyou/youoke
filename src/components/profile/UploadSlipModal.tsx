@@ -99,21 +99,18 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
             'ในแชทนี้ เพื่อทำการอนุมัติการใช้งานครับ'
         ].join('\n');
         
-        // Ensure LINE OA ID doesn't have @ for the scheme URL
-        const rawLineOaId = process.env.NEXT_PUBLIC_LINE_OA_ID || "@243lercy";
-        const cleanId = rawLineOaId.replace('@', '');
-        
-        // Official OA Message URL scheme
-        const lineUrl = `https://line.me/R/oaMessage/${cleanId}/?${encodeURIComponent(messageBody)}`;
+        // URL for LINE Official Account with pre-filled message
+        const lineOaId = process.env.NEXT_PUBLIC_LINE_OA_ID || "@243lercy";
+        const lineUrl = `https://line.me/R/oaMessage/${lineOaId}/?${encodeURIComponent(messageBody)}`;
         
         window.open(lineUrl, '_blank');
         
-        // Fallback or explicit Add Friend if message scheme fails
+        // Fallback for desktop if the R/ scheme fails
         setTimeout(() => {
             if (document.hasFocus()) {
-                 window.open(`https://line.me/ti/p/${rawLineOaId.startsWith('@') ? rawLineOaId : '@' + rawLineOaId}`, '_blank');
+                 window.open(`https://line.me/ti/p/${lineOaId}`, '_blank');
             }
-        }, 800);
+        }, 500);
     };
 
     return (
