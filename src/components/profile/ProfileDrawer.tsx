@@ -131,7 +131,6 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
         },
     ];
 
-    if (!user) return null;
 
     return (
         <Transition.Root show={isOpen} as={Fragment}>
