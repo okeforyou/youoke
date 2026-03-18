@@ -5,8 +5,10 @@ import { PlaylistService, CommunityPlaylist } from "../../services/playlistServi
 import { 
     Trash2, RefreshCw, BadgeCheck, Music, Search, 
     ExternalLink, CheckCircle2, AlertCircle, PlayCircle,
-    Info, LayoutGrid, List, Heart, Plus, Loader2, Users, Settings
+    Info, LayoutGrid, List, Heart, Plus, Loader2, Users, Settings,
+    Activity, TrendingUp, TrendingDown, Minus, Globe
 } from "lucide-react";
+import { StatCard } from "@/features/admin/components/StatCard";
 import { useToast } from "@/context/ToastContext";
 import axios from "axios";
 import Image from "next/image";
@@ -208,50 +210,83 @@ export default function AdminPlaylists() {
             </Head>
 
             <div className="max-w-7xl mx-auto space-y-8">
-                {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900">จัดการเพลย์ลิสต์</h1>
-                        <p className="text-sm text-gray-500 mt-1">จัดการรายการเพลงและคอนเทนต์ของระบบ</p>
+                {/* Header Section */}
+                <div className="p-6 bg-white rounded-[24px] border border-gray-100 shadow-sm shadow-gray-200/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                    <div className="flex items-center gap-4">
+                        <div className="w-1.5 h-10 bg-primary rounded-full shadow-[0_0_15px_rgba(239,68,68,0.3)]"></div>
+                        <div>
+                            <h1 className="text-2xl font-black text-gray-900 tracking-tight">จัดการเพลย์ลิสต์</h1>
+                            <p className="text-sm text-gray-500 mt-1 font-medium">จัดการรายการเพลงและคอนเทนต์ของระบบ YouOke</p>
+                        </div>
                     </div>
 
                     <div className="flex items-center gap-3">
                          <button 
                             onClick={activeTab === 'community' ? fetchCommunityPlaylists : activeTab === 'members' ? fetchMemberPlaylists : fetchMySpotifyPlaylists}
-                            className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 rounded-2xl font-bold text-sm text-gray-600 hover:bg-gray-50 transition-all shadow-sm"
+                            className="flex items-center gap-2 px-5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl font-bold text-sm text-gray-600 hover:bg-white hover:border-indigo-200 transition-all shadow-sm"
                          >
                             <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
                             รีเฟรชข้อมูล
                         </button>
-                    <div className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl border transition-all ${
-                        spotifyAccount?.status === 'connected' 
-                            ? "bg-emerald-50 border-emerald-100 text-emerald-700" 
-                            : "bg-amber-50 border-amber-100 text-amber-700"
-                    }`}>
-                        {spotifyAccount?.status === 'connected' ? (
-                            <>
-                                <div className="relative w-7 h-7 rounded-full overflow-hidden border-2 border-emerald-200">
-                                    <img src={spotifyAccount.user?.images?.[0]?.url || "https://placehold.co/100?text=S"} alt="" className="object-cover" />
-                                </div>
-                                <div className="flex flex-col">
-                                    <span className="text-xs font-bold leading-tight">{spotifyAccount.user?.display_name}</span>
-                                    <span className="text-[10px] font-medium opacity-70 uppercase tracking-widest">Connected</span>
-                                </div>
-                                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse ml-1" />
-                            </>
-                        ) : (
-                            <>
-                                <AlertCircle className="w-5 h-5" />
-                                <div className="flex flex-col">
-                                    <span className="text-xs font-bold leading-tight">Spotify Disconnected</span>
-                                    <span className="text-[10px] font-medium opacity-70">Check Integration Settings</span>
-                                </div>
-                                <RefreshCw className="w-4 h-4 cursor-pointer hover:rotate-180 transition-transform" onClick={fetchSpotifyStatus} />
-                            </>
-                        )}
+                        <div className={`flex items-center gap-3 px-4 py-2.5 rounded-2xl border transition-all ${
+                            spotifyAccount?.status === 'connected' 
+                                ? "bg-emerald-50 border-emerald-100 text-emerald-700" 
+                                : "bg-amber-50 border-amber-100 text-amber-700 shadow-sm"
+                        }`}>
+                            {spotifyAccount?.status === 'connected' ? (
+                                <>
+                                    <div className="relative w-7 h-7 rounded-full overflow-hidden border-2 border-emerald-200">
+                                        <img src={spotifyAccount.user?.images?.[0]?.url || "https://placehold.co/100?text=S"} alt="" className="object-cover" />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-xs font-bold leading-tight">{spotifyAccount.user?.display_name}</span>
+                                        <span className="text-[10px] font-medium opacity-70 uppercase tracking-widest">Connected</span>
+                                    </div>
+                                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse ml-1" />
+                                </>
+                            ) : (
+                                <>
+                                    <AlertCircle className="w-5 h-5 opacity-70" />
+                                    <div className="flex flex-col">
+                                        <span className="text-xs font-bold leading-tight">Spotify Disconnected</span>
+                                        <span className="text-[10px] font-medium opacity-70">Check Integration Settings</span>
+                                    </div>
+                                    <RefreshCw className="w-4 h-4 cursor-pointer hover:rotate-180 transition-transform ml-1" onClick={fetchSpotifyStatus} />
+                                </>
+                            )}
+                        </div>
                     </div>
                 </div>
-            </div>
+
+                {/* Quick Stats Summary */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <StatCard 
+                        title="Community"
+                        value={playlists.length}
+                        icon={Heart}
+                        iconColor="primary"
+                        className="border-primary/20 bg-gradient-to-br from-white to-primary/5"
+                    />
+                    <StatCard 
+                        title="Official"
+                        value={playlists.filter(p => p.isOfficial).length}
+                        icon={BadgeCheck}
+                        iconColor="warning"
+                    />
+                    <StatCard 
+                        title="Members"
+                        value={memberPlaylists.length}
+                        icon={Users}
+                        iconColor="info"
+                    />
+                    <StatCard 
+                        title="Songs Linked"
+                        value={playlists.reduce((acc, p) => acc + (parseInt(p.tracksCount as string) || 0), 0)}
+                        icon={Music}
+                        iconColor="secondary"
+                    />
+                </div>
+
 
             {/* Tabs & Search */}
                 <div className="flex flex-col md:flex-row justify-between items-center gap-6 p-1.5 bg-gray-100/80 rounded-[24px] backdrop-blur-sm border border-gray-200/50">

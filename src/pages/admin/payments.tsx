@@ -11,8 +11,14 @@ import {
     Trash2,
     AlertCircle,
     RefreshCw,
-    CreditCard as IconCard
+    CreditCard as IconCard,
+    Activity,
+    Users,
+    TrendingUp,
+    TrendingDown,
+    Minus
 } from "lucide-react";
+import { StatCard } from "@/features/admin/components/StatCard";
 import { collection, query, orderBy, getDocs } from "firebase/firestore";
 import { db } from "@/firebase";
 import { PaymentSlip } from "@/modules/billing/types";
@@ -163,13 +169,16 @@ export default function AdminOrdersPage() {
             </Head>
 
             {/* Page Header */}
-            <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">รายการสั่งซื้อ</h1>
-                    <p className="text-sm text-gray-500 mt-1">ตรวจสอบรายการแจ้งโอนและอนุมัติการสมัครสมาชิก</p>
+            <div className="mb-8 p-6 bg-white rounded-[24px] border border-gray-100 shadow-sm shadow-gray-200/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div className="flex items-center gap-4">
+                    <div className="w-1.5 h-10 bg-primary rounded-full shadow-[0_0_15px_rgba(239,68,68,0.3)]"></div>
+                    <div>
+                        <h1 className="text-2xl font-black text-gray-900 tracking-tight">รายการสั่งซื้อ</h1>
+                        <p className="text-sm text-gray-500 mt-1 font-medium">ตรวจสอบรายการแจ้งโอนและอนุมัติการสมัครสมาชิก</p>
+                    </div>
                 </div>
                 <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 rounded-2xl font-bold text-sm text-gray-600 hover:bg-gray-50 transition-all shadow-sm" onClick={fetchOrders}>
+                    <button className="flex items-center gap-2 px-5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl font-bold text-sm text-gray-600 hover:bg-white hover:border-indigo-200 transition-all shadow-sm" onClick={fetchOrders}>
                         <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
                         รีเฟรชข้อมูล
                     </button>
@@ -181,42 +190,31 @@ export default function AdminOrdersPage() {
 
             {/* Stats Items */}
             <div className="mb-8 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                <div className="bg-white border border-gray-100 p-6 rounded-[32px] flex items-center gap-5 shadow-sm hover:shadow-xl transition-all duration-500 group">
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 group-hover:scale-110 transition-transform">
-                        <IconCard size={28} />
-                    </div>
-                    <div>
-                        <p className="text-3xl font-black text-gray-900 leading-none">{stats.total.toLocaleString()}</p>
-                        <p className="text-[10px] text-gray-400 mt-2 font-black uppercase tracking-widest">ทั้งหมด</p>
-                    </div>
-                </div>
-                <div className="bg-white border border-gray-100 p-6 rounded-[32px] flex items-center gap-5 shadow-sm hover:shadow-xl transition-all duration-500 group">
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-500 group-hover:scale-110 transition-transform">
-                        <Clock size={28} />
-                    </div>
-                    <div>
-                        <p className="text-3xl font-black text-gray-900 leading-none">{stats.pending.toLocaleString()}</p>
-                        <p className="text-[10px] text-gray-400 mt-2 font-black uppercase tracking-widest">รอตรวจสอบ</p>
-                    </div>
-                </div>
-                <div className="bg-white border border-gray-100 p-6 rounded-[32px] flex items-center gap-5 shadow-sm hover:shadow-xl transition-all duration-500 group">
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-500 group-hover:scale-110 transition-transform">
-                        <CheckCircle size={28} />
-                    </div>
-                    <div>
-                        <p className="text-3xl font-black text-gray-900 leading-none">{stats.approved.toLocaleString()}</p>
-                        <p className="text-[10px] text-gray-400 mt-2 font-black uppercase tracking-widest">อนุมัติแล้ว</p>
-                    </div>
-                </div>
-                <div className="bg-white border border-gray-100 p-6 rounded-[32px] flex items-center gap-5 shadow-sm hover:shadow-xl transition-all duration-500 group">
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gray-50 text-gray-400 group-hover:scale-110 transition-transform">
-                        <XCircle size={28} />
-                    </div>
-                    <div>
-                        <p className="text-3xl font-black text-gray-900 leading-none">{stats.rejected.toLocaleString()}</p>
-                        <p className="text-[10px] text-gray-400 mt-2 font-black uppercase tracking-widest">ปฏิเสธแล้ว</p>
-                    </div>
-                </div>
+                <StatCard 
+                    title="ทั้งหมด"
+                    value={stats.total}
+                    icon={IconCard}
+                    iconColor="primary"
+                    className="border-primary/20 bg-gradient-to-br from-white to-primary/5"
+                />
+                <StatCard 
+                    title="รอตรวจสอบ"
+                    value={stats.pending}
+                    icon={Clock}
+                    iconColor="warning"
+                />
+                <StatCard 
+                    title="อนุมัติแล้ว"
+                    value={stats.approved}
+                    icon={CheckCircle}
+                    iconColor="success"
+                />
+                <StatCard 
+                    title="ปฏิเสธแล้ว"
+                    value={stats.rejected}
+                    icon={XCircle}
+                    iconColor="secondary"
+                />
             </div>
 
             {/* Filter Tabs & Search */}

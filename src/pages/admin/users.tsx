@@ -22,8 +22,13 @@ import {
     Lock,
     Package,
     ArrowRight,
-    RefreshCw
+    RefreshCw,
+    Activity,
+    TrendingUp,
+    TrendingDown,
+    Minus
 } from "lucide-react";
+import { StatCard } from "@/features/admin/components/StatCard";
 
 // LINE Icon Component
 const LineIcon = ({ className }: { className?: string }) => (
@@ -452,13 +457,16 @@ export default function AdminUsersPage() {
             <GlobalScrollbarStyle />
 
             {/* Dashboard Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">จัดการผู้ใช้งาน</h1>
-                    <p className="text-sm text-gray-500 mt-1">จัดการรายชื่อสมาชิก สิทธิ์การใช้งาน และสถานะ</p>
+            <div className="mb-10 p-6 bg-white rounded-[24px] border border-gray-100 shadow-sm shadow-gray-200/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div className="flex items-center gap-4">
+                    <div className="w-1.5 h-10 bg-primary rounded-full shadow-[0_0_15px_rgba(239,68,68,0.3)]"></div>
+                    <div>
+                        <h1 className="text-2xl font-black text-gray-900 tracking-tight">จัดการผู้ใช้งาน</h1>
+                        <p className="text-sm text-gray-500 mt-1 font-medium">จัดการรายชื่อสมาชิก สิทธิ์การใช้งาน และสถานะของระบบ</p>
+                    </div>
                 </div>
                 <div className="flex items-center gap-3">
-                    <button onClick={fetchUsers} className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 rounded-2xl font-bold text-sm text-gray-600 hover:bg-gray-50 transition-all shadow-sm">
+                    <button onClick={fetchUsers} className="flex items-center gap-2 px-5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl font-bold text-sm text-gray-600 hover:bg-white hover:border-indigo-200 transition-all shadow-sm">
                         <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
                         รีเฟรชข้อมูล
                     </button>
@@ -478,49 +486,35 @@ export default function AdminUsersPage() {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-500 group">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl group-hover:scale-110 transition-transform">
-                            <Users className="w-6 h-6" />
-                        </div>
-                        <span className="text-[10px] font-black uppercase text-indigo-400 tracking-widest">Growth +12%</span>
-                    </div>
-                    <h3 className="text-3xl font-black text-gray-900">{stats.total.toLocaleString()}</h3>
-                    <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mt-1">สมาชิกทั้งหมด</p>
-                </div>
+                <StatCard 
+                    title="สมาชิกทั้งหมด"
+                    value={stats.total}
+                    icon={Users}
+                    iconColor="primary"
+                    change={{ value: 12, type: "increase" }}
+                    className="border-primary/20 bg-gradient-to-br from-white to-primary/5 shadow-indigo-100"
+                />
+                
+                <StatCard 
+                    title="ผู้ใช้ผ่าน LINE"
+                    value={stats.line}
+                    icon={LineIcon}
+                    iconColor="success"
+                />
 
-                <div className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-500 group">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl group-hover:scale-110 transition-transform">
-                            <LineIcon className="w-6 h-6" />
-                        </div>
-                        <span className="text-[10px] font-black uppercase text-emerald-400 tracking-widest">LINE Official</span>
-                    </div>
-                    <h3 className="text-3xl font-black text-gray-900">{stats.line.toLocaleString()}</h3>
-                    <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mt-1">ผู้ใช้ผ่าน LINE</p>
-                </div>
+                <StatCard 
+                    title="ผู้ใช้ผ่าน Google"
+                    value={stats.google}
+                    icon={Mail}
+                    iconColor="info"
+                />
 
-                <div className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-500 group">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="p-3 bg-rose-50 text-rose-600 rounded-2xl group-hover:scale-110 transition-transform">
-                            <Mail className="w-6 h-6" />
-                        </div>
-                        <span className="text-[10px] font-black uppercase text-rose-400 tracking-widest">Google / Email</span>
-                    </div>
-                    <h3 className="text-3xl font-black text-gray-900">{stats.google.toLocaleString()}</h3>
-                    <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mt-1">ผู้ใช้ผ่าน Google</p>
-                </div>
-
-                <div className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-500 group">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="p-3 bg-amber-50 text-amber-600 rounded-2xl group-hover:scale-110 transition-transform">
-                            <Crown className="w-6 h-6" />
-                        </div>
-                        <span className="text-[10px] font-black uppercase text-amber-400 tracking-widest">Premium Members</span>
-                    </div>
-                    <h3 className="text-3xl font-black text-gray-900">{stats.premium.toLocaleString()}</h3>
-                    <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mt-1">สมาชิกพรีเมียม</p>
-                </div>
+                <StatCard 
+                    title="สมาชิกพรีเมียม"
+                    value={stats.premium}
+                    icon={Crown}
+                    iconColor="warning"
+                />
             </div>
 
             {/* Main Table Card */}

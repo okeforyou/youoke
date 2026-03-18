@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import AdminLayout from "@/features/admin/layouts/AdminLayout";
 import { ARTIST_CATEGORIES, Artist } from "@/data/artist-categories";
-import { Image as ImageIcon, Search, Save, Globe, CheckCircle2, AlertCircle, Trash2 } from "lucide-react";
+import { Image as ImageIcon, Search, Save, Globe, CheckCircle2, AlertCircle, Trash2, Activity, TrendingUp, TrendingDown, Minus, BadgeCheck } from "lucide-react";
+import { StatCard } from "@/features/admin/components/StatCard";
+import { cn } from "@/utils/cn";
 import { db } from "@/firebase";
 import { doc, setDoc, getDoc, deleteDoc, collection, getDocs, onSnapshot } from "firebase/firestore";
 import Image from "next/image";
@@ -36,7 +38,7 @@ const ArtistManagementPage = () => {
         const fetchOverrides = async () => {
             setLoading(true);
             try {
-                const snapshot = await getDocs(collection(db, "artist_images"));
+                const snapshot = await getDocs(collection(db as any, "artist_images"));
                 const data: Record<string, string> = {};
                 snapshot.forEach(doc => {
                     data[doc.id] = doc.data().imageUrl;
@@ -44,7 +46,7 @@ const ArtistManagementPage = () => {
                 setOverrides(data);
                 
                 // Fetch JOOX Config
-                const configDoc = await getDoc(doc(db, "system_config", "joox_api"));
+                const configDoc = await getDoc(doc(db as any, "system_config", "joox_api"));
                 if (configDoc.exists()) {
                     setWmid(configDoc.data().wmid || "");
                     setSessionKey(configDoc.data().session_key || "");
@@ -70,7 +72,7 @@ const ArtistManagementPage = () => {
         setMessage(null);
         try {
             const cleanName = selectedArtist.name.split(' (')[0].trim();
-            await setDoc(doc(db, "artist_images", cleanName), {
+            await setDoc(doc(db as any, "artist_images", cleanName), {
                 imageUrl: imageUrl.trim(),
                 updatedAt: new Date().toISOString()
             });
@@ -89,7 +91,7 @@ const ArtistManagementPage = () => {
         setSaving(true);
         try {
             const cleanName = selectedArtist.name.split(' (')[0].trim();
-            await deleteDoc(doc(db, "artist_images", cleanName));
+            await deleteDoc(doc(db as any, "artist_images", cleanName));
             const newOverrides = { ...overrides };
             delete newOverrides[cleanName];
             setOverrides(newOverrides);
@@ -106,7 +108,7 @@ const ArtistManagementPage = () => {
         setConfigSaving(true);
         setMessage(null);
         try {
-            await setDoc(doc(db, "system_config", "joox_api"), {
+            await setDoc(doc(db as any, "system_config", "joox_api"), {
                 wmid: wmid.trim(),
                 session_key: sessionKey.trim(),
                 updatedAt: new Date().toISOString(),
@@ -124,23 +126,56 @@ const ArtistManagementPage = () => {
     return (
         <AdminLayout>
             <div className="max-w-6xl mx-auto py-8 px-4">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900">จัดการข้อมูลศิลปิน</h1>
-                        <p className="text-sm text-gray-500 mt-1">จัดการรูปภาพและข้อมูลพื้นฐานของศิลปินในระบบ</p>
+                {/* Header Section */}
+                <div className="p-6 bg-white rounded-[24px] border border-gray-100 shadow-sm shadow-gray-200/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
+                    <div className="flex items-center gap-4">
+                        <div className="w-1.5 h-10 bg-primary rounded-full shadow-[0_0_15px_rgba(239,68,68,0.3)]"></div>
+                        <div>
+                            <h1 className="text-2xl font-black text-gray-900 tracking-tight">จัดการข้อมูลศิลปิน</h1>
+                            <p className="text-sm text-gray-500 mt-1 font-medium">จัดการรูปภาพและข้อมูลพื้นฐานของศิลปินในระบบ YouOke</p>
+                        </div>
                     </div>
                 </div>
 
-                <div className="flex gap-2 mb-8 p-1 bg-gray-100 w-fit rounded-2xl">
+                {/* Quick Stats Summary */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                    <StatCard 
+                        title="ศิลปินทั้งหมด"
+                        value={allArtists.length}
+                        icon={Globe}
+                        iconColor="primary"
+                        className="border-primary/20 bg-gradient-to-br from-white to-primary/5"
+                    />
+                    <StatCard 
+                        title="แก้ไขรูปภาพแล้ว"
+                        value={Object.keys(overrides).length}
+                        icon={ImageIcon}
+                        iconColor="success"
+                    />
+                    <StatCard 
+                        title="หมวดหมู่หลัก"
+                        value={8}
+                        icon={Globe}
+                        iconColor="info"
+                    />
+                    <StatCard 
+                        title="สถานะระบบ"
+                        value="ปกติ"
+                        icon={BadgeCheck}
+                        iconColor="warning"
+                    />
+                </div>
+
+                <div className="flex gap-2 mb-8 p-1 bg-gray-100 w-fit rounded-2xl border border-gray-200/50 shadow-inner">
                     <button 
                         onClick={() => setView('artists')}
-                        className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${view === 'artists' ? "bg-white shadow-sm text-primary" : "text-gray-500 hover:text-gray-700"}`}
+                        className={`px-6 py-2.5 rounded-[14px] font-black text-sm transition-all ${view === 'artists' ? "bg-white shadow-md text-primary translate-y-[-1px]" : "text-gray-500 hover:text-gray-700"}`}
                     >
                         รายชื่อศิลปิน
                     </button>
                     <button 
                         onClick={() => setView('settings')}
-                        className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${view === 'settings' ? "bg-white shadow-sm text-primary" : "text-gray-500 hover:text-gray-700"}`}
+                        className={`px-6 py-2.5 rounded-[14px] font-black text-sm transition-all ${view === 'settings' ? "bg-white shadow-md text-primary translate-y-[-1px]" : "text-gray-500 hover:text-gray-700"}`}
                     >
                         ตั้งค่าระบบ JOOX API
                     </button>

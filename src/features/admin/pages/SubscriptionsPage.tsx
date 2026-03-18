@@ -314,23 +314,21 @@ const SubscriptionsPage: React.FC = () => {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              จัดการแผนสมาชิก (Subscription Plans)
-            </h1>
-            <p className="text-gray-600 mt-1">
-              จัดการแพ็คเกจสมาชิกทั้งหมด ({plans.length} แผน)
-            </p>
+      <div className="max-w-7xl mx-auto py-8 px-4 space-y-8">
+        {/* Header Section */}
+        <div className="p-6 bg-white rounded-[24px] border border-gray-100 shadow-sm shadow-gray-200/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
+          <div className="flex items-center gap-4">
+            <div className="w-1.5 h-10 bg-primary rounded-full shadow-[0_0_15px_rgba(239,68,68,0.3)]"></div>
+            <div>
+              <h1 className="text-2xl font-black text-gray-900 tracking-tight">จัดการแผนสมาชิก</h1>
+              <p className="text-sm text-gray-500 mt-1 font-medium">จัดการแพ็คเกจสมาชิกพื้นฐานและความจุของระบบ YouOke</p>
+            </div>
           </div>
           <button
             onClick={() => setCreatingPlan(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+            className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 rounded-2xl font-bold text-sm text-white hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200"
           >
-            <PlusIcon className="w-5 h-5" />
-            สร้างแผนใหม่
+            <PlusIcon className="w-4 h-4" /> สร้างแผนใหม่
           </button>
         </div>
 

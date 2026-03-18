@@ -188,12 +188,15 @@ export default function AdminConfigPage() {
                 {/* Main Content Area */}
                 <div className="flex-1 min-w-0">
                     {/* Header Action */}
-                    <div className="flex items-center justify-between mb-6 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm sticky top-0 z-10 backdrop-blur-xl bg-white/80">
-                        <div>
-                            <h2 className="text-xl font-bold text-gray-800">
-                                {MENU_ITEMS.find(i => i.id === activeTab)?.label}
-                            </h2>
-                            <p className="text-sm text-gray-500">จัดการการตั้งค่าในส่วนนี้</p>
+                    <div className="flex items-center justify-between mb-6 bg-white p-6 rounded-[24px] border border-gray-100 shadow-sm sticky top-0 z-10 backdrop-blur-xl bg-white/80">
+                        <div className="flex items-center gap-4">
+                            <div className="w-1 h-8 bg-primary rounded-full shadow-[0_0_10px_rgba(239,68,68,0.3)]"></div>
+                            <div>
+                                <h2 className="text-xl font-black text-gray-900 tracking-tight">
+                                    {MENU_ITEMS.find(i => i.id === activeTab)?.label}
+                                </h2>
+                                <p className="text-xs text-gray-500 font-medium">จัดการการตั้งค่าในส่วนนี้</p>
+                            </div>
                         </div>
                         <button
                             onClick={handleSave}

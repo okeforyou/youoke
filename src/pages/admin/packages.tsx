@@ -23,6 +23,8 @@ import {
     Ban
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { StatCard } from "@/features/admin/components/StatCard";
+import { Activity, TrendingUp, TrendingDown, Minus, BadgeCheck } from "lucide-react";
 
 interface PackageData {
     id: string;
@@ -95,7 +97,7 @@ export default function PackagesPage() {
         // 1. Fetch Plans for dropdown
         const fetchPlans = async () => {
             try {
-                const plansCol = collection(db, 'plans');
+                const plansCol = collection(db as any, 'plans');
                 const snap = await getDocs(plansCol);
                 if (isMounted) {
                     const planList = snap.docs.map(doc => ({
@@ -112,7 +114,7 @@ export default function PackagesPage() {
         // 2. Subscribe to Packages
         let unsubscribe = () => {};
         try {
-            const pkgsCol = collection(db, 'packages');
+            const pkgsCol = collection(db as any, 'packages');
             unsubscribe = onSnapshot(pkgsCol, (snapshot) => {
                 if (isMounted) {
                     const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as PackageData));
@@ -277,45 +279,52 @@ export default function PackagesPage() {
     }
 
     return (
-        <AdminLayout headerTitle="Package Manager">
-            <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold text-foreground">จัดการแพ็กเกจ</h1>
-                    <p className="mt-1 text-muted-foreground text-sm">จัดการแผนราคาแบบขายสิทธิ์สมาชิกแบบต่างๆ</p>
+        <AdminLayout>
+            <div className="max-w-7xl mx-auto space-y-8">
+                {/* Header Section */}
+                <div className="p-6 bg-white rounded-[24px] border border-gray-100 shadow-sm shadow-gray-200/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                    <div className="flex items-center gap-4">
+                        <div className="w-1.5 h-10 bg-primary rounded-full shadow-[0_0_15px_rgba(239,68,68,0.3)]"></div>
+                        <div>
+                            <h1 className="text-2xl font-black text-gray-900 tracking-tight">จัดการแพ็กเกจ</h1>
+                            <p className="text-sm text-gray-500 mt-1 font-medium">จัดการแผนราคาและสิทธิ์การใช้งานของสมาชิก YouOke</p>
+                        </div>
+                    </div>
+                    <button 
+                        onClick={handleCreate} 
+                        className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 rounded-2xl font-bold text-sm text-white hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200"
+                    >
+                        <Plus className="w-4 h-4" /> สร้างแพ็กเกจ
+                    </button>
                 </div>
-                <button onClick={handleCreate} className="btn btn-primary gap-2 rounded-xl">
-                    <Plus className="w-4 h-4" /> สร้างแพ็กเกจ
-                </button>
-            </div>
 
-            <div className="mb-8 grid gap-4 sm:grid-cols-3">
-                <div className="glass-card p-4 flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/20 text-primary">
-                        <Package className="h-6 w-6" />
-                    </div>
-                    <div>
-                        <p className="text-2xl font-bold">{stats.total}</p>
-                        <p className="text-xs text-muted-foreground uppercase font-bold">แพ็กเกจทั้งหมด</p>
-                    </div>
-                </div>
-                <div className="glass-card p-4 flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-500/20 text-green-500">
-                        <Check className="h-6 w-6" />
-                    </div>
-                    <div>
-                        <p className="text-2xl font-bold">{stats.active}</p>
-                        <p className="text-xs text-muted-foreground uppercase font-bold">เปิดขาย</p>
-                    </div>
-                </div>
-                <div className="glass-card p-4 flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-500/20 text-amber-500">
-                        <Star className="h-6 w-6" />
-                    </div>
-                    <div>
-                        <p className="text-2xl font-bold">{stats.popular}</p>
-                        <p className="text-xs text-muted-foreground uppercase font-bold">ยอดนิยม</p>
-                    </div>
-                </div>
+            {/* Quick Stats Summary */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                <StatCard 
+                    title="แพ็กเกจทั้งหมด"
+                    value={stats.total}
+                    icon={Package}
+                    iconColor="primary"
+                    className="border-primary/20 bg-gradient-to-br from-white to-primary/5"
+                />
+                <StatCard 
+                    title="เปิดขายอยู่"
+                    value={stats.active}
+                    icon={Check}
+                    iconColor="success"
+                />
+                <StatCard 
+                    title="ยอดนิยม"
+                    value={stats.popular}
+                    icon={Star}
+                    iconColor="warning"
+                />
+                <StatCard 
+                    title="สถานะระบบ"
+                    value="ปกติ"
+                    icon={BadgeCheck}
+                    iconColor="info"
+                />
             </div>
 
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -410,7 +419,7 @@ export default function PackagesPage() {
                             <button onClick={() => { setEditMode(null); setIsCreating(false); }} className="rounded-full p-2 hover:bg-muted text-muted-foreground transition-all"><X /></button>
                         </div>
 
-                        <div className="p-8 space-y-6 overflow-y-auto scrollbar-hide">
+                        <div className="p-8 space-y-6 overflow-y-auto scrollbar-hide flex-1">
                             <div className="grid grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black uppercase text-muted-foreground ml-1">รหัส (ID)</label>
@@ -490,6 +499,7 @@ export default function PackagesPage() {
                     </div>
                 </div>
             )}
+            </div>
         </AdminLayout>
     );
 }
