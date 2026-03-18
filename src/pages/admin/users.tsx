@@ -20,8 +20,17 @@ import {
     UserCog,
     X,
     Lock,
-    Package
+    Package,
+    ArrowRight,
+    RefreshCw
 } from "lucide-react";
+
+// LINE Icon Component
+const LineIcon = ({ className }: { className?: string }) => (
+    <svg viewBox="0 0 24 24" className={className} fill="currentColor">
+        <path d="M19.365 9.863c.064.433.1.882.1 1.34 0 3.125-2.562 5.674-5.712 5.674-1.223 0-2.359-.383-3.297-1.036l-2.651.883c-.37.123-.663-.223-.52-.54l.582-1.33c-1.328-1.01-2.181-2.577-2.181-4.347 0-3.125 2.562-5.674 5.712-5.674 3.15 0 5.712 2.549 5.712 5.674h.256zm-10.138 4.53c.06.02.12.03.17.03.16 0 .3-.09.37-.24l.58-1.33.04-.08.08-.03c1.2-.45 2.04-1.58 2.04-2.88 0-1.72-1.41-3.12-3.13-3.12s-3.13 1.4-3.13 3.12c0 1.07.54 2.02 1.36 2.59l.07.05-.02.09-.58 1.33c-.07.16-.03.35.11.45.1.07.21.1.32.1h.11z"/>
+    </svg>
+);
 import { collection, query, orderBy, limit, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, addDoc } from "firebase/firestore";
 import { db } from "@/firebase";
 import { cn } from "@/lib/utils";
@@ -391,7 +400,9 @@ export default function AdminUsersPage() {
         total: users.length,
         premium: users.filter(u => getMembershipType(u) !== 'free').length,
         admins: users.filter(u => u.role === 'admin').length,
-        banned: users.filter(u => u.banned).length
+        banned: users.filter(u => u.banned).length,
+        line: users.filter(u => u.uid.startsWith('line:') || u.provider === 'line').length,
+        google: users.filter(u => u.provider === 'google' || (u.email && !u.uid.startsWith('line:') && u.email.endsWith('@gmail.com'))).length
     };
 
 
@@ -440,105 +451,117 @@ export default function AdminUsersPage() {
             </Head>
             <GlobalScrollbarStyle />
 
-            {/* Page Header */}
-            <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            {/* Dashboard Header */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
                 <div>
-                    <h1 className="text-2xl font-bold text-foreground">จัดการผู้ใช้งาน (Users)</h1>
-                    <p className="mt-1 text-muted-foreground">จัดการรายชื่อสมาชิก สิทธิ์การใช้งาน และสถานะ</p>
+                    <h1 className="text-4xl font-black text-gray-900 tracking-tight">จัดการผู้ใช้งาน</h1>
+                    <p className="text-gray-500 font-medium mt-1">ตรวจสอบข้อมูล สิทธิ์การใช้งาน และประวัติสมาชิกทั้งหมด</p>
                 </div>
                 <div className="flex items-center gap-3">
-                    <button
-                        onClick={handleCleanupGuests}
-                        className="btn btn-outline border-border hover:border-destructive text-destructive hover:bg-destructive/10 gap-2 normal-case"
+                    <button onClick={fetchUsers} className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 rounded-2xl font-bold text-sm text-gray-600 hover:bg-gray-50 transition-all shadow-sm">
+                        <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
+                        รีเฟรชข้อมูล
+                    </button>
+                    <button 
+                        onClick={handleCleanupGuests} 
+                        className="flex items-center gap-2 px-5 py-2.5 bg-white border border-red-200 rounded-2xl font-bold text-sm text-red-600 hover:bg-red-50 transition-all shadow-sm"
                     >
-                        <Trash className="h-4 w-4" />
+                        <Trash2 className="w-4 h-4" />
                         ล้าง Guest เก่า
                     </button>
-                    <button className="btn bg-primary text-primary-foreground hover:bg-primary/90 gap-2 normal-case border-none">
-                        <UserPlus className="h-4 w-4" />
-                        เพิ่มผู้ใช้
+                    <button className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 rounded-2xl font-bold text-sm text-white hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200">
+                        <UserPlus className="w-4 h-4" />
+                        เพิ่มผู้ใช้ใหม่
                     </button>
                 </div>
             </div>
 
-            {/* Stats Row */}
-            <div className="mb-8 grid gap-4 sm:grid-cols-4">
-                <div className="glass-card p-4 flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/20">
-                        <Users className="h-6 w-6 text-primary" />
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-500 group">
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl group-hover:scale-110 transition-transform">
+                            <Users className="w-6 h-6" />
+                        </div>
+                        <span className="text-[10px] font-black uppercase text-indigo-400 tracking-widest">Growth +12%</span>
                     </div>
-                    <div>
-                        <p className="text-2xl font-bold text-foreground">{stats.total}</p>
-                        <p className="text-sm text-muted-foreground">ผู้ใช้ทั้งหมด</p>
-                    </div>
+                    <h3 className="text-3xl font-black text-gray-900">{stats.total.toLocaleString()}</h3>
+                    <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mt-1">สมาชิกทั้งหมด</p>
                 </div>
-                <div className="glass-card p-4 flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-success/20">
-                        <Crown className="h-6 w-6 text-success" />
+
+                <div className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-500 group">
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl group-hover:scale-110 transition-transform">
+                            <LineIcon className="w-6 h-6" />
+                        </div>
+                        <span className="text-[10px] font-black uppercase text-emerald-400 tracking-widest">LINE Official</span>
                     </div>
-                    <div>
-                        <p className="text-2xl font-bold text-foreground">
-                            {stats.premium}
-                        </p>
-                        <p className="text-sm text-muted-foreground">พรีเมียม</p>
-                    </div>
+                    <h3 className="text-3xl font-black text-gray-900">{stats.line.toLocaleString()}</h3>
+                    <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mt-1">ผู้ใช้ผ่าน LINE</p>
                 </div>
-                <div className="glass-card p-4 flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-warning/20">
-                        <Shield className="h-6 w-6 text-warning" />
+
+                <div className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-500 group">
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="p-3 bg-rose-50 text-rose-600 rounded-2xl group-hover:scale-110 transition-transform">
+                            <Mail className="w-6 h-6" />
+                        </div>
+                        <span className="text-[10px] font-black uppercase text-rose-400 tracking-widest">Google / Email</span>
                     </div>
-                    <div>
-                        <p className="text-2xl font-bold text-foreground">
-                            {stats.admins}
-                        </p>
-                        <p className="text-sm text-muted-foreground">ผู้ดูแล</p>
-                    </div>
+                    <h3 className="text-3xl font-black text-gray-900">{stats.google.toLocaleString()}</h3>
+                    <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mt-1">ผู้ใช้ผ่าน Google</p>
                 </div>
-                <div className="glass-card p-4 flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-destructive/20">
-                        <Ban className="h-6 w-6 text-destructive" />
+
+                <div className="bg-white p-6 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-500 group">
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="p-3 bg-amber-50 text-amber-600 rounded-2xl group-hover:scale-110 transition-transform">
+                            <Crown className="w-6 h-6" />
+                        </div>
+                        <span className="text-[10px] font-black uppercase text-amber-400 tracking-widest">Premium Members</span>
                     </div>
-                    <div>
-                        <p className="text-2xl font-bold text-foreground">
-                            {stats.banned}
-                        </p>
-                        <p className="text-sm text-muted-foreground">ถูกระงับ</p>
-                    </div>
+                    <h3 className="text-3xl font-black text-gray-900">{stats.premium.toLocaleString()}</h3>
+                    <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mt-1">สมาชิกพรีเมียม</p>
                 </div>
             </div>
 
-            {/* Filters */}
-            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <input
-                        type="search"
-                        placeholder="ค้นหาชื่อ หรืออีเมล..."
-                        className="input input-sm w-full pl-9 bg-muted/30 border-border/50 focus:border-primary rounded-md"
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                    />
-                </div>
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                        <input
-                            type="checkbox"
-                            className="toggle toggle-primary toggle-sm"
-                            checked={showGuests}
-                            onChange={e => setShowGuests(e.target.checked)}
+            {/* Main Table Card */}
+            <div className="bg-white border border-gray-100 rounded-[40px] shadow-2xl shadow-gray-200/50 overflow-hidden">
+                {/* Table Filters Header */}
+                <div className="p-8 flex flex-col md:flex-row justify-between items-center gap-6 border-b border-gray-50">
+                    <div className="relative w-full md:w-[450px]">
+                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input 
+                            type="text" 
+                            placeholder="ค้นหาชื่อ, อีเมล หรือ UID ของผู้ใช้..." 
+                            className="w-full pl-14 pr-6 py-4 bg-gray-50/50 border border-gray-100 rounded-[22px] focus:ring-4 focus:ring-indigo-100 outline-none transition-all font-medium text-gray-900"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                         />
-                        <span className="text-sm text-muted-foreground">แสดง Guest</span>
                     </div>
-                    <select className="select select-sm select-bordered w-32 bg-muted/30 border-border/50 rounded-lg text-foreground">
-                        <option>ทุกบทบาท</option>
-                        <option>Admin</option>
-                        <option>User</option>
-                    </select>
+                    <div className="flex items-center gap-3 w-full md:w-auto">
+                        <div className="flex items-center gap-4 mr-4">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    className="toggle toggle-primary toggle-sm"
+                                    checked={showGuests}
+                                    onChange={e => setShowGuests(e.target.checked)}
+                                />
+                                <span className="text-xs font-bold text-gray-500">แสดง Guest</span>
+                            </label>
+                        </div>
+                        <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-xl border border-gray-100">
+                            <Filter className="w-4 h-4 text-gray-400" />
+                            <span className="text-xs font-bold text-gray-500">บทบาท</span>
+                        </div>
+                        <select className="px-4 py-3 bg-white border border-gray-200 rounded-2xl font-bold text-sm outline-none focus:ring-2 focus:ring-indigo-100 min-w-[150px]">
+                            <option>ทั้งหมด (All)</option>
+                            <option>Admin Only</option>
+                            <option>User Only</option>
+                        </select>
+                    </div>
                 </div>
-            </div>
 
-            {/* Users Table */}
-            <div className="glass-card overflow-hidden">
+                {/* Users Table */}
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead>

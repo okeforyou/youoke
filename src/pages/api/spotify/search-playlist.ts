@@ -20,7 +20,7 @@ export default async function handler(
 
     if (OKE_PLAYLIST === query) {
       const playlistResponse = await axios.get(
-        "https://api.spotify.com/v1/users/31dt6lomfdeam2r24mfy6chevmoe/playlists?offset=0&limit=50&locale=th",
+        "https://api.spotify.com/v1/me/playlists?offset=0&limit=50&locale=th",
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,

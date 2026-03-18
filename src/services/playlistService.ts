@@ -26,6 +26,10 @@ export interface CommunityPlaylist {
     createdAt?: any;
     updatedAt?: any;
     isOfficial?: boolean;
+    createdBy?: string;
+    type?: 'private' | 'public';
+    name?: string; // For user-created playlists
+    playlists?: any[]; // For user-created playlists containing video objects
 }
 
 const COLLECTION_NAME = "community_playlists";
@@ -61,6 +65,36 @@ export const PlaylistService = {
             return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CommunityPlaylist));
         } catch (error) {
             console.error("Error fetching all playlists:", error);
+            return [];
+        }
+    },
+
+    /**
+     * Fetch User Created Playlists (from 'playlists' collection)
+     */
+    getUserPlaylists: async (): Promise<CommunityPlaylist[]> => {
+        if (!db) return [];
+        try {
+            const q = query(collection(db, "playlists"), orderBy("createdAt", "desc"));
+            const snapshot = await getDocs(q);
+            return snapshot.docs.map(doc => {
+                const data = doc.data();
+                // Map user playlist structure to CommunityPlaylist interface
+                return {
+                    id: doc.id,
+                    title: data.name || "Untitled Playlist",
+                    thumbnail: data.playlists?.[0]?.videoThumbnails?.[0]?.url || "",
+                    source: 'youoke',
+                    likes: data.starCount || 0,
+                    tracksCount: data.playlists?.length || 0,
+                    addedBy: data.createdBy,
+                    type: data.type,
+                    createdAt: data.createdAt,
+                    ...data
+                } as CommunityPlaylist;
+            });
+        } catch (error) {
+            console.error("Error fetching user playlists:", error);
             return [];
         }
     },
@@ -105,6 +139,14 @@ export const PlaylistService = {
     deletePlaylist: async (playlistId: string): Promise<void> => {
         if (!db) throw new Error("Firestore not initialized");
         await deleteDoc(doc(db, COLLECTION_NAME, playlistId));
+    },
+
+    /**
+     * Delete a User Created Playlist (Admin only)
+     */
+    deleteUserPlaylist: async (playlistId: string): Promise<void> => {
+        if (!db) throw new Error("Firestore not initialized");
+        await deleteDoc(doc(db, "playlists", playlistId));
     },
 
     /**

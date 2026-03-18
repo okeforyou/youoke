@@ -110,10 +110,10 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) 
                   key={item.path}
                   href={item.path}
                   className={cn(
-                    "group flex items-center gap-3 px-4 py-3 mb-1 rounded-2xl transition-all duration-200 font-medium text-sm",
+                    "group flex items-center gap-3 px-4 py-3 mb-1 rounded-2xl transition-all duration-200 font-bold text-sm",
                     isActive
                       ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1"
-                      : "text-gray-700 hover:bg-gray-100/50 hover:text-gray-900"
+                      : "text-gray-700 hover:bg-gray-100/50 hover:text-gray-900 border border-transparent hover:border-gray-200"
                   )}
                   onClick={() => {
                     if (window.innerWidth < 1024 && onToggle) {
@@ -129,7 +129,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) 
                     </span>
                   )}
                   {item.id === 'orders' && stats.pendingOrders > 0 && (
-                    <span className="ml-auto flex h-5 min-w-[20px] items-center justify-center rounded-full bg-orange-100 px-1.5 text-xs font-bold text-orange-600 animate-pulse">
+                    <span className="ml-auto flex h-6 min-w-[24px] items-center justify-center rounded-full bg-orange-500 px-1.5 text-[10px] font-black text-white shadow-lg shadow-orange-200 animate-pulse border border-white/20">
                       {stats.pendingOrders}
                     </span>
                   )}
