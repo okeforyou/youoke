@@ -165,8 +165,8 @@ export default function AdminOrdersPage() {
             {/* Page Header */}
             <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-4xl font-black text-gray-900 tracking-tight">รายการสั่งซื้อ</h1>
-                    <p className="mt-1 text-gray-500 font-medium">ตรวจสอบรายการแจ้งโอนและอนุมัติการสมัครสมาชิก</p>
+                    <h1 className="text-2xl font-bold text-gray-900">รายการสั่งซื้อ</h1>
+                    <p className="text-sm text-gray-500 mt-1">ตรวจสอบรายการแจ้งโอนและอนุมัติการสมัครสมาชิก</p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 rounded-2xl font-bold text-sm text-gray-600 hover:bg-gray-50 transition-all shadow-sm" onClick={fetchOrders}>

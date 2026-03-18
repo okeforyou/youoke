@@ -5,7 +5,7 @@ import { PlaylistService, CommunityPlaylist } from "../../services/playlistServi
 import { 
     Trash2, RefreshCw, BadgeCheck, Music, Search, 
     ExternalLink, CheckCircle2, AlertCircle, PlayCircle,
-    Info, LayoutGrid, List, Heart, Plus, Loader2, Users
+    Info, LayoutGrid, List, Heart, Plus, Loader2, Users, Settings
 } from "lucide-react";
 import { useToast } from "@/context/ToastContext";
 import axios from "axios";
@@ -38,6 +38,11 @@ export default function AdminPlaylists() {
     const [viewingPlaylist, setViewingPlaylist] = useState<any | null>(null);
     const [tracks, setTracks] = useState<any[]>([]);
     const [tracksLoading, setTracksLoading] = useState(false);
+
+    // Edit Playlist State
+    const [editingPlaylist, setEditingPlaylist] = useState<any | null>(null);
+    const [editTitle, setEditTitle] = useState("");
+    const [updating, setUpdating] = useState(false);
 
     const { addToast } = useToast() || { addToast: console.log };
 
@@ -168,9 +173,31 @@ export default function AdminPlaylists() {
             const res = await axios.get(`/api/playlist/${formattedId}`);
             setTracks(res.data.videos || []);
         } catch (error) {
-            addToast("Failed to load tracks", "error");
+            console.error("View tracks error:", error);
+            // Member playlists might not be in the sp- format if they are native YouOke playlists
+            if (p.playlists) {
+                setTracks(p.playlists);
+            } else {
+                addToast("Failed to load tracks", "error");
+            }
         } finally {
             setTracksLoading(false);
+        }
+    };
+
+    const handleUpdatePlaylist = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingPlaylist || !editTitle.trim()) return;
+        setUpdating(true);
+        try {
+            await PlaylistService.updateUserPlaylist(editingPlaylist.id, editTitle.trim());
+            addToast("Playlist updated", "success");
+            setEditingPlaylist(null);
+            fetchMemberPlaylists();
+        } catch (error) {
+            addToast("Failed to update", "error");
+        } finally {
+            setUpdating(false);
         }
     };
 
@@ -183,14 +210,9 @@ export default function AdminPlaylists() {
             <div className="max-w-7xl mx-auto space-y-8">
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3.5 bg-indigo-600 rounded-[20px] shadow-lg shadow-indigo-200">
-                            <PlayCircle className="w-8 h-8 text-white" />
-                        </div>
-                        <div>
-                            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">จัดการเพลย์ลิสต์</h1>
-                            <p className="text-gray-500 font-medium">จัดการรายการเพลงและคอนเทนต์ Official ของระบบ</p>
-                        </div>
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-900">จัดการเพลย์ลิสต์</h1>
+                        <p className="text-sm text-gray-500 mt-1">จัดการรายการเพลงและคอนเทนต์ของระบบ</p>
                     </div>
 
                     <div className="flex items-center gap-3">
@@ -311,6 +333,7 @@ export default function AdminPlaylists() {
                                     onDelete={() => handleDelete(playlist.id)}
                                     onToggleOfficial={() => handleToggleOfficial(playlist, !!playlist.isOfficial)}
                                     onViewTracks={() => viewTracks(playlist)}
+                                    onEdit={undefined}
                                 />
                             ))
                         )
@@ -338,6 +361,10 @@ export default function AdminPlaylists() {
                                     onDelete={() => handleDelete(playlist.id, true)}
                                     onToggleOfficial={() => handleToggleOfficial(playlist, !!playlist.isOfficial)}
                                     onViewTracks={() => viewTracks(playlist)}
+                                    onEdit={() => {
+                                        setEditingPlaylist(playlist);
+                                        setEditTitle(playlist.title || "");
+                                    }}
                                 />
                             ))
                         )
@@ -454,11 +481,53 @@ export default function AdminPlaylists() {
                     </div>
                 </div>
             )}
+
+            {/* Edit Playlist Modal */}
+            {editingPlaylist && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setEditingPlaylist(null)} />
+                    <div className="relative w-full max-w-md bg-white rounded-[32px] shadow-2xl overflow-hidden p-8 animate-in zoom-in duration-300">
+                        <h3 className="text-xl font-black text-gray-900 mb-2">แก้ไขเพลย์ลิสต์</h3>
+                        <p className="text-sm text-gray-500 mb-6 font-bold uppercase tracking-wider">MEMBER PLAYLIST ID: {editingPlaylist.id}</p>
+                        
+                        <form onSubmit={handleUpdatePlaylist} className="space-y-6">
+                            <div>
+                                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">ชื่อเพลย์ลิสต์</label>
+                                <input 
+                                    type="text" 
+                                    className="w-full px-5 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:ring-2 focus:ring-indigo-500/20 outline-none font-bold text-gray-900 transition-all"
+                                    value={editTitle}
+                                    onChange={(e) => setEditTitle(e.target.value)}
+                                    placeholder="Enter playlist name..."
+                                    autoFocus
+                                />
+                            </div>
+
+                            <div className="flex gap-3 pt-2">
+                                <button 
+                                    type="button"
+                                    onClick={() => setEditingPlaylist(null)}
+                                    className="flex-1 py-4 rounded-2xl font-black text-sm text-gray-500 hover:bg-gray-50 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    type="submit"
+                                    disabled={updating}
+                                    className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-black text-sm shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                                >
+                                    {updating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Changes"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </AdminLayout>
     );
 }
 
-const PlaylistCard = ({ playlist, isMember, onDelete, onToggleOfficial, onViewTracks }: { playlist: CommunityPlaylist, isMember?: boolean, onDelete: any, onToggleOfficial: any, onViewTracks: any }) => (
+const PlaylistCard = ({ playlist, isMember, onDelete, onToggleOfficial, onViewTracks, onEdit }: { playlist: CommunityPlaylist, isMember?: boolean, onDelete: any, onToggleOfficial: any, onViewTracks: any, onEdit?: any }) => (
     <div className="group relative bg-white border border-gray-100 rounded-[32px] p-5 shadow-sm hover:shadow-xl hover:translate-y-[-4px] transition-all duration-500 overflow-hidden">
         {/* Background Accent */}
         <div className={`absolute top-0 right-0 w-24 h-24 blur-3xl opacity-10 transition-opacity ${playlist.isOfficial ? "bg-amber-400" : isMember ? "bg-rose-400" : "bg-indigo-400"}`} />
@@ -515,17 +584,28 @@ const PlaylistCard = ({ playlist, isMember, onDelete, onToggleOfficial, onViewTr
 
         {/* Footer Actions */}
         <div className="mt-6 flex gap-2 pt-2 border-t border-gray-50">
-            <button 
-                onClick={onToggleOfficial}
-                className={`flex-1 py-2.5 rounded-[14px] text-xs font-black transition-all flex items-center justify-center gap-2 ${
-                    playlist.isOfficial 
-                        ? "bg-amber-50 text-amber-600 border border-amber-100 hover:bg-amber-100" 
-                        : "bg-gray-50 text-gray-500 border border-gray-100 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-100"
-                }`}
-            >
-                {playlist.isOfficial ? <BadgeCheck className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
-                {playlist.isOfficial ? "Unmark Official" : "Set Official"}
-            </button>
+            {isMember && onEdit && (
+                <button 
+                    onClick={onEdit}
+                    className="flex-1 py-2.5 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-[14px] text-xs font-black hover:bg-indigo-100 transition-all flex items-center justify-center gap-2"
+                >
+                    <Settings className="w-3.5 h-3.5" />
+                    Manage
+                </button>
+            )}
+            {!isMember && (
+                <button 
+                    onClick={onToggleOfficial}
+                    className={`flex-1 py-2.5 rounded-[14px] text-xs font-black transition-all flex items-center justify-center gap-2 ${
+                        playlist.isOfficial 
+                            ? "bg-amber-50 text-amber-600 border border-amber-100 hover:bg-amber-100" 
+                            : "bg-gray-50 text-gray-500 border border-gray-100 hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-100"
+                    }`}
+                >
+                    {playlist.isOfficial ? <BadgeCheck className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+                    {playlist.isOfficial ? "Unmark Official" : "Set Official"}
+                </button>
+            )}
             <button 
                 onClick={onDelete}
                 className="p-2.5 bg-gray-50 border border-gray-100 text-gray-400 rounded-[14px] hover:bg-red-50 hover:text-red-500 hover:border-red-100 transition-all"

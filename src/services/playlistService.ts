@@ -150,6 +150,17 @@ export const PlaylistService = {
     },
 
     /**
+     * Update a User Created Playlist (Admin)
+     */
+    updateUserPlaylist: async (playlistId: string, name: string): Promise<void> => {
+        if (!db) throw new Error("Firestore not initialized");
+        await updateDoc(doc(db, "playlists", playlistId), {
+            name,
+            updatedAt: serverTimestamp()
+        });
+    },
+
+    /**
      * Update Official Status (Admin)
      */
     toggleOfficial: async (playlistId: string, isOfficial: boolean): Promise<void> => {

@@ -124,13 +124,10 @@ const ArtistManagementPage = () => {
     return (
         <AdminLayout>
             <div className="max-w-6xl mx-auto py-8 px-4">
-                <div className="flex items-center gap-4 mb-8">
-                    <div className="p-3 bg-primary/10 rounded-2xl">
-                        <Globe className="w-8 h-8 text-primary" />
-                    </div>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">จัดการข้อมูลศิลปิน</h1>
-                        <p className="text-gray-500">จัดการรูปภาพและข้อมูลพื้นฐานของศิลปินในระบบ</p>
+                        <p className="text-sm text-gray-500 mt-1">จัดการรูปภาพและข้อมูลพื้นฐานของศิลปินในระบบ</p>
                     </div>
                 </div>
 

@@ -195,8 +195,9 @@ export default function MidiLab() {
 
     return (
         <AdminLayout>
-            <div className="p-6 pb-0 max-w-6xl mx-auto">
-                <h1 className="text-2xl font-bold">MIDI Lab (Smart Import)</h1>
+            <div className="p-6 pb-0 max-w-6xl mx-auto mb-8">
+                <h1 className="text-2xl font-bold text-gray-900">MIDI Lab (Smart Import)</h1>
+                <p className="text-sm text-gray-500 mt-1">เครื่องมือจัดการและทดสอบเทมเพลต MIDI</p>
             </div>
             <div className="p-6 space-y-6 max-w-6xl mx-auto h-[calc(100vh-100px)] flex flex-col">
 
