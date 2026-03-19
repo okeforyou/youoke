@@ -8,6 +8,8 @@ import {
     createUserWithEmailAndPassword,
     GoogleAuthProvider,
     signInWithPopup,
+    signInWithRedirect,
+    getRedirectResult,
     updateProfile
 } from 'firebase/auth';
 import { getApps } from 'firebase/app';
@@ -397,33 +399,41 @@ export const useAuthStore = create<UserState & AuthActions>()(
                 set({ isLoading: true, error: null });
                 try {
                     const provider = new GoogleAuthProvider();
-
                     if (!auth) throw new Error("Firebase Auth not initialized");
-                    console.time('GooglePopup');
-                    const userCredential = await signInWithPopup(auth, provider);
-                    console.timeEnd('GooglePopup');
 
-                    const firebaseUser = userCredential.user;
-                    console.log('⚡ GoogleSignIn: Auth Success', firebaseUser.uid);
+                    const isMobile = typeof window !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                    
+                    if (isMobile) {
+                        console.log('📱 GoogleSignIn: Using Redirect (Mobile optimized)');
+                        await signInWithRedirect(auth, provider);
+                    } else {
+                        console.log('💻 GoogleSignIn: Using Popup');
+                        const userCredential = await signInWithPopup(auth, provider);
+                        const firebaseUser = userCredential.user;
+                        console.log('⚡ GoogleSignIn: Auth Success', firebaseUser.uid);
 
-                    // Optimistic Update
-                    set({
-                        user: {
-                            uid: firebaseUser.uid,
-                            email: firebaseUser.email,
-                            displayName: firebaseUser.displayName,
-                            photoURL: firebaseUser.photoURL,
-                            role: 'user',
-                            isAdmin: false,
-                            membership: DEFAULT_MEMBERSHIP,
-                            installed_modules: [],
-                            quota: undefined
-                        },
-                        isLoading: false
-                    });
+                        set({
+                            user: {
+                                uid: firebaseUser.uid,
+                                email: firebaseUser.email,
+                                displayName: firebaseUser.displayName,
+                                photoURL: firebaseUser.photoURL,
+                                role: 'user',
+                                isAdmin: false,
+                                membership: DEFAULT_MEMBERSHIP,
+                                installed_modules: [],
+                                quota: undefined
+                            },
+                        });
+                    }
+                    set({ isLoading: false });
                 } catch (error: any) {
                     console.error('⚡ GoogleSignIn: Error', error);
-                    set({ error: error.message, isLoading: false });
+                    let msg = error.message;
+                    if (error.code === 'auth/popup-closed-by-user') {
+                        msg = 'การเข้าสู่ระบบถูกยกเลิก (หน้าต่างถูกปิด)';
+                    }
+                    set({ error: msg, isLoading: false });
                     throw error;
                 }
             },
@@ -435,7 +445,6 @@ export const useAuthStore = create<UserState & AuthActions>()(
                 // 2. http://localhost:3000/login/ (For testing)
 
                 let redirectUri = 'https://play.okeforyou.com/login/';
-
                 if (typeof window !== 'undefined') {
                     redirectUri = `${window.location.origin}/login/`;
                 }
