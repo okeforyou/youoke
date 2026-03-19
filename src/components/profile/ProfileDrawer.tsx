@@ -19,6 +19,9 @@ import { db } from '../../firebase';
 import { MembershipCard } from './MembershipCard';
 import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
+import { NotificationList } from './NotificationList';
+import { PackageStore } from './PackageStore';
+import { BellIcon, TicketIcon } from '@heroicons/react/24/outline';
 
 interface UserProfile {
     displayName?: string;
@@ -312,11 +315,33 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                                     <MembershipCard membership={displayMembership as any} role={isAdmin ? 'admin' : 'user'} onUpgrade={() => { onClose(); router.push('/packages'); }} />
                                                 </div>
 
-                                                {/* Menu Sections */}
-                                                <div className="space-y-6">
-                                                    <div>
-                                                        <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3 ml-2">เมนูสมาชิก</h3>
-                                                        <div className="grid grid-cols-1 gap-2">
+                                                 {/* Menu Sections */}
+                                                 <div className="space-y-8">
+                                                     {/* 🔔 Notifications Section */}
+                                                     <div>
+                                                         <div className="flex items-center gap-2 mb-3 ml-2">
+                                                             <BellIcon className="w-3.5 h-3.5 text-gray-400" />
+                                                             <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">การแจ้งเตือน</h3>
+                                                         </div>
+                                                         <div className="bg-gray-50/50 rounded-[2rem] border border-gray-100 p-4">
+                                                             <NotificationList />
+                                                         </div>
+                                                     </div>
+
+                                                     {/* 🎟️ Packages Section */}
+                                                     <div>
+                                                         <div className="flex items-center gap-2 mb-3 ml-2">
+                                                             <TicketIcon className="w-3.5 h-3.5 text-gray-400" />
+                                                             <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">คลังแพ็กเกจ</h3>
+                                                         </div>
+                                                         <div className="bg-gray-50/50 rounded-[2rem] border border-gray-100 p-4">
+                                                             <PackageStore />
+                                                         </div>
+                                                     </div>
+
+                                                     <div>
+                                                         <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3 ml-2">เมนูสมาชิก</h3>
+                                                         <div className="grid grid-cols-1 gap-2">
                                                             <button className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-gray-100 hover:bg-gray-50 transition-all group">
                                                                 <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-white group-hover:text-primary transition-all">
                                                                     <UserIcon className="w-5 h-5" />
