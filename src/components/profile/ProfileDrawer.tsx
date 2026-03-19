@@ -306,7 +306,7 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                                             {profile?.displayName || user?.displayName || "YouOke User"}
                                                             {isPremium && <SparklesIcon className="w-3.5 h-3.5 text-yellow-500" />}
                                                         </h2>
-                                                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">{isPremium ? 'Smarter Member' : 'เลเวล 1 สมาชิกทั่วไป'}</p>
+                                                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">{isPremium ? 'Smarter Member' : (user?.membership?.type === 'none' ? 'ยังไม่ได้เลือกแพ็กเกจ' : 'เลเวล 1 สมาชิกทั่วไป')}</p>
                                                     </div>
                                                 </div>
 

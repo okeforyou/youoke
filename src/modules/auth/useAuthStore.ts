@@ -20,7 +20,7 @@ import { realtimeDb } from '../../firebase';
 import { createNotification } from '@/services/notificationService';
 
 interface MembershipState {
-    type: 'free' | 'day_pass' | 'monthly' | 'yearly' | 'lifetime';
+    type: 'free' | 'day_pass' | 'monthly' | 'yearly' | 'lifetime' | 'none';
     status: 'active' | 'expired' | 'pending';
     startedAt: any;
     expiresAt: any | null;
@@ -205,8 +205,8 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                     photoURL: rtdbData?.photoURL || firebaseUser.photoURL || null,
                                     role: 'user',
                                     membership: {
-                                        type: 'free',
-                                        status: 'active',
+                                        type: 'none',
+                                        status: 'pending',
                                         startedAt: serverTimestamp(),
                                         expiresAt: null
                                     },
@@ -362,8 +362,8 @@ export const useAuthStore = create<UserState & AuthActions>()(
                         photoURL: user.photoURL || null,
                         role: 'user',
                         membership: {
-                            type: 'free',
-                            status: 'active',
+                            type: 'none',
+                            status: 'pending',
                             startedAt: serverTimestamp(),
                             expiresAt: null
                         },
@@ -389,8 +389,8 @@ export const useAuthStore = create<UserState & AuthActions>()(
                             role: 'user',
                             isAdmin: false,
                             membership: {
-                                type: 'free',
-                                status: 'active',
+                                type: 'none',
+                                status: 'pending',
                                 startedAt: new Date(),
                                 expiresAt: null
                             },
