@@ -3,6 +3,7 @@ import { Cast } from 'lucide-react';
 import { useUIStore } from '../../../stores/useUIStore';
 import { useCast } from '@/plugins/cast/context/CastContext';
 import { useSystem } from '@/core/container/SystemContext';
+import { useToast } from '@/context/ToastContext';
 
 interface UnifiedCastButtonProps {
     className?: string;
@@ -16,13 +17,14 @@ export const UnifiedCastButton: React.FC<UnifiedCastButtonProps> = ({
     const { setCastModalOpen, castMode } = useUIStore();
     const { isConnected } = useCast();
     const { user } = useSystem().auth();
+    const { addToast } = useToast() || { addToast: () => {} };
     const isGuest = !user || user.displayName === 'Guest';
 
     const isAnyCastActive = isConnected || (castMode !== 'none' && castMode !== undefined);
 
     const handleCastClick = () => {
         if (isGuest) {
-            alert("กรุณาสมัครสมาชิกเพื่อใช้ฟีเจอร์การ Cast (ฟรี 1 วัน!)");
+            addToast("กรุณาสมัครสมาชิกเพื่อใช้ฟีเจอร์การ Cast (ฟรี 1 วัน!)", "warning");
             return;
         }
         setCastModalOpen(true);

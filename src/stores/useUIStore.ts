@@ -48,8 +48,6 @@ interface UIState {
     setSidebarCollapsed: (collapsed: boolean) => void;
 }
 
-
-
 export const useUIStore = create<UIState>((set) => ({
     isQueueOpen: false,
     setQueueOpen: (isOpen) => set({ isQueueOpen: isOpen }),
