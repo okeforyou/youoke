@@ -28,11 +28,10 @@ export default function LoginPage() {
             const verifyLineLogin = async () => {
                 try {
                     // Try to be strict with origin
-                    const origin = typeof window !== 'undefined' ? 
-                        (window.location.origin.includes('localhost') ? 'http://localhost:3000' : 'https://play.okeforyou.com') 
+                    // STRICT: Must match LINE Developers Console exactly
+                    const origin = (typeof window !== 'undefined' && window.location.origin.includes('localhost')) 
+                        ? 'http://localhost:3000' 
                         : 'https://play.okeforyou.com';
-                    
-                    // MUST match LINE Developers Console exactly
                     const redirectUri = `${origin}/login/`;
                     
                     console.log('📡 Verifying LINE code:', code, 'with URI:', redirectUri);

@@ -444,10 +444,12 @@ export const useAuthStore = create<UserState & AuthActions>()(
                 // 1. https://playyouoke.vercel.app/login/
                 // 2. http://localhost:3000/login/ (For testing)
 
-                let redirectUri = 'https://play.okeforyou.com/login/';
-                if (typeof window !== 'undefined') {
-                    redirectUri = `${window.location.origin}/login/`;
+                // STRICT: Must match LINE Developers Console exactly
+                let origin = 'https://play.okeforyou.com';
+                if (typeof window !== 'undefined' && window.location.origin.includes('localhost')) {
+                    origin = 'http://localhost:3000';
                 }
+                const redirectUri = `${origin}/login/`;
 
                 console.log('🔗 LINE Redirect URI:', redirectUri);
                 const state = 'random_state_string'; // Should be random
