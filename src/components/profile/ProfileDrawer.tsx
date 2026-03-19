@@ -32,7 +32,6 @@ interface ProfileDrawerProps {
 
 export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
     const { user, signOut: logOut } = useSystem().auth(); // specific hook
-    const isGuest = !user || user.displayName === 'Guest';
     const router = useRouter();
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(false);
@@ -181,7 +180,7 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                                 <div className="loading loading-spinner loading-lg text-primary"></div>
                                             </div>
                                         ) : !user ? (
-                                            // 🆕 NEW: Not Logged In View (Similar to Desktop)
+                                            // Member Invitation View (Standard Login/Signup)
                                             <div className="flex-1 flex flex-col items-center justify-center px-8 text-center space-y-6 animate-in fade-in duration-500">
                                                 <div className="w-20 h-20 rounded-3xl bg-slate-50 flex items-center justify-center text-slate-300 border border-slate-100 shadow-sm">
                                                     <UserCircleIcon className="w-12 h-12" />
@@ -204,12 +203,6 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                                         เข้าสู่ระบบ
                                                     </button>
                                                 </div>
-                                            </div>
-                                        ) : user.displayName === 'Guest' ? (
-                                            // Guest View (Has Anonymous Session)
-                                            <div className="flex-1 px-4 py-6 space-y-4">
-                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">สถานะการใช้งาน</p>
-                                                <GuestCard />
                                             </div>
                                         ) : (
                                             <>
