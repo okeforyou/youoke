@@ -126,25 +126,33 @@ export const useAuthStore = create<UserState & AuthActions>()(
 
                         // ⬇️ ANONYMOUS USER HANDLING (Monitor/Guest Mode)
                         if (firebaseUser.isAnonymous) {
-                            console.log('👻 Anonymous User Detected');
+                            console.log('👻 Anonymous User Detected:', firebaseUser.uid);
 
                             // 🛑 SYSTEM FIX: PREVENT GHOST LOGIN ON MAIN APP
-                            // If user is guest/anonymous, ONLY allow if on /monitor or /remote
+                            // If user is guest/anonymous, ONLY allow if on designated Monitor/TV/Remote pages
                             if (typeof window !== 'undefined') {
                                 const path = window.location.pathname;
-                                const isAllowedGuestPage = path.startsWith('/monitor') || path.startsWith('/remote');
+                                const isAllowedGuestPage = [
+                                    '/monitor',
+                                    '/tv',
+                                    '/receiver',
+                                    '/chromecast',
+                                    '/remote'
+                                ].some(p => path.startsWith(p));
 
                                 if (!isAllowedGuestPage) {
-                                    console.warn('🚫 [Debug] Guest Session detected on unauthorized page.', window.location.pathname);
-                                    // TEMPORARY DEBUG: Disable Force Logout
-                                    // console.warn('🚫 Guest Session detected on unauthorized page. Forcing Logout.');
-                                    // if (auth) await firebaseSignOut(auth);
-                                    // set({ user: null, isLoading: false });
-                                    // return;
+                                    console.warn('🚫 [Auth] Guest Session blocked on main app page:', path);
+                                    // Set user to null immediately to clean up UI
+                                    set({ user: null, isLoading: false });
+                                    // Clean up Firebase session
+                                    if (auth) {
+                                        firebaseSignOut(auth).catch(e => console.warn('Guest cleanup failed', e));
+                                    }
+                                    return;
                                 }
                             }
 
-                            console.log('✅ Guest Access Allowed on:', window.location.pathname);
+                            console.log('✅ Guest Access Allowed on designated page');
                             set({
                                 user: {
                                     uid: firebaseUser.uid,
