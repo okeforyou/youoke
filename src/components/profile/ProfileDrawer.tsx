@@ -201,7 +201,7 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                                 </div>
                                                 <div className="w-full space-y-3 pt-4">
                                                     <button 
-                                                        onClick={() => { onClose(); router.push('/signup'); }}
+                                                        onClick={() => { onClose(); router.push('/login?mode=register'); }}
                                                         className="w-full h-12 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-95"
                                                     >
                                                         สมัครสมาชิกฟรี
