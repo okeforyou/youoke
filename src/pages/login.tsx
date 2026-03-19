@@ -27,14 +27,11 @@ export default function LoginPage() {
             
             const verifyLineLogin = async () => {
                 try {
-                    // Try to be strict with origin
-                    // STRICT: Must match LINE Developers Console exactly
-                    const origin = (typeof window !== 'undefined' && window.location.origin.includes('localhost')) 
-                        ? 'http://localhost:3000' 
-                        : 'https://play.okeforyou.com';
+                    // DYNAMIC: Support multiple domains (Vercel, custom domain, etc.)
+                    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://play.okeforyou.com';
                     const redirectUri = `${origin}/login/`;
                     
-                    console.log('📡 Verifying LINE code:', code, 'with URI:', redirectUri);
+                    console.log('📡 Verifying LINE code with URI:', redirectUri);
 
                     const res = await fetch('/api/auth/line-token', {
                         method: 'POST',
@@ -50,7 +47,6 @@ export default function LoginPage() {
                     
                     if (data.token) {
                         await signInWithCustomToken(data.token);
-                        // router.replace handles redirection after state update via the user dependency
                     } else {
                         throw new Error('No token received');
                     }

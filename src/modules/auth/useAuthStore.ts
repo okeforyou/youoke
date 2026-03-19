@@ -444,11 +444,8 @@ export const useAuthStore = create<UserState & AuthActions>()(
                 // 1. https://playyouoke.vercel.app/login/
                 // 2. http://localhost:3000/login/ (For testing)
 
-                // STRICT: Must match LINE Developers Console exactly
-                let origin = 'https://play.okeforyou.com';
-                if (typeof window !== 'undefined' && window.location.origin.includes('localhost')) {
-                    origin = 'http://localhost:3000';
-                }
+                // Use dynamic origin for multi-domain support (Vercel + Custom Domain)
+                const origin = (typeof window !== 'undefined') ? window.location.origin : 'https://play.okeforyou.com';
                 const redirectUri = `${origin}/login/`;
 
                 console.log('🔗 LINE Redirect URI:', redirectUri);
