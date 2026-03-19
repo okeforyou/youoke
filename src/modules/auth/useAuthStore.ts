@@ -183,7 +183,12 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                     displayName: rtdbData?.displayName || firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
                                     photoURL: rtdbData?.photoURL || firebaseUser.photoURL || null,
                                     role: 'user',
-                                    membership: { ...DEFAULT_MEMBERSHIP, startedAt: serverTimestamp() },
+                                    membership: {
+                                        type: 'day_pass',
+                                        status: 'active',
+                                        startedAt: serverTimestamp(),
+                                        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+                                    },
                                     quota: {
                                         daily_limit: 5,
                                         used: 0,
