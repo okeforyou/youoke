@@ -11,7 +11,11 @@ import {
     ChevronRightIcon,
     MusicalNoteIcon,
     PlayCircleIcon,
-    ServerIcon
+    ServerIcon,
+    ShieldCheckIcon,
+    DevicePhoneMobileIcon,
+    TvIcon,
+    QueueListIcon,
 } from '@heroicons/react/24/outline';
 import { useUIStore } from '../../stores/useUIStore';
 import { useSystem } from '../../core/container/SystemContext'; // DI Container
@@ -191,26 +195,50 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                             </div>
                                         ) : !user ? (
                                             // Member Invitation View (Standard Login/Signup)
-                                            <div className="flex-1 flex flex-col items-center justify-center px-8 text-center space-y-6 animate-in fade-in duration-500">
-                                                <div className="w-20 h-20 rounded-3xl bg-slate-50 flex items-center justify-center text-slate-300 border border-slate-100 shadow-sm">
-                                                    <UserCircleIcon className="w-12 h-12" />
+                                            <div className="flex-1 flex flex-col p-6 animate-in fade-in duration-500">
+                                                <div className="flex flex-col items-center text-center space-y-4 mb-10 mt-4">
+                                                    <div className="w-20 h-20 rounded-[2rem] bg-gradient-to-br from-primary/10 to-blue-500/10 flex items-center justify-center text-primary shadow-sm ring-1 ring-primary/5">
+                                                        <SparklesIcon className="w-10 h-10" />
+                                                    </div>
+                                                    <div className="space-y-1.5">
+                                                        <h3 className="text-2xl font-black text-gray-900 leading-tight">ร่วมเป็นครอบครัว YouOke</h3>
+                                                        <p className="text-sm text-gray-500 font-medium px-4">สมัครสมาชิกวันนี้เพื่อรับสิทธิ์ทดลองใช้ฟรี 1 วัน และปลดล็อกฟีเจอร์พรีเมียม!</p>
+                                                    </div>
                                                 </div>
-                                                <div className="space-y-2">
-                                                    <h3 className="text-xl font-black text-slate-900">เข้าสู่ระบบ YouOke</h3>
-                                                    <p className="text-sm text-slate-500 font-medium">สมัครสมาชิกวันนี้เพื่อรับสิทธิ์ทดลองใช้ฟรี 1 วัน และปลดล็อกฟีเจอร์พรีเมียมทั้งหมด!</p>
+
+                                                {/* Benefits List */}
+                                                <div className="space-y-4 mb-12">
+                                                    {[
+                                                        { icon: MusicalNoteIcon, title: "ฟังเพลงไม่จำกัด", desc: "คลังเพลงมหาศาล อัปเดตใหม่ทุกวัน", color: "text-blue-500", bg: "bg-blue-50" },
+                                                        { icon: TvIcon, title: "โหมดขึ้นจอ (Cast)", desc: "แชร์ความสนุกขึ้นจอใหญ่ได้ทันที", color: "text-purple-500", bg: "bg-purple-50" },
+                                                        { icon: DevicePhoneMobileIcon, title: "รีโมทมือถือ", desc: "ควบคุมเพลงผ่านเครื่องอื่นได้อิสระ", color: "text-green-500", bg: "bg-green-50" },
+                                                        { icon: QueueListIcon, title: "สร้างเพลย์ลิสต์", desc: "บันทึกและจัดการเพลงโปรดของตัวเอง", color: "text-orange-500", bg: "bg-orange-50" },
+                                                        { icon: ShieldCheckIcon, title: "ปราศจากโฆษณา", desc: "ร้องเพลงต่อเนื่องไม่มีโฆษณากวนใจ", color: "text-emerald-500", bg: "bg-emerald-50" },
+                                                    ].map((benefit, i) => (
+                                                        <div key={i} className="flex items-center gap-4 group">
+                                                            <div className={cn("w-12 h-12 shrink-0 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110", benefit.bg, benefit.color)}>
+                                                                <benefit.icon className="w-6 h-6" />
+                                                            </div>
+                                                            <div>
+                                                                <h4 className="font-bold text-gray-900 text-sm leading-tight">{benefit.title}</h4>
+                                                                <p className="text-xs text-gray-400 mt-0.5">{benefit.desc}</p>
+                                                            </div>
+                                                        </div>
+                                                    ))}
                                                 </div>
-                                                <div className="w-full space-y-3 pt-4">
+
+                                                <div className="w-full space-y-3 mt-auto pb-4">
                                                     <button 
                                                         onClick={() => { onClose(); router.push('/login?mode=register'); }}
-                                                        className="w-full h-12 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-95"
+                                                        className="w-full h-14 rounded-2xl bg-primary hover:brightness-110 text-white font-black text-lg shadow-xl shadow-primary/20 transition-all active:scale-[0.98]"
                                                     >
                                                         สมัครสมาชิกฟรี
                                                     </button>
                                                     <button 
                                                         onClick={() => { onClose(); router.push('/login'); }}
-                                                        className="w-full h-12 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold transition-all active:scale-95"
+                                                        className="w-full h-14 rounded-2xl bg-gray-50 hover:bg-gray-100 text-gray-700 font-bold transition-all active:scale-[0.98]"
                                                     >
-                                                        เข้าสู่ระบบ
+                                                        เข้าสู่ระบบที่มีอยู่
                                                     </button>
                                                 </div>
                                             </div>
