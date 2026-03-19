@@ -22,8 +22,6 @@ import { useUIStore } from "../../../stores/useUIStore";
 import { Headphones, Library, ChevronRight, Grid as GridIcon, Headphones as HeadphonesIcon, Music, Guitar, Disc, Mic2, Star, Globe, Heart, Mic, Coffee, Radio, PlayCircle } from "lucide-react";
 import { clsx } from "clsx";
 import { ARTIST_CATEGORIES, ArtistCategory } from "../../../data/artist-categories";
-import { useSystem } from "@/core/container/SystemContext";
-import { Zap, ShieldCheck, Smartphone, Cast as CastIcon, Plus } from "lucide-react";
 
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../../firebase";
@@ -45,9 +43,7 @@ const GENRES = [
 
 export default function SpotifyDashboard({ showTab = true, mode = 'default' }: { showTab?: boolean, mode?: 'default' | 'listening' | 'genres' | 'station' }) {
   const router = useRouter();
-  const { user } = useSystem().auth();
   const { config } = useSystemConfig();
-  const { setProfileOpen } = useUIStore();
   const rawGenres = (config?.ui?.genres || GENRES).filter(g => g !== "เพลงไทย" && g !== "ทั้งหมด" && g !== "แนะนำ");
   const genres = [...rawGenres];
 
@@ -248,65 +244,6 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
     <JooxError />
   ) : (
     <div className="flex flex-col w-full pb-20">
-      {/* 0. PROMOTION BANNER FOR GUESTS */}
-      {!user && mode === 'default' && !tagId && !selectedCategoryId && (
-        <div className="px-4 pt-4 pb-2 animate-in fade-in slide-in-from-top-4 duration-700">
-            <div className="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-gray-900 via-gray-800 to-black p-6 sm:p-10 shadow-2xl group border border-white/5">
-                {/* Decorative Elements */}
-                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-[100px] -mr-32 -mt-32 animate-pulse" />
-                <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/10 rounded-full blur-[80px] -ml-24 -mb-24" />
-                
-                <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-                    <div className="max-w-xl">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/20 text-primary rounded-full text-[10px] font-black uppercase tracking-wider mb-4 border border-primary/20">
-                            <Zap size={12} fill="currentColor" />
-                            <span>สมาชิกใหม่ทดลองใช้ฟรี 1 วัน</span>
-                        </div>
-                        <h2 className="text-3xl sm:text-4xl font-black text-white leading-tight mb-4 tracking-tight">
-                            ปลดล็อกพลังเสียง<br/>
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-400">ร้องคาราโอเกะแบบโปร</span>
-                        </h2>
-                        <p className="text-gray-400 text-sm sm:text-base font-medium mb-6 leading-relaxed">
-                            สมัครสมาชิกวันนี้เพื่อเข้าถึงคลังเพลงมหาศาล ตัดเสียงร้องอัตโนมัติ 
-                            และสนุกกับการขึ้นจอคาราโอเกะได้ไม่มีสะดุด
-                        </p>
-                        
-                        <div className="flex flex-wrap gap-4 sm:gap-6">
-                            {[
-                                { icon: ShieldCheck, text: "ไร้โฆษณา" },
-                                { icon: CastIcon, text: "Cast ขึ้นจอ" },
-                                { icon: Smartphone, text: "รีโมทมือถือ" }
-                            ].map((item, i) => (
-                                <div key={i} className="flex items-center gap-2 text-white/70 text-xs font-bold">
-                                    <div className="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center">
-                                        <item.icon size={14} className="text-primary" />
-                                    </div>
-                                    {item.text}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-3">
-                        <button 
-                            onClick={() => router.push('/login?mode=register')}
-                            className="h-14 px-8 rounded-2xl bg-primary hover:brightness-110 text-white font-black text-lg shadow-xl shadow-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2"
-                        >
-                            <Plus size={20} strokeWidth={3} />
-                            สมัครสมาชิกฟรี
-                        </button>
-                        <button 
-                            onClick={() => setProfileOpen(true)}
-                            className="h-14 px-8 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold backdrop-blur-md transition-all active:scale-95 border border-white/10"
-                        >
-                            ดูรายละเอียด
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-      )}
-
       {/* 1. PLAYLIST DETAIL VIEW */}
       {tagId && artist ? (
         <div className="col-span-full animate-in fade-in duration-500">

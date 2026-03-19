@@ -195,51 +195,69 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                             </div>
                                         ) : !user ? (
                                             // Member Invitation View (Standard Login/Signup)
-                                            <div className="flex-1 flex flex-col p-6 animate-in fade-in duration-500">
-                                                <div className="flex flex-col items-center text-center space-y-4 mb-10 mt-4">
-                                                    <div className="w-20 h-20 rounded-[2rem] bg-gradient-to-br from-primary/10 to-blue-500/10 flex items-center justify-center text-primary shadow-sm ring-1 ring-primary/5">
-                                                        <SparklesIcon className="w-10 h-10" />
-                                                    </div>
-                                                    <div className="space-y-1.5">
-                                                        <h3 className="text-2xl font-black text-gray-900 leading-tight">ร่วมเป็นครอบครัว YouOke</h3>
-                                                        <p className="text-sm text-gray-500 font-medium px-4">สมัครสมาชิกวันนี้เพื่อรับสิทธิ์ทดลองใช้ฟรี 1 วัน และปลดล็อกฟีเจอร์พรีเมียม!</p>
-                                                    </div>
-                                                </div>
-
-                                                {/* Benefits List */}
-                                                <div className="space-y-4 mb-12">
-                                                    {[
-                                                        { icon: MusicalNoteIcon, title: "ฟังเพลงไม่จำกัด", desc: "คลังเพลงมหาศาล อัปเดตใหม่ทุกวัน", color: "text-blue-500", bg: "bg-blue-50" },
-                                                        { icon: TvIcon, title: "โหมดขึ้นจอ (Cast)", desc: "แชร์ความสนุกขึ้นจอใหญ่ได้ทันที", color: "text-purple-500", bg: "bg-purple-50" },
-                                                        { icon: DevicePhoneMobileIcon, title: "รีโมทมือถือ", desc: "ควบคุมเพลงผ่านเครื่องอื่นได้อิสระ", color: "text-green-500", bg: "bg-green-50" },
-                                                        { icon: QueueListIcon, title: "สร้างเพลย์ลิสต์", desc: "บันทึกและจัดการเพลงโปรดของตัวเอง", color: "text-orange-500", bg: "bg-orange-50" },
-                                                        { icon: ShieldCheckIcon, title: "ปราศจากโฆษณา", desc: "ร้องเพลงต่อเนื่องไม่มีโฆษณากวนใจ", color: "text-emerald-500", bg: "bg-emerald-50" },
-                                                    ].map((benefit, i) => (
-                                                        <div key={i} className="flex items-center gap-4 group">
-                                                            <div className={cn("w-12 h-12 shrink-0 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110", benefit.bg, benefit.color)}>
-                                                                <benefit.icon className="w-6 h-6" />
-                                                            </div>
-                                                            <div>
-                                                                <h4 className="font-bold text-gray-900 text-sm leading-tight">{benefit.title}</h4>
-                                                                <p className="text-xs text-gray-400 mt-0.5">{benefit.desc}</p>
-                                                            </div>
+                                            <div className="flex-1 flex flex-col p-4 animate-in fade-in duration-500 bg-gray-50/30">
+                                                {/* PREMIUM BANNER - INTEGRATED */}
+                                                <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-gray-900 via-gray-800 to-black p-8 shadow-xl border border-white/5 mb-6">
+                                                    {/* Decorative Elements */}
+                                                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-[40px] -mr-16 -mt-16 animate-pulse" />
+                                                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-500/10 rounded-full blur-[40px] -ml-16 -mb-16" />
+                                                    
+                                                    <div className="relative z-10 text-center flex flex-col items-center">
+                                                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/20 text-primary rounded-full text-[10px] font-black uppercase tracking-wider mb-6 border border-primary/20">
+                                                            <SparklesIcon className="w-3.5 h-3.5" fill="currentColor" />
+                                                            <span>New Member: Free 1 Day</span>
                                                         </div>
-                                                    ))}
+                                                        <h3 className="text-3xl font-black text-white leading-tight mb-4 tracking-tight">
+                                                            ปลดล็อกพลังเสียง<br/>
+                                                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-400">ร้องคาราโอเกะแบบโปร</span>
+                                                        </h3>
+                                                        <p className="text-gray-400 text-xs font-medium mb-8 leading-relaxed max-w-[240px]">
+                                                            สมัครสมาชิกวันนี้เพื่อเข้าถึงคลังเพลงมหาศาล ตัดเสียงร้องอัตโนมัติ และ Cast ขึ้นจอใหญ่
+                                                        </p>
+
+                                                        {/* Benefits Grid in Banner */}
+                                                        <div className="grid grid-cols-2 gap-3 w-full mb-8">
+                                                            {[
+                                                                { icon: MusicalNoteIcon, text: "ฟังเพลงไม่จำกัด" },
+                                                                { icon: TvIcon, text: "Cast ขึ้นจอ" },
+                                                                { icon: ShieldCheckIcon, text: "ไร้โฆษณา" },
+                                                                { icon: DevicePhoneMobileIcon, text: "รีโมทมือถือ" }
+                                                            ].map((item, i) => (
+                                                                <div key={i} className="flex flex-col items-center gap-2 text-white/60 text-[10px] font-bold bg-white/5 py-3 rounded-2xl border border-white/5">
+                                                                    <item.icon className="w-5 h-5 text-primary" />
+                                                                    {item.text}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+
+                                                        <div className="w-full space-y-3">
+                                                            <button 
+                                                                onClick={() => { onClose(); router.push('/login?mode=register'); }}
+                                                                className="w-full h-14 rounded-2xl bg-primary hover:brightness-110 text-white font-black text-lg shadow-xl shadow-primary/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                                                            >
+                                                                สมัครสมาชิกฟรี
+                                                            </button>
+                                                            <button 
+                                                                onClick={() => { onClose(); router.push('/login'); }}
+                                                                className="w-full h-14 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold backdrop-blur-md transition-all active:scale-[0.98] border border-white/10"
+                                                            >
+                                                                เข้าสู่ระบบที่มีอยู่
+                                                            </button>
+                                                        </div>
+                                                    </div>
                                                 </div>
 
-                                                <div className="w-full space-y-3 mt-auto pb-4">
-                                                    <button 
-                                                        onClick={() => { onClose(); router.push('/login?mode=register'); }}
-                                                        className="w-full h-14 rounded-2xl bg-primary hover:brightness-110 text-white font-black text-lg shadow-xl shadow-primary/20 transition-all active:scale-[0.98]"
-                                                    >
-                                                        สมัครสมาชิกฟรี
-                                                    </button>
-                                                    <button 
-                                                        onClick={() => { onClose(); router.push('/login'); }}
-                                                        className="w-full h-14 rounded-2xl bg-gray-50 hover:bg-gray-100 text-gray-700 font-bold transition-all active:scale-[0.98]"
-                                                    >
-                                                        เข้าสู่ระบบที่มีอยู่
-                                                    </button>
+                                                <div className="flex-1 flex flex-col items-center justify-center text-center p-6 bg-white rounded-[2.5rem] border border-gray-100 shadow-sm">
+                                                    <div className="flex -space-x-3 mb-4">
+                                                        {[1, 2, 3, 4].map(i => (
+                                                            <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-gray-100 overflow-hidden shadow-sm">
+                                                                <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="avatar" />
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    <p className="text-xs font-bold text-gray-500">
+                                                        ร่วมสนุกกับคนรักคาราโอเกะกว่า <span className="text-gray-900">10,000+</span> คน
+                                                    </p>
                                                 </div>
                                             </div>
                                         ) : (
