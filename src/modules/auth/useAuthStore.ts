@@ -336,9 +336,10 @@ export const useAuthStore = create<UserState & AuthActions>()(
                         photoURL: user.photoURL || null,
                         role: 'user',
                         membership: {
-                            ...DEFAULT_MEMBERSHIP,
-                            status: 'pending',
-                            startedAt: serverTimestamp()
+                            type: 'day_pass',
+                            status: 'active',
+                            startedAt: serverTimestamp(),
+                            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
                         },
                         tier: 'free',
                         credits: 0,
@@ -362,8 +363,10 @@ export const useAuthStore = create<UserState & AuthActions>()(
                             role: 'user',
                             isAdmin: false,
                             membership: {
-                                ...DEFAULT_MEMBERSHIP,
-                                status: 'pending'
+                                type: 'day_pass',
+                                status: 'active',
+                                startedAt: new Date(),
+                                expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
                             },
                             installed_modules: [],
                             quota: undefined

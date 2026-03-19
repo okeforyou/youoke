@@ -2,11 +2,16 @@ import { useRouter } from 'next/router';
 import { LogIn, Music, Shield, Infinity as InfinityIcon, User } from 'lucide-react';
 import { useGuestLimit } from '../../modules/party-system/hooks/useGuestLimit';
 import { SparklesIcon as HeroSparkles } from '@heroicons/react/24/solid';
+import { cn } from '@/lib/utils';
 
 export const GuestCard = () => {
     const router = useRouter();
     const { playedCount, guestLimit, remainingPlays } = useGuestLimit();
     const progress = Math.min((playedCount / guestLimit) * 100, 100);
+    const isLimitReached = remainingPlays <= 0;
+
+    const onLogin = () => router.push('/login');
+    const onSignup = () => router.push('/signup');
 
     const benefits = [
         { icon: Music, text: 'ฟังเพลงไม่จำกัด' },
@@ -28,58 +33,64 @@ export const GuestCard = () => {
                         <div className="w-11 h-11 rounded-2xl bg-gray-700/80 flex items-center justify-center border border-gray-600/50">
                             <User size={20} className="text-gray-300" />
                         </div>
-                        <div>
-                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">โหมดทดลองใช้</p>
-                            <h3 className="text-base font-black text-white">Guest Access</h3>
-                        </div>
-                        <div className="ml-auto">
-                            <span className="text-[10px] font-bold bg-gray-700/80 text-gray-300 px-2 py-1 rounded-full border border-gray-600/50">
-                                ฟรี
-                            </span>
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-0.5">
+                                <span className="flex h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
+                                <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">โหมดทดลองใช้</p>
+                            </div>
+                            <h3 className="text-lg font-black text-slate-900 dark:text-white truncate">ยินดีต้อนรับสู่ YouOke</h3>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">สมัครสมาชิกเพื่อรับสิทธิ์ทดลองใช้ฟรี 1 วัน!</p>
                         </div>
                     </div>
 
-                    {/* Usage Progress */}
-                    <div className="mb-4">
-                        <div className="flex items-center justify-between mb-1.5">
-                            <p className="text-[11px] text-gray-400 font-medium">เพลงที่เล่นแล้ว</p>
-                            <p className="text-[11px] font-bold text-white">
-                                {playedCount} <span className="text-gray-500">/ {guestLimit}</span>
-                            </p>
+                    {/* Progress Section */}
+                    <div className="bg-white/50 dark:bg-slate-800/50 rounded-2xl p-4 border border-slate-100 dark:border-slate-700/50">
+                        <div className="flex justify-between items-end mb-2">
+                            <div>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight mb-0.5">โควต้าเพลงฟรีวันนี้</p>
+                                <div className="flex items-baseline gap-1">
+                                    <span className="text-2xl font-black text-slate-900 dark:text-white">{playedCount}</span>
+                                    <span className="text-sm font-bold text-slate-400">/ {guestLimit} เพลง</span>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight mb-0.5">เหลืออีก</p>
+                                <span className="text-sm font-black text-blue-600 dark:text-blue-400">{remainingPlays} เพลง</span>
+                            </div>
                         </div>
-                        <div className="w-full h-2 bg-gray-700/80 rounded-full overflow-hidden">
+
+                        <div className="h-2.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden p-0.5 border border-slate-200/50 dark:border-slate-600/50">
                             <div
-                                className="h-full rounded-full transition-all duration-500"
-                                style={{
-                                    width: `${progress}%`,
-                                    background: progress >= 80
-                                        ? 'linear-gradient(90deg, #f97316, #ef4444)'
-                                        : 'linear-gradient(90deg, #3b82f6, #6366f1)'
-                                }}
+                                className={cn(
+                                    "h-full rounded-full transition-all duration-1000 ease-out shadow-sm",
+                                    isLimitReached ? "bg-red-500" : "bg-gradient-to-r from-blue-500 to-indigo-500"
+                                )}
+                                style={{ width: `${Math.min(progress, 100)}%` }}
                             />
                         </div>
-                        <p className="text-[10px] text-gray-500 mt-1">
-                            {remainingPlays > 0
-                                ? `เหลืออีก ${remainingPlays} เพลง จากนั้นรอ 24 ชม. หรือสมัครสมาชิก`
-                                : '⚠️ ใช้งานครบแล้ว — สมัครสมาชิกเพื่อใช้ต่อ'}
+                    </div>
+
+                    {/* Info Text */}
+                    <div className="px-1 py-1">
+                        <p className="text-[11px] leading-relaxed text-slate-500 dark:text-slate-400 italic">
+                            * ปลดล็อกฟีเจอร์ <span className="text-blue-600 dark:text-blue-400 font-bold">Cast (ขึ้นจอ)</span> และ <span className="text-blue-600 dark:text-blue-400 font-bold">เล่นเพลงยาวไม่จำกัด</span> เพียงสมัครสมาชิกวันนี้
                         </p>
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-3 pt-1">
                         <button
-                            onClick={() => router.push('/login')}
-                            className="flex items-center justify-center gap-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold py-2.5 rounded-xl border border-white/10 transition-all"
+                            onClick={onLogin}
+                            className="h-11 rounded-xl font-bold text-sm bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700"
                         >
-                            <LogIn size={14} />
                             เข้าสู่ระบบ
                         </button>
                         <button
-                            onClick={() => router.push('/pricing')}
-                            className="flex items-center justify-center gap-1.5 bg-primary hover:bg-primary/90 text-white text-xs font-bold py-2.5 rounded-xl shadow-lg shadow-primary/20 transition-all"
+                            onClick={onSignup}
+                            className="h-11 rounded-xl font-bold text-sm bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2"
                         >
                             <HeroSparkles className="w-3.5 h-3.5" />
-                            สมัครฟรี
+                            สมัครสมาชิกฟรี
                         </button>
                     </div>
                 </div>

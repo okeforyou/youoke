@@ -116,7 +116,17 @@ export const usePlayerLifecycle = (currentSource: string | null, showDjOverlay: 
             return;
         }
 
-        // 3. Increment logic
+        // 4. Medley/Long Video Check (Block Guests)
+        const duration = usePlayerStore.getState().duration;
+        const maxDur = maxDuration || config?.membership?.free?.max_duration_sec || 600; 
+        if (userRole === 'guest' && duration > maxDur && maxDur > 0) {
+            console.log("⛔ Medley detected! Blocking guest playing long music.");
+            usePlayerStore.setState({ isPlaying: false });
+            setLimitModalOpen(true);
+            return;
+        }
+
+        // 5. Increment logic
         const hasCountedKey = `counted_${currentSource}`;
         if (!sessionStorage.getItem(hasCountedKey)) {
             const newCount = currentCount + 1;
@@ -126,8 +136,9 @@ export const usePlayerLifecycle = (currentSource: string | null, showDjOverlay: 
             sessionStorage.setItem(hasCountedKey, 'true');
             setDailyCount(newCount);
 
-            // 💾 Update Firestore for logged in users
-            if (user?.uid && db) {
+            // 💾 Update Firestore for logged in users (Avoid Guest sync)
+            const isGuest = !user || user.displayName === 'Guest';
+            if (user?.uid && !isGuest && db) {
                 console.log(`💾 Syncing Quota to Firestore: ${newCount}`);
                 const userRef = doc(db, 'users', user.uid);
                 updateDoc(userRef, {
@@ -139,7 +150,7 @@ export const usePlayerLifecycle = (currentSource: string | null, showDjOverlay: 
             }
         }
 
-    }, [currentSource, maxDailySongs, showDjOverlay, setLimitModalOpen, user, userRole]);
+    }, [currentSource, maxDailySongs, maxDuration, showDjOverlay, setLimitModalOpen, user, userRole, config]);
 
     return {
         dailyCount,
