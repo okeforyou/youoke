@@ -36,7 +36,12 @@ type AuthView = 'invite' | 'login' | 'register';
 
 export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
     const { user, signOut: logOut } = useSystem().auth();
-    const { signIn, signUp, signInWithGoogle, signInWithLine, isLoading, error: authError } = useAuthStore();
+    const signIn = useAuthStore(state => state.signIn);
+    const signUp = useAuthStore(state => state.signUp);
+    const signInWithGoogle = useAuthStore(state => state.signInWithGoogle);
+    const signInWithLine = useAuthStore(state => state.signInWithLine);
+    const isLoading = useAuthStore(state => state.isLoading);
+    const authError = useAuthStore(state => state.error);
     const router = useRouter();
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(false);
