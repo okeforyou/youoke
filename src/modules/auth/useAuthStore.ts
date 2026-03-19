@@ -103,6 +103,17 @@ export const useAuthStore = create<UserState & AuthActions>()(
                 }, 15000);
 
                 console.log('🔐 Auth Store: Registering onIdTokenChanged listener...');
+                
+                // 🚀 HANDLE REDIRECT RESULTS (Crucial for Mobile Google Login)
+                getRedirectResult(auth).then((result) => {
+                    if (result?.user) {
+                        console.log('🏁 Google Redirect Success:', result.user.uid);
+                    }
+                }).catch((error) => {
+                    console.error('🏁 Google Redirect Error:', error);
+                    set({ error: error.message });
+                });
+
                 const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
                     console.time('AuthLifecycle');
                     console.log('⚡ [AuthStore] onIdTokenChanged Fired!', {
@@ -465,11 +476,26 @@ export const useAuthStore = create<UserState & AuthActions>()(
             signInWithCustomToken: async (token: string) => {
                 set({ isLoading: true, error: null });
                 try {
-                    const { signInWithCustomToken } = await import('firebase/auth');
+                    const { signInWithCustomToken: firebaseSignIn } = await import('firebase/auth');
                     if (!auth) throw new Error("Firebase Auth not initialized");
-                    const userCredential = await signInWithCustomToken(auth, token);
+                    const userCredential = await firebaseSignIn(auth, token);
                     const firebaseUser = userCredential.user;
                     console.log('⚡ CustomToken SignIn: Success', firebaseUser.uid);
+                    
+                    // Force state update to prevent UI race conditions
+                    set({ 
+                        user: {
+                            uid: firebaseUser.uid,
+                            email: firebaseUser.email,
+                            displayName: firebaseUser.displayName,
+                            photoURL: firebaseUser.photoURL,
+                            role: 'user',
+                            isAdmin: false,
+                            membership: DEFAULT_MEMBERSHIP,
+                            installed_modules: []
+                        },
+                        isLoading: false 
+                    });
                 } catch (error: any) {
                     set({ error: error.message, isLoading: false });
                     throw error;
