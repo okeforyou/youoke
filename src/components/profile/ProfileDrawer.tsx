@@ -13,10 +13,10 @@ import {
 } from '@heroicons/react/24/outline';
 import { useUIStore } from '@/stores/useUIStore';
 import { useAuthStore } from '@/modules/auth/useAuthStore';
-import { useSystem } from '@/modules/system/useSystem';
+import { useSystem } from '@/core/container/SystemContext';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../firebase';
-import MembershipCard from './MembershipCard';
+import { MembershipCard } from './MembershipCard';
 import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 
