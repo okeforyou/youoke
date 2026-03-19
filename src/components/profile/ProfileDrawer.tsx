@@ -180,8 +180,33 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                             <div className="flex-1 flex items-center justify-center">
                                                 <div className="loading loading-spinner loading-lg text-primary"></div>
                                             </div>
-                                        ) : isGuest ? (
-                                            // Guest View
+                                        ) : !user ? (
+                                            // 🆕 NEW: Not Logged In View (Similar to Desktop)
+                                            <div className="flex-1 flex flex-col items-center justify-center px-8 text-center space-y-6 animate-in fade-in duration-500">
+                                                <div className="w-20 h-20 rounded-3xl bg-slate-50 flex items-center justify-center text-slate-300 border border-slate-100 shadow-sm">
+                                                    <UserCircleIcon className="w-12 h-12" />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <h3 className="text-xl font-black text-slate-900">เข้าสู่ระบบ YouOke</h3>
+                                                    <p className="text-sm text-slate-500 font-medium">สมัครสมาชิกวันนี้เพื่อรับสิทธิ์ทดลองใช้ฟรี 1 วัน และปลดล็อกฟีเจอร์พรีเมียมทั้งหมด!</p>
+                                                </div>
+                                                <div className="w-full space-y-3 pt-4">
+                                                    <button 
+                                                        onClick={() => { onClose(); router.push('/signup'); }}
+                                                        className="w-full h-12 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-95"
+                                                    >
+                                                        สมัครสมาชิกฟรี
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => { onClose(); router.push('/login'); }}
+                                                        className="w-full h-12 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold transition-all active:scale-95"
+                                                    >
+                                                        เข้าสู่ระบบ
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : user.displayName === 'Guest' ? (
+                                            // Guest View (Has Anonymous Session)
                                             <div className="flex-1 px-4 py-6 space-y-4">
                                                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">สถานะการใช้งาน</p>
                                                 <GuestCard />
