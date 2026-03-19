@@ -205,10 +205,10 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                     photoURL: rtdbData?.photoURL || firebaseUser.photoURL || null,
                                     role: 'user',
                                     membership: {
-                                        type: 'free',
+                                        type: 'day_pass',
                                         status: 'active',
                                         startedAt: serverTimestamp(),
-                                        expiresAt: null
+                                        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
                                     },
                                     quota: {
                                         daily_limit: 5,
@@ -362,10 +362,10 @@ export const useAuthStore = create<UserState & AuthActions>()(
                         photoURL: user.photoURL || null,
                         role: 'user',
                         membership: {
-                            type: 'free',
+                            type: 'day_pass',
                             status: 'active',
                             startedAt: serverTimestamp(),
-                            expiresAt: null
+                            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
                         },
                         tier: 'free',
                         credits: 0,
@@ -389,10 +389,10 @@ export const useAuthStore = create<UserState & AuthActions>()(
                             role: 'user',
                             isAdmin: false,
                             membership: {
-                                type: 'free',
+                                type: 'day_pass',
                                 status: 'active',
                                 startedAt: new Date(),
-                                expiresAt: null
+                                expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
                             },
                             installed_modules: [],
                             quota: undefined
