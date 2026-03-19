@@ -52,7 +52,7 @@ interface UserState {
 interface AuthActions {
     initialize: () => () => void;
     signIn: (email: string, pass: string) => Promise<void>;
-    signUp: (email: string, pass: string) => Promise<void>;
+    signUp: (email: string, pass: string, name?: string) => Promise<void>;
     signInWithGoogle: () => Promise<void>;
     signInWithLine: () => void;
     signInWithCustomToken: (token: string) => Promise<void>;
@@ -330,13 +330,13 @@ export const useAuthStore = create<UserState & AuthActions>()(
                 }
             },
 
-            signUp: async (email, password) => {
+            signUp: async (email, password, name) => {
                 set({ isLoading: true, error: null });
                 try {
                     if (!auth || !db) throw new Error("Firebase not initialized");
                     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                     const user = userCredential.user;
-                    const displayName = email.split('@')[0];
+                    const displayName = name || email.split('@')[0];
 
                     // Update Auth Profile immediately
                     await updateProfile(user, { displayName });
