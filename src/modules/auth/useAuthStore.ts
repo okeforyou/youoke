@@ -8,8 +8,6 @@ import {
     createUserWithEmailAndPassword,
     GoogleAuthProvider,
     signInWithPopup,
-    signInWithRedirect,
-    getRedirectResult,
     updateProfile
 } from 'firebase/auth';
 import { getApps } from 'firebase/app';
@@ -54,7 +52,7 @@ interface UserState {
 interface AuthActions {
     initialize: () => () => void;
     signIn: (email: string, pass: string) => Promise<void>;
-    signUp: (email: string, pass: string, name?: string) => Promise<void>;
+    signUp: (email: string, pass: string) => Promise<void>;
     signInWithGoogle: () => Promise<void>;
     signInWithLine: () => void;
     signInWithCustomToken: (token: string) => Promise<void>;
@@ -103,17 +101,6 @@ export const useAuthStore = create<UserState & AuthActions>()(
                 }, 15000);
 
                 console.log('🔐 Auth Store: Registering onIdTokenChanged listener...');
-                
-                // 🚀 HANDLE REDIRECT RESULTS (Crucial for Mobile Google Login)
-                getRedirectResult(auth).then((result) => {
-                    if (result?.user) {
-                        console.log('🏁 Google Redirect Success:', result.user.uid);
-                    }
-                }).catch((error) => {
-                    console.error('🏁 Google Redirect Error:', error);
-                    set({ error: error.message });
-                });
-
                 const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
                     console.time('AuthLifecycle');
                     console.log('⚡ [AuthStore] onIdTokenChanged Fired!', {
@@ -343,13 +330,13 @@ export const useAuthStore = create<UserState & AuthActions>()(
                 }
             },
 
-            signUp: async (email, password, name) => {
+            signUp: async (email, password) => {
                 set({ isLoading: true, error: null });
                 try {
                     if (!auth || !db) throw new Error("Firebase not initialized");
                     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                     const user = userCredential.user;
-                    const displayName = name || email.split('@')[0];
+                    const displayName = email.split('@')[0];
 
                     // Update Auth Profile immediately
                     await updateProfile(user, { displayName });
@@ -410,41 +397,33 @@ export const useAuthStore = create<UserState & AuthActions>()(
                 set({ isLoading: true, error: null });
                 try {
                     const provider = new GoogleAuthProvider();
+
                     if (!auth) throw new Error("Firebase Auth not initialized");
+                    console.time('GooglePopup');
+                    const userCredential = await signInWithPopup(auth, provider);
+                    console.timeEnd('GooglePopup');
 
-                    const isMobile = typeof window !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                    
-                    if (isMobile) {
-                        console.log('📱 GoogleSignIn: Using Redirect (Mobile optimized)');
-                        await signInWithRedirect(auth, provider);
-                    } else {
-                        console.log('💻 GoogleSignIn: Using Popup');
-                        const userCredential = await signInWithPopup(auth, provider);
-                        const firebaseUser = userCredential.user;
-                        console.log('⚡ GoogleSignIn: Auth Success', firebaseUser.uid);
+                    const firebaseUser = userCredential.user;
+                    console.log('⚡ GoogleSignIn: Auth Success', firebaseUser.uid);
 
-                        set({
-                            user: {
-                                uid: firebaseUser.uid,
-                                email: firebaseUser.email,
-                                displayName: firebaseUser.displayName,
-                                photoURL: firebaseUser.photoURL,
-                                role: 'user',
-                                isAdmin: false,
-                                membership: DEFAULT_MEMBERSHIP,
-                                installed_modules: [],
-                                quota: undefined
-                            },
-                        });
-                    }
-                    set({ isLoading: false });
+                    // Optimistic Update
+                    set({
+                        user: {
+                            uid: firebaseUser.uid,
+                            email: firebaseUser.email,
+                            displayName: firebaseUser.displayName,
+                            photoURL: firebaseUser.photoURL,
+                            role: 'user',
+                            isAdmin: false,
+                            membership: DEFAULT_MEMBERSHIP,
+                            installed_modules: [],
+                            quota: undefined
+                        },
+                        isLoading: false
+                    });
                 } catch (error: any) {
                     console.error('⚡ GoogleSignIn: Error', error);
-                    let msg = error.message;
-                    if (error.code === 'auth/popup-closed-by-user') {
-                        msg = 'การเข้าสู่ระบบถูกยกเลิก (หน้าต่างถูกปิด)';
-                    }
-                    set({ error: msg, isLoading: false });
+                    set({ error: error.message, isLoading: false });
                     throw error;
                 }
             },
@@ -455,9 +434,11 @@ export const useAuthStore = create<UserState & AuthActions>()(
                 // 1. https://playyouoke.vercel.app/login/
                 // 2. http://localhost:3000/login/ (For testing)
 
-                // Use dynamic origin for multi-domain support (Vercel + Custom Domain)
-                const origin = (typeof window !== 'undefined') ? window.location.origin : 'https://play.okeforyou.com';
-                const redirectUri = `${origin}/login/`;
+                let redirectUri = 'https://play.okeforyou.com/login/';
+
+                if (typeof window !== 'undefined') {
+                    redirectUri = `${window.location.origin}/login/`;
+                }
 
                 console.log('🔗 LINE Redirect URI:', redirectUri);
                 const state = 'random_state_string'; // Should be random
@@ -476,26 +457,11 @@ export const useAuthStore = create<UserState & AuthActions>()(
             signInWithCustomToken: async (token: string) => {
                 set({ isLoading: true, error: null });
                 try {
-                    const { signInWithCustomToken: firebaseSignIn } = await import('firebase/auth');
+                    const { signInWithCustomToken } = await import('firebase/auth');
                     if (!auth) throw new Error("Firebase Auth not initialized");
-                    const userCredential = await firebaseSignIn(auth, token);
+                    const userCredential = await signInWithCustomToken(auth, token);
                     const firebaseUser = userCredential.user;
                     console.log('⚡ CustomToken SignIn: Success', firebaseUser.uid);
-                    
-                    // Force state update to prevent UI race conditions
-                    set({ 
-                        user: {
-                            uid: firebaseUser.uid,
-                            email: firebaseUser.email,
-                            displayName: firebaseUser.displayName,
-                            photoURL: firebaseUser.photoURL,
-                            role: 'user',
-                            isAdmin: false,
-                            membership: DEFAULT_MEMBERSHIP,
-                            installed_modules: []
-                        },
-                        isLoading: false 
-                    });
                 } catch (error: any) {
                     set({ error: error.message, isLoading: false });
                     throw error;
