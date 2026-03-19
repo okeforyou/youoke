@@ -37,6 +37,7 @@ const ReceiverInfoModal = dynamic(() => import('../modules/party-system/componen
 // Add UnifiedCastButton dynamic import if needed or import directly
 import { UnifiedCastButton } from '../plugins/cast/components/UnifiedCastButton';
 import { type CastMode } from '../plugins/cast/components/CastStatusBar';
+import { GlobalConfirmModal } from '../components/common/GlobalConfirmModal';
 // useCastCommands removed (Phase 6)
 
 
@@ -54,7 +55,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
         isMobilePlayerExpanded, setMobilePlayerExpanded,
         isPlayerHidden, setPlayerHidden,
         isReceiverModalOpen, setReceiverModalOpen,
-        castMode, setCastMode
+        castMode, setCastMode,
+        showConfirm
     } = useUIStore();
 
     // Local state for layout-specific things only
@@ -747,7 +749,16 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 <div><p className="text-sm font-bold truncate text-gray-900">{user.displayName}</p><p className="text-[10px] text-gray-500 uppercase font-semibold">{isPremium ? 'สมาชิก Pro' : 'สมาชิกทั่วไป'}</p></div>
                             </div>
                             <button 
-                                onClick={() => { if (window.confirm('ยืนยันออกจากระบบ?')) signOut(); }} 
+                                onClick={() => { 
+                                    showConfirm({
+                                        title: 'ออกจากระบบ',
+                                        message: 'คุณต้องการออกจากระบบใช่หรือไม่? คุณจะยังสามารถฟังเพลงฟรีได้ตามโควต้าที่มี',
+                                        confirmText: 'ออกจากระบบ',
+                                        cancelText: 'ยกเลิก',
+                                        type: 'danger',
+                                        onConfirm: () => signOut()
+                                    });
+                                }} 
                                 className="p-2 text-gray-400 hover:text-red-500"
                             >
                                 <LogOut className="w-5 h-5" />
@@ -818,6 +829,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
             {/* Global Limit Reached Modal */}
             <LimitReachedModal />
+
+            {/* Global Confirmation Modal */}
+            <GlobalConfirmModal />
 
 
 

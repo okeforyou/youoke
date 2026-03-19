@@ -46,6 +46,25 @@ interface UIState {
 
     isSidebarCollapsed: boolean;
     setSidebarCollapsed: (collapsed: boolean) => void;
+
+    confirmModal: {
+        isOpen: boolean;
+        title: string;
+        message: string;
+        confirmText?: string;
+        cancelText?: string;
+        type?: 'danger' | 'warning' | 'info';
+        onConfirm: () => void;
+    };
+    showConfirm: (data: {
+        title: string;
+        message: string;
+        confirmText?: string;
+        cancelText?: string;
+        type?: 'danger' | 'warning' | 'info';
+        onConfirm: () => void;
+    }) => void;
+    hideConfirm: () => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
@@ -94,4 +113,25 @@ export const useUIStore = create<UIState>((set) => ({
 
     isSidebarCollapsed: false,
     setSidebarCollapsed: (collapsed) => set({ isSidebarCollapsed: collapsed }),
+
+    confirmModal: {
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: () => { }
+    },
+    showConfirm: (data) => set({
+        confirmModal: {
+            isOpen: true,
+            title: data.title,
+            message: data.message,
+            confirmText: data.confirmText,
+            cancelText: data.cancelText,
+            type: data.type || 'info',
+            onConfirm: data.onConfirm
+        }
+    }),
+    hideConfirm: () => set((state) => ({
+        confirmModal: { ...state.confirmModal, isOpen: false }
+    })),
 }));

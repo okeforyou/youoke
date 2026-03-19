@@ -15,7 +15,7 @@ export const Sidebar = memo(() => {
     const { user, signOut: logOut } = useSystem().auth(); // specific hook
     const isPremium = user?.membership?.status === 'active' && user?.membership?.type !== 'free'; // Updated check for new UserData structure
     const { activeIndex, setActiveIndex, setSearchTerm } = usePlayerStore();
-    const { isSidebarCollapsed, setSidebarCollapsed } = useUIStore();
+    const { isSidebarCollapsed, setSidebarCollapsed, showConfirm } = useUIStore();
     const [isProfileDrawerOpen, setIsProfileDrawerOpen] = useState(false); // State for drawer
 
     // Mounted check to match hydration safety patterns
@@ -260,10 +260,17 @@ export const Sidebar = memo(() => {
                                 </div>
                             </div>
                             <button 
-                                onClick={async () => { 
-                                    if (window.confirm('ยืนยันออกจากระบบ?')) { 
-                                        await logOut(); 
-                                    } 
+                                onClick={() => { 
+                                    showConfirm({
+                                        title: 'ออกจากระบบ',
+                                        message: 'คุณต้องการออกจากระบบใช่หรือไม่? คุณจะยังสามารถฟังเพลงฟรีได้ตามโควต้าที่มี',
+                                        confirmText: 'ออกจากระบบ',
+                                        cancelText: 'ยกเลิก',
+                                        type: 'danger',
+                                        onConfirm: async () => {
+                                            await logOut();
+                                        }
+                                    });
                                 }} 
                                 className={clsx(
                                     "p-2 text-black hover:bg-red-50 hover:text-red-500 rounded-xl transition-all shrink-0 hover:scale-110",

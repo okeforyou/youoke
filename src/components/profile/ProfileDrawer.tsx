@@ -58,14 +58,24 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
         }
     };
 
-    const handleLogout = async () => {
-        if (!window.confirm('ยืนยันออกจากระบบ?')) return;
-        try {
-            await logOut();
-            onClose();
-        } catch (error) {
-            console.error(error);
-        }
+    const { showConfirm } = useUIStore();
+
+    const handleLogout = () => {
+        showConfirm({
+            title: 'ออกจากระบบ',
+            message: 'คุณต้องการออกจากระบบใช่หรือไม่? คุณจะยังสามารถฟังเพลงฟรีได้ตามโควต้าที่มี',
+            confirmText: 'ออกจากระบบ',
+            cancelText: 'ยกเลิก',
+            type: 'danger',
+            onConfirm: async () => {
+                try {
+                    await logOut();
+                    onClose();
+                } catch (error) {
+                    console.error(error);
+                }
+            }
+        });
     };
 
     const getPackageDisplayName = (plan?: string) => {

@@ -30,19 +30,26 @@ const SettingsRow = ({ icon: Icon, label, onClick, className, destructive = fals
 export const ProfileContent = () => {
     const router = useRouter();
     const { user, signOut } = useAuthStore();
-    const { setProfileOpen } = useUIStore();
+    const { setProfileOpen, showConfirm } = useUIStore();
     const packageSectionRef = useRef<HTMLDivElement>(null);
 
     const handleScrollToPackages = () => {
         packageSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
-    const handleLogout = async () => {
-        if (confirm('ยืนยันออกจากระบบ?')) {
-            setProfileOpen(false);
-            await signOut();
-            router.push('/login');
-        }
+    const handleLogout = () => {
+        showConfirm({
+            title: 'ออกจากระบบ',
+            message: 'คุณต้องการออกจากระบบใช่หรือไม่? คุณจะยังสามารถฟังเพลงฟรีได้ตามโควต้าที่มี',
+            confirmText: 'ออกจากระบบ',
+            cancelText: 'ยกเลิก',
+            type: 'danger',
+            onConfirm: async () => {
+                setProfileOpen(false);
+                await signOut();
+                router.push('/login');
+            }
+        });
     };
 
     if (!user) return null;

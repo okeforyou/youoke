@@ -112,6 +112,7 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
 
 export function QueueList() {
     const { queue, removeFromQueue, currentIndex, setCurrentIndex, reorderQueue, clearQueue } = usePlayerStore();
+    const { showConfirm } = useUIStore();
 
     // Derived State
     const queueItems = queue.slice(currentIndex + 1);
@@ -180,9 +181,14 @@ export function QueueList() {
                 {queue.length > 0 && (
                     <button
                         onClick={() => {
-                            if (confirm('ต้องการลบคิวเพลงทั้งหมดหรือไม่?')) {
-                                clearQueue();
-                            }
+                            showConfirm({
+                                title: 'ล้างคิวเพลง',
+                                message: 'คุณต้องการลบคิวเพลงทั้งหมดที่เหลืออยู่ใช่หรือไม่? การกระทำนี้ไม่สามารถย้อนคืนได้',
+                                confirmText: 'ล้างทั้งหมด',
+                                cancelText: 'ยกเลิก',
+                                type: 'danger',
+                                onConfirm: () => clearQueue()
+                            });
                         }}
                         className="group flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-50 text-gray-600 hover:bg-red-50 hover:text-red-500 transition-all duration-300 active:scale-95 border border-gray-100"
                     >
