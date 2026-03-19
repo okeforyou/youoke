@@ -4,7 +4,6 @@ import { useRouter } from 'next/router';
 import { useAuthStore } from '@/modules/auth/useAuthStore';
 import Link from 'next/link';
 import { 
-    ArrowLeft, 
     Zap,
     X,
 } from 'lucide-react';
@@ -97,55 +96,62 @@ export default function LoginPage() {
     if (!mounted) return null;
 
     return (
-        <div className="fixed inset-0 min-h-screen bg-black/60 backdrop-blur-sm flex justify-end z-[100] animate-in fade-in duration-300">
+        <div className="fixed inset-0 min-h-screen bg-black/40 backdrop-blur-sm flex justify-end z-[100] animate-in fade-in duration-500 overflow-hidden">
             <Head>
                 <title>{isLogin ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก'} - YouOke</title>
             </Head>
 
-            {/* Clickable Overlay to go back */}
-            <div className="absolute inset-0 cursor-default" onClick={() => router.push('/')} />
+            {/* Clickable Overlay */}
+            <div className="absolute inset-0" onClick={() => router.push('/')} />
 
-            {/* DRAWER-LIKE CONTAINER - Slide in from right */}
-            <div className="relative w-full max-w-[420px] h-full bg-white shadow-2xl animate-in slide-in-from-right duration-500 overflow-y-auto flex flex-col">
+            {/* THE DRAWER PANEL - MATCHING ProfileDrawer Layout */}
+            <div className="relative w-screen max-w-sm h-full bg-white shadow-2xl animate-in slide-in-from-right duration-500 sm:duration-700 overflow-y-auto flex flex-col pointer-events-auto">
                 
-                {/* Drawer Header */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-100 sticky top-0 bg-white z-10">
-                    <h3 className="text-lg font-black text-gray-900 tracking-tight">เข้าสู่ระบบ / สมัครสมาชิก</h3>
-                    <button onClick={() => router.push('/')} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                        <X size={20} className="text-gray-400" />
+                {/* Header - Matching Exact Styling */}
+                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white sticky top-0 z-[110]">
+                    <h3 className="text-lg font-bold text-gray-900">
+                        {isLogin ? 'เข้าสู่ระบบ' : 'สมัครสมาชิกใหม่'}
+                    </h3>
+                    <button 
+                        onClick={() => router.push('/')} 
+                        className="rounded-full p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 transition-colors focus:outline-none"
+                    >
+                        <X size={24} />
                     </button>
                 </div>
 
-                <div className="flex-1 p-8 sm:p-10 flex flex-col justify-start">
+                <div className="flex-1 flex flex-col p-6 overflow-y-auto">
                     
-                    {/* TITLE SECTION */}
-                    <div className="mb-10 text-center">
-                        <div className="w-16 h-16 bg-primary/10 rounded-3xl flex items-center justify-center text-primary mx-auto mb-6">
+                    {/* ICON & WELCOME */}
+                    <div className="flex flex-col items-center text-center space-y-4 mb-8">
+                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/10 to-blue-500/10 flex items-center justify-center text-primary shadow-sm ring-1 ring-primary/5">
                             <Zap size={32} />
                         </div>
-                        <h2 className="text-2xl font-black text-gray-900 mb-2 tracking-tight">
-                            {isLogin ? 'ยินดีต้อนรับกลับมา' : 'เริ่มต้นใช้งาน YouOke'}
-                        </h2>
-                        <p className="text-gray-400 text-[11px] font-bold uppercase tracking-widest">
-                            {isLogin ? (
-                                <>ยังไม่มีบัญชี? <button onClick={() => setIsLogin(false)} className="text-primary hover:underline underline-offset-4">สมัครสมาชิกใหม่</button></>
-                            ) : (
-                                <>มีบัญชีอยู่แล้ว? <button onClick={() => setIsLogin(true)} className="text-primary hover:underline underline-offset-4">เข้าสู่ระบบที่นี่</button></>
-                            )}
-                        </p>
+                        <div className="space-y-1">
+                            <h3 className="text-xl font-black text-gray-900 leading-tight">
+                                {isLogin ? 'ร่วมเป็นครอบครัว YouOke' : 'เริ่มต้นการร้องเพลง'}
+                            </h3>
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                                {isLogin ? (
+                                    <>ยังไม่มีบัญชี? <button onClick={() => setIsLogin(false)} className="text-primary hover:underline">สมัครสมาชิกที่นี่</button></>
+                                ) : (
+                                    <>มีบัญชีอยู่แล้ว? <button onClick={() => setIsLogin(true)} className="text-primary hover:underline">เข้าสู่ระบบ</button></>
+                                )}
+                            </p>
+                        </div>
                     </div>
 
-                    {/* Social Login Area */}
-                    <div className="space-y-3 mb-10">
-                        <button onClick={signInWithLine} disabled={isLoading || lineLoading} className="w-full h-12 flex justify-center items-center gap-3 px-6 rounded-2xl bg-[#06C755] hover:brightness-105 text-white font-black transition-all active:scale-95 disabled:opacity-50">
+                    {/* SOCIAL LOGIN */}
+                    <div className="space-y-3 mb-10 w-full">
+                        <button onClick={signInWithLine} disabled={isLoading || lineLoading} className="w-full h-14 rounded-2xl bg-[#06C755] hover:brightness-105 text-white font-black text-base transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3">
                             {lineLoading ? <span className="loading loading-spinner loading-xs" /> : (
                                 <>
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M24 10.3c0-4.6-4.6-8.3-10.4-8.3C7.8 2 3.1 5.7 3.1 10.3c0 4.1 3.7 7.5 8.7 8.2.3.1.8.2 1 .5.1.1.2.4.1.6l-.3 1.9c-.1.4-.4 1.5-.4 1.5l3.2-1.9s1.4-.8 2-.7l.1-.1c4.5-1.1 6.5-4.5 6.5-10z"/></svg>
-                                    <span className="text-[15px]">เข้าสู่ระบบด้วย LINE</span>
+                                    <span>เข้าโดย LINE</span>
                                 </>
                             )}
                         </button>
-                        <button onClick={signInWithGoogle} disabled={isLoading} className="w-full h-12 flex justify-center items-center gap-3 px-6 rounded-2xl bg-white border border-gray-100 hover:bg-gray-50 text-gray-700 font-bold transition-all active:scale-95 disabled:opacity-50">
+                        <button onClick={signInWithGoogle} disabled={isLoading} className="w-full h-14 rounded-2xl bg-white border border-gray-100 hover:bg-gray-50 text-gray-600 font-bold text-sm transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-3">
                             {isLoading ? <span className="loading loading-spinner loading-xs" /> : (
                                 <>
                                     <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
@@ -154,21 +160,22 @@ export default function LoginPage() {
                                         <path d="M3.964 10.706c-.18-.54-.282-1.117-.282-1.706 0-.589.102-1.166.282-1.706V4.962H.957C.347 6.177 0 7.549 0 9s.347 2.823.957 4.038l3.007-2.332z" fill="#FBBC05"/>
                                         <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.962L3.964 7.294C4.672 5.167 6.656 3.58 9 3.58z" fill="#EA4335"/>
                                     </svg>
-                                    <span className="text-[15px]">เข้าสู่ระบบด้วย Google</span>
+                                    <span>เข้าโดย Google</span>
                                 </>
                             )}
                         </button>
                     </div>
 
-                    <div className="relative mb-10 text-center">
-                        <span className="relative z-10 px-4 bg-white text-[10px] font-black text-gray-300 uppercase tracking-widest">หรือแจ้งอีเมล</span>
+                    {/* SEPARATOR */}
+                    <div className="relative mb-8 text-center">
+                        <span className="relative z-10 px-4 bg-white text-[10px] font-bold text-gray-300 uppercase tracking-widest">หรือใช้อีเมล</span>
                         <div className="absolute top-1/2 left-0 right-0 border-t border-gray-100" />
                     </div>
 
-                    {/* Email Form */}
-                    <form className="space-y-5" onSubmit={handleSubmit}>
+                    {/* EMAIL FORM */}
+                    <form className="space-y-4" onSubmit={handleSubmit}>
                         {(error || localError) && (
-                            <div className="bg-red-50 text-red-500 text-[11px] font-bold p-3 rounded-2xl flex items-center gap-2.5 animate-in shake duration-500">
+                            <div className="bg-red-50 text-red-500 text-[11px] font-bold p-3 rounded-2xl flex items-center gap-2.5">
                                 <Zap size={14} fill="currentColor" />
                                 <span>{localError || error}</span>
                             </div>
@@ -176,31 +183,32 @@ export default function LoginPage() {
 
                         {!isLogin && (
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider ml-1">ชื่อ</label>
+                                <label className="text-[10px] font-black text-gray-400 uppercase ml-1">ชื่อ</label>
                                 <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full h-12 bg-gray-50 border-2 border-transparent focus:border-primary/10 focus:bg-white rounded-2xl px-5 text-gray-900 font-bold transition-all outline-none text-[15px]" placeholder="ระบุชื่อของคุณ" />
                             </div>
                         )}
 
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider ml-1">อีเมล</label>
+                            <label className="text-[10px] font-black text-gray-400 uppercase ml-1">อีเมล</label>
                             <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full h-12 bg-gray-50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-2xl px-5 text-gray-900 font-bold transition-all outline-none text-[15px]" placeholder="example@email.com" />
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider ml-1">รหัสผ่าน</label>
+                            <label className="text-[10px] font-black text-gray-400 uppercase ml-1">รหัสผ่าน</label>
                             <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full h-12 bg-gray-50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-2xl px-5 text-gray-900 font-bold transition-all outline-none text-[15px]" placeholder="••••••••" />
                         </div>
 
-                        <button type="submit" disabled={isLoading} className="w-full h-14 mt-6 rounded-2xl bg-gray-900 hover:bg-black text-white font-black text-base shadow-2xl shadow-gray-900/20 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2">
-                            {isLoading ? <span className="loading loading-spinner loading-xs" /> : <span>{isLogin ? 'เข้าสู่ระบบ' : 'เริ่มใช้งานเลย!'}</span>}
+                        <button type="submit" disabled={isLoading} className="w-full h-14 mt-6 rounded-2xl bg-primary hover:brightness-105 text-white font-black text-base shadow-lg shadow-primary/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2 mb-10">
+                            {isLoading ? <span className="loading loading-spinner loading-xs" /> : <span>{isLogin ? 'เข้าสู่ระบบเลย' : 'เริ่มใช้งานฟรี'}</span>}
                         </button>
                     </form>
-                </div>
 
-                <div className="p-8 mt-auto border-t border-gray-50">
-                    <p className="text-center text-[10px] text-gray-400 font-medium px-4 tracking-tight leading-relaxed">
-                        ด้วยการดำเนินการต่อ คุณยอมรับ <Link href="/terms" className="underline font-bold hover:text-gray-600 transition-colors">ข้อตกลงและนโยบายความเป็นส่วนตัว</Link> ขอบคุณครับ
-                    </p>
+                    {/* FOOTER */}
+                    <div className="mt-auto pt-8 border-t border-gray-50 pb-6 text-center">
+                        <p className="text-[10px] text-gray-400 font-medium px-4 leading-relaxed">
+                            ด้วยการดำเนินการต่อ คุณยอมรับ <Link href="/terms" className="underline font-bold hover:text-gray-600 transition-colors">ข้อตกลงและนโยบายความเป็นส่วนตัว</Link> ขอบคุณครับ
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
