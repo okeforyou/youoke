@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { useAuthStore } from '@/modules/auth/useAuthStore';
 import Link from 'next/link';
 import { CheckCircleIcon, MusicalNoteIcon } from '@heroicons/react/24/solid';
+import { ArrowLeft } from 'lucide-react';
 import { useSystemConfig } from '../hooks/useSystemConfig';
 
 export default function LoginPage() {
@@ -154,7 +155,13 @@ export default function LoginPage() {
             </div>
 
             {/* RIGHT SIDE: Login Form */}
-            <div className="w-full lg:w-1/2 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-20 xl:px-24 bg-white">
+            <div className="w-full lg:w-1/2 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-20 xl:px-24 bg-white relative">
+                {/* Back Link */}
+                <Link href="/" className="absolute top-8 left-8 flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-primary transition-colors group">
+                    <ArrowLeft size={18} className="transition-transform group-hover:-translate-x-1" />
+                    <span>กลับหน้าหลัก</span>
+                </Link>
+
                 <div className="mx-auto w-full max-w-sm lg:w-96">
                     <div className="text-center lg:text-left mb-8">
                         <h2 className="text-3xl font-extrabold text-gray-900">
