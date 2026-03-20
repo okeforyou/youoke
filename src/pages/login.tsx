@@ -62,9 +62,6 @@ export default function LoginPage() {
             setLineLoading(true);
             setLocalError('');
 
-            // CRITICAL: Clean up URL immediately so we don't process the same code twice
-            router.replace('/login', undefined, { shallow: true });
-
             const verifyLineLogin = async () => {
                 try {
                     // Try to match the exact Redirect URI from LINE Console
@@ -92,6 +89,8 @@ export default function LoginPage() {
                     processingRef.current = false;
                 } finally {
                     setLineLoading(false);
+                    // CRITICAL: Clean up URL AFTER we are done to prevent re-triggering while allowing sync to finish
+                    router.replace('/login', undefined, { shallow: true });
                 }
             };
             verifyLineLogin();

@@ -198,7 +198,15 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                 },
                                 isLoading: false
                             });
-                            console.log('⚡ [AuthStore] Optimistic user set. Proceeding to background sync...');
+
+                            // ⚡ CRITICAL OPTIMIZATION: If UID matches existing user, SKIP heavy wait
+                            const currentState = get();
+                            if (currentState.user?.uid === firebaseUser.uid && currentState.user.displayName !== 'User') {
+                                console.log('⚡ [AuthStore] User already synced. Skipping heavy init.');
+                                return;
+                            }
+
+                            console.log('⚡ [AuthStore] Proceeding to sync databases...');
 
                             if (!db) throw new Error("Firestore not initialized");
                             const userRef = doc(db, 'users', firebaseUser.uid);
