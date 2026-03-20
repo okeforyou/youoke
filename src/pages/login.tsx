@@ -42,60 +42,49 @@ export default function LoginPage() {
     useEffect(() => {
         if (!router.isReady || isLoading) return;
         if (user) {
+            // CRITICAL: If new user (just registered) or has no active plan, force packages
+            const isNewUser = !user.membership || user.membership.type === 'free' || !user.membership.startedAt;
+            
             let redirectUrl = (router.query.redirect as string) || '/';
+            
+            if (isNewUser && redirectUrl === '/') {
+                console.log('🚀 [Login] New/Free user detected. Redirecting to Packages.');
+                redirectUrl = '/packages';
+            }
+
             if (redirectUrl === router.asPath) return;
             router.replace(redirectUrl);
         }
     }, [user, router.isReady, isLoading, router.query, router.asPath]);
 
-    // Handle LINE Callback (Instant Extraction)
+    // Handle LINE Callback
     useEffect(() => {
-        if (typeof window === 'undefined' || !!user || processingRef.current) return;
-
-        // Use native URLSearchParams for instant access
-        const params = new URLSearchParams(window.location.search);
-        const code = params.get('code');
-
-        if (code) {
-            console.log('⚡ [Instant LINE] Code detected! Starting verification...');
+        const { code } = router.query;
+        if (code && !user && !processingRef.current) {
             processingRef.current = true;
             setLineLoading(true);
-            setLocalError('');
-
             const verifyLineLogin = async () => {
                 try {
-                    // Try to match the exact Redirect URI from LINE Console
-                    // 1. First try with trailing slash (as configured)
-                    // 2. Fallback to no trailing slash if needed
-                    const redirectUri = `${window.location.origin}/login/`;
-                    
+                    let redirectUri = typeof window !== 'undefined' ? `${window.location.origin}/login/` : 'https://play.okeforyou.com/login/';
                     const res = await fetch('/api/auth/line-token', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ code, redirectUri })
                     });
-                    
-                    if (!res.ok) {
-                        const errorData = await res.json().catch(() => ({}));
-                        throw new Error(errorData.error || 'Failed to verify LINE login');
-                    }
-                    
+                    if (!res.ok) throw new Error('Failed to verify LINE login');
                     const { token } = await res.json();
                     await signInWithCustomToken(token);
-                    console.log('✅ LINE Auth Success!');
                 } catch (err: any) {
-                    console.error('❌ LINE Auth Final Error:', err);
-                    setLocalError(`เข้าสู่ระบบ LINE ไม่สำเร็จ: ${err.message || 'กรุณาลองใหม่'}`);
+                    setLocalError('การเข้าสู่ระบบด้วย LINE ล้มเหลว กรุณาลองใหม่');
                     processingRef.current = false;
                 } finally {
                     setLineLoading(false);
-                    // CRITICAL: Clean up URL AFTER we are done to prevent re-triggering while allowing sync to finish
                     router.replace('/login', undefined, { shallow: true });
                 }
             };
             verifyLineLogin();
         }
-    }, [user, router.isReady]);
+    }, [router.query, user]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -169,13 +158,7 @@ export default function LoginPage() {
             </div>
 
             {/* RIGHT SIDE: Login Form */}
-            <div className="w-full lg:w-1/2 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-20 xl:px-24 bg-white relative">
-                {/* Back Link */}
-                <Link href="/" className="absolute top-8 left-8 flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-primary transition-colors group">
-                    <ArrowLeft size={18} className="transition-transform group-hover:-translate-x-1" />
-                    <span>กลับหน้าหลัก</span>
-                </Link>
-
+            <div className="w-full lg:w-1/2 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-20 xl:px-24 bg-white">
                 <div className="mx-auto w-full max-w-sm lg:w-96">
                     <div className="text-center lg:text-left mb-8">
                         <h2 className="text-3xl font-extrabold text-gray-900">

@@ -75,7 +75,7 @@ export const useAuthStore = create<UserState & AuthActions>()(
     persist(
         (set, get) => ({
             user: null,
-            isLoading: false,
+            isLoading: true,
             error: null,
             isHydrated: false,
 
@@ -102,10 +102,10 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     }
                 }, 15000);
 
-                // 🚀 HANDLE REDIRECT RESULTS (Crucial for Mobile Google Login - Instant Catch)
+                // 🚀 HANDLE REDIRECT RESULTS (Crucial for Mobile Google Login)
                 getRedirectResult(auth).then((result) => {
                     if (result?.user) {
-                        console.log('🏁 Google Redirect Success (Instant Catch):', result.user.uid);
+                        console.log('🏁 Google Redirect Success:', result.user.uid);
                     }
                 }).catch((error) => {
                     console.error('🏁 Google Redirect Error:', error);
@@ -137,33 +137,25 @@ export const useAuthStore = create<UserState & AuthActions>()(
 
                         // ⬇️ ANONYMOUS USER HANDLING (Monitor/Guest Mode)
                         if (firebaseUser.isAnonymous) {
-                            console.log('👻 Anonymous User Detected:', firebaseUser.uid);
+                            console.log('👻 Anonymous User Detected');
 
                             // 🛑 SYSTEM FIX: PREVENT GHOST LOGIN ON MAIN APP
-                            // If user is guest/anonymous, ONLY allow if on designated Monitor/TV/Remote pages
+                            // If user is guest/anonymous, ONLY allow if on /monitor or /remote
                             if (typeof window !== 'undefined') {
                                 const path = window.location.pathname;
-                                const isAllowedGuestPage = [
-                                    '/monitor',
-                                    '/tv',
-                                    '/receiver',
-                                    '/chromecast',
-                                    '/remote'
-                                ].some(p => path.startsWith(p));
+                                const isAllowedGuestPage = path.startsWith('/monitor') || path.startsWith('/remote');
 
                                 if (!isAllowedGuestPage) {
-                                    console.warn('🚫 [Auth] Guest Session blocked on main app page:', path);
-                                    // Set user to null immediately to clean up UI
-                                    set({ user: null, isLoading: false });
-                                    // Clean up Firebase session
-                                    if (auth) {
-                                        firebaseSignOut(auth).catch(e => console.warn('Guest cleanup failed', e));
-                                    }
-                                    return;
+                                    console.warn('🚫 [Debug] Guest Session detected on unauthorized page.', window.location.pathname);
+                                    // TEMPORARY DEBUG: Disable Force Logout
+                                    // console.warn('🚫 Guest Session detected on unauthorized page. Forcing Logout.');
+                                    // if (auth) await firebaseSignOut(auth);
+                                    // set({ user: null, isLoading: false });
+                                    // return;
                                 }
                             }
 
-                            console.log('✅ Guest Access Allowed on designated page');
+                            console.log('✅ Guest Access Allowed on:', window.location.pathname);
                             set({
                                 user: {
                                     uid: firebaseUser.uid,
@@ -182,32 +174,6 @@ export const useAuthStore = create<UserState & AuthActions>()(
                         // Sync with backend (Strict Validation)
                         try {
                             const token = await firebaseUser.getIdToken();
-                            
-                            // 🚀 OPTIMISTIC UPDATE: Set user immediately to trigger redirect
-                            set({
-                                user: {
-                                    uid: firebaseUser.uid,
-                                    email: firebaseUser.email,
-                                    displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
-                                    photoURL: firebaseUser.photoURL || null,
-                                    role: firebaseUser.email === 'boonyanone@gmail.com' ? 'owner' : 'user',
-                                    isAdmin: firebaseUser.email === 'boonyanone@gmail.com',
-                                    membership: DEFAULT_MEMBERSHIP,
-                                    installed_modules: [],
-                                    quota: undefined
-                                },
-                                isLoading: false
-                            });
-
-                            // ⚡ CRITICAL OPTIMIZATION: If UID matches existing user, SKIP heavy wait
-                            const currentState = get();
-                            if (currentState.user?.uid === firebaseUser.uid && currentState.user.displayName !== 'User') {
-                                console.log('⚡ [AuthStore] User already synced. Skipping heavy init.');
-                                return;
-                            }
-
-                            console.log('⚡ [AuthStore] Proceeding to sync databases...');
-
                             if (!db) throw new Error("Firestore not initialized");
                             const userRef = doc(db, 'users', firebaseUser.uid);
 
@@ -228,12 +194,7 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                     displayName: rtdbData?.displayName || firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
                                     photoURL: rtdbData?.photoURL || firebaseUser.photoURL || null,
                                     role: 'user',
-                                    membership: {
-                                        type: 'day_pass',
-                                        status: 'active',
-                                        startedAt: serverTimestamp(),
-                                        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
-                                    },
+                                    membership: { ...DEFAULT_MEMBERSHIP, startedAt: serverTimestamp() },
                                     quota: {
                                         daily_limit: 5,
                                         used: 0,
@@ -386,10 +347,9 @@ export const useAuthStore = create<UserState & AuthActions>()(
                         photoURL: user.photoURL || null,
                         role: 'user',
                         membership: {
-                            type: 'day_pass',
-                            status: 'active',
-                            startedAt: serverTimestamp(),
-                            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+                            ...DEFAULT_MEMBERSHIP,
+                            status: 'pending',
+                            startedAt: serverTimestamp()
                         },
                         tier: 'free',
                         credits: 0,
@@ -413,10 +373,8 @@ export const useAuthStore = create<UserState & AuthActions>()(
                             role: 'user',
                             isAdmin: false,
                             membership: {
-                                type: 'day_pass',
-                                status: 'active',
-                                startedAt: new Date(),
-                                expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+                                ...DEFAULT_MEMBERSHIP,
+                                status: 'pending'
                             },
                             installed_modules: [],
                             quota: undefined
@@ -442,14 +400,13 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     if (isMobile) {
                         console.log('📱 Mobile detected: Using Redirect for Google...');
                         await signInWithRedirect(auth, provider);
-                        // No need for optimistic update here as page will redirect
                     } else {
                         console.log('💻 Desktop detected: Using Popup for Google...');
                         const userCredential = await signInWithPopup(auth, provider);
                         const firebaseUser = userCredential.user;
                         console.log('⚡ GoogleSignIn: Auth Success', firebaseUser.uid);
 
-                        // Optimistic Update for instant feel on Desktop
+                        // Optimistic Update
                         set({
                             user: {
                                 uid: firebaseUser.uid,
@@ -501,27 +458,11 @@ export const useAuthStore = create<UserState & AuthActions>()(
             signInWithCustomToken: async (token: string) => {
                 set({ isLoading: true, error: null });
                 try {
-                    const { signInWithCustomToken: firebaseSignIn } = await import('firebase/auth');
+                    const { signInWithCustomToken } = await import('firebase/auth');
                     if (!auth) throw new Error("Firebase Auth not initialized");
-                    const userCredential = await firebaseSignIn(auth, token);
+                    const userCredential = await signInWithCustomToken(auth, token);
                     const firebaseUser = userCredential.user;
                     console.log('⚡ CustomToken SignIn: Success', firebaseUser.uid);
-
-                    // 🚀 OPTIMISTIC UPDATE for Instant Transition
-                    set({
-                        user: {
-                            uid: firebaseUser.uid,
-                            email: firebaseUser.email,
-                            displayName: firebaseUser.displayName || 'User',
-                            photoURL: firebaseUser.photoURL || null,
-                            role: 'user',
-                            isAdmin: false,
-                            membership: DEFAULT_MEMBERSHIP,
-                            installed_modules: [],
-                            quota: undefined
-                        },
-                        isLoading: false
-                    });
                 } catch (error: any) {
                     set({ error: error.message, isLoading: false });
                     throw error;
