@@ -469,6 +469,22 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     const userCredential = await signInWithCustomToken(auth, token);
                     const firebaseUser = userCredential.user;
                     console.log('⚡ CustomToken SignIn: Success', firebaseUser.uid);
+                    
+                    // Optimistic Update: Skip waiting for global listener to trigger instant redirect
+                    set({
+                        user: {
+                            uid: firebaseUser.uid,
+                            email: firebaseUser.email,
+                            displayName: firebaseUser.displayName,
+                            photoURL: firebaseUser.photoURL,
+                            role: 'user',
+                            isAdmin: false,
+                            membership: DEFAULT_MEMBERSHIP,
+                            installed_modules: [],
+                            quota: undefined
+                        },
+                        isLoading: false
+                    });
                 } catch (error: any) {
                     set({ error: error.message, isLoading: false });
                     throw error;
