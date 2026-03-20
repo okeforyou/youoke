@@ -252,25 +252,25 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                                               }}
                                                            />
 
-                                                            {/* VIP LINE@ SUPPORT SECTION */}
-                                                            <div className="mt-4 bg-[#00B900]/5 border border-[#00B900]/20 rounded-3xl p-5 flex flex-col gap-4 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-700">
-                                                                <div className="flex items-center gap-4">
-                                                                    <div className="bg-[#00B900] p-2.5 rounded-2xl shadow-lg shadow-green-500/20">
-                                                                        <ChatBubbleLeftRightIcon className="w-6 h-6 text-white" />
+                                                            {/* VIP LINE@ SUPPORT SECTION - Compact & Strategic */}
+                                                            <div className="mt-3 bg-gray-50 border border-gray-100 rounded-3xl p-4 flex flex-col gap-3 shadow-sm transition-all hover:border-[#00B900]/30 hover:bg-[#00B900]/5 group">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="bg-[#00B900] p-2 rounded-xl shadow-lg shadow-green-500/10">
+                                                                        <ChatBubbleLeftRightIcon className="w-5 h-5 text-white" />
                                                                     </div>
                                                                     <div>
-                                                                        <p className="text-[13px] font-black text-gray-900 leading-tight">ติดต่อเจ้าหน้าที่ / แจ้งโอนเงิน</p>
-                                                                        <p className="text-[10px] font-medium text-gray-500 mt-1">รับสิทธิ์ VIP หรือยืนยันยอดผ่าน LINE@ 24 ชม.</p>
+                                                                        <p className="text-[12px] font-black text-gray-900 leading-tight">ติดต่อสอบถาม / เชื่อมต่อระบบ</p>
+                                                                        <p className="text-[9px] font-medium text-gray-500 mt-0.5">เพิ่มเพื่อนเพื่อรับข้อมูลและการแจ้งเตือนจากระบบผ่าน LINE</p>
                                                                     </div>
                                                                 </div>
                                                                 <a 
                                                                     href="https://line.me/R/ti/p/@243lercy" 
                                                                     target="_blank" 
                                                                     rel="noopener noreferrer"
-                                                                    className="w-full bg-[#00B900] hover:bg-[#009e00] text-white py-3.5 rounded-2xl font-black text-center text-sm shadow-xl shadow-green-500/10 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                                                                    className="w-full bg-[#00B900] hover:bg-[#009e00] text-white py-2.5 rounded-xl font-black text-center text-xs active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
                                                                 >
-                                                                    <span className="text-lg">@</span>
                                                                     <span>คุยกับแอดมิน (LINE@)</span>
+                                                                    <ChevronRightIcon className="w-3.5 h-3.5" />
                                                                 </a>
                                                             </div>
                                                      </div>
