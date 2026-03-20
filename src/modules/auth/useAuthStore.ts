@@ -394,14 +394,21 @@ export const useAuthStore = create<UserState & AuthActions>()(
 
             signInWithGoogle: async () => {
                 console.log('⚡ GoogleSignIn: Started');
-                set({ isLoading: true, error: null });
+                
+                // 🛑 SAFARI POPUP FIX: Do not set state before popup! 
+                // Any 'set' call here might cause a React microtask and block the popup.
                 try {
                     const provider = new GoogleAuthProvider();
 
                     if (!auth) throw new Error("Firebase Auth not initialized");
+                    
                     console.time('GooglePopup');
+                    // 1. OPEN POPUP IMMEDIATELY (Synchronously linked to user click)
                     const userCredential = await signInWithPopup(auth, provider);
                     console.timeEnd('GooglePopup');
+
+                    // 2. NOW we can set the loading state and process the user
+                    set({ isLoading: true, error: null });
 
                     const firebaseUser = userCredential.user;
                     console.log('⚡ GoogleSignIn: Auth Success', firebaseUser.uid);

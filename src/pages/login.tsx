@@ -125,13 +125,14 @@ export default function LoginPage() {
         }
     };
 
-    const handleGoogleLogin = async () => {
-        setLocalError('');
-        try {
-            await signInWithGoogle();
-        } catch (err: any) {
+    const handleGoogleLogin = () => {
+        // 🚀 SYNCHRONOUS FIX FOR SAFARI POP-UP:
+        // By NOT making this function async and NOT calling setLocalError('') here,
+        // we prevent React from queueing a render cycle before opening the popup.
+        // This ensures the popup counts as a "direct user action" and doesn't get blocked.
+        signInWithGoogle().catch((err: any) => {
             setLocalError(err.message || 'เข้าสู่ระบบด้วย Google ล้มเหลว');
-        }
+        });
     };
 
     return (
