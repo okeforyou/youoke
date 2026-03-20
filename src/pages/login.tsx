@@ -245,9 +245,9 @@ export default function LoginPage() {
                     "w-full lg:w-[55%] xl:w-[50%] flex flex-col justify-center items-center py-12 px-6 lg:px-24 bg-[#fcfcfd] lg:bg-transparent min-h-screen lg:min-h-0",
                     showIntro ? "hidden lg:flex" : "flex animate-in fade-in slide-in-from-bottom-4 duration-500"
                 )}>
-                    {/* BACK TO INTRO BUTTON (Mobile Only) */}
-                    <button onClick={() => setShowIntro(true)} className="lg:hidden absolute top-8 left-6 flex items-center gap-2 text-sm font-bold text-gray-400 p-2">
-                        <ArrowLeft size={18} />
+                    {/* BACK TO INTRO BUTTON (Mobile Only) - Premium Pill Style */}
+                    <button onClick={() => setShowIntro(true)} className="lg:hidden absolute top-8 left-6 flex items-center gap-2 text-sm font-black text-gray-700 bg-white border-2 border-gray-100 rounded-2xl px-5 py-2.5 shadow-sm active:scale-95 transition-all">
+                        <ArrowLeft size={18} strokeWidth={3} />
                         <span>กลับ</span>
                     </button>
 

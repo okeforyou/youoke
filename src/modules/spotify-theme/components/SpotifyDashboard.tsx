@@ -451,12 +451,11 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
           {mode === 'genres' && (
             <div className="animate-in fade-in duration-500">
                <div className="px-4 pt-4 pb-6">
-                    <div className="bg-gray-900 p-6 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] relative overflow-hidden min-h-[140px] sm:min-h-[160px] flex flex-col justify-center">
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-[80px] -mr-32 -mt-32" />
-                        <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight">ตู้เพลง / แนวเพลง</h2>
-                        <p className="text-[13px] sm:text-base text-gray-400 mt-2 font-medium">รวมลิสต์เพลงเด็ดแยกตามแนวดนตรีที่จัดไว้ให้คุณ</p>
+                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-5 sm:p-8 rounded-2xl relative overflow-hidden min-h-[130px] flex flex-col justify-center border border-gray-200/50 shadow-sm">
+                        <h2 className="text-2xl sm:text-3xl font-black text-gray-900 leading-tight">ตู้เพลง / แนวเพลง</h2>
+                        <p className="text-[13px] sm:text-base text-black mt-2 font-black">เลือกหมวดหมู่เพลงที่รวบรวมไว้ให้คุณ</p>
                         <div className="absolute bottom-6 right-8 opacity-10">
-                            <GridIcon className="w-20 h-20 text-white" />
+                            <GridIcon className="w-20 h-20 text-black" />
                         </div>
                     </div>
                </div>
@@ -481,9 +480,8 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                         <div key={cat.tag_id} onClick={() => setTagId(cat.tag_id)} className="group cursor-pointer">
                             <div className="relative aspect-video rounded-3xl overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-xl transition-all duration-300 group-hover:-translate-y-1">
                                 <Image src={cat.imageUrl || "/icon-cover.png"} alt={cat.tag_name} fill className="object-cover" unoptimized />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                                <div className="absolute inset-0 p-5 flex flex-col justify-end">
-                                    <p className="text-white font-bold text-sm leading-tight line-clamp-2">{cat.tag_name}</p>
+                                <div className="absolute inset-0 p-3 flex flex-col justify-end bg-gradient-to-t from-white/90 via-white/40 to-transparent">
+                                    <p className="text-black font-black text-sm leading-tight line-clamp-2">{cat.tag_name}</p>
                                 </div>
                             </div>
                         </div>

@@ -552,16 +552,16 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     if (auth) await firebaseSignOut(auth);
                     console.log('⚡ SignOut: Firebase Success');
 
-                    // 5. Force Reload to clear memory and prevent resurrection
-                    window.location.href = '/login';
+                    // 5. Force Reload to clear memory and prevent resurrection (Redirect to Home)
+                    window.location.href = '/';
                 } catch (error: any) {
                     console.error('⚡ SignOut: Error', error);
                     set({ user: null, error: error.message, isLoading: false });
                     if (typeof window !== 'undefined') {
                         localStorage.removeItem('auth-storage');
                     }
-                    // Force redirect anyway
-                    window.location.href = '/login';
+                    // Force redirect anyway (Redirect to Home)
+                    window.location.href = '/';
                 }
             },
 
