@@ -171,6 +171,24 @@ export const useAuthStore = create<UserState & AuthActions>()(
                         // Sync with backend (Strict Validation)
                         try {
                             const token = await firebaseUser.getIdToken();
+                            
+                            // 🚀 OPTIMISTIC UPDATE: Set user immediately to trigger redirect
+                            set({
+                                user: {
+                                    uid: firebaseUser.uid,
+                                    email: firebaseUser.email,
+                                    displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
+                                    photoURL: firebaseUser.photoURL || null,
+                                    role: firebaseUser.email === 'boonyanone@gmail.com' ? 'owner' : 'user',
+                                    isAdmin: firebaseUser.email === 'boonyanone@gmail.com',
+                                    membership: DEFAULT_MEMBERSHIP,
+                                    installed_modules: [],
+                                    quota: undefined
+                                },
+                                isLoading: false
+                            });
+                            console.log('⚡ [AuthStore] Optimistic user set. Proceeding to background sync...');
+
                             if (!db) throw new Error("Firestore not initialized");
                             const userRef = doc(db, 'users', firebaseUser.uid);
 
