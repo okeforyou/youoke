@@ -30,6 +30,10 @@ export const MobileBottomNav = () => {
 
     const handleNavClick = (index: number) => {
         if (index === 5) {
+            if (!user) {
+                router.push('/login');
+                return;
+            }
             setProfileOpen(true);
             return;
         } else {
