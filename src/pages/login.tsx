@@ -48,18 +48,21 @@ export default function LoginPage() {
         }
     }, [user, router.isReady, isLoading, router.query, router.asPath]);
 
-    // Handle LINE Callback
+    // Handle LINE Callback (Instant Extraction)
     useEffect(() => {
-        const { code } = router.query;
-        if (code && !user && !processingRef.current) {
+        if (typeof window === 'undefined' || user || processingRef.current) return;
+
+        // Use native URLSearchParams for instant access before Next.js router is ready
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get('code');
+
+        if (code) {
+            console.log('⚡ [Instant LINE] Code found in URL. Verification started...');
             processingRef.current = true;
             setLineLoading(true);
             const verifyLineLogin = async () => {
                 try {
-                    let redirectUri = typeof window !== 'undefined' ? `${window.location.origin}/login/` : 'https://play.okeforyou.com/login/';
-                    
-                    console.log('📡 Verifying LINE code with URI:', redirectUri);
-
+                    let redirectUri = `${window.location.origin}/login/`;
                     const res = await fetch('/api/auth/line-token', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -78,7 +81,7 @@ export default function LoginPage() {
             };
             verifyLineLogin();
         }
-    }, [router.query, user]);
+    }, [user]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

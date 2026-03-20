@@ -8,6 +8,8 @@ import {
     createUserWithEmailAndPassword,
     GoogleAuthProvider,
     signInWithPopup,
+    signInWithRedirect,
+    getRedirectResult,
     updateProfile
 } from 'firebase/auth';
 import { getApps } from 'firebase/app';
@@ -99,6 +101,15 @@ export const useAuthStore = create<UserState & AuthActions>()(
                         set({ isLoading: false });
                     }
                 }, 15000);
+
+                // 🚀 HANDLE REDIRECT RESULTS (Crucial for Mobile Google Login - Instant Catch)
+                getRedirectResult(auth).then((result) => {
+                    if (result?.user) {
+                        console.log('🏁 Google Redirect Success (Instant Catch):', result.user.uid);
+                    }
+                }).catch((error) => {
+                    console.error('🏁 Google Redirect Error:', error);
+                });
 
                 console.log('🔐 Auth Store: Registering onIdTokenChanged listener...');
                 const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
