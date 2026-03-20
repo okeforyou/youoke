@@ -117,14 +117,13 @@ export default function ListHitsGrid() {
                  cat.gradient,
                  isActive ? "opacity-100" : "opacity-90 group-hover:opacity-100"
                )} />
-                              {/* Light Overlay for Black Text Visibility */}
                 <div className={clsx(
-                  "absolute inset-0 bg-gradient-to-t from-white/95 via-white/40 to-transparent transition-opacity duration-300", 
+                  "absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent transition-opacity duration-300", 
                   isActive ? "opacity-100" : "opacity-80 group-hover:opacity-100"
                 )} />
                 <div className="absolute inset-0 p-3 sm:p-4 flex flex-col justify-end">
-                  <h3 className="text-sm sm:text-base font-black text-black leading-tight mb-1">{cat.title}</h3>
-                  <p className="text-[10px] text-black/80 font-black line-clamp-1">{cat.description}</p>
+                  <h3 className="text-sm sm:text-base font-bold text-white leading-tight drop-shadow-sm line-clamp-2 mb-1">{cat.title}</h3>
+                  <p className="text-[10px] text-white font-black line-clamp-1">{cat.description}</p>
                 </div>
                
                {isActive && (
@@ -171,7 +170,7 @@ export default function ListHitsGrid() {
               <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-4">
                {chartItems.map((hit: Single, index: number) => (
                  <div 
-                   key={`${hit.id}-${index}`} 
+                   key={`${hit.jooxId || index}-${index}`} 
                    onClick={() => handleClick(hit)} 
                    className="group cursor-pointer overflow-hidden max-w-full relative"
                  >

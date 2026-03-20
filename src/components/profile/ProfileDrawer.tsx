@@ -11,7 +11,8 @@ import {
     ChevronRightIcon,
     MusicalNoteIcon,
     PlayCircleIcon,
-    ServerIcon
+    ServerIcon,
+    ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
 import { useUIStore } from '../../stores/useUIStore';
 import { useSystem } from '../../core/container/SystemContext'; // DI Container
@@ -242,15 +243,37 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                                     {/* Membership Status (The Pretty Card) */}
                                                     <div>
                                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 px-2">บัตรสมาชิก</p>
-                                                        <MembershipCard
-                                                             membership={displayMembership as any}
-                                                             role={isAdmin ? 'admin' : (user?.role || profile?.role)}
-                                                             onUpgrade={() => {
-                                                                 onClose();
-                                                                 router.push('/packages');
-                                                             }}
-                                                          />
-                                                    </div>
+                                                         <MembershipCard
+                                                              membership={displayMembership as any}
+                                                              role={isAdmin ? 'admin' : (user?.role || profile?.role)}
+                                                              onUpgrade={() => {
+                                                                  onClose();
+                                                                  router.push('/packages');
+                                                              }}
+                                                           />
+
+                                                            {/* VIP LINE@ SUPPORT SECTION */}
+                                                            <div className="mt-4 bg-[#00B900]/5 border border-[#00B900]/20 rounded-3xl p-5 flex flex-col gap-4 shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-700">
+                                                                <div className="flex items-center gap-4">
+                                                                    <div className="bg-[#00B900] p-2.5 rounded-2xl shadow-lg shadow-green-500/20">
+                                                                        <ChatBubbleLeftRightIcon className="w-6 h-6 text-white" />
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="text-[13px] font-black text-gray-900 leading-tight">ติดต่อเจ้าหน้าที่ / แจ้งโอนเงิน</p>
+                                                                        <p className="text-[10px] font-medium text-gray-500 mt-1">รับสิทธิ์ VIP หรือยืนยันยอดผ่าน LINE@ 24 ชม.</p>
+                                                                    </div>
+                                                                </div>
+                                                                <a 
+                                                                    href="https://line.me/ti/p/@youoke" 
+                                                                    target="_blank" 
+                                                                    rel="noopener noreferrer"
+                                                                    className="w-full bg-[#00B900] hover:bg-[#009e00] text-white py-3.5 rounded-2xl font-black text-center text-sm shadow-xl shadow-green-500/10 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                                                                >
+                                                                    <span className="text-lg">@</span>
+                                                                    <span>คุยกับแอดมิน (LINE@)</span>
+                                                                </a>
+                                                            </div>
+                                                     </div>
 
                                                     {/* Notifications */}
                                                     <div>
