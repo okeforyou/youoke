@@ -94,10 +94,10 @@ export default function LoginPage() {
                     await signInWithCustomToken(token);
                 } catch (err: any) {
                     setLocalError('การเข้าสู่ระบบด้วย LINE ล้มเหลว กรุณาลองใหม่');
-                } finally {
-                    setLineLoading(false);
-                    router.replace('/login', undefined, { shallow: true });
+                    setLineLoading(false); // ปลดล็อกเฉพาะตอน Error
                 }
+                // 🚀 SPEED FIX: ไม่ต้องล้าง URL กลับไปที่ /login แล้ว เพราะแอปกำลังจะถูกดีดไปหน้าแรก
+                // และปล่อย spinner ให้หมุนค้างไว้เนียนๆ จนกว่าจะเปลี่ยนหน้าเสร็จสิ้น
             };
             verifyLineLogin();
         }
