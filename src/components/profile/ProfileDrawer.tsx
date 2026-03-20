@@ -264,7 +264,7 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                                                     </div>
                                                                 </div>
                                                                 <a 
-                                                                    href="https://line.me/ti/p/@youoke" 
+                                                                    href="https://line.me/R/ti/p/@243lercy" 
                                                                     target="_blank" 
                                                                     rel="noopener noreferrer"
                                                                     className="w-full bg-[#00B900] hover:bg-[#009e00] text-white py-3.5 rounded-2xl font-black text-center text-sm shadow-xl shadow-green-500/10 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
