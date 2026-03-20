@@ -265,7 +265,7 @@ export default function LoginPage() {
 
                             {/* Social Login: STABLE & FAST FAST FAST */}
                             <div className="grid grid-cols-1 gap-3 mb-8">
-                                <button onClick={signInWithLine} disabled={isLoading || lineLoading || !acceptedTerms} className="h-14 flex justify-center items-center gap-3 px-6 rounded-2xl bg-[#06C755] hover:bg-[#05b34d] text-white font-black shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-30">
+                                <button onClick={signInWithLine} disabled={isLoading || lineLoading || !acceptedTerms} className="h-14 flex justify-center items-center gap-3 px-6 rounded-2xl bg-[#06C755] hover:bg-[#05b34d] text-white font-black shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95 disabled:cursor-not-allowed">
                                     {lineLoading ? <span className="loading loading-spinner loading-sm" /> : (
                                         <>
                                             <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M24 10.3c0-4.6-4.6-8.3-10.4-8.3C7.8 2 3.1 5.7 3.1 10.3c0 4.1 3.7 7.5 8.7 8.2.3.1.8.2 1 .5.1.1.2.4.1.6l-.3 1.9c-.1.4-.4 1.5-.4 1.5l3.2-1.9s1.4-.8 2-.7l.1-.1c4.5-1.1 6.5-4.5 6.5-10z"/></svg>
@@ -273,7 +273,7 @@ export default function LoginPage() {
                                         </>
                                     )}
                                 </button>
-                                <button onClick={handleGoogleLogin} disabled={isLoading || !acceptedTerms} className="h-14 flex justify-center items-center gap-3 px-6 rounded-2xl bg-white border-2 border-gray-100 hover:border-gray-200 text-gray-700 font-black hover:shadow-sm hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-30">
+                                <button onClick={handleGoogleLogin} disabled={isLoading || !acceptedTerms} className="h-14 flex justify-center items-center gap-3 px-6 rounded-2xl bg-white border-2 border-gray-100 hover:border-gray-200 text-gray-700 font-black hover:shadow-sm hover:-translate-y-0.5 transition-all active:scale-95 disabled:cursor-not-allowed">
                                     {isLoading ? <span className="loading loading-spinner loading-sm" /> : (
                                         <>
                                             <svg width="20" height="20" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
@@ -299,8 +299,8 @@ export default function LoginPage() {
                                         />
                                         <svg className="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 left-1 transition-opacity pointer-events-none" viewBox="0 0 12 10" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="1.5 6 4.5 9 10.5 1"></polyline></svg>
                                     </div>
-                                    <span className="text-[13px] font-bold text-gray-500 leading-tight group-hover:text-gray-900 transition-colors">
-                                        ฉันได้อ่านและยอมรับ <Link href="/terms" className="text-gray-900 underline decoration-gray-200 hover:decoration-gray-900 transition-all">ข้อตกลงและเงื่อนไขการใช้งาน</Link> ของ YouOke แล้ว
+                                    <span className="text-[13px] font-black text-gray-900 leading-tight group-hover:text-red-600 transition-colors">
+                                        ฉันได้อ่านและยอมรับ <Link href="/terms" className="text-red-500 underline decoration-red-200 hover:decoration-red-500 transition-all">ข้อตกลงและเงื่อนไขการใช้งาน</Link> ของ YouOke แล้ว
                                     </span>
                                 </label>
                             </div>
@@ -337,9 +337,9 @@ export default function LoginPage() {
                             </div>
 
                             <button type="submit" disabled={isLoading || !acceptedTerms} className={clsx(
-                                "w-full h-14 mt-4 rounded-2xl font-black text-[17px] text-white shadow-xl transition-all active:scale-[0.98] disabled:opacity-30 flex items-center justify-center gap-2",
-                                isLogin ? "bg-gray-900 shadow-gray-900/10 hover:bg-black" : "bg-primary shadow-primary/20 hover:brightness-110"
-                            )}>
+                                    "w-full h-14 mt-4 rounded-2xl font-black text-[17px] text-white shadow-xl transition-all active:scale-[0.98] disabled:cursor-not-allowed flex items-center justify-center gap-2",
+                                    isLogin ? "bg-gray-900 shadow-gray-900/10 hover:bg-black" : "bg-primary shadow-primary/20 hover:brightness-110"
+                                )}>
                                 {isLoading ? (
                                     <span className="loading loading-spinner" />
                                 ) : (
