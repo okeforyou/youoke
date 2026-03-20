@@ -434,30 +434,37 @@ export const useAuthStore = create<UserState & AuthActions>()(
                 set({ isLoading: true, error: null });
                 try {
                     const provider = new GoogleAuthProvider();
-
                     if (!auth) throw new Error("Firebase Auth not initialized");
-                    console.time('GooglePopup');
-                    const userCredential = await signInWithPopup(auth, provider);
-                    console.timeEnd('GooglePopup');
 
-                    const firebaseUser = userCredential.user;
-                    console.log('⚡ GoogleSignIn: Auth Success', firebaseUser.uid);
+                    // 📱 MOBILE OPTIMIZATION: Use Redirect for Mobile, Popup for Desktop
+                    const isMobile = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                    
+                    if (isMobile) {
+                        console.log('📱 Mobile detected: Using Redirect for Google...');
+                        await signInWithRedirect(auth, provider);
+                        // No need for optimistic update here as page will redirect
+                    } else {
+                        console.log('💻 Desktop detected: Using Popup for Google...');
+                        const userCredential = await signInWithPopup(auth, provider);
+                        const firebaseUser = userCredential.user;
+                        console.log('⚡ GoogleSignIn: Auth Success', firebaseUser.uid);
 
-                    // Optimistic Update
-                    set({
-                        user: {
-                            uid: firebaseUser.uid,
-                            email: firebaseUser.email,
-                            displayName: firebaseUser.displayName,
-                            photoURL: firebaseUser.photoURL,
-                            role: 'user',
-                            isAdmin: false,
-                            membership: DEFAULT_MEMBERSHIP,
-                            installed_modules: [],
-                            quota: undefined
-                        },
-                        isLoading: false
-                    });
+                        // Optimistic Update for instant feel on Desktop
+                        set({
+                            user: {
+                                uid: firebaseUser.uid,
+                                email: firebaseUser.email,
+                                displayName: firebaseUser.displayName,
+                                photoURL: firebaseUser.photoURL,
+                                role: 'user',
+                                isAdmin: false,
+                                membership: DEFAULT_MEMBERSHIP,
+                                installed_modules: [],
+                                quota: undefined
+                            },
+                            isLoading: false
+                        });
+                    }
                 } catch (error: any) {
                     console.error('⚡ GoogleSignIn: Error', error);
                     set({ error: error.message, isLoading: false });

@@ -85,20 +85,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         // 5. Update Firestore Profile (Sync)
+        // 5 & 6 Parallel: Update Firestore and Create Token concurrently for maximum speed
         if (!adminFirestore) throw new Error("Admin Firestore not initialized");
+        if (!adminAuth) throw new Error("Admin Auth not initialized"); // Ensure adminAuth is initialized before calling createCustomToken
         const userRef = adminFirestore.collection('users').doc(uid);
-        await userRef.set({
-            uid: uid,
-            displayName: name,
-            photoURL: picture,
-            email: email || null,
-            provider: 'line',
-            updatedAt: FieldValue.serverTimestamp()
-        }, { merge: true });
 
-        // 6. Generate Custom Token
-        if (!adminAuth) throw new Error("Admin Auth not initialized");
-        const customToken = await adminAuth.createCustomToken(uid);
+        const [_, customToken] = await Promise.all([
+            userRef.set({
+                uid: uid,
+                displayName: name,
+                photoURL: picture,
+                email: email || null,
+                provider: 'line',
+                updatedAt: FieldValue.serverTimestamp()
+            }, { merge: true }),
+            adminAuth.createCustomToken(uid)
+        ]);
 
         return res.status(200).json({ token: customToken });
 
