@@ -181,123 +181,126 @@ export const useAuthStore = create<UserState & AuthActions>()(
                             return;
                         }
 
-                        // Sync with backend (Strict Validation)
+                        // Sync with backend (With Fallback for Mobile)
                         try {
                             const token = await firebaseUser.getIdToken();
                             if (!db) throw new Error("Firestore not initialized");
                             const userRef = doc(db, 'users', firebaseUser.uid);
 
-                            // 🚀 DEEP SYNC: Fetch from both Databases in Parallel
-                            let [userSnap, rtdbSnap] = await Promise.all([
+                            // 🚀 DEEP SYNC with 7-Second Timeout (Crucial for Mobile WebSockets)
+                            const syncPromise = Promise.all([
                                 getDoc(userRef),
                                 realtimeDb ? rtdbGet(ref(realtimeDb, `users/${firebaseUser.uid}`)) : Promise.resolve(null)
                             ]);
 
-                            const rtdbData = (rtdbSnap && typeof rtdbSnap.exists === 'function' && rtdbSnap.exists()) ? rtdbSnap.val() : null;
+                            const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve('TIMEOUT'), 7000));
+                            
+                            const result = await Promise.race([syncPromise, timeoutPromise]);
+                            
+                            let userDataFromDB = null;
+                            let rtdbData = null;
 
-                            // Self-healing: If profile missing in BOTH or just Firestore
-                            if (!userSnap.exists()) {
-                                console.log('🩹 [AuthStore] Initializing missing Firestore profile...');
-                                const newProfile = {
-                                    uid: firebaseUser.uid,
-                                    email: firebaseUser.email,
-                                    displayName: rtdbData?.displayName || firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
-                                    photoURL: rtdbData?.photoURL || firebaseUser.photoURL || null,
-                                    role: 'user',
-                                    membership: {
-                                        type: 'free',
-                                        status: 'active',
-                                        startedAt: serverTimestamp(),
-                                        expiresAt: null
-                                    },
-                                    quota: {
-                                        daily_limit: 5,
-                                        used: 0,
-                                        last_reset: new Date().toISOString()
-                                    },
-                                    createdAt: serverTimestamp(),
-                                    updatedAt: serverTimestamp(),
-                                };
-                                await setDoc(userRef, newProfile);
-                                userSnap = await getDoc(userRef);
-                            }
+                            if (result === 'TIMEOUT') {
+                                console.warn('⚠️ Firestore Sync Timeout (Mobile Network Issue?). Falling back to basic Auth Profile.');
+                            } else {
+                                const [userSnap, rtdbSnap] = result as any;
+                                rtdbData = (rtdbSnap && typeof rtdbSnap.exists === 'function' && rtdbSnap.exists()) ? rtdbSnap.val() : null;
 
-                            if (userSnap.exists()) {
-                                const userData = userSnap.data();
-                                let membership = userData.membership || DEFAULT_MEMBERSHIP;
-
-                                // 🛡️ SERVER-SIDE VALIDATION: CHECK EXPIRY
-                                if (membership.expiresAt) {
-                                    const expiry = membership.expiresAt.toDate ? membership.expiresAt.toDate() : new Date(membership.expiresAt);
-                                    if (new Date() > expiry && membership.status !== 'expired') {
-                                        console.warn('⚠️ Membership Expired! Downgrading to Free...');
-                                        membership = {
-                                            ...DEFAULT_MEMBERSHIP,
-                                            status: 'expired',
-                                            type: 'free'
-                                        };
-                                        // Update Firestore to reflect expiry immediately
-                                        const { updateDoc } = await import('firebase/firestore');
-                                        updateDoc(userRef, { membership }).catch(e => console.error('Firestore expiry sync failed', e));
-
-                                        // Sync to Realtime DB too (Simple & Fast)
-                                        if (realtimeDb) {
-                                            rtdbUpdate(ref(realtimeDb, `users/${firebaseUser.uid}/subscription`), {
-                                                status: 'expired',
-                                                plan: 'free'
-                                            }).catch(e => console.error('RTDB expiry sync failed', e));
-                                        }
-                                    }
-                                }
-
-                                let role = userData.role || 'user';
-                                let isAdmin = userData.role === 'admin';
-
-                                // 👑 HARDCODE OWNER ROLE
-                                if (firebaseUser.email === 'boonyanone@gmail.com') {
-                                    role = 'owner';
-                                    isAdmin = true;
-                                    console.log('👑 [AuthStore] Owner Identified: Access Granted');
-                                }
-
-                                // 🛡️ SELF-HEALING: SYNC MISSING photoURL FROM AUTH PROVIDER
-                                if (!userData.photoURL && firebaseUser.photoURL) {
-                                    console.log('🩹 [AuthStore] Healing missing photoURL in Firestore...');
-                                    const { updateDoc } = await import('firebase/firestore');
-                                    updateDoc(userRef, { photoURL: firebaseUser.photoURL }).catch(e => console.warn('Self-healing failed', e));
-                                }
-
-                                set({
-                                    user: {
+                                // Self-healing: If profile missing in BOTH or just Firestore
+                                if (!userSnap.exists()) {
+                                    console.log('🩹 [AuthStore] Initializing missing Firestore profile...');
+                                    const newProfile = {
                                         uid: firebaseUser.uid,
                                         email: firebaseUser.email,
-                                        displayName: userData.displayName || rtdbData?.displayName || firebaseUser.displayName,
-                                        photoURL: userData.photoURL || rtdbData?.photoURL || firebaseUser.photoURL,
-                                        role: role,
-                                        isAdmin: isAdmin,
-                                        membership: membership,
-                                        installed_modules: userData.installed_modules || [],
-                                        quota: userData.quota || undefined
-                                    },
-                                    isLoading: false
-                                });
-                                console.timeEnd('AuthLifecycle');
-                            } else {
-                                set({ user: null, isLoading: false }); // Should never happen due to self-healing
+                                        displayName: rtdbData?.displayName || firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
+                                        photoURL: rtdbData?.photoURL || firebaseUser.photoURL || null,
+                                        role: 'user',
+                                        membership: {
+                                            type: 'free',
+                                            status: 'active',
+                                            startedAt: serverTimestamp(),
+                                            expiresAt: null
+                                        },
+                                        quota: {
+                                            daily_limit: 5,
+                                            used: 0,
+                                            last_reset: new Date().toISOString()
+                                        },
+                                        createdAt: serverTimestamp(),
+                                        updatedAt: serverTimestamp(),
+                                    };
+                                    await setDoc(userRef, newProfile).catch(e => console.warn("Init New Profile Failed (Offline?)", e));
+                                    userDataFromDB = newProfile;
+                                } else {
+                                    userDataFromDB = userSnap.data();
+                                }
                             }
 
+                            // Build final user object (using DB data if available, or Auth Profile as fallback)
+                            let membership = userDataFromDB?.membership || DEFAULT_MEMBERSHIP;
+                            let role = userDataFromDB?.role || 'user';
+                            let isAdmin = userDataFromDB?.role === 'admin';
+
+                            // 🛡️ SERVER-SIDE VALIDATION: CHECK EXPIRY
+                            if (membership.expiresAt && membership.status !== 'expired') {
+                                const expiry = membership.expiresAt.toDate ? membership.expiresAt.toDate() : new Date(membership.expiresAt);
+                                if (new Date() > expiry) {
+                                    console.warn('⚠️ Membership Expired! Downgrading to Free...');
+                                    membership = {
+                                        ...DEFAULT_MEMBERSHIP,
+                                        status: 'expired',
+                                        type: 'free'
+                                    };
+                                    if (result !== 'TIMEOUT') {
+                                        const { updateDoc } = await import('firebase/firestore');
+                                        updateDoc(userRef, { membership }).catch(e => console.error('Firestore expiry sync failed', e));
+                                    }
+                                }
+                            }
+
+                            // 👑 HARDCODE OWNER ROLE
+                            if (firebaseUser.email === 'boonyanone@gmail.com') {
+                                role = 'owner';
+                                isAdmin = true;
+                                console.log('👑 [AuthStore] Owner Identified: Access Granted');
+                            }
+
+                            set({
+                                user: {
+                                    uid: firebaseUser.uid,
+                                    email: firebaseUser.email,
+                                    displayName: userDataFromDB?.displayName || rtdbData?.displayName || firebaseUser.displayName || 'User',
+                                    photoURL: userDataFromDB?.photoURL || rtdbData?.photoURL || firebaseUser.photoURL || null,
+                                    role: role,
+                                    isAdmin: isAdmin,
+                                    membership: membership,
+                                    installed_modules: userDataFromDB?.installed_modules || [],
+                                    quota: userDataFromDB?.quota || undefined
+                                },
+                                isLoading: false
+                            });
+                            console.timeEnd('AuthLifecycle');
+
                             // Set cookies for SSR/Middleware if needed
-                            nookies.set(null, 'token', token, { path: '/', maxAge: 3600, sameSite: 'Lax' });
-                            nookies.set(null, 'uid', firebaseUser.uid, { path: '/', maxAge: 3600, sameSite: 'Lax' });
+                            nookies.set(null, 'token', token, { path: '/', maxAge: 3600, sameSite: 'Lax', secure: process.env.NODE_ENV === 'production' });
+                            nookies.set(null, 'uid', firebaseUser.uid, { path: '/', maxAge: 3600, sameSite: 'Lax', secure: process.env.NODE_ENV === 'production' });
+
                         } catch (error) {
-                            console.error('⚠️ Auth Verification Failed:', error);
-                            // 🛑 CRITICAL: Revert Optimistic Update if Server Refuses
-                            // This prevents "Ghost Users" who are authenticated on Firebase but banned/invalid on Firestore
-                            set({ user: null, isLoading: false });
-                            nookies.destroy(null, 'token');
-                            nookies.destroy(null, 'uid');
-                            // Ensure we kill the firebase session too
-                            if (auth) firebaseSignOut(auth).catch(e => console.warn('Force logout failed', e));
+                            console.error('⚠️ Auth Database Sync Failed completely:', error);
+                            // 🛑 PREVENT SILENT LOGOUT: Fallback to basic profile so UI isn't stuck
+                            console.warn('🛡️ Bypassing strict validation due to network error. Trusting Firebase Auth payload.');
+                            set({
+                                user: {
+                                    uid: firebaseUser.uid,
+                                    email: firebaseUser.email,
+                                    displayName: firebaseUser.displayName || 'User',
+                                    photoURL: firebaseUser.photoURL || null,
+                                    role: firebaseUser.email === 'boonyanone@gmail.com' ? 'owner' : 'user',
+                                    isAdmin: firebaseUser.email === 'boonyanone@gmail.com',
+                                    membership: DEFAULT_MEMBERSHIP,
+                                },
+                                isLoading: false
+                            });
                         }
                     }
                 });
