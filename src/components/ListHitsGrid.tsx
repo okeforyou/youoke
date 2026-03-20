@@ -121,6 +121,11 @@ export default function ListHitsGrid() {
                   "absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent transition-opacity duration-300", 
                   isActive ? "opacity-100" : "opacity-80 group-hover:opacity-100"
                 )} />
+                
+                <div className="absolute -bottom-4 -right-4 opacity-20 transform -rotate-12 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
+                  <Icon className="w-24 h-24 text-white" />
+                </div>
+                
                 <div className="absolute inset-0 p-3 sm:p-4 flex flex-col justify-end">
                   <h3 className="text-sm sm:text-base font-bold text-white leading-tight drop-shadow-sm line-clamp-2 mb-1">{cat.title}</h3>
                   <p className="text-[10px] text-white font-black line-clamp-1">{cat.description}</p>
