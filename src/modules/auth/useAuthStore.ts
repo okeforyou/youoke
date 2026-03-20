@@ -486,11 +486,27 @@ export const useAuthStore = create<UserState & AuthActions>()(
             signInWithCustomToken: async (token: string) => {
                 set({ isLoading: true, error: null });
                 try {
-                    const { signInWithCustomToken } = await import('firebase/auth');
+                    const { signInWithCustomToken: firebaseSignIn } = await import('firebase/auth');
                     if (!auth) throw new Error("Firebase Auth not initialized");
-                    const userCredential = await signInWithCustomToken(auth, token);
+                    const userCredential = await firebaseSignIn(auth, token);
                     const firebaseUser = userCredential.user;
                     console.log('⚡ CustomToken SignIn: Success', firebaseUser.uid);
+
+                    // 🚀 OPTIMISTIC UPDATE for Instant Transition
+                    set({
+                        user: {
+                            uid: firebaseUser.uid,
+                            email: firebaseUser.email,
+                            displayName: firebaseUser.displayName || 'User',
+                            photoURL: firebaseUser.photoURL || null,
+                            role: 'user',
+                            isAdmin: false,
+                            membership: DEFAULT_MEMBERSHIP,
+                            installed_modules: [],
+                            quota: undefined
+                        },
+                        isLoading: false
+                    });
                 } catch (error: any) {
                     set({ error: error.message, isLoading: false });
                     throw error;

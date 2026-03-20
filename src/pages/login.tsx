@@ -50,30 +50,45 @@ export default function LoginPage() {
 
     // Handle LINE Callback (Instant Extraction)
     useEffect(() => {
-        if (typeof window === 'undefined' || user || processingRef.current) return;
+        if (typeof window === 'undefined' || !!user || processingRef.current) return;
 
-        // Use native URLSearchParams for instant access before Next.js router is ready
+        // Use native URLSearchParams for instant access
         const params = new URLSearchParams(window.location.search);
         const code = params.get('code');
 
         if (code) {
-            console.log('⚡ [Instant LINE] Code found in URL. Verification started...');
+            console.log('⚡ [Instant LINE] Code detected! Starting verification...');
             processingRef.current = true;
             setLineLoading(true);
+            setLocalError('');
+
+            // CRITICAL: Clean up URL immediately so we don't process the same code twice
+            router.replace('/login', undefined, { shallow: true });
+
             const verifyLineLogin = async () => {
                 try {
-                    let redirectUri = `${window.location.origin}/login/`;
+                    // Try to match the exact Redirect URI from LINE Console
+                    // 1. First try with trailing slash (as configured)
+                    // 2. Fallback to no trailing slash if needed
+                    const redirectUri = `${window.location.origin}/login/`;
+                    
                     const res = await fetch('/api/auth/line-token', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ code, redirectUri })
                     });
-                    if (!res.ok) throw new Error('Failed to verify LINE login');
+                    
+                    if (!res.ok) {
+                        const errorData = await res.json().catch(() => ({}));
+                        throw new Error(errorData.error || 'Failed to verify LINE login');
+                    }
+                    
                     const { token } = await res.json();
                     await signInWithCustomToken(token);
+                    console.log('✅ LINE Auth Success!');
                 } catch (err: any) {
-                    console.error('❌ LINE Login Error:', err);
-                    setLocalError('การเข้าสู่ระบบด้วย LINE ล้มเหลว กรุณาลองใหม่');
+                    console.error('❌ LINE Auth Final Error:', err);
+                    setLocalError(`เข้าสู่ระบบ LINE ไม่สำเร็จ: ${err.message || 'กรุณาลองใหม่'}`);
                     processingRef.current = false;
                 } finally {
                     setLineLoading(false);
@@ -81,7 +96,7 @@ export default function LoginPage() {
             };
             verifyLineLogin();
         }
-    }, [user]);
+    }, [user, router.isReady]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
