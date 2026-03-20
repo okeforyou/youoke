@@ -316,14 +316,14 @@ export default function LoginPage() {
                                 )}
                             </button>
                         </form>
-                    </div> {/* Closes Form Card (line 236) */}
-                </div> {/* Closes Max-width wrapper (line 234) */}
+                    </div>
+                </div>
 
                 <p className="mt-8 text-center text-xs text-gray-400 font-medium pb-8 lg:pb-0">
                     การเข้าใช้งานแสดงว่าคุณยอมรับ <Link href="/terms" className="underline">นโยบายความเป็นส่วนตัว</Link> ของเรา
                 </p>
-            </div> {/* Closes RIGHT SIDE (line 224) */}
-        </div> {/* Closes MAIN CONTENT WRAPPER (line 150) */}
-    </div> {/* Closes Outermost div (line 136) */}
+            </div>
+        </div>
+    </div>
     );
 }
