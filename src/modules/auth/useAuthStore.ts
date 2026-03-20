@@ -102,13 +102,39 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     }
                 }, 15000);
 
-                // 🚀 HANDLE REDIRECT RESULTS (Crucial for Mobile Google Login)
+                // 🚀 INSTANT REDIRECT CATCH (Crucial for Mobile Google Login)
+                console.log('🔍 [AuthStore] Checking for Google Redirect Result...');
+                const DEFAULT_MEMBERSHIP: MembershipState = {
+                    type: 'free',
+                    status: 'pending',
+                    startedAt: serverTimestamp(),
+                    expiresAt: null
+                };
+
                 getRedirectResult(auth).then((result) => {
                     if (result?.user) {
-                        console.log('🏁 Google Redirect Success:', result.user.uid);
+                        console.log('🏁 [AuthStore] Redirect Result Found! Finalizing login...', result.user.uid);
+                        // Optimistic update to unlock the UI instantly
+                        set({
+                            user: {
+                                uid: result.user.uid,
+                                email: result.user.email,
+                                displayName: result.user.displayName,
+                                photoURL: result.user.photoURL,
+                                role: 'user',
+                                isAdmin: false,
+                                membership: DEFAULT_MEMBERSHIP,
+                                installed_modules: [],
+                                quota: undefined
+                            },
+                            isLoading: false
+                        });
+                    } else {
+                        console.log('👋 [AuthStore] No Redirect Result.');
                     }
                 }).catch((error) => {
-                    console.error('🏁 Google Redirect Error:', error);
+                    console.error('🏁 [AuthStore] Redirect Login Error:', error);
+                    set({ error: error.message, isLoading: false });
                 });
 
                 console.log('🔐 Auth Store: Registering onIdTokenChanged listener...');
