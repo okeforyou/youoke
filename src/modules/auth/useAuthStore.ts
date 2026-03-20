@@ -105,13 +105,17 @@ export const useAuthStore = create<UserState & AuthActions>()(
                 console.log('🔐 Auth Store: Registering onIdTokenChanged listener...');
                 
                 // 🚀 HANDLE REDIRECT RESULTS (Crucial for Mobile Google Login)
-                getRedirectResult(auth).then((result) => {
+                getRedirectResult(auth).then(async (result) => {
                     if (result?.user) {
                         console.log('🏁 Google Redirect Success:', result.user.uid);
+                        // Force a refresh of the token listener
+                        set({ isLoading: true });
+                    } else {
+                        // Normally finished or no redirect
                     }
                 }).catch((error) => {
                     console.error('🏁 Google Redirect Error:', error);
-                    set({ error: error.message });
+                    set({ error: error.message, isLoading: false });
                 });
 
                 const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
@@ -412,42 +416,28 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     const provider = new GoogleAuthProvider();
                     if (!auth) throw new Error("Firebase Auth not initialized");
 
-                    const isMobile = typeof window !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                    // Robust mobile detection
+                    const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+                    const isMobile = /android|iphone|ipad|ipod/i.test(userAgent);
                     
                     if (isMobile) {
                         console.log('📱 GoogleSignIn: Using Redirect (Mobile optimized)');
+                        // Note: Execution stops here as it redirects
                         await signInWithRedirect(auth, provider);
                     } else {
                         console.log('💻 GoogleSignIn: Using Popup');
                         const userCredential = await signInWithPopup(auth, provider);
                         const firebaseUser = userCredential.user;
                         console.log('⚡ GoogleSignIn: Auth Success', firebaseUser.uid);
-
-                        set({
-                            user: {
-                                uid: firebaseUser.uid,
-                                email: firebaseUser.email,
-                                displayName: firebaseUser.displayName,
-                                photoURL: firebaseUser.photoURL,
-                                role: 'user',
-                                isAdmin: false,
-                                membership: DEFAULT_MEMBERSHIP,
-                                installed_modules: [],
-                                quota: undefined
-                            },
-                        });
+                        // onIdTokenChanged will handle the state update
                     }
-                    set({ isLoading: false });
                 } catch (error: any) {
-                    console.error('⚡ GoogleSignIn: Error', error);
-                    let msg = error.message;
-                    if (error.code === 'auth/popup-closed-by-user') {
-                        msg = 'การเข้าสู่ระบบถูกยกเลิก (หน้าต่างถูกปิด)';
-                    }
-                    set({ error: msg, isLoading: false });
+                    console.error('❌ GoogleSignIn Error:', error);
+                    set({ error: error.message, isLoading: false });
                     throw error;
                 }
             },
+
 
             signInWithLine: () => {
                 const clientId = process.env.NEXT_PUBLIC_LINE_LOGIN_CHANNEL_ID;
