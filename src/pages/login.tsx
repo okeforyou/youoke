@@ -57,9 +57,10 @@ export default function LoginPage() {
         { icon: ShieldCheck, title: "ไร้โฆษณาคั่น", desc: "สนุกต่อเนื่องแบบไม่มีโฆษณากวนใจ", color: "text-emerald-500", bg: "bg-emerald-50" },
     ];
 
-    // Redirect if logged in
+    // Redirect if logged in (Instant)
     useEffect(() => {
-        if (!router.isReady || isLoading) return;
+        if (!router.isReady) return;
+        
         if (user) {
             // Check if user should be sent to packages
             const isNewUser = !user.membership || user.membership.type === 'free' || !user.membership.startedAt;
@@ -70,7 +71,7 @@ export default function LoginPage() {
             if (redirectUrl === router.asPath) return;
             router.replace(redirectUrl);
         }
-    }, [user, router.isReady, isLoading, router.query, router.asPath]);
+    }, [user, router.isReady, router.query, router.asPath]);
 
     // Handle LINE Callback
     useEffect(() => {
