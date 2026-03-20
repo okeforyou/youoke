@@ -106,20 +106,20 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     }
                 }, 15000);
 
-                // 🚀 DYNAMIC & SMART REDIRECT CATCH (No hardcoding)
-                console.log('🔍 [AuthStore] Checking for Google/Social Redirect Result...');
-                set({ isCheckingRedirect: true, isLoading: true });
+                // 🚀 GOLD BASELINE:Capture Redirect Result FIRST
+                console.log('🔍 [AuthStore] Capturing Redirect Result...');
+                set({ isLoading: true, isCheckingRedirect: true });
 
                 getRedirectResult(auth).then((result) => {
                     if (result?.user) {
-                        console.log('🏁 [AuthStore] Redirect Result Found! User Authenticated:', result.user.uid);
-                        // Instant user update to bypass loading loops
+                        console.log('🏁 [AuthStore] Result Found!', result.user.uid);
+                        const firebaseUser = result.user;
                         set({
                             user: {
-                                uid: result.user.uid,
-                                email: result.user.email,
-                                displayName: result.user.displayName,
-                                photoURL: result.user.photoURL,
+                                uid: firebaseUser.uid,
+                                email: firebaseUser.email,
+                                displayName: firebaseUser.displayName,
+                                photoURL: firebaseUser.photoURL,
                                 role: 'user',
                                 isAdmin: false,
                                 membership: DEFAULT_MEMBERSHIP,
@@ -128,11 +128,12 @@ export const useAuthStore = create<UserState & AuthActions>()(
                             },
                         });
                     }
-                    // Release the lock regardless
-                    set({ isCheckingRedirect: false, isLoading: false });
                 }).catch((error) => {
-                    console.error('🏁 [AuthStore] Redirect Login Error:', error);
-                    set({ error: error.message, isCheckingRedirect: false, isLoading: false });
+                    console.error('🏁 Redirect Error:', error);
+                    set({ error: error.message });
+                }).finally(() => {
+                    // Release the lock
+                    set({ isCheckingRedirect: false, isLoading: false });
                 });
 
                 console.log('🔐 Auth Store: Registering onIdTokenChanged listener...');
@@ -143,10 +144,11 @@ export const useAuthStore = create<UserState & AuthActions>()(
                         isAnonymous: firebaseUser?.isAnonymous,
                         email: firebaseUser?.email
                     });
+
                     if (!firebaseUser) {
                         // 🛑 SMART LOCK: Don't clear user if we are still checking for Redirect Result
                         if (get().isCheckingRedirect) {
-                            console.log('🛡️ [AuthStore] onIdTokenChanged returned null but Redirect Check is still in progress. Skipping reset.');
+                            console.log('🛡️ [AuthStore] Skipping reset: Redirect Check in progress.');
                             return;
                         }
 
