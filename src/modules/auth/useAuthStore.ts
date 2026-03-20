@@ -8,8 +8,6 @@ import {
     createUserWithEmailAndPassword,
     GoogleAuthProvider,
     signInWithPopup,
-    signInWithRedirect,
-    getRedirectResult,
     updateProfile
 } from 'firebase/auth';
 import { getApps } from 'firebase/app';
@@ -102,15 +100,6 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     }
                 }, 15000);
 
-                // 🚀 HANDLE REDIRECT RESULTS (Crucial for Mobile Google Login)
-                getRedirectResult(auth).then((result) => {
-                    if (result?.user) {
-                        console.log('🏁 Google Redirect Success:', result.user.uid);
-                    }
-                }).catch((error) => {
-                    console.error('🏁 Google Redirect Error:', error);
-                });
-
                 console.log('🔐 Auth Store: Registering onIdTokenChanged listener...');
                 const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
                     console.time('AuthLifecycle');
@@ -137,25 +126,33 @@ export const useAuthStore = create<UserState & AuthActions>()(
 
                         // ⬇️ ANONYMOUS USER HANDLING (Monitor/Guest Mode)
                         if (firebaseUser.isAnonymous) {
-                            console.log('👻 Anonymous User Detected');
+                            console.log('👻 Anonymous User Detected:', firebaseUser.uid);
 
                             // 🛑 SYSTEM FIX: PREVENT GHOST LOGIN ON MAIN APP
-                            // If user is guest/anonymous, ONLY allow if on /monitor or /remote
+                            // If user is guest/anonymous, ONLY allow if on designated Monitor/TV/Remote pages
                             if (typeof window !== 'undefined') {
                                 const path = window.location.pathname;
-                                const isAllowedGuestPage = path.startsWith('/monitor') || path.startsWith('/remote');
+                                const isAllowedGuestPage = [
+                                    '/monitor',
+                                    '/tv',
+                                    '/receiver',
+                                    '/chromecast',
+                                    '/remote'
+                                ].some(p => path.startsWith(p));
 
                                 if (!isAllowedGuestPage) {
-                                    console.warn('🚫 [Debug] Guest Session detected on unauthorized page.', window.location.pathname);
-                                    // TEMPORARY DEBUG: Disable Force Logout
-                                    // console.warn('🚫 Guest Session detected on unauthorized page. Forcing Logout.');
-                                    // if (auth) await firebaseSignOut(auth);
-                                    // set({ user: null, isLoading: false });
-                                    // return;
+                                    console.warn('🚫 [Auth] Guest Session blocked on main app page:', path);
+                                    // Set user to null immediately to clean up UI
+                                    set({ user: null, isLoading: false });
+                                    // Clean up Firebase session
+                                    if (auth) {
+                                        firebaseSignOut(auth).catch(e => console.warn('Guest cleanup failed', e));
+                                    }
+                                    return;
                                 }
                             }
 
-                            console.log('✅ Guest Access Allowed on:', window.location.pathname);
+                            console.log('✅ Guest Access Allowed on designated page');
                             set({
                                 user: {
                                     uid: firebaseUser.uid,
@@ -194,7 +191,12 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                     displayName: rtdbData?.displayName || firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
                                     photoURL: rtdbData?.photoURL || firebaseUser.photoURL || null,
                                     role: 'user',
-                                    membership: { ...DEFAULT_MEMBERSHIP, startedAt: serverTimestamp() },
+                                    membership: {
+                                        type: 'day_pass',
+                                        status: 'active',
+                                        startedAt: serverTimestamp(),
+                                        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+                                    },
                                     quota: {
                                         daily_limit: 5,
                                         used: 0,
@@ -347,9 +349,10 @@ export const useAuthStore = create<UserState & AuthActions>()(
                         photoURL: user.photoURL || null,
                         role: 'user',
                         membership: {
-                            ...DEFAULT_MEMBERSHIP,
-                            status: 'pending',
-                            startedAt: serverTimestamp()
+                            type: 'day_pass',
+                            status: 'active',
+                            startedAt: serverTimestamp(),
+                            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
                         },
                         tier: 'free',
                         credits: 0,
@@ -373,8 +376,10 @@ export const useAuthStore = create<UserState & AuthActions>()(
                             role: 'user',
                             isAdmin: false,
                             membership: {
-                                ...DEFAULT_MEMBERSHIP,
-                                status: 'pending'
+                                type: 'day_pass',
+                                status: 'active',
+                                startedAt: new Date(),
+                                expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
                             },
                             installed_modules: [],
                             quota: undefined
@@ -392,36 +397,30 @@ export const useAuthStore = create<UserState & AuthActions>()(
                 set({ isLoading: true, error: null });
                 try {
                     const provider = new GoogleAuthProvider();
+
                     if (!auth) throw new Error("Firebase Auth not initialized");
+                    console.time('GooglePopup');
+                    const userCredential = await signInWithPopup(auth, provider);
+                    console.timeEnd('GooglePopup');
 
-                    // 📱 MOBILE OPTIMIZATION: Use Redirect for Mobile, Popup for Desktop
-                    const isMobile = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                    
-                    if (isMobile) {
-                        console.log('📱 Mobile detected: Using Redirect for Google...');
-                        await signInWithRedirect(auth, provider);
-                    } else {
-                        console.log('💻 Desktop detected: Using Popup for Google...');
-                        const userCredential = await signInWithPopup(auth, provider);
-                        const firebaseUser = userCredential.user;
-                        console.log('⚡ GoogleSignIn: Auth Success', firebaseUser.uid);
+                    const firebaseUser = userCredential.user;
+                    console.log('⚡ GoogleSignIn: Auth Success', firebaseUser.uid);
 
-                        // Optimistic Update
-                        set({
-                            user: {
-                                uid: firebaseUser.uid,
-                                email: firebaseUser.email,
-                                displayName: firebaseUser.displayName,
-                                photoURL: firebaseUser.photoURL,
-                                role: 'user',
-                                isAdmin: false,
-                                membership: DEFAULT_MEMBERSHIP,
-                                installed_modules: [],
-                                quota: undefined
-                            },
-                            isLoading: false
-                        });
-                    }
+                    // Optimistic Update
+                    set({
+                        user: {
+                            uid: firebaseUser.uid,
+                            email: firebaseUser.email,
+                            displayName: firebaseUser.displayName,
+                            photoURL: firebaseUser.photoURL,
+                            role: 'user',
+                            isAdmin: false,
+                            membership: DEFAULT_MEMBERSHIP,
+                            installed_modules: [],
+                            quota: undefined
+                        },
+                        isLoading: false
+                    });
                 } catch (error: any) {
                     console.error('⚡ GoogleSignIn: Error', error);
                     set({ error: error.message, isLoading: false });
