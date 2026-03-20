@@ -32,6 +32,7 @@ export default function LoginPage() {
     const [localError, setLocalError] = useState('');
     const [name, setName] = useState('');
     const [showIntro, setShowIntro] = useState(true); // New: For Mobile Intro Step
+    const [acceptedTerms, setAcceptedTerms] = useState(false); // New: Terms agreement
 
     // Toggle Mode Logic
     useEffect(() => {
@@ -133,13 +134,34 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#fcfcfd] flex flex-col lg:flex-row relative">
+        <div className="min-h-screen bg-white flex flex-col lg:flex-row relative">
             <Head>
                 <title>{isLogin ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก'} - YouOke</title>
             </Head>
 
+            {/* 🚀 PREMIUM LOADING OVERLAY */}
+            {(isLoading || lineLoading) && (
+                <div className="fixed inset-0 z-[200] bg-white/60 backdrop-blur-xl flex flex-col items-center justify-center animate-in fade-in duration-300">
+                    <div className="w-16 h-16 bg-gray-900 rounded-2xl flex items-center justify-center shadow-2xl animate-bounce mb-6">
+                         <span className="text-2xl font-black text-white">Y</span>
+                    </div>
+                    <div className="flex flex-col items-center gap-2">
+                        <span className="text-gray-900 font-black text-lg">กำลังประมวลผล...</span>
+                        <span className="text-gray-400 text-sm font-medium px-8 text-center">กรุณารอสักครู่ ระบบกำลังพาคุณเข้าสู่ YouOke</span>
+                    </div>
+                    <div className="mt-8 flex gap-2">
+                        <div className="w-2 h-2 bg-red-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                        <div className="w-2 h-2 bg-red-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                        <div className="w-2 h-2 bg-red-500 rounded-full animate-bounce" />
+                    </div>
+                </div>
+            )}
+
             {/* HEADER: Back Button - Fixed for Native App Feel */}
-            <div className="fixed top-0 left-0 right-0 z-[100] p-6 flex items-center justify-between pointer-events-none">
+            <div className={clsx(
+                "fixed top-0 left-0 right-0 z-[100] p-6 flex items-center justify-between pointer-events-none transition-opacity",
+                !showIntro ? "opacity-0 invisible lg:opacity-100 lg:visible" : "opacity-100 visible"
+            )}>
                 <Link href="/" className="pointer-events-auto flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors bg-white/60 backdrop-blur-md px-4 py-2 rounded-full border border-gray-100 shadow-sm">
                     <ArrowLeft size={16} />
                     <span>กลับ</span>
@@ -162,11 +184,8 @@ export default function LoginPage() {
                                 <span>ทดลองใช้ฟรี 1 วัน</span>
                             </div>
 
-                            <h1 className="text-3xl lg:text-5xl font-black text-gray-900 leading-tight mb-3 lg:mb-4 tracking-tight">
-                                ร้องคาราโอเกะกับ<br/>YouOke คลับ
-                            </h1>
                             <p className="text-gray-500 text-[15px] lg:text-lg font-medium mb-8 lg:mb-12">
-                                เพลิดเพลินกับประสบการณ์คาราโอเกะที่ดีที่สุด พร้อมฟีเจอร์ที่ช่วยให้คุณสนุกกับดนตรีได้อย่างลื่นไหล
+                               {isLogin ? "เข้าสู่ระบบเพื่อร้องเพลงที่ชอบและจัดการคิวเพลงของคุณผ่านระบบ YouTube API ที่ลื่นไหลที่สุด" : "สมัครสมาชิกเพื่อสัมผัสประสบการณ์คาราโอเกะแบบใหม่ที่คุมได้จากมือคุณ"}
                             </p>
 
                             {/* Feature Grid: 2 Columns */}
@@ -246,7 +265,7 @@ export default function LoginPage() {
 
                             {/* Social Login: STABLE & FAST FAST FAST */}
                             <div className="grid grid-cols-1 gap-3 mb-8">
-                                 <button onClick={signInWithLine} disabled={isLoading || lineLoading} className="h-14 flex justify-center items-center gap-3 px-6 rounded-2xl bg-[#06C755] hover:bg-[#05b34d] text-white font-black shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-50">
+                                <button onClick={signInWithLine} disabled={isLoading || lineLoading || !acceptedTerms} className="h-14 flex justify-center items-center gap-3 px-6 rounded-2xl bg-[#06C755] hover:bg-[#05b34d] text-white font-black shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-30">
                                     {lineLoading ? <span className="loading loading-spinner loading-sm" /> : (
                                         <>
                                             <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M24 10.3c0-4.6-4.6-8.3-10.4-8.3C7.8 2 3.1 5.7 3.1 10.3c0 4.1 3.7 7.5 8.7 8.2.3.1.8.2 1 .5.1.1.2.4.1.6l-.3 1.9c-.1.4-.4 1.5-.4 1.5l3.2-1.9s1.4-.8 2-.7l.1-.1c4.5-1.1 6.5-4.5 6.5-10z"/></svg>
@@ -254,7 +273,7 @@ export default function LoginPage() {
                                         </>
                                     )}
                                 </button>
-                                <button onClick={handleGoogleLogin} disabled={isLoading} className="h-14 flex justify-center items-center gap-3 px-6 rounded-2xl bg-white border-2 border-gray-100 hover:border-gray-200 text-gray-700 font-black hover:shadow-sm hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-50">
+                                <button onClick={handleGoogleLogin} disabled={isLoading || !acceptedTerms} className="h-14 flex justify-center items-center gap-3 px-6 rounded-2xl bg-white border-2 border-gray-100 hover:border-gray-200 text-gray-700 font-black hover:shadow-sm hover:-translate-y-0.5 transition-all active:scale-95 disabled:opacity-30">
                                     {isLoading ? <span className="loading loading-spinner loading-sm" /> : (
                                         <>
                                             <svg width="20" height="20" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
@@ -267,6 +286,23 @@ export default function LoginPage() {
                                         </>
                                     )}
                                 </button>
+                            </div>
+                            {/* Terms Checkbox */}
+                            <div className="mb-6 px-2">
+                                <label className="flex items-start gap-3 cursor-pointer group">
+                                    <div className="relative flex items-center shrink-0 mt-0.5">
+                                        <input 
+                                            type="checkbox" 
+                                            checked={acceptedTerms} 
+                                            onChange={(e) => setAcceptedTerms(e.target.checked)}
+                                            className="peer w-5 h-5 border-2 border-gray-200 rounded-lg appearance-none checked:bg-gray-900 checked:border-gray-900 transition-all cursor-pointer" 
+                                        />
+                                        <svg className="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 left-1 transition-opacity pointer-events-none" viewBox="0 0 12 10" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="1.5 6 4.5 9 10.5 1"></polyline></svg>
+                                    </div>
+                                    <span className="text-[13px] font-bold text-gray-500 leading-tight group-hover:text-gray-900 transition-colors">
+                                        ฉันได้อ่านและยอมรับ <Link href="/terms" className="text-gray-900 underline decoration-gray-200 hover:decoration-gray-900 transition-all">ข้อตกลงและเงื่อนไขการใช้งาน</Link> ของ YouOke แล้ว
+                                    </span>
+                                </label>
                             </div>
 
                         <div className="relative mb-8 text-center">
@@ -300,8 +336,8 @@ export default function LoginPage() {
                                 <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full h-14 bg-gray-50 border border-transparent focus:border-primary/20 focus:bg-white rounded-2xl px-5 text-gray-900 font-bold transition-all outline-none" placeholder="••••••••" />
                             </div>
 
-                            <button type="submit" disabled={isLoading} className={clsx(
-                                "w-full h-14 mt-4 rounded-2xl font-black text-[17px] text-white shadow-xl transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2",
+                            <button type="submit" disabled={isLoading || !acceptedTerms} className={clsx(
+                                "w-full h-14 mt-4 rounded-2xl font-black text-[17px] text-white shadow-xl transition-all active:scale-[0.98] disabled:opacity-30 flex items-center justify-center gap-2",
                                 isLogin ? "bg-gray-900 shadow-gray-900/10 hover:bg-black" : "bg-primary shadow-primary/20 hover:brightness-110"
                             )}>
                                 {isLoading ? (
