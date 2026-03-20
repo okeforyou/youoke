@@ -8,8 +8,6 @@ import {
     createUserWithEmailAndPassword,
     GoogleAuthProvider,
     signInWithPopup,
-    signInWithRedirect,
-    getRedirectResult,
     updateProfile
 } from 'firebase/auth';
 import { getApps } from 'firebase/app';
@@ -20,7 +18,7 @@ import { realtimeDb } from '../../firebase';
 import { createNotification } from '@/services/notificationService';
 
 interface MembershipState {
-    type: 'free' | 'day_pass' | 'monthly' | 'yearly' | 'lifetime' | 'none';
+    type: 'free' | 'day_pass' | 'monthly' | 'yearly' | 'lifetime';
     status: 'active' | 'expired' | 'pending';
     startedAt: any;
     expiresAt: any | null;
@@ -54,7 +52,7 @@ interface UserState {
 interface AuthActions {
     initialize: () => () => void;
     signIn: (email: string, pass: string) => Promise<void>;
-    signUp: (email: string, pass: string, name?: string) => Promise<void>;
+    signUp: (email: string, pass: string) => Promise<void>;
     signInWithGoogle: () => Promise<void>;
     signInWithLine: () => void;
     signInWithCustomToken: (token: string) => Promise<void>;
@@ -103,21 +101,6 @@ export const useAuthStore = create<UserState & AuthActions>()(
                 }, 15000);
 
                 console.log('🔐 Auth Store: Registering onIdTokenChanged listener...');
-                
-                // 🚀 HANDLE REDIRECT RESULTS (Crucial for Mobile Google Login)
-                getRedirectResult(auth).then(async (result) => {
-                    if (result?.user) {
-                        console.log('🏁 Google Redirect Success:', result.user.uid);
-                        // Force a refresh of the token listener
-                        set({ isLoading: true });
-                    } else {
-                        // Normally finished or no redirect
-                    }
-                }).catch((error) => {
-                    console.error('🏁 Google Redirect Error:', error);
-                    set({ error: error.message, isLoading: false });
-                });
-
                 const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
                     console.time('AuthLifecycle');
                     console.log('⚡ [AuthStore] onIdTokenChanged Fired!', {
@@ -143,33 +126,25 @@ export const useAuthStore = create<UserState & AuthActions>()(
 
                         // ⬇️ ANONYMOUS USER HANDLING (Monitor/Guest Mode)
                         if (firebaseUser.isAnonymous) {
-                            console.log('👻 Anonymous User Detected:', firebaseUser.uid);
+                            console.log('👻 Anonymous User Detected');
 
                             // 🛑 SYSTEM FIX: PREVENT GHOST LOGIN ON MAIN APP
-                            // If user is guest/anonymous, ONLY allow if on designated Monitor/TV/Remote pages
+                            // If user is guest/anonymous, ONLY allow if on /monitor or /remote
                             if (typeof window !== 'undefined') {
                                 const path = window.location.pathname;
-                                const isAllowedGuestPage = [
-                                    '/monitor',
-                                    '/tv',
-                                    '/receiver',
-                                    '/chromecast',
-                                    '/remote'
-                                ].some(p => path.startsWith(p));
+                                const isAllowedGuestPage = path.startsWith('/monitor') || path.startsWith('/remote');
 
                                 if (!isAllowedGuestPage) {
-                                    console.warn('🚫 [Auth] Guest Session blocked on main app page:', path);
-                                    // Set user to null immediately to clean up UI
-                                    set({ user: null, isLoading: false });
-                                    // Clean up Firebase session
-                                    if (auth) {
-                                        firebaseSignOut(auth).catch(e => console.warn('Guest cleanup failed', e));
-                                    }
-                                    return;
+                                    console.warn('🚫 [Debug] Guest Session detected on unauthorized page.', window.location.pathname);
+                                    // TEMPORARY DEBUG: Disable Force Logout
+                                    // console.warn('🚫 Guest Session detected on unauthorized page. Forcing Logout.');
+                                    // if (auth) await firebaseSignOut(auth);
+                                    // set({ user: null, isLoading: false });
+                                    // return;
                                 }
                             }
 
-                            console.log('✅ Guest Access Allowed on designated page');
+                            console.log('✅ Guest Access Allowed on:', window.location.pathname);
                             set({
                                 user: {
                                     uid: firebaseUser.uid,
@@ -208,12 +183,7 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                     displayName: rtdbData?.displayName || firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
                                     photoURL: rtdbData?.photoURL || firebaseUser.photoURL || null,
                                     role: 'user',
-                                    membership: {
-                                        type: 'none',
-                                        status: 'pending',
-                                        startedAt: serverTimestamp(),
-                                        expiresAt: null
-                                    },
+                                    membership: { ...DEFAULT_MEMBERSHIP, startedAt: serverTimestamp() },
                                     quota: {
                                         daily_limit: 5,
                                         used: 0,
@@ -366,10 +336,9 @@ export const useAuthStore = create<UserState & AuthActions>()(
                         photoURL: user.photoURL || null,
                         role: 'user',
                         membership: {
-                            type: 'none',
+                            ...DEFAULT_MEMBERSHIP,
                             status: 'pending',
-                            startedAt: serverTimestamp(),
-                            expiresAt: null
+                            startedAt: serverTimestamp()
                         },
                         tier: 'free',
                         credits: 0,
@@ -393,10 +362,8 @@ export const useAuthStore = create<UserState & AuthActions>()(
                             role: 'user',
                             isAdmin: false,
                             membership: {
-                                type: 'none',
-                                status: 'pending',
-                                startedAt: new Date(),
-                                expiresAt: null
+                                ...DEFAULT_MEMBERSHIP,
+                                status: 'pending'
                             },
                             installed_modules: [],
                             quota: undefined
@@ -414,30 +381,36 @@ export const useAuthStore = create<UserState & AuthActions>()(
                 set({ isLoading: true, error: null });
                 try {
                     const provider = new GoogleAuthProvider();
-                    if (!auth) throw new Error("Firebase Auth not initialized");
 
-                    // Robust mobile detection
-                    const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
-                    const isMobile = /android|iphone|ipad|ipod/i.test(userAgent);
-                    
-                    if (isMobile) {
-                        console.log('📱 GoogleSignIn: Using Redirect (Mobile optimized)');
-                        // Note: Execution stops here as it redirects
-                        await signInWithRedirect(auth, provider);
-                    } else {
-                        console.log('💻 GoogleSignIn: Using Popup');
-                        const userCredential = await signInWithPopup(auth, provider);
-                        const firebaseUser = userCredential.user;
-                        console.log('⚡ GoogleSignIn: Auth Success', firebaseUser.uid);
-                        // onIdTokenChanged will handle the state update
-                    }
+                    if (!auth) throw new Error("Firebase Auth not initialized");
+                    console.time('GooglePopup');
+                    const userCredential = await signInWithPopup(auth, provider);
+                    console.timeEnd('GooglePopup');
+
+                    const firebaseUser = userCredential.user;
+                    console.log('⚡ GoogleSignIn: Auth Success', firebaseUser.uid);
+
+                    // Optimistic Update
+                    set({
+                        user: {
+                            uid: firebaseUser.uid,
+                            email: firebaseUser.email,
+                            displayName: firebaseUser.displayName,
+                            photoURL: firebaseUser.photoURL,
+                            role: 'user',
+                            isAdmin: false,
+                            membership: DEFAULT_MEMBERSHIP,
+                            installed_modules: [],
+                            quota: undefined
+                        },
+                        isLoading: false
+                    });
                 } catch (error: any) {
-                    console.error('❌ GoogleSignIn Error:', error);
+                    console.error('⚡ GoogleSignIn: Error', error);
                     set({ error: error.message, isLoading: false });
                     throw error;
                 }
             },
-
 
             signInWithLine: () => {
                 const clientId = process.env.NEXT_PUBLIC_LINE_LOGIN_CHANNEL_ID;
@@ -445,9 +418,11 @@ export const useAuthStore = create<UserState & AuthActions>()(
                 // 1. https://playyouoke.vercel.app/login/
                 // 2. http://localhost:3000/login/ (For testing)
 
-                // Use dynamic origin for multi-domain support (Vercel + Custom Domain)
-                const origin = (typeof window !== 'undefined') ? window.location.origin : 'https://play.okeforyou.com';
-                const redirectUri = `${origin}/login/`;
+                let redirectUri = 'https://play.okeforyou.com/login/';
+
+                if (typeof window !== 'undefined') {
+                    redirectUri = `${window.location.origin}/login/`;
+                }
 
                 console.log('🔗 LINE Redirect URI:', redirectUri);
                 const state = 'random_state_string'; // Should be random
@@ -466,26 +441,11 @@ export const useAuthStore = create<UserState & AuthActions>()(
             signInWithCustomToken: async (token: string) => {
                 set({ isLoading: true, error: null });
                 try {
-                    const { signInWithCustomToken: firebaseSignIn } = await import('firebase/auth');
+                    const { signInWithCustomToken } = await import('firebase/auth');
                     if (!auth) throw new Error("Firebase Auth not initialized");
-                    const userCredential = await firebaseSignIn(auth, token);
+                    const userCredential = await signInWithCustomToken(auth, token);
                     const firebaseUser = userCredential.user;
                     console.log('⚡ CustomToken SignIn: Success', firebaseUser.uid);
-                    
-                    // Force state update to prevent UI race conditions
-                    set({ 
-                        user: {
-                            uid: firebaseUser.uid,
-                            email: firebaseUser.email,
-                            displayName: firebaseUser.displayName,
-                            photoURL: firebaseUser.photoURL,
-                            role: 'user',
-                            isAdmin: false,
-                            membership: DEFAULT_MEMBERSHIP,
-                            installed_modules: []
-                        },
-                        isLoading: false 
-                    });
                 } catch (error: any) {
                     set({ error: error.message, isLoading: false });
                     throw error;
