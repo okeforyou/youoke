@@ -147,14 +147,15 @@ export default function LoginPage() {
             </div>
 
             {/* MAIN CONTENT WRAPPER */}
-            <div className="flex flex-col lg:flex-row min-h-[100dvh] bg-white overflow-hidden relative">
+            {/* MAIN CONTENT WRAPPER */}
+            <div className="flex flex-col lg:flex-row min-h-screen bg-white relative">
                 
                 {/* LEFT SIDE: Mobile Intro (Step 1) / Desktop Sidebar */}
                 <div className={clsx(
-                    "w-full lg:w-[45%] xl:w-[50%] flex flex-col justify-between lg:justify-center p-6 lg:p-24 pt-24 lg:pt-24 bg-white lg:border-r border-gray-100 h-[100dvh] lg:h-auto overflow-hidden",
+                    "w-full lg:w-[45%] xl:w-[50%] flex flex-col justify-center p-6 lg:p-24 pt-24 lg:pt-24 bg-white lg:border-r border-gray-100 min-h-screen lg:min-h-0",
                     !showIntro ? "hidden lg:flex" : "flex"
                 )}>
-                    <div className="max-w-xl mx-auto lg:mx-0 flex flex-col h-full lg:h-auto justify-between lg:justify-center lg:gap-12">
+                    <div className="max-w-xl mx-auto lg:mx-0 flex flex-col justify-center lg:gap-12">
                         {/* 1. Hero Content */}
                         <div className="mt-4 lg:mt-0">
                             <div className="inline-flex lg:hidden items-center gap-2 px-3 py-1 bg-red-50 text-red-600 rounded-full text-[11px] font-black uppercase tracking-widest mb-4">
@@ -163,30 +164,30 @@ export default function LoginPage() {
                             </div>
 
                             <h1 className="text-3xl lg:text-5xl font-black text-gray-900 leading-tight mb-3 lg:mb-4 tracking-tight">
-                                {isLogin ? "ยินดีต้อนรับกลับมา!" : "ร่วมเป็นส่วนหนึ่งกับ\nYouOke คลับ"}
+                                {isLogin ? "เข้าสู่ระบบ\nYouOke" : "ร่วมเป็นส่วนหนึ่งกับ\nYouOke คลับ"}
                             </h1>
                             <p className="text-gray-500 text-[15px] lg:text-lg font-medium mb-8 lg:mb-12">
                                 {isLogin ? "เข้าสู่ระบบเพื่อร้องเพลงที่ชอบและจัดคิวเพลงของคุณ" : "สมัครสมาชิกวันนี้ เพื่อปลดล็อกประสบการณ์ที่ดีที่สุด"}
                             </p>
 
-                            {/* Feature Grid: 2 Columns */}
-                            <div className="grid grid-cols-2 gap-x-4 lg:gap-x-10 gap-y-6 lg:gap-y-10">
+                            {/* Feature Grid: Balanced for all screens */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 lg:gap-x-10 gap-y-6 lg:gap-y-8">
                                 {premiumFeatures.map((f, i) => (
-                                    <div key={i} className="flex flex-col lg:flex-row items-center lg:items-start text-center lg:text-left gap-2 lg:gap-4 group">
+                                    <div key={i} className="flex flex-row items-start text-left gap-3 lg:gap-4 group">
                                         <div className={clsx("w-10 h-10 lg:w-12 lg:h-12 shrink-0 rounded-xl lg:rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110", f.bg, f.color)}>
                                             <f.icon size={20} strokeWidth={2.5} />
                                         </div>
                                         <div>
-                                            <h3 className="font-bold text-gray-900 text-[13px] lg:text-[16px] leading-tight">{f.title}</h3>
-                                            <p className="hidden lg:block text-gray-400 text-[13px] leading-snug mt-1">{f.desc}</p>
+                                            <h3 className="font-bold text-gray-900 text-[14px] lg:text-[16px] leading-tight">{f.title}</h3>
+                                            <p className="text-gray-400 text-[12px] lg:text-[13px] leading-snug mt-1">{f.desc}</p>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         </div>
 
-                        {/* 2. MOBILE ONLY ACTIONS (Bottom Fixed Feel) */}
-                        <div className="lg:hidden space-y-3 mb-6 pb-[env(safe-area-inset-bottom)]">
+                        {/* 2. MOBILE ONLY ACTIONS (Bottom Space) */}
+                        <div className="lg:hidden space-y-3 mt-12 mb-6 pb-[env(safe-area-inset-bottom)]">
                             <button 
                                 onClick={() => { setIsLogin(false); setShowIntro(false); }}
                                 className="w-full h-14 bg-gray-900 text-white font-black rounded-2xl shadow-xl shadow-gray-900/10 active:scale-95 transition-all text-[17px]"
@@ -199,12 +200,23 @@ export default function LoginPage() {
                             >
                                 เข้าสู่ระบบ
                             </button>
-                            <div className="text-center text-[11px] font-bold text-gray-400 pt-2">
-                                 มีผู้ใช้งานแล้วกว่า <span className="text-gray-900">10,000+</span> คนที่รักเสียงเพลง
+                            
+                            {/* Mobile Social Proof */}
+                            <div className="flex items-center justify-center gap-3 pt-4">
+                                <div className="flex -space-x-2">
+                                    {[1, 2, 3].map(i => (
+                                        <div key={i} className="w-7 h-7 rounded-full border-2 border-white bg-gray-100 overflow-hidden shadow-sm">
+                                            <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="avatar" />
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="text-[11px] font-bold text-gray-400 uppercase tracking-tight">
+                                     มีผู้ใช้งานแล้ว <span className="text-gray-900">จำนวนมาก</span> ทั่วไทย
+                                </div>
                             </div>
                         </div>
 
-                        {/* Desktop Footer Placeholder */}
+                        {/* Desktop Social Proof */}
                         <div className="hidden lg:flex pt-12 border-t border-gray-50 items-center gap-3">
                             <div className="flex -space-x-3">
                                 {[1, 2, 3, 4].map(i => (
@@ -214,7 +226,7 @@ export default function LoginPage() {
                                 ))}
                             </div>
                             <div className="text-sm font-bold text-gray-500">
-                                <span className="text-gray-900">10,000+</span> คนกำลังร้องเพลงอยู่ในขณะนี้
+                                ผู้ใช้งาน <span className="text-gray-900 font-black">จำนวนมาก</span> กำลังร้องเพลงในขณะนี้
                             </div>
                         </div>
                     </div>
