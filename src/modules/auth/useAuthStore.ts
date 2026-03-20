@@ -6,12 +6,11 @@ import {
     signOut as firebaseSignOut,
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
-    signInWithRedirect,
-    getRedirectResult,
     GoogleAuthProvider,
     signInWithPopup,
-    updateProfile,
-    ParsedToken
+    signInWithRedirect,
+    getRedirectResult,
+    updateProfile
 } from 'firebase/auth';
 import { getApps } from 'firebase/app';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
@@ -55,7 +54,7 @@ interface UserState {
 interface AuthActions {
     initialize: () => () => void;
     signIn: (email: string, pass: string) => Promise<void>;
-    signUp: (email: string, pass: string) => Promise<void>;
+    signUp: (email: string, pass: string, name?: string) => Promise<void>;
     signInWithGoogle: () => Promise<void>;
     signInWithLine: () => void;
     signInWithCustomToken: (token: string) => Promise<void>;
@@ -103,21 +102,18 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     }
                 }, 15000);
 
-                // 🚀 GOOGLE REDIRECT HANDLER (Critical for Mobile)
-                getRedirectResult(auth).then(async (result) => {
+                console.log('🔐 Auth Store: Registering onIdTokenChanged listener...');
+                
+                // 🚀 HANDLE REDIRECT RESULTS (Crucial for Mobile Google Login)
+                getRedirectResult(auth).then((result) => {
                     if (result?.user) {
                         console.log('🏁 Google Redirect Success:', result.user.uid);
-                        set({ isLoading: true });
                     }
-                }).catch(err => {
-                    console.error('❌ Google Redirect Error:', err);
-                    // Don't show error for cancel
-                    if (!err.message?.includes('closed-by-user') && !err.message?.includes('cancelled')) {
-                        set({ error: err.message, isLoading: false });
-                    }
+                }).catch((error) => {
+                    console.error('🏁 Google Redirect Error:', error);
+                    set({ error: error.message });
                 });
 
-                console.log('🔐 Auth Store: Registering onIdTokenChanged listener...');
                 const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
                     console.time('AuthLifecycle');
                     console.log('⚡ [AuthStore] onIdTokenChanged Fired!', {
@@ -143,25 +139,33 @@ export const useAuthStore = create<UserState & AuthActions>()(
 
                         // ⬇️ ANONYMOUS USER HANDLING (Monitor/Guest Mode)
                         if (firebaseUser.isAnonymous) {
-                            console.log('👻 Anonymous User Detected');
+                            console.log('👻 Anonymous User Detected:', firebaseUser.uid);
 
                             // 🛑 SYSTEM FIX: PREVENT GHOST LOGIN ON MAIN APP
-                            // If user is guest/anonymous, ONLY allow if on /monitor or /remote
+                            // If user is guest/anonymous, ONLY allow if on designated Monitor/TV/Remote pages
                             if (typeof window !== 'undefined') {
                                 const path = window.location.pathname;
-                                const isAllowedGuestPage = path.startsWith('/monitor') || path.startsWith('/remote');
+                                const isAllowedGuestPage = [
+                                    '/monitor',
+                                    '/tv',
+                                    '/receiver',
+                                    '/chromecast',
+                                    '/remote'
+                                ].some(p => path.startsWith(p));
 
                                 if (!isAllowedGuestPage) {
-                                    console.warn('🚫 [Debug] Guest Session detected on unauthorized page.', window.location.pathname);
-                                    // TEMPORARY DEBUG: Disable Force Logout
-                                    // console.warn('🚫 Guest Session detected on unauthorized page. Forcing Logout.');
-                                    // if (auth) await firebaseSignOut(auth);
-                                    // set({ user: null, isLoading: false });
-                                    // return;
+                                    console.warn('🚫 [Auth] Guest Session blocked on main app page:', path);
+                                    // Set user to null immediately to clean up UI
+                                    set({ user: null, isLoading: false });
+                                    // Clean up Firebase session
+                                    if (auth) {
+                                        firebaseSignOut(auth).catch(e => console.warn('Guest cleanup failed', e));
+                                    }
+                                    return;
                                 }
                             }
 
-                            console.log('✅ Guest Access Allowed on:', window.location.pathname);
+                            console.log('✅ Guest Access Allowed on designated page');
                             set({
                                 user: {
                                     uid: firebaseUser.uid,
@@ -200,7 +204,12 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                     displayName: rtdbData?.displayName || firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
                                     photoURL: rtdbData?.photoURL || firebaseUser.photoURL || null,
                                     role: 'user',
-                                    membership: { ...DEFAULT_MEMBERSHIP, startedAt: serverTimestamp() },
+                                    membership: {
+                                        type: 'free',
+                                        status: 'active',
+                                        startedAt: serverTimestamp(),
+                                        expiresAt: null
+                                    },
                                     quota: {
                                         daily_limit: 5,
                                         used: 0,
@@ -353,9 +362,10 @@ export const useAuthStore = create<UserState & AuthActions>()(
                         photoURL: user.photoURL || null,
                         role: 'user',
                         membership: {
-                            ...DEFAULT_MEMBERSHIP,
-                            status: 'pending',
-                            startedAt: serverTimestamp()
+                            type: 'free',
+                            status: 'active',
+                            startedAt: serverTimestamp(),
+                            expiresAt: null
                         },
                         tier: 'free',
                         credits: 0,
@@ -379,8 +389,10 @@ export const useAuthStore = create<UserState & AuthActions>()(
                             role: 'user',
                             isAdmin: false,
                             membership: {
-                                ...DEFAULT_MEMBERSHIP,
-                                status: 'pending'
+                                type: 'free',
+                                status: 'active',
+                                startedAt: new Date(),
+                                expiresAt: null
                             },
                             installed_modules: [],
                             quota: undefined
@@ -400,39 +412,39 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     const provider = new GoogleAuthProvider();
                     if (!auth) throw new Error("Firebase Auth not initialized");
 
-                    // 📱 Detect Browser Environment
-                    const userAgent = (typeof navigator !== 'undefined' && navigator.userAgent) || "";
-                    const isInAppBrowser = /Line\/|FBAN|FBAV|Instagram|Twitter/i.test(userAgent);
-                    const isMobile = /android|iphone|ipad|ipod/i.test(userAgent.toLowerCase());
-
-                    console.log('📱 Browser Detection:', { isMobile, isInAppBrowser });
-
-                    // 🛑 BLOCK Google Login in restrictive In-App Browsers (LINE, etc.)
-                    if (isMobile && isInAppBrowser) {
-                        const msg = "Google ไม่รองรับการล็อกอินในแอปนี้ (เช่น LINE)\nกรุณาใช้ LINE Login หรือเปิดด้วยเบราว์เซอร์อื่น (Safari/Chrome)";
-                        set({ error: msg, isLoading: false });
-                        throw new Error(msg);
-                    }
+                    const isMobile = typeof window !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
                     
                     if (isMobile) {
-                        // 🚀 Using Redirect on mobile for stability (Avoids auth/popup-closed-by-user)
-                        console.log('📱 GoogleSignIn: Using Redirect (Mobile)');
+                        console.log('📱 GoogleSignIn: Using Redirect (Mobile optimized)');
                         await signInWithRedirect(auth, provider);
-                        // Execution stops here on true redirect
                     } else {
-                        console.log('💻 GoogleSignIn: Using Popup (Desktop)');
+                        console.log('💻 GoogleSignIn: Using Popup');
                         const userCredential = await signInWithPopup(auth, provider);
-                        console.log('🏁 GoogleSignIn: Auth Success', userCredential.user.uid);
-                        set({ isLoading: false });
+                        const firebaseUser = userCredential.user;
+                        console.log('⚡ GoogleSignIn: Auth Success', firebaseUser.uid);
+
+                        set({
+                            user: {
+                                uid: firebaseUser.uid,
+                                email: firebaseUser.email,
+                                displayName: firebaseUser.displayName,
+                                photoURL: firebaseUser.photoURL,
+                                role: 'user',
+                                isAdmin: false,
+                                membership: DEFAULT_MEMBERSHIP,
+                                installed_modules: [],
+                                quota: undefined
+                            },
+                        });
                     }
+                    set({ isLoading: false });
                 } catch (error: any) {
-                    console.error('❌ GoogleSignIn Error:', error);
-                    // Only show friendly message if it's not a "cancelled" error
-                    if (!error.message?.includes('closed-by-user') && !error.message?.includes('cancelled')) {
-                        set({ error: error.message, isLoading: false });
-                    } else {
-                        set({ isLoading: false });
+                    console.error('⚡ GoogleSignIn: Error', error);
+                    let msg = error.message;
+                    if (error.code === 'auth/popup-closed-by-user') {
+                        msg = 'การเข้าสู่ระบบถูกยกเลิก (หน้าต่างถูกปิด)';
                     }
+                    set({ error: msg, isLoading: false });
                     throw error;
                 }
             },
@@ -443,11 +455,9 @@ export const useAuthStore = create<UserState & AuthActions>()(
                 // 1. https://playyouoke.vercel.app/login/
                 // 2. http://localhost:3000/login/ (For testing)
 
-                let redirectUri = 'https://play.okeforyou.com/login/';
-
-                if (typeof window !== 'undefined') {
-                    redirectUri = `${window.location.origin}/login/`;
-                }
+                // Use dynamic origin for multi-domain support (Vercel + Custom Domain)
+                const origin = (typeof window !== 'undefined') ? window.location.origin : 'https://play.okeforyou.com';
+                const redirectUri = `${origin}/login/`;
 
                 console.log('🔗 LINE Redirect URI:', redirectUri);
                 const state = 'random_state_string'; // Should be random
@@ -466,11 +476,26 @@ export const useAuthStore = create<UserState & AuthActions>()(
             signInWithCustomToken: async (token: string) => {
                 set({ isLoading: true, error: null });
                 try {
-                    const { signInWithCustomToken } = await import('firebase/auth');
+                    const { signInWithCustomToken: firebaseSignIn } = await import('firebase/auth');
                     if (!auth) throw new Error("Firebase Auth not initialized");
-                    const userCredential = await signInWithCustomToken(auth, token);
+                    const userCredential = await firebaseSignIn(auth, token);
                     const firebaseUser = userCredential.user;
                     console.log('⚡ CustomToken SignIn: Success', firebaseUser.uid);
+                    
+                    // Force state update to prevent UI race conditions
+                    set({ 
+                        user: {
+                            uid: firebaseUser.uid,
+                            email: firebaseUser.email,
+                            displayName: firebaseUser.displayName,
+                            photoURL: firebaseUser.photoURL,
+                            role: 'user',
+                            isAdmin: false,
+                            membership: DEFAULT_MEMBERSHIP,
+                            installed_modules: []
+                        },
+                        isLoading: false 
+                    });
                 } catch (error: any) {
                     set({ error: error.message, isLoading: false });
                     throw error;
