@@ -6,9 +6,12 @@ import {
     signOut as firebaseSignOut,
     signInWithEmailAndPassword,
     createUserWithEmailAndPassword,
+    signInWithRedirect,
+    getRedirectResult,
     GoogleAuthProvider,
     signInWithPopup,
-    updateProfile
+    updateProfile,
+    ParsedToken
 } from 'firebase/auth';
 import { getApps } from 'firebase/app';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
@@ -99,6 +102,20 @@ export const useAuthStore = create<UserState & AuthActions>()(
                         set({ isLoading: false });
                     }
                 }, 15000);
+
+                // 🚀 GOOGLE REDIRECT HANDLER (Critical for Mobile)
+                getRedirectResult(auth).then(async (result) => {
+                    if (result?.user) {
+                        console.log('🏁 Google Redirect Success:', result.user.uid);
+                        set({ isLoading: true });
+                    }
+                }).catch(err => {
+                    console.error('❌ Google Redirect Error:', err);
+                    // Don't show error for cancel
+                    if (!err.message?.includes('closed-by-user') && !err.message?.includes('cancelled')) {
+                        set({ error: err.message, isLoading: false });
+                    }
+                });
 
                 console.log('🔐 Auth Store: Registering onIdTokenChanged listener...');
                 const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
@@ -381,33 +398,41 @@ export const useAuthStore = create<UserState & AuthActions>()(
                 set({ isLoading: true, error: null });
                 try {
                     const provider = new GoogleAuthProvider();
-
                     if (!auth) throw new Error("Firebase Auth not initialized");
-                    console.time('GooglePopup');
-                    const userCredential = await signInWithPopup(auth, provider);
-                    console.timeEnd('GooglePopup');
 
-                    const firebaseUser = userCredential.user;
-                    console.log('⚡ GoogleSignIn: Auth Success', firebaseUser.uid);
+                    // 📱 Detect Browser Environment
+                    const userAgent = (typeof navigator !== 'undefined' && navigator.userAgent) || "";
+                    const isInAppBrowser = /Line\/|FBAN|FBAV|Instagram|Twitter/i.test(userAgent);
+                    const isMobile = /android|iphone|ipad|ipod/i.test(userAgent.toLowerCase());
 
-                    // Optimistic Update
-                    set({
-                        user: {
-                            uid: firebaseUser.uid,
-                            email: firebaseUser.email,
-                            displayName: firebaseUser.displayName,
-                            photoURL: firebaseUser.photoURL,
-                            role: 'user',
-                            isAdmin: false,
-                            membership: DEFAULT_MEMBERSHIP,
-                            installed_modules: [],
-                            quota: undefined
-                        },
-                        isLoading: false
-                    });
+                    console.log('📱 Browser Detection:', { isMobile, isInAppBrowser });
+
+                    // 🛑 BLOCK Google Login in restrictive In-App Browsers (LINE, etc.)
+                    if (isMobile && isInAppBrowser) {
+                        const msg = "Google ไม่รองรับการล็อกอินในแอปนี้ (เช่น LINE)\nกรุณาใช้ LINE Login หรือเปิดด้วยเบราว์เซอร์อื่น (Safari/Chrome)";
+                        set({ error: msg, isLoading: false });
+                        throw new Error(msg);
+                    }
+                    
+                    if (isMobile) {
+                        // 🚀 Using Redirect on mobile for stability (Avoids auth/popup-closed-by-user)
+                        console.log('📱 GoogleSignIn: Using Redirect (Mobile)');
+                        await signInWithRedirect(auth, provider);
+                        // Execution stops here on true redirect
+                    } else {
+                        console.log('💻 GoogleSignIn: Using Popup (Desktop)');
+                        const userCredential = await signInWithPopup(auth, provider);
+                        console.log('🏁 GoogleSignIn: Auth Success', userCredential.user.uid);
+                        set({ isLoading: false });
+                    }
                 } catch (error: any) {
-                    console.error('⚡ GoogleSignIn: Error', error);
-                    set({ error: error.message, isLoading: false });
+                    console.error('❌ GoogleSignIn Error:', error);
+                    // Only show friendly message if it's not a "cancelled" error
+                    if (!error.message?.includes('closed-by-user') && !error.message?.includes('cancelled')) {
+                        set({ error: error.message, isLoading: false });
+                    } else {
+                        set({ isLoading: false });
+                    }
                     throw error;
                 }
             },
