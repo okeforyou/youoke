@@ -11,11 +11,7 @@ import {
     ChevronRightIcon,
     MusicalNoteIcon,
     PlayCircleIcon,
-    ServerIcon,
-    ShieldCheckIcon,
-    DevicePhoneMobileIcon,
-    TvIcon,
-    QueueListIcon,
+    ServerIcon
 } from '@heroicons/react/24/outline';
 import { useUIStore } from '../../stores/useUIStore';
 import { useSystem } from '../../core/container/SystemContext'; // DI Container
@@ -195,66 +191,27 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                             </div>
                                         ) : !user ? (
                                             // Member Invitation View (Standard Login/Signup)
-                                            <div className="flex-1 flex flex-col p-6 animate-in fade-in duration-700 overflow-y-auto">
-                                                {/* INVITATION SECTION - CLEAN & SIMPLE */}
-                                                <div className="flex flex-col items-center text-center space-y-4 mb-2 lg:mb-4">
-                                                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/10 to-blue-500/10 flex items-center justify-center text-primary shadow-sm ring-1 ring-primary/5">
-                                                        <SparklesIcon className="w-8 h-8" />
-                                                    </div>
-                                                    <div className="space-y-1">
-                                                        <h3 className="text-xl font-black text-gray-900 leading-tight">ร่วมเป็นครอบครัว YouOke</h3>
-                                                        <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">New Member: Get 1 Day Free</p>
-                                                    </div>
+                                            <div className="flex-1 flex flex-col items-center justify-center px-8 text-center space-y-6 animate-in fade-in duration-500">
+                                                <div className="w-20 h-20 rounded-3xl bg-slate-50 flex items-center justify-center text-slate-300 border border-slate-100 shadow-sm">
+                                                    <UserCircleIcon className="w-12 h-12" />
                                                 </div>
-
-                                                <p className="text-gray-500 text-[13px] font-medium text-center mb-8 px-4 leading-relaxed">
-                                                    สมัครสมาชิกวันนี้เพื่อปลดล็อกฟีเจอร์พรีเมียม และสนุกกับการร้องคาราโอเกะได้ทุกที่ทุกเวลา
-                                                </p>
-
-                                                {/* Benefits List - Simplified & Clean */}
-                                                <div className="space-y-3 mb-10 w-full max-w-[280px] mx-auto">
-                                                    {[
-                                                        { icon: MusicalNoteIcon, text: "ฟังเพลงจาก YouTube ไม่จำกัด", color: "text-blue-500", bg: "bg-blue-50" },
-                                                        { icon: TvIcon, text: "โหมดขึ้นจอ (Cast) ทันที", color: "text-purple-500", bg: "bg-purple-50" },
-                                                        { icon: DevicePhoneMobileIcon, text: "รีโมทมือถือ ควบคุมอิสระ", color: "text-green-500", bg: "bg-green-50" },
-                                                        { icon: ShieldCheckIcon, text: "ไม่มีโฆษณาคั่นความสนุก", color: "text-orange-500", bg: "bg-orange-50" }
-                                                    ].map((item, i) => (
-                                                        <div key={i} className="flex items-center gap-4 p-3 bg-white rounded-2xl border border-gray-100 shadow-sm group hover:border-primary/20 transition-all">
-                                                            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", item.bg, item.color)}>
-                                                                <item.icon className="w-5 h-5" />
-                                                            </div>
-                                                            <span className="text-[13px] font-bold text-gray-700 leading-snug">{item.text}</span>
-                                                        </div>
-                                                    ))}
+                                                <div className="space-y-2">
+                                                    <h3 className="text-xl font-black text-slate-900">เข้าสู่ระบบ YouOke</h3>
+                                                    <p className="text-sm text-slate-500 font-medium">สมัครสมาชิกวันนี้เพื่อรับสิทธิ์ทดลองใช้ฟรี 1 วัน และปลดล็อกฟีเจอร์พรีเมียมทั้งหมด!</p>
                                                 </div>
-
-                                                <div className="w-full space-y-3 mt-auto mb-6">
+                                                <div className="w-full space-y-3 pt-4">
                                                     <button 
-                                                        onClick={() => { onClose(); router.push('/login?mode=register'); }}
-                                                        className="w-full h-14 rounded-2xl bg-primary hover:brightness-105 text-white font-black text-base shadow-lg shadow-primary/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                                                        onClick={() => { onClose(); router.push('/signup'); }}
+                                                        className="w-full h-12 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/20 transition-all active:scale-95"
                                                     >
                                                         สมัครสมาชิกฟรี
                                                     </button>
                                                     <button 
                                                         onClick={() => { onClose(); router.push('/login'); }}
-                                                        className="w-full h-14 rounded-2xl bg-gray-50 hover:bg-gray-100 text-gray-600 font-bold text-sm transition-all active:scale-[0.98] border border-gray-100"
+                                                        className="w-full h-12 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold transition-all active:scale-95"
                                                     >
-                                                        เข้าสู่ระบบที่มีอยู่
+                                                        เข้าสู่ระบบ
                                                     </button>
-                                                </div>
-
-                                                {/* Social Proof Footer */}
-                                                <div className="flex items-center justify-center gap-3">
-                                                    <div className="flex -space-x-2">
-                                                        {[1, 2, 3].map(i => (
-                                                            <div key={i} className="w-7 h-7 rounded-full border-2 border-white bg-gray-100 overflow-hidden shadow-sm">
-                                                                <img src={`https://i.pravatar.cc/100?img=${i+30}`} alt="avatar" />
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                    <p className="text-[10px] font-bold text-gray-400">
-                                                        มีเพื่อนร่วมสมาชิกแล้ว <span className="text-gray-900">10,000+</span> คน
-                                                    </p>
                                                 </div>
                                             </div>
                                         ) : (

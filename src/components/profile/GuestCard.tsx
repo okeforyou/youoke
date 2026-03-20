@@ -11,7 +11,7 @@ export const GuestCard = () => {
     const isLimitReached = remainingPlays <= 0;
 
     const onLogin = () => router.push('/login');
-    const onSignup = () => router.push('/login?mode=register');
+    const onSignup = () => router.push('/signup');
 
     const benefits = [
         { icon: Music, text: 'ฟังเพลงไม่จำกัด' },
