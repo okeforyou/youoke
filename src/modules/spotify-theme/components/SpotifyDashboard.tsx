@@ -388,17 +388,16 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                       )}
                     >
                        <div className={clsx(
-                          "absolute inset-0 bg-gradient-to-br transition-opacity duration-300", 
-                          cat.gradient,
-                          isActive ? "opacity-100" : "opacity-90 group-hover:opacity-100"
+                          "absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent transition-opacity duration-300", 
+                          isActive ? "opacity-100" : "opacity-80 group-hover:opacity-100"
                        )} />
 
                        <div className="absolute -bottom-2 -right-2 opacity-20 transform -rotate-12 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
                          <Icon className="w-16 h-16 sm:w-20 sm:h-20 text-white" />
                        </div>
-                       <div className="absolute inset-0 p-2 flex flex-col justify-end sm:p-2.5">
-                          <h3 className="text-[10px] min-[320px]:text-[11px] sm:text-[13px] md:text-[14px] font-black leading-[1.1] sm:leading-tight drop-shadow-md text-white line-clamp-2 text-left">{cat.title}</h3>
-                          <p className="text-[8px] sm:text-[9px] font-black mt-0.5 text-white text-left">{cat.artists.length} ศิลปิน</p>
+                       <div className="absolute inset-0 p-3 sm:p-4 flex flex-col justify-end">
+                          <h3 className="text-sm sm:text-base font-bold text-white leading-tight drop-shadow-sm line-clamp-2 mb-1">{cat.title}</h3>
+                          <p className="text-[10px] text-white font-black line-clamp-1">{cat.description}</p>
                        </div>
 
                        {isActive && (
@@ -451,11 +450,11 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
           {mode === 'genres' && (
             <div className="animate-in fade-in duration-500">
                <div className="px-4 pt-4 pb-6">
-                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-5 sm:p-8 rounded-2xl relative overflow-hidden min-h-[130px] flex flex-col justify-center border border-gray-200/50 shadow-sm">
-                        <h2 className="text-2xl sm:text-3xl font-black text-gray-900 leading-tight">ตู้เพลง / แนวเพลง</h2>
-                        <p className="text-[13px] sm:text-base text-black mt-2 font-black">เลือกหมวดหมู่เพลงที่รวบรวมไว้ให้คุณ</p>
-                        <div className="absolute bottom-6 right-8 opacity-10">
-                            <GridIcon className="w-20 h-20 text-black" />
+                    <div className="bg-gradient-to-r from-gray-800 to-gray-900 p-5 sm:p-8 rounded-2xl relative overflow-hidden min-h-[130px] flex flex-col justify-center shadow-lg border border-white/10">
+                        <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight">ตู้เพลง / แนวเพลง</h2>
+                        <p className="text-gray-400 text-sm mt-1">บทเพลงที่คัดสรรมาเพื่อคุณโดยเฉพาะ</p>
+                        <div className="absolute bottom-6 right-8 opacity-20">
+                            <GridIcon className="w-20 h-20 text-white" />
                         </div>
                     </div>
                </div>
@@ -480,9 +479,9 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                         <div key={cat.tag_id} onClick={() => setTagId(cat.tag_id)} className="group cursor-pointer">
                             <div className="relative aspect-video rounded-3xl overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-xl transition-all duration-300 group-hover:-translate-y-1">
                                 <Image src={cat.imageUrl || "/icon-cover.png"} alt={cat.tag_name} fill className="object-cover" unoptimized />
-                                <div className="absolute inset-0 p-3 flex flex-col justify-end bg-gradient-to-t from-white/90 via-white/40 to-transparent">
-                                    <p className="text-black font-black text-sm leading-tight line-clamp-2">{cat.tag_name}</p>
-                                </div>
+                                    <div className="absolute inset-0 p-3 flex flex-col justify-end bg-gradient-to-t from-black/80 via-transparent to-transparent">
+                                    <p className="text-white font-bold text-sm leading-tight line-clamp-2">{cat.tag_name}</p>
+                                    </div>
                             </div>
                         </div>
                     ))
