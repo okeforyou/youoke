@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useAuthStore } from '@/modules/auth/useAuthStore';
@@ -17,6 +17,7 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [localError, setLocalError] = useState('');
     const [name, setName] = useState('');
+    const processingRef = useRef(false);
 
     // Initial State from Query
     useEffect(() => {
@@ -41,16 +42,7 @@ export default function LoginPage() {
     useEffect(() => {
         if (!router.isReady || isLoading) return;
         if (user) {
-            // CRITICAL: If new user (just registered) or has no active plan, force packages
-            const isNewUser = !user.membership || user.membership.type === 'free' || !user.membership.startedAt;
-            
             let redirectUrl = (router.query.redirect as string) || '/';
-            
-            if (isNewUser && redirectUrl === '/') {
-                console.log('🚀 [Login] New/Free user detected. Redirecting to Packages.');
-                redirectUrl = '/packages';
-            }
-
             if (redirectUrl === router.asPath) return;
             router.replace(redirectUrl);
         }
@@ -59,11 +51,15 @@ export default function LoginPage() {
     // Handle LINE Callback
     useEffect(() => {
         const { code } = router.query;
-        if (code && !user) {
+        if (code && !user && !processingRef.current) {
+            processingRef.current = true;
             setLineLoading(true);
             const verifyLineLogin = async () => {
                 try {
                     let redirectUri = typeof window !== 'undefined' ? `${window.location.origin}/login/` : 'https://play.okeforyou.com/login/';
+                    
+                    console.log('📡 Verifying LINE code with URI:', redirectUri);
+
                     const res = await fetch('/api/auth/line-token', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -73,10 +69,11 @@ export default function LoginPage() {
                     const { token } = await res.json();
                     await signInWithCustomToken(token);
                 } catch (err: any) {
+                    console.error('❌ LINE Login Error:', err);
                     setLocalError('การเข้าสู่ระบบด้วย LINE ล้มเหลว กรุณาลองใหม่');
+                    processingRef.current = false;
                 } finally {
                     setLineLoading(false);
-                    router.replace('/login', undefined, { shallow: true });
                 }
             };
             verifyLineLogin();
