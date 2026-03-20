@@ -8,8 +8,6 @@ import {
     createUserWithEmailAndPassword,
     GoogleAuthProvider,
     signInWithPopup,
-    signInWithRedirect,
-    getRedirectResult,
     updateProfile
 } from 'firebase/auth';
 import { getApps } from 'firebase/app';
@@ -101,41 +99,6 @@ export const useAuthStore = create<UserState & AuthActions>()(
                         set({ isLoading: false });
                     }
                 }, 15000);
-
-                // 🚀 INSTANT REDIRECT CATCH (Crucial for Mobile Google Login)
-                console.log('🔍 [AuthStore] Checking for Google Redirect Result...');
-                const DEFAULT_MEMBERSHIP: MembershipState = {
-                    type: 'free',
-                    status: 'pending',
-                    startedAt: serverTimestamp(),
-                    expiresAt: null
-                };
-
-                getRedirectResult(auth).then((result) => {
-                    if (result?.user) {
-                        console.log('🏁 [AuthStore] Redirect Result Found! Finalizing login...', result.user.uid);
-                        // Optimistic update to unlock the UI instantly
-                        set({
-                            user: {
-                                uid: result.user.uid,
-                                email: result.user.email,
-                                displayName: result.user.displayName,
-                                photoURL: result.user.photoURL,
-                                role: 'user',
-                                isAdmin: false,
-                                membership: DEFAULT_MEMBERSHIP,
-                                installed_modules: [],
-                                quota: undefined
-                            },
-                            isLoading: false
-                        });
-                    } else {
-                        console.log('👋 [AuthStore] No Redirect Result.');
-                    }
-                }).catch((error) => {
-                    console.error('🏁 [AuthStore] Redirect Login Error:', error);
-                    set({ error: error.message, isLoading: false });
-                });
 
                 console.log('🔐 Auth Store: Registering onIdTokenChanged listener...');
                 const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
@@ -434,37 +397,30 @@ export const useAuthStore = create<UserState & AuthActions>()(
                 set({ isLoading: true, error: null });
                 try {
                     const provider = new GoogleAuthProvider();
+
                     if (!auth) throw new Error("Firebase Auth not initialized");
+                    console.time('GooglePopup');
+                    const userCredential = await signInWithPopup(auth, provider);
+                    console.timeEnd('GooglePopup');
 
-                    // 📱 MOBILE DETECTION: Use Redirect for Mobile, Popup for Desktop
-                    const isMobile = typeof navigator !== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                    
-                    if (isMobile) {
-                        console.log('📱 Mobile detected: Using Redirect for Google...');
-                        await signInWithRedirect(auth, provider);
-                        // No need for optimistic update here as page will redirect
-                    } else {
-                        console.log('💻 Desktop detected: Using Popup for Google...');
-                        const userCredential = await signInWithPopup(auth, provider);
-                        const firebaseUser = userCredential.user;
-                        console.log('⚡ GoogleSignIn: Auth Success', firebaseUser.uid);
+                    const firebaseUser = userCredential.user;
+                    console.log('⚡ GoogleSignIn: Auth Success', firebaseUser.uid);
 
-                        // Optimistic Update
-                        set({
-                            user: {
-                                uid: firebaseUser.uid,
-                                email: firebaseUser.email,
-                                displayName: firebaseUser.displayName,
-                                photoURL: firebaseUser.photoURL,
-                                role: 'user',
-                                isAdmin: false,
-                                membership: DEFAULT_MEMBERSHIP,
-                                installed_modules: [],
-                                quota: undefined
-                            },
-                            isLoading: false
-                        });
-                    }
+                    // Optimistic Update
+                    set({
+                        user: {
+                            uid: firebaseUser.uid,
+                            email: firebaseUser.email,
+                            displayName: firebaseUser.displayName,
+                            photoURL: firebaseUser.photoURL,
+                            role: 'user',
+                            isAdmin: false,
+                            membership: DEFAULT_MEMBERSHIP,
+                            installed_modules: [],
+                            quota: undefined
+                        },
+                        isLoading: false
+                    });
                 } catch (error: any) {
                     console.error('⚡ GoogleSignIn: Error', error);
                     set({ error: error.message, isLoading: false });
