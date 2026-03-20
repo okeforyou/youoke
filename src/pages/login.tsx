@@ -80,7 +80,10 @@ export default function LoginPage() {
             setLineLoading(true);
             const verifyLineLogin = async () => {
                 try {
-                    let redirectUri = typeof window !== 'undefined' ? `${window.location.origin}/login/` : 'https://play.okeforyou.com/login/';
+                    const redirectUri = typeof window !== 'undefined' 
+                        ? `${window.location.origin}/login/` 
+                        : '';
+                    
                     const res = await fetch('/api/auth/line-token', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },

@@ -48,6 +48,8 @@ interface UserState {
     user: UserData | null;
     isLoading: boolean;
     error: string | null;
+    isCheckingRedirect: boolean; // New state to prevent loops
+    isRegistrationModalOpen: boolean;
     isHydrated: boolean;
 }
 
@@ -77,6 +79,8 @@ export const useAuthStore = create<UserState & AuthActions>()(
             user: null,
             isLoading: true,
             error: null,
+            isCheckingRedirect: true, // Start app with redirect check
+            isRegistrationModalOpen: false,
             isHydrated: false,
 
             setLoading: (loading: boolean) => set({ isLoading: loading }),
@@ -102,12 +106,14 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     }
                 }, 15000);
 
-                // 🚀 INSTANT REDIRECT CATCH (Crucial for Mobile Google Login)
-                console.log('🔍 [AuthStore] Checking for Google Redirect Result...');
+                // 🚀 DYNAMIC & SMART REDIRECT CATCH (No hardcoding)
+                console.log('🔍 [AuthStore] Checking for Google/Social Redirect Result...');
+                set({ isCheckingRedirect: true, isLoading: true });
+
                 getRedirectResult(auth).then((result) => {
                     if (result?.user) {
-                        console.log('🏁 [AuthStore] Redirect Result Found! Finalizing login...', result.user.uid);
-                        // Optimistic update to unlock the UI instantly
+                        console.log('🏁 [AuthStore] Redirect Result Found! User Authenticated:', result.user.uid);
+                        // Instant user update to bypass loading loops
                         set({
                             user: {
                                 uid: result.user.uid,
@@ -120,14 +126,13 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                 installed_modules: [],
                                 quota: undefined
                             },
-                            isLoading: false
                         });
-                    } else {
-                        console.log('👋 [AuthStore] No Redirect Result.');
                     }
+                    // Release the lock regardless
+                    set({ isCheckingRedirect: false, isLoading: false });
                 }).catch((error) => {
                     console.error('🏁 [AuthStore] Redirect Login Error:', error);
-                    set({ error: error.message, isLoading: false });
+                    set({ error: error.message, isCheckingRedirect: false, isLoading: false });
                 });
 
                 console.log('🔐 Auth Store: Registering onIdTokenChanged listener...');
@@ -139,6 +144,12 @@ export const useAuthStore = create<UserState & AuthActions>()(
                         email: firebaseUser?.email
                     });
                     if (!firebaseUser) {
+                        // 🛑 SMART LOCK: Don't clear user if we are still checking for Redirect Result
+                        if (get().isCheckingRedirect) {
+                            console.log('🛡️ [AuthStore] onIdTokenChanged returned null but Redirect Check is still in progress. Skipping reset.');
+                            return;
+                        }
+
                         // 🛑 SYSTEM FIX: Don't kill Dev Admin session
                         const currentUser = get().user;
                         if (currentUser?.uid === 'dev-admin') {
@@ -147,6 +158,7 @@ export const useAuthStore = create<UserState & AuthActions>()(
                             return;
                         }
 
+                        console.log('🚪 [AuthStore] User is null. Syncing states to logout.');
                         set({ user: null, isLoading: false });
                         nookies.destroy(null, 'token');
                         nookies.destroy(null, 'uid');
