@@ -31,6 +31,7 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [localError, setLocalError] = useState('');
     const [name, setName] = useState('');
+    const [showIntro, setShowIntro] = useState(true); // New: For Mobile Intro Step
 
     // Toggle Mode Logic
     useEffect(() => {
@@ -47,14 +48,13 @@ export default function LoginPage() {
     const isRegistrationEnabled = true;
     const { config } = useSystemConfig();
     
-    // Premium Features List
+    // Real YouOke Features (Ultra-compact)
     const premiumFeatures = [
-        { icon: Music, title: "ฟังเพลงไม่จำกัด", desc: "เข้าถึงคลังเพลงมหาศาลจาก Youtube", color: "text-blue-500", bg: "bg-blue-50" },
-        { icon: Mic2, title: "โหมดคาราโอเกะ", desc: "ตัดเสียงร้องและแสดงเนื้อร้องแบบ DJ", color: "text-red-500", bg: "bg-red-50" },
-        { icon: Cast, title: "Cast ขึ้นจอ TV", desc: "แชร์ความสนุกขึ้นจอใหญ่ได้ทันที", color: "text-purple-500", bg: "bg-purple-50" },
-        { icon: Smartphone, title: "รีโมทมือถือ", desc: "ควบคุมคิวเพลงผ่านมือถือเครื่องอื่น", color: "text-green-500", bg: "bg-green-50" },
-        { icon: InfinityIcon, title: "สร้างเพลย์ลิสต์", desc: "บันทึกเพลงโปรดไว้ฟังได้ตลอดเวลา", color: "text-orange-500", bg: "bg-orange-50" },
-        { icon: ShieldCheck, title: "ไร้โฆษณาคั่น", desc: "สนุกต่อเนื่องแบบไม่มีโฆษณากวนใจ", color: "text-emerald-500", bg: "bg-emerald-50" },
+        { icon: Cast, title: "แคสต์ขึ้นจอ", desc: "TV คุมผ่านมือถือ", color: "text-blue-600", bg: "bg-blue-50" },
+        { icon: Mic2, title: "ค้นด้วยเสียง", desc: "พูดชื่อเพลงได้เลย", color: "text-red-600", bg: "bg-red-50" },
+        { icon: Smartphone, title: "รีโมทอัจฉริยะ", desc: "ช่วยกันจัดคิวเพลง", color: "text-green-600", bg: "bg-green-50" },
+        { icon: Music, title: "คลังเพลง", desc: "ร้องไม่อั้น อัปเดตใหม่", color: "text-purple-600", bg: "bg-purple-50" },
+        { icon: ShieldCheck, title: "ไร้โฆษณา", desc: "สนุกต่อเนื่องไม่สะดุด", color: "text-emerald-600", bg: "bg-emerald-50" },
     ];
 
     // Redirect if logged in (Instant)
@@ -62,12 +62,8 @@ export default function LoginPage() {
         if (!router.isReady) return;
         
         if (user) {
-            // Check if user should be sent to packages
-            const isNewUser = !user.membership || user.membership.type === 'free' || !user.membership.startedAt;
-            let redirectUrl = (router.query.redirect as string) || '/';
-            if (isNewUser && redirectUrl === '/') {
-                redirectUrl = '/packages';
-            }
+            // 🚀 ALWAYS REDIRECT TO HOME (as requested)
+            const redirectUrl = (router.query.redirect as string) || '/';
             if (redirectUrl === router.asPath) return;
             router.replace(redirectUrl);
         }
@@ -156,52 +152,79 @@ export default function LoginPage() {
                 </Link>
             </div>
 
-            {/* LEFT SIDE: Promotional & Features */}
-            <div className="w-full lg:w-[45%] xl:w-[50%] flex flex-col justify-center p-8 lg:p-24 pt-32 lg:pt-24 bg-white border-r border-gray-100">
+            {/* LEFT SIDE: Promotional & Features (STAYS SAME ON DESKTOP, HIDDEN ON MOBILE INTRO STEP) */}
+            <div className={clsx(
+                "w-full lg:w-[45%] xl:w-[50%] flex flex-col justify-center p-8 lg:p-24 pt-32 lg:pt-24 bg-white lg:border-r border-gray-100 transition-all",
+                !showIntro ? "hidden lg:flex" : "flex"
+            )}>
                 <div className="max-w-xl mx-auto lg:mx-0">
                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-red-50 text-red-600 rounded-full text-xs font-black uppercase tracking-wider mb-6">
                         <Zap size={14} fill="currentColor" />
                         <span>สมาชิกใหม่: ทดลองใช้ฟรี 1 วัน</span>
                     </div>
 
-                    <h1 className="text-4xl lg:text-5xl font-black text-gray-900 leading-tight mb-4">
+                    <h1 className="text-3xl lg:text-5xl font-black text-gray-900 leading-tight mb-4">
                         {isLogin ? "ยินดีต้อนรับกลับมา!" : "ร่วมเป็นส่วนหนึ่งกับ\nYouOke คลับ"}
                     </h1>
-                    <p className="text-gray-500 text-lg font-medium mb-12">
-                        {isLogin ? "เข้าสู่ระบบเพื่อร้องเพลงโปรดและจัดการเพลย์ลิสต์ของคุณ" : "สมัครสมาชิกวันนี้ เพื่อปลดล็อกประสบการณ์คาราโอเกะที่ดีที่สุด"}
+                    <p className="text-gray-500 text-base lg:text-lg font-medium mb-12">
+                        {isLogin ? "เข้าสู่ระบบเพื่อร้องเพลงโปรดและจัดการคิวเพลงของคุณ" : "สมัครสมาชิกวันนี้ เพื่อปลดล็อกประสบการณ์คาราโอเกะที่ดีที่สุด"}
                     </p>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 lg:gap-y-6">
                         {premiumFeatures.map((f, i) => (
-                            <div key={i} className="flex gap-4 group">
-                                <div className={clsx("w-12 h-12 shrink-0 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110", f.bg, f.color)}>
-                                    <f.icon size={22} strokeWidth={2.5} />
+                            <div key={i} className="flex items-center gap-3 lg:gap-4 group">
+                                <div className={clsx("w-10 h-10 lg:w-12 lg:h-12 shrink-0 rounded-xl lg:rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110", f.bg, f.color)}>
+                                    <f.icon size={20} strokeWidth={2.5} />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-gray-900 text-[15px]">{f.title}</h3>
-                                    <p className="text-gray-400 text-[13px] leading-snug">{f.desc}</p>
+                                    <h3 className="font-bold text-gray-900 text-[14px] lg:text-[15px] leading-tight">{f.title}</h3>
+                                    <p className="hidden lg:block text-gray-400 text-[13px] leading-snug">{f.desc}</p>
                                 </div>
                             </div>
                         ))}
                     </div>
 
-                    <div className="mt-16 pt-8 border-t border-gray-50 flex items-center gap-3">
+                    {/* MOBILE ONLY BUTTONS IN STEP 1 */}
+                    <div className="mt-12 lg:hidden space-y-3">
+                        <button 
+                            onClick={() => { setIsLogin(false); setShowIntro(false); }}
+                            className="w-full h-14 bg-red-600 text-white font-black rounded-2xl shadow-xl shadow-red-600/20 active:scale-95 transition-all text-[17px]"
+                        >
+                            สมัครสมาชิกฟรี
+                        </button>
+                        <button 
+                            onClick={() => { setIsLogin(true); setShowIntro(false); }}
+                            className="w-full h-14 bg-white border-2 border-gray-100 text-gray-900 font-black rounded-2xl active:scale-95 transition-all text-[17px]"
+                        >
+                            เข้าสู่ระบบ
+                        </button>
+                    </div>
+
+                    <div className="mt-12 lg:mt-16 pt-8 border-t border-gray-50 flex items-center gap-3">
                         <div className="flex -space-x-3">
                             {[1, 2, 3, 4].map(i => (
-                                <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-gray-100 overflow-hidden shadow-sm">
+                                <div key={i} className="w-8 h-8 lg:w-10 lg:h-10 rounded-full border-2 border-white bg-gray-100 overflow-hidden shadow-sm">
                                     <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="avatar" />
                                 </div>
                             ))}
                         </div>
-                        <div className="text-sm font-bold text-gray-500">
+                        <div className="text-xs lg:text-sm font-bold text-gray-500">
                             <span className="text-gray-900">10,000+</span> คนที่รักเสียงเพลงกำลังใช้งานอยู่
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* RIGHT SIDE: Auth Form */}
-            <div className="w-full lg:w-[55%] xl:w-[50%] flex flex-col justify-center items-center py-12 px-6 lg:px-24">
+            {/* RIGHT SIDE: Auth Form (HIDDEN ON MOBILE INTRO, VISIBLE ON DESKTOP & MOBILE STEP 2) */}
+            <div className={clsx(
+                "w-full lg:w-[55%] xl:w-[50%] flex flex-col justify-center items-center py-12 px-6 lg:px-24 bg-[#fcfcfd] lg:bg-transparent min-h-screen lg:min-h-0",
+                showIntro ? "hidden lg:flex" : "flex animate-in fade-in slide-in-from-bottom-4 duration-500"
+            )}>
+                {/* BACK BUTTON FOR MOBILE */}
+                <button onClick={() => setShowIntro(true)} className="lg:hidden absolute top-8 left-6 flex items-center gap-2 text-sm font-bold text-gray-400">
+                    <ArrowLeft size={16} />
+                    <span>กลับ</span>
+                </button>
                 <div className="w-full max-w-[400px]">
                     {/* Form Card */}
                     <div className="bg-white rounded-[2.5rem] p-8 lg:p-10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)] border border-gray-100 transition-all">
