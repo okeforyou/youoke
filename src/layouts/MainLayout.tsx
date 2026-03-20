@@ -138,17 +138,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
         setActiveIndex(index);
     };
 
-    // Auto-open Profile Drawer if 'auth' param is present
-    useEffect(() => {
-        if (!router.isReady) return;
-        if (router.query.auth) {
-            setProfileOpen(true);
-            // Clean up the URL
-            const { auth: _, ...rest } = router.query;
-            router.replace({ pathname: router.pathname, query: rest }, undefined, { shallow: true });
-        }
-    }, [router.isReady, router.query.auth, setProfileOpen, router.pathname]);
-
     // Auth & Config
     const { user, signOut } = useSystem().auth();
     const isPremium = user?.membership?.type !== 'free';

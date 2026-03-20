@@ -14,7 +14,7 @@ const LoginForm = () => {
   });
 
   // Use the signIn method from the AuthContext
-  const { logIn, signInWithGoogle, error: authError } = useAuth();
+  const { logIn, signInWithGoogle } = useAuth();
   const router = useRouter();
   const errRef = useRef<AlertHandler>(null);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -53,11 +53,11 @@ const LoginForm = () => {
         <div className="w-full max-w-sm rounded-lg border border-gray-200 bg-white p-4 py-8 shadow-md dark:border-gray-700 dark:bg-gray-800 sm:p-6 sm:py-10 md:p-8 md:py-14">
           <Alert
             ref={errRef}
-            timer={3000}
-            headline="พบข้อผิดพลาด"
+            timer={2500}
+            headline="Error"
             headlineColor="text-red-600"
             bgColor="bg-red-100"
-            content={<span className="text-sm">{authError || "เข้าสู่ระบบไม่สำเร็จ"}</span>}
+            content={<span className="text-sm">เข้าสู่ระบบไม่สำเร็จ</span>}
             icon={<ExclamationCircleIcon />}
           />
 
