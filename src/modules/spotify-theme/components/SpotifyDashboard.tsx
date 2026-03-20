@@ -272,8 +272,8 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                    <h1 className="text-xl sm:text-2xl font-bold text-black leading-tight line-clamp-1">
                       {playlistInfo?.name || "รายการเพลง"}
                    </h1>
-                   <div className="flex items-center gap-2 text-[11px] text-gray-500 font-medium">
-                      <span className="text-black font-bold">{playlistInfo?.owner || "YouOke"}</span>
+                   <div className="flex items-center gap-2 text-[11px] text-gray-600 font-black">
+                      <span className="text-black font-black">{playlistInfo?.owner || "YouOke"}</span>
                       <span>•</span>
                       <span>{artist.length} เพลง</span>
                    </div>
@@ -331,7 +331,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                 <div className="animate-in fade-in duration-500">
                   <div className="px-4 pt-6 pb-2">
                     <h1 className="text-xl font-bold text-black">ศิลปินยอดฮิต</h1>
-                    <p className="text-[12px] text-gray-400">ชื่อที่คุณคุ้นเคยและชื่นชอบ</p>
+                    <p className="text-[12px] text-gray-600 font-black">ชื่อที่คุณคุ้นเคยและชื่นชอบ</p>
                   </div>
 
                   <div className="grid grid-cols-2 min-[500px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 py-3">
@@ -359,7 +359,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
               {/* TIER 2: CATEGORY SELECTION */}
               <div className="px-4 pt-6 pb-3">
                 <h1 className="text-lg font-black text-black">สารบัญศิลปิน</h1>
-                <p className="text-[11px] text-gray-400 font-medium">แยกตามหมวดหมู่และแนวเพลง</p>
+                <p className="text-[11px] text-gray-600 font-black">แยกตามหมวดหมู่และแนวเพลง</p>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 mb-4">
@@ -397,8 +397,8 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                          <Icon className="w-16 h-16 sm:w-20 sm:h-20 text-white" />
                        </div>
                        <div className="absolute inset-0 p-2 flex flex-col justify-end sm:p-2.5">
-                          <h3 className="text-[10px] min-[320px]:text-[11px] sm:text-[13px] md:text-[14px] font-bold leading-[1.1] sm:leading-tight drop-shadow-md text-white line-clamp-2 text-left">{cat.title}</h3>
-                          <p className="text-[8px] sm:text-[9px] font-medium mt-0.5 text-white/80 text-left">{cat.artists.length} ศิลปิน</p>
+                          <h3 className="text-[10px] min-[320px]:text-[11px] sm:text-[13px] md:text-[14px] font-black leading-[1.1] sm:leading-tight drop-shadow-md text-white line-clamp-2 text-left">{cat.title}</h3>
+                          <p className="text-[8px] sm:text-[9px] font-black mt-0.5 text-white text-left">{cat.artists.length} ศิลปิน</p>
                        </div>
 
                        {isActive && (
@@ -417,7 +417,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                   <div className="px-4 pt-4 pb-4 border-t border-gray-100 flex items-center justify-between">
                     <div>
                         <h2 className="text-base sm:text-xl font-bold text-black">{selectedCategory.title}</h2>
-                        <p className="text-[10px] sm:text-[11px] text-gray-400 font-medium">รายชื่อศิลปินทั้งหมดในหมวดหมู่นี้</p>
+                        <p className="text-[10px] sm:text-[11px] text-gray-600 font-black">รายชื่อศิลปินทั้งหมดในหมวดหมู่นี้</p>
                     </div>
                     <button onClick={() => setCategoryId("")} className="text-xs font-bold text-primary hover:underline">ปิดรายการ</button>
                   </div>
@@ -501,7 +501,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                    <div className="px-4 pt-4 pb-6">
                         <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-5 sm:p-8 rounded-2xl relative overflow-hidden min-h-[130px] flex flex-col justify-center border border-gray-200/50 shadow-sm">
                             <h2 className="text-2xl sm:text-3xl font-black text-gray-900 leading-tight">สถานีเพลง</h2>
-                            <p className="text-[13px] sm:text-base text-gray-500 mt-2 font-medium">รวมชุดเพลงยาว ฟังต่อเนื่อง สำหรับเปิดทิ้งไว้</p>
+                            <p className="text-[13px] sm:text-base text-gray-600 mt-2 font-black">รวมชุดเพลงยาว ฟังต่อเนื่อง สำหรับเปิดทิ้งไว้</p>
                             <div className="absolute bottom-6 right-8 opacity-5">
                                 <Headphones className="w-20 h-20 text-black" />
                             </div>
@@ -510,7 +510,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
 
                    <div className="px-4 mb-6">
                       <h3 className="text-base sm:text-lg font-black text-black mb-1">เลือกสถานีเพลง</h3>
-                      <p className="text-[10px] sm:text-xs text-gray-400 font-medium">กดเลือกแนวเพลงที่ต้องการฟังได้เลยครับ</p>
+                      <p className="text-[10px] sm:text-xs text-gray-500 font-black">กดเลือกแนวเพลงที่ต้องการฟังได้เลยครับ</p>
                    </div>
 
                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 mb-4">
@@ -548,7 +548,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                                <Icon className="w-16 h-16 sm:w-20 sm:h-20 text-white" />
                              </div>
                              <div className="absolute inset-0 p-2 flex flex-col justify-end sm:p-2.5">
-                                <h3 className="text-[10px] min-[320px]:text-[11px] sm:text-[13px] md:text-[14px] font-bold leading-[1.1] sm:leading-tight drop-shadow-md text-white line-clamp-2 text-left">{cat.title}</h3>
+                                <h3 className="text-[10px] min-[320px]:text-[11px] sm:text-[13px] md:text-[14px] font-black leading-[1.1] sm:leading-tight drop-shadow-md text-white line-clamp-2 text-left">{cat.title}</h3>
                              </div>
 
                              {isActive && (
@@ -567,7 +567,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                         <div className="flex items-center justify-between mb-6 pt-4 border-t border-gray-100">
                             <div>
                                 <h2 className="text-xl font-bold text-gray-900">{genreText || searchTerm}</h2>
-                                <p className="text-[11px] text-gray-500 font-medium">รวมเพลงยาว ({stationResults?.length || 0} รายการ)</p>
+                                <p className="text-[11px] text-gray-600 font-black">รวมเพลงยาว ({stationResults?.length || 0} รายการ)</p>
                             </div>
                             <button onClick={() => setGenreText("")} className="text-xs font-bold text-primary hover:underline">ปิดรายการ</button>
                         </div>

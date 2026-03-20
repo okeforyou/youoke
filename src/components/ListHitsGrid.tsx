@@ -86,7 +86,7 @@ export default function ListHitsGrid() {
       <div className="px-4 pt-4 pb-6">
         <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-5 sm:p-8 rounded-2xl relative overflow-hidden min-h-[130px] flex flex-col justify-center border border-gray-200/50 shadow-sm">
            <h2 className="text-2xl sm:text-3xl font-black text-gray-900 leading-tight">ชาร์ตเพลง</h2>
-           <p className="text-[13px] sm:text-base text-gray-500 mt-2 font-medium">เกาะติดกระแสเพลงฮิต อัปเดตใหม่ล่าสุดตลอดเวลา</p>
+           <p className="text-[13px] sm:text-base text-gray-600 mt-2 font-black">เกาะติดกระแสเพลงฮิต อัปเดตใหม่ล่าสุดตลอดเวลา</p>
            <div className="absolute bottom-6 right-8 opacity-10">
               <BarChart2 className="w-20 h-20 text-black" />
            </div>
@@ -96,7 +96,7 @@ export default function ListHitsGrid() {
       {/* Category Selection Grid */}
       <div className="px-4 mb-4">
         <h3 className="text-base sm:text-lg font-black text-black mb-1">เลือกหมวดหมู่ชาร์ต</h3>
-        <p className="text-[10px] sm:text-xs text-gray-400 font-medium">กดเลือกชาร์ตจัดอันดับที่คุณสนใจ</p>
+        <p className="text-[10px] sm:text-xs text-gray-500 font-black">กดเลือกชาร์ตจัดอันดับที่คุณสนใจ</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 mb-8">
@@ -124,7 +124,7 @@ export default function ListHitsGrid() {
                
                <div className="absolute inset-0 p-4 flex flex-col justify-end">
                   <h3 className="text-sm sm:text-base font-bold text-white leading-tight drop-shadow-sm line-clamp-2 mb-1">{cat.title}</h3>
-                  <p className="text-[10px] text-white/80 font-medium line-clamp-1">{cat.description}</p>
+                  <p className="text-[10px] text-white font-black line-clamp-1">{cat.description}</p>
                </div>
                
                {isActive && (
@@ -146,7 +146,7 @@ export default function ListHitsGrid() {
                     {activeChart?.title}
                     <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium">#{activeChart?.jooxId}</span>
                  </h2>
-                 <p className="text-[11px] text-gray-500 font-medium">{activeChart?.description} ({chartItems.length} รายการ)</p>
+                 <p className="text-[11px] text-gray-600 font-bold">{activeChart?.description} ({chartItems.length} รายการ)</p>
               </div>
               <button 
                 onClick={() => setSelectedChart(null)}
