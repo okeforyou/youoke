@@ -84,7 +84,7 @@ function App({ Component, pageProps }: AppProps) {
         console.warn('Cleanup failed', e);
       }
     };
-    clearServices();
+    // clearServices();
   }, []);
 
   return (

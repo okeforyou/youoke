@@ -10,7 +10,10 @@ import {
     signInWithPopup,
     signInWithRedirect,
     getRedirectResult,
-    updateProfile
+    setPersistence,
+    browserLocalPersistence,
+    updateProfile,
+    ParsedToken
 } from 'firebase/auth';
 import { getApps } from 'firebase/app';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
@@ -102,8 +105,13 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     }
                 }, 15000);
 
-                console.log('🔐 Auth Store: Registering onIdTokenChanged listener...');
-                
+                // 🛡️ SET PERSISTENCE: Crucial for Mobile Auth 
+                if (auth) {
+                    setPersistence(auth, browserLocalPersistence)
+                        .then(() => console.log('🛡️ Persistence set to LOCAL'))
+                        .catch(err => console.warn('🛡️ Persistence Error:', err));
+                }
+
                 // 🚀 HANDLE REDIRECT RESULTS (Crucial for Mobile Google Login)
                 getRedirectResult(auth).then((result) => {
                     if (result?.user) {
@@ -111,8 +119,10 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     }
                 }).catch((error) => {
                     console.error('🏁 Google Redirect Error:', error);
-                    set({ error: error.message });
+                    set({ error: error.message, isLoading: false });
                 });
+
+                console.log('🔐 Auth Store: Registering onIdTokenChanged listener...');
 
                 const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
                     console.time('AuthLifecycle');

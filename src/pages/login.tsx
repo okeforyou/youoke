@@ -4,13 +4,13 @@ import { useAuthStore } from '@/modules/auth/useAuthStore';
 
 export default function LoginPage() {
     const router = useRouter();
-    const { user, signInWithCustomToken, isHydrated } = useAuthStore();
+    const { user, signInWithCustomToken, isHydrated, isLoading } = useAuthStore();
     const [lineLoading, setLineLoading] = useState(false);
     const [error, setError] = useState('');
     const processingRef = useRef(false);
 
     useEffect(() => {
-        if (!router.isReady || !isHydrated) return;
+        if (!router.isReady || !isHydrated || isLoading) return;
 
         const { code, mode, redirect, error: lineError } = router.query;
 
