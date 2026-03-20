@@ -33,6 +33,7 @@ export default function LoginPage() {
     const [name, setName] = useState('');
     const [showIntro, setShowIntro] = useState(true); // New: For Mobile Intro Step
     const [acceptedTerms, setAcceptedTerms] = useState(false); // New: Terms agreement
+    const [isSubmitting, setIsSubmitting] = useState(false); // New: For actionable loading only
 
     // Toggle Mode Logic
     useEffect(() => {
@@ -104,6 +105,7 @@ export default function LoginPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLocalError('');
+        setIsSubmitting(true);
         try {
             if (isLogin) {
                 await signIn(email, password);
@@ -128,7 +130,9 @@ export default function LoginPage() {
         // By NOT making this function async and NOT calling setLocalError('') here,
         // we prevent React from queueing a render cycle before opening the popup.
         // This ensures the popup counts as a "direct user action" and doesn't get blocked.
+        setIsSubmitting(true);
         signInWithGoogle().catch((err: any) => {
+            setIsSubmitting(false);
             setLocalError(err.message || 'เข้าสู่ระบบด้วย Google ล้มเหลว');
         });
     };
@@ -139,8 +143,8 @@ export default function LoginPage() {
                 <title>{isLogin ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก'} - YouOke</title>
             </Head>
 
-            {/* 🚀 PREMIUM LOADING OVERLAY */}
-            {(isLoading || lineLoading) && (
+            {/* 🚀 PREMIUM LOADING OVERLAY (Action-Aware) */}
+            {((isLoading && isSubmitting) || lineLoading) && (
                 <div className="fixed inset-0 z-[200] bg-white/60 backdrop-blur-xl flex flex-col items-center justify-center animate-in fade-in duration-300">
                     <div className="w-16 h-16 bg-gray-900 rounded-2xl flex items-center justify-center shadow-2xl animate-bounce mb-6">
                          <span className="text-2xl font-black text-white">Y</span>
@@ -162,8 +166,8 @@ export default function LoginPage() {
                 "fixed top-0 left-0 right-0 z-[100] p-6 flex items-center justify-between pointer-events-none transition-opacity",
                 !showIntro ? "opacity-0 invisible lg:opacity-100 lg:visible" : "opacity-100 visible"
             )}>
-                <Link href="/" className="pointer-events-auto flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors bg-white/60 backdrop-blur-md px-4 py-2 rounded-full border border-gray-100 shadow-sm">
-                    <ArrowLeft size={16} />
+                <Link href="/" className="pointer-events-auto flex items-center gap-2 text-sm font-black text-gray-700 hover:text-black transition-all bg-white px-5 py-2.5 rounded-2xl border-2 border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200 active:scale-95">
+                    <ArrowLeft size={18} strokeWidth={3} />
                     <span>กลับ</span>
                 </Link>
             </div>
