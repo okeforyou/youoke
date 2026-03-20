@@ -22,6 +22,7 @@ interface AuthContextProps {
   logOut: any;
   logout: any;
   signInWithGoogle: any;
+  error: string | null;
 }
 
 // Create auth context
@@ -35,6 +36,7 @@ const AuthContext = createContext<AuthContextProps>({
   logOut: () => { },
   logout: () => { },
   signInWithGoogle: () => { },
+  error: null,
 });
 
 // Make auth context available across the app by exporting it
@@ -52,7 +54,8 @@ export const AuthContextProvider = ({
     signUp: storeSignUp,
     signOut: storeSignOut,
     signInWithGoogle: storeGoogleSignIn,
-    isLoading
+    isLoading,
+    error: storeError
   } = useAuthStore();
 
   const [user, setUser] = useState<UserType | null>(null);
@@ -106,7 +109,8 @@ export const AuthContextProvider = ({
       login: logIn,
       logOut,
       logout: logOut,
-      signInWithGoogle
+      signInWithGoogle,
+      error: storeError
     }}>
       {children}
     </AuthContext.Provider>
