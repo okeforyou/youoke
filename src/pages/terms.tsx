@@ -28,7 +28,7 @@ export default function TermsPage() {
                         <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-red-500">
                              <ShieldCheck size={32} />
                         </div>
-                        <h2 className="text-3xl font-black text-gray-900 leading-tight">ข้อตกลงและนโยบายการใช้งาน<br/>เพื่อความสุขของสมาชิก YouOke</h2>
+                        <h2 className="text-3xl font-black text-gray-900 leading-tight">ข้อตกลงและนโยบายการใช้งาน</h2>
                         <p className="text-gray-500 font-medium leading-relaxed">
                             กรุณาอ่านและทำความเข้าใจนโยบายการให้บริการของเรา เพื่อประสบการณ์คาราโอเกะที่ดีที่สุดสำหรับคุณ
                         </p>
