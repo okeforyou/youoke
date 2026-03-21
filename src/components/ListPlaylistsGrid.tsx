@@ -413,7 +413,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
       <div className="px-4 pt-4 pb-6">
         <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-5 sm:p-8 rounded-2xl relative overflow-hidden min-h-[130px] flex flex-col justify-center border border-gray-200/50 shadow-sm">
            <h2 className="text-2xl sm:text-3xl font-black text-gray-900 leading-tight">คลังเพลย์ลิสต์</h2>
-           <p className="text-[13px] sm:text-base text-gray-500 mt-2 font-medium">แหล่งรวมความบันเทิงที่คุณสร้างสรรค์เองได้</p>
+           <p className="text-[13px] sm:text-base !text-black mt-2 font-black">แหล่งรวมความบันเทิงที่คุณสร้างสรรค์เองได้</p>
            <div className="absolute bottom-6 right-8 opacity-10">
               <RectangleStackIcon className="w-20 h-20 text-black" />
            </div>

@@ -94,7 +94,7 @@ export const Sidebar = memo(() => {
                     className={clsx(
                         "w-full flex items-center transition-all font-bold duration-300 text-sm",
                         isSidebarCollapsed ? "justify-center p-3 rounded-xl" : "gap-3 px-4 py-3 rounded-2xl",
-                        (router.pathname === '/' && activeIndex === 1) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-black hover:bg-gray-100/50 hover:text-black"
+                        (router.pathname === '/' && activeIndex === 1) ? "bg-primary text-white translate-x-1" : "text-black hover:bg-gray-100/50 hover:text-black"
                     )}
                     title={isSidebarCollapsed ? "หน้าหลัก" : ""}
                 >
@@ -108,7 +108,7 @@ export const Sidebar = memo(() => {
                     className={clsx(
                         "w-full flex items-center transition-all font-bold duration-300 text-sm",
                         isSidebarCollapsed ? "justify-center p-3 rounded-xl" : "gap-3 px-4 py-3 rounded-2xl",
-                        (router.pathname === '/' && activeIndex === 2) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-black hover:bg-gray-100/50 hover:text-black"
+                        (router.pathname === '/' && activeIndex === 2) ? "bg-primary text-white translate-x-1" : "text-black hover:bg-gray-100/50 hover:text-black"
                     )}
                     title={isSidebarCollapsed ? "ชาร์ตเพลง" : ""}
                 >
@@ -122,7 +122,7 @@ export const Sidebar = memo(() => {
                     className={clsx(
                         "w-full flex items-center transition-all font-bold duration-300 text-sm",
                         isSidebarCollapsed ? "justify-center p-3 rounded-xl" : "gap-3 px-4 py-3 rounded-2xl",
-                        (router.pathname === '/' && activeIndex === 3) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-black hover:bg-gray-100/50 hover:text-black"
+                        (router.pathname === '/' && activeIndex === 3) ? "bg-primary text-white translate-x-1" : "text-black hover:bg-gray-100/50 hover:text-black"
                     )}
                     title={isSidebarCollapsed ? "สถานีเพลง" : ""}
                 >
@@ -136,7 +136,7 @@ export const Sidebar = memo(() => {
                     className={clsx(
                         "w-full flex items-center transition-all font-bold duration-300 text-sm",
                         isSidebarCollapsed ? "justify-center p-3 rounded-xl" : "gap-3 px-4 py-3 rounded-2xl",
-                        (router.pathname === '/' && activeIndex === 4) ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1" : "text-black hover:bg-gray-100/50 hover:text-black"
+                        (router.pathname === '/' && activeIndex === 4) ? "bg-primary text-white translate-x-1" : "text-black hover:bg-gray-100/50 hover:text-black"
                     )}
                     title={isSidebarCollapsed ? "เพลย์ลิสต์" : ""}
                 >
@@ -161,11 +161,11 @@ export const Sidebar = memo(() => {
                         isSidebarCollapsed ? "justify-center p-3 rounded-xl" : "gap-3 px-4 py-3 rounded-2xl",
                         "text-black hover:bg-gray-100/50 hover:text-black"
                     )}
-                    title={isSidebarCollapsed ? "ติดต่อสอบถาม (LINE)" : ""}
+                    title={isSidebarCollapsed ? "ติดต่อ" : ""}
                 >
                     <MessageCircle className="w-[22px] h-[22px] text-black" /> 
                     <span className={clsx("transition-all duration-300 whitespace-nowrap", isSidebarCollapsed ? "opacity-0 w-0 overflow-hidden" : "opacity-100")}>
-                        ติดต่อสอบถาม (LINE)
+                        ติดต่อ
                     </span>
                 </a>
 
