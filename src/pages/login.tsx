@@ -173,7 +173,7 @@ export default function LoginPage() {
             </div>
 
             {/* MAIN CONTENT WRAPPER */}
-            <div className="flex flex-col lg:flex-row min-h-screen bg-white relative">
+            <div className="flex-1 flex flex-col lg:flex-row w-full h-full relative">
                 
                 {/* LEFT SIDE: Mobile Intro (Step 1) / Desktop Sidebar */}
                 <div className={clsx(
