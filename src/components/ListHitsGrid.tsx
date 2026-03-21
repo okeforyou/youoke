@@ -85,8 +85,8 @@ export default function ListHitsGrid() {
       {/* Header Section */}
       <div className="px-4 pt-4 pb-6">
         <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-5 sm:p-8 rounded-2xl relative overflow-hidden min-h-[130px] flex flex-col justify-center border border-gray-200/50 shadow-sm">
-           <h2 className="text-2xl sm:text-3xl font-black text-gray-900 leading-tight">ชาร์ตเพลง</h2>
-           <p className="text-[13px] sm:text-base text-black mt-2 font-black">เกาะติดกระแสเพลงฮิต อัปเดตใหม่ล่าสุดตลอดเวลา</p>
+           <h2 className="text-2xl sm:text-3xl font-black text-black leading-tight">ชาร์ตเพลง</h2>
+           <p className="text-[13px] sm:text-base !text-black mt-2 font-black">เกาะติดกระแสเพลงฮิต อัปเดตใหม่ล่าสุดตลอดเวลา</p>
            <div className="absolute bottom-6 right-8 opacity-10">
               <BarChart2 className="w-20 h-20 text-black" />
            </div>

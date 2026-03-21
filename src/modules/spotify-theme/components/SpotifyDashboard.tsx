@@ -456,9 +456,9 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
           {mode === 'genres' && (
             <div className="animate-in fade-in duration-500">
                <div className="px-4 pt-4 pb-6">
-                    <div className="bg-gradient-to-r from-gray-800 to-gray-900 p-5 sm:p-8 rounded-2xl relative overflow-hidden min-h-[130px] flex flex-col justify-center shadow-lg border border-white/10">
-                        <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight">ตู้เพลง / แนวเพลง</h2>
-                        <p className="text-gray-400 text-sm mt-1">บทเพลงที่คัดสรรมาเพื่อคุณโดยเฉพาะ</p>
+                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-5 sm:p-8 rounded-2xl relative overflow-hidden min-h-[130px] flex flex-col justify-center border border-gray-200/50 shadow-sm">
+                        <h2 className="text-2xl sm:text-3xl font-black text-black leading-tight">ตู้เพลง / แนวเพลง</h2>
+                        <p className="text-[13px] sm:text-base !text-black mt-2 font-black">บทเพลงที่คัดสรรมาเพื่อคุณโดยเฉพาะ</p>
                         <div className="absolute bottom-6 right-8 opacity-20">
                             <GridIcon className="w-20 h-20 text-white" />
                         </div>
@@ -503,8 +503,8 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                  <>
                    <div className="px-4 pt-4 pb-6">
                         <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-5 sm:p-8 rounded-2xl relative overflow-hidden min-h-[130px] flex flex-col justify-center border border-gray-200/50 shadow-sm">
-                            <h2 className="text-2xl sm:text-3xl font-black text-gray-900 leading-tight">สถานีเพลง</h2>
-                            <p className="text-[13px] sm:text-base text-black mt-2 font-black">รวมชุดเพลงยาว ฟังต่อเนื่อง สำหรับเปิดทิ้งไว้</p>
+                            <h2 className="text-2xl sm:text-3xl font-black text-black leading-tight">สถานีเพลง</h2>
+                            <p className="text-[13px] sm:text-base !text-black mt-2 font-black">รวมชุดเพลงยาว ฟังต่อเนื่อง สำหรับเปิดทิ้งไว้</p>
                             <div className="absolute bottom-6 right-8 opacity-5">
                                 <Headphones className="w-20 h-20 text-black" />
                             </div>
@@ -513,7 +513,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
 
                    <div className="px-4 mb-6">
                       <h3 className="text-base sm:text-lg font-black text-black mb-1">เลือกสถานีเพลง</h3>
-                      <p className="text-[10px] sm:text-xs text-black font-black">กดเลือกแนวเพลงที่ต้องการฟังได้เลยครับ</p>
+                      <p className="text-[10px] sm:text-xs !text-black font-black">กดเลือกแนวเพลงที่ต้องการฟังได้เลยครับ</p>
                    </div>
 
                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 mb-4">
