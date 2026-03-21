@@ -193,7 +193,7 @@ export default function LoginPage() {
                             </p>
 
                             {/* Feature Grid: 2 Columns */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 lg:gap-x-10 gap-y-6 lg:gap-y-10">
+                            <div className="grid grid-cols-2 gap-x-4 lg:gap-x-10 gap-y-6 lg:gap-y-10">
                                 {premiumFeatures.map((f, i) => (
                                     <div key={i} className="flex flex-row items-start text-left gap-4 group">
                                         <div className={clsx("w-10 h-10 lg:w-12 lg:h-12 shrink-0 rounded-xl lg:rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110", f.bg, f.color)}>
@@ -317,7 +317,7 @@ export default function LoginPage() {
                         {/* Traditional Form */}
                         <form className="space-y-4" onSubmit={handleSubmit}>
                             {(error || localError) && (
-                                <div className="bg-red-50 border border-red-100 text-red-600 text-xs font-bold p-4 rounded-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+                                <div className="bg-red-50 border border-red-100 text-red-600 text-xs font-bold p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
                                     <Zap size={16} fill="currentColor" />
                                     <span>{localError || error}</span>
                                 </div>
