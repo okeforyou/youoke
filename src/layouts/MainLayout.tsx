@@ -421,6 +421,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             {searchTerm && (
                                 <button
                                     onClick={() => {
+                                        setSearchTerm('');
                                         const { search, ...rest } = router.query;
                                         router.replace({ pathname: '/', query: rest }, undefined, { shallow: true });
                                     }}
@@ -582,6 +583,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                 />
                                                 {searchTerm && (
                                                     <button onClick={() => {
+                                                        setSearchTerm('');
                                                         const { search, ...rest } = router.query;
                                                         router.replace({ pathname: '/', query: rest }, undefined, { shallow: true });
                                                     }} className="text-gray-400 ml-1.5 p-1 rounded-full hover:bg-gray-100">
