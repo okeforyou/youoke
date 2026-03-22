@@ -490,7 +490,15 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                                 <p className="text-xs font-bold uppercase tracking-widest animate-pulse">กำลังเตรียมเพลงถัดไป...</p>
                             </>
                         ) : (
-                            <p>รอเลือกเพลง...</p>
+                            <div className="flex flex-col items-center gap-4 text-center animate-pulse">
+                                <div className="p-4 bg-white/5 rounded-full border border-white/10 shadow-inner">
+                                    <Music className="w-8 h-8 text-primary shadow-sm" />
+                                </div>
+                                <div className="space-y-1">
+                                    <p className="text-sm font-bold text-white tracking-wide">ยังไม่มีรายการเพลง</p>
+                                    <p className="text-[10px] text-white/40 uppercase font-black tracking-[0.2em]">รอเลือกเพลงจากรายการ...</p>
+                                </div>
+                            </div>
                         )}
                     </div>
                 )

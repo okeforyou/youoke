@@ -520,10 +520,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 ? "fixed inset-0 w-screen h-[100dvh] border-none bg-black shadow-none ring-0 origin-top-right transition-all duration-300"
                                 : [
                                     // Mobile Logic (Inline block at top)
-                                    "max-lg:w-full",
-                                    queue.length > 0
-                                        ? "max-lg:opacity-100 max-lg:h-auto max-lg:pointer-events-auto shadow-sm"
-                                        : "max-lg:opacity-0 max-lg:h-0 max-lg:pointer-events-none max-lg:border-none",
+                                    "max-lg:w-full max-lg:opacity-100 max-lg:h-auto max-lg:pointer-events-auto shadow-md",
 
                                     // Desktop Logic
                                     "lg:fixed lg:top-0 lg:w-[420px] lg:h-[236px] bg-black origin-top-right transition-all duration-500",
