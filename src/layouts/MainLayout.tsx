@@ -654,9 +654,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                 <ListMusic className="w-5 h-5" />
                                                 {queue.length > 0 && (
                                                     <div className={clsx(
-                                                        "absolute -top-1.5 -right-1.5 text-white text-[9px] font-black h-4.5 min-w-[18px] px-1 rounded-full flex items-center justify-center border-2 border-white shadow-sm transition-colors duration-300",
-                                                        isQueueOpen ? "bg-green-500" : "bg-red-500"
-                                                    )}>
+                                                        "absolute -top-1.5 -right-1.5 text-white text-[9px] font-black h-4.5 min-w-[18px] px-1 rounded-full flex items-center justify-center border-2 border-white shadow-sm transition-all duration-300 animate-bounce",
+                                                        isQueueOpen ? "bg-red-500" : "bg-black"
+                                                    )} style={{ animationDuration: '3s' }}>
                                                         {queue.length}
                                                     </div>
                                                 )}
