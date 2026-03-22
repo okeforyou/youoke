@@ -77,12 +77,15 @@ export default function HomePage() {
     }
   }, [router.query.search, router.isReady, router.query.tab]);
 
-  // Reset to search results if typing
+  // Reset to search results if typing, or back home if cleared
   useEffect(() => {
     if (searchTerm) {
       if (activeIndex !== 0 && activeIndex !== 3) setActiveIndex(0);
+    } else if (activeIndex === 0) {
+      // If search cleared and we're looking at search results, go back to Home
+      setActiveIndex(1);
     }
-  }, [searchTerm]); // Simplified this dependency chain
+  }, [searchTerm, activeIndex, setActiveIndex]);
 
   return (
     <MainLayout>
