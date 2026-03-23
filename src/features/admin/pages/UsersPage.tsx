@@ -125,7 +125,8 @@ export default function UsersPage() {
             confirmText: 'รับทราบ',
             type: 'success',
             onConfirm: () => {
-              setSelectedUser(null);
+              // 🛡️ RE-FIX: Don't close modal, just refresh data
+              setSelectedUser({ ...selectedUser, role: newRole });
               fetchUsers();
             }
           });
