@@ -218,7 +218,12 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
   };
 
   const getYoutubePlaylists = async () => {
-    if (!user?.googleAccessToken) return;
+    if (!user?.googleAccessToken) {
+      console.warn("[YouTube Shell] 🚫 Missing Google Access Token. Re-login required.");
+      return;
+    }
+    
+    console.log("[YouTube Shell] 📡 Fetching your YouTube playlists...");
     setIsLoading(true);
     try {
       const resp = await fetch(`https://www.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&mine=true&maxResults=50`, {
@@ -227,15 +232,23 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
           'Accept': 'application/json'
         }
       });
+      
+      console.log("[YouTube Shell] 🌐 API Status:", resp.status);
+      
       if (!resp.ok) {
+        const errorData = await resp.json().catch(() => ({}));
+        console.error("[YouTube Shell] ❌ API Error Details:", errorData);
+        
         if (resp.status === 401) {
-          console.warn("YouTube token expired, re-linking required.");
-          // In a real app, we might force a re-auth here or refresh token.
+          console.error("🔒 Token might be expired or invalid scope.");
         }
-        throw new Error("Failed to fetch YouTube playlists");
+        throw new Error(`Failed to fetch playlists: ${resp.status}`);
       }
+      
       const data = await resp.json();
-      const mapped = data.items.map((item: any) => ({
+      console.log(`[YouTube Shell] ✅ Success! Found ${data.items?.length || 0} playlists.`);
+      
+      const mapped = (data.items || []).map((item: any) => ({
         id: item.id,
         name: item.snippet.title,
         thumbnail: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url,
@@ -244,9 +257,9 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
         sourceType: 'youtube'
       }));
       setYoutubePlaylists(mapped);
-      setIsLoading(false);
     } catch (error) {
-      console.error("YouTube Fetch Error:", error);
+      console.error("[YouTube Shell] 💥 Fetch Crash:", error);
+    } finally {
       setIsLoading(false);
     }
   };

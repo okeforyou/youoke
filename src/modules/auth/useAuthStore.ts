@@ -272,7 +272,8 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                         installed_modules: userData.installed_modules || [],
                                         quota: userData.quota || undefined,
                                         isYouTubeConnected: userData.isYouTubeConnected || firebaseUser.providerData.some(p => p.providerId === 'google.com'),
-                                        youtubeEmail: userData.youtubeEmail || (firebaseUser.providerData.find(p => p.providerId === 'google.com')?.email) || null
+                                        youtubeEmail: userData.youtubeEmail || (firebaseUser.providerData.find(p => p.providerId === 'google.com')?.email) || null,
+                                        googleAccessToken: userData.googleAccessToken || null
                                     },
                                     isLoading: false
                                 });
