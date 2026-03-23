@@ -98,7 +98,7 @@ export const LimitReachedModal = () => {
                                 <br />
                                 เพื่อรับสิทธิการเข้าถึงแบบส่วนบุคคลผ่าน YouOke
                                 <br />
-                                <span className="text-secondary font-semibold">
+                                <span className="text-red-600 font-bold">
                                   และเล่นผ่านบัญชีของคุณแบบไร้โฆษณาคั่น 🔐✨
                                 </span>
                             </>

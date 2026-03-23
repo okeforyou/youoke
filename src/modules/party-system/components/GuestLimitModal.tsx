@@ -2,7 +2,8 @@ import React from 'react';
 import { useRouter } from 'next/router';
 import { useAuthStore } from '@/modules/auth/useAuthStore';
 import { useUIStore } from '@/stores/useUIStore';
-import { XMarkIcon, Crown, PartyPopper } from '@heroicons/react/24/solid';
+import { XMarkIcon } from '@heroicons/react/24/solid';
+import { Crown, PartyPopper } from 'lucide-react';
 
 interface GuestLimitModalProps {
   isOpen: boolean;
@@ -74,7 +75,7 @@ export default function GuestLimitModal({
                                 <br />
                                 เพื่อรับสิทธิการเข้าถึงแบบส่วนบุคคลผ่าน YouOke
                                 <br />
-                                <span className="text-secondary font-semibold">
+                                <span className="text-red-600 font-bold">
                                   และเล่นผ่านบัญชีของคุณแบบไร้โฆษณาคั่น 🔐✨
                                 </span>
                             </>
