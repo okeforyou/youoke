@@ -407,6 +407,7 @@ export const useAuthStore = create<UserState & AuthActions>()(
                 // Any 'set' call here might cause a React microtask and block the popup.
                 try {
                     const provider = new GoogleAuthProvider();
+                    provider.addScope('https://www.googleapis.com/auth/youtube.readonly');
 
                     if (!auth) throw new Error("Firebase Auth not initialized");
                     
@@ -454,6 +455,7 @@ export const useAuthStore = create<UserState & AuthActions>()(
                 set({ isLoading: true, error: null });
                 try {
                     const provider = new GoogleAuthProvider();
+                    provider.addScope('https://www.googleapis.com/auth/youtube.readonly');
                     if (!auth || !auth.currentUser) throw new Error("User must be logged in to link accounts");
 
                     const result = await linkWithPopup(auth.currentUser, provider);
