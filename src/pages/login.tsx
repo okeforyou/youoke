@@ -23,7 +23,7 @@ import clsx from 'clsx';
 
 export default function LoginPage() {
     const router = useRouter();
-    const { user, signInWithGoogle, signInWithLine, signInWithCustomToken, signIn, signUp, error, isLoading } = useAuthStore();
+    const { user, signInWithGoogle, linkGoogleAccount, signInWithLine, signInWithCustomToken, signIn, signUp, error, isLoading } = useAuthStore();
 
     const [isLogin, setIsLogin] = useState(true);
     const [lineLoading, setLineLoading] = useState(false);
@@ -64,6 +64,9 @@ export default function LoginPage() {
     useEffect(() => {
         if (!router.isReady) return;
         
+        // 🛡️ Skip redirect if we are here to LINK an account (YouTube Shell Connection)
+        if (user && router.query.action === 'link') return;
+
         if (user) {
             // 🚀 ALWAYS REDIRECT TO HOME (as requested)
             const redirectUrl = (router.query.redirect as string) || '/';
@@ -127,13 +130,13 @@ export default function LoginPage() {
 
     const handleGoogleLogin = () => {
         // 🚀 SYNCHRONOUS FIX FOR SAFARI POP-UP:
-        // By NOT making this function async and NOT calling setLocalError('') here,
-        // we prevent React from queueing a render cycle before opening the popup.
-        // This ensures the popup counts as a "direct user action" and doesn't get blocked.
         setIsSubmitting(true);
-        signInWithGoogle().catch((err: any) => {
+        
+        const action = user ? linkGoogleAccount() : signInWithGoogle();
+
+        action.catch((err: any) => {
             setIsSubmitting(false);
-            setLocalError(err.message || 'เข้าสู่ระบบด้วย Google ล้มเหลว');
+            setLocalError(err.message || 'การเชื่อมต่อ Google ล้มเหลว');
         });
     };
 
@@ -185,7 +188,7 @@ export default function LoginPage() {
                         <div className="mt-4 lg:mt-0">
                             <div className="inline-flex items-center gap-2 px-3 py-1 bg-red-50 text-red-600 rounded-full text-[11px] font-black uppercase tracking-widest mb-4">
                                 <Zap size={14} fill="currentColor" />
-                                <span>ทดลองใช้ฟรี 1 วัน</span>
+                                <span>{user ? 'เชื่อมบัญชี YouTube รับสิทธิเพิ่ม' : 'ทดลองใช้ฟรี 1 วัน'}</span>
                             </div>
 
                             <p className="text-gray-500 text-[15px] lg:text-lg font-medium mb-8 lg:mb-12">

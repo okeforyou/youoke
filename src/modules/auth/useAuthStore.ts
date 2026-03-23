@@ -8,10 +8,11 @@ import {
     createUserWithEmailAndPassword,
     GoogleAuthProvider,
     signInWithPopup,
-    updateProfile
+    updateProfile,
+    linkWithPopup
 } from 'firebase/auth';
 import { getApps } from 'firebase/app';
-import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import nookies from 'nookies';
 import { ref, get as rtdbGet, update as rtdbUpdate } from 'firebase/database';
 import { realtimeDb } from '../../firebase';
@@ -32,6 +33,9 @@ interface UserData {
     role: 'admin' | 'user' | 'owner';
     membership: MembershipState;
     isAdmin: boolean;
+    // YouTube Shell Integration
+    isYouTubeConnected?: boolean;
+    youtubeEmail?: string | null;
     // Marketplace & Apps
     credits?: number;
     installed_modules?: string[];
@@ -54,6 +58,7 @@ interface AuthActions {
     signIn: (email: string, pass: string) => Promise<void>;
     signUp: (email: string, pass: string) => Promise<void>;
     signInWithGoogle: () => Promise<void>;
+    linkGoogleAccount: () => Promise<void>;
     signInWithLine: () => void;
     signInWithCustomToken: (token: string) => Promise<void>;
     signOut: () => Promise<void>;
@@ -264,7 +269,9 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                         isAdmin: isAdmin,
                                         membership: membership,
                                         installed_modules: userData.installed_modules || [],
-                                        quota: userData.quota || undefined
+                                        quota: userData.quota || undefined,
+                                        isYouTubeConnected: userData.isYouTubeConnected || firebaseUser.providerData.some(p => p.providerId === 'google.com'),
+                                        youtubeEmail: userData.youtubeEmail || (firebaseUser.providerData.find(p => p.providerId === 'google.com')?.email) || null
                                     },
                                     isLoading: false
                                 });
@@ -430,6 +437,51 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     });
                 } catch (error: any) {
                     console.error('⚡ GoogleSignIn: Error', error);
+                    set({ error: error.message, isLoading: false });
+                    throw error;
+                }
+            },
+
+            linkGoogleAccount: async () => {
+                console.log('⚡ LinkGoogleAccount: Started');
+                set({ isLoading: true, error: null });
+                try {
+                    const provider = new GoogleAuthProvider();
+                    if (!auth || !auth.currentUser) throw new Error("User must be logged in to link accounts");
+
+                    const result = await linkWithPopup(auth.currentUser, provider);
+                    const firebaseUser = result.user;
+                    console.log('⚡ LinkGoogleAccount: Success', firebaseUser.uid);
+
+                    // Update Firestore to mark YouTube as connected
+                    if (db) {
+                        const userRef = doc(db, 'users', firebaseUser.uid);
+                        const googleProfile = firebaseUser.providerData.find(p => p.providerId === 'google.com');
+                        
+                        const updates: any = {
+                            isYouTubeConnected: true,
+                            youtubeEmail: googleProfile?.email || null,
+                            updatedAt: serverTimestamp()
+                        };
+
+                        // Special Bonus: Grant 1-day day pass if they don't have an active one
+                        const userSnap = await getDoc(userRef);
+                        const currentMembership = userSnap.data()?.membership;
+                        if (!currentMembership || currentMembership.status !== 'active') {
+                            updates.membership = {
+                                type: 'day_pass',
+                                status: 'active',
+                                startedAt: serverTimestamp(),
+                                expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+                            };
+                        }
+
+                        await updateDoc(userRef, updates);
+                    }
+
+                    set({ isLoading: false });
+                } catch (error: any) {
+                    console.error('⚡ LinkGoogleAccount: Error', error);
                     set({ error: error.message, isLoading: false });
                     throw error;
                 }

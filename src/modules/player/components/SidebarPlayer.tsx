@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Maximize2, Minimize2, X, Play, Pause, Music, User } from 'lucide-react'; // Player V2.8.0 Vanish
 import Image from "next/image";
-// import YouTube from "react-youtube"; // Removing direct dependency
+import { LockClosedIcon } from "@heroicons/react/24/solid";
 import { UniversalPlayer } from "./UniversalPlayer";
+import { useAuthStore } from "@/modules/auth/useAuthStore";
 import { usePlayerStore } from "../stores/usePlayerStore";
 import { playerService } from "../services/playerService";
 import { YouTubeAdapter } from "../adapters/YouTubeAdapter";
@@ -45,6 +46,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
             duration: state.duration
         }))
     );
+    const { user } = useAuthStore();
     const playerRef = useRef<any>(null);
     const controlsTimerRef = useRef<NodeJS.Timeout | null>(null);
     const [showMiniControls, setShowMiniControls] = useState(false);
@@ -513,10 +515,30 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                 />
             )}
 
+            {/* 🛡️ IDENTITY SHIELD BADGE (YouTube Shell Strategy) */}
+            {mounted && user?.isYouTubeConnected && currentSource && (
+                <div 
+                    className="absolute top-3 left-3 z-[60] flex items-center gap-2 px-3 py-1.5 bg-black/40 backdrop-blur-md border border-white/10 rounded-full animate-in fade-in slide-in-from-left-4 duration-700 hover:bg-black/60 transition-colors group/identity"
+                    title={`เล่นผ่านสิทธิของคุณ: ${user.youtubeEmail || user.email}`}
+                >
+                    <div className="relative w-2 h-2">
+                        <div className="absolute inset-0 bg-green-500 rounded-full animate-ping opacity-40"></div>
+                        <div className="absolute inset-0 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
+                    </div>
+                    <span className="text-[10px] font-black text-white/80 uppercase tracking-widest flex items-center gap-1.5">
+                        <LockClosedIcon className="w-3 h-3 text-primary" />
+                        <span className="max-w-[120px] truncate hidden sm:inline-block">
+                            {user.youtubeEmail || user.email?.split('@')[0]}
+                        </span>
+                        <span className="sm:hidden">SHELLED</span>
+                    </span>
+                </div>
+            )}
+
             {/* Limit Indicator */}
             {
                 !isPassive && mounted && maxDuration > 0 && currentSource && (
-                    <div className="absolute top-2 right-2 z-20 badge badge-warning gap-1 opacity-80 text-xs">
+                    <div className="absolute top-3 right-3 z-20 badge badge-warning gap-1 opacity-80 text-[10px] font-black uppercase tracking-wider h-7 px-3 rounded-full border-none shadow-lg">
                         <span>⏱️ จำกัดเวลา: {maxDuration}วิ</span>
                     </div>
                 )
