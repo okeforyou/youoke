@@ -86,6 +86,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
   const [isLoading, setIsLoading] = useState(false);
   const [activeIndex, setActiveIndex] = useState(defaultTab); // 0: Community, 1: My Playlists
   const [playlists, setPlaylists] = useState<PlaylistItem[]>([]);
+  const [youtubePlaylists, setYoutubePlaylists] = useState<any[]>([]);
   const [suggestPlaylists, setSuggestPlaylists] = useState<PlaylistItem[]>([]);
   const [latestPlaylists, setLatestPlaylists] = useState<PlaylistItem[]>([]);
 
@@ -124,8 +125,10 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
       getMyPlaylists();
     } else if (activeIndex === 0 && isLoadPlaylist.suggest === 0) {
       getSuggestPlaylists();
+    } else if (activeIndex === 2 && youtubePlaylists.length === 0 && user?.googleAccessToken) {
+      getYoutubePlaylists();
     }
-  }, [activeIndex, isLoadPlaylist, user]);
+  }, [activeIndex, isLoadPlaylist, user, youtubePlaylists.length]);
 
   // Update playlists when data changes OR when switching tabs
   useEffect(() => {
@@ -211,6 +214,40 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
     } catch (error) {
       setIsLoading(false);
       console.error(error);
+    }
+  };
+
+  const getYoutubePlaylists = async () => {
+    if (!user?.googleAccessToken) return;
+    setIsLoading(true);
+    try {
+      const resp = await fetch(`https://www.googleapis.com/youtube/v3/playlists?part=snippet,contentDetails&mine=true&maxResults=50`, {
+        headers: {
+          'Authorization': `Bearer ${user.googleAccessToken}`,
+          'Accept': 'application/json'
+        }
+      });
+      if (!resp.ok) {
+        if (resp.status === 401) {
+          console.warn("YouTube token expired, re-linking required.");
+          // In a real app, we might force a re-auth here or refresh token.
+        }
+        throw new Error("Failed to fetch YouTube playlists");
+      }
+      const data = await resp.json();
+      const mapped = data.items.map((item: any) => ({
+        id: item.id,
+        name: item.snippet.title,
+        thumbnail: item.snippet.thumbnails?.medium?.url || item.snippet.thumbnails?.default?.url,
+        count: item.contentDetails?.itemCount || 0,
+        type: 'youtube_personal',
+        sourceType: 'youtube'
+      }));
+      setYoutubePlaylists(mapped);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("YouTube Fetch Error:", error);
+      setIsLoading(false);
     }
   };
 
@@ -454,6 +491,21 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
               <RectangleStackIcon className="w-4 h-4" />
               <span>ของฉัน</span>
             </button>
+
+            {user?.isYouTubeConnected && (
+              <button
+                onClick={() => setActiveIndex(2)}
+                className={clsx(
+                  "relative flex-1 flex items-center justify-center gap-2 h-full rounded-xl text-[13px] font-bold transition-colors z-10",
+                  activeIndex === 2 ? "text-gray-900" : "text-gray-400 hover:text-gray-600"
+                )}
+              >
+                <div className="w-4 h-4 rounded-full bg-red-600 flex items-center justify-center">
+                   <div className="w-2 h-2 bg-white rounded-full" />
+                </div>
+                <span>บัญชี YouTube</span>
+              </button>
+            )}
           </div>
         ) : (
           /* Guest Mode: Single Static Pill */
@@ -514,22 +566,44 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-x-6 gap-y-10 px-4">
-                {playlists.map((item, index) => (
-                  <PlaylistCard
-                    key={item.id + index + "-v3-force-refresh"}
-                    id={item.id}
-                    name={item.name}
-                    count={item.playlists?.length || 0}
-                    thumbnail={item.playlists?.[0]?.thumbnail}
-                    videoId={item.playlists?.[0]?.videoId}
-                    type={item.type}
-                    activeIndex={activeIndex}
-                    onClick={() => openPlaylistDetail(item)}
-                    onEdit={() => openEditModal(item)}
-                    onDelete={() => deletePlaylist(item.id)}
-                    onLike={() => handleAddLike(item.id)}
-                  />
-                ))}
+                {activeIndex === 2 ? (
+                  youtubePlaylists.map((item) => (
+                    <PlaylistCard
+                      key={item.id}
+                      id={item.id}
+                      name={item.name}
+                      count={item.count}
+                      thumbnail={item.thumbnail}
+                      videoId={item.id} // Standard id for playlists here
+                      type="youtube_personal"
+                      activeIndex={activeIndex}
+                      onClick={() => {
+                        // Open YouTube Playlist logic
+                        console.log("Open YT Playlist:", item.id);
+                        const playerStore = usePlayerStore.getState();
+                        playerStore.setSearchTerm(`https://www.youtube.com/playlist?list=${item.id}`);
+                        playerStore.setActiveIndex(0); // For now, switch to Search to resolve
+                      }}
+                    />
+                  ))
+                ) : (
+                  playlists.map((item, index) => (
+                    <PlaylistCard
+                      key={item.id + index + "-v3-force-refresh"}
+                      id={item.id}
+                      name={item.name}
+                      count={item.playlists?.length || 0}
+                      thumbnail={item.playlists?.[0]?.thumbnail}
+                      videoId={item.playlists?.[0]?.videoId}
+                      type={item.type}
+                      activeIndex={activeIndex}
+                      onClick={() => openPlaylistDetail(item)}
+                      onEdit={() => openEditModal(item)}
+                      onDelete={() => deletePlaylist(item.id)}
+                      onLike={() => handleAddLike(item.id)}
+                    />
+                  ))
+                )}
               </div>
             )}
           </>

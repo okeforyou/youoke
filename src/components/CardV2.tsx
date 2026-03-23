@@ -82,6 +82,15 @@ export default function CardV2({
                         </div>
                     </div>
                 )}
+
+                {type === 'youtube_personal' && (
+                    <div className="absolute top-4 left-4 z-30 m-2">
+                        <div className="badge bg-red-600 shadow-md font-bold border-none text-white gap-1 h-6 px-3">
+                            <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                            YouTube
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* 7. Info Section */}

@@ -36,6 +36,7 @@ interface UserData {
     // YouTube Shell Integration
     isYouTubeConnected?: boolean;
     youtubeEmail?: string | null;
+    googleAccessToken?: string | null;
     // Marketplace & Apps
     credits?: number;
     installed_modules?: string[];
@@ -410,9 +411,12 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     if (!auth) throw new Error("Firebase Auth not initialized");
                     
                     console.time('GooglePopup');
-                    // 1. OPEN POPUP IMMEDIATELY (Synchronously linked to user click)
+                    // 1. OPEN POPUP IMMEDIATELY
                     const userCredential = await signInWithPopup(auth, provider);
                     console.timeEnd('GooglePopup');
+
+                    const credential = GoogleAuthProvider.credentialFromResult(userCredential);
+                    const accessToken = credential?.accessToken || null;
 
                     // 2. NOW we can set the loading state and process the user
                     set({ isLoading: true, error: null });
@@ -431,7 +435,10 @@ export const useAuthStore = create<UserState & AuthActions>()(
                             isAdmin: false,
                             membership: DEFAULT_MEMBERSHIP,
                             installed_modules: [],
-                            quota: undefined
+                            quota: undefined,
+                            isYouTubeConnected: true,
+                            youtubeEmail: firebaseUser.email,
+                            googleAccessToken: accessToken
                         },
                         isLoading: false
                     });
@@ -453,6 +460,9 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     const firebaseUser = result.user;
                     console.log('⚡ LinkGoogleAccount: Success', firebaseUser.uid);
 
+                    const credential = GoogleAuthProvider.credentialFromResult(result);
+                    const accessToken = credential?.accessToken || null;
+
                     // Update Firestore to mark YouTube as connected
                     if (db) {
                         const userRef = doc(db, 'users', firebaseUser.uid);
@@ -461,6 +471,7 @@ export const useAuthStore = create<UserState & AuthActions>()(
                         const updates: any = {
                             isYouTubeConnected: true,
                             youtubeEmail: googleProfile?.email || null,
+                            googleAccessToken: accessToken, // Store in Firestore too (Optional, but useful for offline)
                             updatedAt: serverTimestamp()
                         };
 
