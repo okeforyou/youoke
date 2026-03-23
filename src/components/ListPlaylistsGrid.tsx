@@ -564,13 +564,17 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
           </div>
         ) : (
           <>
-            {playlists?.length === 0 ? (
+            {(activeIndex === 2 ? youtubePlaylists?.length === 0 : playlists?.length === 0) ? (
               <div className="mx-4 flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-gray-100 rounded-3xl bg-gray-50/50">
                 <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-6 shadow-sm">
                   <RectangleStackIcon className="w-8 h-8 text-gray-300" />
                 </div>
                 <h3 className="text-xl font-black text-black leading-tight">ยังไม่มีเพลย์ลิสต์</h3>
-                <p className="text-gray-500 mt-2 mb-8 max-w-sm text-sm font-medium">เริ่มสร้างคอลเลกชันเพลงโปรดของคุณได้ง่ายๆ แค่กดปุ่มสร้างด้านล่าง</p>
+                <p className="text-gray-500 mt-2 mb-8 max-w-sm text-sm font-medium">
+                  {activeIndex === 2 
+                    ? "เราไม่พบเพลย์ลิสต์ในบัญชี YouTube ของคุณ ลองสร้างเพลย์ลิสต์ใน YouTube ก่อนนะครับ"
+                    : "เริ่มสร้างคอลเลกชันเพลงโปรดของคุณได้ง่ายๆ แค่กดปุ่มสร้างด้านล่าง"}
+                </p>
                 {activeIndex === 1 && (
                   <button onClick={openCreateModal} className="btn btn-primary rounded-full px-8 text-white shadow-lg shadow-primary/20">
                     <PlusIcon className="w-5 h-5 mr-2" /> สร้างเพลย์ลิสต์แรก
