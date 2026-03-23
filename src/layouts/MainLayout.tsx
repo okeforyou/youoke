@@ -21,6 +21,7 @@ import { MobileBottomNav } from '../components/navigation/MobileBottomNav';
 import { Sidebar } from '../components/navigation/Sidebar';
 import { useCast } from '../plugins/cast/context/CastContext';
 import { useToast } from '@/context/ToastContext';
+import { useAuthStore } from '../modules/auth/useAuthStore';
 import useIsMobile from '../hooks/isMobile';
 import { useRemoteHost } from '../hooks/useRemoteHost';
 import { useVoiceSearch } from '../hooks/useVoiceSearch';
@@ -382,7 +383,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
         prevQueueLen.current = queue.length;
     }, [queue.length]);
 
-    // ... (Return statement remains mostly same)
+    // 🛡️ Expiry Alert Logic (Admin v2.1)
+    const { showExpiryAlert, setExpiryAlert } = useAuthStore();
+    const expiryStatus = user?.expiryStatus;
 
     return (
         <div className={clsx(
@@ -397,6 +400,19 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
             {/* Main Content Area - Single Divider Strategy */}
             <div className="flex-1 flex flex-col min-w-0 relative bg-white">
+                
+                {/* 🛡️ Membership Expiry Banner (Expiring Soon) */}
+                {user && expiryStatus?.isExpiringSoon && (
+                    <div className="bg-gradient-to-r from-yellow-400 via-orange-400 to-yellow-500 text-white py-1.5 px-4 flex items-center justify-between z-[60] shadow-lg animate-in slide-in-from-top duration-500">
+                        <div className="flex items-center gap-2 text-[11px] font-black uppercase tracking-wider">
+                            <Star className="w-3.5 h-3.5 animate-pulse" />
+                            <span>พรีเมียมของคุณกำลังจะหมดอายุในอีก {expiryStatus.daysRemaining} วัน!</span>
+                        </div>
+                        <Link href="/profile" className="bg-white/20 hover:bg-white/40 px-3 py-1 rounded-full text-[10px] font-black transition-all border border-white/30">
+                            ต่ออายุเลย
+                        </Link>
+                    </div>
+                )}
 
                 {/* Desktop Header */}
                 <header className="hidden lg:flex h-20 items-center justify-between px-8 border-b border-gray-100 bg-white sticky top-0 z-20 transition-all">
@@ -779,6 +795,40 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
             {/* Receiver Info Modal */}
             <ReceiverInfoModal />
+
+            {/* 🛡️ Membership Expired Modal (Admin v2.1) */}
+            {showExpiryAlert && expiryStatus?.isExpired && (
+                <div className="fixed inset-0 z-[1000] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-[0_0_50px_rgba(0,0,0,0.3)] animate-in zoom-in-95 duration-300">
+                        <div className="w-20 h-20 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <Info className="w-10 h-10" />
+                        </div>
+                        <h3 className="text-2xl font-black text-gray-900 mb-2 tracking-tighter uppercase">สิทธิ์สมาชิกหมดอายุ</h3>
+                        <p className="text-gray-500 text-sm leading-relaxed mb-8">
+                            ขออภัย สิทธิพรีเมียมของคุณสิ้นสุดแล้ว <br/> 
+                            ระบบได้ปรับเป็นสมาชิกทั่วไป (แบบฟรี) <br/>
+                            เพื่อความสนุกต่อเนื่อง กรุณาเลือกแพ็กเกจใหม่ครับ
+                        </p>
+                        <div className="space-y-3">
+                            <button 
+                                onClick={() => {
+                                    setExpiryAlert(false);
+                                    router.push('/profile');
+                                }}
+                                className="w-full py-4 bg-primary text-white font-black rounded-2xl shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
+                            >
+                                ดูแพ็กเกจใหม่
+                            </button>
+                            <button 
+                                onClick={() => setExpiryAlert(false)}
+                                className="w-full py-3 text-gray-400 text-xs font-bold hover:text-gray-600 transition-colors"
+                            >
+                                อ๋อ รับทราบครับ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* QR Code Modal for Remote Connect */}
             {

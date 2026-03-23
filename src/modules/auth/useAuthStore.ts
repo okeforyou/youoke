@@ -48,6 +48,12 @@ interface UserData {
         used: number;
         last_reset: string;
     };
+    // Expiry Notifications
+    expiryStatus?: {
+        isExpiringSoon: boolean;
+        daysRemaining: number;
+        isExpired: boolean;
+    };
 }
 
 interface UserState {
@@ -55,6 +61,7 @@ interface UserState {
     isLoading: boolean;
     error: string | null;
     isHydrated: boolean;
+    showExpiryAlert: boolean;
 }
 
 interface AuthActions {
@@ -68,6 +75,7 @@ interface AuthActions {
     signOut: () => Promise<void>;
     setHydrated: () => void;
     setLoading: (loading: boolean) => void;
+    setExpiryAlert: (show: boolean) => void;
     devLogin: () => void;
 }
 
@@ -85,8 +93,10 @@ export const useAuthStore = create<UserState & AuthActions>()(
             isLoading: true,
             error: null,
             isHydrated: false,
+            showExpiryAlert: false,
 
             setLoading: (loading: boolean) => set({ isLoading: loading }),
+            setExpiryAlert: (show: boolean) => set({ showExpiryAlert: show }),
 
             initialize: () => {
                 if (!auth) {
@@ -265,25 +275,44 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                 // 🛡️ SERVER-SIDE VALIDATION: CHECK EXPIRY
                                 if (membership.expiresAt) {
                                     const expiry = membership.expiresAt.toDate ? membership.expiresAt.toDate() : new Date(membership.expiresAt);
-                                    if (new Date() > expiry && membership.status !== 'expired') {
+                                    const now = new Date();
+                                    const isExpired = now > expiry;
+                                    
+                                    // Calculate days remaining
+                                    const diffMs = expiry.getTime() - now.getTime();
+                                    const daysRemaining = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+                                    if (isExpired && membership.status !== 'expired') {
                                         console.warn('⚠️ Membership Expired! Downgrading to Free...');
                                         membership = {
                                             ...DEFAULT_MEMBERSHIP,
                                             status: 'expired',
                                             type: 'free'
                                         };
-                                        // Update Firestore to reflect expiry immediately
+                                        // Update Firestore and RTDB immediately
                                         const { updateDoc } = await import('firebase/firestore');
                                         updateDoc(userRef, { membership }).catch(e => console.error('Firestore expiry sync failed', e));
 
-                                        // Sync to Realtime DB too (Simple & Fast)
                                         if (realtimeDb) {
                                             rtdbUpdate(ref(realtimeDb, `users/${firebaseUser.uid}/subscription`), {
                                                 status: 'expired',
                                                 plan: 'free'
                                             }).catch(e => console.error('RTDB expiry sync failed', e));
                                         }
+                                        
+                                        // Show Alert for recently expired users
+                                        set({ showExpiryAlert: true });
+                                    } else if (!isExpired && daysRemaining <= 3 && daysRemaining >= 0) {
+                                        // 🔔 Warn user if expiring soon (last 3 days)
+                                        set({ showExpiryAlert: true });
                                     }
+
+                                    // Store status in UserData for UI consumption
+                                    userData.expiryStatus = {
+                                        isExpiringSoon: !isExpired && daysRemaining <= 3 && daysRemaining >= 0,
+                                        daysRemaining: daysRemaining,
+                                        isExpired: isExpired
+                                    };
                                 }
 
                                 let role = userData.role || 'user';
