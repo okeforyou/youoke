@@ -40,9 +40,39 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
     packages,
     loading
 }) => {
+    // 🛡️ RE-FIX: Use State for Dates to ensure UI Stability
     const [editName, setEditName] = useState(user.displayName || '');
+    const [startedAt, setStartedAt] = useState<string>(
+        user.membership?.startedAt 
+            ? (user.membership.startedAt.toDate ? user.membership.startedAt.toDate().toISOString().split('T')[0] : new Date(user.membership.startedAt).toISOString().split('T')[0]) 
+            : ''
+    );
+    const [expiresAt, setExpiresAt] = useState<string>(
+        user.membership?.expiresAt 
+            ? (user.membership.expiresAt.toDate ? user.membership.expiresAt.toDate().toISOString().split('T')[0] : new Date(user.membership.expiresAt).toISOString().split('T')[0]) 
+            : ''
+    );
+    const [savingDates, setSavingDates] = useState(false);
+
     const isLineUser = user.uid.startsWith('line:');
     const lineId = isLineUser ? user.uid.split(':')[1] : '';
+
+    const handleSaveDates = async () => {
+        setSavingDates(true);
+        try {
+            console.log('💾 Saving membership dates...', { startedAt, expiresAt });
+            await AdminService.updateMembershipDates(
+                user.uid, 
+                startedAt ? new Date(startedAt) : null, 
+                expiresAt ? new Date(expiresAt) : null
+            );
+            alert('✅ อัปเดตอายุสมาชิกสำเร็จ (Admin v2.1)');
+        } catch (e: any) {
+            alert('❌ ผิดพลาด: ' + e.message);
+        } finally {
+            setSavingDates(false);
+        }
+    };
 
     const handleUpdateName = async () => {
         try {
@@ -65,7 +95,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4 shrink-0">
                     <div>
-                        <h3 className="text-lg font-bold text-gray-900">จัดการข้อมูลสมาชิก</h3>
+                        <h3 className="text-lg font-bold text-gray-900">จัดการข้อมูล (YouOke Admin v2.1)</h3>
                         <p className="text-xs text-gray-500">สมัครผ่านช่องทาง: <span className={cn("font-bold", isLineUser ? "text-green-600" : "text-blue-600")}>{isLineUser ? 'LINE Official Account' : 'Google / Email'}</span></p>
                     </div>
                     <button onClick={onClose} className="rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-900">
@@ -154,46 +184,37 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                         {/* Status Info */}
                         <div className="space-y-4">
                             <label className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                                <StarIcon className="w-4 h-4 text-yellow-500" /> จัดการอายุสมาชิก (Manual)
+                                <StarIcon className="w-4 h-4 text-yellow-500" /> จัดการสิทธิ์สมาชิก (Admin v2.1)
                             </label>
-                            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 text-sm">
-                                <div className="space-y-3">
-                                    <div className="flex flex-col gap-1">
-                                        <label className="text-[10px] uppercase font-black text-yellow-800">วันเริ่มสิทธิ์ (Started At)</label>
+                            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 text-sm shadow-inner">
+                                <div className="space-y-4">
+                                    <div className="flex flex-col gap-1.5">
+                                        <label className="text-[10px] uppercase font-black text-yellow-800 tracking-wider">วันเริ่มพรีเมียม (Started At)</label>
                                         <input 
                                             type="date" 
-                                            className="input input-xs input-bordered w-full h-8"
-                                            defaultValue={user.membership?.startedAt ? (user.membership.startedAt.toDate ? user.membership.startedAt.toDate().toISOString().split('T')[0] : new Date(user.membership.startedAt).toISOString().split('T')[0]) : ''}
-                                            id="membership_started_at"
+                                            className="input input-sm input-bordered w-full h-10 font-bold text-gray-700 bg-white/80 focus:ring-primary"
+                                            value={startedAt}
+                                            onChange={(e) => setStartedAt(e.target.value)}
                                         />
                                     </div>
-                                    <div className="flex flex-col gap-1">
-                                        <label className="text-[10px] uppercase font-black text-yellow-800">วันหมดสิทธิ์ (Expires At)</label>
+                                    <div className="flex flex-col gap-1.5">
+                                        <label className="text-[10px] uppercase font-black text-yellow-800 tracking-wider">วันสิ้นสุดพรีเมียม (Expires At)</label>
                                         <input 
                                             type="date" 
-                                            className="input input-xs input-bordered w-full h-8"
-                                            defaultValue={user.membership?.expiresAt ? (user.membership.expiresAt.toDate ? user.membership.expiresAt.toDate().toISOString().split('T')[0] : new Date(user.membership.expiresAt).toISOString().split('T')[0]) : ''}
-                                            id="membership_expires_at"
+                                            className="input input-sm input-bordered w-full h-10 font-bold text-gray-700 bg-white/80 focus:ring-primary"
+                                            value={expiresAt}
+                                            onChange={(e) => setExpiresAt(e.target.value)}
                                         />
                                     </div>
                                     <button 
-                                        onClick={async () => {
-                                            const startVal = (document.getElementById('membership_started_at') as HTMLInputElement).value;
-                                            const expireVal = (document.getElementById('membership_expires_at') as HTMLInputElement).value;
-                                            try {
-                                                await AdminService.updateMembershipDates(
-                                                    user.uid, 
-                                                    startVal ? new Date(startVal) : null, 
-                                                    expireVal ? new Date(expireVal) : null
-                                                );
-                                                alert('✅ อัปเดตอายุสมาชิกสำเร็จ!');
-                                            } catch (e: any) {
-                                                alert('❌ ผิดพลาด: ' + e.message);
-                                            }
-                                        }}
-                                        className="btn btn-xs btn-warning w-full text-white font-bold"
+                                        onClick={handleSaveDates}
+                                        disabled={savingDates}
+                                        className={cn(
+                                            "btn btn-sm w-full font-black tracking-tighter shadow-md border-none",
+                                            savingDates ? "bg-gray-300" : "bg-gradient-to-r from-yellow-500 to-orange-500 text-white hover:scale-[1.02] active:scale-95 transition-all"
+                                        )}
                                     >
-                                        บันทึกการจัดการวันที่
+                                        {savingDates ? 'กำลังบันทึก...' : 'บันทึกวันหมดอายุ'}
                                     </button>
                                 </div>
                             </div>

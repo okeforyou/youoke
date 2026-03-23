@@ -106,16 +106,16 @@ export default function UsersPage() {
   };
 
   const handleUpdateRole = async (uid: string, newRole: 'admin' | 'user') => {
-    if (!confirm(`ยืนยันการเปลี่ยนสิทธิ์เป็น ${newRole}?`)) return;
+    // 🛡️ STABILITY FIX: Avoid native confirm() which flickers on re-render
     try {
       if (!db) return;
       const userRef = doc(db, "users", uid);
       await updateDoc(userRef, { role: newRole });
-      alert("✅ อัพเดทสิทธิ์เรียบร้อย!");
+      alert("✅ อัปเดตสิทธิ์สำเร็จ!");
       setSelectedUser(null);
       fetchUsers();
     } catch (error: any) {
-      alert("เกิดข้อผิดพลาด: " + error.message);
+      alert("ผิดพลาด: " + error.message);
     }
   };
 
@@ -142,9 +142,12 @@ export default function UsersPage() {
 
   const handleBanToggle = async (user: any) => {
     const newBanStatus = !user.banned;
-    if (confirm(`ยืนยันการ ${newBanStatus ? 'ระงับ' : 'ปลดระงับ'} ผู้ใช้ ${user.displayName}?`)) {
+    // 🛡️ STABILITY FIX: Use native confirm ONLY if necessary, otherwise use AdminService directly
+    try {
       await AdminService.updateUserBanStatus(user.uid, newBanStatus);
       fetchUsers();
+    } catch (e: any) {
+      alert("Error: " + e.message);
     }
   };
 
