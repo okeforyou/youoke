@@ -456,8 +456,40 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     if (!auth) throw new Error("Firebase Auth not initialized");
                     
                     console.log('⚡ GoogleSignIn: Starting Redirect Flow');
-                    // Use Redirect instead of Popup for sensitive scopes (YouTube)
-                    await signInWithRedirect(auth, provider);
+                    const result = await signInWithPopup(auth, provider);
+                    console.log('⚡ GoogleSignIn: Popup Success', result.user.uid);
+
+                    // 🚀 YouTube Shell: Persist Token immediately
+                    if (db) {
+                        const credential = GoogleAuthProvider.credentialFromResult(result);
+                        const accessToken = credential?.accessToken;
+                        const firebaseUser = result.user;
+                        
+                        if (accessToken) {
+                            const googleProfile = firebaseUser.providerData.find(p => p.providerId === 'google.com');
+                            const userRef = doc(db, 'users', firebaseUser.uid);
+                            await updateDoc(userRef, {
+                                isYouTubeConnected: true,
+                                youtubeEmail: googleProfile?.email || null,
+                                googleAccessToken: accessToken,
+                                updatedAt: serverTimestamp()
+                            });
+                            console.log('⚡ [Auth] Google Token Persisted from Popup.');
+
+                            // 🔄 Instant Update Local State
+                            const currentUser = get().user;
+                            if (currentUser) {
+                                set({
+                                    user: {
+                                        ...currentUser,
+                                        isYouTubeConnected: true,
+                                        youtubeEmail: googleProfile?.email || null,
+                                        googleAccessToken: accessToken
+                                    }
+                                });
+                            }
+                        }
+                    }
                 } catch (error: any) {
                     console.error('⚡ GoogleSignIn: Error', error);
                     set({ error: error.message, isLoading: false });
@@ -473,8 +505,37 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     provider.addScope('https://www.googleapis.com/auth/youtube.readonly');
                     if (!auth || !auth.currentUser) throw new Error("User must be logged in to link accounts");
 
-                    console.log('⚡ LinkGoogleAccount: Starting Redirect Flow');
-                    await linkWithRedirect(auth.currentUser, provider);
+                    console.log('⚡ LinkGoogleAccount: Starting Popup Flow');
+                    const result = await linkWithPopup(auth.currentUser, provider);
+                    
+                    // 🚀 YouTube Shell: Persist Token immediately
+                    if (db) {
+                        const credential = GoogleAuthProvider.credentialFromResult(result);
+                        const accessToken = credential?.accessToken;
+                        if (accessToken) {
+                            const userRef = doc(db, 'users', auth.currentUser.uid);
+                            await updateDoc(userRef, {
+                                isYouTubeConnected: true,
+                                youtubeEmail: result.user.email || null,
+                                googleAccessToken: accessToken,
+                                updatedAt: serverTimestamp()
+                            });
+                            console.log('⚡ [Auth] Google Token Linked & Persisted.');
+
+                            // 🔄 Instant Update Local State
+                            const currentUser = get().user;
+                            if (currentUser) {
+                                set({
+                                    user: {
+                                        ...currentUser,
+                                        isYouTubeConnected: true,
+                                        youtubeEmail: result.user.email || null,
+                                        googleAccessToken: accessToken
+                                    }
+                                });
+                            }
+                        }
+                    }
                 } catch (error: any) {
                     console.error('⚡ LinkGoogleAccount: Error', error);
                     set({ error: error.message, isLoading: false });
