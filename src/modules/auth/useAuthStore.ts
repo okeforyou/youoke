@@ -8,8 +8,11 @@ import {
     createUserWithEmailAndPassword,
     GoogleAuthProvider,
     signInWithPopup,
+    signInWithRedirect,
+    getRedirectResult,
     updateProfile,
-    linkWithPopup
+    linkWithPopup,
+    linkWithRedirect
 } from 'firebase/auth';
 import { getApps } from 'firebase/app';
 import { doc, setDoc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
@@ -105,6 +108,46 @@ export const useAuthStore = create<UserState & AuthActions>()(
                         set({ isLoading: false });
                     }
                 }, 15000);
+
+                console.log('🔐 Auth Store: Initializing...');
+
+                // 🚀 YouTube Shell: Handle Redirect Result (Non-blocking)
+                getRedirectResult(auth).then(async (result) => {
+                    if (result && db) {
+                        const credential = GoogleAuthProvider.credentialFromResult(result);
+                        const accessToken = credential?.accessToken;
+                        const firebaseUser = result.user;
+                        console.log('⚡ [Auth] Redirect Result Found:', firebaseUser.uid);
+                        
+                        if (accessToken) {
+                            const googleProfile = firebaseUser.providerData.find(p => p.providerId === 'google.com');
+                            const userRef = doc(db, 'users', firebaseUser.uid);
+                            const updates: any = {
+                                isYouTubeConnected: true,
+                                youtubeEmail: googleProfile?.email || null,
+                                googleAccessToken: accessToken,
+                                updatedAt: serverTimestamp()
+                            };
+
+                            const userSnap = await getDoc(userRef);
+                            if (userSnap.exists()) {
+                                const currentMembership = userSnap.data()?.membership;
+                                if (!currentMembership || currentMembership.status !== 'active') {
+                                    updates.membership = {
+                                        type: 'day_pass',
+                                        status: 'active',
+                                        startedAt: serverTimestamp(),
+                                        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+                                    };
+                                }
+                                await updateDoc(userRef, updates);
+                                console.log('⚡ [Auth] Token persisted to Firestore.');
+                            }
+                        }
+                    }
+                }).catch(error => {
+                    console.error('⚡ [Auth] Redirect Error:', error);
+                });
 
                 console.log('🔐 Auth Store: Registering onIdTokenChanged listener...');
                 const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
@@ -272,7 +315,8 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                         installed_modules: userData.installed_modules || [],
                                         quota: userData.quota || undefined,
                                         isYouTubeConnected: userData.isYouTubeConnected || firebaseUser.providerData.some(p => p.providerId === 'google.com'),
-                                        youtubeEmail: userData.youtubeEmail || (firebaseUser.providerData.find(p => p.providerId === 'google.com')?.email) || null
+                                        youtubeEmail: userData.youtubeEmail || (firebaseUser.providerData.find(p => p.providerId === 'google.com')?.email) || null,
+                                        googleAccessToken: userData.googleAccessToken || null
                                     },
                                     isLoading: false
                                 });
@@ -411,38 +455,9 @@ export const useAuthStore = create<UserState & AuthActions>()(
 
                     if (!auth) throw new Error("Firebase Auth not initialized");
                     
-                    console.time('GooglePopup');
-                    // 1. OPEN POPUP IMMEDIATELY
-                    const userCredential = await signInWithPopup(auth, provider);
-                    console.timeEnd('GooglePopup');
-
-                    const credential = GoogleAuthProvider.credentialFromResult(userCredential);
-                    const accessToken = credential?.accessToken || null;
-
-                    // 2. NOW we can set the loading state and process the user
-                    set({ isLoading: true, error: null });
-
-                    const firebaseUser = userCredential.user;
-                    console.log('⚡ GoogleSignIn: Auth Success', firebaseUser.uid);
-
-                    // Optimistic Update
-                    set({
-                        user: {
-                            uid: firebaseUser.uid,
-                            email: firebaseUser.email,
-                            displayName: firebaseUser.displayName,
-                            photoURL: firebaseUser.photoURL,
-                            role: 'user',
-                            isAdmin: false,
-                            membership: DEFAULT_MEMBERSHIP,
-                            installed_modules: [],
-                            quota: undefined,
-                            isYouTubeConnected: true,
-                            youtubeEmail: firebaseUser.email,
-                            googleAccessToken: accessToken
-                        },
-                        isLoading: false
-                    });
+                    console.log('⚡ GoogleSignIn: Starting Redirect Flow');
+                    // Use Redirect instead of Popup for sensitive scopes (YouTube)
+                    await signInWithRedirect(auth, provider);
                 } catch (error: any) {
                     console.error('⚡ GoogleSignIn: Error', error);
                     set({ error: error.message, isLoading: false });
@@ -458,41 +473,8 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     provider.addScope('https://www.googleapis.com/auth/youtube.readonly');
                     if (!auth || !auth.currentUser) throw new Error("User must be logged in to link accounts");
 
-                    const result = await linkWithPopup(auth.currentUser, provider);
-                    const firebaseUser = result.user;
-                    console.log('⚡ LinkGoogleAccount: Success', firebaseUser.uid);
-
-                    const credential = GoogleAuthProvider.credentialFromResult(result);
-                    const accessToken = credential?.accessToken || null;
-
-                    // Update Firestore to mark YouTube as connected
-                    if (db) {
-                        const userRef = doc(db, 'users', firebaseUser.uid);
-                        const googleProfile = firebaseUser.providerData.find(p => p.providerId === 'google.com');
-                        
-                        const updates: any = {
-                            isYouTubeConnected: true,
-                            youtubeEmail: googleProfile?.email || null,
-                            googleAccessToken: accessToken, // Store in Firestore too (Optional, but useful for offline)
-                            updatedAt: serverTimestamp()
-                        };
-
-                        // Special Bonus: Grant 1-day day pass if they don't have an active one
-                        const userSnap = await getDoc(userRef);
-                        const currentMembership = userSnap.data()?.membership;
-                        if (!currentMembership || currentMembership.status !== 'active') {
-                            updates.membership = {
-                                type: 'day_pass',
-                                status: 'active',
-                                startedAt: serverTimestamp(),
-                                expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
-                            };
-                        }
-
-                        await updateDoc(userRef, updates);
-                    }
-
-                    set({ isLoading: false });
+                    console.log('⚡ LinkGoogleAccount: Starting Redirect Flow');
+                    await linkWithRedirect(auth.currentUser, provider);
                 } catch (error: any) {
                     console.error('⚡ LinkGoogleAccount: Error', error);
                     set({ error: error.message, isLoading: false });
