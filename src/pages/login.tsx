@@ -129,12 +129,16 @@ export default function LoginPage() {
     };
 
     const handleGoogleLogin = () => {
+        if (isLoading || isSubmitting) return;
+
         // 🚀 SYNCHRONOUS FIX FOR SAFARI POP-UP:
         setIsSubmitting(true);
+        console.log('⚡ [Login] Initiating Google Redirect Flow...');
         
         const action = user ? linkGoogleAccount() : signInWithGoogle();
 
         action.catch((err: any) => {
+            console.error('⚡ [Login] Google Flow Error:', err);
             setIsSubmitting(false);
             setLocalError(err.message || 'การเชื่อมต่อ Google ล้มเหลว');
         });
