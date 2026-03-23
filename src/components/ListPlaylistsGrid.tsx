@@ -511,7 +511,8 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
               <span>ของฉัน</span>
             </button>
 
-            {user?.isYouTubeConnected && (
+            {/* Hide YouTube personal accounts tab temporarily to keep Google login green/trusted */}
+            {/* {user?.isYouTubeConnected && (
               <button
                 onClick={() => setActiveIndex(2)}
                 className={clsx(
@@ -524,7 +525,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
                 </div>
                 <span className="truncate">บัญชี YouTube</span>
               </button>
-            )}
+            )} */}
           </div>
         ) : (
           /* Guest Mode: Single Static Pill */
