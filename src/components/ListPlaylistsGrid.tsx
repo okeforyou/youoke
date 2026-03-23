@@ -481,11 +481,11 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
         {/* Tabs - Animated Switch */}
         {user?.uid ? (
           <div className="relative flex items-center bg-gray-100 rounded-2xl p-1 h-12 w-full max-w-[400px]">
-            {/* Sliding Active Background - Updated for 3 Tabs */}
+            {/* Sliding Active Background - Updated for 2 Tabs */}
             <div
-              className="absolute top-1.5 bottom-1.5 w-[calc(33.33%-4px)] bg-white rounded-xl shadow-sm transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+              className="absolute top-1.5 bottom-1.5 w-[calc(50%-4px)] bg-white rounded-xl shadow-sm transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
               style={{
-                left: `calc(${activeIndex * 33.33}% + ${activeIndex === 0 ? '4px' : activeIndex === 1 ? '2px' : '0px'})`
+                left: `calc(${activeIndex * 50}% + ${activeIndex === 0 ? '4px' : '0px'})`
               }}
             />
 
@@ -510,22 +510,6 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
               <RectangleStackIcon className="w-4 h-4" />
               <span>ของฉัน</span>
             </button>
-
-            {/* Hide YouTube personal accounts tab temporarily to keep Google login green/trusted */}
-            {/* {user?.isYouTubeConnected && (
-              <button
-                onClick={() => setActiveIndex(2)}
-                className={clsx(
-                  "relative flex-1 flex items-center justify-center gap-1.5 h-full rounded-xl text-[11px] sm:text-[12px] font-bold transition-colors z-10",
-                  activeIndex === 2 ? "text-gray-900" : "text-gray-400 hover:text-gray-600"
-                )}
-              >
-                <div className="w-3.5 h-3.5 rounded-full bg-red-600 flex items-center justify-center shrink-0">
-                   <div className="w-1.5 h-1.5 bg-white rounded-full" />
-                </div>
-                <span className="truncate">บัญชี YouTube</span>
-              </button>
-            )} */}
           </div>
         ) : (
           /* Guest Mode: Single Static Pill */
