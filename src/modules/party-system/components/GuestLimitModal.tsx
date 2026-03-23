@@ -1,162 +1,140 @@
-import { useRouter } from "next/router";
-import { XMarkIcon, SparklesIcon, LockClosedIcon } from "@heroicons/react/24/solid";
-import { useAuthStore } from "@/modules/auth/useAuthStore";
+import React from 'react';
+import { useRouter } from 'next/router';
+import { useAuthStore } from '@/modules/auth/useAuthStore';
+import { useUIStore } from '@/stores/useUIStore';
+import { XMarkIcon, Crown, PartyPopper } from '@heroicons/react/24/solid';
 
 interface GuestLimitModalProps {
   isOpen: boolean;
   onClose: () => void;
-  playedCount: number;
   guestLimit: number;
 }
 
 export default function GuestLimitModal({
   isOpen,
   onClose,
-  playedCount,
   guestLimit,
 }: GuestLimitModalProps) {
-  const router = useRouter();
-  const { user } = useAuthStore();
-  const isLoggedIn = !!user;
-  const isExpired = user?.membership?.status === 'expired';
+    const router = useRouter();
+    const { user } = useAuthStore();
 
-  if (!isOpen) return null;
+    if (!isOpen) return null;
 
-  function handleRegister() {
-    // If guest, go to login (which will trigger 1-day trial via Google)
-    // If already logged in but expired, go to pricing
-    if (!isLoggedIn) {
-      router.push("/login");
-    } else {
-      router.push("/pricing");
-    }
-  }
+    const isLoggedIn = !!user;
+    const isExpired = user?.membership?.status === 'expired';
 
-  function handleLogin() {
-    router.push("/login");
-  }
+    const handleAction = () => {
+        onClose();
+        if (!isLoggedIn) {
+            router.push('/login?action=link');
+        } else {
+            router.push('/pricing');
+        }
+    };
 
-  return (
-    <>
-      {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[9999] animate-fade-in" />
+    const title = isLoggedIn && isExpired 
+        ? "สิทธิสมาชิกหมดอายุแล้ว!" 
+        : "หมดโควต้าฟังเพลงวันนี้แล้ว";
 
-      {/* Modal */}
-      <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
-        <div className="bg-base-100 rounded-3xl shadow-2xl max-w-md w-full p-8 border border-white/10 animate-scale-in relative overflow-hidden">
-          {/* Decorative background element */}
-          <div className="absolute -top-24 -right-24 w-48 h-48 bg-primary/20 blur-3xl rounded-full" />
-          
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 btn btn-ghost btn-sm btn-circle text-base-content/50 hover:text-base-content"
-          >
-            <XMarkIcon className="w-5 h-5" />
-          </button>
+    const buttonText = !isLoggedIn 
+        ? "เชื่อมต่อบัญชี YouTube (Gmail)" 
+        : "อัปเกรดแผนการใช้งาน";
 
-          {/* Icon */}
-          <div className="flex justify-center mb-6">
-            <div className="w-20 h-20 bg-gradient-to-br from-primary to-secondary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20 rotate-3">
-              {isLoggedIn ? (
-                <SparklesIcon className="w-10 h-10 text-white" />
-              ) : (
-                <LockClosedIcon className="w-10 h-10 text-white" />
-              )}
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <div
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300"
+                onClick={onClose}
+            />
+
+            {/* Modal Content */}
+            <div className="relative bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 duration-300 overflow-hidden border border-white/20">
+
+                {/* Decorative Background Glows */}
+                <div className="absolute top-0 right-0 -mt-20 -mr-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+
+                <div className="relative z-10 text-center">
+                    {/* Icon Header */}
+                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-50 mb-6 shrink-0 ring-4 ring-red-50">
+                        <div className="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center">
+                            <span className="text-3xl">😢</span>
+                        </div>
+                    </div>
+
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                        {title}
+                    </h2>
+
+                    <div className="text-gray-500 mb-8 px-4 leading-relaxed text-sm">
+                        {!isLoggedIn ? (
+                            <>
+                                กรุณาใช้บัญชี <span className="text-primary font-bold">YouTube (Gmail)</span> ของคุณ
+                                <br />
+                                เพื่อรับสิทธิการเข้าถึงแบบส่วนบุคคลผ่าน YouOke
+                                <br />
+                                <span className="text-secondary font-semibold">
+                                  และเล่นผ่านบัญชีของคุณแบบไร้โฆษณาคั่น 🔐✨
+                                </span>
+                            </>
+                        ) : (
+                            <>
+                                สิทธิการใช้งานแบบพรีเมียมส่วนบุคคลของคุณสิ้นสุดแล้ว
+                                <br />
+                                กรุณาเลือกแพ็กเกจที่คุณต้องการ
+                                <br />
+                                <span className="text-primary font-semibold">เพื่อขยายเวลาความสุขกับ YouOke 🎵⏳</span>
+                            </>
+                        )}
+                    </div>
+
+                    {/* Premium Offer Box (Shell Strategy) */}
+                    <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-5 mb-8 text-left relative overflow-hidden group border border-gray-700 shadow-xl">
+                        <div className="absolute top-0 right-0 p-2 opacity-10">
+                            <Crown className="w-24 h-24 rotate-12 -mt-4 -mr-4 opacity-20 text-white" />
+                        </div>
+
+                        <div className="relative z-10">
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-yellow-400 text-yellow-900 uppercase tracking-wider">
+                                   YouTube Shell Access
+                                </span>
+                                <span className="text-xs text-yellow-400 font-medium flex items-center gap-1 leading-none">
+                                    ✨ เชื่อมบัญชีรับสิทธิเพิ่ม
+                                </span>
+                            </div>
+
+                            <h3 className="text-lg font-bold text-white mb-1">
+                                {!isLoggedIn ? "รับสิทธิทดลองพรีเมียมส่วนตัว!" : "อัปเกรดเพื่อความสนุกไม่จำกัด"}
+                            </h3>
+                            <p className="text-xs text-gray-400 mb-0">
+                                {!isLoggedIn 
+                                    ? "เพียงเชื่อมต่อ Google เพื่อเข้าถึงการเล่นแบบไม่มีโฆษณาด้วยบัญชีของคุณเอง" 
+                                    : "เลือกแผนการใช้งานที่เหมาะกับคุณเพื่อร้องเพลงได้ไม่อั้น"}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex flex-col gap-3">
+                        <button
+                            onClick={handleAction}
+                            className="w-full py-4 rounded-xl bg-primary hover:bg-primary-dark active:scale-[0.98] transition-all text-white font-bold text-base shadow-lg shadow-primary/30 flex items-center justify-center gap-2"
+                        >
+                            {!isLoggedIn ? <PartyPopper className="w-5 h-5 text-white" /> : <Crown className="w-5 h-5 text-white" />}
+                            <span>{buttonText}</span>
+                        </button>
+
+                        <button
+                            onClick={onClose}
+                            className="w-full py-3 rounded-xl text-gray-400 hover:text-gray-600 font-medium text-sm transition-colors hover:bg-gray-50"
+                        >
+                            ไว้คราวหลัง
+                        </button>
+                    </div>
+                </div>
             </div>
-          </div>
-
-          {/* Title */}
-          <h2 className="text-2xl font-bold text-center mb-3">
-            {isLoggedIn && isExpired 
-              ? "สิทธิรักษาการพรีเมียมส่วนตัวหมดอายุแล้ว!" 
-              : `คุณฟังครบ ${guestLimit} เพลงแล้ว!`}
-          </h2>
-
-          {/* Description */}
-          <p className="text-center text-base-content/70 mb-8 leading-relaxed">
-            {!isLoggedIn ? (
-              <>
-                กรุณาใช้บัญชี <span className="text-primary font-bold">YouTube (Gmail)</span> ของคุณ
-                <br />
-                เพื่อรับสิทธิการเข้าถึงแบบส่วนบุคคลผ่าน YouOke
-                <br />
-                <span className="text-secondary font-semibold">
-                  และเริ่มต้นการเล่นผ่านบัญชีของคุณแบบไร้โฆษณาคั่น 🔐✨
-                </span>
-              </>
-            ) : (
-              <>
-                สิทธิการใช้งานแบบพรีเมียมส่วนบุคคลของคุณสิ้นสุดแล้ว
-                <br />
-                กรุณาเลือกแพ็กเกจที่คุณต้องการ
-                <br />
-                <span className="text-primary font-semibold">เพื่อขยับขยายเวลาความสุขกับ YouOke 🎵⏳</span>
-              </>
-            )}
-          </p>
-
-          {/* Features Highlights */}
-          <div className="bg-base-200/50 backdrop-blur-sm rounded-2xl p-6 mb-8 border border-white/5">
-            <h3 className="font-bold mb-4 text-xs uppercase tracking-wider text-base-content/40">
-              สิทธิที่จะได้รับเมื่อเชื่อมต่อ:
-            </h3>
-            <ul className="grid grid-cols-1 gap-3 text-sm">
-              <li className="flex items-center gap-3">
-                <div className="flex-none w-5 h-5 rounded-full bg-success/20 flex items-center justify-center">
-                  <div className="w-1.5 h-1.5 bg-success rounded-full" />
-                </div>
-                <span className="font-medium">เล่นวิดีโอผ่านบัญชีของคุณเอง (ไร้โฆษณา)</span>
-              </li>
-              <li className="flex items-center gap-3">
-                <div className="flex-none w-5 h-5 rounded-full bg-success/20 flex items-center justify-center">
-                  <div className="w-1.5 h-1.5 bg-success rounded-full" />
-                </div>
-                <span className="font-medium">เชื่อมต่อสิทธิ Playlist โดยตรงจากบัญชี YouTube</span>
-              </li>
-              <li className="flex items-center gap-3">
-                <div className="flex-none w-5 h-5 rounded-full bg-success/20 flex items-center justify-center">
-                  <div className="w-1.5 h-1.5 bg-success rounded-full" />
-                </div>
-                <span className="font-medium">ระบบแคสต์ (Cast) ขึ้นจอภาพภายนอก</span>
-              </li>
-            </ul>
-          </div>
-
-          {/* Actions */}
-          <div className="space-y-3">
-            <button
-              onClick={handleRegister}
-              className="btn btn-primary btn-block btn-lg gap-2 shadow-xl shadow-primary/20"
-            >
-              {!isLoggedIn ? (
-                <>
-                  <SparklesIcon className="w-5 h-5" />
-                  เชื่อมต่อบัญชี YouTube (Gmail)
-                </>
-              ) : (
-                <>
-                  <SparklesIcon className="w-5 h-5" />
-                  เลือกแพ็กเกจพรีเมียม
-                </>
-              )}
-            </button>
-            <button
-              onClick={onClose}
-              className="btn btn-ghost btn-block text-base-content/50"
-            >
-              กลับไปหน้าสำรวจ (แบบจำกัด)
-            </button>
-          </div>
-
-          {/* Footer */}
-          {!isLoggedIn && (
-            <p className="text-center text-xs text-base-content/40 mt-6 italic">
-              * บัญชี YouTube ของคุณจะถูกใช้เพื่อยืนยันสิทธิการเล่นวิดีโอเท่านั้น
-            </p>
-          )}
         </div>
-      </div>
-    </>
-  );
+    );
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, Lock, Crown, Sparkles, Youtube } from 'lucide-react';
+import { X, CheckCircle, Crown, PartyPopper, Sparkles } from 'lucide-react';
 import { useUIStore } from '../../../stores/useUIStore';
 import { useSystemConfig } from '../../../hooks/useSystemConfig';
 import { useAuthStore } from '@/modules/auth/useAuthStore';
@@ -29,7 +29,7 @@ export const LimitReachedModal = () => {
                 if (planSnap.exists()) {
                     setMaxSongs(planSnap.data().maxDailySongs || 0);
                 } else {
-                    const limits = config?.membership?.[userRole];
+                    const limits = config?.membership?.[userRole as keyof typeof config.membership];
                     setMaxSongs(limits?.max_daily_songs || 0);
                 }
             } catch (err) {
@@ -44,12 +44,12 @@ export const LimitReachedModal = () => {
 
     // UI Texts based on strategy
     const title = isLoggedIn && isExpired 
-        ? "สิทธิสมาชิกพรีเมียมส่วนตัวหมดอายุแล้ว!" 
-        : "คุณฟังครบโควตาฟรีแล้ว!";
+        ? "สิทธิสมาชิกหมดอายุแล้ว!" 
+        : "หมดโควต้าฟังเพลงวันนี้แล้ว";
 
     const buttonText = !isLoggedIn 
         ? "เชื่อมต่อบัญชี YouTube (Gmail)" 
-        : "เลือกแพ็กเกจพรีเมียม";
+        : "อัปเกรดแผนการใช้งาน";
 
     const onClose = () => setLimitModalOpen(false);
 
@@ -65,43 +65,41 @@ export const LimitReachedModal = () => {
     if (!isLimitModalOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-black/80 backdrop-blur-md animate-in fade-in duration-500"
+                className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300"
                 onClick={onClose}
             />
 
             {/* Modal Content */}
-            <div className="relative bg-base-100 rounded-[2.5rem] w-full max-w-md p-10 shadow-3xl animate-in zoom-in-95 duration-500 overflow-hidden border border-white/10">
+            <div className="relative bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 duration-300 overflow-hidden border border-white/20">
 
-                {/* Decorative Elements */}
-                <div className="absolute top-0 right-0 -mt-24 -mr-24 w-64 h-64 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
-                <div className="absolute bottom-0 left-0 -mb-24 -ml-24 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+                {/* Decorative Background Glows */}
+                <div className="absolute top-0 right-0 -mt-20 -mr-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
 
                 <div className="relative z-10 text-center">
-                    {/* Icon Header (Premium Shield) */}
-                    <div className="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-gradient-to-br from-primary to-secondary mb-8 shadow-2xl shadow-primary/30 transform -rotate-3">
-                        {!isLoggedIn ? (
-                            <Lock className="w-12 h-12 text-white" strokeWidth={2.5} />
-                        ) : (
-                            <Crown className="w-12 h-12 text-white" strokeWidth={2.5} />
-                        )}
+                    {/* Icon Header */}
+                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-50 mb-6 shrink-0 ring-4 ring-red-50">
+                        <div className="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center">
+                            <span className="text-3xl">😢</span>
+                        </div>
                     </div>
 
-                    <h2 className="text-3xl font-black text-white mb-4 tracking-tight leading-tight">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
                         {title}
                     </h2>
 
-                    <p className="text-white/60 mb-10 px-2 leading-relaxed font-medium">
+                    <div className="text-gray-500 mb-8 px-4 leading-relaxed text-sm">
                         {!isLoggedIn ? (
                             <>
                                 กรุณาใช้บัญชี <span className="text-primary font-bold">YouTube (Gmail)</span> ของคุณ
                                 <br />
                                 เพื่อรับสิทธิการเข้าถึงแบบส่วนบุคคลผ่าน YouOke
                                 <br />
-                                <span className="text-white font-bold opacity-90 underline decoration-primary/50 underline-offset-4 decoration-2">
-                                  และเริ่มต้นการเล่นแบบไร้โฆษณาคั่น 🛡️✨
+                                <span className="text-secondary font-semibold">
+                                  และเล่นผ่านบัญชีของคุณแบบไร้โฆษณาคั่น 🔐✨
                                 </span>
                             </>
                         ) : (
@@ -110,44 +108,53 @@ export const LimitReachedModal = () => {
                                 <br />
                                 กรุณาเลือกแพ็กเกจที่คุณต้องการ
                                 <br />
-                                <span className="text-primary font-bold">เพื่อขยับขยายเวลาความสุขกับ YouOke 🎵⏳</span>
+                                <span className="text-primary font-semibold">เพื่อขยายเวลาความสุขกับ YouOke 🎵⏳</span>
                             </>
                         )}
-                    </p>
+                    </div>
 
-                    {/* Features (Shell Strategy) */}
-                    {!isLoggedIn && (
-                        <div className="grid grid-cols-1 gap-4 mb-10 text-left bg-white/5 rounded-2xl p-6 border border-white/5">
-                            <div className="flex items-center gap-3">
-                                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
-                                    <Sparkles className="w-3 h-3 text-primary" />
-                                </div>
-                                <span className="text-xs font-bold text-white/80">เล่นผ่านบัญชีของคุณเอง (Ad-Free)</span>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
-                                    <Youtube className="w-3 h-3 text-primary" />
-                                </div>
-                                <span className="text-xs font-bold text-white/80">ดึงสิทธิ Playlist โดยตรงจากบัญชีคุณ</span>
-                            </div>
+                    {/* Premium Offer Box (Shell Strategy) */}
+                    <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-5 mb-8 text-left relative overflow-hidden group border border-gray-700 shadow-xl">
+                        <div className="absolute top-0 right-0 p-2 opacity-10">
+                            <Crown className="w-24 h-24 rotate-12 -mt-4 -mr-4" />
                         </div>
-                    )}
+
+                        <div className="relative z-10">
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-yellow-400 text-yellow-900 uppercase tracking-wider">
+                                   YouTube Shell Access
+                                </span>
+                                <span className="text-xs text-yellow-400 font-medium flex items-center gap-1 leading-none">
+                                    <SparkleIcon /> เชื่อมบัญชีรับสิทธิเพิ่ม
+                                </span>
+                            </div>
+
+                            <h3 className="text-lg font-bold text-white mb-1">
+                                {!isLoggedIn ? "รับสิทธิทดลองพรีเมียมส่วนตัว!" : "อัปเกรดเพื่อความสนุกไม่จำกัด"}
+                            </h3>
+                            <p className="text-xs text-gray-400 mb-0">
+                                {!isLoggedIn 
+                                    ? "เพียงเชื่อมต่อ Google เพื่อเข้าถึงการเล่นแบบไม่มีโฆษณาด้วยบัญชีของคุณเอง" 
+                                    : "เลือกแผนการใช้งานที่เหมาะกับคุณเพื่อร้องเพลงได้ไม่อั้น"}
+                            </p>
+                        </div>
+                    </div>
 
                     {/* Actions */}
-                    <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-3">
                         <button
                             onClick={onAction}
-                            className="w-full py-5 rounded-[1.25rem] bg-primary hover:brightness-110 active:scale-[0.97] transition-all text-white font-black text-lg shadow-2xl shadow-primary/20 flex items-center justify-center gap-3"
+                            className="w-full py-4 rounded-xl bg-primary hover:bg-primary-dark active:scale-[0.98] transition-all text-white font-bold text-base shadow-lg shadow-primary/30 flex items-center justify-center gap-2"
                         >
-                            <Sparkles className="w-6 h-6" />
+                            {!isLoggedIn ? <PartyPopper className="w-5 h-5" /> : <Crown className="w-5 h-5" />}
                             <span>{buttonText}</span>
                         </button>
 
                         <button
                             onClick={onClose}
-                            className="w-full py-2 text-white/30 hover:text-white/60 font-black text-xs uppercase tracking-widest transition-colors"
+                            className="w-full py-3 rounded-xl text-gray-400 hover:text-gray-600 font-medium text-sm transition-colors hover:bg-gray-50"
                         >
-                            กลับไปสำรวจก่อน
+                            ไว้คราวหลัง
                         </button>
                     </div>
                 </div>
