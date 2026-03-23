@@ -31,7 +31,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     }
   }, [user, loading, router]);
 
-  if (loading || !user) {
+  // 🛡️ STABILITY FIX: Only show full-screen loader on INITIAL load (where user is missing)
+  // Don't unmount the whole layout just because of a background 'loading' refresh
+  if (loading && !user) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
         <span className="loading loading-spinner loading-lg text-primary"></span>
