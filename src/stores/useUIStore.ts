@@ -53,7 +53,7 @@ interface UIState {
         message: string;
         confirmText?: string;
         cancelText?: string;
-        type?: 'danger' | 'warning' | 'info';
+        type?: 'danger' | 'warning' | 'info' | 'success';
         onConfirm: () => void;
     };
     showConfirm: (data: {
@@ -61,7 +61,7 @@ interface UIState {
         message: string;
         confirmText?: string;
         cancelText?: string;
-        type?: 'danger' | 'warning' | 'info';
+        type?: 'danger' | 'warning' | 'info' | 'success';
         onConfirm: () => void;
     }) => void;
     hideConfirm: () => void;

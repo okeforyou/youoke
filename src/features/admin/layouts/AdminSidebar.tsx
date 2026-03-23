@@ -18,6 +18,7 @@ import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from "../../../firebase";
 import { useAuth } from "@/context/AuthContext";
 import { cn } from "../../../utils/cn";
+import { useUIStore } from "@/stores/useUIStore";
 
 interface AdminSidebarProps {
   isOpen?: boolean;
@@ -38,7 +39,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) 
   const router = useRouter();
   const { user, logout } = useAuth();
   const [stats, setStats] = useState<{ users: number; pendingOrders: number }>({ users: 0, pendingOrders: 0 });
-  const [confirmLogout, setConfirmLogout] = useState(false);
+  const { showConfirm } = useUIStore();
 
   useEffect(() => {
     // Real-time listener for Users
@@ -175,31 +176,28 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) 
                   <span>CMS</span>
                 </Link>
 
-                {!confirmLogout ? (
-                  <button
-                    onClick={() => setConfirmLogout(true)}
-                    className="flex flex-col items-center justify-center gap-1 p-2 rounded-xl text-xs font-medium transition-colors border border-transparent bg-white text-gray-500 hover:bg-red-50 hover:text-red-600 hover:border-red-100"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    <span>ออกระบบ</span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={async () => {
-                      try {
-                        await logout();
-                      } catch (e) {
-                        console.error("Logout failed", e);
-                        setConfirmLogout(false);
+                <button
+                  onClick={() => {
+                    showConfirm({
+                      title: 'ออกจากระบบ',
+                      message: 'คุณต้องการออกจากระบบในฐานะผู้ดูแลใช่หรือไม่?',
+                      confirmText: 'ออกจากระบบ',
+                      cancelText: 'ยกเลิก',
+                      type: 'danger',
+                      onConfirm: async () => {
+                        try {
+                          await logout();
+                        } catch (e) {
+                          console.error("Logout failed", e);
+                        }
                       }
-                    }}
-                    onMouseLeave={() => setConfirmLogout(false)}
-                    className="flex flex-col items-center justify-center gap-1 p-2 rounded-xl text-[10px] font-black transition-all bg-red-600 text-white shadow-lg animate-pulse"
-                  >
-                    <Shield className="h-4 w-4" />
-                    <span>กดยืนยัน?</span>
-                  </button>
-                )}
+                    });
+                  }}
+                  className="flex flex-col items-center justify-center gap-1 p-2 rounded-xl text-xs font-medium transition-colors border border-transparent bg-white text-gray-500 hover:bg-red-50 hover:text-red-600 hover:border-red-100"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>ออกระบบ</span>
+                </button>
               </div>
             </div>
           </div>

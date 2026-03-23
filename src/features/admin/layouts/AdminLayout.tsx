@@ -4,6 +4,7 @@ import { useAuthStore } from '@/modules/auth/useAuthStore'; // Use the same stor
 import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from '../components/AdminHeader';
 import { cn } from '../../../utils/cn';
+import { GlobalConfirmModal } from '@/components/common/GlobalConfirmModal';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -80,6 +81,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </p>
         </footer>
       </div>
+      <GlobalConfirmModal />
     </div>
   );
 }

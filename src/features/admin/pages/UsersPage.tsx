@@ -20,6 +20,7 @@ import { collection, query, orderBy, getDocs, doc, updateDoc, deleteDoc, serverT
 import { db } from '../../../firebase';
 import { cn } from '../../../utils/cn';
 import { DatabaseHealth } from '../components/DatabaseHealth';
+import { useUIStore } from '@/stores/useUIStore';
 
 // Mock Modules Config (since we don't have the file physically yet or it's in config)
 const AVAILABLE_MODULES = [
@@ -34,6 +35,7 @@ export default function UsersPage() {
   const [showGuests, setShowGuests] = useState(true);
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
   const [packages, setPackages] = useState<any[]>([]);
+  const { showConfirm } = useUIStore();
 
   useEffect(() => {
     fetchUsers();
@@ -106,17 +108,32 @@ export default function UsersPage() {
   };
 
   const handleUpdateRole = async (uid: string, newRole: 'admin' | 'user') => {
-    // 🛡️ STABILITY FIX: Avoid native confirm() which flickers on re-render
-    try {
-      if (!db) return;
-      const userRef = doc(db, "users", uid);
-      await updateDoc(userRef, { role: newRole });
-      alert("✅ อัปเดตสิทธิ์สำเร็จ!");
-      setSelectedUser(null);
-      fetchUsers();
-    } catch (error: any) {
-      alert("ผิดพลาด: " + error.message);
-    }
+    showConfirm({
+      title: 'ปรับเปลี่ยนบทบาท?',
+      message: `คุณต้องการเปลี่ยนสิทธิ์ผู้ใช้รายนี้ให้เป็น ${newRole === 'admin' ? 'ผู้ดูแลระบบ (Admin)' : 'สมาชิกทั่วไป (User)'} ใช่หรือไม่?`,
+      confirmText: 'ยืนยันการเปลี่ยน',
+      cancelText: 'ยกเลิก',
+      type: 'warning',
+      onConfirm: async () => {
+        try {
+          if (!db) return;
+          const userRef = doc(db, "users", uid);
+          await updateDoc(userRef, { role: newRole });
+          showConfirm({
+            title: 'อัปเดตสำเร็จ!',
+            message: 'เปลี่ยนสิทธิ์การใช้งานเรียบร้อยแล้วครับ',
+            confirmText: 'รับทราบ',
+            type: 'success',
+            onConfirm: () => {
+              setSelectedUser(null);
+              fetchUsers();
+            }
+          });
+        } catch (error: any) {
+          alert("ผิดพลาด: " + error.message);
+        }
+      }
+    });
   };
 
   const handleToggleModule = async (moduleId: string) => {
@@ -142,13 +159,21 @@ export default function UsersPage() {
 
   const handleBanToggle = async (user: any) => {
     const newBanStatus = !user.banned;
-    // 🛡️ STABILITY FIX: Use native confirm ONLY if necessary, otherwise use AdminService directly
-    try {
-      await AdminService.updateUserBanStatus(user.uid, newBanStatus);
-      fetchUsers();
-    } catch (e: any) {
-      alert("Error: " + e.message);
-    }
+    showConfirm({
+      title: newBanStatus ? 'ระงับการใช้งาน?' : 'ปลดระงับการใช้งาน?',
+      message: `คุณต้องการ ${newBanStatus ? 'ระงับ' : 'ปลดระงับ'} สมาชิกรายนี้ใช่หรือไม่? ${newBanStatus ? 'เขาจะไม่สามารถเข้าใช้งานระบบได้' : 'เขามีสิทธิ์เข้าใช้งานได้ตามปกติ'}`,
+      confirmText: 'ตกลง',
+      cancelText: 'ยกเลิก',
+      type: newBanStatus ? 'danger' : 'warning',
+      onConfirm: async () => {
+        try {
+          await AdminService.updateUserBanStatus(user.uid, newBanStatus);
+          fetchUsers();
+        } catch (e: any) {
+          alert("Error: " + e.message);
+        }
+      }
+    });
   };
 
   // Filter Logic
