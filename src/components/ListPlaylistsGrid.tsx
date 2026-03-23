@@ -220,6 +220,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
   const getYoutubePlaylists = async () => {
     if (!user?.googleAccessToken) {
       console.warn("[YouTube Shell] 🚫 Missing Google Access Token. Re-login required.");
+      alert("❌ ไม่พบบัญชี YouTube ที่เชื่อมต่อ! กรุณาลองเข้าสู่ระบบด้วย Google ใหม่อีกครั้งครับ (และอย่าลืมกดยอมรับสิทธิ YouTube นะครับ)");
       return;
     }
     
@@ -238,6 +239,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
       if (!resp.ok) {
         const errorData = await resp.json().catch(() => ({}));
         console.error("[YouTube Shell] ❌ API Error Details:", errorData);
+        alert(`❌ YouTube API Error: ${resp.status}\n${JSON.stringify(errorData)}`);
         
         if (resp.status === 401) {
           console.error("🔒 Token might be expired or invalid scope.");
@@ -247,6 +249,10 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
       
       const data = await resp.json();
       console.log(`[YouTube Shell] ✅ Success! Found ${data.items?.length || 0} playlists.`);
+      
+      if (!data.items || data.items.length === 0) {
+        alert("ℹ️ พบ 0 เพลย์ลิสต์: บัญชี YouTube นี้อาจจะยังไม่มีเพลย์ลิสต์ที่บันทึกไว้ครับ");
+      }
       
       const mapped = (data.items || []).map((item: any) => ({
         id: item.id,
