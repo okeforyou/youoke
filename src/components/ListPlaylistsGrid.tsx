@@ -461,19 +461,19 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
       <div className="flex flex-col md:flex-row items-center justify-between gap-6 px-4 py-4 mb-6">
         {/* Tabs - Animated Switch */}
         {user?.uid ? (
-          <div className="relative flex items-center bg-gray-100 rounded-2xl p-1 h-12 w-[240px]">
-            {/* Sliding Active Background */}
+          <div className="relative flex items-center bg-gray-100 rounded-2xl p-1 h-12 w-full max-w-[400px]">
+            {/* Sliding Active Background - Updated for 3 Tabs */}
             <div
-              className={clsx(
-                "absolute top-1.5 bottom-1.5 w-[calc(50%-8px)] bg-white rounded-xl shadow-sm transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]",
-                activeIndex === 1 ? "left-[calc(50%+2px)]" : "left-1.5"
-              )}
+              className="absolute top-1.5 bottom-1.5 w-[calc(33.33%-4px)] bg-white rounded-xl shadow-sm transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+              style={{
+                left: `calc(${activeIndex * 33.33}% + ${activeIndex === 0 ? '4px' : activeIndex === 1 ? '2px' : '0px'})`
+              }}
             />
 
             <button
               onClick={() => setActiveIndex(0)}
               className={clsx(
-                "relative flex-1 flex items-center justify-center gap-2 h-full rounded-xl text-[13px] font-bold transition-colors z-10",
+                "relative flex-1 flex items-center justify-center gap-2 h-full rounded-xl text-[12px] sm:text-[13px] font-bold transition-colors z-10",
                 activeIndex === 0 ? "text-gray-900" : "text-gray-400 hover:text-gray-600"
               )}
             >
@@ -484,7 +484,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
             <button
               onClick={() => setActiveIndex(1)}
               className={clsx(
-                "relative flex-1 flex items-center justify-center gap-2 h-full rounded-xl text-[13px] font-bold transition-colors z-10",
+                "relative flex-1 flex items-center justify-center gap-2 h-full rounded-xl text-[12px] sm:text-[13px] font-bold transition-colors z-10",
                 activeIndex === 1 ? "text-gray-900" : "text-gray-400 hover:text-gray-600"
               )}
             >
@@ -496,14 +496,14 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
               <button
                 onClick={() => setActiveIndex(2)}
                 className={clsx(
-                  "relative flex-1 flex items-center justify-center gap-2 h-full rounded-xl text-[13px] font-bold transition-colors z-10",
+                  "relative flex-1 flex items-center justify-center gap-1.5 h-full rounded-xl text-[11px] sm:text-[12px] font-bold transition-colors z-10",
                   activeIndex === 2 ? "text-gray-900" : "text-gray-400 hover:text-gray-600"
                 )}
               >
-                <div className="w-4 h-4 rounded-full bg-red-600 flex items-center justify-center">
-                   <div className="w-2 h-2 bg-white rounded-full" />
+                <div className="w-3.5 h-3.5 rounded-full bg-red-600 flex items-center justify-center shrink-0">
+                   <div className="w-1.5 h-1.5 bg-white rounded-full" />
                 </div>
-                <span>บัญชี YouTube</span>
+                <span className="truncate">บัญชี YouTube</span>
               </button>
             )}
           </div>
