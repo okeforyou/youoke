@@ -1,186 +1,137 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { auth, db } from '../../firebase';
-import {
-    onIdTokenChanged,
-    signOut as firebaseSignOut,
-    signInWithEmailAndPassword,
-    createUserWithEmailAndPassword,
+import { 
+    getAuth, 
+    onIdTokenChanged, 
+    signInWithEmailAndPassword, 
+    signOut as firebaseSignOut, 
     GoogleAuthProvider,
-    signInWithPopup,
+    signInWithRedirect,
+    getRedirectResult,
     updateProfile,
-    linkWithPopup
+    linkWithRedirect,
+    setPersistence,
+    browserLocalPersistence
 } from 'firebase/auth';
 import { getApps } from 'firebase/app';
 import { doc, setDoc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { ref, update as rtdbUpdate, get as rtdbGet } from 'firebase/database';
 import nookies from 'nookies';
-import { ref, get as rtdbGet, update as rtdbUpdate } from 'firebase/database';
-import { realtimeDb } from '../../firebase';
-import { createNotification } from '@/services/notificationService';
 
-interface MembershipState {
-    type: 'free' | 'day_pass' | 'monthly' | 'yearly' | 'lifetime';
-    status: 'active' | 'expired' | 'pending';
-    startedAt: any;
-    expiresAt: any | null;
-}
+// Mock/Fallback structures
+const DEFAULT_MEMBERSHIP = { type: 'free', status: 'pending' };
 
-interface UserData {
-    uid: string | null;
+export interface UserData {
+    uid: string;
     email: string | null;
     displayName: string | null;
     photoURL: string | null;
-    role: 'admin' | 'user' | 'owner';
-    membership: MembershipState;
+    role: 'user' | 'admin';
     isAdmin: boolean;
-    // YouTube Shell Integration
+    membership: any;
+    installed_modules?: string[];
+    quota?: any;
     isYouTubeConnected?: boolean;
     youtubeEmail?: string | null;
     googleAccessToken?: string | null;
-    // Marketplace & Apps
     credits?: number;
-    installed_modules?: string[];
-    quota?: {
-        daily_limit: number;
-        used: number;
-        last_reset: string;
-    };
 }
 
-interface UserState {
+interface AuthState {
     user: UserData | null;
     isLoading: boolean;
-    error: string | null;
     isHydrated: boolean;
-}
-
-interface AuthActions {
-    initialize: () => () => void;
-    signIn: (email: string, pass: string) => Promise<void>;
-    signUp: (email: string, pass: string) => Promise<void>;
+    error: string | null;
+    initialize: () => void;
     signInWithGoogle: () => Promise<void>;
     linkGoogleAccount: () => Promise<void>;
-    signInWithLine: () => void;
     signInWithCustomToken: (token: string) => Promise<void>;
+    devLogin: () => void;
     signOut: () => Promise<void>;
     setHydrated: () => void;
-    setLoading: (loading: boolean) => void;
-    devLogin: () => void;
 }
 
-const DEFAULT_MEMBERSHIP: MembershipState = {
-    type: 'free',
-    status: 'active',
-    startedAt: null,
-    expiresAt: null
-};
-
-export const useAuthStore = create<UserState & AuthActions>()(
+export const useAuthStore = create<AuthState>()(
     persist(
         (set, get) => ({
             user: null,
             isLoading: true,
-            error: null,
             isHydrated: false,
+            error: null,
 
-            setLoading: (loading: boolean) => set({ isLoading: loading }),
+            initialize: async () => {
+                const apps = getApps();
+                if (apps.length === 0) return;
+                const auth = getAuth(apps[0]);
+                const { getFirestore } = await import('firebase/firestore');
+                const db = getFirestore(apps[0]);
+                const { getDatabase } = await import('firebase/database');
+                const realtimeDb = getDatabase(apps[0]);
 
-            initialize: () => {
-                if (!auth) {
-                    set({ isLoading: false, error: 'Firebase not configured' });
-                    return () => { };
-                }
+                console.log('🔐 Auth Store: Initializing...');
 
-                if (typeof window !== 'undefined') {
-                    console.log('🔐 Auth Store: Initializing...', {
-                        path: window.location.pathname,
-                        apps: getApps().length
-                    });
-                }
+                // 1. Handle Redirect Result (For YouTube Shell Identity capture)
+                try {
+                    const result = await getRedirectResult(auth);
+                    if (result) {
+                        const credential = GoogleAuthProvider.credentialFromResult(result);
+                        const accessToken = credential?.accessToken;
+                        const firebaseUser = result.user;
+                        
+                        console.log('⚡ [Auth] Redirect Login Success:', firebaseUser.uid);
+                        
+                        if (accessToken && db) {
+                            const userRef = doc(db, 'users', firebaseUser.uid);
+                            const googleProfile = firebaseUser.providerData.find(p => p.providerId === 'google.com');
+                            
+                            const updates: any = {
+                                isYouTubeConnected: true,
+                                youtubeEmail: googleProfile?.email || null,
+                                googleAccessToken: accessToken,
+                                updatedAt: serverTimestamp()
+                            };
 
-                // 🛡️ SAFETY TIMEOUT: Force UI unlock if Firebase is slow/stuck
-                const safetyTimeout = setTimeout(() => {
-                    if (get().isLoading) {
-                        console.warn('⚠️ Auth Init Timeout (15s). Forcing UI unlock.');
-                        set({ isLoading: false });
+                            // Grant 1-day pass if needed
+                            const userSnap = await getDoc(userRef);
+                            if (userSnap.exists()) {
+                                const currentMembership = userSnap.data()?.membership;
+                                if (!currentMembership || currentMembership.status !== 'active') {
+                                    updates.membership = {
+                                        type: 'day_pass',
+                                        status: 'active',
+                                        startedAt: serverTimestamp(),
+                                        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+                                    };
+                                }
+                                await updateDoc(userRef, updates);
+                            } else {
+                                // Profile doesn't exist yet, it will be created in onIdTokenChanged
+                                // tokens will be saved during that creation if we store them in state now
+                                set({ user: { ...get().user, googleAccessToken: accessToken } as any });
+                            }
+                        }
                     }
-                }, 15000);
+                } catch (error: any) {
+                    console.error('⚡ [Auth] Redirect Result Error:', error);
+                    set({ error: error.message });
+                }
 
-                console.log('🔐 Auth Store: Registering onIdTokenChanged listener...');
+                // 2. Register Global Listener
                 const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
                     console.time('AuthLifecycle');
-                    console.log('⚡ [AuthStore] onIdTokenChanged Fired!', {
-                        uid: firebaseUser?.uid,
-                        isAnonymous: firebaseUser?.isAnonymous,
-                        email: firebaseUser?.email
-                    });
                     if (!firebaseUser) {
-                        // 🛑 SYSTEM FIX: Don't kill Dev Admin session
                         const currentUser = get().user;
                         if (currentUser?.uid === 'dev-admin') {
-                            console.log('🛡️ Dev Admin detected. Ignoring Firebase logout.');
                             set({ isLoading: false });
                             return;
                         }
-
                         set({ user: null, isLoading: false });
                         nookies.destroy(null, 'token');
                         nookies.destroy(null, 'uid');
                     } else {
-                        // ⬇️ MOVED: Optimistic update removed to prevent "Ghost User Flash"
-                        // We maintain isLoading: true and only set user after server validation.
-
-                        // ⬇️ ANONYMOUS USER HANDLING (Monitor/Guest Mode)
-                        if (firebaseUser.isAnonymous) {
-                            console.log('👻 Anonymous User Detected:', firebaseUser.uid);
-
-                            // 🛑 SYSTEM FIX: PREVENT GHOST LOGIN ON MAIN APP
-                            // If user is guest/anonymous, ONLY allow if on designated Monitor/TV/Remote pages
-                            if (typeof window !== 'undefined') {
-                                const path = window.location.pathname;
-                                const isAllowedGuestPage = [
-                                    '/monitor',
-                                    '/tv',
-                                    '/receiver',
-                                    '/chromecast',
-                                    '/remote'
-                                ].some(p => path.startsWith(p));
-
-                                if (!isAllowedGuestPage) {
-                                    console.warn('🚫 [Auth] Guest Session blocked on main app page:', path);
-                                    // Set user to null immediately to clean up UI
-                                    set({ user: null, isLoading: false });
-                                    // Clean up Firebase session
-                                    if (auth) {
-                                        firebaseSignOut(auth).catch(e => console.warn('Guest cleanup failed', e));
-                                    }
-                                    return;
-                                }
-                            }
-
-                            console.log('✅ Guest Access Allowed on designated page');
-                            set({
-                                user: {
-                                    uid: firebaseUser.uid,
-                                    email: null,
-                                    displayName: 'Guest',
-                                    photoURL: null,
-                                    role: 'user',
-                                    isAdmin: false,
-                                    membership: DEFAULT_MEMBERSHIP
-                                },
-                                isLoading: false
-                            });
-                            return;
-                        }
-
-                        // Sync with backend (Strict Validation)
                         try {
                             const token = await firebaseUser.getIdToken();
-                            if (!db) throw new Error("Firestore not initialized");
                             const userRef = doc(db, 'users', firebaseUser.uid);
-
-                            // 🚀 DEEP SYNC: Fetch from both Databases in Parallel
                             let [userSnap, rtdbSnap] = await Promise.all([
                                 getDoc(userRef),
                                 realtimeDb ? rtdbGet(ref(realtimeDb, `users/${firebaseUser.uid}`)) : Promise.resolve(null)
@@ -188,10 +139,8 @@ export const useAuthStore = create<UserState & AuthActions>()(
 
                             const rtdbData = (rtdbSnap && typeof rtdbSnap.exists === 'function' && rtdbSnap.exists()) ? rtdbSnap.val() : null;
 
-                            // Self-healing: If profile missing in BOTH or just Firestore
                             if (!userSnap.exists()) {
-                                console.log('🩹 [AuthStore] Initializing missing Firestore profile...');
-                                const newProfile = {
+                                const newProfile: any = {
                                     uid: firebaseUser.uid,
                                     email: firebaseUser.email,
                                     displayName: rtdbData?.displayName || firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
@@ -203,357 +152,90 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                         startedAt: serverTimestamp(),
                                         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
                                     },
-                                    quota: {
-                                        daily_limit: 5,
-                                        used: 0,
-                                        last_reset: new Date().toISOString()
-                                    },
+                                    quota: { daily_limit: 5, used: 0, last_reset: new Date().toISOString() },
                                     createdAt: serverTimestamp(),
                                     updatedAt: serverTimestamp(),
                                 };
+                                // Capture token if it was just received in getRedirectResult
+                                if (get().user?.googleAccessToken) {
+                                    newProfile.googleAccessToken = get().user?.googleAccessToken;
+                                    newProfile.isYouTubeConnected = true;
+                                    newProfile.youtubeEmail = firebaseUser.email;
+                                }
                                 await setDoc(userRef, newProfile);
                                 userSnap = await getDoc(userRef);
                             }
 
                             if (userSnap.exists()) {
                                 const userData = userSnap.data();
-                                let membership = userData.membership || DEFAULT_MEMBERSHIP;
-
-                                // 🛡️ SERVER-SIDE VALIDATION: CHECK EXPIRY
-                                if (membership.expiresAt) {
-                                    const expiry = membership.expiresAt.toDate ? membership.expiresAt.toDate() : new Date(membership.expiresAt);
-                                    if (new Date() > expiry && membership.status !== 'expired') {
-                                        console.warn('⚠️ Membership Expired! Downgrading to Free...');
-                                        membership = {
-                                            ...DEFAULT_MEMBERSHIP,
-                                            status: 'expired',
-                                            type: 'free'
-                                        };
-                                        // Update Firestore to reflect expiry immediately
-                                        const { updateDoc } = await import('firebase/firestore');
-                                        updateDoc(userRef, { membership }).catch(e => console.error('Firestore expiry sync failed', e));
-
-                                        // Sync to Realtime DB too (Simple & Fast)
-                                        if (realtimeDb) {
-                                            rtdbUpdate(ref(realtimeDb, `users/${firebaseUser.uid}/subscription`), {
-                                                status: 'expired',
-                                                plan: 'free'
-                                            }).catch(e => console.error('RTDB expiry sync failed', e));
-                                        }
-                                    }
-                                }
-
-                                let role = userData.role || 'user';
-                                let isAdmin = userData.role === 'admin';
-
-                                // 👑 HARDCODE OWNER ROLE
-                                if (firebaseUser.email === 'boonyanone@gmail.com') {
-                                    role = 'owner';
-                                    isAdmin = true;
-                                    console.log('👑 [AuthStore] Owner Identified: Access Granted');
-                                }
-
-                                // 🛡️ SELF-HEALING: SYNC MISSING photoURL FROM AUTH PROVIDER
-                                if (!userData.photoURL && firebaseUser.photoURL) {
-                                    console.log('🩹 [AuthStore] Healing missing photoURL in Firestore...');
-                                    const { updateDoc } = await import('firebase/firestore');
-                                    updateDoc(userRef, { photoURL: firebaseUser.photoURL }).catch(e => console.warn('Self-healing failed', e));
-                                }
-
                                 set({
                                     user: {
                                         uid: firebaseUser.uid,
                                         email: firebaseUser.email,
-                                        displayName: userData.displayName || rtdbData?.displayName || firebaseUser.displayName,
-                                        photoURL: userData.photoURL || rtdbData?.photoURL || firebaseUser.photoURL,
-                                        role: role,
-                                        isAdmin: isAdmin,
-                                        membership: membership,
+                                        displayName: userData.displayName || firebaseUser.displayName,
+                                        photoURL: userData.photoURL || firebaseUser.photoURL,
+                                        role: userData.role || 'user',
+                                        isAdmin: userData.role === 'admin',
+                                        membership: userData.membership || DEFAULT_MEMBERSHIP,
                                         installed_modules: userData.installed_modules || [],
-                                        quota: userData.quota || undefined,
-                                        isYouTubeConnected: userData.isYouTubeConnected || firebaseUser.providerData.some(p => p.providerId === 'google.com'),
-                                        youtubeEmail: userData.youtubeEmail || (firebaseUser.providerData.find(p => p.providerId === 'google.com')?.email) || null,
+                                        quota: userData.quota,
+                                        isYouTubeConnected: userData.isYouTubeConnected || false,
+                                        youtubeEmail: userData.youtubeEmail || null,
                                         googleAccessToken: userData.googleAccessToken || null
                                     },
                                     isLoading: false
                                 });
-                                console.timeEnd('AuthLifecycle');
-                            } else {
-                                set({ user: null, isLoading: false }); // Should never happen due to self-healing
+                                // Set Cookies for Middleware
+                                nookies.set(null, 'token', token, { path: '/' });
+                                nookies.set(null, 'uid', firebaseUser.uid, { path: '/' });
                             }
-
-                            // Set cookies for SSR/Middleware if needed
-                            nookies.set(null, 'token', token, { path: '/', maxAge: 3600, sameSite: 'Lax' });
-                            nookies.set(null, 'uid', firebaseUser.uid, { path: '/', maxAge: 3600, sameSite: 'Lax' });
-                        } catch (error) {
-                            console.error('⚠️ Auth Verification Failed:', error);
-                            // 🛑 CRITICAL: Revert Optimistic Update if Server Refuses
-                            // This prevents "Ghost Users" who are authenticated on Firebase but banned/invalid on Firestore
-                            set({ user: null, isLoading: false });
-                            nookies.destroy(null, 'token');
-                            nookies.destroy(null, 'uid');
-                            // Ensure we kill the firebase session too
-                            if (auth) firebaseSignOut(auth).catch(e => console.warn('Force logout failed', e));
+                        } catch (err: any) {
+                            console.error('🔥 Auth Sync Error:', err);
+                            set({ error: err.message, isLoading: false });
                         }
                     }
+                    console.timeEnd('AuthLifecycle');
                 });
 
-                return () => {
-                    clearTimeout(safetyTimeout);
-                    unsubscribe();
-                };
-            },
-
-            signIn: async (email, password) => {
-                console.log('⚡ SignIn: Started');
-                set({ isLoading: true, error: null });
-                try {
-                    if (!auth) throw new Error("Firebase Auth not initialized");
-                    console.time('FirebaseSignIn');
-                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                    console.timeEnd('FirebaseSignIn');
-
-                    const firebaseUser = userCredential.user;
-                    console.log('⚡ SignIn: Auth Success', firebaseUser.uid);
-
-                    // Optimistic Update: Set user immediately to trigger redirect
-                    set({
-                        user: {
-                            uid: firebaseUser.uid,
-                            email: firebaseUser.email,
-                            displayName: firebaseUser.displayName,
-                            photoURL: firebaseUser.photoURL,
-                            role: 'user',
-                            isAdmin: false,
-                            membership: DEFAULT_MEMBERSHIP,
-                            installed_modules: [],
-                            quota: undefined
-                        },
-                        isLoading: false
-                    });
-                    console.log('⚡ SignIn: State Updated');
-                } catch (error: any) {
-                    console.error('⚡ SignIn: Error', error);
-                    set({ error: error.message, isLoading: false });
-                    throw error;
-                }
-            },
-
-            signUp: async (email, password) => {
-                set({ isLoading: true, error: null });
-                try {
-                    if (!auth || !db) throw new Error("Firebase not initialized");
-                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                    const user = userCredential.user;
-                    const displayName = email.split('@')[0];
-
-                    // Update Auth Profile immediately
-                    await updateProfile(user, { displayName });
-
-                    // Create User Profile in Firestore
-                    await setDoc(doc(db, "users", user.uid), {
-                        uid: user.uid,
-                        email: user.email,
-                        displayName: user.displayName || displayName,
-                        photoURL: user.photoURL || null,
-                        role: 'user',
-                        membership: {
-                            type: 'day_pass',
-                            status: 'active',
-                            startedAt: serverTimestamp(),
-                            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
-                        },
-                        tier: 'free',
-                        credits: 0,
-                        isPremium: false,
-                        quota: {
-                            daily_limit: 5,
-                            used: 0,
-                            last_reset: new Date().toISOString()
-                        },
-                        createdAt: serverTimestamp(),
-                        updatedAt: serverTimestamp(),
-                    });
-
-                    // Optimistic Update
-                    set({
-                        user: {
-                            uid: user.uid,
-                            email: user.email,
-                            displayName: displayName,
-                            photoURL: user.photoURL,
-                            role: 'user',
-                            isAdmin: false,
-                            membership: {
-                                type: 'day_pass',
-                                status: 'active',
-                                startedAt: new Date(),
-                                expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
-                            },
-                            installed_modules: [],
-                            quota: undefined
-                        },
-                        isLoading: false
-                    });
-                } catch (error: any) {
-                    set({ error: error.message, isLoading: false });
-                    throw error;
-                }
+                return () => unsubscribe();
             },
 
             signInWithGoogle: async () => {
-                console.log('⚡ GoogleSignIn: Started');
-                
-                // 🛑 SAFARI POPUP FIX: Do not set state before popup! 
-                // Any 'set' call here might cause a React microtask and block the popup.
+                const apps = getApps();
+                const auth = getAuth(apps[0]);
+                const provider = new GoogleAuthProvider();
+                provider.addScope('https://www.googleapis.com/auth/youtube.readonly');
+                set({ isLoading: true, error: null });
                 try {
-                    const provider = new GoogleAuthProvider();
-                    provider.addScope('https://www.googleapis.com/auth/youtube.readonly');
-
-                    if (!auth) throw new Error("Firebase Auth not initialized");
-                    
-                    console.time('GooglePopup');
-                    // 1. OPEN POPUP IMMEDIATELY
-                    const userCredential = await signInWithPopup(auth, provider);
-                    console.timeEnd('GooglePopup');
-
-                    const credential = GoogleAuthProvider.credentialFromResult(userCredential);
-                    const accessToken = credential?.accessToken || null;
-
-                    // 2. NOW we can set the loading state and process the user
-                    set({ isLoading: true, error: null });
-
-                    const firebaseUser = userCredential.user;
-                    console.log('⚡ GoogleSignIn: Auth Success', firebaseUser.uid);
-
-                    // Optimistic Update
-                    set({
-                        user: {
-                            uid: firebaseUser.uid,
-                            email: firebaseUser.email,
-                            displayName: firebaseUser.displayName,
-                            photoURL: firebaseUser.photoURL,
-                            role: 'user',
-                            isAdmin: false,
-                            membership: DEFAULT_MEMBERSHIP,
-                            installed_modules: [],
-                            quota: undefined,
-                            isYouTubeConnected: true,
-                            youtubeEmail: firebaseUser.email,
-                            googleAccessToken: accessToken
-                        },
-                        isLoading: false
-                    });
+                    await signInWithRedirect(auth, provider);
                 } catch (error: any) {
-                    console.error('⚡ GoogleSignIn: Error', error);
                     set({ error: error.message, isLoading: false });
-                    throw error;
                 }
             },
 
             linkGoogleAccount: async () => {
-                console.log('⚡ LinkGoogleAccount: Started');
+                const apps = getApps();
+                const auth = getAuth(apps[0]);
+                const provider = new GoogleAuthProvider();
+                provider.addScope('https://www.googleapis.com/auth/youtube.readonly');
+                if (!auth.currentUser) return;
                 set({ isLoading: true, error: null });
                 try {
-                    const provider = new GoogleAuthProvider();
-                    provider.addScope('https://www.googleapis.com/auth/youtube.readonly');
-                    if (!auth || !auth.currentUser) throw new Error("User must be logged in to link accounts");
-
-                    const result = await linkWithPopup(auth.currentUser, provider);
-                    const firebaseUser = result.user;
-                    console.log('⚡ LinkGoogleAccount: Success', firebaseUser.uid);
-
-                    const credential = GoogleAuthProvider.credentialFromResult(result);
-                    const accessToken = credential?.accessToken || null;
-
-                    // Update Firestore to mark YouTube as connected
-                    if (db) {
-                        const userRef = doc(db, 'users', firebaseUser.uid);
-                        const googleProfile = firebaseUser.providerData.find(p => p.providerId === 'google.com');
-                        
-                        const updates: any = {
-                            isYouTubeConnected: true,
-                            youtubeEmail: googleProfile?.email || null,
-                            googleAccessToken: accessToken, // Store in Firestore too (Optional, but useful for offline)
-                            updatedAt: serverTimestamp()
-                        };
-
-                        // Special Bonus: Grant 1-day day pass if they don't have an active one
-                        const userSnap = await getDoc(userRef);
-                        const currentMembership = userSnap.data()?.membership;
-                        if (!currentMembership || currentMembership.status !== 'active') {
-                            updates.membership = {
-                                type: 'day_pass',
-                                status: 'active',
-                                startedAt: serverTimestamp(),
-                                expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
-                            };
-                        }
-
-                        await updateDoc(userRef, updates);
-                    }
-
-                    set({ isLoading: false });
+                    await linkWithRedirect(auth.currentUser, provider);
                 } catch (error: any) {
-                    console.error('⚡ LinkGoogleAccount: Error', error);
                     set({ error: error.message, isLoading: false });
-                    throw error;
                 }
-            },
-
-            signInWithLine: () => {
-                const clientId = process.env.NEXT_PUBLIC_LINE_LOGIN_CHANNEL_ID;
-                // CRITICAL: This URL must MATCH EXACTLY with LINE Developers Console
-                // 1. https://playyouoke.vercel.app/login/
-                // 2. http://localhost:3000/login/ (For testing)
-
-                let redirectUri = 'https://play.okeforyou.com/login/';
-
-                if (typeof window !== 'undefined') {
-                    redirectUri = `${window.location.origin}/login/`;
-                }
-
-                console.log('🔗 LINE Redirect URI:', redirectUri);
-                const state = 'random_state_string'; // Should be random
-
-                if (!clientId) {
-                    console.error("LINE_LOGIN_CHANNEL_ID not set");
-                    set({ error: "LINE Login Configuration Missing" });
-                    return;
-                }
-
-                const lineAuthUrl = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&scope=profile%20openid%20email`;
-
-                window.location.replace(lineAuthUrl);
             },
 
             signInWithCustomToken: async (token: string) => {
+                const apps = getApps();
+                const auth = getAuth(apps[0]);
                 set({ isLoading: true, error: null });
                 try {
-                    const { signInWithCustomToken } = await import('firebase/auth');
-                    if (!auth) throw new Error("Firebase Auth not initialized");
-                    const userCredential = await signInWithCustomToken(auth, token);
-                    const firebaseUser = userCredential.user;
-                    console.log('⚡ CustomToken SignIn: Success', firebaseUser.uid);
-                    
-                    // Optimistic Update: Skip waiting for global listener to trigger instant redirect
-                    set({
-                        user: {
-                            uid: firebaseUser.uid,
-                            email: firebaseUser.email,
-                            displayName: firebaseUser.displayName,
-                            photoURL: firebaseUser.photoURL,
-                            role: 'user',
-                            isAdmin: false,
-                            membership: DEFAULT_MEMBERSHIP,
-                            installed_modules: [],
-                            quota: undefined
-                        },
-                        isLoading: false
-                    });
+                    const { signInWithCustomToken: firebaseSignIn } = await import('firebase/auth');
+                    await firebaseSignIn(auth, token);
                 } catch (error: any) {
                     set({ error: error.message, isLoading: false });
-                    throw error;
                 }
             },
 
@@ -565,69 +247,24 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     photoURL: null,
                     role: 'admin',
                     isAdmin: true,
-                    membership: {
-                        type: 'yearly',
-                        status: 'active',
-                        startedAt: { toDate: () => new Date() }, // Mock Timestamp
-                        expiresAt: { toDate: () => new Date(new Date().setFullYear(new Date().getFullYear() + 1)) }
-                    }
+                    membership: { type: 'yearly', status: 'active' }
                 };
-                console.log('⚡ DevLogin: Access Granted', devUser);
                 set({ user: devUser, isLoading: false });
-                if (typeof window !== 'undefined') {
-                    // Bypass firebase persistence, just set local state
-                    localStorage.setItem('auth-storage', JSON.stringify({
-                        state: { user: devUser, isHydrated: true },
-                        version: 0
-                    }));
-                    window.location.href = '/admin';
-                }
             },
 
             signOut: async () => {
-                console.log('⚡ [Debug] SignOut Action Triggered (Nuclear Mode)');
-                console.trace('SignOut Trace');
-                console.log('⚡ SignOut: Started (Nuclear Mode)');
+                const apps = getApps();
+                const auth = getAuth(apps[0]);
                 set({ isLoading: true });
                 try {
-                    // 1. Force clear state UI
+                    await firebaseSignOut(auth);
                     set({ user: null, isLoading: false });
-
-                    // 2. Clear All Storage
-                    if (typeof window !== 'undefined') {
-                        localStorage.removeItem('auth-storage'); // Specific clear
-                        // Optional: localStorage.clear(); if you want to wipe everything
-
-                        // 3. Nuke IndexedDB (Firebase Persistence)
-                        try {
-                            if (window.indexedDB && window.indexedDB.databases) {
-                                const dbs = await window.indexedDB.databases();
-                                dbs.forEach(db => {
-                                    if (db.name && db.name.includes('firebase')) {
-                                        window.indexedDB.deleteDatabase(db.name);
-                                    }
-                                });
-                                console.log('⚡ SignOut: IndexedDB Nuked');
-                            }
-                        } catch (e) {
-                            console.warn('⚡ SignOut: IDB Cleanup Failed', e);
-                        }
-                    }
-
-                    // 4. Official Firebase SignOut
-                    if (auth) await firebaseSignOut(auth);
-                    console.log('⚡ SignOut: Firebase Success');
-
-                    // 5. Force Reload to clear memory and prevent resurrection (Redirect to Home)
+                    nookies.destroy(null, 'token');
+                    nookies.destroy(null, 'uid');
+                    localStorage.removeItem('auth-storage');
                     window.location.href = '/';
                 } catch (error: any) {
-                    console.error('⚡ SignOut: Error', error);
-                    set({ user: null, error: error.message, isLoading: false });
-                    if (typeof window !== 'undefined') {
-                        localStorage.removeItem('auth-storage');
-                    }
-                    // Force redirect anyway (Redirect to Home)
-                    window.location.href = '/';
+                    set({ isLoading: false, error: error.message });
                 }
             },
 
@@ -638,18 +275,7 @@ export const useAuthStore = create<UserState & AuthActions>()(
             storage: createJSONStorage(() => localStorage),
             onRehydrateStorage: () => (state) => {
                 state?.setHydrated();
-                if (state?.user) {
-                    state.setLoading(false);
-                }
-            },
-            partialize: (state) => {
-                // 🛑 SYSTEM FIX: Do NOT persist Guest/Anonymous users
-                // This prevents the "Auto-login as Guest" annoyance
-                if (state.user?.displayName === 'Guest' || state.user?.email === null) {
-                    return {};
-                }
-                return { user: state.user };
-            },
+            }
         }
     )
 );
