@@ -38,6 +38,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) 
   const router = useRouter();
   const { user, logout } = useAuth();
   const [stats, setStats] = useState<{ users: number; pendingOrders: number }>({ users: 0, pendingOrders: 0 });
+  const [confirmLogout, setConfirmLogout] = useState(false);
 
   useEffect(() => {
     // Real-time listener for Users
@@ -174,20 +175,31 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) 
                   <span>CMS</span>
                 </Link>
 
-                <button
-                  onClick={async () => {
-                    if (!window.confirm('ยืนยันออกจากระบบ?')) return;
-                    try {
-                      await logout();
-                    } catch (e) {
-                      console.error("Logout failed", e);
-                    }
-                  }}
-                  className="flex flex-col items-center justify-center gap-1 p-2 rounded-xl text-xs font-medium transition-colors border border-transparent bg-white text-gray-500 hover:bg-red-50 hover:text-red-600 hover:border-red-100"
-                >
-                  <LogOut className="h-4 w-4" />
-                  <span>ออกระบบ</span>
-                </button>
+                {!confirmLogout ? (
+                  <button
+                    onClick={() => setConfirmLogout(true)}
+                    className="flex flex-col items-center justify-center gap-1 p-2 rounded-xl text-xs font-medium transition-colors border border-transparent bg-white text-gray-500 hover:bg-red-50 hover:text-red-600 hover:border-red-100"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>ออกระบบ</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={async () => {
+                      try {
+                        await logout();
+                      } catch (e) {
+                        console.error("Logout failed", e);
+                        setConfirmLogout(false);
+                      }
+                    }}
+                    onMouseLeave={() => setConfirmLogout(false)}
+                    className="flex flex-col items-center justify-center gap-1 p-2 rounded-xl text-[10px] font-black transition-all bg-red-600 text-white shadow-lg animate-pulse"
+                  >
+                    <Shield className="h-4 w-4" />
+                    <span>กดยืนยัน?</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>
