@@ -13,6 +13,7 @@ interface User {
     membership?: {
         type: string;
         status: string;
+        startedAt?: any;
         expiresAt: any;
     };
     installed_modules?: string[];
@@ -153,18 +154,48 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                         {/* Status Info */}
                         <div className="space-y-4">
                             <label className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                                <StarIcon className="w-4 h-4 text-yellow-500" /> สถานะแพ็กเกจปัจจุบัน
+                                <StarIcon className="w-4 h-4 text-yellow-500" /> จัดการอายุสมาชิก (Manual)
                             </label>
                             <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 text-sm">
-                                <div className="flex justify-between mb-1">
-                                    <span className="text-yellow-800 font-bold">แผน: {user.membership?.type || 'Free'}</span>
-                                    <span className="text-yellow-600 font-medium capitalize">{user.membership?.status || 'active'}</span>
-                                </div>
-                                {user.membership?.expiresAt && (
-                                    <div className="text-[11px] text-yellow-700">
-                                        หมดอายุ: {new Date(user.membership.expiresAt.seconds ? user.membership.expiresAt.seconds * 1000 : user.membership.expiresAt).toLocaleString('th-TH')}
+                                <div className="space-y-3">
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-[10px] uppercase font-black text-yellow-800">วันเริ่มสิทธิ์ (Started At)</label>
+                                        <input 
+                                            type="date" 
+                                            className="input input-xs input-bordered w-full h-8"
+                                            defaultValue={user.membership?.startedAt ? (user.membership.startedAt.toDate ? user.membership.startedAt.toDate().toISOString().split('T')[0] : new Date(user.membership.startedAt).toISOString().split('T')[0]) : ''}
+                                            id="membership_started_at"
+                                        />
                                     </div>
-                                )}
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-[10px] uppercase font-black text-yellow-800">วันหมดสิทธิ์ (Expires At)</label>
+                                        <input 
+                                            type="date" 
+                                            className="input input-xs input-bordered w-full h-8"
+                                            defaultValue={user.membership?.expiresAt ? (user.membership.expiresAt.toDate ? user.membership.expiresAt.toDate().toISOString().split('T')[0] : new Date(user.membership.expiresAt).toISOString().split('T')[0]) : ''}
+                                            id="membership_expires_at"
+                                        />
+                                    </div>
+                                    <button 
+                                        onClick={async () => {
+                                            const startVal = (document.getElementById('membership_started_at') as HTMLInputElement).value;
+                                            const expireVal = (document.getElementById('membership_expires_at') as HTMLInputElement).value;
+                                            try {
+                                                await AdminService.updateMembershipDates(
+                                                    user.uid, 
+                                                    startVal ? new Date(startVal) : null, 
+                                                    expireVal ? new Date(expireVal) : null
+                                                );
+                                                alert('✅ อัปเดตอายุสมาชิกสำเร็จ!');
+                                            } catch (e: any) {
+                                                alert('❌ ผิดพลาด: ' + e.message);
+                                            }
+                                        }}
+                                        className="btn btn-xs btn-warning w-full text-white font-bold"
+                                    >
+                                        บันทึกการจัดการวันที่
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

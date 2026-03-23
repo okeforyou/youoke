@@ -537,5 +537,31 @@ export const AdminService = {
                 updatedAt: rtdbServerTimestamp()
             });
         }
+    },
+
+    /**
+     * Manually update membership dates (Firestore + RTDB)
+     */
+    updateMembershipDates: async (uid: string, startedAt: Date | null, expiresAt: Date | null) => {
+        if (!db) throw new Error("Firebase not initialized");
+
+        const updates: any = {
+            'membership.startedAt': startedAt,
+            'membership.expiresAt': expiresAt,
+            'updatedAt': new Date()
+        };
+
+        // 1. Update Firestore
+        const userRef = doc(db, "users", uid);
+        await updateDoc(userRef, updates);
+
+        // 2. Update Realtime Database
+        if (realtimeDb) {
+            const rtdbUserRef = ref(realtimeDb, `users/${uid}/subscription`);
+            await update(rtdbUserRef, {
+                startDate: startedAt ? startedAt.toISOString() : null,
+                endDate: expiresAt ? expiresAt.toISOString() : null
+            });
+        }
     }
 };

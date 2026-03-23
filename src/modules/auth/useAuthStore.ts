@@ -308,7 +308,8 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                         uid: firebaseUser.uid,
                                         email: firebaseUser.email,
                                         displayName: userData.displayName || rtdbData?.displayName || firebaseUser.displayName,
-                                        photoURL: userData.photoURL || rtdbData?.photoURL || firebaseUser.photoURL,
+                                        photoURL: userData.photoURL || rtdbData?.photoURL || firebaseUser.photoURL || 
+                                            `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.displayName || firebaseUser.displayName || 'YouOke')}&background=000&color=fff&bold=true`,
                                         role: role,
                                         isAdmin: isAdmin,
                                         membership: membership,
