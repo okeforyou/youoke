@@ -43,10 +43,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         <div className="animate-in fade-in delay-1000 duration-1000 mt-8 p-4 bg-gray-100 rounded-lg text-xs font-mono text-left max-w-md border border-gray-300">
           <p className="font-bold text-gray-500 mb-2">Debug Info (Developer Use):</p>
           <p>Loading: {loading ? 'YES' : 'NO'}</p>
-          <p>User: {user ? 'LOGGED_IN' : 'NULL'}</p>
-          <p>Email: {user?.email || '-'}</p>
-          <p>Role: {user?.role || '-'}</p>
-          <p>UID: {user?.uid || '-'}</p>
+          <div className="flex flex-col text-[10px] text-gray-400 font-mono opacity-50">
+          <span>DEBUG: {(user as any)?.email || '-'}</span>
+          <span>ROLE: {(user as any)?.role || '-'}</span>
+          <span>UID: {(user as any)?.uid || '-'}</span>
+        </div>
           <div className="mt-4 flex gap-2">
             <button onClick={() => router.push('/login')} className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
               Force Login
@@ -83,7 +84,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </p>
         </footer>
       </div>
-      <GlobalConfirmModal />
     </div>
   );
 }

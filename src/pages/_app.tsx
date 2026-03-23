@@ -22,6 +22,7 @@ import { ToastProvider } from '@/context/ToastContext'
 import { MidiEngineProvider } from '@/context/MidiEngineContext'
 import { FontLoader } from '../components/FontLoader';
 import GlobalErrorBoundary from '../components/GlobalErrorBoundary'; // New global boundary
+import { GlobalConfirmModal } from '../components/common/GlobalConfirmModal';
 
 import { useSystemThemeSync } from '../hooks/useSystemThemeSync';
 import { SystemProvider } from '../core/container/SystemContext';
@@ -188,6 +189,7 @@ function App({ Component, pageProps }: AppProps) {
             </SystemProvider>
           </QueryClientProvider>
           <Analytics />
+          <GlobalConfirmModal />
         </GlobalErrorBoundary>
       </AuthContextProvider >
     </ToastProvider >

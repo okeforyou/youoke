@@ -38,7 +38,6 @@ const ReceiverInfoModal = dynamic(() => import('../modules/party-system/componen
 // Add UnifiedCastButton dynamic import if needed or import directly
 import { UnifiedCastButton } from '../plugins/cast/components/UnifiedCastButton';
 import { type CastMode } from '../plugins/cast/components/CastStatusBar';
-import { GlobalConfirmModal } from '../components/common/GlobalConfirmModal';
 // useCastCommands removed (Phase 6)
 
 
@@ -878,9 +877,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
             {/* Global Limit Reached Modal */}
             <LimitReachedModal />
-
-            {/* Global Confirmation Modal */}
-            <GlobalConfirmModal />
 
 
 
