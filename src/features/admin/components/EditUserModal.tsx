@@ -27,6 +27,7 @@ interface EditUserModalProps {
     onToggleModule: (moduleId: string) => void;
     availableModules: { id: string; name: string; icon: any }[];
     packages: { id: string; name: string; durationDays: number }[];
+    onRefresh?: () => void;
     loading?: boolean;
 }
 
@@ -38,6 +39,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
     onToggleModule,
     availableModules,
     packages,
+    onRefresh,
     loading
 }) => {
     // 🛡️ RE-FIX: Use State for Dates to ensure UI Stability
@@ -66,7 +68,8 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                 startedAt ? new Date(startedAt) : null, 
                 expiresAt ? new Date(expiresAt) : null
             );
-            alert('✅ อัปเดตอายุสมาชิกสำเร็จ (Admin v2.1)');
+            if (onRefresh) onRefresh();
+            alert('✅ อัปเดตอายุสมาชิกสำเร็จ (Admin v2.3 - Platinum)');
         } catch (e: any) {
             alert('❌ ผิดพลาด: ' + e.message);
         } finally {
@@ -77,6 +80,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
     const handleUpdateName = async () => {
         try {
             await AdminService.updateUserProfile(user.uid, { displayName: editName });
+            if (onRefresh) onRefresh();
             alert("✅ อัปเดตชื่อสำเร็จ!");
         } catch (err: any) {
             alert("ผิดพลาด: " + err.message);
@@ -151,7 +155,34 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
 
                     {/* Quick Access Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
-                        {/* 🛡️ MEMBERSHIP (Force Visible v2.2 - MOVED TO TOP) */}
+                        {/* 🛡️ THE ROLE SWITCH (Force Visible) */}
+                        <div className="space-y-4 p-5 rounded-3xl bg-red-50/50 border-2 border-red-100/50">
+                            <label className="text-[11px] font-black text-red-600 flex items-center gap-2 uppercase tracking-widest">
+                                <ShieldCheckIcon className="w-5 h-5" /> ระดับกองอำนวยการ (Role Management)
+                            </label>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => onUpdateRole(user.uid, 'user')}
+                                    className={cn(
+                                        "flex-1 btn btn-md h-12 rounded-2xl border-none shadow-md transition-all font-black text-xs tracking-tighter",
+                                        user.role !== 'admin' ? "bg-gray-900 text-white hover:scale-[1.02]" : "bg-white text-gray-300 border border-gray-100"
+                                    )}
+                                >
+                                    USER
+                                </button>
+                                <button
+                                    onClick={() => onUpdateRole(user.uid, 'admin')}
+                                    className={cn(
+                                        "flex-1 btn btn-md h-12 rounded-2xl border-none shadow-md transition-all font-black text-xs tracking-tighter",
+                                        user.role === 'admin' ? "bg-red-600 text-white hover:scale-[1.02] shadow-red-200" : "bg-white text-gray-300 border border-gray-100"
+                                    )}
+                                >
+                                    ADMIN
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* 🛡️ MEMBERSHIP (Force Visible v2.2) */}
                         <div className="space-y-4 p-5 rounded-3xl bg-amber-50/50 border-2 border-amber-100/50">
                             <label className="text-[11px] font-black text-amber-600 flex items-center gap-2 uppercase tracking-widest">
                                 <StarIcon className="w-5 h-5" /> ตั้งค่าสมาชิกพรีเมียม (v2.2)
@@ -184,33 +215,6 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                                     )}
                                 >
                                     {savingDates ? 'LOADING...' : 'ยืนยันวันหมดอายุ'}
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* 🛡️ THE ROLE SWITCH (Force Visible) */}
-                        <div className="space-y-4 p-5 rounded-3xl bg-red-50/50 border-2 border-red-100/50">
-                            <label className="text-[11px] font-black text-red-600 flex items-center gap-2 uppercase tracking-widest">
-                                <ShieldCheckIcon className="w-5 h-5" /> ระดับกองอำนวยการ (Role Management)
-                            </label>
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={() => onUpdateRole(user.uid, 'user')}
-                                    className={cn(
-                                        "flex-1 btn btn-md h-12 rounded-2xl border-none shadow-md transition-all font-black text-xs tracking-tighter",
-                                        user.role !== 'admin' ? "bg-gray-900 text-white hover:scale-[1.02]" : "bg-white text-gray-300 border border-gray-100"
-                                    )}
-                                >
-                                    USER
-                                </button>
-                                <button
-                                    onClick={() => onUpdateRole(user.uid, 'admin')}
-                                    className={cn(
-                                        "flex-1 btn btn-md h-12 rounded-2xl border-none shadow-md transition-all font-black text-xs tracking-tighter",
-                                        user.role === 'admin' ? "bg-red-600 text-white hover:scale-[1.02] shadow-red-200" : "bg-white text-gray-300 border border-gray-100"
-                                    )}
-                                >
-                                    ADMIN
                                 </button>
                             </div>
                         </div>

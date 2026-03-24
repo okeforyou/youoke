@@ -548,9 +548,15 @@ export const AdminService = {
         const updates: any = {
             'membership.startedAt': startedAt,
             'membership.expiresAt': expiresAt,
+            'membership.status': 'active', // Ensure status is active when dates are set
+            'isPremium': true,             // Mark as premium
+            'role': 'premium',             // Ensure role matches
             'updatedAt': new Date()
         };
 
+        // If tier is not set, default to monthly or yearly based on range
+        // This ensures the profile page displays correctly
+        
         // 1. Update Firestore
         const userRef = doc(db, "users", uid);
         await updateDoc(userRef, updates);
@@ -559,8 +565,16 @@ export const AdminService = {
         if (realtimeDb) {
             const rtdbUserRef = ref(realtimeDb, `users/${uid}/subscription`);
             await update(rtdbUserRef, {
+                status: 'active',
                 startDate: startedAt ? startedAt.toISOString() : null,
                 endDate: expiresAt ? expiresAt.toISOString() : null
+            });
+            
+            // Also update top-level role/tier in RTDB
+            const rtdbMainRef = ref(realtimeDb, `users/${uid}`);
+            await update(rtdbMainRef, {
+                role: 'premium',
+                updatedAt: rtdbServerTimestamp()
             });
         }
     }

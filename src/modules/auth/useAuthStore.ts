@@ -128,7 +128,7 @@ export const useAuthStore = create<UserState & AuthActions>()(
                         const accessToken = credential?.accessToken;
                         const firebaseUser = result.user;
                         console.log('⚡ [Auth] Redirect Result Found:', firebaseUser.uid);
-                        
+
                         if (accessToken) {
                             const googleProfile = firebaseUser.providerData.find(p => p.providerId === 'google.com');
                             const userRef = doc(db, 'users', firebaseUser.uid);
@@ -277,7 +277,7 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                     const expiry = membership.expiresAt.toDate ? membership.expiresAt.toDate() : new Date(membership.expiresAt);
                                     const now = new Date();
                                     const isExpired = now > expiry;
-                                    
+
                                     // Calculate days remaining
                                     const diffMs = expiry.getTime() - now.getTime();
                                     const daysRemaining = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
@@ -299,7 +299,7 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                                 plan: 'free'
                                             }).catch(e => console.error('RTDB expiry sync failed', e));
                                         }
-                                        
+
                                         // Show Alert for recently expired users
                                         set({ showExpiryAlert: true });
                                     } else if (!isExpired && daysRemaining <= 3 && daysRemaining >= 0) {
@@ -337,7 +337,7 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                         uid: firebaseUser.uid,
                                         email: firebaseUser.email,
                                         displayName: userData.displayName || rtdbData?.displayName || firebaseUser.displayName,
-                                        photoURL: userData.photoURL || rtdbData?.photoURL || firebaseUser.photoURL || 
+                                        photoURL: userData.photoURL || rtdbData?.photoURL || firebaseUser.photoURL ||
                                             `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.displayName || firebaseUser.displayName || 'YouOke')}&background=000&color=fff&bold=true`,
                                         role: role,
                                         isAdmin: isAdmin,
@@ -476,13 +476,13 @@ export const useAuthStore = create<UserState & AuthActions>()(
 
             signInWithGoogle: async () => {
                 console.log('⚡ GoogleSignIn: Started');
-                
+
                 // 🛑 SAFARI POPUP FIX: Do not set state before popup! 
                 // Any 'set' call here might cause a React microtask and block the popup.
                 try {
                     const provider = new GoogleAuthProvider();
                     if (!auth) throw new Error("Firebase Auth not initialized");
-                    
+
                     console.log('⚡ GoogleSignIn: Starting Popup Flow');
                     await signInWithPopup(auth, provider);
                     console.log('⚡ GoogleSignIn: Popup Success');
@@ -543,7 +543,7 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     const userCredential = await signInWithCustomToken(auth, token);
                     const firebaseUser = userCredential.user;
                     console.log('⚡ CustomToken SignIn: Success', firebaseUser.uid);
-                    
+
                     // Optimistic Update: Skip waiting for global listener to trigger instant redirect
                     set({
                         user: {
