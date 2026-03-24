@@ -352,6 +352,7 @@ export default function UsersPage() {
           onToggleModule={handleToggleModule}
           availableModules={AVAILABLE_MODULES}
           packages={packages}
+          onRefresh={fetchUsers}
         />
       )}
     </AdminLayout>
