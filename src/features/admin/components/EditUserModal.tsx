@@ -97,10 +97,13 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
             <div className="relative w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white shadow-2xl transition-all max-h-[85vh] flex flex-col">
                 {/* Header */}
-                <div className="flex items-center justify-between border-b border-gray-200 bg-red-50 px-6 py-4 shrink-0">
+                <div className="flex items-center justify-between border-b border-gray-200 bg-red-100 px-6 py-5 shrink-0 shadow-lg">
                     <div>
-                        <h3 className="text-lg font-extrabold text-red-700 uppercase tracking-tighter italic">จัดการสิทธิ์สมาชิก (YouOke Admin v2.2)</h3>
-                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest opacity-60">ADMIN CONTROL CENTER • PLATINUM FIX</p>
+                        <h3 className="text-xl font-black text-red-700 uppercase tracking-tighter italic">จัดการสิทธิ์สมาชิก (YouOke Admin v2.3-PLATINUM)</h3>
+                        <p className="text-[11px] text-red-600 font-black uppercase tracking-widest opacity-80 flex items-center gap-2">
+                             <div className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
+                             ADMIN CONTROL CENTER • ULTIMATE VERSION
+                        </p>
                     </div>
                     <button onClick={onClose} className="rounded-full p-2 text-gray-400 transition-colors hover:bg-red-100 hover:text-red-700">
                         <XMarkIcon className="h-5 w-5" />
