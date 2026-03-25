@@ -3,13 +3,13 @@
     "users": {
       "$uid": {
         ".read": "auth != null",
-        ".write": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('role').val() === 'Admin' || root.child('users').child(auth.uid).child('role').val() === 'owner' || root.child('users').child(auth.uid).child('role').val() === 'Owner' || auth.token.role === 'admin' || auth.token.role === 'Admin' || auth.uid === 'P6r7fkMfvherVvzXV35NPhF5TVw2' || auth.uid === 'I4UmiD5gNDMY04LkvtuEIBtrEkK2')"
+        ".write": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('role').val() === 'Admin' || root.child('users').child(auth.uid).child('role').val() === 'owner' || root.child('users').child(auth.uid).child('role').val() === 'Owner' || auth.token.role === 'admin' || auth.token.role === 'Admin' || auth.uid === 'P6r7fkMfvherVvzXV35NPhF5TVw2' || auth.uid === 'I4UmiD5gNDMY04LkvtuEIBtrEkK2' || auth.uid === 'wXkTEsNMQLRVTSIlVW4QykNpuav1')"
       }
     },
     "rooms": {
       "$roomCode": {
         ".read": true,
-        ".write": "true || auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.uid === 'P6r7fkMfvherVvzXV35NPhF5TVw2' || auth.uid === 'I4UmiD5gNDMY04LkvtuEIBtrEkK2')",
+        ".write": "true || auth != null && (root.child('users').child(auth.uid).child('role').val() === 'admin' || auth.uid === 'P6r7fkMfvherVvzXV35NPhF5TVw2' || auth.uid === 'I4UmiD5gNDMY04LkvtuEIBtrEkK2' || auth.uid === 'wXkTEsNMQLRVTSIlVW4QykNpuav1')",
         "commands": {
           ".read": true,
           ".write": true,
