@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { StatCard } from "@/features/admin/components/StatCard";
 import { EditUserModal } from "@/features/admin/components/EditUserModal";
+import { ConfirmModal } from "@/features/admin/components/ConfirmModal";
 
 
 // LINE Icon Component
@@ -122,6 +123,23 @@ export default function AdminUsersPage() {
     const [msgType, setMsgType] = useState<'info' | 'warning' | 'success' | 'system'>('system');
     const [notificationDialogOpen, setNotificationDialogOpen] = useState(false);
     const [notificationUser, setNotificationUser] = useState<User | null>(null);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    
+    // New Confirm Modal State
+    const [confirmModal, setConfirmModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        onConfirm: () => void;
+        type: 'danger' | 'warning' | 'info';
+        confirmText?: string;
+    }>({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: () => {},
+        type: 'warning'
+    });
 
     // Fetch Users (Optimized)
     const fetchUsers = async () => {
@@ -231,47 +249,62 @@ export default function AdminUsersPage() {
 
     const handleAssignLifetime = async () => {
         if (!selectedUser) return;
-        if (!confirm(`คุณแน่ใจหรือไม่ที่จะมอบสิทธิ์ LIFETIME ให้กับ ${selectedUser.displayName}?`)) return;
+        setConfirmModal({
+            isOpen: true,
+            title: "ยืนยันการปลดล็อกตลอดชีพ",
+            message: `คุณแน่ใจหรือไม่ที่จะมอบสถานะสมาชิกตลอดชีพ (Lifetime) ให้กับคุณ ${selectedUser.displayName}?`,
+            type: 'warning',
+            onConfirm: async () => {
+                setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                setAssigningLoading(true);
+                try {
+                    if (!db) return;
+                    const userRef = doc(db, "users", selectedUser.uid);
+                    await updateDoc(userRef, {
+                        membership: {
+                            type: 'lifetime',
+                            status: 'active',
+                            updatedAt: serverTimestamp()
+                        }
+                    });
 
-        setAssigningLoading(true);
-        try {
-            if (!db) return;
-            const userRef = doc(db, "users", selectedUser.uid);
-            await updateDoc(userRef, {
-                membership: {
-                    type: 'lifetime',
-                    status: 'active',
-                    updatedAt: serverTimestamp()
+                    alert(`มอบสิทธิ์ LIFETIME เรียบร้อยแล้ว`);
+                    setSelectedUser({ ...selectedUser, membership: { type: 'lifetime', status: 'active', expiresAt: null } as any });
+                    fetchUsers();
+                } catch (error: any) {
+                    console.error(error);
+                    alert("Failed to assign lifetime: " + error.message);
+                } finally {
+                    setAssigningLoading(false);
                 }
-            });
-
-            alert(`มอบสิทธิ์ LIFETIME เรียบร้อยแล้ว`);
-            setSelectedUser({ ...selectedUser, membership: { type: 'lifetime', status: 'active', expiresAt: null } as any });
-            fetchUsers();
-        } catch (error: any) {
-            console.error(error);
-            alert("Failed to assign lifetime: " + error.message);
-        } finally {
-            setAssigningLoading(false);
-        }
+            }
+        });
     };
 
     const updateUserRole = async (uid: string, newRole: 'admin' | 'user') => {
-        if (!confirm(`ยืนยันเปลี่ยนบทบาทเป็น ${newRole.toUpperCase()}?`)) return;
-        try {
-            if (!db) return;
-            await updateDoc(doc(db, "users", uid), { role: newRole });
-            // Update local state to reflect change immediately
-            if (selectedUser && selectedUser.uid === uid) {
-                setSelectedUser({ ...selectedUser, role: newRole });
+        setConfirmModal({
+            isOpen: true,
+            title: `ยืนยันการตั้งค่าเป็น ${newRole.toUpperCase()}`,
+            message: `คุณแน่ใจหรือไม่ที่จะส่งมอบสิทธิ์ระดับ ${newRole === 'admin' ? 'แอดมิน' : 'สมาชิกทั่วไป'} ให้แก่บัญชีนี้?`,
+            type: 'warning',
+            onConfirm: async () => {
+                setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                try {
+                    if (!db) return;
+                    await updateDoc(doc(db, "users", uid), { role: newRole });
+                    // Update local state to reflect change immediately
+                    if (selectedUser && selectedUser.uid === uid) {
+                        setSelectedUser({ ...selectedUser, role: newRole });
+                    }
+                    setUsers(users.map(u => u.uid === uid ? { ...u, role: newRole } : u));
+                 } catch (e: any) {
+                    console.error("Role update failed:", e);
+                    alert("❌ เปลี่ยนบทบาทไม่สำเร็จ: " + e.message);
+                }
             }
-            setUsers(users.map(u => u.uid === uid ? { ...u, role: newRole } : u));
-            alert("✅ เปลี่ยนบทบาทสำเร็จ!");
-        } catch (e: any) {
-            console.error("Role update failed:", e);
-            alert("❌ เปลี่ยนบทบาทไม่สำเร็จ: " + e.message);
-        }
+        });
     };
+
 
     const handleToggleModule = async (moduleId: string) => {
         if (!selectedUser) return;
@@ -279,14 +312,27 @@ export default function AdminUsersPage() {
         const currentModules = selectedUser.installed_modules || [];
         const hasModule = currentModules.includes(moduleId);
 
-        let newModules;
+        let newModules: string[];
         if (hasModule) {
             newModules = currentModules.filter(id => id !== moduleId);
-            if (!confirm(`ถอนการติดตั้ง module: ${moduleId}?`)) return;
+            setConfirmModal({
+                isOpen: true,
+                title: "ยืนยันการถอนการติดตั้ง",
+                message: `ระบบจะทำการถอนการติดตั้ง module: ${moduleId} ออกจากบัญชีนี้ คุณต้องการดำเนินการต่อหรือไม่?`,
+                type: 'danger',
+                onConfirm: async () => {
+                    setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                    await executeToggleModule(newModules);
+                }
+            });
         } else {
             newModules = [...currentModules, moduleId];
+            await executeToggleModule(newModules);
         }
+    };
 
+    const executeToggleModule = async (newModules: string[]) => {
+        if (!selectedUser) return;
         try {
             if (!db) return;
             await updateDoc(doc(db, "users", selectedUser.uid), {
@@ -297,10 +343,9 @@ export default function AdminUsersPage() {
             const updatedUser = { ...selectedUser, installed_modules: newModules };
             setSelectedUser(updatedUser);
             setUsers(users.map(u => u.uid === selectedUser.uid ? updatedUser : u));
-
-        } catch (error: any) {
-            console.error("Module update failed:", error);
-            alert("Failed to update module: " + error.message);
+        } catch (e: any) {
+            console.error("Module update failed:", e);
+            alert("❌ ปรับปรุง module ไม่สำเร็จ");
         }
     };
 
@@ -331,46 +376,63 @@ export default function AdminUsersPage() {
 
     const handleBanToggle = async (user: User) => {
         const newBanStatus = !user.banned;
-        if (confirm(`คุณต้องการ ${newBanStatus ? 'ระงับการใช้งาน (BAN)' : 'ปลดระงับ (UNBAN)'} ผู้ใช้ ${user.displayName} หรือไม่?`)) {
-            try {
-                const { AdminService } = await import('@/features/admin/services/adminService');
-                await AdminService.updateUserBanStatus(user.uid, newBanStatus);
+        setConfirmModal({
+            isOpen: true,
+            title: newBanStatus ? "ระงับการใช้งานบัญชี" : "ยกเลิกการระงับการใช้งาน",
+            message: `คุณแน่ใจหรือไม่ที่จะทำการ ${newBanStatus ? 'BAN' : 'UNBAN'} ผู้ใช้ท่านนี้? ${newBanStatus ? 'ผู้ใช้จะไม่สามารถเข้าสู่ระบบเพื่อใช้งานเพลงได้' : 'สิทธิ์การเข้าใช้งานจะกลับมาเป็นปกติ'}`,
+            type: newBanStatus ? 'danger' : 'warning',
+            onConfirm: async () => {
+                setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                try {
+                    const { AdminService } = await import('@/features/admin/services/adminService');
+                    await AdminService.updateUserBanStatus(user.uid, newBanStatus);
 
-                const updatedUser = { ...user, banned: newBanStatus };
-                setUsers(users.map(u => u.uid === user.uid ? updatedUser : u));
-            } catch (error) {
-                console.error("Error updating ban status:", error);
+                    const updatedUser = { ...user, banned: newBanStatus };
+                    setUsers(users.map(u => u.uid === user.uid ? updatedUser : u));
+                } catch (error) {
+                    console.error("Error updating ban status:", error);
+                    alert("❌ ปรับปรุงสถานะไม่สำเร็จ");
+                }
             }
-        }
+        });
     };
 
     const handleCleanupGuests = async () => {
-        if (!confirm(`🛠️ ยืนยันปฏิบัตการล้างข้อมูลขยะ (Anonymous/Guest Accounts)?\n\nระบบจะทำการล้างรายการที่ไม่มีการใช้งานเกิน 3 วัน ออกจากทั้งรายการสมาชิก (Auth) และฐานข้อมูล (Database) เพื่อความสะอาดและรวดเร็วของระบบ\n\nตรวจสอบความปลอดภัย: ผู้ใช้งานที่มีบัญชีจริงจะไม่ได้รับผลกระทบ 100%`)) return;
-
-        setLoading(true);
-        try {
-            const res = await fetch('/api/admin/bulk-cleanup');
-            const result = await res.json();
-            
-            if (result.success) {
-                const message = `🧹 ดำเนินการกวาดล้างสำเร็จ (Batch Process)!\n\n` +
-                                `- ลบออกจาก Auth List: ${result.deletedAuth} ราย\n` +
-                                `- ลบออกจาก Firestore: ${result.deletedFirestore} ราย\n` +
-                                `- ข้อมูลที่ตรวจสอบทั้งหมดในรอบนี้: ${result.totalProcessed} ราย\n\n` +
-                                `คำแนะนำ: ${result.instruction}`;
-                
-                alert(message);
-                fetchUsers(); // Refresh the list
-            } else {
-                throw new Error(result.error || "Unknown server error");
+        setConfirmModal({
+            isOpen: true,
+            title: "ยืนยันปฏิบัติการกวาดล้างขยะ (Anonymous)",
+            message: "ระบบจะทำการล้างรายการผู้ใช้นิรนามที่ไม่มีการใช้งานเกิน 3 วันออกทันที ข้อมูลผู้ใช้งานจริงและสมาชิกจะไม่ได้รับผลกระทบแน่นอน คุณต้องการดำเนินการต่อหรือไม่?",
+            type: 'danger',
+            confirmText: 'เริ่มกวาดล้างขยะ',
+            onConfirm: async () => {
+                setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                setLoading(true);
+                try {
+                    const res = await fetch('/api/admin/bulk-cleanup');
+                    const result = await res.json();
+                    
+                    if (result.success) {
+                        const message = `🧹 กวาดล้างสำเร็จ!\n\n` +
+                                        `- ลบจาก Auth: ${result.deletedAuth}\n` +
+                                        `- ลบจาก Firestore: ${result.deletedFirestore}\n` +
+                                        `- ตรวจสอบแล้ว: ${result.totalProcessed}\n\n` +
+                                        `คำแนะนำ: ${result.instruction}`;
+                        
+                        alert(message);
+                        fetchUsers(); // Refresh the list
+                    } else {
+                        throw new Error(result.error || "Unknown server error");
+                    }
+                } catch (error: any) {
+                    console.error("Cleanup failed:", error);
+                    alert("❌ ระบบขัดข้อง: " + error.message);
+                } finally {
+                    setLoading(false);
+                }
             }
-        } catch (error: any) {
-            console.error("Cleanup failed:", error);
-            alert("❌ ระบบขัดข้อง: " + error.message);
-        } finally {
-            setLoading(false);
-        }
+        });
     };
+
 
 
     const filteredUsers = users.filter(u => {
@@ -800,6 +862,17 @@ export default function AdminUsersPage() {
                 </div>
             )}
 
+            {/* Confirm Modal */}
+            <ConfirmModal 
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                type={confirmModal.type}
+                confirmText={confirmModal.confirmText}
+            />
         </AdminLayout>
     );
 }
+
