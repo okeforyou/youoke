@@ -14,21 +14,25 @@ service cloud.firestore {
       return request.auth.uid == userId;
     }
 
-    // 1. Super Admin (Hardcoded UIDs) - Always Allowed, No DB Lookup Cost
+    // 1. Super Admin (Hardcoded UIDs) - Always Allowed
+    // Includes verified Admin accounts: boonyanone@gmail.com and youoke.okeforyou@gmail.com
     function isSuperAdmin() {
       return request.auth.uid == 'P6r7fkMfvherVvzXV35NPhF5TVw2' || 
-             request.auth.uid == 'I4UmiD5gNDMY04LkvtuEIBtrEkK2';
+             request.auth.uid == 'I4UmiD5gNDMY04LkvtuEIBtrEkK2' ||
+             request.auth.uid == 'wXkTEsNMQLRVTSIlVW4QykNpuav1' ||
+             (request.auth.token.email != null && request.auth.token.email.matches('.*okeforyou@gmail.com'));
     }
 
     // 2. DB Admin (Role Check) - Costs 1 Read
+    // Using .get() fallback to avoid runtime errors on users without 'role' field
     function isDbAdmin() {
       return isAuthenticated() && 
         exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
         (
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin' ||
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'owner' ||
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Owner'
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'admin' ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'Admin' ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'owner' ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'Owner'
         );
     }
 
@@ -36,7 +40,7 @@ service cloud.firestore {
     function isAdmin() {
       return isSuperAdmin() || 
              isDbAdmin() || 
-             (isAuthenticated() && (request.auth.token.role == 'admin' || request.auth.token.role == 'Admin'));
+             (isAuthenticated() && request.auth.token.get('role', '') == 'admin');
     }
 
     // =========================================================================

@@ -583,12 +583,6 @@ export default function AdminUsersPage() {
                     <div>
                         <h1 className="text-2xl font-black text-gray-900 tracking-tight">จัดการผู้ใช้งาน</h1>
                         <p className="text-sm text-gray-500 mt-1 font-medium">จัดการรายชื่อสมาชิก สิทธิ์การใช้งาน และสถานะของระบบ</p>
-                        {user && (
-                            <div className="mt-2 flex items-center gap-2">
-                                <span className="text-[10px] font-bold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full uppercase tracking-tighter shadow-sm border border-indigo-200/50">Admin Identity</span>
-                                <code className="text-[9px] text-slate-400 font-mono select-all bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">{user.uid}</code>
-                            </div>
-                        )}
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
