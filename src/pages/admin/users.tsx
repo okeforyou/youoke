@@ -345,41 +345,33 @@ export default function AdminUsersPage() {
     };
 
     const handleCleanupGuests = async () => {
-        const cutoffDate = new Date();
-        cutoffDate.setDate(cutoffDate.getDate() - 3);
-        if (!confirm(`ลบผู้เยี่ยมชม (Guests) ที่ไม่ได้ใช้งานเกิน 3 วันหรือไม่?`)) return;
+        if (!confirm(`🛠️ ยืนยันปฏิบัตการล้างข้อมูลขยะ (Anonymous/Guest Accounts)?\n\nระบบจะทำการล้างรายการที่ไม่มีการใช้งานเกิน 3 วัน ออกจากทั้งรายการสมาชิก (Auth) และฐานข้อมูล (Database) เพื่อความสะอาดและรวดเร็วของระบบ\n\nตรวจสอบความปลอดภัย: ผู้ใช้งานที่มีบัญชีจริงจะไม่ได้รับผลกระทบ 100%`)) return;
 
         setLoading(true);
         try {
-            if (!db) return;
-            const q = query(collection(db, "users"));
-            const snapshot = await getDocs(q);
-            let deleteCount = 0;
-            const batchPromises: Promise<void>[] = [];
-
-            snapshot.forEach(docSnap => {
-                const data = docSnap.data();
-                if (!data.email) {
-                    let createdSeconds = 0;
-                    if (data.createdAt?.seconds) createdSeconds = data.createdAt.seconds;
-                    else if (data.createdAt instanceof Date) createdSeconds = data.createdAt.getTime() / 1000;
-                    else if (typeof data.createdAt === 'number') createdSeconds = data.createdAt > 10000000000 ? data.createdAt / 1000 : data.createdAt;
-
-                    if (!createdSeconds || createdSeconds < cutoffDate.getTime() / 1000) {
-                        if (db) batchPromises.push(deleteDoc(doc(db, "users", docSnap.id)));
-                        deleteCount++;
-                    }
-                }
-            });
-            await Promise.all(batchPromises);
-            alert(deleteCount > 0 ? `ลบ Guest ไปทั้งหมด ${deleteCount} รายการ` : "ไม่พบ Guest ที่เก่าเกินกำหนด");
-            fetchUsers();
-        } catch (error) {
+            const res = await fetch('/api/admin/bulk-cleanup');
+            const result = await res.json();
+            
+            if (result.success) {
+                const message = `🧹 ดำเนินการกวาดล้างสำเร็จ (Batch Process)!\n\n` +
+                                `- ลบออกจาก Auth List: ${result.deletedAuth} ราย\n` +
+                                `- ลบออกจาก Firestore: ${result.deletedFirestore} ราย\n` +
+                                `- ข้อมูลที่ตรวจสอบทั้งหมดในรอบนี้: ${result.totalProcessed} ราย\n\n` +
+                                `คำแนะนำ: ${result.instruction}`;
+                
+                alert(message);
+                fetchUsers(); // Refresh the list
+            } else {
+                throw new Error(result.error || "Unknown server error");
+            }
+        } catch (error: any) {
             console.error("Cleanup failed:", error);
+            alert("❌ ระบบขัดข้อง: " + error.message);
         } finally {
             setLoading(false);
         }
     };
+
 
     const filteredUsers = users.filter(u => {
         const matchesSearch = u.displayName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
