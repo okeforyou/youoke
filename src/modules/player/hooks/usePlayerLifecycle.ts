@@ -36,11 +36,16 @@ export const usePlayerLifecycle = (currentSource: string | null, showDjOverlay: 
         
         // Get defaults from system config
         const defaultLimits = config.membership?.[role] || DEFAULT_CONFIG.membership[role] || DEFAULT_CONFIG.membership.guest;
+        
+        // 🛡️ HARD PROTECTION: Non-guests should NOT use guest-level defaults
+        const actualMaxDuration = (role !== 'guest' && (defaultLimits.max_duration_sec === undefined || defaultLimits.max_duration_sec === null)) 
+            ? 0 
+            : (defaultLimits.max_duration_sec || 0);
 
         setPlanLimits({
             maxDailySongs: defaultLimits.max_daily_songs || 0,
             showAds: membershipLimits?.showAds ?? defaultLimits.show_ads ?? true,
-            maxDuration: defaultLimits.max_duration_sec || 0
+            maxDuration: actualMaxDuration
         });
     }, [userRole, config, user?.membership]);
 
