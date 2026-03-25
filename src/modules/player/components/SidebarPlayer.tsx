@@ -535,14 +535,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                 </div>
             )}
 
-            {/* Limit Indicator */}
-            {
-                !isPassive && mounted && maxDuration > 0 && currentSource && (
-                    <div className="absolute top-3 right-3 z-20 badge badge-warning gap-1 opacity-80 text-[10px] font-black uppercase tracking-wider h-7 px-3 rounded-full border-none shadow-lg">
-                        <span>⏱️ จำกัดเวลา: {maxDuration}วิ</span>
-                    </div>
-                )
-            }
+            {/* Limit Indicator Removed (v2.10.3) */}
 
             {/* 🎯 YOUTUBE-STYLE MINI CONTROLS (Fullscreen Only - Rounded Capsule - VANISHING MODE) */}
             {

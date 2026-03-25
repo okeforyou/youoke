@@ -13,7 +13,7 @@ export const usePlayerLifecycle = (currentSource: string | null, showDjOverlay: 
     const { setLimitModalOpen } = useUIStore();
 
     const [dailyCount, setDailyCount] = useState(0);
-    const [planLimits, setPlanLimits] = useState<{ maxDailySongs: number, showAds: boolean, maxDuration: number } | null>(null);
+    const [planLimits, setPlanLimits] = useState<{ maxDailySongs: number, showAds: boolean } | null>(null);
 
     // 🏷️ Role Resolution Logic (Guest vs Free vs Premium)
     let userRole: string = 'guest';
@@ -44,14 +44,13 @@ export const usePlayerLifecycle = (currentSource: string | null, showDjOverlay: 
 
         setPlanLimits({
             maxDailySongs: defaultLimits.max_daily_songs || 0,
-            showAds: membershipLimits?.showAds ?? defaultLimits.show_ads ?? true,
-            maxDuration: actualMaxDuration
+            showAds: membershipLimits?.showAds ?? defaultLimits.show_ads ?? true
         });
     }, [userRole, config, user?.membership]);
 
     const maxDailySongs = planLimits?.maxDailySongs || 0;
     const showAds = planLimits?.showAds ?? true;
-    const maxDuration = planLimits?.maxDuration || 0;
+    const maxDuration = 0; // Duration limit removed entirely (v2.10.3)
 
     // Initial Load
     useEffect(() => {
@@ -106,15 +105,7 @@ export const usePlayerLifecycle = (currentSource: string | null, showDjOverlay: 
             return;
         }
 
-        // 4. Medley/Long Video Check (Block Guests)
-        const duration = usePlayerStore.getState().duration;
-        const maxDur = (maxDuration !== undefined && maxDuration !== null) ? maxDuration : (config?.membership?.free?.max_duration_sec ?? 600); 
-        if (userRole === 'guest' && duration > maxDur && maxDur > 0) {
-            console.log("⛔ Medley detected! Blocking guest playing long music.");
-            usePlayerStore.setState({ isPlaying: false });
-            setLimitModalOpen(true);
-            return;
-        }
+        // 4. Medley/Long Video Check (Removed v2.10.3 - Gated at Playback Level instead)
 
         // 5. Increment logic
         const hasCountedKey = `counted_${currentSource}`;
