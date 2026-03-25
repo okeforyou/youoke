@@ -11,6 +11,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import React from "react";
+import { useAdminNotifications } from "../hooks/useAdminNotifications";
 
 interface AdminHeaderProps {
     onMenuClick?: () => void;
@@ -19,6 +20,18 @@ interface AdminHeaderProps {
 export const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
     const { user, logout } = useAuth();
     const router = useRouter();
+    const { notifications, unreadCount } = useAdminNotifications();
+
+    const timeAgo = (date: Date) => {
+        const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+        if (seconds < 60) return 'เมื่อสักครู่';
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return `${minutes} นาทีที่แล้ว`;
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return `${hours} ชั่วโมงที่แล้ว`;
+        const days = Math.floor(hours / 24);
+        return `${days} วันที่แล้ว`;
+    };
 
     const handleLogout = async () => {
         if (!window.confirm('ยืนยันออกจากระบบ?')) return;
@@ -61,19 +74,63 @@ export const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
                     <label tabIndex={0} className="btn btn-ghost btn-sm btn-circle text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors">
                         <div className="indicator">
                             <Bell className="h-5 w-5" />
-                            <span className="badge badge-xs badge-primary indicator-item border-white"></span>
+                            {unreadCount > 0 && (
+                                <span className="badge badge-xs badge-primary indicator-item border-white animate-pulse">
+                                    {unreadCount}
+                                </span>
+                            )}
                         </div>
                     </label>
                     <div tabIndex={0} className="dropdown-content z-[1] card card-compact w-80 p-0 shadow-xl bg-white border border-gray-100 mt-2 rounded-xl animate-in zoom-in-95 duration-200">
                         <div className="card-body p-0">
-                            <div className="px-4 py-3 border-b border-gray-100 flex justify-between items-center">
-                                <h3 className="font-semibold text-gray-900">การแจ้งเตือน</h3>
-                                <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">เร็วๆ นี้</span>
+                            <div className="px-4 py-3 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                                <h3 className="font-semibold text-gray-900 text-sm">การแจ้งเตือน</h3>
+                                {unreadCount > 0 && (
+                                    <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
+                                        {unreadCount} รายการใหม่
+                                    </span>
+                                )}
                             </div>
-                            <div className="p-8 text-center text-gray-400 text-sm">
-                                <Bell className="h-8 w-8 mx-auto mb-2 opacity-20" />
-                                <p>ยังไม่มีการแจ้งเตือนใหม่</p>
+                            <div className="max-h-[320px] overflow-y-auto">
+                                {notifications.length > 0 ? (
+                                    <div className="divide-y divide-gray-50">
+                                        {notifications.map((notif) => (
+                                            <Link 
+                                                key={notif.id} 
+                                                href={notif.link}
+                                                className="flex flex-col gap-1 p-4 hover:bg-gray-50 transition-colors group"
+                                            >
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <h4 className="text-[13px] font-bold text-gray-900 group-hover:text-primary transition-colors">
+                                                        {notif.title}
+                                                    </h4>
+                                                    <span className="text-[10px] text-gray-400 whitespace-nowrap pt-0.5">
+                                                        {notif.timestamp ? timeAgo(notif.timestamp.toDate()) : 'เมื่อสักครู่'}
+                                                    </span>
+                                                </div>
+                                                <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">
+                                                    {notif.message}
+                                                </p>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="p-8 text-center text-gray-400 text-sm">
+                                        <Bell className="h-8 w-8 mx-auto mb-2 opacity-20" />
+                                        <p className="font-medium">ยังไม่มีการแจ้งเตือนใหม่</p>
+                                    </div>
+                                )}
                             </div>
+                            {notifications.length > 0 && (
+                                <div className="p-2 border-t border-gray-100">
+                                    <Link 
+                                        href="/admin/payments" 
+                                        className="btn btn-ghost btn-sm w-full text-primary hover:bg-primary/5 rounded-lg normal-case font-bold"
+                                    >
+                                        ดูทั้งหมด
+                                    </Link>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
