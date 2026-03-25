@@ -37,22 +37,6 @@ export const MobileBottomNav = () => {
             setProfileOpen(true);
             return;
         } else {
-            // 🛡️ Premium Authorization Logic: Lock "Music Station" for Guests/Free
-            if (index === 3) {
-                const isGuest = !user;
-                const isFree = user?.membership?.type === 'free' || user?.membership?.status !== 'active';
-                
-                if (isGuest || isFree) {
-                    showConfirm({
-                        title: "👑 สิทธิพิเศษระดับพรีเมียม",
-                        message: "เมนู 'สถานีเพลง' (Music Station) เป็นแหล่รวมเพลย์ลิสต์เพลงยาวสำหรับสมาชิกพรีเมียมเท่านั้น อัปเกรดตอนนี้เพื่อร้องเพลงต่อเนื่องได้ทันที!",
-                        confirmText: "ดูแผนพรีเมียม",
-                        cancelText: "ไว้ก่อน",
-                        onConfirm: () => router.push('/packages')
-                    });
-                    return;
-                }
-            }
 
             setSearchTerm(''); // Clear search logic from MainLayout
             setActiveIndex(index);
