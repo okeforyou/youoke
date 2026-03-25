@@ -29,6 +29,8 @@ import {
     Minus
 } from "lucide-react";
 import { StatCard } from "@/features/admin/components/StatCard";
+import { EditUserModal } from "@/features/admin/components/EditUserModal";
+
 
 // LINE Icon Component
 const LineIcon = ({ className }: { className?: string }) => (
@@ -715,205 +717,20 @@ export default function AdminUsersPage() {
                 </div>
             </div>
 
-            {/* Edit Membership Modal - Refactored for Clean UI */}
+            {/* Edit Membership Modal - Platinum v2.3 Integrated */}
             {selectedUser && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    {/* Backdrop */}
-                    <div
-                        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
-                        onClick={() => setSelectedUser(null)}
-                    />
-
-                    {/* Modal Content */}
-                    <div className="relative w-full max-w-2xl transform overflow-hidden rounded-2xl bg-card shadow-2xl transition-all max-h-[85vh] flex flex-col">
-
-                        {/* Header */}
-                        <div className="flex items-center justify-between border-b border-border bg-muted/30 px-6 py-4 shrink-0">
-                            <div>
-                                <h3 className="text-lg font-bold text-foreground">แก้ไขสมาชิก</h3>
-                                <p className="text-xs text-muted-foreground">ปรับเปลี่ยนสถานะสำหรับสมาชิก</p>
-                            </div>
-                            <button
-                                onClick={() => setSelectedUser(null)}
-                                className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                            >
-                                <X className="h-5 w-5" />
-                            </button>
-                        </div>
-
-                        {/* Scrollable Body */}
-                        <div className="flex-1 overflow-y-auto p-6 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                            <style jsx>{`
-                                .scrollbar-hide::-webkit-scrollbar {
-                                    display: none;
-                                }
-                             `}</style>
-
-                            {/* User Profile Card */}
-                            <div className="flex items-center gap-4 p-4 rounded-xl bg-muted/40 border border-border/50 mb-6">
-                                <div className="avatar placeholder">
-                                    <div className="bg-primary text-primary-foreground rounded-full w-14 h-14 text-xl">
-                                        <span>{selectedUser.displayName?.charAt(0) || 'U'}</span>
-                                    </div>
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-lg text-foreground">
-                                        {selectedUser.displayName}
-                                        {selectedUser.role === 'admin' && <span className="ml-2 text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full">Admin</span>}
-                                    </h3>
-                                    <p className="text-sm text-muted-foreground">{selectedUser.email}</p>
-                                    <p className="text-xs text-muted-foreground mt-1 opacity-70 font-mono select-all">UID: {selectedUser.uid}</p>
-                                </div>
-                            </div>
-
-                            {/* Role Management */}
-                            <div className="mb-6">
-                                <label className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
-                                    <Shield className="w-4 h-4 text-primary" /> บทบาท (Role)
-                                </label>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <button
-                                        onClick={() => updateUserRole(selectedUser.uid, 'user')}
-                                        className={cn(
-                                            "btn btn-sm border-none shadow-sm",
-                                            selectedUser.role !== 'admin'
-                                                ? "bg-muted text-foreground ring-2 ring-primary/20"
-                                                : "bg-background text-muted-foreground border border-border"
-                                        )}
-                                    >
-                                        USER
-                                    </button>
-                                    <button
-                                        onClick={() => updateUserRole(selectedUser.uid, 'admin')}
-                                        className={cn(
-                                            "btn btn-sm border-none shadow-sm",
-                                            selectedUser.role === 'admin'
-                                                ? "bg-red-600 text-white hover:bg-red-700"
-                                                : "bg-background text-muted-foreground border border-border"
-                                        )}
-                                    >
-                                        <Shield className="w-3 h-3 mr-1" /> ADMIN
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Modules Management */}
-                            <div className="mb-6">
-                                <label className="text-sm font-semibold text-foreground flex items-center gap-2 mb-3">
-                                    <Package className="w-4 h-4 text-primary" /> Installed Modules
-                                </label>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    {AVAILABLE_MODULES.map((module) => {
-                                        const isInstalled = selectedUser.installed_modules?.includes(module.id);
-                                        return (
-                                            <div
-                                                key={module.id}
-                                                onClick={() => handleToggleModule(module.id)}
-                                                className={cn(
-                                                    "cursor-pointer border rounded-lg p-3 flex items-center gap-3 transition-colors",
-                                                    isInstalled
-                                                        ? "bg-primary/10 border-primary"
-                                                        : "bg-background border-border hover:bg-muted"
-                                                )}
-                                            >
-                                                <div className={cn(
-                                                    "w-8 h-8 rounded-full flex items-center justify-center",
-                                                    isInstalled ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                                                )}>
-                                                    <module.icon className="w-4 h-4" />
-                                                </div>
-                                                <div className="flex-1">
-                                                    <div className="text-sm font-medium">{module.name}</div>
-                                                    <div className="text-xs text-muted-foreground">{isInstalled ? 'Installed' : 'Not Installed'}</div>
-                                                </div>
-                                                <input
-                                                    type="checkbox"
-                                                    className="toggle toggle-primary toggle-sm"
-                                                    checked={isInstalled || false}
-                                                    readOnly
-                                                />
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-
-                            <hr className="border-border/50 mb-6" />
-
-                            {/* Package Selection */}
-                            <div className="space-y-4">
-                                <label className="text-sm font-semibold text-foreground flex items-center gap-2 text-warning">
-                                    <Crown className="w-4 h-4" /> เลือกแพ็กเกจ
-                                </label>
-
-                                <button
-                                    onClick={() => handleAssignPackage('lifetime')}
-                                    disabled={assigningLoading}
-                                    className={cn(
-                                        "btn w-full gap-2 h-auto py-3 relative overflow-hidden group",
-                                        selectedUser.membership?.packageId === 'lifetime'
-                                            ? "btn-error ring-2 ring-offset-2 ring-red-500"
-                                            : "btn-outline btn-error"
-                                    )}
-                                >
-                                    <div className="absolute inset-0 bg-red-500/5 group-hover:bg-red-500/10 transition-colors" />
-                                    <Crown className="w-5 h-5" />
-                                    <span>มอบสิทธิ์ LIFETIME (ตลอดชีพ)</span>
-                                    {selectedUser.membership?.packageId === 'lifetime' && (
-                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs bg-white/20 px-2 py-0.5 rounded-full">Selected</span>
-                                    )}
-                                </button>
-
-                                <div className="text-xs text-muted-foreground mt-4 mb-2">แพ็กเกจมาตรฐาน</div>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    {packages.map((pkg) => {
-                                        const isSelected = selectedUser.membership?.packageId === pkg.id;
-                                        return (
-                                            <div
-                                                key={pkg.id}
-                                                onClick={() => handleAssignPackage(pkg.id)}
-                                                className={cn(
-                                                    "cursor-pointer border rounded-xl p-3 transition-all active:scale-[0.98] relative",
-                                                    isSelected
-                                                        ? "border-primary bg-primary/10 shadow-sm ring-1 ring-primary"
-                                                        : "border-border hover:border-primary hover:bg-primary/5"
-                                                )}
-                                            >
-                                                {isSelected && (
-                                                    <div className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary animate-pulse" />
-                                                )}
-                                                <div className="flex justify-between items-start mb-1">
-                                                    <span className={cn("font-semibold", isSelected ? "text-primary" : "text-foreground")}>
-                                                        {pkg.name}
-                                                    </span>
-                                                    <div className={cn("badge badge-sm", isSelected ? "badge-primary" : "badge-ghost")}>
-                                                        {pkg.durationDays} วัน
-                                                    </div>
-                                                </div>
-                                                <div className="text-sm text-muted-foreground line-clamp-1">{pkg.id}</div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-
-                                {packages.length === 0 && (
-                                    <div className="text-center py-8 border-2 border-dashed border-border rounded-xl bg-muted/20">
-                                        <p className="text-sm text-muted-foreground">ไม่พบแพ็กเกจมาตรฐาน</p>
-                                        <a href="/admin/packages" className="btn btn-xs btn-ghost mt-2">
-                                            <Package className="w-3 h-3 mr-1" /> ไปสร้างแพ็กเกจ
-                                        </a>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Footer */}
-                        <div className="flex justify-end border-t border-border bg-muted/30 px-6 py-4 shrink-0">
-                            <button className="btn btn-ghost btn-sm" onClick={() => setSelectedUser(null)}>ปิดหน้าต่าง</button>
-                        </div>
-                    </div>
-                </div>
+                <EditUserModal
+                    user={selectedUser as any}
+                    packages={packages}
+                    loading={assigningLoading}
+                    onClose={() => setSelectedUser(null)}
+                    onUpdateRole={updateUserRole}
+                    onAssignPackage={handleAssignPackage}
+                    onToggleModule={handleToggleModule}
+                    onRefresh={fetchUsers}
+                />
             )}
+
 
             {/* Notification Modal - Refactored */}
             {notificationDialogOpen && (
