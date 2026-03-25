@@ -229,7 +229,8 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                             <ShieldCheckIcon className="w-4 h-4 text-green-500" /> อัปเกรดสถานะพรีเมียม (Manual Assign)
                         </label>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                            {packages.map(pkg => (
+                            {packages?.map(pkg => (
+
                                 <button
                                     key={pkg.id}
                                     onClick={() => onAssignPackage(pkg.id)}
@@ -255,7 +256,8 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                             <CubeIcon className="w-4 h-4 text-blue-500" /> ปลดล็อกโมดูลเสริม
                         </label>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            {availableModules.map(module => {
+                            {availableModules?.map(module => {
+
                                 const isInstalled = user.installed_modules?.includes(module.id);
                                 return (
                                     <div

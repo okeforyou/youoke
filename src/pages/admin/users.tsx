@@ -722,7 +722,9 @@ export default function AdminUsersPage() {
                 <EditUserModal
                     user={selectedUser as any}
                     packages={packages}
+                    availableModules={AVAILABLE_MODULES} // 🛡️ ADDED: Missing prop fixed
                     loading={assigningLoading}
+
                     onClose={() => setSelectedUser(null)}
                     onUpdateRole={updateUserRole}
                     onAssignPackage={handleAssignPackage}
