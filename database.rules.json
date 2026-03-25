@@ -3,7 +3,7 @@
     "users": {
       "$uid": {
         ".read": "auth != null",
-        ".write": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('role').val() === 'owner' || auth.uid === 'P6r7fkMfvherVvzXV35NPhF5TVw2' || auth.uid === 'I4UmiD5gNDMY04LkvtuEIBtrEkK2')"
+        ".write": "auth != null && (auth.uid === $uid || root.child('users').child(auth.uid).child('role').val() === 'admin' || root.child('users').child(auth.uid).child('role').val() === 'Admin' || root.child('users').child(auth.uid).child('role').val() === 'owner' || root.child('users').child(auth.uid).child('role').val() === 'Owner' || auth.uid === 'P6r7fkMfvherVvzXV35NPhF5TVw2' || auth.uid === 'I4UmiD5gNDMY04LkvtuEIBtrEkK2')"
       }
     },
     "rooms": {

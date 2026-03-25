@@ -45,10 +45,10 @@ service cloud.firestore {
       allow read, write: if isSuperAdmin();
       
       // Standard rules for others
-      allow read: if isOwner(userId) || isDbAdmin(); 
+      allow read: if isOwner(userId) || isAdmin(); 
       allow list: if isAdmin(); 
       allow create: if isOwner(userId);
-      allow update: if isOwner(userId) || isDbAdmin();
+      allow update: if isOwner(userId) || isAdmin();
       allow delete: if isAdmin();
 
       // Notifications Sub-collection
