@@ -25,39 +25,24 @@ export const usePlayerLifecycle = (currentSource: string | null, showDjOverlay: 
         }
     }
 
-    // Load Plan Limits from Database
+    // Set Initial Limits from User Profile or System Config
     useEffect(() => {
-        const fetchPlan = async () => {
-            if (!db) return;
-            try {
-                const planRef = doc(db, 'plans', userRole);
-                const planSnap = await getDoc(planRef);
-                
-                if (planSnap.exists()) {
-                    const data = planSnap.data();
-                    setPlanLimits({
-                        maxDailySongs: data.maxDailySongs || 0,
-                        showAds: data.showAds ?? true,
-                        maxDuration: data.maxDurationSec || 0
-                    });
-                } else {
-                    // Fallback to System Config / Defaults
-                    const role = (userRole as 'guest' | 'free' | 'premium') || 'guest';
-                    // @ts-ignore - Handle dynamic indexing safely
-                    const limits = config?.membership?.[role] || DEFAULT_CONFIG.membership[role] || DEFAULT_CONFIG.membership.guest;
-                    setPlanLimits({
-                        maxDailySongs: limits?.max_daily_songs || 0,
-                        showAds: limits?.show_ads ?? true,
-                        maxDuration: limits?.max_duration_sec || 0
-                    });
-                }
-            } catch (err) {
-                console.error("Error fetching plan limits:", err);
-            }
-        };
+        if (!config) return;
 
-        fetchPlan();
-    }, [userRole, db, config]);
+        const role = (userRole as 'guest' | 'free' | 'premium') || 'guest';
+        
+        // Use user's specific membership properties if available (e.g. from useAuthStore)
+        const membershipLimits = user?.membership;
+        
+        // Get defaults from system config
+        const defaultLimits = config.membership?.[role] || DEFAULT_CONFIG.membership[role] || DEFAULT_CONFIG.membership.guest;
+
+        setPlanLimits({
+            maxDailySongs: defaultLimits.max_daily_songs || 0,
+            showAds: membershipLimits?.showAds ?? defaultLimits.show_ads ?? true,
+            maxDuration: defaultLimits.max_duration_sec || 0
+        });
+    }, [userRole, config, user?.membership]);
 
     const maxDailySongs = planLimits?.maxDailySongs || 0;
     const showAds = planLimits?.showAds ?? true;

@@ -216,7 +216,7 @@ export const DEFAULT_CONFIG: SystemConfig = {
     membership: {
         guest: {
             max_daily_songs: 10,
-            max_duration_sec: 0,
+            max_duration_sec: 600,
             allow_cast: false,
             allow_remote: true,
             show_ads: true,

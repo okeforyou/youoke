@@ -26,6 +26,7 @@ interface MembershipState {
     status: 'active' | 'expired' | 'pending';
     startedAt: any;
     expiresAt: any | null;
+    showAds?: boolean;
 }
 
 interface UserData {
@@ -83,7 +84,16 @@ const DEFAULT_MEMBERSHIP: MembershipState = {
     type: 'free',
     status: 'active',
     startedAt: null,
-    expiresAt: null
+    expiresAt: null,
+    showAds: false
+};
+
+const EXPIRED_MEMBERSHIP: MembershipState = {
+    type: 'free',
+    status: 'expired',
+    startedAt: null,
+    expiresAt: null,
+    showAds: true
 };
 
 export const useAuthStore = create<UserState & AuthActions>()(
@@ -147,7 +157,8 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                         type: 'day_pass',
                                         status: 'active',
                                         startedAt: serverTimestamp(),
-                                        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+                                        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+                                        showAds: false
                                     };
                                 }
                                 await updateDoc(userRef, updates);
@@ -254,7 +265,8 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                         type: 'day_pass',
                                         status: 'active',
                                         startedAt: serverTimestamp(),
-                                        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+                                        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+                                        showAds: false
                                     },
                                     quota: {
                                         daily_limit: 5,
@@ -285,9 +297,7 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                     if (isExpired && membership.status !== 'expired') {
                                         console.warn('⚠️ Membership Expired! Downgrading to Free...');
                                         membership = {
-                                            ...DEFAULT_MEMBERSHIP,
-                                            status: 'expired',
-                                            type: 'free'
+                                            ...EXPIRED_MEMBERSHIP
                                         };
                                         // Update Firestore and RTDB immediately
                                         const { updateDoc } = await import('firebase/firestore');
@@ -434,7 +444,8 @@ export const useAuthStore = create<UserState & AuthActions>()(
                             type: 'day_pass',
                             status: 'active',
                             startedAt: serverTimestamp(),
-                            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+                            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+                            showAds: false
                         },
                         tier: 'free',
                         credits: 0,
@@ -461,7 +472,8 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                 type: 'day_pass',
                                 status: 'active',
                                 startedAt: new Date(),
-                                expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+                                expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+                                showAds: false
                             },
                             installed_modules: [],
                             quota: undefined
