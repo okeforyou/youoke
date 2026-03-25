@@ -203,7 +203,13 @@ export default function AdminUsersPage() {
             : packages.find(p => p.id === pkgId);
 
         if (!targetPkg) {
-            alert("ไม่พบข้อมูลแพ็กเกจ");
+            setConfirmModal({
+                isOpen: true,
+                title: "ไม่พบข้อมูล",
+                message: "ไม่พบข้อมูลแพ็กเกจที่คุณเลือก",
+                type: 'danger',
+                onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+            });
             return;
         }
 
@@ -225,7 +231,13 @@ export default function AdminUsersPage() {
                 }
             });
 
-            alert(`✅ มอบแพ็กเกจ "${targetPkg.name}" ให้เรียบร้อยแล้ว`);
+            setConfirmModal({
+                isOpen: true,
+                title: "มอบแพ็กเกจสำเร็จ",
+                message: `ดำเนินการมอบสถานะให้แก่คุณ ${selectedUser.displayName} เรียบร้อยแล้ว`,
+                type: 'info',
+                onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+            });
 
             // 4. Optimistic Update
             const updatedUser = {
@@ -242,7 +254,13 @@ export default function AdminUsersPage() {
 
         } catch (error: any) {
             console.error(error);
-            alert("เกิดข้อผิดพลาด: " + error.message);
+            setConfirmModal({
+                isOpen: true,
+                title: "ผิดพลาด",
+                message: `ไม่สามารถมอบแพ็กเกจได้: ${error.message}`,
+                type: 'danger',
+                onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+            });
         } finally {
             setAssigningLoading(false);
         }
@@ -306,7 +324,13 @@ export default function AdminUsersPage() {
                     setUsers(users.map(u => u.uid === uid ? { ...u, role: newRole } : u));
                  } catch (e: any) {
                     console.error("Role update failed:", e);
-                    alert("❌ เปลี่ยนบทบาทไม่สำเร็จ: " + e.message);
+                    setConfirmModal({
+                        isOpen: true,
+                        title: "ผิดพลาด",
+                        message: `เปลี่ยนบทบาทไม่สำเร็จ: ${e.message}`,
+                        type: 'danger',
+                        onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+                    });
                 }
             }
         });
@@ -352,7 +376,13 @@ export default function AdminUsersPage() {
             setUsers(users.map(u => u.uid === selectedUser.uid ? updatedUser : u));
         } catch (e: any) {
             console.error("Module update failed:", e);
-            alert("❌ ปรับปรุง module ไม่สำเร็จ");
+            setConfirmModal({
+                isOpen: true,
+                title: "ผิดพลาด",
+                message: "ปรับปรุง Module ให้ผู้ใช้งานไม่สำเร็จ",
+                type: 'danger',
+                onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+            });
         }
     };
 
@@ -381,7 +411,13 @@ export default function AdminUsersPage() {
             setNotificationDialogOpen(false);
         } catch (error: any) {
             console.error(error);
-            alert("Failed to send message: " + error.message);
+            setConfirmModal({
+                isOpen: true,
+                title: "ผิดพลาด",
+                message: `ไม่สามารถส่งข้อความได้: ${error.message}`,
+                type: 'danger',
+                onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+            });
         } finally {
             setSendingMsg(false);
         }
@@ -404,7 +440,13 @@ export default function AdminUsersPage() {
                     setUsers(users.map(u => u.uid === user.uid ? updatedUser : u));
                 } catch (error) {
                     console.error("Error updating ban status:", error);
-                    alert("❌ ปรับปรุงสถานะไม่สำเร็จ");
+                    setConfirmModal({
+                        isOpen: true,
+                        title: "ผิดพลาด",
+                        message: "ไม่สามารถปรับปรุงสถานะระงับการใช้งานได้",
+                        type: 'danger',
+                        onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+                    });
                 }
             }
         });

@@ -32,9 +32,11 @@ service cloud.firestore {
         );
     }
 
-    // Combined Check (Use SuperAdmin first to short-circuit)
+    // Combined Check (Use SuperAdmin and Auth Token Role as fallbacks)
     function isAdmin() {
-      return isSuperAdmin() || isDbAdmin();
+      return isSuperAdmin() || 
+             isDbAdmin() || 
+             (isAuthenticated() && (request.auth.token.role == 'admin' || request.auth.token.role == 'Admin'));
     }
 
     // =========================================================================

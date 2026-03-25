@@ -55,6 +55,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
             : ''
     );
     const [savingDates, setSavingDates] = useState(false);
+    const [copied, setCopied] = useState(false);
     const [confirmModal, setConfirmModal] = useState<{
         isOpen: boolean;
         title: string;
@@ -137,7 +138,8 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
-        alert("📋 คัดลอกข้อมูลแล้ว");
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
     };
 
     return (
@@ -192,7 +194,12 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                                 <label className="text-[11px] font-bold text-slate-400 uppercase block mb-1">รหัสสมาชิก (UID)</label>
                                 <div className="flex items-center gap-2">
                                     <code className="bg-slate-50 px-2 py-1 rounded text-[10px] text-slate-500 font-mono flex-1 truncate">{user.uid}</code>
-                                    <button onClick={() => copyToClipboard(user.uid)} className="text-slate-400 hover:text-indigo-600 transition-colors">
+                                    <button onClick={() => copyToClipboard(user.uid)} className="relative text-slate-400 hover:text-indigo-600 transition-colors">
+                                        {copied && (
+                                            <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] px-2 py-1 rounded shadow-xl whitespace-nowrap animate-in fade-in zoom-in-50 duration-200">
+                                                คัดลอกแล้ว!
+                                            </span>
+                                        )}
                                         <ClipboardIcon className="w-4 h-4" />
                                     </button>
                                 </div>
