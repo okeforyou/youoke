@@ -24,7 +24,12 @@ service cloud.firestore {
     function isDbAdmin() {
       return isAuthenticated() && 
         exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'owner'];
+        (
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin' ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'owner' ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Owner'
+        );
     }
 
     // Combined Check (Use SuperAdmin first to short-circuit)

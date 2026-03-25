@@ -28,15 +28,15 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
     if (!isOpen) return null;
 
     const colors = {
-        danger: "bg-red-600 hover:bg-red-700 shadow-red-100",
+        danger: "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100",
         warning: "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100",
-        info: "bg-slate-800 hover:bg-slate-900 shadow-slate-100"
+        info: "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100"
     };
 
     const iconColors = {
-        danger: "text-red-600 bg-red-50",
+        danger: "text-indigo-600 bg-indigo-50",
         warning: "text-indigo-600 bg-indigo-50",
-        info: "text-slate-600 bg-slate-50"
+        info: "text-indigo-600 bg-indigo-50"
     };
 
     return (
