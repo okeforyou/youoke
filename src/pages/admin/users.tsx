@@ -87,6 +87,7 @@ const membershipStyles = {
 
 import { MODULES } from "@/config/modules";
 import { Grid } from "lucide-react";
+import { useAuthStore } from "@/modules/auth/useAuthStore";
 
 const AVAILABLE_MODULES = MODULES.map(m => ({
     id: m.id,
@@ -108,6 +109,7 @@ const GlobalScrollbarStyle = () => (
 );
 
 export default function AdminUsersPage() {
+    const { user } = useAuthStore();
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
