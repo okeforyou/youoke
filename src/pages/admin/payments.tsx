@@ -23,6 +23,8 @@ import { collection, query, orderBy, getDocs } from "firebase/firestore";
 import { db } from "@/firebase";
 import { PaymentSlip } from "@/modules/billing/types";
 import { cn } from "@/lib/utils";
+import { useUIStore } from '@/stores/useUIStore';
+import { useToast } from '@/context/ToastContext';
 
 export default function AdminOrdersPage() {
     const [orders, setOrders] = useState<PaymentSlip[]>([]);
@@ -30,6 +32,8 @@ export default function AdminOrdersPage() {
     const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
     const [selectedOrder, setSelectedOrder] = useState<PaymentSlip | null>(null);
     const [processing, setProcessing] = useState(false);
+    const showConfirm = useUIStore(state => state.showConfirm);
+    const { addToast } = useToast()!;
 
     // Fetch Orders
     const fetchOrders = async () => {
@@ -78,75 +82,94 @@ export default function AdminOrdersPage() {
 
     const handleApprove = async () => {
         if (!selectedOrder) return;
-        if (!confirm(`คุณยืนยันที่จะ "อนุมัติ" รายการแจ้งโอนของ ${selectedOrder.userDisplayName || 'User'} หรือไม่?`)) return;
+        showConfirm({
+            title: "ยืนยันการอนุมัติ",
+            message: `คุณยืนยันที่จะ "อนุมัติ" รายการแจ้งโอนของ ${selectedOrder.userDisplayName || 'User'} หรือไม่? ระบบจะเปิดสิทธิ์การใช้งานให้ทันที`,
+            confirmText: "อนุมัติรายการ",
+            type: "success",
+            onConfirm: async () => {
+                setProcessing(true);
+                try {
+                    const { useAuthStore } = await import('@/modules/auth/useAuthStore');
+                    const adminUid = useAuthStore.getState().user?.uid || 'admin';
 
-        setProcessing(true);
-        try {
-            const { useAuthStore } = await import('@/modules/auth/useAuthStore');
-            const adminUid = useAuthStore.getState().user?.uid || 'admin';
+                    const { approvePayment } = await import('@/modules/billing/services/paymentService');
+                    await approvePayment(
+                        selectedOrder.id,
+                        selectedOrder.userId,
+                        selectedOrder.packageId || 'free',
+                        adminUid
+                    );
 
-            const { approvePayment } = await import('@/modules/billing/services/paymentService');
-            await approvePayment(
-                selectedOrder.id, 
-                selectedOrder.userId, 
-                selectedOrder.packageId || 'free', 
-                adminUid
-            );
+                    addToast("อนุมัติรายการและเปิดใช้งานสมาชิกเรียบร้อยแล้ว!", "success");
+                    setSelectedOrder(null);
+                    fetchOrders();
 
-            alert("อนุมัติรายการและเปิดใช้งานสมาชิกเรียบร้อยแล้ว!");
-            setSelectedOrder(null);
-            fetchOrders();
-
-        } catch (error) {
-            console.error("Approval failed:", error);
-            alert("เกิดข้อผิดพลาดในการอนุมัติ");
-        } finally {
-            setProcessing(false);
-        }
+                } catch (error) {
+                    console.error("Approval failed:", error);
+                    addToast("เกิดข้อผิดพลาดในการอนุมัติ", "error");
+                } finally {
+                    setProcessing(false);
+                }
+            }
+        });
     };
 
     const handleReject = async () => {
         if (!selectedOrder) return;
-        const reason = prompt("ระบุเหตุผลที่ปฏิเสธ (ไม่บังคับ):", "หลักฐานไม่ถูกต้อง / ไม่พบยอดเงิน");
-        if (reason === null) return;
+        
+        showConfirm({
+            title: "ปฏิเสธรายการ",
+            message: "กรุณายืนยันการปฏิเสธรายการนี้ ระบบจะแจ้งเตือนผู้ใช้ให้ตรวจสอบหลักฐานอีกครั้ง",
+            confirmText: "ปฏิเสธรายการ",
+            type: "danger",
+            onConfirm: async () => {
+                const reason = "หลักฐานไม่ถูกต้อง / ไม่พบยอดเงิน (ตรวจสอบโดยผู้ดูแลระบบ)";
+                setProcessing(true);
+                try {
+                    const { useAuthStore } = await import('@/modules/auth/useAuthStore');
+                    const adminUid = useAuthStore.getState().user?.uid || 'admin';
 
-        setProcessing(true);
-        try {
-            const { useAuthStore } = await import('@/modules/auth/useAuthStore');
-            const adminUid = useAuthStore.getState().user?.uid || 'admin';
+                    const { rejectPayment } = await import('@/modules/billing/services/paymentService');
+                    await rejectPayment(selectedOrder.id, selectedOrder.userId, reason, adminUid);
 
-            const { rejectPayment } = await import('@/modules/billing/services/paymentService');
-            await rejectPayment(selectedOrder.id, selectedOrder.userId, reason, adminUid);
+                    addToast("ปฏิเสธรายการเรียบร้อยแล้ว", "success");
+                    setSelectedOrder(null);
+                    fetchOrders();
 
-            alert("ปฏิเสธรายการเรียบร้อยแล้ว");
-            setSelectedOrder(null);
-            fetchOrders();
-
-        } catch (error) {
-            console.error("Rejection failed:", error);
-            alert("เกิดข้อผิดพลาดในการปฏิเสธรายการ");
-        } finally {
-            setProcessing(false);
-        }
+                } catch (error) {
+                    console.error("Rejection failed:", error);
+                    addToast("เกิดข้อผิดพลาดในการปฏิเสธรายการ", "error");
+                } finally {
+                    setProcessing(false);
+                }
+            }
+        });
     };
 
     const handleDelete = async (orderId: string) => {
-        if (!confirm("⚠️ คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้ออกจากระบบ? (ไม่สามารถเรียกคืนได้)")) return;
-
-        setProcessing(true);
-        try {
-            const { deleteDoc, doc: firestoreDoc } = await import('firebase/firestore');
-            await deleteDoc(firestoreDoc(db as any, "payment_proofs", orderId));
-            
-            alert("ลบรายการออกจากระบบเรียบร้อยแล้ว");
-            if (selectedOrder?.id === orderId) setSelectedOrder(null);
-            fetchOrders();
-        } catch (error) {
-            console.error("Delete failed:", error);
-            alert("เกิดข้อผิดพลาดในการลบรายการ");
-        } finally {
-            setProcessing(false);
-        }
+        showConfirm({
+            title: "ยืนยันการลบ",
+            message: "⚠️ คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้ออกจากระบบ? (ไม่สามารถเรียกคืนได้)",
+            confirmText: "ลบถาวร",
+            type: "danger",
+            onConfirm: async () => {
+                setProcessing(true);
+                try {
+                    const { deleteDoc, doc: firestoreDoc } = await import('firebase/firestore');
+                    await deleteDoc(firestoreDoc(db as any, "payment_proofs", orderId));
+                    
+                    addToast("ลบรายการออกจากระบบเรียบร้อยแล้ว", "success");
+                    if (selectedOrder?.id === orderId) setSelectedOrder(null);
+                    fetchOrders();
+                } catch (error) {
+                    console.error("Delete failed:", error);
+                    addToast("เกิดข้อผิดพลาดในการลบรายการ", "error");
+                } finally {
+                    setProcessing(false);
+                }
+            }
+        });
     };
 
     const statusConfig = {

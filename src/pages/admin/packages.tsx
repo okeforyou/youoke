@@ -25,6 +25,8 @@ import {
 import { cn } from '@/lib/utils';
 import { StatCard } from "@/features/admin/components/StatCard";
 import { Activity, TrendingUp, TrendingDown, Minus, BadgeCheck } from "lucide-react";
+import { useUIStore } from '@/stores/useUIStore';
+import { useToast } from '@/context/ToastContext';
 
 interface PackageData {
     id: string;
@@ -60,6 +62,8 @@ export default function PackagesPage() {
     const [editMode, setEditMode] = useState<PackageData | null>(null);
     const [isCreating, setIsCreating] = useState(false);
     const [jsonError, setJsonError] = useState('');
+    const showConfirm = useUIStore(state => state.showConfirm);
+    const { addToast } = useToast()!;
 
     // Form State
     const [formData, setFormData] = useState<PackageData>({
@@ -219,12 +223,12 @@ export default function PackagesPage() {
             };
 
             await setDoc(doc(db, 'packages', finalId), payload);
-            alert("✅ บันทึกข้อมูลสำเร็จ!");
+            addToast("บันทึกข้อมูลสำเร็จ!", "success");
             setEditMode(null);
             setIsCreating(false);
         } catch (e: any) {
             console.error("❌ Save Error:", e);
-            alert(`❌ ไม่สามารถบันทึกได้: ${e.message}`);
+            addToast(`ไม่สามารถบันทึกได้: ${e.message}`, "error");
         } finally {
             setLoading(false);
         }
@@ -232,15 +236,25 @@ export default function PackagesPage() {
 
     const handleDelete = async (id: string) => {
         if (!db) return;
-        if (confirm(`คุณต้องการลบแพ็กเกจ ${id} ใช่ไหม?`)) {
-            try {
-                await deleteDoc(doc(db, 'packages', id));
-                alert("ลบแพ็กเกจแล้ว");
-            } catch (e: any) {
-                console.error("Delete Error:", e);
-                alert("เกิดข้อผิดพลาดในการลบ: " + e.message);
+        showConfirm({
+            title: "ยืนยันการลบ",
+            message: `คุณต้องการลบแพ็กเกจ ${id} ใช่ไหม? การดำเนินการนี้ไม่สามารถเรียกคืนได้`,
+            confirmText: "ลบแพ็กเกจ",
+            type: "danger",
+            onConfirm: async () => {
+                try {
+                    if (!db) return;
+                    setLoading(true);
+                    await deleteDoc(doc(db, 'packages', id));
+                    addToast("ลบแพ็กเกจเรียบร้อยแล้ว", "success");
+                } catch (e: any) {
+                    console.error("Delete Error:", e);
+                    addToast("เกิดข้อผิดพลาดในการลบ: " + e.message, "error");
+                } finally {
+                    setLoading(false);
+                }
             }
-        }
+        });
     };
 
     const stats = {

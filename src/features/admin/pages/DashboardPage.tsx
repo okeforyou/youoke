@@ -84,14 +84,11 @@ const AdminDashboard: React.FC = () => {
             setStats({
               ...dashboardStats,
               adminUsers: 0,
-              freeUsers: dashboardStats.totalUsers,
+              freeUsers: dashboardStats.totalUsers - dashboardStats.activeSubs,
               premiumUsers: dashboardStats.activeSubs,
               monthlySubscribers: 0,
               yearlySubscribers: 0,
               lifetimeSubscribers: 0,
-              pendingPayments: 0,
-              approvedPayments: 0,
-              rejectedPayments: 0,
               totalRevenue: dashboardStats.revenue,
             });
             console.log("🚀 DashboardPage: Stats Load Complete");

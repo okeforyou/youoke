@@ -23,6 +23,9 @@ export interface AdminStats {
     totalUsers: number;
     activeSubs: number;
     revenue: number;
+    pendingPayments: number;
+    approvedPayments: number;
+    rejectedPayments: number;
     loading: boolean;
 }
 
@@ -42,7 +45,7 @@ export const AdminService = {
         try {
             if (!db) {
                 console.warn("⚠️ AdminService: db is null");
-                return { totalUsers: 0, activeSubs: 0, revenue: 0, loading: false };
+                return { totalUsers: 0, activeSubs: 0, revenue: 0, pendingPayments: 0, approvedPayments: 0, rejectedPayments: 0, loading: false };
             }
 
             // 1. Total Users
@@ -70,21 +73,36 @@ export const AdminService = {
             );
             const paymentsSnapshot = await withTimeout(getDocs(paymentsQuery));
             let revenue = 0;
+            let approvedPayments = 0;
             paymentsSnapshot.forEach(doc => {
                 const data = doc.data();
                 if (data.amount) revenue += Number(data.amount);
+                approvedPayments++;
             });
             console.log("📊 AdminService: Got Revenue:", revenue);
+
+            // 4. Detailed Payment Counts (Extra counts for Dashboard)
+            console.log("📊 AdminService: Fetching Detailed Payment Counts...");
+            const pendingQuery = query(collection(db, "payment_proofs"), where("status", "==", "pending"));
+            const rejectedQuery = query(collection(db, "payment_proofs"), where("status", "==", "rejected"));
+            
+            const [pendingSnap, rejectedSnap] = await Promise.all([
+                withTimeout(getCountFromServer(pendingQuery)),
+                withTimeout(getCountFromServer(rejectedQuery))
+            ]);
 
             return {
                 totalUsers,
                 activeSubs,
                 revenue,
+                pendingPayments: pendingSnap.data().count,
+                approvedPayments: approvedPayments,
+                rejectedPayments: rejectedSnap.data().count,
                 loading: false
             };
         } catch (error) {
             console.error("❌ AdminService.getDashboardStats error:", error);
-            return { totalUsers: 0, activeSubs: 0, revenue: 0, loading: false };
+            return { totalUsers: 0, activeSubs: 0, revenue: 0, pendingPayments: 0, approvedPayments: 0, rejectedPayments: 0, loading: false };
         }
     },
 
