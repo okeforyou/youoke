@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { XMarkIcon, ShieldCheckIcon, StarIcon, ClipboardIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, ShieldCheckIcon, StarIcon, ClipboardIcon, UserIcon } from '@heroicons/react/24/outline';
 import { cn } from "../../../utils/cn";
 import { AdminService } from '../services/adminService';
 
@@ -66,7 +66,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                 expiresAt ? new Date(expiresAt) : null
             );
             if (onRefresh) onRefresh();
-            alert('✅ อัปเดตอายุสมาชิกสำเร็จ');
+            alert('✅ อัปเดตข้อมูลสำเร็จ');
         } catch (e: any) {
             alert('❌ ผิดพลาด: ' + e.message);
         } finally {
@@ -78,7 +78,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
         try {
             await AdminService.updateUserProfile(user.uid, { displayName: editName });
             if (onRefresh) onRefresh();
-            alert("✅ อัปเดตชื่อสำเร็จ!");
+            alert("✅ อัปเดตสำเร็จ");
         } catch (err: any) {
             alert("ผิดพลาด: " + err.message);
         }
@@ -86,165 +86,141 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
-        alert("📋 คัดลอกแล้ว: " + text);
+        alert("📋 คัดลอกข้อมูลแล้ว");
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" onClick={onClose} />
-            <div className="relative w-full max-w-2xl transform overflow-hidden rounded-3xl bg-white shadow-2xl transition-all max-h-[90vh] flex flex-col border border-gray-100">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center sm:p-4">
+            {/* Backdrop */}
+            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} />
+            
+            {/* Modal Container */}
+            <div className="relative w-full max-w-lg h-full sm:h-auto max-h-[95vh] bg-slate-50 overflow-hidden flex flex-col sm:rounded-2xl shadow-xl border border-slate-200/50">
                 
-                {/* Header: Clean & Sophisticated */}
-                <div className="flex items-center justify-between border-b border-gray-100 bg-white px-8 py-6 shrink-0">
-                    <div className="flex items-center gap-4">
-                        <div className="w-1.5 h-10 bg-indigo-600 rounded-full" />
-                        <div>
-                            <h3 className="text-xl font-black text-gray-900 tracking-tight">จัดการสมาชิก</h3>
-                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center gap-2">
-                                <div className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-pulse" />
-                                Platinum Control Center
-                            </p>
-                        </div>
-                    </div>
-                    <button 
-                        onClick={onClose} 
-                        className="rounded-full p-2 text-gray-300 transition-all hover:bg-gray-50 hover:text-gray-900"
-                    >
-                        <XMarkIcon className="h-6 w-6" />
+                {/* Header (Standard Pattern) */}
+                <div className="bg-white px-5 py-4 flex items-center justify-between border-b border-slate-100 flex-shrink-0">
+                    <h3 className="text-base font-bold text-slate-900 uppercase">จัดการสมาชิก</h3>
+                    <button onClick={onClose} className="p-2 hover:bg-slate-50 rounded-lg text-slate-400 transition-colors">
+                        <XMarkIcon className="w-5 h-5" />
                     </button>
                 </div>
 
-                {/* Body: Simplified & Focused */}
-                <div className="flex-1 overflow-y-auto p-8 space-y-10 scroll-smooth no-scrollbar">
+                {/* Body (Compact Card-Based) */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
                     
-                    {/* Compact Profile Card */}
-                    <div className="flex flex-col sm:flex-row items-center gap-8 p-8 rounded-[2rem] bg-gray-50/50 border border-gray-100">
-                        <div className="relative">
-                            <div className="h-24 w-24 rounded-3xl bg-indigo-600 text-white flex items-center justify-center text-4xl font-black border-4 border-white shadow-xl overflow-hidden ring-4 ring-indigo-50">
-                                {user.photoURL ? <img src={user.photoURL} alt={user.displayName} className="w-full h-full object-cover" /> : user.displayName?.charAt(0) || 'U'}
-                            </div>
-                            <div className="absolute -bottom-2 -right-2 bg-white p-2 rounded-2xl shadow-lg border border-gray-50">
-                                {isLineUser ? (
-                                    <div className="w-6 h-6 text-[#06C755]"><ChatBubbleLeftRightIcon /></div>
+                    {/* ข้อมูลพื้นฐาน (Basic Info Card) */}
+                    <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 space-y-4">
+                        <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 bg-slate-100 rounded-lg border border-slate-200 overflow-hidden flex items-center justify-center flex-shrink-0">
+                                {user.photoURL ? (
+                                    <img src={user.photoURL} alt={user.displayName} className="w-full h-full object-cover" />
                                 ) : (
-                                    <div className="w-6 h-6 text-indigo-600"><ShieldCheckIcon /></div>
+                                    <UserIcon className="w-6 h-6 text-slate-400" />
                                 )}
                             </div>
-                        </div>
-                        
-                        <div className="flex-1 text-center sm:text-left space-y-1">
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-2">
-                                <h3 className="text-2xl font-black text-gray-900 tracking-tight">{user.displayName || 'ไม่มีชื่อ'}</h3>
-                                <div className={cn(
-                                    "px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider w-fit mx-auto sm:mx-0 shadow-sm",
-                                    user.role === 'admin' ? "bg-red-50 text-red-600 border border-red-100" : "bg-indigo-50 text-indigo-600 border border-indigo-100"
-                                )}>
-                                    {user.role}
+                            <div className="min-w-0 flex-1">
+                                <label className="text-[11px] font-bold text-slate-400 uppercase leading-none block mb-1">ชื่อผู้ใช้งาน</label>
+                                <div className="flex gap-2">
+                                    <input 
+                                        type="text" 
+                                        value={editName}
+                                        onChange={(e) => setEditName(e.target.value)}
+                                        className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-sm font-semibold text-slate-900 w-full focus:ring-1 focus:ring-indigo-500 outline-none"
+                                    />
+                                    <button onClick={handleUpdateName} className="bg-indigo-600 text-white rounded-lg px-3 py-1.5 text-xs font-bold whitespace-nowrap active:scale-95 transition-transform">บันทึก</button>
                                 </div>
-                            </div>
-                            <p className="text-sm text-gray-500 font-medium">{user.email || '(สมัครผ่าน LINE)'}</p>
-                            <div className="flex items-center justify-center sm:justify-start gap-2 pt-1">
-                                <code className="text-[10px] text-gray-300 font-mono tracking-tighter select-all">UID: {user.uid}</code>
-                                <button onClick={() => copyToClipboard(user.uid)} className="p-1 hover:text-indigo-600 transition-colors">
-                                    <ClipboardIcon className="w-4 h-4" />
-                                </button>
                             </div>
                         </div>
 
-                        <div className="flex gap-3">
-                            <div className="flex flex-col gap-2">
+                        <div className="grid grid-cols-1 gap-3 pt-2">
+                            <div>
+                                <label className="text-[11px] font-bold text-slate-400 uppercase block mb-1">อีเมลติดต่อ / บัญชี {isLineUser && '(LINE)'}</label>
+                                <p className="text-sm font-semibold text-slate-900 truncate">{user.email || 'LINE Account User'}</p>
+                            </div>
+                            <div>
+                                <label className="text-[11px] font-bold text-slate-400 uppercase block mb-1">รหัสสมาชิก (UID)</label>
+                                <div className="flex items-center gap-2">
+                                    <code className="bg-slate-50 px-2 py-1 rounded text-[10px] text-slate-500 font-mono flex-1 truncate">{user.uid}</code>
+                                    <button onClick={() => copyToClipboard(user.uid)} className="text-slate-400 hover:text-indigo-600 transition-colors">
+                                        <ClipboardIcon className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* จัดการสิทธิ์ (Roles Management Card) */}
+                    <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4">
+                        <label className="text-[11px] font-bold text-slate-400 uppercase mb-3 block px-1">ระดับบทบาทผู้ใช้งาน</label>
+                        <div className="grid grid-cols-2 gap-2">
+                            <button
+                                onClick={() => onUpdateRole(user.uid, 'user')}
+                                className={cn(
+                                    "flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold border transition-all active:scale-95",
+                                    user.role === 'user' ? "bg-indigo-50 border-indigo-200 text-indigo-700 shadow-inner" : "bg-white border-slate-200 text-slate-500 hover:bg-slate-50"
+                                )}
+                            >
+                                <UserIcon className="w-4 h-4" /> ทั่วไป (USER)
+                            </button>
+                            <button
+                                onClick={() => onUpdateRole(user.uid, 'admin')}
+                                className={cn(
+                                    "flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold border transition-all active:scale-95",
+                                    user.role === 'admin' ? "bg-red-50 border-red-200 text-red-700 shadow-inner" : "bg-white border-slate-200 text-slate-500 hover:bg-slate-50"
+                                )}
+                            >
+                                <ShieldCheckIcon className="w-4 h-4" /> ผู้ดูแล (ADMIN)
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* การตั้งค่าพรีเมียม (Membership Dates Card) */}
+                    <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 space-y-4">
+                        <label className="text-[11px] font-bold text-slate-400 uppercase flex items-center gap-2 px-1">
+                            <StarIcon className="w-4 h-4 text-amber-500 fill-amber-500" /> ระยะเวลาสมาชิกพรีเมียม
+                        </label>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div>
+                                <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1 pl-1">วันที่เริ่มต้น</label>
                                 <input 
-                                    type="text" 
-                                    value={editName}
-                                    onChange={(e) => setEditName(e.target.value)}
-                                    className="px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-indigo-100 outline-none w-40"
-                                    placeholder="เปลี่ยนชื่อ..."
+                                    type="date" 
+                                    value={startedAt}
+                                    onChange={(e) => setStartedAt(e.target.value)}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-semibold text-slate-900 outline-none focus:ring-1 focus:ring-indigo-500"
                                 />
-                                <button onClick={handleUpdateName} className="btn btn-sm btn-primary rounded-xl font-black shadow-lg shadow-indigo-100">บันทึกชื่อ</button>
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1 pl-1">วันที่สิ้นสุด</label>
+                                <input 
+                                    type="date" 
+                                    value={expiresAt}
+                                    onChange={(e) => setExpiresAt(e.target.value)}
+                                    className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-semibold text-slate-900 outline-none focus:ring-1 focus:ring-indigo-500"
+                                />
                             </div>
                         </div>
+                        <button 
+                            onClick={handleSaveDates}
+                            disabled={savingDates}
+                            className={cn(
+                                "w-full py-3 rounded-xl font-bold text-sm tracking-wide transition-all active:scale-[0.98] shadow-sm",
+                                savingDates ? "bg-slate-100 text-slate-400" : "bg-indigo-600 text-white hover:bg-indigo-700"
+                            )}
+                        >
+                            {savingDates ? 'กำลังบันทึก...' : 'บันทึกข้อมูลสมาชิก'}
+                        </button>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {/* 1. Account Roles */}
-                        <div className="space-y-4">
-                            <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2 px-2">
-                                <ShieldCheckIcon className="w-4 h-4" /> บทบาทการใช้งาน
-                            </label>
-                            <div className="grid grid-cols-2 gap-3 p-1.5 bg-gray-50 rounded-2xl border border-gray-100">
-                                <button
-                                    onClick={() => onUpdateRole(user.uid, 'user')}
-                                    className={cn(
-                                        "py-3.5 rounded-xl font-black text-xs transition-all",
-                                        user.role !== 'admin' ? "bg-white text-indigo-600 shadow-sm border border-gray-100" : "text-gray-400 hover:bg-gray-100"
-                                    )}
-                                >
-                                    ผู้ทั่วไป (USER)
-                                </button>
-                                <button
-                                    onClick={() => onUpdateRole(user.uid, 'admin')}
-                                    className={cn(
-                                        "py-3.5 rounded-xl font-black text-xs transition-all",
-                                        user.role === 'admin' ? "bg-red-600 text-white shadow-lg shadow-red-100" : "text-gray-400 hover:bg-gray-100"
-                                    )}
-                                >
-                                    ผู้ดูแล (ADMIN)
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* 2. Membership Dates */}
-                        <div className="space-y-4">
-                            <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2 px-2">
-                                <StarIcon className="w-4 h-4 text-amber-500" /> ระยะเวลาสมาชิก (ไทย)
-                            </label>
-                            <div className="space-y-3">
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div className="space-y-1.5">
-                                        <span className="text-[10px] font-black text-gray-400 ml-1 uppercase">เริ่มวันที่</span>
-                                        <input 
-                                            type="date" 
-                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl font-bold text-xs text-gray-900 focus:ring-2 focus:ring-indigo-100 outline-none transition-all shadow-inner"
-                                            value={startedAt}
-                                            onChange={(e) => setStartedAt(e.target.value)}
-                                        />
-                                    </div>
-                                    <div className="space-y-1.5">
-                                        <span className="text-[10px] font-black text-gray-400 ml-1 uppercase">หมดอายุวันที่</span>
-                                        <input 
-                                            type="date" 
-                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-2xl font-bold text-xs text-gray-900 focus:ring-2 focus:ring-indigo-100 outline-none transition-all shadow-inner"
-                                            value={expiresAt}
-                                            onChange={(e) => setExpiresAt(e.target.value)}
-                                        />
-                                    </div>
-                                </div>
-                                <button 
-                                    onClick={handleSaveDates}
-                                    disabled={savingDates}
-                                    className={cn(
-                                        "w-full py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all",
-                                        savingDates 
-                                            ? "bg-gray-100 text-gray-300" 
-                                            : "bg-indigo-600 text-white hover:bg-indigo-700 shadow-xl shadow-indigo-100 active:scale-95"
-                                    )}
-                                >
-                                    {savingDates ? 'กำลังบันทึก...' : 'บันทึกวันหมดอายุ'}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* 3. Manual Upgrade Section */}
-                    <div className="pt-10 border-t border-gray-50">
-                        <label className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-6 block px-2">ปรับระดับพรีเมียม (Assign Package)</label>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    {/* ปรับปรุงแพ็กเกจปัจจุบัน (Package Assign Card) */}
+                    <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4">
+                        <label className="text-[11px] font-bold text-slate-400 uppercase mb-3 block px-1">อัปเกรดสถานะ (Manual Assign)</label>
+                        <div className="grid grid-cols-2 gap-2">
                             {packages?.map(pkg => (
                                 <button
                                     key={pkg.id}
                                     onClick={() => onAssignPackage(pkg.id)}
                                     disabled={loading}
-                                    className="py-3 px-4 rounded-xl border border-gray-100 font-bold text-[11px] text-gray-600 hover:border-indigo-600 hover:text-indigo-600 transition-all bg-white shadow-sm"
+                                    className="py-2.5 px-3 rounded-lg border border-slate-200 bg-white text-[11px] font-bold text-slate-600 hover:bg-slate-50 transition-colors active:scale-95"
                                 >
                                     {pkg.name}
                                 </button>
@@ -252,22 +228,19 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                             <button
                                 onClick={() => onAssignPackage('lifetime')}
                                 disabled={loading}
-                                className="py-3 px-4 rounded-xl bg-gradient-to-tr from-amber-400 via-orange-500 to-amber-600 text-white font-black text-[11px] uppercase shadow-lg shadow-amber-100 border-none hover:scale-[1.02] active:scale-95 transition-all"
+                                className="col-span-2 py-3 rounded-lg bg-slate-900 text-white text-[11px] font-bold uppercase tracking-widest active:scale-95 transition-transform"
                             >
                                 ตลอดชีพ (Lifetime)
                             </button>
                         </div>
                     </div>
 
-                    {/* 🚀 Modules section hidden as requested by user - can be re-enabled if needed later */}
-                    {/* <div className="pt-4 border-t border-gray-50"> ... </div> */}
-
                 </div>
 
-                {/* Footer: Light & Simple */}
-                <div className="px-8 py-5 bg-gray-50/50 border-t border-gray-100 flex justify-end shrink-0">
+                {/* Footer (Standard Pattern) */}
+                <div className="bg-white px-5 py-4 border-t border-slate-100 flex justify-end flex-shrink-0">
                     <button 
-                        className="px-8 py-3 rounded-2xl font-bold text-sm text-gray-500 hover:bg-gray-100 transition-all active:scale-95" 
+                        className="px-6 py-2 rounded-lg text-sm font-bold text-slate-500 hover:bg-slate-50 transition-colors" 
                         onClick={onClose}
                     >
                         ปิดหน้าต่าง
