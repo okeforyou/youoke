@@ -21,7 +21,7 @@ export const usePlayerLifecycle = (currentSource: string | null, showDjOverlay: 
         userRole = user.membership?.type || 'free';
         // Normalize role for plan lookup if needed
         if (['monthly', 'yearly', 'day_pass', 'trial', 'lifetime'].includes(userRole)) {
-            // userRole = 'premium'; // Uncomment if 'plans' collection uses 'premium' for all
+            userRole = 'premium'; 
         }
     }
 
@@ -103,7 +103,7 @@ export const usePlayerLifecycle = (currentSource: string | null, showDjOverlay: 
 
         // 4. Medley/Long Video Check (Block Guests)
         const duration = usePlayerStore.getState().duration;
-        const maxDur = maxDuration || config?.membership?.free?.max_duration_sec || 600; 
+        const maxDur = (maxDuration !== undefined && maxDuration !== null) ? maxDuration : (config?.membership?.free?.max_duration_sec ?? 600); 
         if (userRole === 'guest' && duration > maxDur && maxDur > 0) {
             console.log("⛔ Medley detected! Blocking guest playing long music.");
             usePlayerStore.setState({ isPlaying: false });
