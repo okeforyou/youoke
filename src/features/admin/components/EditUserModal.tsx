@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { XMarkIcon, ShieldCheckIcon, StarIcon, ClipboardIcon, UserIcon } from '@heroicons/react/24/outline';
 import { cn } from "../../../utils/cn";
 import { AdminService } from '../services/adminService';
+import { ConfirmModal } from './ConfirmModal';
 
 interface User {
     uid: string;
@@ -54,35 +55,85 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
             : ''
     );
     const [savingDates, setSavingDates] = useState(false);
+    const [confirmModal, setConfirmModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        onConfirm: () => void;
+        type: 'danger' | 'warning' | 'info';
+        confirmText?: string;
+    }>({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: () => {},
+        type: 'warning'
+    });
 
     const isLineUser = user.uid.startsWith('line:');
 
     const handleSaveDates = async () => {
-        setSavingDates(true);
-        try {
-            await AdminService.updateMembershipDates(
-                user.uid, 
-                startedAt ? new Date(startedAt) : null, 
-                expiresAt ? new Date(expiresAt) : null
-            );
-            if (onRefresh) onRefresh();
-            alert('✅ อัปเดตข้อมูลสำเร็จ');
-        } catch (e: any) {
-            alert('❌ ผิดพลาด: ' + e.message);
-        } finally {
-            setSavingDates(false);
-        }
+        setConfirmModal({
+            isOpen: true,
+            title: "ยืนยันการบันทึกวันที่",
+            message: "ระบบจะทำการอัปเดตวันเริ่มต้นและวันหมดอายุสมาชิกพรีเมียมใหม่ คุณต้องการดำเนินการต่อหรือไม่?",
+            type: 'warning',
+            onConfirm: async () => {
+                setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                setSavingDates(true);
+                try {
+                    await AdminService.updateMembershipDates(
+                        user.uid, 
+                        startedAt ? new Date(startedAt) : null, 
+                        expiresAt ? new Date(expiresAt) : null
+                    );
+                    if (onRefresh) onRefresh();
+                    setConfirmModal({
+                        isOpen: true,
+                        title: "บันทึกสำเร็จ",
+                        message: "อัปเดตข้อมูลระยะเวลาสมาชิกเรียบร้อยแล้ว",
+                        type: 'info',
+                        confirmText: "ตกลง",
+                        onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+                    });
+                } catch (e: any) {
+                    setConfirmModal({
+                        isOpen: true,
+                        title: "ผิดพลาด",
+                        message: e.message,
+                        type: 'danger',
+                        onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+                    });
+                } finally {
+                    setSavingDates(false);
+                }
+            }
+        });
     };
+
 
     const handleUpdateName = async () => {
         try {
             await AdminService.updateUserProfile(user.uid, { displayName: editName });
             if (onRefresh) onRefresh();
-            alert("✅ อัปเดตสำเร็จ");
+            setConfirmModal({
+                isOpen: true,
+                title: "อัปเดตสำเร็จ",
+                message: "เปลี่ยนชื่อผู้ใช้งานเรียบร้อยแล้ว",
+                type: 'info',
+                onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+            });
         } catch (err: any) {
-            alert("ผิดพลาด: " + err.message);
+            setConfirmModal({
+                isOpen: true,
+                title: "ผิดพลาด",
+                message: err.message,
+                type: 'danger',
+                onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+            });
         }
     };
+
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
@@ -248,6 +299,17 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                 </div>
 
             </div>
+            
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                type={confirmModal.type}
+                confirmText={confirmModal.confirmText}
+            />
         </div>
     );
 };
+

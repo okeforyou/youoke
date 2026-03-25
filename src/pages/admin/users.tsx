@@ -141,6 +141,7 @@ export default function AdminUsersPage() {
         type: 'warning'
     });
 
+
     // Fetch Users (Optimized)
     const fetchUsers = async () => {
         setLoading(true);
@@ -268,7 +269,13 @@ export default function AdminUsersPage() {
                         }
                     });
 
-                    alert(`มอบสิทธิ์ LIFETIME เรียบร้อยแล้ว`);
+                    setConfirmModal({
+                        isOpen: true,
+                        title: "มอบสิทธิ์สำเร็จ",
+                        message: `มอบสิทธิ์สมาชิกตลอดชีพ (LIFETIME) ให้แก่คุณ ${selectedUser.displayName} เรียบร้อยแล้ว`,
+                        type: 'info',
+                        onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+                    });
                     setSelectedUser({ ...selectedUser, membership: { type: 'lifetime', status: 'active', expiresAt: null } as any });
                     fetchUsers();
                 } catch (error: any) {
@@ -362,7 +369,13 @@ export default function AdminUsersPage() {
                 createdAt: serverTimestamp()
             });
 
-            alert("ส่งข้อความเรียบร้อย!");
+            setConfirmModal({
+                isOpen: true,
+                title: "ส่งข้อความสำเร็จ",
+                message: `ส่งการแจ้งเตือนไปยังคุณ ${notificationUser.displayName} เรียบร้อยแล้ว`,
+                type: 'info',
+                onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+            });
             setMsgTitle("");
             setMsgBody("");
             setNotificationDialogOpen(false);
@@ -412,26 +425,33 @@ export default function AdminUsersPage() {
                     const result = await res.json();
                     
                     if (result.success) {
-                        const message = `🧹 กวาดล้างสำเร็จ!\n\n` +
-                                        `- ลบจาก Auth: ${result.deletedAuth}\n` +
-                                        `- ลบจาก Firestore: ${result.deletedFirestore}\n` +
-                                        `- ตรวจสอบแล้ว: ${result.totalProcessed}\n\n` +
-                                        `คำแนะนำ: ${result.instruction}`;
-                        
-                        alert(message);
+                        setConfirmModal({
+                            isOpen: true,
+                            title: "กวาดล้างขยะสำเร็จ",
+                            message: `ดำเนินการล้างบัญชี Anonymous เรียบร้อยแล้ว\n\n- ลบจาก Auth: ${result.deletedAuth}\n- ลบจาก Firestore: ${result.deletedFirestore}\n- ตรวจสอบรวม: ${result.totalProcessed}`,
+                            type: 'info',
+                            onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+                        });
                         fetchUsers(); // Refresh the list
                     } else {
                         throw new Error(result.error || "Unknown server error");
                     }
                 } catch (error: any) {
                     console.error("Cleanup failed:", error);
-                    alert("❌ ระบบขัดข้อง: " + error.message);
+                    setConfirmModal({
+                        isOpen: true,
+                        title: "ผิดพลาด",
+                        message: error.message,
+                        type: 'danger',
+                        onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+                    });
                 } finally {
                     setLoading(false);
                 }
             }
         });
     };
+
 
 
 
@@ -875,4 +895,6 @@ export default function AdminUsersPage() {
         </AdminLayout>
     );
 }
+
+
 
