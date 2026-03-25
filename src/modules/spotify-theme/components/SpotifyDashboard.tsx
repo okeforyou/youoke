@@ -8,6 +8,7 @@ import { OKE_PLAYLIST } from "../../../const/common";
 import { usePlayerStore } from "../../../modules/player/stores/usePlayerStore";
 import { useListSingerState } from "../../../hooks/listSinger";
 import { GetTopArtists, SearchPlaylists } from "../../../types";
+import { useSystem } from "../../../core/container/SystemContext";
 import {
   getArtists,
   getSkeletonItems,
@@ -43,7 +44,9 @@ const GENRES = [
 
 export default function SpotifyDashboard({ showTab = true, mode = 'default' }: { showTab?: boolean, mode?: 'default' | 'listening' | 'genres' | 'station' }) {
   const router = useRouter();
+  const { user } = useSystem().auth();
   const { config } = useSystemConfig();
+  const { showConfirm } = useUIStore();
   const rawGenres = (config?.ui?.genres || GENRES).filter(g => g !== "เพลงไทย" && g !== "ทั้งหมด" && g !== "แนะนำ");
   const genres = [...rawGenres];
 
@@ -586,6 +589,21 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                                         author: video.author,
                                         thumbnail: undefined,
                                     } as any;
+                                    
+                                    // 🛡️ Premium Authorization Logic for Station Mode Playback
+                                    const isPremium = user?.membership?.status === 'active' && user?.membership?.type !== 'free';
+                                    
+                                    if (!isPremium) {
+                                      showConfirm({
+                                          title: "👑 สิทธิพิเศษเฉพาะสมาชิก",
+                                          message: "เพลย์ลิตส์สถานีเพลง (Music Station) นี้เป็นสิทธิประโยชน์สำหรับสมาชิกพรีเมียมเท่านั้น อัปเกรดเพื่อเปิดสถานีเพลงส่วนตัวได้ไม่จำกัดและไร้โฆษณา!",
+                                          confirmText: "สมัครสมาชิกเลย",
+                                          cancelText: "ไว้ก่อน",
+                                          onConfirm: () => router.push('/packages')
+                                      });
+                                      return;
+                                    }
+
                                     addToQueue(videoToAdd);
                                 }} className="group cursor-pointer overflow-hidden max-w-full">
                                     <div className="relative aspect-video rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm group-hover:shadow-md transition-all">
