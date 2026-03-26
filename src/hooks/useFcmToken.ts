@@ -8,15 +8,12 @@ export const useFcmToken = () => {
   const [notificationPermissionStatus, setNotificationPermissionStatus] = useState<PermissionState | null>(null);
 
   useEffect(() => {
-    if (!user?.uid) return;
-
     const initNotifications = async () => {
-      const uid = user.uid;
-      if (uid) {
-        const newToken = await notificationService.requestPermission(uid as string);
-        if (newToken) {
-          setToken(newToken);
-        }
+      // 🔔 Now requests permission for GUESTS too (for global topics)
+      const uid = user?.uid || null;
+      const newToken = await notificationService.requestPermission(uid);
+      if (newToken) {
+        setToken(newToken);
       }
     };
 

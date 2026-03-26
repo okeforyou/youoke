@@ -68,34 +68,8 @@ function App({ Component, pageProps }: AppProps) {
     return () => unsub();
   }, [initializeAuth]);
 
-  useEffect(() => {
-    const clearServices = async () => {
-      try {
-        if (typeof window === 'undefined') return;
-        
-        // 🧹 Force kill any lingering Service Workers that are causing network-request-failed
-        if ('serviceWorker' in navigator) {
-          const registrations = await navigator.serviceWorker.getRegistrations();
-          for (const registration of registrations) {
-            await registration.unregister();
-            console.log('🧹 [Force Cleanup] Service Worker Unregistered');
-          }
-        }
-        
-        // 🧹 Optional: Clear Cache if it exists
-        if ('caches' in window) {
-          const keys = await caches.keys();
-          for (const key of keys) {
-            await caches.delete(key);
-            console.log('🧹 [Force Cleanup] Cache Deleted:', key);
-          }
-        }
-      } catch (e) {
-        console.warn('Cleanup failed', e);
-      }
-    };
-    clearServices();
-  }, []);
+  // 🔔 FCM Service Worker is managed by Firebase SDK. 
+  // DO NOT add broad service worker unregister logic here as it breaks notifications.
 
   return (
     <ToastProvider>

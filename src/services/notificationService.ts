@@ -15,7 +15,7 @@ class NotificationService {
   /**
    * Request Permission and Get Token
    */
-  public async requestPermission(userId: string): Promise<string | null> {
+  public async requestPermission(userId: string | null): Promise<string | null> {
     if (typeof window === 'undefined' || !messaging) return null;
 
     try {
@@ -25,9 +25,11 @@ class NotificationService {
           vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY || this.VAPID_KEY
         });
 
-        if (token && userId) {
-          await this.saveTokenToUser(userId, token);
-          // 📡 Automatically subscribe to global topic
+        if (token) {
+          if (userId) {
+            await this.saveTokenToUser(userId, token);
+          }
+          // 📡 Automatically subscribe to global topic (for both guest and logged in)
           this.subscribeToTopic(token, 'all_users');
           return token;
         }
