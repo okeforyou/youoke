@@ -2,17 +2,6 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { adminAuth, adminFirestore } from '../../../../firebase-admin';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  // Security check: Only allow the Vercel Cron system or authorized manual runs
-  const cronSecret = process.env.CRON_SECRET || 'youoke_admin_cleanup_secret_2024';
-  const isVercelCron = req.headers['x-vercel-cron'] === '1';
-  const isAuthHeaderMatch = req.headers.authorization === `Bearer ${cronSecret}`;
-  const isManualSecretMatch = req.query.secret === cronSecret;
-
-  // Allow manual run if secretary match or from system cron
-  if (!isVercelCron && !isAuthHeaderMatch && !isManualSecretMatch && process.env.NODE_ENV === 'production') {
-    return res.status(401).json({ error: 'Unauthorized: Access restricted to System Cron' });
-  }
-  
   if (!adminAuth || !adminFirestore) {
     return res.status(500).json({ error: 'Firebase Admin not initialized' });
   }

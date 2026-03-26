@@ -3,10 +3,6 @@
     {
       "path": "/api/cron/update-cache",
       "schedule": "0 3 * * 1"
-    },
-    {
-      "path": "/api/admin/bulk-cleanup",
-      "schedule": "0 21 * * *"
     }
   ]
 }

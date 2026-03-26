@@ -121,16 +121,7 @@ export default function AdminUsersPage() {
     const [packages, setPackages] = useState<PackageOption[]>([]);
     const [assigningLoading, setAssigningLoading] = useState(false);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [syncing, setSyncing] = useState(false);
-
-    // Notification State
-    const [msgTitle, setMsgTitle] = useState("");
-    const [msgBody, setMsgBody] = useState("");
-    const [sendingMsg, setSendingMsg] = useState(false);
-    const [msgType, setMsgType] = useState<'info' | 'warning' | 'success' | 'system'>('system');
-    const [notificationDialogOpen, setNotificationDialogOpen] = useState(false);
     const [notificationUser, setNotificationUser] = useState<User | null>(null);
-    const [isRefreshing, setIsRefreshing] = useState(false);
     
     // New Confirm Modal State
     const [confirmModal, setConfirmModal] = useState<{
@@ -441,7 +432,6 @@ export default function AdminUsersPage() {
             confirmText: 'เริ่มซิงค์ข้อมูล',
             onConfirm: async () => {
                 setConfirmModal(prev => ({ ...prev, isOpen: false }));
-                setSyncing(true);
                 try {
                     const result = await AdminService.syncAllUsers();
                     setConfirmModal({
@@ -455,8 +445,6 @@ export default function AdminUsersPage() {
                 } catch (error: any) {
                     console.error("Sync failed:", error);
                     alert("Sync Error: " + error.message);
-                } finally {
-                    setSyncing(false);
                 }
             }
         });
@@ -496,7 +484,7 @@ export default function AdminUsersPage() {
                 setConfirmModal(prev => ({ ...prev, isOpen: false }));
                 setLoading(true);
                 try {
-                    const res = await fetch('/api/admin/bulk-cleanup?secret=youoke_admin_cleanup_secret_2024');
+                    const res = await fetch('/api/admin/bulk-cleanup');
                     const result = await res.json();
                     
                     if (result.success) {
@@ -621,19 +609,15 @@ export default function AdminUsersPage() {
                 </div>
                 <div className="flex items-center gap-3">
                     <button onClick={fetchUsers} className="flex items-center gap-2 px-5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl font-bold text-sm text-gray-600 hover:bg-white hover:border-indigo-200 transition-all shadow-sm">
-                        <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
+                        <RefreshCw className="w-4 h-4" />
                         รีเฟรชข้อมูล
                     </button>
                     <button 
                         onClick={handleSyncAll}
-                        disabled={syncing}
-                        className={cn(
-                            "flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-sm transition-all shadow-sm",
-                            syncing ? "bg-gray-100 text-gray-400" : "bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-50"
-                        )}
+                        className="flex items-center gap-2 px-5 py-2.5 bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-50 rounded-2xl font-bold text-sm transition-all shadow-sm"
                     >
-                        <ArrowDownUp className={cn("w-4 h-4", syncing && "animate-spin")} />
-                        {syncing ? 'กำลังซิงค์...' : 'Sync สมาชิก'}
+                        <ArrowDownUp className="w-4 h-4" />
+                        Sync สมาชิก
                     </button>
                     <button 
                         onClick={handleCleanupGuests} 
