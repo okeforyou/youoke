@@ -16,32 +16,44 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   
   let deletedAuthCount = 0;
   let deletedFirestoreCount = 0;
-  let batchLimit = 1000; // Process 1000 at a time per request to avoid timeout
+  let pageToken: string | undefined = undefined;
+  let scanCount = 0;
+  const maxScan = 5000; // Scan up to 5000 total users per request
+  const maxToDelete = 500; // Stop collecting once we find 500 candidates to keep the request snappy
   
   try {
-    const listUsersResult = await adminAuth.listUsers(batchLimit);
     const anonymousUids: string[] = [];
     
-    listUsersResult.users.forEach((userRecord) => {
-      const isAnonymous = userRecord.providerData.length === 0 && !userRecord.email;
-      const isOldEnough = new Date(userRecord.metadata.creationTime) < cutOffDate;
+    // 🔍 Loop to find candidates across multiple pages
+    do {
+      const listUsersResult = await adminAuth.listUsers(1000, pageToken);
       
-      if (isAnonymous && isOldEnough) {
-        anonymousUids.push(userRecord.uid);
-      }
-    });
+      listUsersResult.users.forEach((userRecord) => {
+        scanCount++;
+        const isAnonymous = userRecord.providerData.length === 0 && !userRecord.email;
+        const isOldEnough = new Date(userRecord.metadata.creationTime) < cutOffDate;
+        
+        if (isAnonymous && isOldEnough && anonymousUids.length < maxToDelete) {
+          anonymousUids.push(userRecord.uid);
+        }
+      });
+
+      pageToken = listUsersResult.pageToken;
+      
+      // Stop if we scanned too many, found enough to delete, or reached the end
+    } while (pageToken && scanCount < maxScan && anonymousUids.length < maxToDelete);
 
     if (anonymousUids.length > 0) {
-      // 1. Delete from Auth
+      // 1. Delete from Auth (Efficiently in one call)
       const deleteResult = await adminAuth.deleteUsers(anonymousUids);
       deletedAuthCount = deleteResult.successCount;
       
-      // 2. Delete from Firestore in chunks of 500
+      // 2. Delete from Firestore in chunks of 500 (Firestore Batch limit)
       for (let i = 0; i < anonymousUids.length; i += 500) {
         const chunk = anonymousUids.slice(i, i + 500);
-        const batch = adminFirestore.batch();
+        const batch = adminFirestore!.batch();
         chunk.forEach((uid) => {
-          batch.delete(adminFirestore.collection('users').doc(uid));
+          batch.delete(adminFirestore!.collection('users').doc(uid));
         });
         await batch.commit();
         deletedFirestoreCount += chunk.length;
@@ -50,12 +62,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     return res.status(200).json({
       success: true,
-      message: `Successfully processed batch.`,
+      message: scanCount >= maxScan ? "Reached scan limit." : (pageToken ? "Found enough candidates." : "Cleanup finished."),
+      scanSize: scanCount,
+      foundCandidates: anonymousUids.length,
       deletedAuth: deletedAuthCount,
       deletedFirestore: deletedFirestoreCount,
-      totalProcessed: listUsersResult.users.length,
-      nextPageToken: listUsersResult.pageToken || null,
-      instruction: deletedAuthCount > 0 ? "Call again to process more." : "Cleanup finished for now."
+      nextPageToken: pageToken || null,
+      instruction: pageToken ? "Call again to process more." : "System is clean."
     });
 
   } catch (error: any) {
