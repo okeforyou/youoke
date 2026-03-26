@@ -16,7 +16,8 @@ import {
 import AdminLayout from '../layouts/AdminLayout';
 import { AdminService } from '../services/adminService';
 import { EditUserModal } from '../components/EditUserModal';
-import { collection, query, orderBy, getDocs, doc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { AddUserModal } from '../components/AddUserModal';
+import { collection, query, orderBy, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, limit } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { cn } from '../../../utils/cn';
 import { DatabaseHealth } from '../components/DatabaseHealth';
@@ -35,6 +36,7 @@ export default function UsersPage() {
   const [showGuests, setShowGuests] = useState(true);
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
   const [packages, setPackages] = useState<any[]>([]);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const { showConfirm } = useUIStore();
 
   useEffect(() => {
@@ -219,7 +221,10 @@ export default function UsersPage() {
             <p className="text-sm text-gray-500">จัดการสมาชิก บทบาท และช่องทางการสมัคร (LINE / Google)</p>
           </div>
           <div className="flex gap-2">
-            <button className="btn btn-sm bg-primary text-white border-none gap-2 hover:bg-primary/90">
+            <button 
+              onClick={() => setIsAddModalOpen(true)}
+              className="btn btn-sm bg-primary text-white border-none gap-2 hover:bg-primary/90 rounded-xl"
+            >
               <UserPlusIcon className="w-4 h-4" /> เพิ่มผู้ใช้ใหม่
             </button>
           </div>
@@ -342,6 +347,13 @@ export default function UsersPage() {
       <div className="mt-8 mb-8">
         <DatabaseHealth />
       </div>
+
+      {isAddModalOpen && (
+        <AddUserModal
+          onClose={() => setIsAddModalOpen(false)}
+          onRefresh={fetchUsers}
+        />
+      )}
 
       {selectedUser && (
         <EditUserModal
