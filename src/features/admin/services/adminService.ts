@@ -38,6 +38,26 @@ const withTimeout = <T>(promise: Promise<T>, ms: number = 8000): Promise<T> => {
 
 export const AdminService = {
     /**
+     * Get all users from Firestore (Admin Table)
+     */
+    getAllUsers: async (): Promise<any[]> => {
+        if (!db) return [];
+        try {
+            console.log("👥 AdminService: Fetching all users from Firestore...");
+            const q = query(collection(db, "users"), orderBy("createdAt", "desc"));
+            const snapshot = await getDocs(q);
+            return snapshot.docs.map(doc => ({
+                id: doc.id,
+                uid: doc.id,
+                ...doc.data()
+            }));
+        } catch (error) {
+            console.error("❌ AdminService.getAllUsers error:", error);
+            return [];
+        }
+    },
+
+    /**
      * Get Dashboard Stats (Users from Firestore, Revenue from Firestore)
      */
     getDashboardStats: async (): Promise<AdminStats> => {
