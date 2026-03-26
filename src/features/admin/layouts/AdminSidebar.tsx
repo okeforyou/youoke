@@ -2,6 +2,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useState, useEffect } from "react";
 import {
+  Bell,
   LayoutDashboard,
   Users,
   Settings,
@@ -29,6 +30,7 @@ const mainMenuItems = [
   { title: "ภาพรวมระบบ", icon: LayoutDashboard, path: "/admin" },
   { title: "จัดการผู้ใช้", icon: Users, path: "/admin/users", id: 'users' },
   { title: "จัดการเพลย์ลิสต์", icon: PlayCircle, path: "/admin/playlists" },
+  { title: "ส่งการแจ้งเตือน", icon: Bell, path: "/admin/broadcast", id: 'broadcast' },
   { title: "แพ็กเกจ", icon: Package, path: "/admin/packages" },
   { title: "รายการสั่งซื้อ", icon: CreditCard, path: "/admin/payments", id: 'orders', badgeColor: "warning" },
   { title: "ตั้งค่าระบบ", icon: Settings, path: "/admin/config" },

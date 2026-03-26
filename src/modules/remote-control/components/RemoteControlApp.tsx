@@ -28,6 +28,8 @@ import {
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 
+import { castService } from '../../../plugins/cast/services/CastService';
+
 // Components
 import { RemoteMiniPlayer } from './RemoteMiniPlayer';
 import { DraggableQueueItem } from './DraggableQueueItem';
@@ -238,6 +240,9 @@ export default function RemoteControlApp() {
                     await signInAnonymously(auth);
                 }
 
+                // Initialize CastService (Centralized logic)
+                await castService.initialize(roomCode, 'monitor');
+
                 // Signal to Host that we've joined (Direct Trigger for closing QR)
                 const statusRef = ref(realtimeDb, `rooms/${roomCode}/status`);
                 set(statusRef, {
@@ -398,6 +403,12 @@ export default function RemoteControlApp() {
         const handleVisibilityChange = () => {
             const newState = document.visibilityState === 'hidden' ? 'background' : 'active';
             updatePresence(newState);
+            
+            // 🛡️ RECOVER CONNECTION: If we come back from sleep, tell castService to verify state
+            if (document.visibilityState === 'visible') {
+                console.log('🔄 [Remote] App visible: Verifying connection state...');
+                castService.ensureConnection();
+            }
         };
         document.addEventListener('visibilitychange', handleVisibilityChange);
 
@@ -409,35 +420,18 @@ export default function RemoteControlApp() {
         };
     }, [roomCode, guestName, currentUser]);
 
-    // Command Sender
+    // Command Sender (Refactored to use CastService)
     const sendCommand = async (type: string, payload: any = {}) => {
-        if (!roomCode || !realtimeDb) return;
-        const currentUser = auth?.currentUser;
-        if (!currentUser) return;
-
-        const cmdId = Date.now().toString();
-        const command = {
-            id: cmdId,
-            command: {
-                type,
-                payload: {
-                    ...payload,
-                    addedBy: { uid: currentUser.uid, name: guestName }
-                }
-            },
-            status: 'pending',
-            timestamp: serverTimestamp(),
-            senderId: currentUser.uid
-        };
-
-        console.log('📤 Sending command:', { type, roomCode, cmdId });
-
-        // Write directly to commands list
-        const cmdRef = ref(realtimeDb, `rooms/${roomCode}/commands/${cmdId}`);
-        await set(cmdRef, command);
-
-        console.log('✅ Command sent successfully');
-    };
+        if (!roomCode) return;
+        
+        await castService.sendCommand({
+            type,
+            payload: {
+                ...payload,
+                addedBy: { uid: currentUser?.uid || 'guest', name: guestName }
+            }
+        });
+    }
 
     // Handlers
     const handleNameSubmit = (e: React.FormEvent) => {

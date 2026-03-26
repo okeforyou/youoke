@@ -12,6 +12,7 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 import React from "react";
 import { useAdminNotifications } from "../hooks/useAdminNotifications";
+import { NotificationBell } from "../../../modules/notifications/components/NotificationBell";
 
 interface AdminHeaderProps {
     onMenuClick?: () => void;
@@ -69,6 +70,7 @@ export const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
 
             {/* Right side - Actions */}
             <div className="flex items-center gap-3">
+                <NotificationBell />
                 {/* Notifications Dropdown (DaisyUI) */}
                 <div className="dropdown dropdown-end">
                     <label tabIndex={0} className="btn btn-ghost btn-sm btn-circle text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors">

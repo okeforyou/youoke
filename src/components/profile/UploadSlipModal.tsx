@@ -1,9 +1,10 @@
-import { useState, Fragment } from 'react';
+import { useState, Fragment, useRef } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { X, CheckCircle, AlertCircle, Copy, QrCode, MessageCircle, ExternalLink } from 'lucide-react';
+import { X, CheckCircle, AlertCircle, Copy, QrCode, MessageCircle, ExternalLink, Upload, ImageIcon, Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/modules/auth/useAuthStore';
-import { db } from '@/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '@/firebase';
+import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 import axios from 'axios';
 import { useSystemConfig } from '@/hooks/useSystemConfig';
 import { cn } from '@/lib/utils';
@@ -20,6 +21,12 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
     const [sending, setSending] = useState(false);
     const [sent, setSent] = useState(false);
 
+    // New states for file upload
+    const [file, setFile] = useState<File | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [uploading, setUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
     // Bank Details (Dynamic from System Config)
     const bankInfo = {
         bank: config.payment?.bankAccount?.bankName || "ไทยพาณิชย์ (SCB)",
@@ -30,15 +37,65 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
     // Use default local path if config doesn't have one
     const qrImage = config.payment?.promptPay?.qrImageUrl || "/img/scb-qr.jpg";
 
+    const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedFile = e.target.files?.[0];
+        if (selectedFile) {
+            setFile(selectedFile);
+            setPreviewUrl(URL.createObjectURL(selectedFile));
+        }
+    };
+
+    const notifyAdmins = async (paymentId: string) => {
+        try {
+            // Find admins to notify
+            const adminsQuery = query(collection(db, 'users'), where('role', 'in', ['admin', 'owner']));
+            const adminSnapshot = await getDocs(adminsQuery);
+            
+            const adminIds = adminSnapshot.docs.map(doc => doc.id);
+            
+            for (const adminId of adminIds) {
+                await axios.post('/api/notify/send', {
+                    userId: adminId,
+                    title: `💰 แจ้งโอนเงินใหม่!`,
+                    body: `คุณ ${user?.displayName || user?.email} แจ้งโอนเงินสำหรับแพ็กเกจ ${pkg?.name}`,
+                    data: {
+                        type: 'new_payment',
+                        paymentId: paymentId
+                    }
+                });
+            }
+        } catch (error) {
+            console.error("Failed to notify admins:", error);
+        }
+    };
+
     const handleNotifyAdmin = async () => {
         if (!user || !pkg) return;
+        if (!file) {
+            alert("กรุณาเลือกรูปภาพสลิปการโอนเงินก่อนครับ");
+            return;
+        }
 
         setSending(true);
+        setUploading(true);
         try {
+            let slipUrl = 'line_manual';
+
+            // 1. Upload File to Storage
+            if (storage && file) {
+                const fileExt = file.name.split('.').pop();
+                const fileName = `slip_${user.uid}_${Date.now()}.${fileExt}`;
+                const fileRef = storageRef(storage, `payment_slips/${user.uid}/${fileName}`);
+                
+                const uploadResult = await uploadBytes(fileRef, file);
+                slipUrl = await getDownloadURL(uploadResult.ref);
+            }
+
+            setUploading(false);
+            
             let paymentId = "";
-            // 1. Send Notification to System (Save to DB as pending for Admin verification)
+            // 2. Save Notification to System (Save to DB as pending for Admin verification)
             if (db) {
-                const { collection, addDoc, serverTimestamp } = await import('firebase/firestore');
                 const docRef = await addDoc(collection(db, 'payment_proofs'), {
                     userId: user.uid,
                     userDisplayName: user.displayName || user.email?.split('@')[0],
@@ -47,14 +104,17 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
                     packageName: pkg.name,
                     amount: pkg.price,
                     status: 'pending',
-                    slipUrl: 'line_manual',
-                    method: 'line_manual',
+                    slipUrl: slipUrl,
+                    method: 'direct_upload',
                     createdAt: serverTimestamp()
                 });
                 paymentId = docRef.id;
             }
 
-            // 2. Send LINE Notification (Flex Message for Admin)
+            // 3. Send Notification to Admins via FCM
+            await notifyAdmins(paymentId);
+
+            // 4. Send LINE Notification (Existing logic)
             try {
                 await axios.post('/api/payment/line-push', {
                     message: `💰 แจ้งโอนเงินจาก ${user.displayName || user.email}`,
@@ -64,7 +124,8 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
                         userDisplayName: user.displayName || user.email,
                         packageId: pkg.id,
                         packageName: pkg.name,
-                        amount: pkg.price
+                        amount: pkg.price,
+                        slipUrl: slipUrl // Include slip URL for Line if needed
                     }
                 });
             } catch (notifyError) {
@@ -78,9 +139,10 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
             }, 3000);
         } catch (error) {
             console.error("Notification error:", error);
-            alert("เกิดข้อผิดพลาดในการแจ้งระบบ แต่คุณยังสามารถส่งสลิปทาง LINE ได้โดยตรงครับ");
+            alert("เกิดข้อผิดพลาดในการแจ้งระบบ กรุณาลองใหม่อีกครั้ง หรือติดต่อทีมงานทาง LINE ครับ");
         } finally {
             setSending(false);
+            setUploading(false);
         }
     };
 
@@ -182,55 +244,89 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
 
                                 <div className="mt-4 space-y-2">
                                     <div className="flex items-center gap-2 text-[10px] font-bold text-amber-600 bg-amber-50 p-2 rounded-lg border border-amber-100">
-                                        <AlertCircle className="w-3 h-3 shrink-0" />
-                                        <span>กรุณาเพิ่มเพื่อน LINE เพื่อใช้ยืนยันตนและรอคิวอนุมัติ</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-[10px] text-zinc-500 bg-zinc-100/50 dark:bg-zinc-800/50 p-3 rounded-lg border border-zinc-200/50 dark:border-zinc-700/50">
-                                        <MessageCircle className="w-4 h-4 text-[#06C755] shrink-0" />
-                                        <span>ขั้นตอน: 1.กดเพิ่มเพื่อน -> 2.แจ้งระบบ -> 3.แนบสลิปในแชท</span>
-                                    </div>
-                                </div>
-                            </div>
+                                                         <div className="space-y-4">
+                                {/* File Upload Section */}
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">แนบสลิปการโอนเงิน (หลักฐานสำคัญ)</label>
+                                    
+                                    <input 
+                                        type="file" 
+                                        ref={fileInputRef}
+                                        onChange={onFileChange}
+                                        accept="image/*"
+                                        className="hidden" 
+                                    />
 
-                            <div className="space-y-3">
-                                {/* Step 1: Add Friend (Button style to look mandatory) */}
-                                <a 
-                                    href="https://line.me/ti/p/@243lercy" 
-                                    target="_blank" 
-                                    rel="noreferrer"
-                                    className="w-full border-2 border-dashed border-[#06C755] rounded-2xl py-2 flex items-center justify-center gap-2 hover:bg-[#06C755]/5 transition-colors group"
-                                >
-                                    <div className="bg-[#06C755] text-white p-1 rounded-full group-hover:scale-110 transition-transform">
-                                        <CheckCircle className="w-3 h-3" />
-                                    </div>
-                                    <span className="text-xs font-bold text-[#06C755]">คลิกที่นี่เพื่อเพิ่มเพื่อน @YouOke (จำเป็น)</span>
-                                </a>
+                                    {!previewUrl ? (
+                                        <button 
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="w-full h-32 border-2 border-dashed border-border rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-muted/50 transition-all group"
+                                        >
+                                            <div className="p-3 bg-muted rounded-full group-hover:scale-110 transition-transform">
+                                                <Upload className="w-6 h-6 text-muted-foreground" />
+                                            </div>
+                                            <span className="text-sm font-medium text-muted-foreground">คลิกเพื่อเลือกรูปภาพสลิป</span>
+                                        </button>
+                                    ) : (
+                                        <div className="relative w-full h-48 rounded-2xl overflow-hidden border border-border group">
+                                            <img src={previewUrl} alt="Slip Preview" className="w-full h-full object-cover" />
+                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                                                <button 
+                                                    onClick={() => fileInputRef.current?.click()}
+                                                    className="p-2 bg-white rounded-full text-foreground hover:scale-110 transition-transform"
+                                                >
+                                                    <ImageIcon className="w-5 h-5" />
+                                                </button>
+                                                <button 
+                                                    onClick={() => { setFile(null); setPreviewUrl(null); }}
+                                                    className="p-2 bg-white rounded-full text-destructive hover:scale-110 transition-transform"
+                                                >
+                                                    <X className="w-5 h-5" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
 
                                 <button
-                                    onClick={async () => {
-                                        await handleNotifyAdmin();
-                                        openLineChat();
-                                    }}
+                                    onClick={handleNotifyAdmin}
                                     disabled={sending || sent}
                                     className={cn(
                                         "w-full btn h-16 rounded-2xl flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 shadow-lg",
                                         sent 
-                                            ? "bg-green-50 text-green-600 border-green-200" 
-                                            : "bg-[#06C755] hover:bg-[#05b14c] border-none text-white shadow-green-500/20"
+                                            ? "bg-emerald-50 text-emerald-600 border-emerald-200" 
+                                            : !file
+                                                ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+                                                : "bg-primary hover:bg-primary/90 border-none text-white shadow-primary/20"
                                     )}
                                 >
                                     <div className="flex items-center gap-2">
                                         {sending ? (
-                                            <span className="loading loading-spinner loading-sm"></span>
+                                            <Loader2 className="w-6 h-6 animate-spin" />
                                         ) : sent ? (
                                             <CheckCircle className="w-6 h-6" />
                                         ) : (
-                                            <MessageCircle className="w-6 h-6" />
+                                            <CheckCircle className="w-6 h-6" />
                                         )}
                                         <span className="text-lg font-black">
-                                            {sent ? "แจ้งระบบสำเร็จแล้ว" : "โอนแล้ว แจ้งส่งสลิปทาง LINE"}
+                                            {sent ? "ส่งข้อมูลสำเร็จแล้ว" : sending ? (uploading ? "กำลังอัปโหลดสลิป..." : "กำลังแจ้งระบบ...") : "กดยืนยันการแจ้งโอน"}
                                         </span>
                                     </div>
+                                    {!sent && !sending && file && (
+                                        <span className="text-[10px] opacity-80 font-bold uppercase tracking-tight">ระบบจะแจ้งแอดมินเพื่อตรวจสอบทันที</span>
+                                    )}
+                                </button>
+
+                                <div className="bg-zinc-50 border border-zinc-100 rounded-xl p-3 flex items-start gap-3">
+                                    <div className="bg-zinc-200 rounded-full p-1 text-zinc-600">
+                                        <AlertCircle className="w-3 h-3" />
+                                    </div>
+                                    <p className="text-[10px] text-zinc-600 font-bold leading-tight">
+                                        หมายเหตุ: หลังจากเจ้าหน้าที่ตรวจสอบยอดเงินแล้ว ระบบจะเปิดใช้งานให้คุณโดยอัตโนมัติ พร้อมมีการแจ้งเตือนแจ้งกลับไปครับ
+                                    </p>
+                                </div>
+                            </div>
+      </div>
                                     {!sent && !sending && (
                                         <span className="text-[10px] opacity-80 font-bold uppercase tracking-tight">ระบบจะแจ้ง Admin และพาไปหน้าแชทเพื่อส่งสลิป</span>
                                     )}

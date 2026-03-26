@@ -5,6 +5,7 @@ import { getAuth, setPersistence, indexedDBLocalPersistence, browserLocalPersist
 import { getFirestore, enableIndexedDbPersistence, enableMultiTabIndexedDbPersistence } from 'firebase/firestore'
 import { getDatabase } from 'firebase/database'
 import { getStorage } from 'firebase/storage'
+import { getMessaging, isSupported, Messaging } from 'firebase/messaging'
 
 // Force rebuild to pick up new environment variables (Nov 22, 2025)
 
@@ -54,6 +55,7 @@ let auth: Auth | null = null;
 let database: Firestore | null = null;
 let realtimeDb: Database | null = null;
 let storage: FirebaseStorage | null = null;
+let messaging: Messaging | null = null;
 
 try {
   if (typeof window !== 'undefined') {
@@ -73,6 +75,18 @@ try {
     database = getFirestore(app);
     realtimeDb = getDatabase(app);
     storage = getStorage(app);
+
+    // Initialize Messaging safely
+    if (typeof window !== 'undefined') {
+      isSupported().then((supported) => {
+        if (supported && app) {
+          messaging = getMessaging(app);
+          console.log('🔥 [Firebase] Messaging Initialized');
+        }
+      }).catch(err => {
+        console.warn('🔥 [Firebase] Messaging check failed:', err);
+      });
+    }
 
     // Enable auth persistence for instant auth checks
     // Force LocalStorage to avoid IndexedDB latency/errors (Dec 29, 2025)
@@ -100,6 +114,14 @@ try {
     database = getFirestore(app);
     realtimeDb = getDatabase(app);
     storage = getStorage(app);
+
+    if (typeof window !== 'undefined') {
+      isSupported().then((supported) => {
+        if (supported && app) {
+          messaging = getMessaging(app);
+        }
+      });
+    }
   } else {
     // Firebase not configured - use mock values
     console.warn('Firebase not configured. Using mock values.');
@@ -119,5 +141,5 @@ try {
 }
 
 // Export with common aliases
-export { app, auth, database, realtimeDb, storage };
+export { app, auth, database, realtimeDb, storage, messaging };
 export { database as db }; // Alias for admin pages

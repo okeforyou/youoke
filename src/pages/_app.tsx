@@ -26,6 +26,7 @@ import { GlobalConfirmModal } from '../components/common/GlobalConfirmModal';
 
 import { useSystemThemeSync } from '../hooks/useSystemThemeSync';
 import { SystemProvider } from '../core/container/SystemContext';
+import { useFcmToken } from '../hooks/useFcmToken';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -41,6 +42,9 @@ function App({ Component, pageProps }: AppProps) {
 
   // Sync System Theme (Music Provider)
   useSystemThemeSync();
+
+  // Initialize FCM Token
+  useFcmToken();
 
   // Optimize: Only load heavy Cast/Player stack on pages that need it
   // Chromecast receiver = LIGHTEST possible (no MIDI, no Cast Sender, no Ads)

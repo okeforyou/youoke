@@ -1,28 +1,70 @@
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "@/firebase";
+import { messaging, db } from '../firebase';
+import { getToken, onMessage, Messaging } from 'firebase/messaging';
+import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
 
-export type NotificationType = 'info' | 'warning' | 'success' | 'system';
-
-export interface CreateNotificationParams {
-    userId: string;
-    title: string;
-    message: string;
-    type?: NotificationType;
+export interface NotificationPayload {
+  title: string;
+  body: string;
+  icon?: string;
+  data?: any;
 }
 
-export const createNotification = async ({ userId, title, message, type = 'info' }: CreateNotificationParams) => {
+class NotificationService {
+  private VAPID_KEY = "BMTxxxxxxxxxxxxxxxxxxxxxxxxxxxx"; // TODO: User should provide this or we use a default if available
+
+  /**
+   * Request Permission and Get Token
+   */
+  public async requestPermission(userId: string): Promise<string | null> {
+    if (typeof window === 'undefined' || !messaging) return null;
+
+    try {
+      const permission = await Notification.requestPermission();
+      if (permission === 'granted') {
+        const token = await getToken(messaging, {
+          vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY || this.VAPID_KEY
+        });
+
+        if (token && userId) {
+          await this.saveTokenToUser(userId, token);
+          return token;
+        }
+      }
+      return null;
+    } catch (error) {
+      console.error('❌ [NotificationService] Permission/Token error:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Save Token to Firestore
+   */
+  private async saveTokenToUser(userId: string, token: string) {
     if (!db) return;
     try {
-        const notifRef = collection(db, `users/${userId}/notifications`);
-        await addDoc(notifRef, {
-            title,
-            message,
-            type,
-            read: false,
-            createdAt: serverTimestamp()
-        });
-        console.log(`🔔 Notification Created: ${title}`);
+      const userRef = doc(db, 'users', userId);
+      await updateDoc(userRef, {
+        'metadata.fcmTokens': arrayUnion(token),
+        'metadata.lastTokenUpdate': new Date().toISOString()
+      });
+      console.log('✅ [NotificationService] Token saved to Firestore');
     } catch (error) {
-        console.error("Error creating notification:", error);
+      console.error('❌ [NotificationService] Failed to save token:', error);
     }
-};
+  }
+
+  /**
+   * Listen for Foreground Messages
+   */
+  public listenForMessages(callback: (payload: any) => void) {
+    if (!messaging) return () => {};
+
+    return onMessage(messaging, (payload) => {
+      console.log('🔔 [NotificationService] Foreground message received:', payload);
+      callback(payload);
+    });
+  }
+}
+
+export const notificationService = new NotificationService();

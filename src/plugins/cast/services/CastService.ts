@@ -32,6 +32,11 @@ export class CastService {
         this.roomCode = roomCode;
         console.log(`📡 Initializing CastService (${role}) for Room:`, this.roomCode);
 
+        // Auto-reconnect on visibility change
+        if (typeof document !== 'undefined') {
+            document.addEventListener('visibilitychange', () => this.ensureConnection());
+        }
+
         await this.createRoomIfNotExists(this.roomCode);
 
         // ROLE DIFFERENTIATION
@@ -62,6 +67,38 @@ export class CastService {
         this.roomCode = null;
         this.unsubscribe = null;
         console.log('🛑 CastService Cleaned Up');
+    }
+
+    /**
+     * 🛡️ Ensure Connection (Heartbeat/Reconnect Logic)
+     * Called when visibility changes or before sending a command
+     */
+    public async ensureConnection(): Promise<boolean> {
+        if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return false;
+        if (!this.roomCode || !realtimeDb || !auth) return false;
+
+        try {
+            // 1. Check Auth
+            if (!auth.currentUser) {
+                console.log('🔐 [CastService] Session lost, re-signing in...');
+                await signInAnonymously(auth);
+            }
+
+            // 2. Refresh Listeners if needed (Firebase usually handles this, but we can force it if stale)
+            // For now, we rely on Firebase's internal keep-alive, but we track presence here
+            const statusRef = ref(realtimeDb, `rooms/${this.roomCode}/status`);
+            await set(statusRef, {
+                lastSeen: Date.now(),
+                role: this.role,
+                recovered: true
+            });
+
+            console.log('📡 [CastService] Connection verified & recovered');
+            return true;
+        } catch (e) {
+            console.error('❌ [CastService] Reconnection failed:', e);
+            return false;
+        }
     }
 
     private generateRoomCode(): string {
@@ -234,14 +271,23 @@ export class CastService {
     }
 
     public async sendCommand(command: { type: string; payload?: any }) {
-        if (!this.roomCode || !realtimeDb) return;
+        if (!this.roomCode || !realtimeDb) {
+            console.warn('⚠️ [CastService] Send failed: No roomCode or DB');
+            return;
+        }
+
+        // 🛡️ Pre-flight check: ensure we are connected before pushing
+        await this.ensureConnection();
+
         console.log('📡 Sending Remote Command:', command.type);
         const commandsRef = ref(realtimeDb, `rooms/${this.roomCode}/commands`);
         const newCommandRef = push(commandsRef);
+        
         await set(newCommandRef, sanitizeForFirebase({
             command,
             status: 'pending',
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            senderId: auth?.currentUser?.uid || 'guest'
         }));
     }
 
