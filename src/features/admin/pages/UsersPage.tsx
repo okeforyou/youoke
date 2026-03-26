@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Head from 'next/head';
 import {
   UsersIcon,
@@ -37,6 +37,7 @@ export default function UsersPage() {
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
   const [packages, setPackages] = useState<any[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [errorStatus, setErrorStatus] = useState<string | null>(null);
   const { showConfirm } = useUIStore();
 
   useEffect(() => {
@@ -46,10 +47,16 @@ export default function UsersPage() {
   // Hybrid Fetch: Users from RTDB, Packages from Firestore
   const fetchUsers = async () => {
     setLoading(true);
+    setErrorStatus(null);
     try {
-      // 1. Fetch Users from Firestore
-      if (!db) return;
-      const usersQuery = query(collection(db, "users"));
+      if (!db) {
+        setErrorStatus("Firebase Database Instance not ready. Please refresh.");
+        setLoading(false);
+        return;
+      }
+
+      // 1. Fetch Users from Firestore (Limit 100 for safety)
+      const usersQuery = query(collection(db, "users"), limit(100));
       const snapshot = await getDocs(usersQuery);
 
       if (!snapshot.empty) {
@@ -62,7 +69,6 @@ export default function UsersPage() {
         usersList.sort((a, b) => {
           if (a.role === 'admin' && b.role !== 'admin') return -1;
           if (a.role !== 'admin' && b.role === 'admin') return 1;
-          // createdAt might be Firestore Timestamp or Date or string
           const timeA = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : new Date(a.createdAt || 0).getTime();
           const timeB = b.createdAt?.seconds ? b.createdAt.seconds * 1000 : new Date(b.createdAt || 0).getTime();
           return timeB - timeA;
@@ -72,26 +78,24 @@ export default function UsersPage() {
         setUsers([]);
       }
 
-      // 2. Fetch Packages (Firestore)
-      if (db) {
-        const q = query(collection(db, "packages"), orderBy("price", "asc"));
-        const pkgSnap = await getDocs(q);
-        const pkgList: any[] = [];
-        pkgSnap.forEach(doc => pkgList.push({ id: doc.id, ...doc.data() }));
-        // Default packages if empty
-        if (pkgList.length === 0) {
-          setPackages([
-            { id: 'monthly', name: 'Monthly Plan', durationDays: 30 },
-            { id: 'yearly', name: 'Yearly Plan', durationDays: 365 },
-            { id: 'day_pass', name: 'Day Pass', durationDays: 1 },
-          ]);
-        } else {
-          setPackages(pkgList);
-        }
+      // 2. Fetch Packages
+      const q = query(collection(db, "packages"), orderBy("price", "asc"));
+      const pkgSnap = await getDocs(q);
+      const pkgList: any[] = [];
+      pkgSnap.forEach(doc => pkgList.push({ id: doc.id, ...doc.data() }));
+      
+      if (pkgList.length === 0) {
+        setPackages([
+          { id: 'monthly', name: 'Monthly Plan', durationDays: 30 },
+          { id: 'yearly', name: 'Yearly Plan', durationDays: 365 },
+          { id: 'day_pass', name: 'Day Pass', durationDays: 1 },
+        ]);
+      } else {
+        setPackages(pkgList);
       }
-
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching users:", error);
+      setErrorStatus(error.message || "Unknown error occurred while fetching users.");
     } finally {
       setLoading(false);
     }
@@ -179,15 +183,27 @@ export default function UsersPage() {
     });
   };
 
-  // Filter Logic
-  const filteredUsers = users.filter((u: any) => {
-    const matchesSearch = (u.displayName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (u.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (u.uid || '').includes(searchTerm); // Allow searching by UID
-    const isGuest = !u.email;
-    if (!showGuests && isGuest) return false;
-    return matchesSearch;
-  });
+  // Filter Logic - Optimized with useMemo
+  const filteredUsers = useMemo(() => {
+    // console.log("🔍 Filtering with term:", searchTerm);
+    if (!users || users.length === 0) return [];
+
+    const searchLower = searchTerm.toLowerCase();
+    
+    return users.filter((u: any) => {
+      // 1. Search Logic
+      const matchesSearch = !searchTerm || 
+        (u.displayName || '').toLowerCase().includes(searchLower) ||
+        (u.email || '').toLowerCase().includes(searchLower) ||
+        (u.uid || '').toLowerCase().includes(searchLower);
+        
+      // 2. Guest Filter
+      const isGuest = !u.email;
+      if (!showGuests && isGuest) return false;
+
+      return matchesSearch;
+    });
+  }, [users, searchTerm, showGuests]);
 
   const getMembershipStyle = (user: any) => {
     const status = user.membership?.status || 'active';
@@ -222,7 +238,10 @@ export default function UsersPage() {
           </div>
           <div className="flex gap-2">
             <button 
-              onClick={() => setIsAddModalOpen(true)}
+              onClick={() => {
+                console.log("🛠️ Opening Add User Modal");
+                setIsAddModalOpen(true);
+              }}
               className="btn btn-sm bg-primary text-white border-none gap-2 hover:bg-primary/90 rounded-xl"
             >
               <UserPlusIcon className="w-4 h-4" /> เพิ่มผู้ใช้ใหม่
@@ -264,7 +283,16 @@ export default function UsersPage() {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={4} className="text-center py-12 text-gray-400">กำลังโหลดข้อมูล...</td></tr>
+                  <tr><td colSpan={4} className="text-center py-12 text-gray-400">正在加载数据... (กำลังโหลดข้อมูล)</td></tr>
+                ) : errorStatus ? (
+                  <tr>
+                    <td colSpan={4} className="text-center py-12">
+                      <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-100 max-w-md mx-auto">
+                        <p className="font-bold text-sm mb-1">❌ เกิดข้อผิดพลาดในการดึงข้อมูล</p>
+                        <p className="text-xs opacity-80">{errorStatus}</p>
+                      </div>
+                    </td>
+                  </tr>
                 ) : filteredUsers.length === 0 ? (
                   <tr><td colSpan={4} className="text-center py-12 text-gray-400">ไม่พบข้อมูลผู้ใช้</td></tr>
                 ) : (
