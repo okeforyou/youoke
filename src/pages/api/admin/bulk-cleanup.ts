@@ -10,7 +10,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const cutOffDate = new Date();
-  cutOffDate.setDate(cutOffDate.getDate() - 3);
+  cutOffDate.setDate(cutOffDate.getDate() - 1);
 
   console.log(`🚀 Starting API Bulk Cleanup for users before ${cutOffDate.toISOString()}`);
   
