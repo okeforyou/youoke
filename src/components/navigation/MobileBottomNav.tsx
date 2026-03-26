@@ -7,6 +7,7 @@ import clsx from 'clsx';
 import { useShallow } from 'zustand/react/shallow';
 import { useRouter } from 'next/router';
 import { auth } from '../../firebase';
+import { useUnreadNotifications } from '../../hooks/useUnreadNotifications';
 
 export const MobileBottomNav = () => {
     const router = useRouter();
@@ -19,6 +20,7 @@ export const MobileBottomNav = () => {
         }))
     );
     const { setProfileOpen, isProfileOpen, setQueueOpen, isQueueOpen, showConfirm } = useUIStore();
+    const unreadCount = useUnreadNotifications();
 
     const navItems = [
         { id: 1, label: 'หน้าหลัก', icon: Home },
@@ -74,6 +76,9 @@ export const MobileBottomNav = () => {
                                 "p-1.5 rounded-xl transition-all duration-300 relative",
                                 isActive ? "text-primary bg-primary/10" : "text-black group-hover:text-black"
                             )}>
+                                {unreadCount > 0 && (
+                                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 border-2 border-[#f4f4f5] rounded-full animate-pulse z-10 shadow-sm" />
+                                )}
                                 {item.id === 5 ? (
                                     (() => {
                                         const photoURL = user?.photoURL || auth?.currentUser?.photoURL;

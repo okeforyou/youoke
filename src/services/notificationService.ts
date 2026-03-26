@@ -27,6 +27,8 @@ class NotificationService {
 
         if (token && userId) {
           await this.saveTokenToUser(userId, token);
+          // 📡 Automatically subscribe to global topic
+          this.subscribeToTopic(token, 'all_users');
           return token;
         }
       }
@@ -51,6 +53,27 @@ class NotificationService {
       console.log('✅ [NotificationService] Token saved to Firestore');
     } catch (error) {
       console.error('❌ [NotificationService] Failed to save token:', error);
+    }
+  }
+
+  /**
+   * Subscribe Token to a Topic (Server-side via API)
+   */
+  public async subscribeToTopic(token: string, topic: string) {
+    try {
+      const response = await fetch('/api/notify/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, topic })
+      });
+      const data = await response.json();
+      if (data.success) {
+        console.log(`✅ [NotificationService] Subscribed to topic: ${topic}`);
+      } else {
+        console.warn(`⚠️ [NotificationService] Subscription failed for ${topic}:`, data.error);
+      }
+    } catch (error) {
+      console.error(`❌ [NotificationService] API Error subscribing to ${topic}:`, error);
     }
   }
 

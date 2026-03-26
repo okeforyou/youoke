@@ -9,6 +9,7 @@ import { useSystem } from '../../core/container/SystemContext'; // DI Container
 import ProfileDrawer from '../profile/ProfileDrawer';
 import { usePlayerStore } from '../../modules/player/stores/usePlayerStore';
 import { useUIStore } from '../../stores/useUIStore';
+import { useUnreadNotifications } from '../../hooks/useUnreadNotifications';
 
 export const Sidebar = memo(() => {
     const router = useRouter();
@@ -17,6 +18,7 @@ export const Sidebar = memo(() => {
     const { activeIndex, setActiveIndex, setSearchTerm } = usePlayerStore();
     const { isSidebarCollapsed, setSidebarCollapsed, showConfirm } = useUIStore();
     const [isProfileDrawerOpen, setIsProfileDrawerOpen] = useState(false); // State for drawer
+    const unreadCount = useUnreadNotifications();
 
     // Mounted check to match hydration safety patterns
     const [mounted, setMounted] = useState(false);
@@ -227,8 +229,18 @@ export const Sidebar = memo(() => {
                                 title={isSidebarCollapsed ? user?.displayName || user?.email?.split('@')[0] : ""}
                             >
                                 {user.photoURL ? 
-                                    <img src={user.photoURL} className="w-10 h-10 rounded-full border border-gray-100 group-hover:ring-2 ring-primary/20 transition-all shadow-sm" alt="" /> 
-                                    : <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">{user.email?.[0]?.toUpperCase() || 'G'}</div>
+                                    <div className="relative">
+                                        <img src={user.photoURL} className="w-10 h-10 rounded-full border border-gray-100 group-hover:ring-2 ring-primary/20 transition-all shadow-sm" alt="" />
+                                        {mounted && unreadCount > 0 && (
+                                            <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-red-500 border-2 border-white rounded-full animate-pulse shadow-sm" />
+                                        )}
+                                    </div>
+                                    : <div className="relative">
+                                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">{user.email?.[0]?.toUpperCase() || 'G'}</div>
+                                        {mounted && unreadCount > 0 && (
+                                            <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-red-500 border-2 border-white rounded-full animate-pulse shadow-sm" />
+                                        )}
+                                      </div>
                                 }
                                 <div className={clsx("overflow-hidden transition-all duration-300", isSidebarCollapsed ? "w-0 opacity-0" : "w-auto opacity-100")}>
                                     <div className="flex flex-col">
