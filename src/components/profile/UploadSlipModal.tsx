@@ -167,7 +167,7 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
     };
 
     return (
-        <Transition.Root show={isOpen} as={Fragment}>
+        <Transition show={isOpen} as={Fragment}>
             <Dialog as="div" className="relative z-[210]" onClose={onClose}>
                 <Transition.Child
                     as={Fragment}
@@ -183,71 +183,66 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
 
                 <div className="fixed inset-0 z-10 overflow-y-auto">
                     <div className="flex min-h-full items-center justify-center p-4">
-                        <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-background p-6 shadow-xl transition-all border border-border">
+                        <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 shadow-xl transition-all border border-slate-100">
 
                             <div className="flex justify-between items-center mb-4">
-                                <Dialog.Title as="h3" className="text-lg font-bold">แจ้งโอนเงิน</Dialog.Title>
-                                <button onClick={onClose}><X className="w-5 h-5" /></button>
+                                <Dialog.Title as="h3" className="text-lg font-bold text-slate-900">แจ้งโอนเงิน</Dialog.Title>
+                                <button onClick={onClose} className="text-slate-400 hover:text-slate-600">
+                                    <X className="w-5 h-5" />
+                                </button>
                             </div>
 
                             {/* Payment Info Section */}
-                            <div className="bg-muted/30 p-5 rounded-2xl mb-6 border border-border/50 shadow-inner">
+                            <div className="bg-slate-50 p-5 rounded-2xl mb-6 border border-slate-100">
                                 <div className="text-center mb-5">
-                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4">สแกนชำระผ่านแอปธนาคาร (SCB PROMPTPAY)</p>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">สแกนชำระผ่านแอปธนาคาร</p>
 
                                     {/* QR Image */}
-                                    <div className="bg-white p-4 rounded-2xl inline-block shadow-lg border-2 border-primary/10 relative group overflow-hidden">
+                                    <div className="bg-white p-4 rounded-2xl inline-block shadow-sm border border-slate-100 relative group overflow-hidden">
                                         <img
                                             src={qrImage}
                                             alt="Payment QR"
                                             className="w-48 h-48 mx-auto object-contain"
                                             onError={(e) => {
-                                                // Fallback if image fails to load
                                                 (e.target as HTMLImageElement).src = "https://placehold.co/400x400?text=PromptPay+QR";
                                             }}
                                         />
-                                        <div className="mt-2 flex items-center justify-center gap-2">
-                                            <div className="w-8 h-4 bg-[#4e2e7f] rounded-sm flex items-center justify-center text-[7px] font-bold text-white uppercase">{bankInfo.bank.includes('SCB') ? 'SCB' : 'BANK'}</div>
-                                            <div className="w-10 h-4 bg-[#003d6b] rounded-sm flex items-center justify-center text-[8px] font-bold text-white">PROMPT</div>
-                                            <div className="w-6 h-4 bg-[#f7a600] rounded-sm flex items-center justify-center text-[8px] font-bold text-white">PAY</div>
-                                        </div>
                                     </div>
 
                                     <div className="mt-4">
                                         <p className="text-2xl font-black text-primary">฿{pkg?.price.toLocaleString()}</p>
-                                        <p className="text-[10px] text-muted-foreground mt-1">ชื่อบัญชี: {bankInfo.accName}</p>
+                                        <p className="text-[10px] text-slate-500 mt-1">ชื่อบัญชี: {bankInfo.accName}</p>
                                     </div>
                                 </div>
 
                                 {/* Bank Text Detail */}
-                                <div className="bg-background/80 backdrop-blur rounded-xl p-3 border border-border/50 space-y-2 mt-4 text-left">
+                                <div className="bg-white rounded-xl p-3 border border-slate-100 space-y-2 mt-4 text-left">
                                     <div className="flex justify-between items-center text-xs">
-                                        <span className="text-muted-foreground">ธนาคาร:</span>
-                                        <span className="font-bold">{bankInfo.bank}</span>
+                                        <span className="text-slate-400">ธนาคาร:</span>
+                                        <span className="font-bold text-slate-900">{bankInfo.bank}</span>
                                     </div>
                                     <div className="flex justify-between items-center text-xs">
-                                        <span className="text-muted-foreground">เลขบัญชี:</span>
+                                        <span className="text-slate-400">เลขบัญชี:</span>
                                         <div className="flex items-center gap-2">
-                                            <span className="font-mono font-bold">{bankInfo.accNo}</span>
+                                            <span className="font-mono font-bold text-slate-900">{bankInfo.accNo}</span>
                                             <button
                                                 onClick={() => {
                                                     navigator.clipboard.writeText(bankInfo.accNo.replace(/-/g, ''));
                                                     alert("คัดลอกเลขบัญชีแล้ว");
                                                 }}
-                                                className="p-1 hover:bg-muted rounded transition-colors"
+                                                className="p-1 hover:bg-slate-50 rounded transition-colors"
                                             >
                                                 <Copy className="w-3 h-3 text-primary" />
                                             </button>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
 
-                                <div className="mt-4 space-y-2">
-                                    <div className="flex items-center gap-2 text-[10px] font-bold text-amber-600 bg-amber-50 p-2 rounded-lg border border-amber-100">
-                                                         <div className="space-y-4">
+                            <div className="space-y-4">
                                 {/* File Upload Section */}
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">แนบสลิปการโอนเงิน (หลักฐานสำคัญ)</label>
+                                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">แนบสลิปการโอนเงิน (หลักฐานสำคัญ)</label>
                                     
                                     <input 
                                         type="file" 
@@ -260,26 +255,26 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
                                     {!previewUrl ? (
                                         <button 
                                             onClick={() => fileInputRef.current?.click()}
-                                            className="w-full h-32 border-2 border-dashed border-border rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-muted/50 transition-all group"
+                                            className="w-full h-32 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-all group"
                                         >
-                                            <div className="p-3 bg-muted rounded-full group-hover:scale-110 transition-transform">
-                                                <Upload className="w-6 h-6 text-muted-foreground" />
+                                            <div className="p-3 bg-slate-100 rounded-full group-hover:scale-110 transition-transform">
+                                                <Upload className="w-6 h-6 text-slate-400" />
                                             </div>
-                                            <span className="text-sm font-medium text-muted-foreground">คลิกเพื่อเลือกรูปภาพสลิป</span>
+                                            <span className="text-sm font-medium text-slate-400">คลิกเพื่อเลือกรูปภาพสลิป</span>
                                         </button>
                                     ) : (
-                                        <div className="relative w-full h-48 rounded-2xl overflow-hidden border border-border group">
+                                        <div className="relative w-full h-48 rounded-2xl overflow-hidden border border-slate-200 group">
                                             <img src={previewUrl} alt="Slip Preview" className="w-full h-full object-cover" />
                                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
                                                 <button 
                                                     onClick={() => fileInputRef.current?.click()}
-                                                    className="p-2 bg-white rounded-full text-foreground hover:scale-110 transition-transform"
+                                                    className="p-2 bg-white rounded-full text-slate-900 hover:scale-110 transition-transform"
                                                 >
                                                     <ImageIcon className="w-5 h-5" />
                                                 </button>
                                                 <button 
                                                     onClick={() => { setFile(null); setPreviewUrl(null); }}
-                                                    className="p-2 bg-white rounded-full text-destructive hover:scale-110 transition-transform"
+                                                    className="p-2 bg-white rounded-full text-red-500 hover:scale-110 transition-transform"
                                                 >
                                                     <X className="w-5 h-5" />
                                                 </button>
@@ -292,12 +287,12 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
                                     onClick={handleNotifyAdmin}
                                     disabled={sending || sent}
                                     className={cn(
-                                        "w-full btn h-16 rounded-2xl flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 shadow-lg",
+                                        "w-full h-14 rounded-2xl flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 shadow-lg",
                                         sent 
-                                            ? "bg-emerald-50 text-emerald-600 border-emerald-200" 
+                                            ? "bg-emerald-50 text-emerald-600 border border-emerald-200" 
                                             : !file
-                                                ? "bg-slate-200 text-slate-400 cursor-not-allowed"
-                                                : "bg-primary hover:bg-primary/90 border-none text-white shadow-primary/20"
+                                                ? "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
+                                                : "bg-primary hover:bg-opacity-90 border-none text-white shadow-primary/20"
                                     )}
                                 >
                                     <div className="flex items-center gap-2">
@@ -309,7 +304,7 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
                                             <CheckCircle className="w-6 h-6" />
                                         )}
                                         <span className="text-lg font-black">
-                                            {sent ? "ส่งข้อมูลสำเร็จแล้ว" : sending ? (uploading ? "กำลังอัปโหลดสลิป..." : "กำลังแจ้งระบบ...") : "กดยืนยันการแจ้งโอน"}
+                                            {sent ? "ส่งข้อมูลสำเร็จแล้ว" : sending ? (uploading ? "กำลังอัปโหลด..." : "กำลังแจ้งระบบ...") : "กดยืนยันการแจ้งโอน"}
                                         </span>
                                     </div>
                                     {!sent && !sending && file && (
@@ -317,35 +312,19 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
                                     )}
                                 </button>
 
-                                <div className="bg-zinc-50 border border-zinc-100 rounded-xl p-3 flex items-start gap-3">
-                                    <div className="bg-zinc-200 rounded-full p-1 text-zinc-600">
+                                <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 flex items-start gap-3">
+                                    <div className="bg-slate-200 rounded-full p-1 text-slate-600">
                                         <AlertCircle className="w-3 h-3" />
                                     </div>
-                                    <p className="text-[10px] text-zinc-600 font-bold leading-tight">
+                                    <p className="text-[10px] text-slate-600 font-bold leading-tight">
                                         หมายเหตุ: หลังจากเจ้าหน้าที่ตรวจสอบยอดเงินแล้ว ระบบจะเปิดใช้งานให้คุณโดยอัตโนมัติ พร้อมมีการแจ้งเตือนแจ้งกลับไปครับ
                                     </p>
                                 </div>
                             </div>
-      </div>
-                                    {!sent && !sending && (
-                                        <span className="text-[10px] opacity-80 font-bold uppercase tracking-tight">ระบบจะแจ้ง Admin และพาไปหน้าแชทเพื่อส่งสลิป</span>
-                                    )}
-                                </button>
-
-                                <div className="bg-zinc-50 border border-zinc-100 rounded-xl p-3 flex items-start gap-3">
-                                    <div className="bg-zinc-200 rounded-full p-1 text-zinc-600">
-                                        <AlertCircle className="w-3 h-3" />
-                                    </div>
-                                    <p className="text-[10px] text-zinc-600 font-bold leading-tight">
-                                        หมายเหตุ: ระบบจะอนุมัติการใช้งาน <span className="text-[#06C755]">เฉพาะผู้ใช้งานที่เพิ่มเพื่อน</span> และส่งรูปหลักฐานใน LINE เท่านั้นครับ
-                                    </p>
-                                </div>
-                            </div>
-
                         </Dialog.Panel>
                     </div>
                 </div>
             </Dialog>
-        </Transition.Root>
+        </Transition>
     );
 };
