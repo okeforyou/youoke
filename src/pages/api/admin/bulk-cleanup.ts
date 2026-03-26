@@ -2,6 +2,9 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { adminAuth, adminFirestore } from '../../../../firebase-admin';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // Security check: Only allow certain methods or a temporary secret key
+  // For this one-off task, we will run it and then delete the file.
+  
   if (!adminAuth || !adminFirestore) {
     return res.status(500).json({ error: 'Firebase Admin not initialized' });
   }

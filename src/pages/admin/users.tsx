@@ -117,19 +117,20 @@ export default function AdminUsersPage() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [showGuests, setShowGuests] = useState(true);
-    const [syncing, setSyncing] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [packages, setPackages] = useState<PackageOption[]>([]);
     const [assigningLoading, setAssigningLoading] = useState(false);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [notificationUser, setNotificationUser] = useState<User | null>(null);
-    
+    const [syncing, setSyncing] = useState(false);
+
     // Notification State
     const [msgTitle, setMsgTitle] = useState("");
     const [msgBody, setMsgBody] = useState("");
     const [sendingMsg, setSendingMsg] = useState(false);
     const [msgType, setMsgType] = useState<'info' | 'warning' | 'success' | 'system'>('system');
     const [notificationDialogOpen, setNotificationDialogOpen] = useState(false);
+    const [notificationUser, setNotificationUser] = useState<User | null>(null);
+    const [isRefreshing, setIsRefreshing] = useState(false);
     
     // New Confirm Modal State
     const [confirmModal, setConfirmModal] = useState<{
@@ -502,13 +503,11 @@ export default function AdminUsersPage() {
                         setConfirmModal({
                             isOpen: true,
                             title: "กวาดล้างขยะสำเร็จ",
-                            message: `ดำเนินการล้างบัญชี Anonymous เรียบร้อยแล้ว (ตัวเลขสมาชิกจะวูบลงอัตโนมัติใน 1 วินาที)\n\n- ลบจาก Auth: ${result.deletedAuth}\n- ลบจาก Firestore: ${result.deletedFirestore}`,
+                            message: `ดำเนินการล้างบัญชี Anonymous เรียบร้อยแล้ว\n\n- ลบจาก Auth: ${result.deletedAuth}\n- ลบจาก Firestore: ${result.deletedFirestore}\n- ตรวจสอบรวม: ${result.totalProcessed}`,
                             type: 'info',
                             onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
                         });
-                        
-                        // Wait 1s for Firestore to propogate deletions before fetch
-                        setTimeout(fetchUsers, 1000);
+                        fetchUsers(); // Refresh the list
                     } else {
                         throw new Error(result.error || "Unknown server error");
                     }
@@ -622,19 +621,15 @@ export default function AdminUsersPage() {
                 </div>
                 <div className="flex items-center gap-3">
                     <button onClick={fetchUsers} className="flex items-center gap-2 px-5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl font-bold text-sm text-gray-600 hover:bg-white hover:border-indigo-200 transition-all shadow-sm">
-                        <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
-                        {loading ? 'กำลังรีเฟรช...' : 'รีเฟรชข้อมูล'}
+                        <RefreshCw className="w-4 h-4" />
+                        รีเฟรชข้อมูล
                     </button>
                     <button 
                         onClick={handleSyncAll}
-                        disabled={syncing}
-                        className={cn(
-                            "flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-sm transition-all shadow-sm",
-                            syncing ? "bg-gray-100 text-gray-400" : "bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-50"
-                        )}
+                        className="flex items-center gap-2 px-5 py-2.5 bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-50 rounded-2xl font-bold text-sm transition-all shadow-sm"
                     >
-                        <ArrowDownUp className={cn("w-4 h-4", syncing && "animate-spin")} />
-                        {syncing ? 'กำลังซิงค์...' : 'Sync สมาชิก'}
+                        <ArrowDownUp className="w-4 h-4" />
+                        Sync สมาชิก
                     </button>
                     <button 
                         onClick={handleCleanupGuests} 
