@@ -148,6 +148,8 @@ export default function AdminUsersPage() {
         type: 'warning'
     });
 
+    const [actionUser, setActionUser] = useState<User | null>(null);
+
 
     // Fetch Users (Optimized)
     const fetchUsers = async () => {
@@ -838,35 +840,13 @@ export default function AdminUsersPage() {
                                             )}
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <div className="dropdown dropdown-end">
-                                                <label tabIndex={0} className="btn btn-ghost btn-xs text-muted-foreground hover:text-foreground">
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                </label>
-                                                <ul tabIndex={0} className="dropdown-content menu p-2 shadow-lg bg-card rounded-xl w-56 z-50 border border-border/50">
-                                                    <li>
-                                                        <a onClick={() => setSelectedUser(user)} className="gap-2">
-                                                            <Edit2 className="h-4 w-4" /> แก้ไขสมาชิก
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        <a onClick={() => { setNotificationUser(user); setNotificationDialogOpen(true); }} className="gap-2">
-                                                            <Bell className="h-4 w-4" /> ส่งข้อความ
-                                                        </a>
-                                                    </li>
-                                                    <div className="divider my-1"></div>
-                                                    <li>
-                                                        <a onClick={() => handleBanToggle(user)} className={cn("gap-2", user.banned ? "text-success" : "text-destructive")}>
-                                                            <Ban className="h-4 w-4" /> {user.banned ? "ยกเลิกการแบน" : "ระงับการใช้งาน"}
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        <a onClick={() => handleToggleAuth(user)} className={cn("gap-2", (user as any).disabled ? "text-indigo-600" : "text-amber-600")}>
-                                                            {(user as any).disabled ? <ShieldCheck className="h-4 w-4" /> : <ShieldAlert className="h-4 w-4" />}
-                                                            {(user as any).disabled ? "ปลดระงับเข้าสู่ระบบ" : "ระงับการเข้าสู่ระบบ"}
-                                                        </a>
-                                                    </li>
-                                                </ul>
-                                            </div>
+                                            <button 
+                                                onClick={() => setActionUser(user)}
+                                                className="btn btn-ghost btn-xs text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all group"
+                                                title="จัดการสมาชิก"
+                                            >
+                                                <MoreHorizontal className="h-5 w-5 group-hover:scale-110" />
+                                            </button>
                                         </td>
                                     </tr>
                                 );
@@ -874,18 +854,105 @@ export default function AdminUsersPage() {
                         </tbody>
                     </table>
                 </div>
-                {/* Pagination - Added as static for now since logic wasn't fully there but UI was in mockup */}
-                <div className="flex items-center justify-between border-t border-border/30 px-6 py-4">
-                    <p className="text-sm text-muted-foreground">
-                        แสดง {filteredUsers.length} รายการ
+
+                {/* Pagination */}
+                <div className="flex items-center justify-between border-t border-gray-50 px-8 py-6 bg-gray-50/30">
+                    <p className="text-sm text-gray-400 font-bold">
+                        แสดง <span className="text-gray-900">{filteredUsers.length}</span> รายการ
                     </p>
-                    <div className="flex items-center gap-2">
-                        <button className="btn btn-outline btn-xs border-border/50" disabled>Previous</button>
-                        <button className="btn btn-xs bg-primary text-primary-foreground border-none">1</button>
-                        <button className="btn btn-outline btn-xs border-border/50">Next</button>
+                    <div className="flex items-center gap-3">
+                        <button className="flex h-10 w-10 items-center justify-center rounded-xl bg-white border border-gray-100 text-gray-400 hover:text-gray-900 shadow-sm disabled:opacity-50 transition-all font-black" disabled>&lt;</button>
+                        <button className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/20 font-black">1</button>
+                        <button className="flex h-10 w-10 items-center justify-center rounded-xl bg-white border border-gray-100 text-gray-400 hover:text-gray-900 shadow-sm transition-all font-black">&gt;</button>
                     </div>
                 </div>
             </div>
+
+            {/* User Action Modal - NEW Premium Modal for Actions */}
+            {actionUser && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div 
+                        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300" 
+                        onClick={() => setActionUser(null)}
+                    />
+                    <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-white p-6 animate-in zoom-in-95 fade-in duration-300">
+                        <div className="flex flex-col items-center mb-6 text-center">
+                            <div className="h-16 w-16 rounded-full bg-primary/5 border-2 border-primary/20 flex items-center justify-center overflow-hidden mb-3">
+                                {actionUser.photoURL ? (
+                                    <img src={actionUser.photoURL} alt={actionUser.displayName} className="h-full w-full object-cover" />
+                                ) : (
+                                    <span className="text-xl font-bold text-primary">{actionUser.displayName?.charAt(0) || 'U'}</span>
+                                )}
+                            </div>
+                            <h3 className="text-lg font-black text-slate-900 leading-none">{actionUser.displayName || "Unknown User"}</h3>
+                            <p className="text-xs text-slate-400 font-medium mt-1 truncate max-w-full italic">{actionUser.email || actionUser.uid}</p>
+                        </div>
+
+                        <div className="space-y-2">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 mb-1">คำสั่งจัดการข้อมูล</p>
+                            
+                            <button 
+                                onClick={() => { setSelectedUser(actionUser); setActionUser(null); }}
+                                className="w-full flex items-center justify-between gap-3 p-4 rounded-2xl bg-white border border-slate-100 hover:border-primary/20 hover:bg-primary/5 hover:text-primary transition-all group"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <Edit2 className="h-5 w-5 text-slate-400 group-hover:text-primary" />
+                                    <span className="text-sm font-bold">จัดการสมาชิก (Membership)</span>
+                                </div>
+                                <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+                            </button>
+
+                            <button 
+                                onClick={() => { setNotificationUser(actionUser); setNotificationDialogOpen(true); setActionUser(null); }}
+                                className="w-full flex items-center justify-between gap-3 p-4 rounded-2xl bg-white border border-slate-100 hover:border-indigo-100 hover:bg-indigo-50 hover:text-indigo-600 transition-all group"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <Bell className="h-5 w-5 text-slate-400 group-hover:text-indigo-600" />
+                                    <span className="text-sm font-bold">ส่งข้อความแจ้งเตือน</span>
+                                </div>
+                                <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+                            </button>
+
+                            <div className="h-px bg-slate-50 my-2" />
+
+                            <p className="text-[10px] font-black text-red-400 uppercase tracking-widest px-2 mb-1">ความปลอดภัย (Moderation)</p>
+                            
+                            <button 
+                                onClick={() => { handleBanToggle(actionUser); setActionUser(null); }}
+                                className={cn(
+                                    "w-full flex items-center gap-3 p-4 rounded-2xl border transition-all group font-bold text-sm",
+                                    actionUser.banned 
+                                        ? "bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100" 
+                                        : "bg-orange-50 border-orange-100 text-orange-600 hover:bg-orange-100"
+                                )}
+                            >
+                                <Ban className="h-5 w-5" />
+                                <span>{actionUser.banned ? "ปลดระงับใช้งาน (Unban)" : "ระงับใช้งาน (Ban User)"}</span>
+                            </button>
+
+                            <button 
+                                onClick={() => { handleToggleAuth(actionUser); setActionUser(null); }}
+                                className={cn(
+                                    "w-full flex items-center gap-3 p-4 rounded-2xl border transition-all group font-bold text-sm",
+                                    (actionUser as any).disabled 
+                                        ? "bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100" 
+                                        : "bg-rose-50 border-rose-100 text-rose-600 hover:bg-rose-100"
+                                )}
+                            >
+                                {(actionUser as any).disabled ? <ShieldCheck className="h-5 w-5" /> : <ShieldAlert className="h-5 w-5" />}
+                                <span>{(actionUser as any).disabled ? "เปิดสิทธิ์ Auth (Enable)" : "ระงับสิทธิ์ Auth (Disable)"}</span>
+                            </button>
+                        </div>
+                        
+                        <button 
+                            onClick={() => setActionUser(null)}
+                            className="w-full mt-6 py-3 text-sm font-black text-slate-400 hover:text-slate-600 transition-colors uppercase tracking-widest"
+                        >
+                            ยกเลิก
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Edit Membership Modal - Platinum v2.3 Integrated */}
             {selectedUser && (
