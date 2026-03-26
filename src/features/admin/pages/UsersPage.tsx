@@ -60,29 +60,12 @@ export default function UsersPage() {
 
       let usersList: any[] = [];
       
-      // 🔍 Target Search Logic
-      if (searchQuery && searchQuery.length > 3) {
-        console.log("🎯 Targeting search for:", searchQuery);
-        // Try searching by Email or UID exactly
-        const emailQuery = query(collection(db, "users"), where("email", "==", searchQuery), limit(1));
-        const uidQuery = query(collection(db, "users"), where("uid", "==", searchQuery), limit(1));
-        
-        const [emailSnap, uidSnap] = await Promise.all([getDocs(emailQuery), getDocs(uidQuery)]);
-        
-        emailSnap.forEach(doc => usersList.push({ uid: doc.id, ...doc.data() }));
-        if (usersList.length === 0) {
-          uidSnap.forEach(doc => usersList.push({ uid: doc.id, ...doc.data() }));
-        }
-      } 
-      
-      // Fallback: If no search or search results empty, load default list
-      if (usersList.length === 0) {
-        const usersQuery = query(collection(db, "users"), limit(100));
-        const snapshot = await getDocs(usersQuery);
-        snapshot.forEach(doc => {
-          usersList.push({ uid: doc.id, ...doc.data() });
-        });
-      }
+      // Load active users (up to 1000 for robust client-side search)
+      const usersQuery = query(collection(db, "users"), limit(1000));
+      const snapshot = await getDocs(usersQuery);
+      snapshot.forEach(doc => {
+        usersList.push({ uid: doc.id, ...doc.data() });
+      });
 
       // Sort: Admin first, then newest
       usersList.sort((a, b) => {
@@ -276,15 +259,9 @@ export default function UsersPage() {
               className="input input-sm w-full pl-9 bg-gray-50 border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  fetchUsers(searchTerm);
-                }
-              }}
             />
             <button 
-              onClick={() => fetchUsers(searchTerm)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 btn btn-xs btn-ghost text-primary"
+              className="absolute right-2 top-1/2 -translate-y-1/2 btn btn-xs btn-ghost text-primary pointer-events-none"
             >
               ค้นหา
             </button>
