@@ -496,7 +496,7 @@ export default function AdminUsersPage() {
                 setConfirmModal(prev => ({ ...prev, isOpen: false }));
                 setLoading(true);
                 try {
-                    const res = await fetch('/api/admin/bulk-cleanup');
+                    const res = await fetch('/api/admin/bulk-cleanup?secret=youoke_admin_cleanup_secret_2024');
                     const result = await res.json();
                     
                     if (result.success) {
