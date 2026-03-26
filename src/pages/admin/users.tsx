@@ -31,6 +31,9 @@ import {
 import { StatCard } from "@/features/admin/components/StatCard";
 import { EditUserModal } from "@/features/admin/components/EditUserModal";
 import { ConfirmModal } from "@/features/admin/components/ConfirmModal";
+import { AddUserModal } from "@/features/admin/components/AddUserModal";
+import { ShieldCheck, ShieldAlert, ArrowDownUp } from "lucide-react";
+import { AdminService } from "@/features/admin/services/adminService";
 
 
 // LINE Icon Component
@@ -117,6 +120,8 @@ export default function AdminUsersPage() {
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [packages, setPackages] = useState<PackageOption[]>([]);
     const [assigningLoading, setAssigningLoading] = useState(false);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [syncing, setSyncing] = useState(false);
 
     // Notification State
     const [msgTitle, setMsgTitle] = useState("");
@@ -407,7 +412,6 @@ export default function AdminUsersPage() {
             onConfirm: async () => {
                 setConfirmModal(prev => ({ ...prev, isOpen: false }));
                 try {
-                    const { AdminService } = await import('@/features/admin/services/adminService');
                     await AdminService.updateUserBanStatus(user.uid, newBanStatus);
 
                     const updatedUser = { ...user, banned: newBanStatus };
@@ -421,6 +425,59 @@ export default function AdminUsersPage() {
                         type: 'danger',
                         onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
                     });
+                }
+            }
+        });
+    };
+
+    const handleSyncAll = async () => {
+        setConfirmModal({
+            isOpen: true,
+            title: "ยืนยันการซิงค์ข้อมูล (Restore All Users)",
+            message: "ระบบจะทำการกวาดรายชื่อสมาชิกทุกคนจาก Firebase Auth มาสร้างไฟล์ในระบบจัดการ (Firestore) ใหม่ที่ตกหล่นอยู่ เหมาะสำหรับเคสค้นหาไม่เจอหรือคนหาย คุณต้องการดำเนินการต่อหรือไม่?",
+            type: 'warning',
+            confirmText: 'เริ่มซิงค์ข้อมูล',
+            onConfirm: async () => {
+                setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                setSyncing(true);
+                try {
+                    const result = await AdminService.syncAllUsers();
+                    setConfirmModal({
+                        isOpen: true,
+                        title: "ซิงค์ข้อมูลสำเร็จ",
+                        message: result.message,
+                        type: 'info',
+                        onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+                    });
+                    fetchUsers();
+                } catch (error: any) {
+                    console.error("Sync failed:", error);
+                    alert("Sync Error: " + error.message);
+                } finally {
+                    setSyncing(false);
+                }
+            }
+        });
+    };
+
+    const handleToggleAuth = async (targetUser: User) => {
+        // Safe check for disabled property (might be missing in Firestore but exists in Auth)
+        const currentDisabled = (targetUser as any).disabled || false;
+        const newStatus = !currentDisabled;
+        const actionLabel = newStatus ? "ระงับการเข้าสู่ระบบ" : "เปิดสิทธิ์การเข้าสู่ระบบ";
+        
+        setConfirmModal({
+            isOpen: true,
+            title: `ยืนยันการ ${actionLabel}`,
+            message: `คุณต้องการ ${actionLabel} ของคุณ ${(targetUser as any).displayName || targetUser.email} ใช่หรือไม่? สมาชิกจะ${newStatus ? 'ไม่สามารถ' : 'กลับมา'} Login ได้ตามปกติ`,
+            type: newStatus ? 'danger' : 'warning',
+            onConfirm: async () => {
+                setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                try {
+                    await AdminService.toggleAuthStatus(targetUser.uid, newStatus);
+                    fetchUsers();
+                } catch (e: any) {
+                    alert("Auth Status Error: " + e.message);
                 }
             }
         });
@@ -472,8 +529,11 @@ export default function AdminUsersPage() {
 
 
     const filteredUsers = users.filter(u => {
-        const matchesSearch = u.displayName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            u.email?.toLowerCase().includes(searchTerm.toLowerCase());
+        const searchLower = searchTerm.toLowerCase();
+        const matchesSearch = 
+            u.displayName?.toLowerCase().includes(searchLower) ||
+            u.email?.toLowerCase().includes(searchLower) ||
+            u.uid?.toLowerCase().includes(searchLower);
         const isGuest = !u.email;
         if (!showGuests && isGuest) return false;
         return matchesSearch;
@@ -563,13 +623,27 @@ export default function AdminUsersPage() {
                         รีเฟรชข้อมูล
                     </button>
                     <button 
+                        onClick={handleSyncAll}
+                        disabled={syncing}
+                        className={cn(
+                            "flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-sm transition-all shadow-sm",
+                            syncing ? "bg-gray-100 text-gray-400" : "bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-50"
+                        )}
+                    >
+                        <ArrowDownUp className={cn("w-4 h-4", syncing && "animate-spin")} />
+                        {syncing ? 'กำลังซิงค์...' : 'Sync สมาชิก'}
+                    </button>
+                    <button 
                         onClick={handleCleanupGuests} 
                         className="flex items-center gap-2 px-5 py-2.5 bg-white border border-red-200 rounded-2xl font-bold text-sm text-red-600 hover:bg-red-50 transition-all shadow-sm"
                     >
                         <Trash2 className="w-4 h-4" />
-                        ล้าง Guest เก่า
+                        ล้าง Guest
                     </button>
-                    <button className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 rounded-2xl font-bold text-sm text-white hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200">
+                    <button 
+                        onClick={() => setIsAddModalOpen(true)}
+                        className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 rounded-2xl font-bold text-sm text-white hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200"
+                    >
                         <UserPlus className="w-4 h-4" />
                         เพิ่มผู้ใช้ใหม่
                     </button>
@@ -785,6 +859,12 @@ export default function AdminUsersPage() {
                                                             <Ban className="h-4 w-4" /> {user.banned ? "ยกเลิกการแบน" : "ระงับการใช้งาน"}
                                                         </a>
                                                     </li>
+                                                    <li>
+                                                        <a onClick={() => handleToggleAuth(user)} className={cn("gap-2", (user as any).disabled ? "text-indigo-600" : "text-amber-600")}>
+                                                            {(user as any).disabled ? <ShieldCheck className="h-4 w-4" /> : <ShieldAlert className="h-4 w-4" />}
+                                                            {(user as any).disabled ? "ปลดระงับเข้าสู่ระบบ" : "ระงับการเข้าสู่ระบบ"}
+                                                        </a>
+                                                    </li>
                                                 </ul>
                                             </div>
                                         </td>
@@ -908,6 +988,13 @@ export default function AdminUsersPage() {
                 type={confirmModal.type}
                 confirmText={confirmModal.confirmText}
             />
+
+            {isAddModalOpen && (
+                <AddUserModal
+                    onClose={() => setIsAddModalOpen(false)}
+                    onRefresh={fetchUsers}
+                />
+            )}
         </AdminLayout>
     );
 }
