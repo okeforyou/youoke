@@ -34,6 +34,8 @@ import { ConfirmModal } from "@/features/admin/components/ConfirmModal";
 import { AddUserModal } from "@/features/admin/components/AddUserModal";
 import { ShieldCheck, ShieldAlert, ArrowDownUp } from "lucide-react";
 import { AdminService } from "@/features/admin/services/adminService";
+import { useToast } from "@/context/ToastContext";
+import { cn } from "@/lib/utils";
 
 
 // LINE Icon Component
@@ -113,10 +115,12 @@ const GlobalScrollbarStyle = () => (
 
 export default function AdminUsersPage() {
     const { user } = useAuthStore();
+    const { addToast } = useToast();
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [showGuests, setShowGuests] = useState(true);
+    const [syncing, setSyncing] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [packages, setPackages] = useState<PackageOption[]>([]);
     const [assigningLoading, setAssigningLoading] = useState(false);
@@ -153,6 +157,7 @@ export default function AdminUsersPage() {
 
     // Fetch Users (Optimized)
     const fetchUsers = async () => {
+        if (addToast) addToast("⏳ กำลังรีเฟรชรายชื่อสมาชิก...", "info");
         setLoading(true);
         try {
             if (!db) return;
@@ -173,9 +178,10 @@ export default function AdminUsersPage() {
 
             setUsers(data);
             console.log(`✅ Loaded ${data.length} users successfully.`);
+            if (addToast) addToast("✅ รีเฟรชข้อมูลสมาชิกเรียบร้อยแล้ว", "success");
         } catch (error) {
             console.error("Error fetching users:", error);
-            // Optionally set error state if UI supports it
+            if (addToast) addToast("❌ ไม่สามารถรีเฟรชข้อมูลได้", "error");
         } finally {
             setLoading(false);
         }
@@ -442,6 +448,7 @@ export default function AdminUsersPage() {
             onConfirm: async () => {
                 setConfirmModal(prev => ({ ...prev, isOpen: false }));
                 setSyncing(true);
+                if (addToast) addToast("🌪️ กำลังซิงค์สมาชิกจากระบบ... กรุณารอสักครู่", "info");
                 try {
                     const result = await AdminService.syncAllUsers();
                     setConfirmModal({
@@ -451,10 +458,11 @@ export default function AdminUsersPage() {
                         type: 'info',
                         onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
                     });
+                    if (addToast) addToast("✅ ซิงค์สมาชิกเรียบร้อยแล้ว", "success");
                     fetchUsers();
                 } catch (error: any) {
                     console.error("Sync failed:", error);
-                    alert("Sync Error: " + error.message);
+                    if (addToast) addToast("❌ การซิงค์สมาชิกล้มเหลว", "error");
                 } finally {
                     setSyncing(false);
                 }
@@ -495,6 +503,7 @@ export default function AdminUsersPage() {
             onConfirm: async () => {
                 setConfirmModal(prev => ({ ...prev, isOpen: false }));
                 setLoading(true);
+                if (addToast) addToast("🧹 กำลังปฏิบัติการกวาดล้างขยะ...", "info");
                 try {
                     const res = await fetch('/api/admin/bulk-cleanup');
                     const result = await res.json();
@@ -507,7 +516,9 @@ export default function AdminUsersPage() {
                             type: 'info',
                             onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
                         });
-                        fetchUsers(); // Refresh the list
+                        if (addToast) addToast(`🧹 กวาดล้างขยะเรียบร้อย (ลบไป ${result.deletedFirestore} รายการ)`, "success");
+                        // Wait 1s for Firestore to propogate deletions before fetch
+                        setTimeout(fetchUsers, 1000);
                     } else {
                         throw new Error(result.error || "Unknown server error");
                     }
@@ -621,15 +632,19 @@ export default function AdminUsersPage() {
                 </div>
                 <div className="flex items-center gap-3">
                     <button onClick={fetchUsers} className="flex items-center gap-2 px-5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl font-bold text-sm text-gray-600 hover:bg-white hover:border-indigo-200 transition-all shadow-sm">
-                        <RefreshCw className="w-4 h-4" />
+                        <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
                         รีเฟรชข้อมูล
                     </button>
                     <button 
                         onClick={handleSyncAll}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-50 rounded-2xl font-bold text-sm transition-all shadow-sm"
+                        disabled={syncing}
+                        className={cn(
+                            "flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-sm transition-all shadow-sm",
+                            syncing ? "bg-gray-100 text-gray-400" : "bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-50"
+                        )}
                     >
-                        <ArrowDownUp className="w-4 h-4" />
-                        Sync สมาชิก
+                        <ArrowDownUp className={cn("w-4 h-4", syncing && "animate-spin")} />
+                        {syncing ? 'กำลังซิงค์...' : 'Sync สมาชิก'}
                     </button>
                     <button 
                         onClick={handleCleanupGuests} 
