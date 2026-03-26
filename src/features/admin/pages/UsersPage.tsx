@@ -41,8 +41,11 @@ export default function UsersPage() {
   const { showConfirm } = useUIStore();
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    if (db) {
+      console.log("🔥 Firebase DB Ready - Initializing Users Fetch");
+      fetchUsers();
+    }
+  }, [db]);
 
   // Hybrid Fetch: Users from RTDB, Packages from Firestore
   const fetchUsers = async (searchQuery?: string) => {
@@ -251,8 +254,9 @@ export default function UsersPage() {
           </div>
           <div className="flex gap-2">
             <button 
-              onClick={() => {
-                console.log("🛠️ Opening Add User Modal");
+              onClick={(e) => {
+                e.preventDefault();
+                console.log("🛠️ Clicked: Add User Button. Current state:", isAddModalOpen);
                 setIsAddModalOpen(true);
               }}
               className="btn btn-sm bg-primary text-white border-none gap-2 hover:bg-primary/90 rounded-xl"
