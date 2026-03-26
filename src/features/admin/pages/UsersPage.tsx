@@ -17,7 +17,7 @@ import AdminLayout from '../layouts/AdminLayout';
 import { AdminService } from '../services/adminService';
 import { EditUserModal } from '../components/EditUserModal';
 import { AddUserModal } from '../components/AddUserModal';
-import { collection, query, orderBy, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, limit } from 'firebase/firestore';
+import { collection, query, orderBy, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, limit, where } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { cn } from '../../../utils/cn';
 import { DatabaseHealth } from '../components/DatabaseHealth';
@@ -45,7 +45,7 @@ export default function UsersPage() {
   }, []);
 
   // Hybrid Fetch: Users from RTDB, Packages from Firestore
-  const fetchUsers = async () => {
+  const fetchUsers = async (searchQuery?: string) => {
     setLoading(true);
     setErrorStatus(null);
     try {
@@ -55,28 +55,41 @@ export default function UsersPage() {
         return;
       }
 
-      // 1. Fetch Users from Firestore (Limit 100 for safety)
-      const usersQuery = query(collection(db, "users"), limit(100));
-      const snapshot = await getDocs(usersQuery);
-
-      if (!snapshot.empty) {
-        const usersList: any[] = [];
+      let usersList: any[] = [];
+      
+      // 🔍 Target Search Logic
+      if (searchQuery && searchQuery.length > 3) {
+        console.log("🎯 Targeting search for:", searchQuery);
+        // Try searching by Email or UID exactly
+        const emailQuery = query(collection(db, "users"), where("email", "==", searchQuery), limit(1));
+        const uidQuery = query(collection(db, "users"), where("uid", "==", searchQuery), limit(1));
+        
+        const [emailSnap, uidSnap] = await Promise.all([getDocs(emailQuery), getDocs(uidQuery)]);
+        
+        emailSnap.forEach(doc => usersList.push({ uid: doc.id, ...doc.data() }));
+        if (usersList.length === 0) {
+          uidSnap.forEach(doc => usersList.push({ uid: doc.id, ...doc.data() }));
+        }
+      } 
+      
+      // Fallback: If no search or search results empty, load default list
+      if (usersList.length === 0) {
+        const usersQuery = query(collection(db, "users"), limit(100));
+        const snapshot = await getDocs(usersQuery);
         snapshot.forEach(doc => {
           usersList.push({ uid: doc.id, ...doc.data() });
         });
-
-        // Sort: Admin first, then newest
-        usersList.sort((a, b) => {
-          if (a.role === 'admin' && b.role !== 'admin') return -1;
-          if (a.role !== 'admin' && b.role === 'admin') return 1;
-          const timeA = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : new Date(a.createdAt || 0).getTime();
-          const timeB = b.createdAt?.seconds ? b.createdAt.seconds * 1000 : new Date(b.createdAt || 0).getTime();
-          return timeB - timeA;
-        });
-        setUsers(usersList);
-      } else {
-        setUsers([]);
       }
+
+      // Sort: Admin first, then newest
+      usersList.sort((a, b) => {
+        if (a.role === 'admin' && b.role !== 'admin') return -1;
+        if (a.role !== 'admin' && b.role === 'admin') return 1;
+        const timeA = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : new Date(a.createdAt || 0).getTime();
+        const timeB = b.createdAt?.seconds ? b.createdAt.seconds * 1000 : new Date(b.createdAt || 0).getTime();
+        return timeB - timeA;
+      });
+      setUsers(usersList);
 
       // 2. Fetch Packages
       const q = query(collection(db, "packages"), orderBy("price", "asc"));
@@ -259,7 +272,18 @@ export default function UsersPage() {
               className="input input-sm w-full pl-9 bg-gray-50 border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/20"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  fetchUsers(searchTerm);
+                }
+              }}
             />
+            <button 
+              onClick={() => fetchUsers(searchTerm)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 btn btn-xs btn-ghost text-primary"
+            >
+              ค้นหา
+            </button>
           </div>
           <div className="flex items-center gap-3">
             <label className="label cursor-pointer gap-2">
