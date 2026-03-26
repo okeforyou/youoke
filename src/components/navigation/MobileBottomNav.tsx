@@ -76,7 +76,7 @@ export const MobileBottomNav = () => {
                                 "p-1.5 rounded-xl transition-all duration-300 relative",
                                 isActive ? "text-primary bg-primary/10" : "text-black group-hover:text-black"
                             )}>
-                                {unreadCount > 0 && (
+                                {unreadCount > 0 && item.id === 5 && (
                                     <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 border-2 border-[#f4f4f5] rounded-full animate-pulse z-10 shadow-sm" />
                                 )}
                                 {item.id === 5 ? (
