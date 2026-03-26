@@ -522,5 +522,27 @@ export const AdminService = {
                 updatedAt: rtdbServerTimestamp()
             });
         }
+    },
+
+    /**
+     * Bulk sync all users from Auth to Firestore
+     */
+    syncAllUsers: async (): Promise<{ success: boolean; message: string }> => {
+        const response = await fetch('/api/admin/sync-users', { method: 'POST' });
+        if (!response.ok) throw new Error("Synchronization failed");
+        return await response.json();
+    },
+
+    /**
+     * Toggle a user's Auth enabled/disabled status
+     */
+    toggleAuthStatus: async (uid: string, disabled: boolean): Promise<{ success: boolean }> => {
+        const response = await fetch('/api/admin/toggle-auth-status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uid, disabled })
+        });
+        if (!response.ok) throw new Error("Status update failed");
+        return await response.json();
     }
 };

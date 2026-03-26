@@ -11,12 +11,14 @@ import {
   EllipsisHorizontalIcon,
   BellIcon,
   PencilSquareIcon,
-  Squares2X2Icon
+  Squares2X2Icon,
+  ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import AdminLayout from '../layouts/AdminLayout';
 import { AdminService } from '../services/adminService';
 import { EditUserModal } from '../components/EditUserModal';
 import { AddUserModal } from '../components/AddUserModal';
+import { ConfirmModal } from '../components/ConfirmModal';
 import { collection, query, orderBy, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, limit, where } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { cn } from '../../../utils/cn';
@@ -38,6 +40,20 @@ export default function UsersPage() {
   const [packages, setPackages] = useState<any[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [errorStatus, setErrorStatus] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    type: 'danger' | 'warning' | 'info';
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => { },
+    type: 'warning'
+  });
   const { showConfirm } = useUIStore();
 
   useEffect(() => {
@@ -182,6 +198,41 @@ export default function UsersPage() {
     });
   };
 
+  const handleSyncAll = async () => {
+    if (!window.confirm("คุณต้องการซิงค์ข้อมูลสมาชิกจากฐานข้อมูล Auth ทั้งหมดเลยใช่หรือไม่? (อาจใช้เวลาสักครู่)")) return;
+    setSyncing(true);
+    try {
+      const res = await AdminService.syncAllUsers();
+      alert(res.message);
+      fetchUsers();
+    } catch (e: any) {
+      alert("Error: " + e.message);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const handleToggleAuth = async (user: any) => {
+    const newStatus = !user.disabled;
+    const action = newStatus ? "ระงับสิทธิ์" : "ปลดระงับ";
+    
+    setConfirmModal({
+      isOpen: true,
+      title: `ยืนยันการ${action}`,
+      message: `คุณต้องการ${action}การเข้าสู่ระบบของ ${user.displayName || user.email} ใช่หรือไม่?`,
+      type: newStatus ? 'danger' : 'warning',
+      onConfirm: async () => {
+        try {
+          await AdminService.toggleAuthStatus(user.uid, newStatus);
+          setConfirmModal(prev => ({ ...prev, isOpen: false }));
+          fetchUsers();
+        } catch (e: any) {
+          alert("Error: " + e.message);
+        }
+      }
+    });
+  };
+
   // Filter Logic - Optimized with useMemo
   const filteredUsers = useMemo(() => {
     // console.log("🔍 Filtering with term:", searchTerm);
@@ -236,6 +287,14 @@ export default function UsersPage() {
             <p className="text-sm text-gray-500">จัดการสมาชิก บทบาท และช่องทางการสมัคร (LINE / Google)</p>
           </div>
           <div className="flex gap-2">
+            <button 
+              onClick={handleSyncAll}
+              disabled={syncing}
+              className={`btn btn-sm ${syncing ? 'btn-disabled' : 'bg-slate-100 text-slate-600'} border-none gap-2 hover:bg-slate-200 rounded-xl`}
+            >
+              <ArrowPathIcon className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} /> 
+              {syncing ? 'กำลังซิงค์...' : 'Sync สมาชิก (แก้ไขคนตกหล่น)'}
+            </button>
             <button 
               onClick={(e) => {
                 e.preventDefault();
@@ -319,7 +378,8 @@ export default function UsersPage() {
                             <div>
                               <div className="font-bold text-gray-900 flex items-center gap-2">
                                 {user.displayName || (user.uid?.startsWith('line:') ? 'User (LINE)' : 'ผู้เยี่ยมชม (Guest)')}
-                                {user.banned && <span className="badge badge-error badge-xs font-medium text-white">ถูกระงับ</span>}
+                                {user.banned && <span className="badge badge-error badge-xs font-medium text-white">ถูกระงับ (Ban)</span>}
+                                {user.disabled && <span className="badge badge-warning badge-xs font-medium text-red-700 bg-red-100 border-red-200">Auth Disabled</span>}
                               </div>
                               <div className="text-[10px] text-gray-500 font-mono mt-0.5 max-w-[150px] truncate" title={user.uid}>
                                 {user.email || user.uid}
@@ -356,15 +416,18 @@ export default function UsersPage() {
                           <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                             {user.membership?.status === 'pending' && (
                               <div className="flex gap-1">
-                                <button onClick={() => AdminService.approveUserWithTier(user.uid, 'monthly', 'admin').then(fetchUsers)} className="btn btn-xs btn-success text-white" title="อนุมัติรายเดือน">Approve Mo</button>
-                                <button onClick={() => AdminService.approveUserWithTier(user.uid, 'yearly', 'admin').then(fetchUsers)} className="btn btn-xs btn-success text-white" title="อนุมัติรายปี">Approve Yr</button>
+                                <button onClick={() => AdminService.approveUserWithTier(user.uid, 'monthly', 'admin').then(() => fetchUsers())} className="btn btn-xs btn-success text-white" title="อนุมัติรายเดือน">Approve Mo</button>
+                                <button onClick={() => AdminService.approveUserWithTier(user.uid, 'yearly', 'admin').then(() => fetchUsers())} className="btn btn-xs btn-success text-white" title="อนุมัติรายปี">Approve Yr</button>
                               </div>
                             )}
                             <button onClick={() => setSelectedUser(user)} className="btn btn-ghost btn-xs btn-square hover:bg-blue-50 hover:text-blue-600" title="จัดการสมาชิก">
                               <PencilSquareIcon className="w-4 h-4" />
                             </button>
-                            <button onClick={() => handleBanToggle(user)} className="btn btn-ghost btn-xs btn-square hover:bg-red-50 hover:text-red-600" title={user.banned ? "ปลดระงับ" : "ระงับการใช้งาน"}>
+                            <button onClick={() => handleBanToggle(user)} className="btn btn-ghost btn-xs btn-square hover:bg-orange-50 hover:text-orange-600" title={user.banned ? "ปลดระงับ (Ban)" : "แบนผู้ใช้ (Firestore)"}>
                               {user.banned ? <CheckCircleIcon className="w-4 h-4 text-green-500" /> : <NoSymbolIcon className="w-4 h-4" />}
+                            </button>
+                            <button onClick={() => handleToggleAuth(user)} className="btn btn-ghost btn-xs btn-square hover:bg-red-50 hover:text-red-600" title={user.disabled ? "ปลดระงับไอดี (Enable)" : "ระงับไอดี (Disable)"}>
+                              {user.disabled ? <ShieldCheckIcon className="w-4 h-4 text-indigo-600" /> : <NoSymbolIcon className="w-4 h-4 text-red-600" />}
                             </button>
                           </div>
                         </td>
@@ -384,7 +447,7 @@ export default function UsersPage() {
       {isAddModalOpen && (
         <AddUserModal
           onClose={() => setIsAddModalOpen(false)}
-          onRefresh={fetchUsers}
+          onRefresh={() => fetchUsers()}
         />
       )}
 
@@ -397,9 +460,17 @@ export default function UsersPage() {
           onToggleModule={handleToggleModule}
           availableModules={AVAILABLE_MODULES}
           packages={packages}
-          onRefresh={fetchUsers}
+          onRefresh={() => fetchUsers()}
         />
       )}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={confirmModal.onConfirm}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        type={confirmModal.type}
+      />
     </AdminLayout>
   );
 }
