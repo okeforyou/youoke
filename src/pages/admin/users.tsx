@@ -217,42 +217,20 @@ export default function AdminUsersPage() {
 
         setAssigningLoading(true);
         try {
-            // 2. Calculate Expiry Date
-            const now = new Date();
-            const expiresAt = new Date(now.getTime() + targetPkg.durationDays * 24 * 60 * 60 * 1000);
-
-            // 3. Update Firestore
-            if (!db) return;
-            await updateDoc(doc(db, "users", selectedUser.uid), {
-                membership: {
-                    type: pkgId === 'lifetime' ? 'lifetime' : 'pro',
-                    updatedAt: serverTimestamp(),
-                    status: 'active',
-                    expiresAt: expiresAt, // Save as Firestore Timestamp (JS Date converts automatically)
-                    packageId: pkgId
-                }
-            });
+            // 2. Use AdminService for Package Assignment (Firestore + RealtimeDB Sync)
+            const { AdminService } = await import('@/features/admin/services/adminService');
+            await AdminService.assignPackage(selectedUser.uid, pkgId, user?.uid || 'admin');
 
             setConfirmModal({
                 isOpen: true,
                 title: "มอบแพ็กเกจสำเร็จ",
-                message: `ดำเนินการมอบสถานะให้แก่คุณ ${selectedUser.displayName} เรียบร้อยแล้ว`,
+                message: `ดำเนินการมอบสถานะให้แก่คุณ ${selectedUser.displayName} เรียบร้อยแล้ว (ระบบซิงค์ข้อมูลลงจอ TV/Monitor ทันที)`,
                 type: 'info',
-                onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
-            });
-
-            // 4. Optimistic Update
-            const updatedUser = {
-                ...selectedUser,
-                membership: {
-                    type: pkgId === 'lifetime' ? 'lifetime' : 'pro',
-                    status: 'active',
-                    expiresAt: expiresAt,
-                    packageId: pkgId
+                onConfirm: () => {
+                    setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                    fetchUsers(); // Refresh the list to show new status
                 }
-            };
-            setSelectedUser(updatedUser as any);
-            setUsers(users.map(u => u.uid === selectedUser.uid ? updatedUser as any : u));
+            });
 
         } catch (error: any) {
             console.error(error);
@@ -279,25 +257,19 @@ export default function AdminUsersPage() {
                 setConfirmModal(prev => ({ ...prev, isOpen: false }));
                 setAssigningLoading(true);
                 try {
-                    if (!db) return;
-                    const userRef = doc(db, "users", selectedUser.uid);
-                    await updateDoc(userRef, {
-                        membership: {
-                            type: 'lifetime',
-                            status: 'active',
-                            updatedAt: serverTimestamp()
-                        }
-                    });
+                    const { AdminService } = await import('@/features/admin/services/adminService');
+                    await AdminService.assignLifetime(selectedUser.uid, user?.uid || 'admin');
 
                     setConfirmModal({
                         isOpen: true,
                         title: "มอบสิทธิ์สำเร็จ",
-                        message: `มอบสิทธิ์สมาชิกตลอดชีพ (LIFETIME) ให้แก่คุณ ${selectedUser.displayName} เรียบร้อยแล้ว`,
+                        message: `มอบสิทธิ์สมาชิกตลอดชีพ (LIFETIME) ให้แก่คุณ ${selectedUser.displayName} เรียบร้อยแล้ว (ระบบซิงค์ข้อมูลลงจอ TV/Monitor ทันที)`,
                         type: 'info',
-                        onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+                        onConfirm: () => {
+                            setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                            fetchUsers();
+                        }
                     });
-                    setSelectedUser({ ...selectedUser, membership: { type: 'lifetime', status: 'active', expiresAt: null } as any });
-                    fetchUsers();
                 } catch (error: any) {
                     console.error(error);
                     alert("Failed to assign lifetime: " + error.message);

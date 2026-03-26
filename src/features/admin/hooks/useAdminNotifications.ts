@@ -28,7 +28,7 @@ export function useAdminNotifications() {
 
         // 📡 Listen for Pending Payments
         const q = query(
-            collection(db, 'payments'),
+            collection(db, 'payment_proofs'),
             where('status', '==', 'pending'),
             orderBy('createdAt', 'desc'),
             limit(10)

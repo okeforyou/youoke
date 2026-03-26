@@ -109,13 +109,30 @@ export const AdminService = {
     /**
      * Update user profile details (displayName, etc.)
      */
-    updateUserProfile: async (uid: string, data: Partial<{ displayName: string; role: string }>): Promise<void> => {
+    updateUserProfile: async (uid: string, data: Partial<{ displayName: string; role: string; tier: string }>): Promise<void> => {
         if (!db) throw new Error("Firestore not initialized");
         const userRef = doc(db, "users", uid);
         await updateDoc(userRef, {
             ...data,
             updatedAt: new Date()
         });
+
+        // Sync Role/Tier to Realtime Database if updated
+        if (realtimeDb && (data.role || data.tier)) {
+            try {
+                const rtdbUserRef = ref(realtimeDb, `users/${uid}`);
+                const rtdbUpdates: any = {
+                    updatedAt: rtdbServerTimestamp()
+                };
+                if (data.role) rtdbUpdates.role = data.role;
+                if (data.tier) rtdbUpdates.tier = data.tier;
+
+                await update(rtdbUserRef, rtdbUpdates);
+                console.log("✅ Synced profile update to RealtimeDB for user:", uid);
+            } catch (e) {
+                console.error("❌ Failed to sync profile update to RealtimeDB:", e);
+            }
+        }
     },
 
     /**
@@ -385,103 +402,13 @@ export const AdminService = {
     },
 
     approvePayment: async (paymentId: string, userId: string, packageId: string, adminUid: string) => {
-        if (!db) throw new Error("Firebase not initialized");
-
-        // 1. Get Package Details
-        const pkgRef = doc(db, "packages", packageId);
-        const pkgSnap = await getDocs(query(collection(db, "packages"), where("id", "==", packageId))); // Safety check if using custom ID
-
-        let durationDays = 30;
-        let pkgName = "Premium Package";
-
-        // Try to find package
-        try {
-            const pkgDoc = await getDocs(query(collection(db, "packages"), where("__name__", "==", packageId)));
-            if (!pkgDoc.empty) {
-                const data = pkgDoc.docs[0].data();
-                durationDays = data.durationDays || 30;
-                pkgName = data.name || pkgName;
-            }
-        } catch (e) {
-            console.log("Package lookup fallback");
-        }
-
-        // 2. Calculate Membership
-        const now = new Date();
-        let expiresAt: Date | null = new Date();
-
-        if (durationDays === 0) {
-            expiresAt = null; // Lifetime
-        } else {
-            expiresAt.setDate(now.getDate() + durationDays);
-        }
-
-        let membershipType = 'monthly';
-        if (durationDays <= 3) membershipType = 'day_pass';
-        else if (durationDays > 300) membershipType = 'yearly';
-        if (durationDays === 0) membershipType = 'lifetime';
-
-        // 3. Update User Membership (Firestore)
-        const userRef = doc(db, "users", userId);
-        const membershipData = {
-            type: membershipType,
-            status: 'active',
-            startedAt: new Date(), // Use JS Date for Firestore
-            expiresAt: expiresAt,
-            packageId: packageId,
-            assignedBy: adminUid
-        };
-
-        await updateDoc(userRef, {
-            membership: membershipData,
-            role: 'premium', // Sync role naming convention
-            isPremium: true,
-            tier: membershipType, // Sync tier naming
-            updatedAt: new Date()
-        });
-
-        // 3.5 Sync to Realtime Database (Critical for Profile Page)
-        if (realtimeDb) {
-            try {
-                const rtdbUserRef = ref(realtimeDb, `users/${userId}`);
-                const rtdbSubscription = {
-                    plan: membershipType,
-                    status: 'active',
-                    startDate: new Date().toISOString(),
-                    endDate: expiresAt ? expiresAt.toISOString() : null
-                };
-
-                await update(rtdbUserRef, {
-                    role: 'premium',
-                    tier: membershipType,
-                    subscription: rtdbSubscription,
-                    updatedAt: rtdbServerTimestamp()
-                });
-                console.log("✅ Synced approval to RealtimeDB for user:", userId);
-            } catch (e) {
-                console.error("❌ Failed to sync to RealtimeDB:", e);
-            }
-        }
-
-        // 4. Update Payment Status (Firestore)
-        const paymentRef = doc(db, "payment_proofs", paymentId);
-        await updateDoc(paymentRef, {
-            status: 'approved',
-            processedAt: new Date(),
-            processedBy: adminUid
-        });
+        const { approvePayment } = await import("@/modules/billing/services/paymentService");
+        return await approvePayment(paymentId, userId, packageId, adminUid);
     },
 
     rejectPayment: async (paymentId: string, userId: string, reason: string, adminUid: string) => {
-        if (!db) throw new Error("Firebase not initialized");
-
-        const paymentRef = doc(db, "payment_proofs", paymentId);
-        await updateDoc(paymentRef, {
-            status: 'rejected',
-            processedAt: new Date(),
-            processedBy: adminUid,
-            rejectionReason: reason
-        });
+        const { rejectPayment } = await import("@/modules/billing/services/paymentService");
+        return await rejectPayment(paymentId, userId, reason, adminUid);
     },
 
     /**

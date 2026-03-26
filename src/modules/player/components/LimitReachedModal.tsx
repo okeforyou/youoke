@@ -58,7 +58,7 @@ export const LimitReachedModal = () => {
         if (!isLoggedIn) {
             router.push('/login?action=link');
         } else {
-            router.push('/pricing');
+            router.push('/packages');
         }
     };
 

@@ -135,9 +135,9 @@ const AdminDashboard: React.FC = () => {
     fetchData();
   }, []);
 
-  const mapMembershipType = (type: string): "free" | "pro" | "vip" => {
+  const mapMembershipType = (type: string): "free" | "premium" | "vip" => {
     if (type === 'monthly' || type === 'yearly' || type === 'lifetime') return 'vip';
-    if (type === 'day_pass') return 'pro';
+    if (type === 'day_pass' || type === 'trial') return 'premium';
     return 'free';
   };
 

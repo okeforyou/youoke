@@ -45,6 +45,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
                     // 2. Update User Membership (Secure Write)
                     if (adminDb) {
+                        const isDayPass = packageId.toLowerCase().includes('day') || packageId.toLowerCase().includes('trial');
+                        const membershipType = packageId === 'lifetime' ? 'lifetime' : (isDayPass ? 'day_pass' : 'monthly');
+
                         await adminDb.collection('users').doc(userId).update({
                             membership: {
                                 type: packageId === 'lifetime' ? 'lifetime' : 'pro',

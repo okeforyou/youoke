@@ -23,7 +23,7 @@ export interface RecentUser {
     name: string;
     email: string;
     avatar?: string;
-    membershipType: "free" | "pro" | "vip" | "monthly" | "yearly" | "lifetime"; // Added more types
+    membershipType: "free" | "premium" | "trial" | "pro" | "vip" | "monthly" | "yearly" | "lifetime"; // Added more types
     registeredAt: string;
 }
 
@@ -33,6 +33,8 @@ interface RecentUsersTableProps {
 
 const membershipStyles: any = {
     free: { bg: "bg-gray-100", text: "text-gray-600", label: "ทั่วไป" },
+    premium: { bg: "bg-amber-50", text: "text-amber-700", label: "พรีเมียม" },
+    trial: { bg: "bg-blue-50", text: "text-blue-700", label: "ทดลองใช้" },
     pro: { bg: "bg-blue-50", text: "text-blue-700", label: "โปร" },
     vip: { bg: "bg-purple-50", text: "text-purple-700", label: "VIP" },
     monthly: { bg: "bg-green-50", text: "text-green-700", label: "รายเดือน" },
