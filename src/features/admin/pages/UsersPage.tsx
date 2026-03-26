@@ -60,8 +60,8 @@ export default function UsersPage() {
 
       let usersList: any[] = [];
       
-      // Load active users (up to 1000 for robust client-side search)
-      const usersQuery = query(collection(db, "users"), limit(1000));
+      // Load active users
+      const usersQuery = query(collection(db, "users"));
       const snapshot = await getDocs(usersQuery);
       snapshot.forEach(doc => {
         usersList.push({ uid: doc.id, ...doc.data() });
@@ -187,7 +187,7 @@ export default function UsersPage() {
     // console.log("🔍 Filtering with term:", searchTerm);
     if (!users || users.length === 0) return [];
 
-    const searchLower = searchTerm.toLowerCase();
+    const searchLower = searchTerm.toLowerCase().trim();
     
     return users.filter((u: any) => {
       // 1. Search Logic
