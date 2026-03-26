@@ -17,6 +17,7 @@ import { useUIStore } from '../stores/useUIStore';
 import { sanitizeForFirebase } from '../utils/firebase';
 
 // Static critical imports
+import { GlobalConfirmModal } from '@/components/common/GlobalConfirmModal';
 import { MobileBottomNav } from '../components/navigation/MobileBottomNav';
 import { Sidebar } from '../components/navigation/Sidebar';
 import { useCast } from '../plugins/cast/context/CastContext';
@@ -38,6 +39,7 @@ const ReceiverInfoModal = dynamic(() => import('../modules/party-system/componen
 // Add UnifiedCastButton dynamic import if needed or import directly
 import { UnifiedCastButton } from '../plugins/cast/components/UnifiedCastButton';
 import { type CastMode } from '../plugins/cast/components/CastStatusBar';
+import { NotificationToast } from '../modules/notifications/components/NotificationToast';
 // useCastCommands removed (Phase 6)
 
 
@@ -885,7 +887,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
             {/* BOTTOM FLOATING PLAYER (Apple Music Style - Unified for Mobile/Desktop) */}
 
-
+            <NotificationToast />
         </div >
     );
 }

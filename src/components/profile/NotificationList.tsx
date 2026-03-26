@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { collection, query, orderBy, onSnapshot, limit, Timestamp } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, limit, Timestamp, where } from "firebase/firestore";
 import { db } from "@/firebase";
 import { Bell, Info, AlertTriangle, CheckCircle, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -8,8 +8,8 @@ import { useAuthStore } from "@/modules/auth/useAuthStore";
 interface Notification {
     id: string;
     title: string;
-    message: string;
-    type: 'info' | 'warning' | 'success' | 'system';
+    body: string;
+    type: 'info' | 'warning' | 'success' | 'system' | 'admin_broadcast' | 'global_broadcast';
     read: boolean;
     createdAt: Timestamp;
 }
@@ -23,9 +23,10 @@ export const NotificationList = () => {
         if (!user?.uid || !db) return;
 
         const q = query(
-            collection(db, `users/${user.uid}/notifications`),
+            collection(db, 'notifications'),
+            where('userId', 'in', [user.uid, 'all']),
             orderBy("createdAt", "desc"),
-            limit(10)
+            limit(30)
         );
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -54,7 +55,7 @@ export const NotificationList = () => {
             if (unread.length === 0) return;
 
             unread.forEach(notif => {
-                const docRef = doc(db!, `users/${user.uid}/notifications`, notif.id);
+                const docRef = doc(db!, 'notifications', notif.id);
                 batch.update(docRef, { read: true });
             });
 
@@ -127,7 +128,7 @@ export const NotificationList = () => {
                             <h4 className={cn("font-bold text-sm", notif.read ? "text-foreground/80" : "text-foreground")}>
                                 {notif.title}
                             </h4>
-                            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{notif.message}</p>
+                            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{notif.body}</p>
                             <div className="flex items-center gap-1.5 mt-3 text-[10px] font-medium text-muted-foreground/60">
                                 <Clock className="w-3 h-3" />
                                 {notif.createdAt?.seconds

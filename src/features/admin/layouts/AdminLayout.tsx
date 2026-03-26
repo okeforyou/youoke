@@ -5,6 +5,7 @@ import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from '../components/AdminHeader';
 import { cn } from '../../../utils/cn';
 import { GlobalConfirmModal } from '@/components/common/GlobalConfirmModal';
+import { NotificationToast } from '../../../modules/notifications/components/NotificationToast';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -83,6 +84,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             <span className="text-xs opacity-50 ml-1 font-mono">v{process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0'}</span>
           </p>
         </footer>
+        <NotificationToast />
       </div>
     </div>
   );

@@ -49,24 +49,32 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // 3. Save to In-app notifications collection for persistence
-    if (adminFirestore) {
-      const batch = adminFirestore.batch();
-      const uidsToNotify = targetUids || []; 
-      
-      if (uidsToNotify.length > 0 && adminFirestore) {
-        uidsToNotify.forEach((uid: string) => {
-          const notifRef = adminFirestore.collection('notifications').doc();
-          batch.set(notifRef, {
-            userId: uid,
-            title,
-            body,
-            createdAt: new Date(),
-            read: false,
-            type: 'admin_broadcast'
-          });
+    const db = adminFirestore;
+    const batch = db.batch();
+    
+    if (targetUids && Array.isArray(targetUids) && targetUids.length > 0) {
+      targetUids.forEach((uid: string) => {
+        const notifRef = db.collection('notifications').doc();
+        batch.set(notifRef, {
+          userId: uid,
+          title,
+          body,
+          createdAt: new Date(),
+          read: false,
+          type: 'admin_broadcast'
         });
-        await batch.commit();
-      }
+      });
+      await batch.commit();
+    } else {
+      // Global broadcast record
+      await db.collection('notifications').add({
+        userId: 'all',
+        title,
+        body,
+        createdAt: new Date(),
+        read: false,
+        type: 'global_broadcast'
+      });
     }
 
     return res.status(200).json({ success: true });

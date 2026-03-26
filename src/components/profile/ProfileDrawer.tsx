@@ -277,7 +277,10 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
 
                                                     {/* Notifications */}
                                                     <div>
-                                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 px-2">การแจ้งเตือน</p>
+                                                        <div className="flex items-center justify-between px-2 mb-3">
+                                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">การแจ้งเตือน</p>
+                                                            <Link href="/profile/notifications" onClick={onClose} className="text-[10px] font-bold text-primary hover:underline uppercase tracking-tight">ดูทั้งหมด</Link>
+                                                        </div>
                                                         <div className="rounded-2xl border border-gray-100 bg-gray-50/30 p-4">
                                                             <NotificationList />
                                                         </div>
