@@ -123,6 +123,13 @@ export default function AdminUsersPage() {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [notificationUser, setNotificationUser] = useState<User | null>(null);
     
+    // Notification State
+    const [msgTitle, setMsgTitle] = useState("");
+    const [msgBody, setMsgBody] = useState("");
+    const [sendingMsg, setSendingMsg] = useState(false);
+    const [msgType, setMsgType] = useState<'info' | 'warning' | 'success' | 'system'>('system');
+    const [notificationDialogOpen, setNotificationDialogOpen] = useState(false);
+    
     // New Confirm Modal State
     const [confirmModal, setConfirmModal] = useState<{
         isOpen: boolean;
