@@ -32,7 +32,8 @@ import {
     MessageSquare,
     BellRing,
     Star,
-    Zap
+    Zap,
+    UserCheck
 } from "lucide-react";
 import { StatCard } from "@/features/admin/components/StatCard";
 import { EditUserModal } from "@/features/admin/components/EditUserModal";
@@ -674,7 +675,7 @@ export default function AdminUsersPage() {
     // Calculate Stats (Business Focussed)
     const stats = {
         total: users.length,
-        registered: users.filter(u => u.email).length, // 🛡️ REAL REGISTERED USERS
+        registered: users.filter(u => u.email).length,
         lifetime: users.filter(u => getMembershipType(u) === 'lifetime').length,
         yearly: users.filter(u => getMembershipType(u) === 'yearly').length,
         monthly: users.filter(u => getMembershipType(u) === 'monthly').length,
@@ -777,44 +778,43 @@ export default function AdminUsersPage() {
             </div>
 
             {/* Stats Grid */}
-            {/* Stats Grid - High Density v2.33.4 */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+            <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 mb-6">
                 <StatCard 
                     title="ยอดผู้ใช้รวม"
                     value={stats.total}
                     icon={Users}
                     iconColor="primary"
-                    className="border-primary/10 bg-gradient-to-br from-white to-primary/5 shadow-sm"
+                    className="border-primary/10 bg-gradient-to-br from-white to-primary/5"
                 />
                 <StatCard 
-                    title="ลงทะเบียน (REAL)"
+                    title="ลงทะเบียนจริง"
                     value={stats.registered}
                     icon={Mail}
                     iconColor="accent"
-                    className="ring-1 ring-indigo-500/20 bg-indigo-50/10 shadow-indigo-100"
+                    className="ring-1 ring-indigo-500/10 bg-indigo-50/10"
                 />
                 <StatCard 
-                    title="ตลอดชีพ (LIFETIME)"
+                    title="สมาชิกตลอดชีพ"
                     value={stats.lifetime}
                     icon={Crown}
                     iconColor="warning"
                 />
                 <StatCard 
-                    title="รายปี (YEARLY)"
+                    title="สมาชิกรายปี"
                     value={stats.yearly}
                     icon={Star}
                     iconColor="info"
                 />
                 <StatCard 
-                    title="รายเดือน (MONTHLY)"
+                    title="สมาชิกรายเดือน"
                     value={stats.monthly}
                     icon={Zap}
                     iconColor="success"
                 />
                 <StatCard 
-                    title="ทั่วไป (FREE)"
+                    title="สมาชิกทั่วไป"
                     value={stats.free}
-                    icon={UserCog}
+                    icon={UserCheck}
                     iconColor="secondary"
                 />
             </div>
@@ -1226,28 +1226,27 @@ export default function AdminUsersPage() {
                         </div>
 
                         <div className="p-8 space-y-6">
-                            <div className="grid grid-cols-2 sm:grid-cols-3 bg-slate-50 p-2 rounded-2xl gap-2">
+                            <div className="grid grid-cols-3 bg-slate-50 p-1.5 rounded-2xl gap-1">
                                 {[
-                                    { id: 'all', label: 'ทุกคน', desc: 'เมมเบอร์ลงทะเบียนทั้งหมด', icon: Users },
-                                    { id: 'lifetime', label: 'ตลอดชีพ', desc: 'สมาชิก VIP ถาวร', icon: Crown },
-                                    { id: 'yearly', label: 'รายปี', desc: 'สมาชิกแพ็กเกจรายปี', icon: Star },
-                                    { id: 'monthly', label: 'รายเดือน', desc: 'สมาชิกแพ็กเกจรายเดือน', icon: Zap },
-                                    { id: 'pro', label: 'รายวัน', desc: 'สมาชิก Day Pass (Pro)', icon: Zap },
-                                    { id: 'free', label: 'ทั่วไป', desc: 'ลงทะเบียนแต่ยังไม่สมัคร', icon: UserCog }
+                                    { id: 'all', label: 'ทุกคน', icon: Users },
+                                    { id: 'lifetime', label: 'ตลอดชีพ', icon: Crown },
+                                    { id: 'yearly', label: 'รายปี', icon: Star },
+                                    { id: 'monthly', label: 'รายเดือน', icon: Zap },
+                                    { id: 'pro', label: 'รายวัน', icon: Zap },
+                                    { id: 'free', label: 'ทั่วไป', icon: UserCog }
                                 ].map((g) => (
                                     <button
                                         key={g.id}
                                         onClick={() => setBroadcastType(g.id as any)}
                                         className={cn(
-                                            "flex flex-col items-center justify-center p-3 rounded-2xl transition-all border text-center",
+                                            "flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-[10px] transition-all",
                                             broadcastType === g.id 
-                                                ? "bg-white text-indigo-600 border-indigo-200 shadow-lg ring-2 ring-indigo-50" 
-                                                : "bg-transparent text-slate-400 border-transparent hover:bg-slate-100"
+                                                ? "bg-white text-indigo-600 shadow-sm ring-1 ring-indigo-50" 
+                                                : "text-slate-400 hover:text-slate-600"
                                         )}
                                     >
-                                        <g.icon className={cn("w-6 h-6 mb-2", broadcastType === g.id ? "text-indigo-600" : "text-slate-300")} />
-                                        <span className="font-black text-[11px] uppercase leading-none tracking-tight">{g.label}</span>
-                                        <span className="text-[9px] font-semibold mt-1.5 opacity-60 leading-tight block">{g.desc}</span>
+                                        <g.icon className="w-3 h-3" />
+                                        {g.label}
                                     </button>
                                 ))}
                             </div>
