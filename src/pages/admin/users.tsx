@@ -449,13 +449,8 @@ export default function AdminUsersPage() {
             if (broadcastType !== 'all') {
                 targetUids = users.filter(u => {
                     const mType = getMembershipType(u);
-                    // Match type logic
-                    if (broadcastType === 'lifetime') return mType === 'lifetime';
-                    if (broadcastType === 'yearly') return u.membership?.type === 'yearly';
-                    if (broadcastType === 'monthly') return u.membership?.type === 'monthly';
-                    if (broadcastType === 'pro') return mType === 'pro';
-                    if (broadcastType === 'free') return mType === 'free' && u.email;
-                    return false;
+                    // Match type logic using SMART detection
+                    return mType === broadcastType;
                 }).map(u => u.uid);
             }
 
@@ -636,9 +631,20 @@ export default function AdminUsersPage() {
     });
 
     const getMembershipType = (user: User) => {
-        if (user.membership?.type === 'lifetime') return 'lifetime';
-        if (user.membership?.type === 'day_pass') return 'pro';
-        if (user.membership?.type === 'monthly' || user.membership?.type === 'yearly') return 'vip';
+        const membership = user.membership;
+        if (!membership) return 'free';
+
+        // 🛡️ SMART CHECK: Expiration Detection
+        if (membership.type !== 'lifetime' && membership.expiresAt) {
+            const expiry = membership.expiresAt.toDate ? membership.expiresAt.toDate() : new Date(membership.expiresAt);
+            if (new Date() > expiry) return 'free'; // Expired = Fallback to Free
+        }
+
+        if (membership.type === 'lifetime') return 'lifetime';
+        if (membership.type === 'day_pass') return 'pro';
+        if (membership.type === 'monthly') return 'monthly';
+        if (membership.type === 'yearly') return 'yearly';
+        
         return 'free';
     };
 
