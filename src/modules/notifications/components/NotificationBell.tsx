@@ -19,7 +19,7 @@ export const NotificationBell: React.FC = () => {
     // Listen to real-time in-app notifications in Firestore
     const q = query(
       collection(db, 'notifications'),
-      where('userId', '==', user.uid),
+      where('userId', 'in', [user.uid, 'all']),
       orderBy('createdAt', 'desc'),
       limit(10)
     );

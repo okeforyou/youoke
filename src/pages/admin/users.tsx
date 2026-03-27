@@ -1260,6 +1260,17 @@ export default function AdminUsersPage() {
                                 ))}
                             </div>
 
+                            {/* Target Summary Badge */}
+                            <div className="flex justify-center -mt-2">
+                                <span className="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-indigo-100">
+                                    เป้าหมาย: {
+                                        broadcastType === 'all' 
+                                            ? users.filter(u => u.email).length 
+                                            : users.filter(u => u.email && getMembershipType(u) === broadcastType).length
+                                    } รายการ
+                                </span>
+                            </div>
+
                             <div className="space-y-4">
                                 <div className="form-control">
                                     <label className="label text-[11px] font-black text-slate-400 uppercase tracking-widest">หัวข้อประกาศ</label>

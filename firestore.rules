@@ -110,6 +110,16 @@ service cloud.firestore {
       allow delete: if isAuthenticated() && (resource.data.createdBy == request.auth.uid || isAdmin());
     }
 
+    // Notifications (Root Collection for Broadcasts & Alerts)
+    match /notifications/{notifId} {
+      allow read: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid || 
+        resource.data.userId == 'all' || 
+        isAdmin()
+      );
+      allow create, update, delete: if isAdmin();
+    }
+
     // Orders
     match /orders/{orderId} {
        allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());

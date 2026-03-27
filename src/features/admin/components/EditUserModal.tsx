@@ -17,6 +17,7 @@ interface User {
         startedAt?: any;
         expiresAt: any;
     };
+    tier?: string;
     installed_modules?: string[];
 }
 
@@ -148,7 +149,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
             <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} />
             
             {/* Modal Container */}
-            <div className="relative w-full max-w-lg h-full sm:h-auto max-h-[95vh] bg-slate-50 overflow-hidden flex flex-col sm:rounded-2xl shadow-xl border border-slate-200/50">
+            <div className="relative w-full max-w-lg h-full sm:h-auto max-h-[95vh] bg-slate-50 overflow-hidden flex flex-col sm:rounded-2xl border border-slate-200/50">
                 
                 {/* Header (Standard Pattern) */}
                 <div className="bg-white px-5 py-4 flex items-center justify-between border-b border-slate-100 flex-shrink-0">
@@ -162,7 +163,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                 <div className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
                     
                     {/* ข้อมูลพื้นฐาน (Basic Info Card) */}
-                    <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 space-y-4">
+                    <div className="bg-white rounded-xl border border-slate-100 p-4 space-y-4">
                         <div className="flex items-center gap-4">
                             <div className="w-14 h-14 bg-slate-100 rounded-lg border border-slate-200 overflow-hidden flex items-center justify-center flex-shrink-0">
                                 {user.photoURL ? (
@@ -208,7 +209,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                     </div>
 
                     {/* จัดการสิทธิ์ (Roles Management Card) */}
-                    <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4">
+                    <div className="bg-white rounded-xl border border-slate-100 p-4">
                         <label className="text-[11px] font-bold text-slate-400 uppercase mb-3 block px-1">ระดับบทบาทผู้ใช้งาน</label>
                         <div className="grid grid-cols-2 gap-2">
                             <button
@@ -233,7 +234,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                     </div>
 
                     {/* การตั้งค่าพรีเมียม (Membership Dates Card) */}
-                    <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 space-y-4">
+                    <div className="bg-white rounded-xl border border-slate-100 p-4 space-y-4">
                         <label className="text-[11px] font-bold text-slate-400 uppercase flex items-center gap-2 px-1">
                             <StarIcon className="w-4 h-4 text-amber-500 fill-amber-500" /> ระยะเวลาสมาชิกพรีเมียม
                         </label>
@@ -261,7 +262,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                             onClick={handleSaveDates}
                             disabled={savingDates}
                             className={cn(
-                                "w-full py-3 rounded-xl font-bold text-sm tracking-wide transition-all active:scale-[0.98] shadow-sm",
+                                "w-full py-3 rounded-xl font-bold text-sm tracking-wide transition-all active:scale-[0.98]",
                                 savingDates ? "bg-slate-100 text-slate-400" : "bg-indigo-600 text-white hover:bg-indigo-700"
                             )}
                         >
@@ -269,8 +270,48 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                         </button>
                     </div>
 
+                    {/* จัดกลุ่มสมาชิก (Segmentation Card) - UPDATED v3.0 */}
+                    <div className="bg-white rounded-xl border border-slate-100 p-4">
+                        <label className="text-[11px] font-bold text-slate-400 uppercase mb-3 block px-1 flex items-center gap-2">
+                             📌 จัดกลุ่มสมาชิก (Segmentation)
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                            {['free', 'monthly', 'yearly', 'lifetime'].map(type => (
+                                <button
+                                    key={type}
+                                    onClick={async () => {
+                                        try {
+                                            await AdminService.updateMembershipType(user.uid, type);
+                                            if (onRefresh) onRefresh();
+                                            setConfirmModal({
+                                                isOpen: true,
+                                                title: "อัปเดตกลุ่มสำเร็จ",
+                                                message: `เปลี่ยนกลุ่มเป็น ${type.toUpperCase()} เรียบร้อยแล้ว`,
+                                                type: 'info',
+                                                onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+                                            });
+                                        } catch (e: any) {
+                                            alert(e.message);
+                                        }
+                                    }}
+                                    className={cn(
+                                        "py-2 rounded-lg border text-[10px] font-black uppercase tracking-widest transition-all active:scale-95",
+                                        (user.membership?.type === type || user.tier === type)
+                                            ? "bg-slate-900 border-slate-900 text-white" 
+                                            : "bg-white border-slate-100 text-slate-400 hover:border-slate-200"
+                                    )}
+                                >
+                                    {type}
+                                </button>
+                            ))}
+                        </div>
+                        <p className="text-[9px] text-slate-400 mt-3 px-1 leading-tight">
+                            * การเปลี่ยนกลุ่มตรงนี้จะ **ไม่มีผล** กับวันที่หมดอายุเดิม แต่จะมีผลในการเลือกส่ง Broadcast แบบกลุ่มเป้าหมายครับ
+                        </p>
+                    </div>
+
                     {/* ปรับปรุงแพ็กเกจปัจจุบัน (Package Assign Card) */}
-                    <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4">
+                    <div className="bg-white rounded-xl border border-slate-100 p-4">
                         <label className="text-[11px] font-bold text-slate-400 uppercase mb-3 block px-1">อัปเกรดสถานะ (Manual Assign)</label>
                         <div className="grid grid-cols-2 gap-2">
                             {packages?.map(pkg => (

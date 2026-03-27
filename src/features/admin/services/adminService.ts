@@ -545,6 +545,33 @@ export const AdminService = {
     },
 
     /**
+     * Update membership type independently (Grouping for Broadcasts)
+     */
+    updateMembershipType: async (uid: string, type: string) => {
+        if (!db) throw new Error("Firebase not initialized");
+        const userRef = doc(db, "users", uid);
+        await updateDoc(userRef, {
+            'membership.type': type,
+            'tier': type,
+            'updatedAt': new Date()
+        });
+
+        // Sync to Realtime Database
+        if (realtimeDb) {
+            try {
+                const rtdbUserRef = ref(realtimeDb, `users/${uid}`);
+                await update(rtdbUserRef, {
+                    tier: type,
+                    'subscription/plan': type,
+                    updatedAt: rtdbServerTimestamp()
+                });
+            } catch (e) {
+                console.error("❌ Failed to sync membership type to RealtimeDB:", e);
+            }
+        }
+    },
+
+    /**
      * Bulk sync all users from Auth to Firestore
      */
     syncAllUsers: async (): Promise<{ success: boolean; message: string }> => {
