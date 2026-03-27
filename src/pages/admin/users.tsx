@@ -26,7 +26,11 @@ import {
     Activity,
     TrendingUp,
     TrendingDown,
-    Minus
+    Minus,
+    Megaphone,
+    Users2,
+    MessageSquare,
+    BellRing
 } from "lucide-react";
 import { StatCard } from "@/features/admin/components/StatCard";
 import { EditUserModal } from "@/features/admin/components/EditUserModal";
@@ -114,7 +118,8 @@ const GlobalScrollbarStyle = () => (
 
 export default function AdminUsersPage() {
     const { user } = useAuthStore();
-    const { addToast } = useToast();
+    const toastContext = useToast();
+    const addToast = toastContext?.addToast;
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -132,6 +137,13 @@ export default function AdminUsersPage() {
     const [msgType, setMsgType] = useState<'info' | 'warning' | 'success' | 'system'>('system');
     const [notificationDialogOpen, setNotificationDialogOpen] = useState(false);
     const [notificationUser, setNotificationUser] = useState<User | null>(null);
+    
+    // Broadcast State (New)
+    const [broadcastDialogOpen, setBroadcastDialogOpen] = useState(false);
+    const [broadcastType, setBroadcastType] = useState<'all' | 'premium' | 'free'>('all');
+    const [broadcastTitle, setBroadcastTitle] = useState("");
+    const [broadcastBody, setBroadcastBody] = useState("");
+    const [sendingBroadcast, setSendingBroadcast] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
     
     // New Confirm Modal State
@@ -384,10 +396,26 @@ export default function AdminUsersPage() {
                 createdAt: serverTimestamp()
             });
 
+
+            // Also trigger REAL Push Notification via API
+            try {
+                await fetch('/api/admin/send-broadcast', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        title: msgTitle,
+                        body: msgBody,
+                        targetUids: [notificationUser.uid]
+                    })
+                });
+            } catch (pErr) {
+                console.warn("⚠️ Push Notification failed (FCM), but in-app saved:", pErr);
+            }
+
             setConfirmModal({
                 isOpen: true,
                 title: "ส่งข้อความสำเร็จ",
-                message: `ส่งการแจ้งเตือนไปยังคุณ ${notificationUser.displayName} เรียบร้อยแล้ว`,
+                message: `ส่งการแจ้งเตือนไปยังคุณ ${notificationUser.displayName} เรียบร้อยแล้ว (ระบบส่งรหัสซิงค์ลงมือถือและหน้าจอ TV ให้ด้วย)`,
                 type: 'info',
                 onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
             });
@@ -405,6 +433,54 @@ export default function AdminUsersPage() {
             });
         } finally {
             setSendingMsg(false);
+        }
+    };
+
+    const handleSendBroadcast = async () => {
+        if (!broadcastTitle.trim() || !broadcastBody.trim()) return;
+        setSendingBroadcast(true);
+        if (addToast) addToast(`🌪️ กำลังเตรียมประกาศกลุ่มเป้าหมาย (${broadcastType})...`, "info");
+        
+        try {
+            // Target specific UIDs for groups
+            let targetUids: string[] | undefined = undefined;
+            if (broadcastType === 'premium') {
+                targetUids = users.filter(u => getMembershipType(u) !== 'free').map(u => u.uid);
+            } else if (broadcastType === 'free') {
+                targetUids = users.filter(u => getMembershipType(u) === 'free' && u.email).map(u => u.uid);
+            }
+
+            const response = await fetch('/api/admin/send-broadcast', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: broadcastTitle,
+                    body: broadcastBody,
+                    targetUids: targetUids
+                })
+            });
+
+            if (!response.ok) throw new Error("API call failed");
+
+            setConfirmModal({
+                isOpen: true,
+                title: "ประกาศข้อความสำเร็จ",
+                message: targetUids 
+                    ? `ส่งประกาศหาผู้ใช้กลุ่มเป้าหมายจำนวน ${targetUids.length} รายการเรียบร้อยแล้ว`
+                    : "ส่งประกาศข่าวสารเข้าสู่ระบบ Broadcast หลักสำหรับทุกคนเรียบร้อยแล้วครับ",
+                type: 'info',
+                onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+            });
+
+            setBroadcastTitle("");
+            setBroadcastBody("");
+            setBroadcastDialogOpen(false);
+            if (addToast) addToast("✅ ส่งประกาศข่าวสารเรียบร้อยแล้ว", "success");
+        } catch (error: any) {
+            console.error("Broadcast failed:", error);
+            if (addToast) addToast("❌ ไม่สามารถส่งประกาศได้", "error");
+        } finally {
+            setSendingBroadcast(false);
         }
     };
 
@@ -643,6 +719,13 @@ export default function AdminUsersPage() {
                     >
                         <ArrowDownUp className={cn("w-4 h-4", syncing && "animate-spin")} />
                         {syncing ? 'กำลังซิงค์...' : 'Sync สมาชิก'}
+                    </button>
+                    <button 
+                        onClick={() => setBroadcastDialogOpen(true)}
+                        className="flex items-center gap-2 px-5 py-2.5 bg-indigo-50/50 border border-indigo-100 rounded-2xl font-bold text-sm text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
+                    >
+                        <Megaphone className="w-4 h-4" />
+                        ประกาศกลุ่ม
                     </button>
                     <button 
                         onClick={handleCleanupGuests} 
@@ -1070,6 +1153,96 @@ export default function AdminUsersPage() {
                     onClose={() => setIsAddModalOpen(false)}
                     onRefresh={fetchUsers}
                 />
+            )}
+            {/* Broadcast Modal - NEW Platinum v2.29 */}
+            {broadcastDialogOpen && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setBroadcastDialogOpen(false)} />
+                    <div className="relative w-full max-w-lg bg-white rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-300">
+                        <div className="bg-indigo-600 p-8 text-white relative">
+                            <div className="absolute top-0 right-0 p-8 opacity-10">
+                                <Megaphone className="w-24 h-24" />
+                            </div>
+                            <div className="flex items-center gap-4 mb-2">
+                                <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm">
+                                    <Megaphone className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-black tracking-tight">ประกาศข่าวสารกลุ่ม</h3>
+                                    <p className="text-sm text-indigo-100 opacity-80 font-medium">ส่งแจ้งเตือน Push ถึงสมาชิกในระบบ</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="p-8 space-y-6">
+                            <div className="flex bg-slate-50 p-1.5 rounded-2xl gap-1">
+                                {[
+                                    { id: 'all', label: 'ทุกคน', icon: Users },
+                                    { id: 'premium', label: 'พรีเมียม', icon: Crown },
+                                    { id: 'free', label: 'ทั่วไป', icon: UserCog }
+                                ].map((g) => (
+                                    <button
+                                        key={g.id}
+                                        onClick={() => setBroadcastType(g.id as any)}
+                                        className={cn(
+                                            "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-xs transition-all",
+                                            broadcastType === g.id 
+                                                ? "bg-white text-indigo-600 shadow-sm" 
+                                                : "text-slate-400 hover:text-slate-600"
+                                        )}
+                                    >
+                                        <g.icon className="w-3.5 h-3.5" />
+                                        {g.label}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="form-control">
+                                    <label className="label text-[11px] font-black text-slate-400 uppercase tracking-widest">หัวข้อประกาศ</label>
+                                    <input
+                                        className="input input-bordered bg-slate-50 border-slate-100 rounded-2xl font-bold focus:ring-4 focus:ring-indigo-100"
+                                        value={broadcastTitle}
+                                        onChange={e => setBroadcastTitle(e.target.value)}
+                                        placeholder="เช่น: อัปเดตเพลงใหม่วันนี้..."
+                                    />
+                                </div>
+                                <div className="form-control">
+                                    <label className="label text-[11px] font-black text-slate-400 uppercase tracking-widest">เนื้อหา</label>
+                                    <textarea
+                                        className="textarea textarea-bordered bg-slate-50 border-slate-100 rounded-2xl h-32 font-medium focus:ring-4 focus:ring-indigo-100 resize-none"
+                                        value={broadcastBody}
+                                        onChange={e => setBroadcastBody(e.target.value)}
+                                        placeholder="ระบุข้อความประกาศ..."
+                                    ></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="p-8 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between gap-4">
+                             <button 
+                                onClick={() => setBroadcastDialogOpen(false)}
+                                className="px-6 py-3 font-bold text-slate-400 hover:text-slate-600 transition-colors"
+                            >
+                                ยกเลิก
+                            </button>
+                            <button
+                                className="flex-1 bg-indigo-600 py-3.5 rounded-2xl font-black text-sm text-white hover:bg-indigo-700 shadow-xl shadow-indigo-200 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                                onClick={handleSendBroadcast}
+                                disabled={sendingBroadcast}
+                            >
+                                {sendingBroadcast ? (
+                                    <span className="loading loading-spinner loading-sm"></span>
+                                ) : (
+                                    <>
+                                        <BellRing className="w-5 h-5" />
+                                        <span>ส่งประกาศทันที</span>
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
         </AdminLayout>
     );
