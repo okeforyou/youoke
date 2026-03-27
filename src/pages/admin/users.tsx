@@ -150,6 +150,13 @@ export default function AdminUsersPage() {
     const [roleFilter, setRoleFilter] = useState('all');
     const [packageFilter, setPackageFilter] = useState('all');
 
+    // 🛡️ HYDRATION CONTROL
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => {
+        console.log("Admin Users Page v1.0.4 Loaded (Auth Verified)");
+        setMounted(true);
+    }, []);
+
     // New Confirm Modal State
     const [confirmModal, setConfirmModal] = useState<{
         isOpen: boolean;
@@ -193,9 +200,9 @@ export default function AdminUsersPage() {
         return 'active';
     };
 
-    // Helper for safe date formatting
+    // Helper for safe date formatting (Match hydration check)
     const formatDate = (date: any) => {
-        if (!date) return "-";
+        if (!mounted || !date) return "-";
         try {
             if (date.seconds) return new Date(date.seconds * 1000).toLocaleDateString('th-TH');
             return new Date(date).toLocaleDateString('th-TH');
@@ -692,27 +699,10 @@ export default function AdminUsersPage() {
 
 
 
-    // Ensure hydration consistency
-    const [mounted, setMounted] = useState(false);
-    useEffect(() => {
-        console.log("Admin Users Page v1.0.4 Loaded (Auth Verified)");
-        setMounted(true);
-    }, []);
 
 
 
-    // Helper for safe date formatting
-    const formatDate = (date: any) => {
-        if (!mounted || !date) return "-";
-        try {
-            // Firestore Timestamp
-            if (date.seconds) return new Date(date.seconds * 1000).toLocaleDateString('th-TH');
-            // JS Date or String
-            return new Date(date).toLocaleDateString('th-TH');
-        } catch (e) {
-            return "-";
-        }
-    };
+
 
     const getRoleStyle = (role: string) => {
         const s = roleStyles[role as keyof typeof roleStyles];
