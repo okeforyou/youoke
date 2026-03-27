@@ -18,7 +18,6 @@ import AdminLayout from "../layouts/AdminLayout";
 import { StatCard } from "../components/StatCard";
 import ChartOne from "../components/ChartOne";
 import { ServiceHealth } from "../components/ServiceHealth";
-import { RecentUsersTable, RecentUser } from "../components/RecentUsersTable";
 import { AdminService } from "../services/adminService";
 // DatabaseHealth component moved to UsersPage
 
@@ -140,17 +139,6 @@ const AdminDashboard: React.FC = () => {
     if (type === 'day_pass' || type === 'trial') return 'premium';
     return 'free';
   };
-
-  const tableUsers: RecentUser[] = recentUsers.map(u => ({
-    id: u.uid,
-    name: u.displayName || u.email?.split('@')[0] || 'Guest User',
-    email: u.email || 'No Email',
-    avatar: u.photoURL,
-    membershipType: mapMembershipType(u.membership?.type),
-    registeredAt: u.createdAt?.seconds
-      ? new Date(u.createdAt.seconds * 1000).toLocaleDateString('th-TH')
-      : 'Unknown'
-  }));
 
   // Loading state
   if (loading) {
