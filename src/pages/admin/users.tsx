@@ -435,9 +435,19 @@ export default function AdminUsersPage() {
         if (!notificationUser || !msgTitle.trim() || !msgBody.trim()) return;
         setSendingMsg(true);
         try {
-        // 📡 Trigger Cloud API (Handles both Firestore Save + Push Notification)
-        try {
-            await fetch('/api/admin/send-broadcast', {
+            if (!db) return;
+            // 1. Direct Firestore Write (Reliable Client-side Persistence)
+            await addDoc(collection(db, "notifications"), {
+                userId: notificationUser.uid,
+                title: msgTitle,
+                body: msgBody,
+                read: false,
+                createdAt: serverTimestamp(),
+                type: 'admin_broadcast'
+            });
+
+            // 2. Trigger Push Notif via API (Background/Optional)
+            fetch('/api/admin/send-broadcast', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -445,10 +455,7 @@ export default function AdminUsersPage() {
                     body: msgBody,
                     targetUids: [notificationUser.uid]
                 })
-            });
-        } catch (pErr) {
-            console.error("❌ Notification API Error:", pErr);
-        }
+            }).catch(e => console.error("Push API error:", e));
 
             setConfirmModal({
                 isOpen: true,
@@ -493,6 +500,20 @@ export default function AdminUsersPage() {
             } else {
                 // 🛡️ HUMAN-ONLY CHECK for 'ALL'
                 targetUids = users.filter(u => u.email).map(u => u.uid);
+            }
+
+            if (!db) return;
+
+            // 1. Direct Firestore Write (Reliable Client-side Persistence)
+            if (broadcastType === 'all') {
+                await addDoc(collection(db, "notifications"), {
+                    userId: 'all',
+                    title: broadcastTitle,
+                    body: broadcastBody,
+                    read: false,
+                    createdAt: serverTimestamp(),
+                    type: 'global_broadcast'
+                });
             }
 
             const response = await fetch('/api/admin/send-broadcast', {

@@ -16,6 +16,21 @@ const BroadcastPage = () => {
     setStatus(null);
 
     try {
+      // 1. Persist to Firestore (Client-side)
+      const { collection, addDoc, serverTimestamp } = await import('firebase/firestore');
+      const { db } = await import('@/firebase');
+      
+      if (db) {
+        await addDoc(collection(db, "notifications"), {
+          userId: 'all',
+          title,
+          body,
+          read: false,
+          createdAt: serverTimestamp(),
+          type: 'global_broadcast'
+        });
+      }
+
       const res = await fetch('/api/admin/send-broadcast', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

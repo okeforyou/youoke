@@ -90,27 +90,23 @@ export const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
     };
 
     return (
-        <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-gray-100 bg-white/80 backdrop-blur-xl px-6 transition-all duration-300">
+        <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-gray-100 bg-white/80 backdrop-blur-xl px-4 transition-all duration-300">
             {/* Left side - Search */}
             <div className="flex items-center gap-4">
                 <button
-                    className="lg:hidden p-2 text-gray-500 hover:text-gray-900 rounded-md transition-colors"
+                    className="lg:hidden p-2 text-gray-500 hover:text-gray-900 rounded-xl transition-colors active:scale-90"
                     onClick={onMenuClick}
                 >
-                    <Menu className="h-6 w-6" />
+                    <Menu className="h-5 w-5" />
                 </button>
-
-                <div className="relative w-64 lg:w-96 hidden md:block group">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors" />
+ 
+                <div className="relative w-64 lg:w-80 hidden md:block group">
+                    <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors" />
                     <input
                         type="search"
-                        placeholder="ค้นหา (Command + K)..."
-                        className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-transparent rounded-full text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 focus:bg-white transition-all"
+                        placeholder="Search..."
+                        className="w-full h-9 pl-9 pr-4 bg-gray-50 border border-transparent rounded-full text-xs placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary/30 focus:bg-white transition-all font-medium"
                     />
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 hidden lg:flex items-center gap-1 pointer-events-none">
-                        <kbd className="kbd kbd-sm h-5 min-h-0 bg-white border border-gray-200 text-[10px] text-gray-400 font-mono">⌘</kbd>
-                        <kbd className="kbd kbd-sm h-5 min-h-0 bg-white border border-gray-200 text-[10px] text-gray-400 font-mono">K</kbd>
-                    </div>
                 </div>
             </div>
 
