@@ -140,7 +140,7 @@ export default function AdminUsersPage() {
     
     // Broadcast State (New)
     const [broadcastDialogOpen, setBroadcastDialogOpen] = useState(false);
-    const [broadcastType, setBroadcastType] = useState<'all' | 'premium' | 'free'>('all');
+    const [broadcastType, setBroadcastType] = useState<'all' | 'lifetime' | 'yearly' | 'monthly' | 'pro' | 'free'>('all');
     const [broadcastTitle, setBroadcastTitle] = useState("");
     const [broadcastBody, setBroadcastBody] = useState("");
     const [sendingBroadcast, setSendingBroadcast] = useState(false);
@@ -446,10 +446,17 @@ export default function AdminUsersPage() {
         try {
             // Target specific UIDs for groups
             let targetUids: string[] | undefined = undefined;
-            if (broadcastType === 'premium') {
-                targetUids = users.filter(u => getMembershipType(u) !== 'free').map(u => u.uid);
-            } else if (broadcastType === 'free') {
-                targetUids = users.filter(u => getMembershipType(u) === 'free' && u.email).map(u => u.uid);
+            if (broadcastType !== 'all') {
+                targetUids = users.filter(u => {
+                    const mType = getMembershipType(u);
+                    // Match type logic
+                    if (broadcastType === 'lifetime') return mType === 'lifetime';
+                    if (broadcastType === 'yearly') return u.membership?.type === 'yearly';
+                    if (broadcastType === 'monthly') return u.membership?.type === 'monthly';
+                    if (broadcastType === 'pro') return mType === 'pro';
+                    if (broadcastType === 'free') return mType === 'free' && u.email;
+                    return false;
+                }).map(u => u.uid);
             }
 
             const response = await fetch('/api/admin/send-broadcast', {
@@ -1177,23 +1184,26 @@ export default function AdminUsersPage() {
                         </div>
 
                         <div className="p-8 space-y-6">
-                            <div className="flex bg-slate-50 p-1.5 rounded-2xl gap-1">
+                            <div className="grid grid-cols-3 bg-slate-50 p-1.5 rounded-2xl gap-1">
                                 {[
                                     { id: 'all', label: 'ทุกคน', icon: Users },
-                                    { id: 'premium', label: 'พรีเมียม', icon: Crown },
+                                    { id: 'lifetime', label: 'ตลอดชีพ', icon: Crown },
+                                    { id: 'yearly', label: 'รายปี', icon: Star },
+                                    { id: 'monthly', label: 'รายเดือน', icon: Zap },
+                                    { id: 'pro', label: 'รายวัน', icon: Zap },
                                     { id: 'free', label: 'ทั่วไป', icon: UserCog }
                                 ].map((g) => (
                                     <button
                                         key={g.id}
                                         onClick={() => setBroadcastType(g.id as any)}
                                         className={cn(
-                                            "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-xs transition-all",
+                                            "flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-[10px] transition-all",
                                             broadcastType === g.id 
-                                                ? "bg-white text-indigo-600 shadow-sm" 
+                                                ? "bg-white text-indigo-600 shadow-sm ring-1 ring-indigo-50" 
                                                 : "text-slate-400 hover:text-slate-600"
                                         )}
                                     >
-                                        <g.icon className="w-3.5 h-3.5" />
+                                        <g.icon className="w-3 h-3" />
                                         {g.label}
                                     </button>
                                 ))}
