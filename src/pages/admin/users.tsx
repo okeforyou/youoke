@@ -388,9 +388,11 @@ export default function AdminUsersPage() {
         setSendingMsg(true);
         try {
             if (!db) return;
-            await addDoc(collection(db, `users/${notificationUser.uid}/notifications`), {
+            // Central Hub Pattern (Match NotificationList.tsx)
+            await addDoc(collection(db, "notifications"), {
+                userId: notificationUser.uid,
                 title: msgTitle,
-                message: msgBody,
+                body: msgBody,
                 type: msgType,
                 read: false,
                 createdAt: serverTimestamp()
