@@ -488,9 +488,7 @@ export const useAuthStore = create<UserState & AuthActions>()(
 
             signInWithGoogle: async () => {
                 console.log('⚡ GoogleSignIn: Started');
-
-                // 🛑 SAFARI POPUP FIX: Do not set state before popup! 
-                // Any 'set' call here might cause a React microtask and block the popup.
+                // 🛑 SAFARI/CHROME POPUP FIX: Try popup first, fallback to redirect if blocked
                 try {
                     const provider = new GoogleAuthProvider();
                     if (!auth) throw new Error("Firebase Auth not initialized");
@@ -500,8 +498,18 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     console.log('⚡ GoogleSignIn: Popup Success');
                 } catch (error: any) {
                     console.error('⚡ GoogleSignIn: Error', error);
-                    set({ error: error.message, isLoading: false });
-                    throw error;
+                    
+                    // 🛡️ SMART FALLBACK: If popup is closed or blocked, use Redirect
+                    if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request' || error.code === 'auth/popup-blocked') {
+                        console.warn('🛡️ [Auth] Popup failed/blocked. Switching to Redirect Flow...');
+                        const provider = new GoogleAuthProvider();
+                        if (auth) {
+                            await signInWithRedirect(auth, provider);
+                        }
+                    } else {
+                        set({ error: error.message, isLoading: false });
+                        throw error;
+                    }
                 }
             },
 
@@ -516,8 +524,17 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     await linkWithPopup(auth.currentUser, provider);
                 } catch (error: any) {
                     console.error('⚡ LinkGoogleAccount: Error', error);
-                    set({ error: error.message, isLoading: false });
-                    throw error;
+                    // 🛡️ SMART FALLBACK for Linking
+                    if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request' || error.code === 'auth/popup-blocked') {
+                        console.warn('🛡️ [Auth] Link Popup failed/blocked. Switching to Redirect Flow...');
+                        const provider = new GoogleAuthProvider();
+                        if (auth && auth.currentUser) {
+                            await linkWithRedirect(auth.currentUser, provider);
+                        }
+                    } else {
+                        set({ error: error.message, isLoading: false });
+                        throw error;
+                    }
                 }
             },
 
