@@ -46,7 +46,6 @@ const LineIcon = ({ className }: { className?: string }) => (
 );
 import { collection, query, orderBy, limit, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, addDoc } from "firebase/firestore";
 import { db } from "@/firebase";
-import { cn } from "@/lib/utils";
 
 interface User {
     uid: string;
@@ -125,7 +124,6 @@ export default function AdminUsersPage() {
     const [packages, setPackages] = useState<PackageOption[]>([]);
     const [assigningLoading, setAssigningLoading] = useState(false);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [syncing, setSyncing] = useState(false);
 
     // Notification State
     const [msgTitle, setMsgTitle] = useState("");
