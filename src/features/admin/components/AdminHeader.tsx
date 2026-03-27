@@ -33,65 +33,31 @@ export const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
     React.useEffect(() => {
         if (!db || !storeUser?.uid) return;
 
-        let userList: AdminNotification[] = [];
-        let allList: AdminNotification[] = [];
-
-        const updateMerged = () => {
-            const merged = [...userList, ...allList].sort((a, b) => {
-                const timeA = a.timestamp?.seconds || 9999999999; // Newest first even if pending
-                const timeB = b.timestamp?.seconds || 9999999999;
-                return timeB - timeA;
-            }).slice(0, 10);
-            setUserNotifs(merged);
-            setUserCount(merged.filter(n => !n.read).length);
-        };
-
-        // Individual Query
-        const qUser = query(
+        const q = query(
             collection(db, 'notifications'),
-            where('userId', '==', storeUser.uid),
+            where('userId', 'in', [storeUser.uid, 'all']),
             orderBy('createdAt', 'desc'),
             limit(10)
         );
 
-        // Global Query
-        const qAll = query(
-            collection(db, 'notifications'),
-            where('userId', '==', 'all'),
-            orderBy('createdAt', 'desc'),
-            limit(10)
-        );
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const list = snapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    type: 'system_alert',
+                    title: data.title || 'ประกาศจากระบบ',
+                    message: data.body || '',
+                    timestamp: data.createdAt,
+                    link: '/profile/notifications',
+                    read: data.read || false
+                } as AdminNotification;
+            });
+            setUserNotifs(list);
+            setUserCount(list.filter(n => !n.read).length);
+        }, (err) => console.warn("⚠️ Notification Query Error:", err));
 
-        const unsubUser = onSnapshot(qUser, (snap) => {
-            userList = snap.docs.map(doc => ({
-                id: doc.id,
-                type: 'system_alert',
-                title: doc.data().title || 'ประกาศจากระบบ',
-                message: doc.data().body || '',
-                timestamp: doc.data().createdAt,
-                link: '/profile/notifications',
-                read: doc.data().read || false
-            } as AdminNotification));
-            updateMerged();
-        }, (err) => console.warn("⚠️ Notification User Query Error:", err));
-
-        const unsubAll = onSnapshot(qAll, (snap) => {
-            allList = snap.docs.map(doc => ({
-                id: doc.id,
-                type: 'system_alert',
-                title: doc.data().title || 'ประกาศจากระบบ',
-                message: doc.data().body || '',
-                timestamp: doc.data().createdAt,
-                link: '/profile/notifications',
-                read: doc.data().read || false
-            } as AdminNotification));
-            updateMerged();
-        }, (err) => console.warn("⚠️ Notification All Query Error:", err));
-
-        return () => {
-            unsubUser();
-            unsubAll();
-        };
+        return () => unsubscribe();
     }, [storeUser?.uid]);
 
     // Combine and Sort
