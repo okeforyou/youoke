@@ -674,6 +674,7 @@ export default function AdminUsersPage() {
     // Calculate Stats (Business Focussed)
     const stats = {
         total: users.length,
+        registered: users.filter(u => u.email).length, // 🛡️ REAL REGISTERED USERS
         lifetime: users.filter(u => getMembershipType(u) === 'lifetime').length,
         yearly: users.filter(u => getMembershipType(u) === 'yearly').length,
         monthly: users.filter(u => getMembershipType(u) === 'monthly').length,
@@ -776,13 +777,21 @@ export default function AdminUsersPage() {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+            {/* Stats Grid - High Density v2.33.4 */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
                 <StatCard 
-                    title="สมาชิกทั้งหมด"
+                    title="ยอดผู้ใช้รวม"
                     value={stats.total}
                     icon={Users}
                     iconColor="primary"
-                    className="border-primary/20 bg-gradient-to-br from-white to-primary/5 shadow-indigo-100"
+                    className="border-primary/10 bg-gradient-to-br from-white to-primary/5 shadow-sm"
+                />
+                <StatCard 
+                    title="ลงทะเบียน (REAL)"
+                    value={stats.registered}
+                    icon={Mail}
+                    iconColor="accent"
+                    className="ring-1 ring-indigo-500/20 bg-indigo-50/10 shadow-indigo-100"
                 />
                 <StatCard 
                     title="ตลอดชีพ (LIFETIME)"
@@ -806,7 +815,7 @@ export default function AdminUsersPage() {
                     title="ทั่วไป (FREE)"
                     value={stats.free}
                     icon={UserCog}
-                    iconColor="neutral"
+                    iconColor="secondary"
                 />
             </div>
 
