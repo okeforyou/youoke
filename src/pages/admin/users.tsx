@@ -30,7 +30,9 @@ import {
     Megaphone,
     Users2,
     MessageSquare,
-    BellRing
+    BellRing,
+    Star,
+    Zap
 } from "lucide-react";
 import { StatCard } from "@/features/admin/components/StatCard";
 import { EditUserModal } from "@/features/admin/components/EditUserModal";
@@ -449,9 +451,14 @@ export default function AdminUsersPage() {
             if (broadcastType !== 'all') {
                 targetUids = users.filter(u => {
                     const mType = getMembershipType(u);
+                    // 🛡️ HUMAN-ONLY CHECK: Skip Guests (No Email) for all targeted types
+                    if (!u.email) return false;
                     // Match type logic using SMART detection
                     return mType === broadcastType;
                 }).map(u => u.uid);
+            } else {
+                // 🛡️ HUMAN-ONLY CHECK for 'ALL'
+                targetUids = users.filter(u => u.email).map(u => u.uid);
             }
 
             const response = await fetch('/api/admin/send-broadcast', {
