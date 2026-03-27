@@ -33,13 +33,13 @@ export const StatCard = ({
 }: StatCardProps) => {
     return (
         <div className={cn(
-            "rounded-2xl border border-gray-100 bg-white p-6 shadow-sm hover:shadow-md transition-all duration-300 group",
+            "rounded-2xl border border-gray-100 bg-white p-4 shadow-sm hover:shadow-md transition-all duration-300 group",
             className
         )}>
             <div className="flex items-start justify-between">
                 <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-500">{title}</p>
-                    <h3 className="mt-2 text-3xl font-bold tracking-tight text-gray-900">
+                    <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">{title}</p>
+                    <h3 className="mt-1 text-2xl font-black tracking-tight text-gray-900">
                         {typeof value === 'number' ? value.toLocaleString() : value}
                     </h3>
                     {change && (
@@ -66,10 +66,10 @@ export const StatCard = ({
                     )}
                 </div>
                 <div className={cn(
-                    "flex h-12 w-12 items-center justify-center rounded-2xl transition-transform group-hover:scale-110 duration-300 shadow-sm",
+                    "flex h-10 w-10 items-center justify-center rounded-xl transition-transform group-hover:scale-110 duration-300 shadow-sm",
                     iconColorClasses[iconColor]
                 )}>
-                    <Icon className="h-6 w-6" />
+                    <Icon className="h-5 w-5" />
                 </div>
             </div>
         </div>

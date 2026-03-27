@@ -168,6 +168,42 @@ export default function AdminUsersPage() {
 
     const [actionUser, setActionUser] = useState<User | null>(null);
 
+    // 🛡️ HELPER FUNCTIONS (Moved up to fix ReferenceError)
+    const getMembershipType = (user: User) => {
+        const membership = user.membership;
+        if (!membership) return 'free';
+
+        // SMART CHECK: Expiration Detection
+        if (membership.type !== 'lifetime' && membership.expiresAt) {
+            const expiry = membership.expiresAt.toDate ? membership.expiresAt.toDate() : new Date(membership.expiresAt);
+            if (new Date() > expiry) return 'free';
+        }
+
+        if (membership.type === 'lifetime') return 'lifetime';
+        if (membership.type === 'day_pass') return 'pro';
+        if (membership.type === 'monthly') return 'monthly';
+        if (membership.type === 'yearly') return 'yearly';
+        
+        return 'free';
+    };
+
+    const getStatus = (user: User) => {
+        if (user.banned) return 'banned';
+        if (!user.email) return 'guest';
+        return 'active';
+    };
+
+    // Helper for safe date formatting
+    const formatDate = (date: any) => {
+        if (!date) return "-";
+        try {
+            if (date.seconds) return new Date(date.seconds * 1000).toLocaleDateString('th-TH');
+            return new Date(date).toLocaleDateString('th-TH');
+        } catch (e) {
+            return "-";
+        }
+    };
+
 
     // Fetch Users (Optimized)
     const fetchUsers = async () => {
@@ -628,6 +664,16 @@ export default function AdminUsersPage() {
 
 
 
+    // Calculate Stats (Business Focussed)
+    const stats = {
+        total: users.length,
+        lifetime: users.filter(u => getMembershipType(u) === 'lifetime').length,
+        yearly: users.filter(u => getMembershipType(u) === 'yearly').length,
+        monthly: users.filter(u => getMembershipType(u) === 'monthly').length,
+        free: users.filter(u => getMembershipType(u) === 'free' && u.email).length
+    };
+
+    // Filter Logic
     const filteredUsers = users.filter(u => {
         const searchLower = searchTerm.toLowerCase();
         const matchesSearch = 
@@ -643,39 +689,6 @@ export default function AdminUsersPage() {
 
         return matchesSearch && matchesRole && matchesPackage;
     });
-
-    const getMembershipType = (user: User) => {
-        const membership = user.membership;
-        if (!membership) return 'free';
-
-        // 🛡️ SMART CHECK: Expiration Detection
-        if (membership.type !== 'lifetime' && membership.expiresAt) {
-            const expiry = membership.expiresAt.toDate ? membership.expiresAt.toDate() : new Date(membership.expiresAt);
-            if (new Date() > expiry) return 'free'; // Expired = Fallback to Free
-        }
-
-        if (membership.type === 'lifetime') return 'lifetime';
-        if (membership.type === 'day_pass') return 'pro';
-        if (membership.type === 'monthly') return 'monthly';
-        if (membership.type === 'yearly') return 'yearly';
-        
-        return 'free';
-    };
-
-    const getStatus = (user: User) => {
-        if (user.banned) return 'banned';
-        if (!user.email) return 'guest';
-        return 'active';
-    };
-
-    // Calculate Stats (Business Focussed)
-    const stats = {
-        total: users.length,
-        lifetime: users.filter(u => getMembershipType(u) === 'lifetime').length,
-        yearly: users.filter(u => getMembershipType(u) === 'yearly').length,
-        monthly: users.filter(u => getMembershipType(u) === 'monthly').length,
-        free: users.filter(u => getMembershipType(u) === 'free' && u.email).length
-    };
 
 
 
@@ -724,50 +737,50 @@ export default function AdminUsersPage() {
             <GlobalScrollbarStyle />
 
             {/* Dashboard Header */}
-            <div className="mb-10 p-6 bg-white rounded-[24px] border border-gray-100 shadow-sm shadow-gray-200/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                <div className="flex items-center gap-4">
-                    <div className="w-1.5 h-10 bg-primary rounded-full shadow-[0_0_15px_rgba(239,68,68,0.3)]"></div>
+            <div className="mb-6 p-4 bg-white rounded-[20px] border border-gray-100 shadow-sm shadow-gray-200/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div className="flex items-center gap-3">
+                    <div className="w-1 h-8 bg-primary rounded-full"></div>
                     <div>
-                        <h1 className="text-2xl font-black text-gray-900 tracking-tight">จัดการผู้ใช้งาน</h1>
-                        <p className="text-sm text-gray-500 mt-1 font-medium">จัดการรายชื่อสมาชิก สิทธิ์การใช้งาน และสถานะของระบบ</p>
+                        <h1 className="text-xl font-bold text-gray-900 tracking-tight leading-tight">จัดการผู้ใช้งาน</h1>
+                        <p className="text-[11px] text-gray-400 font-medium">จัดการสมาชิกและสิทธิ์การใช้งาน</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button onClick={fetchUsers} className="flex items-center gap-2 px-5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl font-bold text-sm text-gray-600 hover:bg-white hover:border-indigo-200 transition-all shadow-sm">
-                        <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
-                        รีเฟรชข้อมูล
+                <div className="flex flex-wrap items-center gap-2">
+                    <button onClick={fetchUsers} className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl font-bold text-[11px] text-gray-600 hover:bg-white hover:border-indigo-200 transition-all shadow-sm">
+                        <RefreshCw className={cn("w-3.5 h-3.5", loading && "animate-spin")} />
+                        รีเฟรช
                     </button>
                     <button 
                         onClick={handleSyncAll}
                         disabled={syncing}
                         className={cn(
-                            "flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-sm transition-all shadow-sm",
+                            "flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-[11px] transition-all shadow-sm",
                             syncing ? "bg-gray-100 text-gray-400" : "bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-50"
                         )}
                     >
-                        <ArrowDownUp className={cn("w-4 h-4", syncing && "animate-spin")} />
-                        {syncing ? 'กำลังซิงค์...' : 'Sync สมาชิก'}
+                        <ArrowDownUp className={cn("w-3.5 h-3.5", syncing && "animate-spin")} />
+                        ซิงค์สมาชิก
                     </button>
                     <button 
                         onClick={() => setBroadcastDialogOpen(true)}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-indigo-50/50 border border-indigo-100 rounded-2xl font-bold text-sm text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50/50 border border-indigo-100 rounded-xl font-bold text-[11px] text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
                     >
-                        <Megaphone className="w-4 h-4" />
+                        <Megaphone className="w-3.5 h-3.5" />
                         ประกาศกลุ่ม
                     </button>
                     <button 
                         onClick={handleCleanupGuests} 
-                        className="flex items-center gap-2 px-5 py-2.5 bg-white border border-red-200 rounded-2xl font-bold text-sm text-red-600 hover:bg-red-50 transition-all shadow-sm"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-red-100 rounded-xl font-bold text-[11px] text-red-500 hover:bg-red-50 transition-all shadow-sm"
                     >
-                        <Trash2 className="w-4 h-4" />
-                        ล้าง Guest
+                        <Trash2 className="w-3.5 h-3.5" />
+                        ล้างขยะ
                     </button>
                     <button 
                         onClick={() => setIsAddModalOpen(true)}
-                        className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 rounded-2xl font-bold text-sm text-white hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200"
+                        className="flex items-center gap-1.5 px-4 py-1.5 bg-indigo-600 rounded-xl font-bold text-[11px] text-white hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100 ml-1"
                     >
-                        <UserPlus className="w-4 h-4" />
-                        เพิ่มผู้ใช้ใหม่
+                        <UserPlus className="w-3.5 h-3.5" />
+                        เพิ่มผู้ใช้
                     </button>
                 </div>
             </div>
@@ -810,13 +823,13 @@ export default function AdminUsersPage() {
             {/* Main Table Card */}
             <div className="bg-white border border-gray-100 rounded-[40px] shadow-2xl shadow-gray-200/50 overflow-hidden">
                 {/* Table Filters Header */}
-                <div className="p-6 flex flex-col lg:flex-row justify-between items-center gap-4 border-b border-gray-50">
-                    <div className="relative w-full lg:w-[350px]">
-                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <div className="p-4 flex flex-col lg:flex-row justify-between items-center gap-3 border-b border-gray-50">
+                    <div className="relative w-full lg:w-[320px]">
+                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
                         <input 
                             type="text" 
                             placeholder="ค้นหาชื่อ, อีเมล..." 
-                            className="w-full pl-12 pr-6 py-3 bg-gray-50/50 border border-gray-100 rounded-2xl focus:ring-4 focus:ring-indigo-100 outline-none transition-all font-medium text-sm text-gray-900"
+                            className="w-full pl-11 pr-6 py-2.5 bg-gray-50/50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-indigo-100 outline-none transition-all font-medium text-xs text-gray-900"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
