@@ -33,7 +33,7 @@ export const StatCard = ({
 }: StatCardProps) => {
     return (
         <div className={cn(
-            "rounded-2xl border border-gray-100 bg-white p-4 shadow-sm hover:shadow-md transition-all duration-300 group",
+            "rounded-2xl border border-gray-100 bg-white p-4 transition-all duration-300 group",
             className
         )}>
             <div className="flex items-start justify-between">
@@ -66,7 +66,7 @@ export const StatCard = ({
                     )}
                 </div>
                 <div className={cn(
-                    "flex h-10 w-10 items-center justify-center rounded-xl transition-transform group-hover:scale-110 duration-300 shadow-sm",
+                    "flex h-10 w-10 items-center justify-center rounded-xl transition-transform group-hover:scale-110 duration-300",
                     iconColorClasses[iconColor]
                 )}>
                     <Icon className="h-5 w-5" />

@@ -162,7 +162,7 @@ const AdminDashboard: React.FC = () => {
             <p className="text-red-600 text-lg font-medium mb-4">{error}</p>
             <button
               onClick={() => window.location.reload()}
-              className="px-6 py-2.5 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all font-medium shadow-sm active:scale-95"
+              className="px-6 py-2.5 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all font-medium active:scale-95"
             >
               รีโหลดหน้า
             </button>
@@ -176,9 +176,9 @@ const AdminDashboard: React.FC = () => {
     <AdminLayout>
       <div className="space-y-8 max-w-[1600px] mx-auto pb-8">
         {/* Header */}
-        <div className="p-6 bg-white rounded-[24px] border border-gray-100 shadow-sm shadow-gray-200/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+        <div className="p-6 bg-white rounded-[24px] border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
           <div className="flex items-center gap-4">
-            <div className="w-1.5 h-10 bg-primary rounded-full shadow-[0_0_15px_rgba(239,68,68,0.3)]"></div>
+            <div className="w-1.5 h-10 bg-primary rounded-full"></div>
             <div>
               <h1 className="text-2xl font-black text-gray-900 tracking-tight">ภาพรวมระบบ</h1>
               <p className="text-sm text-gray-500 mt-1 font-medium">ติดตามสถานะและความเคลื่อนไหวล่าสุดของ YouOke</p>
@@ -191,7 +191,7 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         {/* เมนูจัดการด่วน Section */}
-        <div className="bg-white p-6 rounded-[24px] border border-gray-100 shadow-sm shadow-gray-200/50">
+        <div className="bg-white p-6 rounded-[24px] border border-gray-100">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-1 h-6 bg-primary rounded-full"></div>
             <h3 className="font-bold text-lg text-gray-900">เมนูจัดการด่วน</h3>
@@ -201,8 +201,8 @@ const AdminDashboard: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Marketing & Upsell */}
             <Link href="/admin/config"
-              className="group bg-gradient-to-br from-pink-50 to-purple-50 hover:from-pink-100 hover:to-purple-100 p-6 rounded-2xl border border-pink-200 transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-1">
-              <div className="flex items-center justify-center w-12 h-12 bg-white rounded-xl mb-4 shadow-sm group-hover:scale-110 transition-transform duration-300 ring-1 ring-pink-100">
+              className="group bg-gradient-to-br from-pink-50 to-purple-50 hover:from-pink-100 hover:to-purple-100 p-6 rounded-2xl border border-pink-200 transition-all duration-300 cursor-pointer hover:-translate-y-1">
+              <div className="flex items-center justify-center w-12 h-12 bg-white rounded-xl mb-4 group-hover:scale-110 transition-transform duration-300 ring-1 ring-pink-100">
                 <Megaphone className="w-6 h-6 text-pink-500" />
               </div>
               <div className="text-base font-bold text-gray-900 group-hover:text-pink-700 transition-colors">Marketing & Upsell</div>
@@ -211,8 +211,8 @@ const AdminDashboard: React.FC = () => {
 
             {/* Users & Roles */}
             <Link href="/admin/users"
-              className="group bg-gradient-to-br from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 p-6 rounded-2xl border border-green-200 transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-1">
-              <div className="flex items-center justify-center w-12 h-12 bg-white rounded-xl mb-4 shadow-sm group-hover:scale-110 transition-transform duration-300 ring-1 ring-green-100">
+              className="group bg-gradient-to-br from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 p-6 rounded-2xl border border-green-200 transition-all duration-300 cursor-pointer hover:-translate-y-1">
+              <div className="flex items-center justify-center w-12 h-12 bg-white rounded-xl mb-4 group-hover:scale-110 transition-transform duration-300 ring-1 ring-green-100">
                 <UserCheck className="w-6 h-6 text-green-600" />
               </div>
               <div className="text-base font-bold text-gray-900 group-hover:text-green-700 transition-colors">Users & Roles</div>
@@ -221,8 +221,8 @@ const AdminDashboard: React.FC = () => {
 
             {/* System Setup */}
             <Link href="/admin/config"
-              className="group bg-gradient-to-br from-blue-50 to-cyan-50 hover:from-blue-100 hover:to-cyan-100 p-6 rounded-2xl border border-blue-200 transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-1">
-              <div className="flex items-center justify-center w-12 h-12 bg-white rounded-xl mb-4 shadow-sm group-hover:scale-110 transition-transform duration-300 ring-1 ring-blue-100">
+              className="group bg-gradient-to-br from-blue-50 to-cyan-50 hover:from-blue-100 hover:to-cyan-100 p-6 rounded-2xl border border-blue-200 transition-all duration-300 cursor-pointer hover:-translate-y-1">
+              <div className="flex items-center justify-center w-12 h-12 bg-white rounded-xl mb-4 group-hover:scale-110 transition-transform duration-300 ring-1 ring-blue-100">
                 <Settings className="w-6 h-6 text-blue-600" />
               </div>
               <div className="text-base font-bold text-gray-900 group-hover:text-blue-700 transition-colors">System Setup</div>
@@ -231,8 +231,8 @@ const AdminDashboard: React.FC = () => {
 
             {/* Artist Management */}
             <Link href="/admin/artists"
-              className="group bg-gradient-to-br from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 p-6 rounded-2xl border border-amber-200 transition-all duration-300 cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-1">
-              <div className="flex items-center justify-center w-12 h-12 bg-white rounded-xl mb-4 shadow-sm group-hover:scale-110 transition-transform duration-300 ring-1 ring-amber-100">
+              className="group bg-gradient-to-br from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 p-6 rounded-2xl border border-amber-200 transition-all duration-300 cursor-pointer hover:-translate-y-1">
+              <div className="flex items-center justify-center w-12 h-12 bg-white rounded-xl mb-4 group-hover:scale-110 transition-transform duration-300 ring-1 ring-amber-100">
                 <ImageIcon className="w-6 h-6 text-orange-500" />
               </div>
               <div className="text-base font-bold text-gray-900 group-hover:text-orange-700 transition-colors">Artist Management</div>
@@ -240,7 +240,7 @@ const AdminDashboard: React.FC = () => {
             </Link>
 
             {/* Revenue */}
-            <div className="bg-gradient-to-br from-primary to-purple-600 p-6 rounded-2xl text-white shadow-lg shadow-primary/20 relative overflow-hidden group">
+            <div className="bg-gradient-to-br from-primary to-purple-600 p-6 rounded-2xl text-white relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
               <div className="flex items-center justify-center w-12 h-12 bg-white/20 rounded-xl mb-4 backdrop-blur-md group-hover:rotate-12 transition-transform duration-500">
                 <DollarSign className="w-6 h-6 text-white" />
@@ -291,7 +291,7 @@ const AdminDashboard: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
           {/* Revenue Chart (2 cols) */}
-          <div className="lg:col-span-2 bg-white p-6 rounded-[24px] border border-gray-100 shadow-sm">
+          <div className="lg:col-span-2 bg-white p-6 rounded-[24px] border border-gray-100 text-slate-900 font-bold">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h3 className="font-bold text-gray-900 text-lg">ภาพรวมรายได้</h3>

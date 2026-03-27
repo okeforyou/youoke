@@ -435,32 +435,20 @@ export default function AdminUsersPage() {
         if (!notificationUser || !msgTitle.trim() || !msgBody.trim()) return;
         setSendingMsg(true);
         try {
-            if (!db) return;
-            // Central Hub Pattern (Match NotificationList.tsx)
-            await addDoc(collection(db, "notifications"), {
-                userId: notificationUser.uid,
-                title: msgTitle,
-                body: msgBody,
-                type: msgType,
-                read: false,
-                createdAt: serverTimestamp()
+        // 📡 Trigger Cloud API (Handles both Firestore Save + Push Notification)
+        try {
+            await fetch('/api/admin/send-broadcast', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: msgTitle,
+                    body: msgBody,
+                    targetUids: [notificationUser.uid]
+                })
             });
-
-
-            // Also trigger REAL Push Notification via API
-            try {
-                await fetch('/api/admin/send-broadcast', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        title: msgTitle,
-                        body: msgBody,
-                        targetUids: [notificationUser.uid]
-                    })
-                });
-            } catch (pErr) {
-                console.warn("⚠️ Push Notification failed (FCM), but in-app saved:", pErr);
-            }
+        } catch (pErr) {
+            console.error("❌ Notification API Error:", pErr);
+        }
 
             setConfirmModal({
                 isOpen: true,
@@ -729,7 +717,7 @@ export default function AdminUsersPage() {
             <GlobalScrollbarStyle />
 
             {/* Dashboard Header */}
-            <div className="mb-6 p-4 bg-white rounded-[20px] border border-gray-100 shadow-sm shadow-gray-200/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="mb-6 p-4 bg-white rounded-[20px] border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div className="flex items-center gap-3">
                     <div className="w-1 h-8 bg-primary rounded-full"></div>
                     <div>
@@ -738,7 +726,7 @@ export default function AdminUsersPage() {
                     </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                    <button onClick={fetchUsers} className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl font-bold text-[11px] text-gray-600 hover:bg-white hover:border-indigo-200 transition-all shadow-sm">
+                    <button onClick={fetchUsers} className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl font-bold text-[11px] text-gray-600 hover:bg-white hover:border-indigo-200 transition-all">
                         <RefreshCw className={cn("w-3.5 h-3.5", loading && "animate-spin")} />
                         รีเฟรช
                     </button>
@@ -746,7 +734,7 @@ export default function AdminUsersPage() {
                         onClick={handleSyncAll}
                         disabled={syncing}
                         className={cn(
-                            "flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-[11px] transition-all shadow-sm",
+                            "flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-[11px] transition-all",
                             syncing ? "bg-gray-100 text-gray-400" : "bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-50"
                         )}
                     >
@@ -755,21 +743,21 @@ export default function AdminUsersPage() {
                     </button>
                     <button 
                         onClick={() => setBroadcastDialogOpen(true)}
-                        className="flex items-center gap-1.5 px-4 py-1.5 bg-indigo-600 border border-indigo-500 rounded-xl font-black text-[11px] text-white hover:bg-indigo-700 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-indigo-200"
+                        className="flex items-center gap-1.5 px-4 py-1.5 bg-indigo-600 border border-indigo-500 rounded-xl font-black text-[11px] text-white hover:bg-indigo-700 hover:scale-105 active:scale-95 transition-all"
                     >
                         <Megaphone className="w-3.5 h-3.5 fill-white/20" />
                         ประกาศกลุ่มเป้าหมาย
                     </button>
                     <button 
                         onClick={handleCleanupGuests} 
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-red-100 rounded-xl font-bold text-[11px] text-red-500 hover:bg-red-50 transition-all shadow-sm"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-red-100 rounded-xl font-bold text-[11px] text-red-500 hover:bg-red-50 transition-all"
                     >
                         <Trash2 className="w-3.5 h-3.5" />
                         ล้างขยะ
                     </button>
                     <button 
                         onClick={() => setIsAddModalOpen(true)}
-                        className="flex items-center gap-1.5 px-4 py-1.5 bg-indigo-600 rounded-xl font-bold text-[11px] text-white hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100 ml-1"
+                        className="flex items-center gap-1.5 px-4 py-1.5 bg-indigo-600 rounded-xl font-bold text-[11px] text-white hover:bg-indigo-700 transition-all ml-1"
                     >
                         <UserPlus className="w-3.5 h-3.5" />
                         เพิ่มผู้ใช้
@@ -820,7 +808,7 @@ export default function AdminUsersPage() {
             </div>
 
             {/* Main Table Card */}
-            <div className="bg-white border border-gray-100 rounded-[40px] shadow-2xl shadow-gray-200/50 overflow-hidden">
+            <div className="bg-white border border-gray-100 rounded-[40px] overflow-hidden">
                 {/* Table Filters Header */}
                 <div className="p-4 flex flex-col lg:flex-row justify-between items-center gap-3 border-b border-gray-50">
                     <div className="relative w-full lg:w-[320px]">
@@ -908,10 +896,10 @@ export default function AdminUsersPage() {
                                                 }}
                                             >
                                                 <div className="relative group/avatar">
-                                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-100 to-white text-indigo-600 font-bold border border-indigo-100 overflow-hidden shadow-sm group-hover/avatar:ring-2 group-hover/avatar:ring-indigo-200 transition-all">
+                                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-100 to-white text-indigo-600 font-bold border border-indigo-100 overflow-hidden group-hover/avatar:ring-2 group-hover/avatar:ring-indigo-200 transition-all">
                                                         {user.photoURL ? <img src={user.photoURL} alt={user.displayName} className="w-full h-full object-cover" /> : user.displayName?.charAt(0)}
                                                     </div>
-                                                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-white rounded-full flex items-center justify-center shadow-sm border border-gray-50 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-white rounded-full flex items-center justify-center border border-gray-50 opacity-0 group-hover:opacity-100 transition-opacity">
                                                         <Edit2 className="w-2.5 h-2.5 text-indigo-500" />
                                                     </div>
                                                 </div>
@@ -1004,9 +992,9 @@ export default function AdminUsersPage() {
                         แสดง <span className="text-gray-900">{filteredUsers.length}</span> รายการ
                     </p>
                     <div className="flex items-center gap-3">
-                        <button className="flex h-10 w-10 items-center justify-center rounded-xl bg-white border border-gray-100 text-gray-400 hover:text-gray-900 shadow-sm disabled:opacity-50 transition-all font-black" disabled>&lt;</button>
-                        <button className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/20 font-black">1</button>
-                        <button className="flex h-10 w-10 items-center justify-center rounded-xl bg-white border border-gray-100 text-gray-400 hover:text-gray-900 shadow-sm transition-all font-black">&gt;</button>
+                        <button className="flex h-10 w-10 items-center justify-center rounded-xl bg-white border border-gray-100 text-gray-400 hover:text-gray-900 disabled:opacity-50 transition-all font-black" disabled>&lt;</button>
+                        <button className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white font-black">1</button>
+                        <button className="flex h-10 w-10 items-center justify-center rounded-xl bg-white border border-gray-100 text-gray-400 hover:text-gray-900 transition-all font-black">&gt;</button>
                     </div>
                 </div>
             </div>
@@ -1018,7 +1006,7 @@ export default function AdminUsersPage() {
                         className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300" 
                         onClick={() => setActionUser(null)}
                     />
-                    <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-white p-6 animate-in zoom-in-95 fade-in duration-300">
+                    <div className="relative w-full max-w-sm bg-white rounded-3xl border border-white p-6 animate-in zoom-in-95 fade-in duration-300">
                         <div className="flex flex-col items-center mb-6 text-center">
                             <div className="h-16 w-16 rounded-full bg-primary/5 border-2 border-primary/20 flex items-center justify-center overflow-hidden mb-3">
                                 {actionUser.photoURL ? (
@@ -1122,7 +1110,7 @@ export default function AdminUsersPage() {
                         onClick={() => setNotificationDialogOpen(false)}
                     />
 
-                    <div className="relative w-full max-w-lg transform overflow-hidden rounded-2xl bg-card shadow-2xl transition-all flex flex-col">
+                    <div className="relative w-full max-w-lg transform overflow-hidden rounded-2xl bg-card transition-all flex flex-col">
                         <div className="bg-muted/30 p-6 border-b border-border flex justify-between items-center">
                             <div>
                                 <h3 className="font-bold text-lg text-foreground">ส่งข้อความแจ้งเตือน</h3>
@@ -1209,7 +1197,7 @@ export default function AdminUsersPage() {
             {broadcastDialogOpen && (
                 <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setBroadcastDialogOpen(false)} />
-                    <div className="relative w-full max-w-lg bg-white rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-300">
+                    <div className="relative w-full max-w-lg bg-white rounded-[32px] overflow-hidden animate-in zoom-in-95 fade-in duration-300">
                         <div className="bg-indigo-600 p-8 text-white relative">
                             <div className="absolute top-0 right-0 p-8 opacity-10">
                                 <Megaphone className="w-24 h-24" />
@@ -1241,7 +1229,7 @@ export default function AdminUsersPage() {
                                         className={cn(
                                             "flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-[10px] transition-all",
                                             broadcastType === g.id 
-                                                ? "bg-white text-indigo-600 shadow-sm ring-1 ring-indigo-50" 
+                                                ? "bg-white text-indigo-600 ring-1 ring-indigo-50" 
                                                 : "text-slate-400 hover:text-slate-600"
                                         )}
                                     >
@@ -1281,7 +1269,7 @@ export default function AdminUsersPage() {
                                 ยกเลิก
                             </button>
                             <button
-                                className="flex-1 bg-indigo-600 py-3.5 rounded-2xl font-black text-sm text-white hover:bg-indigo-700 shadow-xl shadow-indigo-200 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                                className="flex-1 bg-indigo-600 py-3.5 rounded-2xl font-black text-sm text-white hover:bg-indigo-700 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                                 onClick={handleSendBroadcast}
                                 disabled={sendingBroadcast}
                             >

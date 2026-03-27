@@ -3,6 +3,9 @@ import { X, Bell, Info } from 'lucide-react';
 import { useRouter } from 'next/router';
 import { notificationService } from '../../../services/notificationService';
 import { cn } from '../../../utils/cn';
+import { useAuthStore } from '../../../modules/auth/useAuthStore';
+import { db } from '../../../firebase';
+import { collection, query, where, orderBy, limit, onSnapshot } from 'firebase/firestore';
 
 interface ToastData {
   id: string;
@@ -14,28 +17,63 @@ interface ToastData {
 export const NotificationToast: React.FC = () => {
   const [toasts, setToasts] = useState<ToastData[]>([]);
   const router = useRouter();
+  const { user } = useAuthStore();
 
   useEffect(() => {
-    // 🔔 Listen for foreground messages
-    const unsubscribe = notificationService.listenForMessages((payload) => {
+    // 🔔 Listen for foreground messages (FCM)
+    const unsubscribeFCM = notificationService.listenForMessages((payload) => {
       const { notification, data } = payload;
-      const newToast: ToastData = {
-        id: Date.now().toString(),
-        title: notification?.title || 'แจ้งเตือนใหม่',
-        body: notification?.body || '',
-        type: data?.type === 'success' ? 'success' : 'info'
-      };
-
-      setToasts((prev: ToastData[]) => [...prev, newToast]);
-
-      // Auto remove after 6 seconds
-      setTimeout(() => {
-        removeToast(newToast.id);
-      }, 6000);
+      addToastUI(notification?.title || 'แจ้งเตือนใหม่', notification?.body || '', data?.type === 'success' ? 'success' : 'info');
     });
 
-    return () => unsubscribe();
-  }, []);
+    // 📡 Real-time Firestore Listener for In-app Toasts
+    let isInitialLoad = true;
+    let unsubFirestore = () => {};
+
+    if (user?.uid && db) {
+      const q = query(
+        collection(db, 'notifications'),
+        where('userId', 'in', [user.uid, 'all']),
+        orderBy('createdAt', 'desc'),
+        limit(1)
+      );
+
+      unsubFirestore = onSnapshot(q, (snapshot) => {
+        if (isInitialLoad) {
+          isInitialLoad = false;
+          return;
+        }
+
+        snapshot.docChanges().forEach((change) => {
+          if (change.type === 'added') {
+            const data = change.doc.data();
+            addToastUI(data.title || 'แจ้งเตือนใหม่', data.body || '', data.type === 'success' ? 'success' : 'info');
+          }
+        });
+      }, (err) => console.warn("⚠️ Notification Toast Listener Error:", err));
+    }
+
+    return () => {
+      unsubscribeFCM();
+      unsubFirestore();
+    };
+  }, [user?.uid]);
+
+  const addToastUI = (title: string, body: string, type: 'info' | 'success' | 'warning' = 'info') => {
+    const newToast: ToastData = {
+      id: Math.random().toString(36).substr(2, 9),
+      title,
+      body,
+      type
+    };
+
+    setToasts((prev: ToastData[]) => [...prev, newToast]);
+
+    // Auto remove after 6 seconds
+    setTimeout(() => {
+      removeToast(newToast.id);
+    }, 6000);
+  };
 
   const removeToast = (id: string) => {
     setToasts((prev: ToastData[]) => prev.filter((t: ToastData) => t.id !== id));

@@ -56,7 +56,7 @@ const BroadcastPage = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
               <form onSubmit={handleSend} className="p-6 space-y-6">
                 <div>
                   <label className="block text-xs font-bold text-slate-400 uppercase mb-2">หัวข้อประกาศ</label>
@@ -93,7 +93,7 @@ const BroadcastPage = () => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full h-12 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold transition-all shadow-lg shadow-primary/20 disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full h-12 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {isLoading ? (
                     <span className="loading loading-spinner loading-xs"></span>

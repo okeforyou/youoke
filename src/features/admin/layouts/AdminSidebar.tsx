@@ -86,12 +86,12 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) 
 
       {/* Sidebar */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-100 transform transition-transform duration-300 ease-in-out lg:translate-x-0 shadow-xl lg:shadow-none",
+        "fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-100 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:shadow-none",
         isOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         {/* Logo */}
         <div className="flex h-16 items-center gap-3 border-b border-gray-100 px-6">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/20">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-white">
             <Shield className="h-5 w-5" />
           </div>
           <div className="flex flex-col">
@@ -115,7 +115,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) 
                   className={cn(
                     "group flex items-center gap-3 px-4 py-3 mb-1 rounded-2xl transition-all duration-200 font-bold text-sm",
                     isActive
-                      ? "bg-primary text-white shadow-lg shadow-primary/25 translate-x-1"
+                      ? "bg-primary text-white translate-x-1"
                       : "text-gray-700 hover:bg-gray-100/50 hover:text-gray-900 border border-transparent hover:border-gray-200"
                   )}
                   onClick={() => {
@@ -127,12 +127,12 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) 
                   <item.icon className={cn("h-[22px] w-[22px]", isActive ? "text-white" : "text-gray-500 group-hover:text-gray-700")} />
                   <span>{item.title}</span>
                   {item.id === 'users' && stats.users > 0 && (
-                    <span className="ml-auto flex h-5 min-w-[22px] items-center justify-center rounded-full bg-blue-50 px-1.5 text-[10px] font-black text-blue-600 border border-blue-100 shadow-sm">
+                    <span className="ml-auto flex h-5 min-w-[22px] items-center justify-center rounded-full bg-blue-50 px-1.5 text-[10px] font-black text-blue-600 border border-blue-100">
                       {stats.users}
                     </span>
                   )}
                   {item.id === 'orders' && stats.pendingOrders > 0 && (
-                    <span className="ml-auto flex h-5 min-w-[22px] items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-black text-white shadow-[0_2px_8px_rgba(220,38,38,0.4)] animate-in zoom-in-50 duration-500 border border-white/20">
+                    <span className="ml-auto flex h-5 min-w-[22px] items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-black text-white animate-in zoom-in-50 duration-500 border border-white/20">
                       {stats.pendingOrders > 99 ? '99+' : stats.pendingOrders}
                     </span>
                   )}
@@ -169,7 +169,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) 
                   className={cn(
                     "flex flex-col items-center justify-center gap-1 p-2 rounded-xl text-xs font-medium transition-colors border",
                     router.pathname.startsWith("/admin/content")
-                      ? "bg-white border-primary/20 text-primary shadow-sm"
+                      ? "bg-white border-primary/20 text-primary"
                       : "bg-white border-transparent text-gray-500 hover:bg-white hover:text-gray-900 hover:border-gray-200"
                   )}
                 >

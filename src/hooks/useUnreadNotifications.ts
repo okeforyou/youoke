@@ -15,19 +15,43 @@ export const useUnreadNotifications = () => {
 
     // 📡 Real-time listen for unread notifications
     // We fetch for both user-specific and global 'all' notifications
-    const q = query(
+    let countIndividual = 0;
+    let countGlobal = 0;
+
+    const updateCount = () => setUnreadCount(countIndividual + countGlobal);
+
+    // Individual Unread
+    const qIndiv = query(
       collection(db, 'notifications'),
-      where('userId', 'in', [user.uid, 'all']),
+      where('userId', '==', user.uid),
       where('read', '==', false)
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setUnreadCount(snapshot.size);
+    // Global Unread
+    const qGlobal = query(
+      collection(db, 'notifications'),
+      where('userId', '==', 'all'),
+      where('read', '==', false)
+    );
+
+    const unsubIndiv = onSnapshot(qIndiv, (snap) => {
+      countIndividual = snap.size;
+      updateCount();
     }, (error) => {
-      console.error('❌ [useUnreadNotifications] Error:', error);
+      console.error('❌ [useUnreadNotifications] Error fetching individual notifications:', error);
     });
 
-    return () => unsubscribe();
+    const unsubGlobal = onSnapshot(qGlobal, (snap) => {
+      countGlobal = snap.size;
+      updateCount();
+    }, (error) => {
+      console.error('❌ [useUnreadNotifications] Error fetching global notifications:', error);
+    });
+
+    return () => {
+      unsubIndiv();
+      unsubGlobal();
+    };
   }, [user?.uid]);
 
   return unreadCount;

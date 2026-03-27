@@ -33,31 +33,65 @@ export const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
     React.useEffect(() => {
         if (!db || !storeUser?.uid) return;
 
-        const q = query(
+        let userList: AdminNotification[] = [];
+        let allList: AdminNotification[] = [];
+
+        const updateMerged = () => {
+            const merged = [...userList, ...allList].sort((a, b) => {
+                const timeA = a.timestamp?.seconds || 9999999999; // Newest first even if pending
+                const timeB = b.timestamp?.seconds || 9999999999;
+                return timeB - timeA;
+            }).slice(0, 10);
+            setUserNotifs(merged);
+            setUserCount(merged.filter(n => !n.read).length);
+        };
+
+        // Individual Query
+        const qUser = query(
             collection(db, 'notifications'),
-            where('userId', 'in', [storeUser.uid, 'all']),
+            where('userId', '==', storeUser.uid),
             orderBy('createdAt', 'desc'),
             limit(10)
         );
 
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const list = snapshot.docs.map(doc => {
-                const data = doc.data();
-                return {
-                    id: doc.id,
-                    type: 'system_alert',
-                    title: data.title || 'ประกาศจากระบบ',
-                    message: data.body || '',
-                    timestamp: data.createdAt,
-                    link: '/profile/notifications',
-                    read: data.read || false
-                } as AdminNotification;
-            });
-            setUserNotifs(list);
-            setUserCount(list.filter(n => !n.read).length);
-        });
+        // Global Query
+        const qAll = query(
+            collection(db, 'notifications'),
+            where('userId', '==', 'all'),
+            orderBy('createdAt', 'desc'),
+            limit(10)
+        );
 
-        return () => unsubscribe();
+        const unsubUser = onSnapshot(qUser, (snap) => {
+            userList = snap.docs.map(doc => ({
+                id: doc.id,
+                type: 'system_alert',
+                title: doc.data().title || 'ประกาศจากระบบ',
+                message: doc.data().body || '',
+                timestamp: doc.data().createdAt,
+                link: '/profile/notifications',
+                read: doc.data().read || false
+            } as AdminNotification));
+            updateMerged();
+        }, (err) => console.warn("⚠️ Notification User Query Error:", err));
+
+        const unsubAll = onSnapshot(qAll, (snap) => {
+            allList = snap.docs.map(doc => ({
+                id: doc.id,
+                type: 'system_alert',
+                title: doc.data().title || 'ประกาศจากระบบ',
+                message: doc.data().body || '',
+                timestamp: doc.data().createdAt,
+                link: '/profile/notifications',
+                read: doc.data().read || false
+            } as AdminNotification));
+            updateMerged();
+        }, (err) => console.warn("⚠️ Notification All Query Error:", err));
+
+        return () => {
+            unsubUser();
+            unsubAll();
+        };
     }, [storeUser?.uid]);
 
     // Combine and Sort
@@ -90,7 +124,7 @@ export const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
     };
 
     return (
-        <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-gray-100 bg-white/80 backdrop-blur-xl px-6 shadow-sm transition-all duration-300">
+        <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-gray-100 bg-white/80 backdrop-blur-xl px-6 transition-all duration-300">
             {/* Left side - Search */}
             <div className="flex items-center gap-4">
                 <button
@@ -125,7 +159,7 @@ export const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
                         <div className="indicator">
                             <Bell className="h-5 w-5 transition-transform group-hover:rotate-12" />
                             {totalUnreadCount > 0 && (
-                                <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-red-600 border-2 border-white rounded-full flex items-center justify-center z-10 shadow-[0_2px_8px_rgba(220,38,38,0.4)] animate-in zoom-in-50 duration-500">
+                                <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-red-600 border-2 border-white rounded-full flex items-center justify-center z-10 animate-in zoom-in-50 duration-500">
                                     <span className="text-[10px] font-black text-white leading-none">
                                         {totalUnreadCount > 99 ? '99+' : totalUnreadCount}
                                     </span>
@@ -133,7 +167,7 @@ export const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
                             )}
                         </div>
                     </label>
-                    <div tabIndex={0} className="dropdown-content z-50 card card-compact w-80 p-0 shadow-[0_20px_60px_rgba(0,0,0,0.15)] bg-white border border-gray-100 mt-3 rounded-[24px] animate-in slide-in-from-top-2 duration-300">
+                    <div tabIndex={0} className="dropdown-content z-50 card card-compact w-80 p-0 bg-white border border-gray-100 mt-3 rounded-[24px] animate-in slide-in-from-top-2 duration-300">
                         <div className="card-body p-0">
                             {/* Header */}
                             <div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-[24px]">
@@ -142,7 +176,7 @@ export const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
                                     <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none mt-0.5">Unified Center</p>
                                 </div>
                                 {totalUnreadCount > 0 && (
-                                    <span className="text-[11px] bg-red-600 text-white px-2.5 py-1 rounded-full font-black uppercase tracking-tighter shadow-md border border-white/20">
+                                    <span className="text-[11px] bg-red-600 text-white px-2.5 py-1 rounded-full font-black uppercase tracking-tighter border border-white/20">
                                         {totalUnreadCount} NEW
                                     </span>
                                 )}
@@ -159,7 +193,7 @@ export const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
                                                 className="flex flex-col gap-1 p-3.5 hover:bg-gray-50/80 rounded-2xl transition-all group relative border border-transparent hover:border-gray-100"
                                             >
                                                 {!notif.read && (
-                                                    <div className="absolute top-4 right-4 w-1.5 h-1.5 bg-primary rounded-full shadow-sm animate-pulse" />
+                                                    <div className="absolute top-4 right-4 w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
                                                 )}
                                                 <div className="flex items-start justify-between gap-3">
                                                     <div className="flex-1">
@@ -200,13 +234,13 @@ export const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
                             <div className="p-3 bg-white/50 border-t border-gray-100 rounded-b-[24px] flex gap-2">
                                 <Link 
                                     href="/admin/payments" 
-                                    className="flex-1 bg-gray-50 hover:bg-gray-100 text-gray-900 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-sm border border-gray-100 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
+                                    className="flex-1 bg-gray-50 hover:bg-gray-100 text-gray-900 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest border border-gray-100 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
                                 >
                                     <span>เช็ครายการ</span>
                                 </Link>
                                 <Link 
                                     href="/admin/broadcast" 
-                                    className="flex-1 bg-primary hover:bg-red-600 text-white py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
+                                    className="flex-1 bg-primary hover:bg-red-600 text-white py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
                                 >
                                     <Megaphone size={12} />
                                     <span>ส่งประกาศ</span>
@@ -220,7 +254,7 @@ export const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
                 <div className="dropdown dropdown-end">
                     <label tabIndex={0} className="btn btn-ghost btn-sm gap-2 px-1 hover:bg-gray-100 border-none normal-case h-auto py-1 flex items-center rounded-full pr-3 transition-colors">
                         <div className="avatar placeholder ring-2 ring-white ring-offset-2 ring-offset-gray-100 rounded-full">
-                            <div className="bg-gradient-to-br from-primary to-primary/80 text-white rounded-full w-8 h-8 flex items-center justify-center shadow-lg shadow-primary/20">
+                            <div className="bg-gradient-to-br from-primary to-primary/80 text-white rounded-full w-8 h-8 flex items-center justify-center">
                                 {user?.photoURL ? (
                                     <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
                                 ) : (
@@ -234,7 +268,7 @@ export const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
                         </div>
                         <ChevronDown className="h-3 w-3 text-gray-400 ml-1 hidden md:block" />
                     </label>
-                    <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow-xl bg-white rounded-xl w-60 border border-gray-100 mt-2 animate-in zoom-in-95 duration-200">
+                    <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 bg-white rounded-xl w-60 border border-gray-100 mt-2 animate-in zoom-in-95 duration-200">
                         <li className="menu-title px-3 py-2 border-b border-gray-100 mb-1">
                             <span className="text-gray-900 font-bold block p-0 text-sm">บัญชีผู้ใช้</span>
                             <span className="text-xs text-gray-500 font-normal block lowercase p-0 mt-0.5 truncate">{user?.email}</span>
