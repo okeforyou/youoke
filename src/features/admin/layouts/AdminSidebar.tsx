@@ -30,7 +30,6 @@ const mainMenuItems = [
   { title: "ภาพรวมระบบ", icon: LayoutDashboard, path: "/admin" },
   { title: "จัดการผู้ใช้", icon: Users, path: "/admin/users", id: 'users' },
   { title: "จัดการเพลย์ลิสต์", icon: PlayCircle, path: "/admin/playlists" },
-  { title: "ส่งการแจ้งเตือน", icon: Bell, path: "/admin/broadcast", id: 'broadcast' },
   { title: "แพ็กเกจ", icon: Package, path: "/admin/packages" },
   { title: "รายการสั่งซื้อ", icon: CreditCard, path: "/admin/payments", id: 'orders', badgeColor: "warning" },
   { title: "ตั้งค่าระบบ", icon: Settings, path: "/admin/config" },
@@ -128,13 +127,13 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) 
                   <item.icon className={cn("h-[22px] w-[22px]", isActive ? "text-white" : "text-gray-500 group-hover:text-gray-700")} />
                   <span>{item.title}</span>
                   {item.id === 'users' && stats.users > 0 && (
-                    <span className="ml-auto flex h-5 min-w-[20px] items-center justify-center rounded-full bg-blue-100 px-1.5 text-xs font-bold text-blue-600">
+                    <span className="ml-auto flex h-5 min-w-[22px] items-center justify-center rounded-full bg-blue-50 px-1.5 text-[10px] font-black text-blue-600 border border-blue-100 shadow-sm">
                       {stats.users}
                     </span>
                   )}
                   {item.id === 'orders' && stats.pendingOrders > 0 && (
-                    <span className="ml-auto flex h-6 min-w-[24px] items-center justify-center rounded-full bg-orange-500 px-1.5 text-[10px] font-black text-white shadow-lg shadow-orange-200 animate-pulse border border-white/20">
-                      {stats.pendingOrders}
+                    <span className="ml-auto flex h-5 min-w-[22px] items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-black text-white shadow-[0_2px_8px_rgba(220,38,38,0.4)] animate-in zoom-in-50 duration-500 border border-white/20">
+                      {stats.pendingOrders > 99 ? '99+' : stats.pendingOrders}
                     </span>
                   )}
                 </Link>

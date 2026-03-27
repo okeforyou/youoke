@@ -4,6 +4,7 @@ import {
     Settings,
     ChevronDown,
     Menu,
+    Megaphone,
     LogOut
 } from "lucide-react";
 import { cn } from "../../../utils/cn";
@@ -11,8 +12,10 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import React from "react";
-import { useAdminNotifications } from "../hooks/useAdminNotifications";
-import { NotificationBell } from "../../../modules/notifications/components/NotificationBell";
+import { AdminNotification, useAdminNotifications } from "../hooks/useAdminNotifications";
+import { collection, query, where, onSnapshot, orderBy, limit } from 'firebase/firestore';
+import { db } from '@/firebase';
+import { useAuthStore } from "@/modules/auth/useAuthStore";
 
 interface AdminHeaderProps {
     onMenuClick?: () => void;
@@ -20,8 +23,51 @@ interface AdminHeaderProps {
 
 export const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
     const { user, logout } = useAuth();
+    const { user: storeUser } = useAuthStore();
     const router = useRouter();
-    const { notifications, unreadCount } = useAdminNotifications();
+    const { notifications: adminNotifs, unreadCount: adminCount } = useAdminNotifications();
+    const [userNotifs, setUserNotifs] = React.useState<AdminNotification[]>([]);
+    const [userCount, setUserCount] = React.useState(0);
+
+    // 📡 Listen for System/User Notifications
+    React.useEffect(() => {
+        if (!db || !storeUser?.uid) return;
+
+        const q = query(
+            collection(db, 'notifications'),
+            where('userId', 'in', [storeUser.uid, 'all']),
+            orderBy('createdAt', 'desc'),
+            limit(10)
+        );
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const list = snapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    type: 'system_alert',
+                    title: data.title || 'ประกาศจากระบบ',
+                    message: data.body || '',
+                    timestamp: data.createdAt,
+                    link: '/profile/notifications',
+                    read: data.read || false
+                } as AdminNotification;
+            });
+            setUserNotifs(list);
+            setUserCount(list.filter(n => !n.read).length);
+        });
+
+        return () => unsubscribe();
+    }, [storeUser?.uid]);
+
+    // Combine and Sort
+    const allNotifications = [...adminNotifs, ...userNotifs].sort((a, b) => {
+        const timeA = a.timestamp?.seconds || 0;
+        const timeB = b.timestamp?.seconds || 0;
+        return timeB - timeA;
+    });
+
+    const totalUnreadCount = adminCount + userCount;
 
     const timeAgo = (date: Date) => {
         const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
@@ -70,69 +116,102 @@ export const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
 
             {/* Right side - Actions */}
             <div className="flex items-center gap-3">
-                <NotificationBell />
-                {/* Notifications Dropdown (DaisyUI) */}
+                {/* Unified Notifications Dropdown (DaisyUI) */}
                 <div className="dropdown dropdown-end">
-                    <label tabIndex={0} className="btn btn-ghost btn-sm btn-circle text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors">
+                    <label 
+                        tabIndex={0} 
+                        className="btn btn-ghost btn-sm btn-circle text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all active:scale-95 group"
+                    >
                         <div className="indicator">
-                            <Bell className="h-5 w-5" />
-                            {unreadCount > 0 && (
-                                <span className="badge badge-xs badge-primary indicator-item border-white animate-pulse">
-                                    {unreadCount}
+                            <Bell className="h-5 w-5 transition-transform group-hover:rotate-12" />
+                            {totalUnreadCount > 0 && (
+                                <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-red-600 border-2 border-white rounded-full flex items-center justify-center z-10 shadow-[0_2px_8px_rgba(220,38,38,0.4)] animate-in zoom-in-50 duration-500">
+                                    <span className="text-[10px] font-black text-white leading-none">
+                                        {totalUnreadCount > 99 ? '99+' : totalUnreadCount}
+                                    </span>
                                 </span>
                             )}
                         </div>
                     </label>
-                    <div tabIndex={0} className="dropdown-content z-[1] card card-compact w-80 p-0 shadow-xl bg-white border border-gray-100 mt-2 rounded-xl animate-in zoom-in-95 duration-200">
+                    <div tabIndex={0} className="dropdown-content z-50 card card-compact w-80 p-0 shadow-[0_20px_60px_rgba(0,0,0,0.15)] bg-white border border-gray-100 mt-3 rounded-[24px] animate-in slide-in-from-top-2 duration-300">
                         <div className="card-body p-0">
-                            <div className="px-4 py-3 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                                <h3 className="font-semibold text-gray-900 text-sm">การแจ้งเตือน</h3>
-                                {unreadCount > 0 && (
-                                    <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
-                                        {unreadCount} รายการใหม่
+                            {/* Header */}
+                            <div className="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-[24px]">
+                                <div>
+                                    <h3 className="font-black text-gray-900 text-sm tracking-tight">ศูนย์ควบคุมแจ้งเตือน</h3>
+                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none mt-0.5">Unified Center</p>
+                                </div>
+                                {totalUnreadCount > 0 && (
+                                    <span className="text-[11px] bg-red-600 text-white px-2.5 py-1 rounded-full font-black uppercase tracking-tighter shadow-md border border-white/20">
+                                        {totalUnreadCount} NEW
                                     </span>
                                 )}
                             </div>
-                            <div className="max-h-[320px] overflow-y-auto">
-                                {notifications.length > 0 ? (
-                                    <div className="divide-y divide-gray-50">
-                                        {notifications.map((notif) => (
+
+                            {/* List Component (Unified Admin & User Tasks) */}
+                            <div className="max-h-[380px] overflow-y-auto scrollbar-hide py-2">
+                                {allNotifications.length > 0 ? (
+                                    <div className="px-2 space-y-1">
+                                        {allNotifications.map((notif) => (
                                             <Link 
                                                 key={notif.id} 
                                                 href={notif.link}
-                                                className="flex flex-col gap-1 p-4 hover:bg-gray-50 transition-colors group"
+                                                className="flex flex-col gap-1 p-3.5 hover:bg-gray-50/80 rounded-2xl transition-all group relative border border-transparent hover:border-gray-100"
                                             >
-                                                <div className="flex items-start justify-between gap-2">
-                                                    <h4 className="text-[13px] font-bold text-gray-900 group-hover:text-primary transition-colors">
-                                                        {notif.title}
-                                                    </h4>
-                                                    <span className="text-[10px] text-gray-400 whitespace-nowrap pt-0.5">
-                                                        {notif.timestamp ? timeAgo(notif.timestamp.toDate()) : 'เมื่อสักครู่'}
-                                                    </span>
+                                                {!notif.read && (
+                                                    <div className="absolute top-4 right-4 w-1.5 h-1.5 bg-primary rounded-full shadow-sm animate-pulse" />
+                                                )}
+                                                <div className="flex items-start justify-between gap-3">
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <span className={cn(
+                                                                "text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md",
+                                                                notif.type === 'payment_pending' ? "bg-amber-100 text-amber-700" : "bg-blue-100 text-blue-700"
+                                                            )}>
+                                                                {notif.type === 'payment_pending' ? 'Task' : 'Info'}
+                                                            </span>
+                                                        </div>
+                                                        <h4 className="text-[13px] font-black text-gray-900 group-hover:text-primary transition-colors leading-snug">
+                                                            {notif.title}
+                                                        </h4>
+                                                        <p className="text-[11px] text-gray-500 line-clamp-2 mt-1 font-medium leading-relaxed">
+                                                            {notif.message}
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                                <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed">
-                                                    {notif.message}
-                                                </p>
+                                                <div className="mt-2 text-[10px] font-bold text-gray-400 flex items-center gap-1 opacity-70">
+                                                    {notif.timestamp ? timeAgo(notif.timestamp.toDate()) : 'เมื่อสักครู่'}
+                                                </div>
                                             </Link>
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="p-8 text-center text-gray-400 text-sm">
-                                        <Bell className="h-8 w-8 mx-auto mb-2 opacity-20" />
-                                        <p className="font-medium">ยังไม่มีการแจ้งเตือนใหม่</p>
+                                    <div className="py-12 px-8 text-center">
+                                        <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 border border-gray-100">
+                                            <Bell className="h-8 w-8 text-gray-300 opacity-50" />
+                                        </div>
+                                        <h3 className="text-sm font-bold text-gray-600">ยังไม่มีการแจ้งเตือนใหม่</h3>
+                                        <p className="text-[11px] text-gray-400 mt-1 font-medium italic">ทุกอย่างเรียบร้อยดี!</p>
                                     </div>
                                 )}
                             </div>
-                            {notifications.length > 0 && (
-                                <div className="p-2 border-t border-gray-100">
-                                    <Link 
-                                        href="/admin/payments" 
-                                        className="btn btn-ghost btn-sm w-full text-primary hover:bg-primary/5 rounded-lg normal-case font-bold"
-                                    >
-                                        ดูทั้งหมด
-                                    </Link>
-                                </div>
-                            )}
+
+                            {/* Footer */}
+                            <div className="p-3 bg-white/50 border-t border-gray-100 rounded-b-[24px] flex gap-2">
+                                <Link 
+                                    href="/admin/payments" 
+                                    className="flex-1 bg-gray-50 hover:bg-gray-100 text-gray-900 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-sm border border-gray-100 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
+                                >
+                                    <span>เช็ครายการ</span>
+                                </Link>
+                                <Link 
+                                    href="/admin/broadcast" 
+                                    className="flex-1 bg-primary hover:bg-red-600 text-white py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
+                                >
+                                    <Megaphone size={12} />
+                                    <span>ส่งประกาศ</span>
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 </div>

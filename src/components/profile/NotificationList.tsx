@@ -116,9 +116,11 @@ export const NotificationList = () => {
                                 : "border-primary/20 bg-primary/5 shadow-sm ring-1 ring-primary/5"
                         )}
                     >
-                        {/* Unread Indicator Dot */}
+                        {/* Unread Indicator Bubble */}
                         {!notif.read && (
-                            <div className="absolute top-4 right-4 w-2 h-2 bg-primary rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
+                            <div className="absolute top-4 right-4 bg-primary text-white text-[9px] font-black px-1.5 py-0.5 rounded-lg shadow-[0_2px_8px_rgba(239,68,68,0.3)] animate-in slide-in-from-right-2 duration-500 uppercase tracking-tighter">
+                                New
+                            </div>
                         )}
 
                         <div className="absolute left-3.5 top-4.5">

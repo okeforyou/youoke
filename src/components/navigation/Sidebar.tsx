@@ -232,13 +232,21 @@ export const Sidebar = memo(() => {
                                     <div className="relative">
                                         <img src={user.photoURL} className="w-10 h-10 rounded-full border border-gray-100 group-hover:ring-2 ring-primary/20 transition-all shadow-sm" alt="" />
                                         {mounted && unreadCount > 0 && (
-                                            <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-red-500 border-2 border-white rounded-full animate-pulse shadow-sm" />
+                                            <div className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-red-600 border-2 border-white rounded-full flex items-center justify-center z-10 shadow-[0_2px_4px_rgba(220,38,38,0.3)] animate-in zoom-in-50 duration-500">
+                                                <span className="text-[9px] font-black text-white leading-none">
+                                                    {unreadCount > 99 ? '99+' : unreadCount}
+                                                </span>
+                                            </div>
                                         )}
                                     </div>
                                     : <div className="relative">
                                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">{user.email?.[0]?.toUpperCase() || 'G'}</div>
                                         {mounted && unreadCount > 0 && (
-                                            <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-red-500 border-2 border-white rounded-full animate-pulse shadow-sm" />
+                                            <div className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-red-600 border-2 border-white rounded-full flex items-center justify-center z-10 shadow-[0_2px_4px_rgba(220,38,38,0.3)] animate-in zoom-in-50 duration-500">
+                                                <span className="text-[9px] font-black text-white leading-none">
+                                                    {unreadCount > 99 ? '99+' : unreadCount}
+                                                </span>
+                                            </div>
                                         )}
                                       </div>
                                 }
