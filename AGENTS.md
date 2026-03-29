@@ -1,4 +1,5 @@
 # YouOke Agent Protocol & Master Plan
+<!-- v3.0 Milestone Force Redeploy -->
 
 ### 1. 🎯 Master Plan Design (v3.0 - Mobile First & Flat)
 - **เรียบง่าย (Minimalist)**: ใช้สีพื้น (Solid Colors) และเส้นขอบ (Borders) แทนการใช้มิติความลึก
