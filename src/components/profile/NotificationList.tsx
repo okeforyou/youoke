@@ -22,26 +22,45 @@ export const NotificationList = () => {
     useEffect(() => {
         if (!user?.uid || !db) return;
 
-        const q = query(
+        // 🛡️ v3.7.8 Zero-Index Strategy: Split queries + JS Sort
+        // (Bypasses Firestore composite index dependency)
+        const qPersonal = query(
             collection(db, 'notifications'),
-            where('userId', 'in', [user.uid, 'all']),
-            orderBy("createdAt", "desc"),
+            where('userId', '==', user.uid),
             limit(30)
         );
 
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const list = snapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            })) as Notification[];
-            setNotifications(list);
-            setLoading(false);
-        }, (error) => {
-            console.error("Error fetching notifications:", error);
-            setLoading(false);
-        });
+        const qGlobal = query(
+            collection(db, 'notifications'),
+            where('userId', '==', 'all'),
+            limit(30)
+        );
 
-        return () => unsubscribe();
+        let pList: Notification[] = [];
+        let gList: Notification[] = [];
+
+        const updateList = () => {
+            const combined = [...pList, ...gList]
+                .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
+                .slice(0, 30);
+            setNotifications(combined);
+            setLoading(false);
+        };
+
+        const unsubPersonal = onSnapshot(qPersonal, (snapshot) => {
+            pList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Notification[];
+            updateList();
+        }, (err) => console.error("❌ [NotifList] Personal Query Fail:", err));
+
+        const unsubGlobal = onSnapshot(qGlobal, (snapshot) => {
+            gList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Notification[];
+            updateList();
+        }, (err) => console.error("❌ [NotifList] Global Query Fail:", err));
+
+        return () => {
+            unsubPersonal();
+            unsubGlobal();
+        };
     }, [user?.uid]);
 
     const markAllAsRead = async () => {

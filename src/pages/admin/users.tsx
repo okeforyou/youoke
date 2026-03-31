@@ -435,7 +435,7 @@ export default function AdminUsersPage() {
         if (!notificationUser || !msgTitle.trim() || !msgBody.trim()) return;
         setSendingMsg(true);
         try {
-            // 🛡️ v3.0.1 Unified: Admin NO longer writes to Firestore from client.
+            // 🛡️ v3.7.8 Unified: Admin NO longer writes to Firestore from client.
             // Let the API handle both Firestore entry AND Push for atomicity.
             const response = await fetch('/api/admin/send-broadcast', {
                 method: 'POST',

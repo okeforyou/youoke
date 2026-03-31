@@ -13,19 +13,36 @@ export const useNotificationCount = () => {
             return;
         }
 
-        const q = query(
+        // 🛡️ v3.7.8 Zero-Index Strategy: Split queries for 100% reliability
+        const qPersonal = query(
             collection(db, 'notifications'),
-            where('userId', 'in', [user.uid, 'all']),
+            where('userId', '==', user.uid),
             where('read', '==', false)
         );
 
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            setUnreadCount(snapshot.size);
-        }, (error) => {
-            console.error("❌ [useNotificationCount] Unified count error (likely index):", error);
+        const qGlobal = query(
+            collection(db, 'notifications'),
+            where('userId', '==', 'all'),
+            where('read', '==', false)
+        );
+
+        let pCount = 0;
+        let gCount = 0;
+
+        const unsubPersonal = onSnapshot(qPersonal, (snapshot) => {
+            pCount = snapshot.size;
+            setUnreadCount(pCount + gCount);
         });
 
-        return () => unsubscribe();
+        const unsubGlobal = onSnapshot(qGlobal, (snapshot) => {
+            gCount = snapshot.size;
+            setUnreadCount(pCount + gCount);
+        });
+
+        return () => {
+            unsubPersonal();
+            unsubGlobal();
+        };
     }, [user?.uid]);
 
     return unreadCount;

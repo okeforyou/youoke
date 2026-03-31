@@ -18,7 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // v3.0.1 Notification Fix - Reinforced Engine
+    // v3.7.8 Notification Fix - Reinforced Engine
     const tokens: string[] = [];
 
     // 1. Get tokens for target users or all users

@@ -16,7 +16,7 @@ const BroadcastPage = () => {
     setStatus(null);
 
     try {
-      // 🛡️ v3.0.1 Unified: Admin NO longer writes to Firestore from client.
+      // 🛡️ v3.7.8 Unified: Admin NO longer writes to Firestore from client.
       // Let the API handle both Firestore entry ('all') AND Topic Push.
       const res = await fetch('/api/admin/send-broadcast', {
         method: 'POST',
