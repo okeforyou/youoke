@@ -11,35 +11,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             throw new Error('Firestore not initialized');
         }
 
-        // 🛡️ v3.9.6 API-Driven News (Bypassing Firestore Permission Issues)
-        // Fetch from system_news or notifications with userId: 'all'
-        const snapshot = await adminFirestore.collection('system_news')
-            .where('active', '==', true)
-            .orderBy('createdAt', 'desc')
-            .limit(20)
-            .get();
+        // 🛡️ v3.9.7 Zero-Config News API (Bypass Index & Permissions)
+        // Fetch ALL and sort in memory to avoid "Missing Index Error"
+        const snapshot = await adminFirestore.collection('system_news').get();
 
-        const news = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-            createdAt: doc.data().createdAt?.toDate().toISOString() || new Date().toISOString()
-        }));
+        const news = snapshot.docs
+            .map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+                createdAt: doc.data().createdAt?.toDate().toISOString() || new Date(0).toISOString()
+            }))
+            .filter((item: any) => item.active !== false);
 
-        // Fallback or Merge with notifications/all if needed
+        // Fallback or Merge with notifications/all
         const fallbackSnapshot = await adminFirestore.collection('notifications')
             .where('userId', '==', 'all')
-            .orderBy('createdAt', 'desc')
-            .limit(10)
             .get();
 
         const fallbackNews = fallbackSnapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data(),
             type: 'system',
-            createdAt: doc.data().createdAt?.toDate().toISOString() || new Date().toISOString()
+            createdAt: doc.data().createdAt?.toDate().toISOString() || new Date(0).toISOString()
         }));
 
-        // Combine and Sort
+        // Combine and Sort in Memory (Bypassing Index requirements)
         const combined = [...news, ...fallbackNews]
             .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
             .slice(0, 30);
