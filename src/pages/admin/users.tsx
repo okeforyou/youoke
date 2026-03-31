@@ -480,45 +480,15 @@ export default function AdminUsersPage() {
     const handleSendBroadcast = async () => {
         if (!broadcastTitle.trim() || !broadcastBody.trim()) return;
         setSendingBroadcast(true);
-        if (addToast) addToast(`🌪️ กำลังเตรียมประกาศกลุ่มเป้าหมาย (${broadcastType})...`, "info");
+        if (addToast) addToast(`🌪️ กำลังเผยแพร่ประกาศข่าวสารระบบ...`, "info");
         
         try {
-            // Target specific UIDs for groups
-            let targetUids: string[] | undefined = undefined;
-            if (broadcastType !== 'all') {
-                targetUids = users.filter(u => {
-                    const mType = getMembershipType(u);
-                    // 🛡️ HUMAN-ONLY CHECK: Skip Guests (No Email) for all targeted types
-                    if (!u.email) return false;
-                    // Match type logic using SMART detection
-                    return mType === broadcastType;
-                }).map(u => u.uid);
-            } else {
-                // 🛡️ HUMAN-ONLY CHECK for 'ALL'
-                targetUids = users.filter(u => u.email).map(u => u.uid);
-            }
-
-            if (!db) return;
-
-            // 1. Direct Firestore Write (Reliable Client-side Persistence)
-            if (broadcastType === 'all') {
-                await addDoc(collection(db, "notifications"), {
-                    userId: 'all',
-                    title: broadcastTitle,
-                    body: broadcastBody,
-                    read: false,
-                    createdAt: serverTimestamp(),
-                    type: 'global_broadcast'
-                });
-            }
-
             const response = await fetch('/api/admin/send-broadcast', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     title: broadcastTitle,
-                    body: broadcastBody,
-                    targetUids: targetUids
+                    body: broadcastBody
                 })
             });
 
@@ -526,10 +496,8 @@ export default function AdminUsersPage() {
 
             setConfirmModal({
                 isOpen: true,
-                title: "ประกาศข้อความสำเร็จ",
-                message: targetUids 
-                    ? `ส่งประกาศหาผู้ใช้กลุ่มเป้าหมายจำนวน ${targetUids.length} รายการเรียบร้อยแล้ว`
-                    : "ส่งประกาศข่าวสารเข้าสู่ระบบ Broadcast หลักสำหรับทุกคนเรียบร้อยแล้วครับ",
+                title: "เผยแพร่ข่าวสารสำเร็จ",
+                message: "ระบบได้ทำการบันทึกประกาศลงใน 'กระดานข่าวสารระบบ' เรียบร้อยแล้ว สมาชิกทุกคนจะเห็นจุดแดงที่กะดิ่งทันทีครับ",
                 type: 'info',
                 onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
             });

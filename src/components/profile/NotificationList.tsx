@@ -47,17 +47,22 @@ export const NotificationList = () => {
             }, (err) => console.error("❌ [NotifList] Personal Query Fail:", err));
         }
 
-        // 📢 Public Announcements (Truly Global)
+        // 📢 Public Announcements (Truly Global Bulletin Board)
         const qGlobal = query(
-            collection(db, 'notifications'),
-            where('userId', '==', 'all'),
+            collection(db, 'system_news'),
+            where('active', '==', true),
+            orderBy('createdAt', 'desc'),
             limit(30)
         );
 
         const unsubGlobal = onSnapshot(qGlobal, (snapshot) => {
-            gList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Notification[];
+            gList = snapshot.docs.map(doc => ({ 
+                id: doc.id, 
+                ...doc.data(),
+                type: 'system' // Treat as system news
+            })) as Notification[];
             updateList();
-        }, (err) => console.error("❌ [NotifList] Global Query Fail:", err));
+        }, (err) => console.error("❌ [NotifList] Global Feed (system_news) Fail:", err));
 
         return () => {
             unsubPersonal();

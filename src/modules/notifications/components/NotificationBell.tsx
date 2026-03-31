@@ -42,18 +42,22 @@ export const NotificationBell: React.FC = () => {
       });
     }
 
-    // 📢 Public (Global)
+    // 📢 Public (Global Bulletin Board Feed)
     const qGlobal = query(
-      collection(db, 'notifications'),
-      where('userId', '==', 'all'),
+      collection(db, 'system_news'),
+      where('active', '==', true),
       orderBy('createdAt', 'desc'),
       limit(10)
     );
 
     const unsubGlobal = onSnapshot(qGlobal, (snapshot) => {
-      gList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as any }));
+      gList = snapshot.docs.map(doc => ({ 
+        id: doc.id, 
+        ...doc.data() as any,
+        type: 'system' // Force system icon for bulletin items
+      }));
       updateAll();
-    });
+    }, (err) => console.error("❌ [NotifBell] News Feed Fail:", err));
 
     return () => {
       unsubPersonal();

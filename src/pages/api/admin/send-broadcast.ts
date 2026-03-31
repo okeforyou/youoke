@@ -15,50 +15,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // 🛡️ v3.9.0 Pivot: In-App System News & Announcements via Firestore.
-    // (Bypasses external push notification friction)
-    let pushResult: any = { success: true, mode: 'in-app-news' };
-
-    // 🚀 Step 1: Persist to Firestore (Atomically from server-side)
     const db = adminFirestore;
-    if (targetUids && Array.isArray(targetUids) && targetUids.length > 0) {
-      // Batch writes (max 500)
-      const chunks = [];
-      for (let i = 0; i < targetUids.length; i += 500) {
-        chunks.push(targetUids.slice(i, i + 500));
-      }
 
-      for (const chunk of chunks) {
-        const batch = db.batch();
-        chunk.forEach((uid: string) => {
-          const notifRef = db.collection('notifications').doc();
-          batch.set(notifRef, {
-            userId: uid,
-            title,
-            body,
-            type: 'admin',
-            read: false,
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
-          });
-        });
-        await batch.commit();
-      }
-    } else if (!targetUids) {
-      // Single entry for 'all'
-      await db.collection('notifications').add({
-        userId: 'all',
-        title,
-        body,
-        type: 'broadcast',
-        read: false,
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      });
-    }
+    // 🚀 Step 1: Write to the Global Bulletin Feed (New Model v3.9.5)
+    // (This ensures every user sees the same feed, regardless of individual ID issues)
+    const newsRef = await db.collection('system_news').add({
+      title,
+      body,
+      type: 'public_announcement',
+      active: true,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // 🚀 Step 2: Backward Compatibility (Write to notifications/all)
+    // (Ensures the old NotificationBell still has a trigger point)
+    await db.collection('notifications').add({
+      userId: 'all',
+      newsId: newsRef.id,
+      title,
+      body,
+      type: 'broadcast',
+      read: false,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
 
     return res.status(200).json({ 
       success: true, 
-      pushResult,
-      deliveredTo: targetUids?.length || 'all' 
+      newsId: newsRef.id,
+      mode: 'bulletin-board'
     });
 
   } catch (error: any) {
