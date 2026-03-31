@@ -58,12 +58,12 @@ const BroadcastPage = () => {
                 <MegaphoneIcon className="w-6 h-6" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-slate-900">ส่งการแจ้งเตือน (Broadcast)</h1>
-                <p className="text-slate-500 text-sm">ส่งข้อความแจ้งเตือนไปยังผู้ใช้งานทุกคนผ่านระบบ Push Notification</p>
+                <h1 className="text-2xl font-bold text-slate-900">ประกาศข่าวสารระบบ</h1>
+                <p className="text-slate-500 text-sm">เขียนข่าวประกาศเพื่อให้แสดงผลในกระดิ่งของทุกคน (Public News)</p>
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+            <div className="bg-white rounded-2xl border border-slate-100">
               <form onSubmit={handleSend} className="p-6 space-y-6">
                 <div>
                   <label className="block text-xs font-bold text-slate-400 uppercase mb-2">หัวข้อประกาศ</label>
@@ -72,25 +72,25 @@ const BroadcastPage = () => {
                     required
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="เช่น: อัปเดตระบบใหม่ v2.12"
-                    className="w-full h-11 px-4 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 text-sm"
+                    placeholder="เช่น: แจ้งวันหยุดสงกรานต์ 🎤"
+                    className="w-full h-11 px-4 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 text-sm font-bold"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase mb-2">ข้อความประกาศ</label>
+                  <label className="block text-xs font-bold text-slate-400 uppercase mb-2">เนื้อหาข่าว</label>
                   <textarea
                     required
-                    rows={4}
+                    rows={6}
                     value={body}
                     onChange={(e) => setBody(e.target.value)}
-                    placeholder="ใส่รายละเอียดสำคัญที่ต้องการแจ้งให้ผู้ใช้ทราบ..."
-                    className="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 text-sm resize-none"
+                    placeholder="ใส่รายละเอียดที่ต้องการแจ้งให้สมาชิกทราบ..."
+                    className="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 text-sm leading-relaxed resize-none"
                   />
                 </div>
 
                 {status && (
-                  <div className={`p-4 rounded-xl text-sm font-medium ${
+                  <div className={`p-4 rounded-xl text-sm font-medium animate-in fade-in slide-in-from-top-2 ${
                     status.type === 'success' ? 'bg-green-50 text-green-600 border border-green-100' : 'bg-red-50 text-red-600 border border-red-100'
                   }`}>
                     {status.msg}
@@ -100,24 +100,24 @@ const BroadcastPage = () => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full h-12 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full h-12 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold transition-all disabled:opacity-50 active:scale-[0.98] shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
                 >
                   {isLoading ? (
                     <span className="loading loading-spinner loading-xs"></span>
                   ) : (
                     <PaperAirplaneIcon className="w-5 h-5 -rotate-45" />
                   )}
-                  ส่งประกาศเลย
+                  ส่งประกาศสาธารณะ
                 </button>
               </form>
             </div>
 
-            <div className="mt-8 p-6 bg-slate-100/50 rounded-2xl border border-dashed border-slate-200">
-              <h4 className="text-xs font-bold text-slate-500 uppercase mb-3">คำแนะนำ</h4>
-              <ul className="text-xs text-slate-400 space-y-2 list-disc pl-4">
-                <li>การส่ง Broadcast จะส่งไปยังผู้ใช้ทุกคนที่เปิดรับการแจ้งเตือน</li>
-                <li>ข้อความจะปรากฏเป็น Push Notification บนมือถือ/คอมพิวเตอร์ และขึ้นในเมนูแจ้งเตือนในแอป</li>
-                <li>ควรใช้หัวข้อที่สั้น กระชับ และน่าสนใจ</li>
+            <div className="mt-8 p-6 bg-blue-50/30 rounded-2xl border border-dashed border-blue-100">
+              <h4 className="text-[10px] font-bold text-blue-500 uppercase mb-3 tracking-widest">การทำงานของระบบ</h4>
+              <ul className="text-xs text-blue-600/70 space-y-2 list-disc pl-4 font-medium">
+                <li>เมื่อกดส่ง ข้อความจะขึ้นที่กระดิ่งของ **สมาชิกทุกคน** ทันที</li>
+                <li>User ไม่จำเป็นต้องอนุญาต Notification ก็สามารถเห็นจุดสีแดงที่กะดิ่งได้</li>
+                <li>ระบบจะบันทึกประวัติไว้ในหน้า "ข่าวสารและประกาศ" เพื่อให้อ่านย้อนหลังได้</li>
               </ul>
             </div>
           </div>

@@ -14,24 +14,51 @@ export const NotificationBell: React.FC = () => {
   const [notifications, setNotifications] = useState<any[]>([]);
 
   useEffect(() => {
-    if (!user?.uid || !db) return;
+    if (!db) return;
 
-    // Listen to real-time in-app notifications in Firestore
-    const q = query(
+    let unsubPersonal = () => {};
+    let pList: any[] = [];
+    let gList: any[] = [];
+
+    const updateAll = () => {
+      const combined = [...pList, ...gList]
+        .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
+        .slice(0, 10);
+      setNotifications(combined);
+      setUnreadCount(combined.filter(d => !d.read).length);
+    };
+
+    // 🛡️ Personal
+    if (user?.uid) {
+      const qPersonal = query(
+        collection(db, 'notifications'),
+        where('userId', '==', user.uid),
+        orderBy('createdAt', 'desc'),
+        limit(10)
+      );
+      unsubPersonal = onSnapshot(qPersonal, (snapshot) => {
+        pList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as any }));
+        updateAll();
+      });
+    }
+
+    // 📢 Public (Global)
+    const qGlobal = query(
       collection(db, 'notifications'),
-      where('userId', 'in', [user.uid, 'all']),
+      where('userId', '==', 'all'),
       orderBy('createdAt', 'desc'),
       limit(10)
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as any }));
-      setNotifications(docs);
-      // Simple unread count: assuming we have a 'read' field
-      setUnreadCount(docs.filter(d => !d.read).length);
+    const unsubGlobal = onSnapshot(qGlobal, (snapshot) => {
+      gList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as any }));
+      updateAll();
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubPersonal();
+      unsubGlobal();
+    };
   }, [user?.uid]);
 
   return (

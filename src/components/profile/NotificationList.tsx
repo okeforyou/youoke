@@ -20,22 +20,9 @@ export const NotificationList = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (!user?.uid || !db) return;
+        if (!db) return;
 
-        // 🛡️ v3.7.8 Zero-Index Strategy: Split queries + JS Sort
-        // (Bypasses Firestore composite index dependency)
-        const qPersonal = query(
-            collection(db, 'notifications'),
-            where('userId', '==', user.uid),
-            limit(30)
-        );
-
-        const qGlobal = query(
-            collection(db, 'notifications'),
-            where('userId', '==', 'all'),
-            limit(30)
-        );
-
+        let unsubPersonal = () => {};
         let pList: Notification[] = [];
         let gList: Notification[] = [];
 
@@ -47,10 +34,25 @@ export const NotificationList = () => {
             setLoading(false);
         };
 
-        const unsubPersonal = onSnapshot(qPersonal, (snapshot) => {
-            pList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Notification[];
-            updateList();
-        }, (err) => console.error("❌ [NotifList] Personal Query Fail:", err));
+        // 🛡️ Personal Announcements (Only if logged in)
+        if (user?.uid) {
+            const qPersonal = query(
+                collection(db, 'notifications'),
+                where('userId', '==', user.uid),
+                limit(30)
+            );
+            unsubPersonal = onSnapshot(qPersonal, (snapshot) => {
+                pList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Notification[];
+                updateList();
+            }, (err) => console.error("❌ [NotifList] Personal Query Fail:", err));
+        }
+
+        // 📢 Public Announcements (Truly Global)
+        const qGlobal = query(
+            collection(db, 'notifications'),
+            where('userId', '==', 'all'),
+            limit(30)
+        );
 
         const unsubGlobal = onSnapshot(qGlobal, (snapshot) => {
             gList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Notification[];
@@ -93,7 +95,6 @@ export const NotificationList = () => {
         }
     };
 
-    if (!user) return null;
 
     if (loading) return <div className="p-4 text-center"><span className="loading loading-dots loading-sm"></span></div>;
 
