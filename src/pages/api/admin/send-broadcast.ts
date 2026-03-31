@@ -4,71 +4,60 @@ import admin, { adminMessaging, adminFirestore } from '@/firebase-admin';
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  // Basic Admin Authorization (Should be enhanced with real session check)
-  // TODO: Add proper middleware for admin check
-
-  const { title, body, topic, targetUids } = req.body;
+  const { title, body, targetUids } = req.body;
 
   if (!title || !body) {
     return res.status(400).json({ error: 'Title and body are required' });
   }
 
-  if (!adminMessaging || !adminFirestore) {
+  if (!adminFirestore) {
     return res.status(500).json({ error: 'Firebase services not configured' });
   }
 
   try {
-    // v3.7.8 Notification Fix - Reinforced Engine
-    const tokens: string[] = [];
+    // 🛡️ v3.8.0 OneSignal Integration - Professional Engine
+    // (Bypasses Firebase FCM reliability issues)
+    const ONESIGNAL_APP_ID = "9f5f7f5c-2b39-4e2e-b76f-bba6b45e27e1";
+    const ONESIGNAL_REST_API_KEY = "os_v2_app_t5px6xblhfhc5n3pxotlixrh4ef4d5pknvzuwyfup3bvk2obx64kmsvqnoocesojx2wfdd72u7mhxo7j5w5loykibs5cwdm7wxmsyzi";
 
-    // 1. Get tokens for target users or all users
-    if (targetUids && Array.isArray(targetUids)) {
-      console.log(`📡 [API/Broadcast] Targeted Mode: ${targetUids.length} users`);
-      for (const uid of targetUids) {
-        const userDoc = await adminFirestore.collection('users').doc(uid).get();
-        const userData = userDoc.data();
-        // Support both old and new metadata paths
-        const userTokens = userData?.metadata?.fcmTokens || userData?.fcmTokens;
-        if (userTokens && Array.isArray(userTokens)) {
-          tokens.push(...userTokens);
-        }
-      }
+    let pushResult: any = null;
+
+    // 🚀 Step 1: Send via OneSignal API
+    const osPayload: any = {
+      app_id: ONESIGNAL_APP_ID,
+      headings: { "en": title },
+      contents: { "en": body },
+      url: "https://play.okeforyou.com/profile",
+    };
+
+    if (targetUids && Array.isArray(targetUids) && targetUids.length > 0) {
+      console.log(`📡 [OneSignal] Targeted Mode: ${targetUids.length} users`);
+      osPayload.include_external_user_ids = targetUids;
     } else {
-      console.log('📡 [API/Broadcast] Global Mode (Topic: all_users)');
+      console.log('📡 [OneSignal] Broadcast Mode: All users');
+      osPayload.included_segments = ["Subscribed Users"];
     }
 
-    // 2. Prepare FCM Delivery (Multicast for targeted, Topic for global)
-    let pushResult = null;
-    if (tokens.length > 0) {
-      const uniqueTokens = Array.from(new Set(tokens)).filter(Boolean);
-      console.log(`📡 [API/Broadcast] Sending to ${uniqueTokens.length} unique tokens`);
-      
-      const response = await adminMessaging.sendEachForMulticast({
-        tokens: uniqueTokens,
-        notification: { title, body },
-      });
-      pushResult = {
-        successCount: response.successCount,
-        failureCount: response.failureCount,
-        details: response.responses.map((r, idx) => r.success ? null : { 
-          token: uniqueTokens[idx].substring(0, 10) + '...', 
-          error: r.error 
-        }).filter(Boolean)
-      };
-      console.log('✅ FCM Multicast Result:', pushResult);
-    } else if (!targetUids) {
-      // Global Broadcast to everyone (using topic)
-      const message = {
-        notification: { title, body },
-        data: { type: 'global', time: new Date().toISOString() },
-        topic: 'all_users'
-      };
-      const response = await adminMessaging.send(message);
-      pushResult = { topic: 'all_users', messageId: response, success: true };
-      console.log('✅ FCM Topic Result:', pushResult);
-    }
+    const osResponse = await fetch("https://onesignal.com/api/v1/notifications", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Authorization": `Basic ${ONESIGNAL_REST_API_KEY}`
+      },
+      body: JSON.stringify(osPayload)
+    });
 
-    // 3. Persist to Firestore (Atomically from server-side)
+    const osData = await osResponse.json();
+    pushResult = {
+      success: osResponse.ok,
+      id: osData.id,
+      errors: osData.errors,
+      recipients: osData.recipients
+    };
+
+    console.log('✅ [OneSignal] API Response:', osData);
+
+    // 🚀 Step 2: Persist to Firestore (Atomically from server-side)
     const db = adminFirestore;
     if (targetUids && Array.isArray(targetUids) && targetUids.length > 0) {
       // Batch writes (max 500)
@@ -107,10 +96,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(200).json({ 
       success: true, 
       pushResult,
-      deliveredToUsers: targetUids?.length || 'all' 
+      deliveredTo: targetUids?.length || 'all' 
     });
+
   } catch (error: any) {
-    console.error('❌ [API/Broadcast] Critical Error:', error);
+    console.error('❌ [Broadcast API] Critical Error:', error);
     return res.status(500).json({ 
       success: false, 
       error: error.message || 'Internal Server Error' 

@@ -456,7 +456,7 @@ export default function AdminUsersPage() {
             setConfirmModal({
                 isOpen: true,
                 title: "ส่งข้อความสำเร็จ",
-                message: `ส่งการแจ้งเตือนไปยังคุณ ${notificationUser.displayName} เรียบร้อยแล้ว (FCM: ${result.pushResult?.successCount || 0}/${result.pushResult?.failureCount || 0})`,
+                message: `ส่งการแจ้งเตือนไปยังคุณ ${notificationUser.displayName} เรียบร้อยแล้ว (OneSignal: ${result.pushResult?.success ? 'Success' : 'Fail'})`,
                 type: 'info',
                 onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
             });

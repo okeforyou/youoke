@@ -61,7 +61,18 @@ function App({ Component, pageProps }: AppProps) {
     console.log(`[App] Current Path: ${router.pathname} | LoadCast: ${shouldLoadCast}`);
   }
 
-  // Initialize Auth Store (Optimistic)
+  // Initialize OneSignal External ID when user changes (v3.8.0)
+  const user = useAuthStore((state) => state.user);
+  useEffect(() => {
+    if (user?.uid && typeof window !== 'undefined' && (window as any).OneSignal) {
+        (window as any).OneSignal.push(function() {
+            (window as any).OneSignal.login(user.uid);
+            console.log('🔔 [OneSignal] Target ID synced:', user.uid);
+        });
+    }
+  }, [user?.uid]);
+
+  // Initializing Auth Store (Optimistic)
   const initializeAuth = useAuthStore((state) => state.initialize);
   useEffect(() => {
     const unsub = initializeAuth();
