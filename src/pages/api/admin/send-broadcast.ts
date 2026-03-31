@@ -15,49 +15,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // 🛡️ v3.8.0 OneSignal Integration - Professional Engine
-    // (Bypasses Firebase FCM reliability issues)
-    const ONESIGNAL_APP_ID = "9f5f7f5c-2b39-4e2e-b76f-bba6b45e27e1";
-    const ONESIGNAL_REST_API_KEY = "os_v2_app_t5px6xblhfhc5n3pxotlixrh4ef4d5pknvzuwyfup3bvk2obx64kmsvqnoocesojx2wfdd72u7mhxo7j5w5loykibs5cwdm7wxmsyzi";
+    // 🛡️ v3.9.0 Pivot: In-App System News & Announcements via Firestore.
+    // (Bypasses external push notification friction)
+    let pushResult: any = { success: true, mode: 'in-app-news' };
 
-    let pushResult: any = null;
-
-    // 🚀 Step 1: Send via OneSignal API
-    const osPayload: any = {
-      app_id: ONESIGNAL_APP_ID,
-      headings: { "en": title },
-      contents: { "en": body },
-      url: "https://play.okeforyou.com/profile",
-    };
-
-    if (targetUids && Array.isArray(targetUids) && targetUids.length > 0) {
-      console.log(`📡 [OneSignal] Targeted Mode: ${targetUids.length} users`);
-      osPayload.include_external_user_ids = targetUids;
-    } else {
-      console.log('📡 [OneSignal] Broadcast Mode: All users');
-      osPayload.included_segments = ["Subscribed Users"];
-    }
-
-    const osResponse = await fetch("https://onesignal.com/api/v1/notifications", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-        "Authorization": `Basic ${ONESIGNAL_REST_API_KEY}`
-      },
-      body: JSON.stringify(osPayload)
-    });
-
-    const osData = await osResponse.json();
-    pushResult = {
-      success: osResponse.ok,
-      id: osData.id,
-      errors: osData.errors,
-      recipients: osData.recipients
-    };
-
-    console.log('✅ [OneSignal] API Response:', osData);
-
-    // 🚀 Step 2: Persist to Firestore (Atomically from server-side)
+    // 🚀 Step 1: Persist to Firestore (Atomically from server-side)
     const db = adminFirestore;
     if (targetUids && Array.isArray(targetUids) && targetUids.length > 0) {
       // Batch writes (max 500)

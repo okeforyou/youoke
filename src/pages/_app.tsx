@@ -61,16 +61,6 @@ function App({ Component, pageProps }: AppProps) {
     console.log(`[App] Current Path: ${router.pathname} | LoadCast: ${shouldLoadCast}`);
   }
 
-  // Initialize OneSignal External ID when user changes (v3.8.0)
-  const user = useAuthStore((state) => state.user);
-  useEffect(() => {
-    if (user?.uid && typeof window !== 'undefined' && (window as any).OneSignal) {
-        (window as any).OneSignal.push(function() {
-            (window as any).OneSignal.login(user.uid);
-            console.log('🔔 [OneSignal] Target ID synced:', user.uid);
-        });
-    }
-  }, [user?.uid]);
 
   // Initializing Auth Store (Optimistic)
   const initializeAuth = useAuthStore((state) => state.initialize);
@@ -149,45 +139,6 @@ function App({ Component, pageProps }: AppProps) {
                     <Script
                       src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"
                       strategy="afterInteractive"
-                    />
-                    {/* OneSignal SDK (v3.8.0) */}
-                    <Script
-                        src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
-                        strategy="afterInteractive"
-                        onLoad={() => {
-                            const _window = window as any;
-                            if (_window.OneSignal) {
-                                _window.OneSignal.push(function() {
-                                    _window.OneSignal.init({
-                                        appId: "9f5f7f5c-2b39-4e2e-b76f-bba6b45e27e1",
-                                        allowLocalhostAsSecureOrigin: true,
-                                        notifyButton: {
-                                            enable: true,
-                                            position: 'bottom-right',
-                                            size: 'medium',
-                                            theme: 'default',
-                                            displayPredicate: () => {
-                                                return _window.OneSignal.Notifications.permission !== 'granted';
-                                            },
-                                            text: {
-                                                'tip.state.unsubscribed': 'คลิกเพื่อรับการแจ้งเตือน',
-                                                'tip.state.subscribed': 'คุณกำลังรับการแจ้งเตือนอยู่',
-                                                'tip.state.blocked': 'คุณบล็อกการแจ้งเตือนไว้',
-                                                'message.prenotify': 'คลิกเพื่อรับการแจ้งเตือนจาก YouOke',
-                                                'message.action.subscribed': 'ขอบคุณที่ติดตามเรา!',
-                                                'message.action.resubscribed': 'ดีใจที่เจอกันอีกครั้ง!',
-                                                'message.action.unsubscribed': 'คุณจะไม่ได้ข่าวสารจากเราเพิ่มแล้วนะ',
-                                                'dialog.main.title': 'จัดการการแจ้งเตือน',
-                                                'dialog.main.button.subscribe': 'จดทะเบียน',
-                                                'dialog.main.button.unsubscribe': 'ยกเลิก',
-                                                'dialog.blocked.title': 'ปลดบล็อกการแจ้งเตือน',
-                                                'dialog.blocked.message': 'ทำตามคำแนะนำเพื่อรับการแจ้งเตือน'
-                                            }
-                                        }
-                                    });
-                                });
-                            }
-                        }}
                     />
                     <FirebaseCastProvider>
                       <YouTubeCastProvider>

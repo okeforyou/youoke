@@ -12,8 +12,7 @@ import {
     MusicalNoteIcon,
     PlayCircleIcon,
     ServerIcon,
-    ChatBubbleLeftRightIcon,
-    BellAlertIcon
+    ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline';
 import { useUIStore } from '../../stores/useUIStore';
 import { useSystem } from '../../core/container/SystemContext'; // DI Container
@@ -276,33 +275,14 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                                             </div>
                                                      </div>
 
-                                                    {/* Notifications */}
+                                                    {/* System News Feed */}
                                                     <div>
                                                         <div className="flex items-center justify-between px-2 mb-3">
-                                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">การแจ้งเตือน</p>
-                                                            <Link href="/profile/notifications" onClick={onClose} className="text-[10px] font-bold text-primary hover:underline uppercase tracking-tight">ดูทั้งหมด</Link>
+                                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">ข่าวสารและประกาศ</p>
+                                                            <Link href="/profile/notifications" onClick={onClose} className="text-[10px] font-bold text-primary hover:underline uppercase tracking-tight">อ่านทั้งหมด</Link>
                                                         </div>
-                                                        <div className="rounded-2xl border border-gray-100 bg-gray-50/30 p-4 space-y-4">
-                                                            <button
-                                                                onClick={() => {
-                                                                    const _window = window as any;
-                                                                    if (_window.OneSignal) {
-                                                                        _window.OneSignal.Notifications.requestPermission();
-                                                                    }
-                                                                }}
-                                                                className="w-full flex items-center gap-3 p-3 rounded-xl bg-primary/5 hover:bg-primary/10 transition-colors text-left group border border-primary/20 shadow-sm animate-pulse-slow"
-                                                            >
-                                                                <div className="p-2 bg-primary/10 rounded-lg text-primary transition-colors group-hover:scale-110 duration-200">
-                                                                    <BellAlertIcon className="w-5 h-5" />
-                                                                </div>
-                                                                <div className="flex flex-col">
-                                                                    <span className="text-sm font-bold text-primary">รับแจ้งเตือน (พุช)</span>
-                                                                    <span className="text-[10px] text-primary/60">คลิกเพื่อเปิดปุ่มอนุญาตจากระบบ</span>
-                                                                </div>
-                                                            </button>
-                                                            <div className="border-t border-gray-100/50 pt-2">
-                                                                <NotificationList />
-                                                            </div>
+                                                        <div className="rounded-2xl border border-gray-100 bg-gray-50/30 p-4">
+                                                            <NotificationList />
                                                         </div>
                                                     </div>
 

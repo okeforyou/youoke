@@ -42,7 +42,7 @@ export const NotificationBell: React.FC = () => {
       >
         <BellIcon className="w-6 h-6" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-600 border-2 border-white rounded-full flex items-center justify-center z-10 shadow-[0_2px_4px_rgba(220,38,38,0.3)] animate-in zoom-in-50 duration-500">
+          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-600 border border-white rounded-full flex items-center justify-center z-10 animate-in zoom-in-50 duration-500">
             <span className="text-[10px] font-black text-white leading-none">
               {unreadCount > 9 ? '9+' : unreadCount}
             </span>
@@ -57,9 +57,9 @@ export const NotificationBell: React.FC = () => {
             className="fixed inset-0 z-30" 
             onClick={() => setIsOpen(false)} 
           />
-          <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-slate-100 z-40 overflow-hidden transform origin-top-right animate-in fade-in zoom-in-95">
+          <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl border border-slate-100 z-40 overflow-hidden transform origin-top-right animate-in fade-in zoom-in-95">
             <div className="p-4 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">การแจ้งเตือน</h3>
+              <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ข่าวสารและประกาศ</h3>
               {unreadCount > 0 && (
                 <button className="text-[10px] font-bold text-primary hover:underline">ทำเป็นอ่านแล้วทั้งหมด</button>
               )}
@@ -85,13 +85,13 @@ export const NotificationBell: React.FC = () => {
               ) : (
                 <div className="p-12 text-center">
                   <BellIcon className="w-8 h-8 text-slate-200 mx-auto mb-3" />
-                  <p className="text-xs text-slate-400 font-medium">ไม่มีการแจ้งเตือนในขณะนี้</p>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">ไม่มีประกาศใหม่</p>
                 </div>
               )}
             </div>
 
             <div className="p-3 bg-slate-50 text-center border-t border-slate-50">
-              <button className="text-[11px] font-bold text-slate-500 hover:text-slate-900">ดูทั้งหมด</button>
+              <button className="text-[10px] font-bold text-slate-400 hover:text-slate-900 uppercase tracking-tight">อ่านข่าวทั้งหมด</button>
             </div>
           </div>
         </>
