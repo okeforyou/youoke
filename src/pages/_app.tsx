@@ -139,6 +139,22 @@ function App({ Component, pageProps }: AppProps) {
                       src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"
                       strategy="afterInteractive"
                     />
+                    {/* OneSignal SDK (v3.8.0) */}
+                    <Script
+                        src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
+                        strategy="afterInteractive"
+                        onLoad={() => {
+                            const _window = window as any;
+                            if (_window.OneSignal) {
+                                _window.OneSignal.push(function() {
+                                    _window.OneSignal.init({
+                                        appId: "9f5f7f5c-2b39-4e2e-b76f-bba6b45e27e1",
+                                        allowLocalhostAsSecureOrigin: true,
+                                    });
+                                });
+                            }
+                        }}
+                    />
                     <FirebaseCastProvider>
                       <YouTubeCastProvider>
                         <AdsProvider>

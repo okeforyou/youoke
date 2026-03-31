@@ -324,6 +324,16 @@ export const Sidebar = memo(() => {
                         </Link>
                     )
                 )}
+
+                {/* Version Info (v3.8.0 Standard) */}
+                <div className={clsx(
+                    "mt-4 flex items-center transition-all duration-300 border-t border-gray-50 pt-4",
+                    isSidebarCollapsed ? "justify-center" : "px-3"
+                )}>
+                    <span className="text-[9px] font-black tracking-widest text-gray-300 uppercase">
+                        {isSidebarCollapsed ? '3.8.0' : 'Version v3.8.0'}
+                    </span>
+                </div>
             </div>
         </aside>
     );
