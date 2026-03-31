@@ -763,7 +763,7 @@ export default function AdminUsersPage() {
                         className="flex items-center gap-1.5 px-4 py-1.5 bg-indigo-600 border border-indigo-500 rounded-xl font-black text-[11px] text-white hover:bg-indigo-700 hover:scale-105 active:scale-95 transition-all"
                     >
                         <Megaphone className="w-3.5 h-3.5 fill-white/20" />
-                        ประกาศกลุ่มเป้าหมาย
+                        ประกาศข่าวสาร
                     </button>
                     <button 
                         onClick={handleCleanupGuests} 
@@ -1224,47 +1224,20 @@ export default function AdminUsersPage() {
                                     <Megaphone className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-black tracking-tight">ประกาศข่าวสารกลุ่ม</h3>
-                                    <p className="text-sm text-indigo-100 opacity-80 font-medium">ส่งแจ้งเตือน Push ถึงสมาชิกในระบบ</p>
+                                    <h3 className="text-xl font-black tracking-tight">ประกาศข่าวสารสาธารณะ</h3>
+                                    <p className="text-sm text-indigo-100 opacity-80 font-medium">แจ้งข่าวสารให้สมาชิกทุกคนทราบผ่านแอป</p>
                                 </div>
                             </div>
                         </div>
 
                         <div className="p-8 space-y-6">
-                            <div className="grid grid-cols-3 bg-slate-50 p-1.5 rounded-2xl gap-1">
-                                {[
-                                    { id: 'all', label: 'ทุกคน', icon: Users },
-                                    { id: 'lifetime', label: 'ตลอดชีพ', icon: Crown },
-                                    { id: 'yearly', label: 'รายปี', icon: Star },
-                                    { id: 'monthly', label: 'รายเดือน', icon: Zap },
-                                    { id: 'pro', label: 'รายวัน', icon: Zap },
-                                    { id: 'free', label: 'ทั่วไป', icon: UserCog }
-                                ].map((g) => (
-                                    <button
-                                        key={g.id}
-                                        onClick={() => setBroadcastType(g.id as any)}
-                                        className={cn(
-                                            "flex items-center justify-center gap-2 py-2.5 rounded-xl font-bold text-[10px] transition-all",
-                                            broadcastType === g.id 
-                                                ? "bg-white text-indigo-600 ring-1 ring-indigo-50" 
-                                                : "text-slate-400 hover:text-slate-600"
-                                        )}
-                                    >
-                                        <g.icon className="w-3 h-3" />
-                                        {g.label}
-                                    </button>
-                                ))}
-                            </div>
-
-                            {/* Target Summary Badge */}
-                            <div className="flex justify-center -mt-2">
-                                <span className="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-indigo-100">
-                                    เป้าหมาย: {
-                                        broadcastType === 'all' 
-                                            ? users.filter(u => u.email).length 
-                                            : users.filter(u => u.email && getMembershipType(u) === broadcastType).length
-                                    } รายการ
-                                </span>
+                            {/* Simplified: No group selection, always broadcasts to all */}
+                            <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-2xl flex items-center gap-3">
+                                <Users2 className="w-5 h-5 text-indigo-600" />
+                                <div>
+                                    <p className="text-xs font-black text-indigo-900 leading-none">ส่งให้สมาชิกทุกคน</p>
+                                    <p className="text-[10px] text-indigo-600 font-medium mt-1">ประกาศนี้จะขึ้นที่กะดิ่งของทุกคนทันที</p>
+                                </div>
                             </div>
 
                             <div className="space-y-4">
@@ -1274,16 +1247,16 @@ export default function AdminUsersPage() {
                                         className="input input-bordered bg-slate-50 border-slate-100 rounded-2xl font-bold focus:ring-4 focus:ring-indigo-100"
                                         value={broadcastTitle}
                                         onChange={e => setBroadcastTitle(e.target.value)}
-                                        placeholder="เช่น: อัปเดตเพลงใหม่วันนี้..."
+                                        placeholder="เช่น: แจ้งโบนัส/อัปเดตเพลงใหม่ 🎤"
                                     />
                                 </div>
                                 <div className="form-control">
-                                    <label className="label text-[11px] font-black text-slate-400 uppercase tracking-widest">เนื้อหา</label>
+                                    <label className="label text-[11px] font-black text-slate-400 uppercase tracking-widest">เนื้อหาข่าว</label>
                                     <textarea
-                                        className="textarea textarea-bordered bg-slate-50 border-slate-100 rounded-2xl h-32 font-medium focus:ring-4 focus:ring-indigo-100 resize-none"
+                                        className="textarea textarea-bordered bg-slate-50 border-slate-100 rounded-2xl h-40 font-medium focus:ring-4 focus:ring-indigo-100 resize-none leading-relaxed"
                                         value={broadcastBody}
                                         onChange={e => setBroadcastBody(e.target.value)}
-                                        placeholder="ระบุข้อความประกาศ..."
+                                        placeholder="ระบุข้อความประกาศที่ต้องการแจ้งสมาชิก..."
                                     ></textarea>
                                 </div>
                             </div>
