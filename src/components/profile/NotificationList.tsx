@@ -28,13 +28,17 @@ export const NotificationList = () => {
 
         const updateList = () => {
             const combined = [...pList, ...gList]
-                .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
+                .sort((a, b) => {
+                    const timeA = a.createdAt?.seconds || new Date(a.createdAt as any).getTime() / 1000 || 0;
+                    const timeB = b.createdAt?.seconds || new Date(b.createdAt as any).getTime() / 1000 || 0;
+                    return timeB - timeA;
+                })
                 .slice(0, 30);
             setNotifications(combined);
             setLoading(false);
         };
 
-        // 🛡️ Personal Announcements (Only if logged in)
+        // 🛡️ Personal Announcements (Private - Firestore)
         if (user?.uid) {
             const qPersonal = query(
                 collection(db, 'notifications'),
@@ -44,29 +48,31 @@ export const NotificationList = () => {
             unsubPersonal = onSnapshot(qPersonal, (snapshot) => {
                 pList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Notification[];
                 updateList();
-            }, (err) => console.error("❌ [NotifList] Personal Query Fail:", err));
+            }, (err) => console.error("❌ [NotifList] Personal Query Fail (Rules?):", err));
         }
 
-        // 📢 Public Announcements (Truly Global Bulletin Board)
-        const qGlobal = query(
-            collection(db, 'system_news'),
-            where('active', '==', true),
-            orderBy('createdAt', 'desc'),
-            limit(30)
-        );
+        // 📢 Public Announcements (Truly Global - API BRIDGE)
+        // (Bypasses Firestore "Insufficient Permissions" for unauthenticated or restricted users)
+        const fetchGlobalNews = async () => {
+            try {
+                const res = await fetch('/api/public/news');
+                if (!res.ok) throw new Error('API Fail');
+                const data = await res.json();
+                gList = data.map((item: any) => ({
+                    ...item,
+                    type: item.type || 'system',
+                    createdAt: item.createdAt // Date string from API
+                }));
+                updateList();
+            } catch (err) {
+                console.error("❌ [NotifList] Global API Bridge Fail:", err);
+            }
+        };
 
-        const unsubGlobal = onSnapshot(qGlobal, (snapshot) => {
-            gList = snapshot.docs.map(doc => ({ 
-                id: doc.id, 
-                ...doc.data(),
-                type: 'system' // Treat as system news
-            })) as Notification[];
-            updateList();
-        }, (err) => console.error("❌ [NotifList] Global Feed (system_news) Fail:", err));
+        fetchGlobalNews();
 
         return () => {
             unsubPersonal();
-            unsubGlobal();
         };
     }, [user?.uid]);
 

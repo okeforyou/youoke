@@ -22,13 +22,17 @@ export const NotificationBell: React.FC = () => {
 
     const updateAll = () => {
       const combined = [...pList, ...gList]
-        .sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0))
+        .sort((a, b) => {
+          const timeA = a.createdAt?.seconds || (typeof a.createdAt === 'string' ? new Date(a.createdAt).getTime() / 1000 : 0);
+          const timeB = b.createdAt?.seconds || (typeof b.createdAt === 'string' ? new Date(b.createdAt).getTime() / 1000 : 0);
+          return timeB - timeA;
+        })
         .slice(0, 10);
       setNotifications(combined);
       setUnreadCount(combined.filter(d => !d.read).length);
     };
 
-    // 🛡️ Personal
+    // 🛡️ Personal (Firestore)
     if (user?.uid) {
       const qPersonal = query(
         collection(db, 'notifications'),
@@ -39,29 +43,30 @@ export const NotificationBell: React.FC = () => {
       unsubPersonal = onSnapshot(qPersonal, (snapshot) => {
         pList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as any }));
         updateAll();
-      });
+      }, (err) => console.error("❌ [NotifBell] Personal Fail:", err));
     }
 
-    // 📢 Public (Global Bulletin Board Feed)
-    const qGlobal = query(
-      collection(db, 'system_news'),
-      where('active', '==', true),
-      orderBy('createdAt', 'desc'),
-      limit(10)
-    );
+    // 📢 Public (API Bridge - NO PERMISSION ISSUES)
+    const fetchGlobal = async () => {
+      try {
+        const res = await fetch('/api/public/news');
+        if (!res.ok) throw new Error('API Fail');
+        const data = await res.json();
+        gList = data.map((item: any) => ({
+          ...item,
+          type: 'system',
+          createdAt: item.createdAt // Date string
+        }));
+        updateAll();
+      } catch (err) {
+        console.error("❌ [NotifBell] News API Fail:", err);
+      }
+    };
 
-    const unsubGlobal = onSnapshot(qGlobal, (snapshot) => {
-      gList = snapshot.docs.map(doc => ({ 
-        id: doc.id, 
-        ...doc.data() as any,
-        type: 'system' // Force system icon for bulletin items
-      }));
-      updateAll();
-    }, (err) => console.error("❌ [NotifBell] News Feed Fail:", err));
+    fetchGlobal();
 
     return () => {
       unsubPersonal();
-      unsubGlobal();
     };
   }, [user?.uid]);
 
