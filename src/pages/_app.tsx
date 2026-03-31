@@ -161,6 +161,29 @@ function App({ Component, pageProps }: AppProps) {
                                     _window.OneSignal.init({
                                         appId: "9f5f7f5c-2b39-4e2e-b76f-bba6b45e27e1",
                                         allowLocalhostAsSecureOrigin: true,
+                                        notifyButton: {
+                                            enable: true,
+                                            position: 'bottom-right',
+                                            size: 'medium',
+                                            theme: 'default',
+                                            displayPredicate: () => {
+                                                return _window.OneSignal.Notifications.permission !== 'granted';
+                                            },
+                                            text: {
+                                                'tip.state.unsubscribed': 'คลิกเพื่อรับการแจ้งเตือน',
+                                                'tip.state.subscribed': 'คุณกำลังรับการแจ้งเตือนอยู่',
+                                                'tip.state.blocked': 'คุณบล็อกการแจ้งเตือนไว้',
+                                                'message.prenotify': 'คลิกเพื่อรับการแจ้งเตือนจาก YouOke',
+                                                'message.action.subscribed': 'ขอบคุณที่ติดตามเรา!',
+                                                'message.action.resubscribed': 'ดีใจที่เจอกันอีกครั้ง!',
+                                                'message.action.unsubscribed': 'คุณจะไม่ได้ข่าวสารจากเราเพิ่มแล้วนะ',
+                                                'dialog.main.title': 'จัดการการแจ้งเตือน',
+                                                'dialog.main.button.subscribe': 'จดทะเบียน',
+                                                'dialog.main.button.unsubscribe': 'ยกเลิก',
+                                                'dialog.blocked.title': 'ปลดบล็อกการแจ้งเตือน',
+                                                'dialog.blocked.message': 'ทำตามคำแนะนำเพื่อรับการแจ้งเตือน'
+                                            }
+                                        }
                                     });
                                 });
                             }
