@@ -37,7 +37,6 @@ export const NotificationBell: React.FC = () => {
       const qPersonal = query(
         collection(db, 'notifications'),
         where('userId', '==', user.uid),
-        orderBy('createdAt', 'desc'),
         limit(10)
       );
       unsubPersonal = onSnapshot(qPersonal, (snapshot) => {
