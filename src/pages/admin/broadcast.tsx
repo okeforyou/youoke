@@ -16,36 +16,28 @@ const BroadcastPage = () => {
     setStatus(null);
 
     try {
-      // 1. Persist to Firestore (Client-side)
-      const { collection, addDoc, serverTimestamp } = await import('firebase/firestore');
-      const { db } = await import('@/firebase');
-      
-      if (db) {
-        await addDoc(collection(db, "notifications"), {
-          userId: 'all',
-          title,
-          body,
-          read: false,
-          createdAt: serverTimestamp(),
-          type: 'global_broadcast'
-        });
-      }
-
+      // 🛡️ v3.0.1 Unified: Admin NO longer writes to Firestore from client.
+      // Let the API handle both Firestore entry ('all') AND Topic Push.
       const res = await fetch('/api/admin/send-broadcast', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, body }),
       });
 
+      const data = await res.json();
+
       if (res.ok) {
-        setStatus({ type: 'success', msg: 'ส่งการแจ้งเตือนสำเร็จ!' });
+        setStatus({ 
+          type: 'success', 
+          msg: `ส่งการแจ้งเตือนสำเร็จ! (Topic: ${data.pushResult?.topic || 'all_users'})` 
+        });
         setTitle('');
         setBody('');
       } else {
-        const data = await res.json();
         throw new Error(data.error || 'Failed to send');
       }
     } catch (err: any) {
+      console.error('Broadcast Error:', err);
       setStatus({ type: 'error', msg: err.message });
     } finally {
       setIsLoading(false);

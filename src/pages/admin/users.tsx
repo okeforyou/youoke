@@ -435,32 +435,28 @@ export default function AdminUsersPage() {
         if (!notificationUser || !msgTitle.trim() || !msgBody.trim()) return;
         setSendingMsg(true);
         try {
-            if (!db) return;
-            // 1. Direct Firestore Write (Reliable Client-side Persistence)
-            await addDoc(collection(db, "notifications"), {
-                userId: notificationUser.uid,
-                title: msgTitle,
-                body: msgBody,
-                read: false,
-                createdAt: serverTimestamp(),
-                type: 'admin_broadcast'
+            // 🛡️ v3.0.1 Unified: Admin NO longer writes to Firestore from client.
+            // Let the API handle both Firestore entry AND Push for atomicity.
+            const response = await fetch('/api/admin/send-broadcast', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    targetUids: [notificationUser.uid],
+                    title: msgTitle,
+                    body: msgBody
+                })
             });
 
-            // 2. Trigger Push Notif via API (Background/Optional)
-            fetch('/api/admin/send-broadcast', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    title: msgTitle,
-                    body: msgBody,
-                    targetUids: [notificationUser.uid]
-                })
-            }).catch(e => console.error("Push API error:", e));
+            const result = await response.json();
+
+            if (!result.success) throw new Error(result.error || 'API Error');
 
             setConfirmModal({
                 isOpen: true,
                 title: "ส่งข้อความสำเร็จ",
-                message: `ส่งการแจ้งเตือนไปยังคุณ ${notificationUser.displayName} เรียบร้อยแล้ว (ระบบส่งรหัสซิงค์ลงมือถือและหน้าจอ TV ให้ด้วย)`,
+                message: `ส่งการแจ้งเตือนไปยังคุณ ${notificationUser.displayName} เรียบร้อยแล้ว (FCM: ${result.pushResult?.successCount || 0}/${result.pushResult?.failureCount || 0})`,
                 type: 'info',
                 onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
             });

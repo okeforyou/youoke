@@ -14,14 +14,15 @@ export const useNotificationCount = () => {
         }
 
         const q = query(
-            collection(db, `users/${user.uid}/notifications`),
-            where("read", "==", false)
+            collection(db, 'notifications'),
+            where('userId', 'in', [user.uid, 'all']),
+            where('read', '==', false)
         );
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
             setUnreadCount(snapshot.size);
         }, (error) => {
-            console.error("Error listening to unread notifications:", error);
+            console.error("❌ [useNotificationCount] Unified count error (likely index):", error);
         });
 
         return () => unsubscribe();
