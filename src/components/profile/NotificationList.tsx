@@ -82,11 +82,15 @@ export const NotificationList = () => {
         try {
             const { writeBatch, doc } = await import("firebase/firestore");
             const batch = writeBatch(db);
-            const unread = notifications.filter(n => !n.read);
+            
+            // 🛡️ v4.0.0 Billboard Fix: Only mark PRIVATE notifications as read.
+            // NEVER update the 'read' status of Global News (userId: 'all') in the central DB,
+            // because doing so marks it as read for EVERYONE else too.
+            const unreadPrivate = notifications.filter(n => !n.read && (n as any).userId !== 'all' && n.type !== 'system');
 
-            if (unread.length === 0) return;
+            if (unreadPrivate.length === 0) return;
 
-            unread.forEach(notif => {
+            unreadPrivate.forEach(notif => {
                 const docRef = doc(db!, 'notifications', notif.id);
                 batch.update(docRef, { read: true });
             });
@@ -98,10 +102,12 @@ export const NotificationList = () => {
     };
 
     const getIcon = (type: string) => {
+        if (type === 'system' || type === 'broadcast' || type === 'global_broadcast') 
+            return <Bell className="w-5 h-5 text-primary" />;
+        
         switch (type) {
             case 'success': return <CheckCircle className="w-5 h-5 text-green-500" />;
             case 'warning': return <AlertTriangle className="w-5 h-5 text-amber-500" />;
-            case 'system': return <Bell className="w-5 h-5 text-primary" />;
             default: return <Info className="w-5 h-5 text-blue-500" />;
         }
     };
@@ -118,15 +124,16 @@ export const NotificationList = () => {
         );
     }
 
-    const unreadCount = notifications.filter(n => !n.read).length;
+    // 🛡️ v4.0.0: Global/System news are always considered "Active" news
+    const unreadCount = notifications.filter(n => !n.read || n.type === 'system' || (n as any).userId === 'all').length;
 
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between mb-2">
                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                    {unreadCount > 0 ? `มี ${unreadCount} รายการที่ยังไม่อ่าน` : 'อ่านครบทั้งหมดแล้ว'}
+                    {unreadCount > 0 ? `ประกาศใหม่ (${unreadCount})` : 'อ่านครบทั้งหมดแล้ว'}
                 </span>
-                {unreadCount > 0 && (
+                {unreadCount > 0 && notifications.some(n => !n.read && (n as any).userId !== 'all') && (
                     <button
                         onClick={markAllAsRead}
                         className="text-[10px] font-bold text-primary hover:underline uppercase tracking-tighter"
@@ -137,42 +144,53 @@ export const NotificationList = () => {
             </div>
 
             <div className="space-y-3">
-                {notifications.map((notif) => (
-                    <div
-                        key={notif.id}
-                        className={cn(
-                            "relative pl-11 pr-4 py-4 rounded-2xl border transition-all duration-300",
-                            notif.read
-                                ? "border-border bg-card opacity-80"
-                                : "border-primary/20 bg-primary/5 shadow-sm ring-1 ring-primary/5"
-                        )}
-                    >
-                        {/* Unread Indicator Bubble */}
-                        {!notif.read && (
-                            <div className="absolute top-4 right-4 bg-primary text-white text-[9px] font-black px-1.5 py-0.5 rounded-lg shadow-[0_2px_8px_rgba(239,68,68,0.3)] animate-in slide-in-from-right-2 duration-500 uppercase tracking-tighter">
-                                New
-                            </div>
-                        )}
+                {notifications.map((notif) => {
+                    // 🛡️ v4.0.0 Logic: System news is ALWAYS treated as "Important/Highlighted" 
+                    // until we implement client-side local-storage read tracking.
+                    const isAlwaysUnread = notif.type === 'system' || (notif as any).userId === 'all';
+                    const isNotificationRead = notif.read && !isAlwaysUnread;
 
-                        <div className="absolute left-3.5 top-4.5">
-                            {getIcon(notif.type)}
-                        </div>
-                        <div>
-                            <h4 className={cn("font-bold text-sm", notif.read ? "text-foreground/80" : "text-foreground")}>
-                                {notif.title}
-                            </h4>
-                            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{notif.body}</p>
-                            <div className="flex items-center gap-1.5 mt-3 text-[10px] font-medium text-muted-foreground/60">
-                                <Clock className="w-3 h-3" />
-                                {notif.createdAt?.seconds
-                                    ? new Date(notif.createdAt.seconds * 1000).toLocaleString('th-TH', {
-                                        month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-                                    })
-                                    : 'เมื่อสักครู่'}
+                    return (
+                        <div
+                            key={notif.id}
+                            className={cn(
+                                "relative pl-11 pr-4 py-4 rounded-2xl border transition-all duration-300",
+                                isNotificationRead
+                                    ? "border-border bg-card opacity-80"
+                                    : "border-primary/20 bg-primary/5 shadow-sm ring-1 ring-primary/5"
+                            )}
+                        >
+                            {/* Unread Indicator Bubble */}
+                            {!isNotificationRead && (
+                                <div className="absolute top-4 right-4 bg-primary text-white text-[9px] font-black px-1.5 py-0.5 rounded-lg shadow-[0_2px_8px_rgba(239,68,68,0.3)] animate-in slide-in-from-right-2 duration-500 uppercase tracking-tighter">
+                                    New
+                                </div>
+                            )}
+
+                            <div className="absolute left-3.5 top-4.5">
+                                {getIcon(notif.type)}
+                            </div>
+                            <div>
+                                <h4 className={cn("font-bold text-sm", isNotificationRead ? "text-foreground/80" : "text-foreground")}>
+                                    {notif.title}
+                                </h4>
+                                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{notif.body}</p>
+                                <div className="flex items-center gap-1.5 mt-3 text-[10px] font-medium text-muted-foreground/60">
+                                    <Clock className="w-3 h-3" />
+                                    {notif.createdAt && typeof (notif.createdAt as any).seconds === 'number'
+                                        ? new Date((notif.createdAt as any).seconds * 1000).toLocaleString('th-TH', {
+                                            month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                                        })
+                                        : typeof notif.createdAt === 'string' 
+                                            ? new Date(notif.createdAt).toLocaleString('th-TH', {
+                                                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                                            })
+                                            : 'เมื่อสักครู่'}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </div>
     );

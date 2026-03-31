@@ -17,21 +17,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const db = adminFirestore;
 
-    // 🚀 Step 1: Write to the Global Bulletin Feed (New Model v3.9.5)
-    // (This ensures every user sees the same feed, regardless of individual ID issues)
-    const newsRef = await db.collection('system_news').add({
-      title,
-      body,
-      type: 'public_announcement',
-      active: true,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
-
-    // 🚀 Step 2: Backward Compatibility (Write to notifications/all)
-    // (Ensures the old NotificationBell still has a trigger point)
-    await db.collection('notifications').add({
+    // 🚀 v3.9.9 Unified Structure: Single point of truth in 'notifications'
+    // This is the simplest model: Write a document with userId: 'all'
+    const newsDoc = await db.collection('notifications').add({
       userId: 'all',
-      newsId: newsRef.id,
       title,
       body,
       type: 'broadcast',
@@ -41,8 +30,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     return res.status(200).json({ 
       success: true, 
-      newsId: newsRef.id,
-      mode: 'bulletin-board'
+      newsId: newsDoc.id,
+      mode: 'unified-broadcast'
     });
 
   } catch (error: any) {

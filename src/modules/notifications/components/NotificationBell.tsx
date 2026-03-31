@@ -29,7 +29,9 @@ export const NotificationBell: React.FC = () => {
         })
         .slice(0, 10);
       setNotifications(combined);
-      setUnreadCount(combined.filter(d => !d.read).length);
+      
+      // 🛡️ v4.0.0 Global Focus: Global news is always part of the count unless locally cleared
+      setUnreadCount(combined.filter(d => !d.read || d.userId === 'all' || d.type === 'system').length);
     };
 
     // 🛡️ Personal (Firestore)
@@ -63,9 +65,12 @@ export const NotificationBell: React.FC = () => {
     };
 
     fetchGlobal();
+    // ⏱️ Poll for fresh news every 60s
+    const pollId = setInterval(fetchGlobal, 60000);
 
     return () => {
       unsubPersonal();
+      clearInterval(pollId);
     };
   }, [user?.uid]);
 
