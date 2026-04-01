@@ -29,6 +29,7 @@ interface AdminSidebarProps {
 const mainMenuItems = [
   { title: "ภาพรวมระบบ", icon: LayoutDashboard, path: "/admin" },
   { title: "จัดการผู้ใช้", icon: Users, path: "/admin/users", id: 'users' },
+  { title: "ประกาศระบบ", icon: Bell, path: "/admin/broadcast" },
   { title: "จัดการเพลย์ลิสต์", icon: PlayCircle, path: "/admin/playlists" },
   { title: "แพ็กเกจ", icon: Package, path: "/admin/packages" },
   { title: "รายการสั่งซื้อ", icon: CreditCard, path: "/admin/payments", id: 'orders', badgeColor: "warning" },

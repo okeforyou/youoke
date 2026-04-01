@@ -141,12 +141,6 @@ export default function AdminUsersPage() {
     const [notificationDialogOpen, setNotificationDialogOpen] = useState(false);
     const [notificationUser, setNotificationUser] = useState<User | null>(null);
     
-    // Broadcast State (New)
-    const [broadcastDialogOpen, setBroadcastDialogOpen] = useState(false);
-    const [broadcastType, setBroadcastType] = useState<'all' | 'lifetime' | 'yearly' | 'monthly' | 'pro' | 'free'>('all');
-    const [broadcastTitle, setBroadcastTitle] = useState("");
-    const [broadcastBody, setBroadcastBody] = useState("");
-    const [sendingBroadcast, setSendingBroadcast] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [roleFilter, setRoleFilter] = useState('all');
     const [packageFilter, setPackageFilter] = useState('all');
@@ -477,42 +471,7 @@ export default function AdminUsersPage() {
         }
     };
 
-    const handleSendBroadcast = async () => {
-        if (!broadcastTitle.trim() || !broadcastBody.trim()) return;
-        setSendingBroadcast(true);
-        if (addToast) addToast(`🌪️ กำลังเผยแพร่ประกาศข่าวสารระบบ...`, "info");
-        
-        try {
-            const response = await fetch('/api/admin/send-broadcast', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    title: broadcastTitle,
-                    body: broadcastBody
-                })
-            });
 
-            if (!response.ok) throw new Error("API call failed");
-
-            setConfirmModal({
-                isOpen: true,
-                title: "เผยแพร่ข่าวสารสำเร็จ",
-                message: "ระบบได้ทำการบันทึกประกาศลงใน 'กระดานข่าวสารระบบ' เรียบร้อยแล้ว สมาชิกทุกคนจะเห็นจุดแดงที่กะดิ่งทันทีครับ",
-                type: 'info',
-                onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
-            });
-
-            setBroadcastTitle("");
-            setBroadcastBody("");
-            setBroadcastDialogOpen(false);
-            if (addToast) addToast("✅ ส่งประกาศข่าวสารเรียบร้อยแล้ว", "success");
-        } catch (error: any) {
-            console.error("Broadcast failed:", error);
-            if (addToast) addToast("❌ ไม่สามารถส่งประกาศได้", "error");
-        } finally {
-            setSendingBroadcast(false);
-        }
-    };
 
     const handleBanToggle = async (user: User) => {
         const newBanStatus = !user.banned;
@@ -726,13 +685,7 @@ export default function AdminUsersPage() {
                         <ArrowDownUp className={cn("w-3.5 h-3.5", syncing && "animate-spin")} />
                         ซิงค์สมาชิก
                     </button>
-                    <button 
-                        onClick={() => setBroadcastDialogOpen(true)}
-                        className="flex items-center gap-1.5 px-4 py-1.5 bg-indigo-600 border border-indigo-500 rounded-xl font-black text-[11px] text-white hover:bg-indigo-700 hover:scale-105 active:scale-95 transition-all"
-                    >
-                        <Megaphone className="w-3.5 h-3.5 fill-white/20" />
-                        ประกาศข่าวสาร
-                    </button>
+
                     <button 
                         onClick={handleCleanupGuests} 
                         className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-red-100 rounded-xl font-bold text-[11px] text-red-500 hover:bg-red-50 transition-all"
@@ -1178,83 +1131,7 @@ export default function AdminUsersPage() {
                     onRefresh={fetchUsers}
                 />
             )}
-            {/* Broadcast Modal - NEW Platinum v2.29 */}
-            {broadcastDialogOpen && (
-                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300" onClick={() => setBroadcastDialogOpen(false)} />
-                    <div className="relative w-full max-w-lg bg-white rounded-[32px] overflow-hidden animate-in zoom-in-95 fade-in duration-300">
-                        <div className="bg-indigo-600 p-8 text-white relative">
-                            <div className="absolute top-0 right-0 p-8 opacity-10">
-                                <Megaphone className="w-24 h-24" />
-                            </div>
-                            <div className="flex items-center gap-4 mb-2">
-                                <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-sm">
-                                    <Megaphone className="w-6 h-6" />
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-black tracking-tight">ประกาศข่าวสารสาธารณะ</h3>
-                                    <p className="text-sm text-indigo-100 opacity-80 font-medium">แจ้งข่าวสารให้สมาชิกทุกคนทราบผ่านแอป</p>
-                                </div>
-                            </div>
-                        </div>
 
-                        <div className="p-8 space-y-6">
-                            {/* Simplified: No group selection, always broadcasts to all */}
-                            <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-2xl flex items-center gap-3">
-                                <Users2 className="w-5 h-5 text-indigo-600" />
-                                <div>
-                                    <p className="text-xs font-black text-indigo-900 leading-none">ส่งให้สมาชิกทุกคน</p>
-                                    <p className="text-[10px] text-indigo-600 font-medium mt-1">ประกาศนี้จะขึ้นที่กะดิ่งของทุกคนทันที</p>
-                                </div>
-                            </div>
-
-                            <div className="space-y-4">
-                                <div className="form-control">
-                                    <label className="label text-[11px] font-black text-slate-400 uppercase tracking-widest">หัวข้อประกาศ</label>
-                                    <input
-                                        className="input input-bordered bg-slate-50 border-slate-100 rounded-2xl font-bold focus:ring-4 focus:ring-indigo-100"
-                                        value={broadcastTitle}
-                                        onChange={e => setBroadcastTitle(e.target.value)}
-                                        placeholder="เช่น: แจ้งโบนัส/อัปเดตเพลงใหม่ 🎤"
-                                    />
-                                </div>
-                                <div className="form-control">
-                                    <label className="label text-[11px] font-black text-slate-400 uppercase tracking-widest">เนื้อหาข่าว</label>
-                                    <textarea
-                                        className="textarea textarea-bordered bg-slate-50 border-slate-100 rounded-2xl h-40 font-medium focus:ring-4 focus:ring-indigo-100 resize-none leading-relaxed"
-                                        value={broadcastBody}
-                                        onChange={e => setBroadcastBody(e.target.value)}
-                                        placeholder="ระบุข้อความประกาศที่ต้องการแจ้งสมาชิก..."
-                                    ></textarea>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="p-8 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between gap-4">
-                             <button 
-                                onClick={() => setBroadcastDialogOpen(false)}
-                                className="px-6 py-3 font-bold text-slate-400 hover:text-slate-600 transition-colors"
-                            >
-                                ยกเลิก
-                            </button>
-                            <button
-                                className="flex-1 bg-indigo-600 py-3.5 rounded-2xl font-black text-sm text-white hover:bg-indigo-700 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
-                                onClick={handleSendBroadcast}
-                                disabled={sendingBroadcast}
-                            >
-                                {sendingBroadcast ? (
-                                    <span className="loading loading-spinner loading-sm"></span>
-                                ) : (
-                                    <>
-                                        <BellRing className="w-5 h-5" />
-                                        <span>ส่งประกาศทันที</span>
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </AdminLayout>
     );
 }

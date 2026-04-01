@@ -46,11 +46,32 @@ export const NotificationList = () => {
     }, [user?.uid]);
 
 
-    const formatDate = (createdAt: string) => {
+    const formatDate = (createdAt: any) => {
         if (!createdAt) return 'เมื่อสักครู่';
-        return new Date(createdAt).toLocaleString('th-TH', {
-            month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-        });
+        
+        try {
+            let date: Date;
+            if (createdAt instanceof Date) {
+                date = createdAt;
+            } else if (typeof createdAt?.toDate === 'function') {
+                date = createdAt.toDate();
+            } else if (typeof createdAt?.seconds === 'number') {
+                date = new Date(createdAt.seconds * 1000);
+            } else {
+                date = new Date(createdAt);
+            }
+
+            if (isNaN(date.getTime())) return 'เมื่อสักครู่';
+
+            return date.toLocaleString('th-TH', { 
+                month: 'short', 
+                day: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+        } catch (e) {
+            return 'เมื่อสักครู่';
+        }
     };
 
     if (loading) return <div className="p-4 text-center"><span className="loading loading-dots loading-sm"></span></div>;
