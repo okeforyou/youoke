@@ -15,15 +15,21 @@ export const NotificationBell: React.FC = () => {
   useEffect(() => {
     if (!user?.uid || !db) return;
 
-    // ✅ Read directly from Firestore — no API needed, no quota issues
-    const q = query(collection(db, 'announcements'), orderBy('createdAt', 'desc'), limit(20));
-    const unsub = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setAnnouncements(data);
-      setUnreadCount(data.length);
-    }, (err) => console.error('❌ [NotifBell]:', err));
+    // 🛡️ v4.1.2 Optimization: Wait 2s before starting listener
+    // This allows the main AuthStore to finish fetching the User Profile (Membership etc.)
+    // without competing for Firestore connection/quota during the critical login moment.
+    const timer = setTimeout(() => {
+      const q = query(collection(db, 'announcements'), orderBy('createdAt', 'desc'), limit(20));
+      const unsub = onSnapshot(q, (snapshot) => {
+        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setAnnouncements(data);
+        setUnreadCount(data.length);
+      }, (err) => console.error('❌ [NotifBell]:', err));
 
-    return () => unsub();
+      return () => unsub();
+    }, 2000);
+
+    return () => clearTimeout(timer);
   }, [user?.uid]);
 
   // Don't render for anonymous users

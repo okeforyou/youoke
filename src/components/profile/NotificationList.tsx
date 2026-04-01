@@ -26,18 +26,23 @@ export const NotificationList = () => {
             return;
         }
 
-        // ✅ Read directly from Firestore — real-time, no API, no quota issues
-        const q = query(collection(db, 'announcements'), orderBy('createdAt', 'desc'), limit(30));
-        const unsub = onSnapshot(q, (snapshot) => {
-            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Announcement[];
-            setAnnouncements(data);
-            setLoading(false);
-        }, (err) => {
-            console.error('❌ [NotifList]:', err);
-            setLoading(false);
-        });
+        // 🛡️ v4.1.2 Optimization: Low-latency UI entry
+        // Allow the profile drawer/dashboard core elements to render FIRST
+        const timer = setTimeout(() => {
+            const q = query(collection(db, 'announcements'), orderBy('createdAt', 'desc'), limit(30));
+            const unsub = onSnapshot(q, (snapshot) => {
+                const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Announcement[];
+                setAnnouncements(data);
+                setLoading(false);
+            }, (err) => {
+                console.error('❌ [NotifList]:', err);
+                setLoading(false);
+            });
 
-        return () => unsub();
+            return () => unsub();
+        }, 500);
+
+        return () => clearTimeout(timer);
     }, [user?.uid]);
 
 
