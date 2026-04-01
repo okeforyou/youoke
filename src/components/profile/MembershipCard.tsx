@@ -97,12 +97,12 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
                 </div>
 
                 {!isAdmin && (
-                    <div className="mt-6 space-y-2">
+                    <div className="space-y-2">
                         <div className="flex justify-between items-end">
-                            <span className="text-[10px] uppercase font-black tracking-widest opacity-30">Quota Usage Status</span>
+                            <span className="text-[10px] uppercase font-black tracking-widest opacity-30">โควต้าเพลงวันนี้</span>
                             <span className="text-[11px] font-black text-slate-700 dark:text-zinc-300">
                                 {membership?.quota?.daily_limit === 0 || isLifetime 
-                                    ? "Full Access" 
+                                    ? "ใช้งานได้ไม่จำกัด" 
                                     : `${membership?.quota?.used || 0} / ${membership?.quota?.daily_limit || 0}`
                                 }
                             </span>
@@ -122,9 +122,9 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
 
                 <div className="mt-6 pt-4 border-t border-slate-50 dark:border-zinc-900 flex justify-between items-end">
                     <div>
-                        <div className="text-[9px] uppercase tracking-widest font-black opacity-30 mb-0.5">Valid Until</div>
+                        <div className="text-[9px] uppercase tracking-widest font-black opacity-30 mb-0.5">หมดอายุวันที่</div>
                         <div className="text-xs font-bold text-slate-500 dark:text-zinc-500">
-                            {isAdmin ? "Super Access" : (isLifetime ? "Lifetime Active" : (safeMembership.expiresAt ? formatDate(safeMembership.expiresAt) : "No Subscription"))}
+                            {isAdmin ? "สิทธิ์ผู้ดูแลระบบ" : (isLifetime ? "ใช้งานได้ตลอดชีพ" : (safeMembership.expiresAt ? formatDate(safeMembership.expiresAt) : "ยังไม่ได้เลือกแพ็กเกจ"))}
                         </div>
                     </div>
                     <div className="flex items-center gap-1.5 p-1 rounded-xl group-hover:bg-primary/5 transition-colors">

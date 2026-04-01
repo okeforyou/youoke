@@ -3,22 +3,22 @@
  * ศูนย์รวมเลขเวอร์ชันของทัังระบบ เพื่อความแม่นยำและไม่ซ้ำซ้อน
  */
 
-export const SYSTEM_VERSION = "4.3.7";
-export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (Iconic Simplicity)`;
+export const SYSTEM_VERSION = "4.4.0";
+export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (Drawer-First Focus)`;
 export const BUILD_DATE = "1 เม.ย. 2569";
 
 export const CHANGELOGS = [
     {
-        version: "4.3.7 (Iconic Simplicity)",
+        version: "4.4.0 (Drawer-First Focus)",
         date: "1 เม.ย. 2569",
         changes: [
-            "[Design] Emoji Eradication: กำจัด Emoji ทั่วทัังแอปและเปลี่ยนเป็นระบบ Icon (Lucide/Heroicons) เพื่อความพรีเมียม",
-            "[UI] Clean Layout: ปรับปรุง Spacing และความหนาของตัวอักษรให้ดูสะอาดตาและเป็นระเบียบแบบ Enterprise",
-            "[Sync] Unified Visuals: หน้าโปรไฟล์และตัวสไลด์ (Drawer) มีหน้าตาเหมือนกัน 100% ไร้รอยต่อ"
+            "[UI/UX] Drawer-Only Architecture: ยุบรวมระบบโปรไฟล์ทัังหมดให้จบใน 'Drawer แถบสไลด์ขวา' เพื่อความเรียบง่ายที่สุด",
+            "[Localization] Thai-First Interface: ปรับข้อความสื่อสารทัังระบบเป็นภาษาไทย 100% เพื่อความเป็นกันเองและดูง่าย",
+            "[Cleanup] Minimalist Recovery: ล้างดีไซน์ส่วนเกินและเมนูซ้ำซ้อนออก เพื่อให้แอปกลับมา 'กระชับ' ตามมาตรฐาน YouOKE"
         ]
     },
     {
-        version: "4.3.3 (Simple LINE Flow / No-Upload Mode)",
+        version: "4.3.7 (Iconic Simplicity)",
         date: "1 เม.ย. 2569",
         changes: [
             "[UX] Simple Flow: ยกเลิกการบังคับ Upload สลิปหน้าเว็บเพื่อลดความยุ่งยาก",

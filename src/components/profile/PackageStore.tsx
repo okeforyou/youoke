@@ -184,7 +184,7 @@ export const PackageStore = () => {
 
                                 <div className="flex items-center gap-2 mr-1">
                                     {pkg.isPopular && (
-                                        <span className="text-[7px] font-black bg-primary text-white px-1.5 py-0.5 rounded-md uppercase tracking-widest italic shrink-0">BEST Choice</span>
+                                        <span className="text-[7px] font-black bg-primary text-white px-1.5 py-0.5 rounded-md uppercase tracking-widest italic shrink-0">แนะนำ</span>
                                     )}
                                     <ChevronLeft className="w-4 h-4 rotate-180 text-muted-foreground group-hover:text-primary transition-colors" />
                                 </div>

@@ -138,7 +138,7 @@ export const ProfileContent = () => {
             <div className="px-4 pb-12 space-y-10">
                 {/* 1. Membership Section */}
                 <section>
-                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 px-2 dark:text-zinc-500">Membership Details</p>
+                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 px-2 dark:text-zinc-500">ข้อมูลสมาชิก</p>
                     <MembershipCard
                         membership={displayMembership as any}
                         role={isAdmin ? 'admin' : (user?.role || profile?.role)}
@@ -152,12 +152,12 @@ export const ProfileContent = () => {
                                 <div className="bg-[#00B900] p-2 rounded-xl shadow-lg shadow-green-500/20">
                                     <ChatBubbleLeftRightIcon className="w-5 h-5 text-white" />
                                 </div>
-                                <p className="text-xs font-black text-slate-900 uppercase dark:text-white">LINE Messaging</p>
+                                <p className="text-xs font-black text-slate-900 dark:text-white">เชื่อมต่อ LINE</p>
                             </div>
                             {profile?.lineUserId ? (
-                                <span className="flex items-center gap-1.5 text-[10px] font-black text-[#00B900] bg-[#00B900]/10 px-3 py-1 rounded-full border border-[#00B900]/20 uppercase">Linked</span>
+                                <span className="flex items-center gap-1.5 text-[10px] font-black text-[#00B900] bg-[#00B900]/10 px-3 py-1 rounded-full border border-[#00B900]/20 uppercase">เชื่อมต่อแล้ว</span>
                             ) : (
-                                <span className="text-[10px] font-black text-slate-300 dark:text-zinc-600 uppercase">Not Linked</span>
+                                <span className="text-[10px] font-black text-slate-300 dark:text-zinc-600 uppercase">ยังไม่ได้เชื่อมต่อ</span>
                             )}
                         </div>
 
@@ -202,8 +202,8 @@ export const ProfileContent = () => {
                 {/* 2. Notifications Section */}
                 <section>
                     <div className="flex items-center justify-between px-2 mb-4">
-                        <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] dark:text-zinc-500">News & Alerts</p>
-                        <Link href="/profile/notifications" className="text-[11px] font-black text-primary hover:underline uppercase tracking-tight">Read All</Link>
+                        <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] dark:text-zinc-500">ข่าวสารและแจ้งเตือน</p>
+                        <Link href="/profile/notifications" className="text-[11px] font-black text-primary hover:underline uppercase tracking-tight">ทั้งหมด</Link>
                     </div>
                     <div className="rounded-[32px] border border-slate-100 bg-slate-50/30 p-5 dark:bg-zinc-900/30 dark:border-zinc-800">
                         <NotificationList />
@@ -212,13 +212,13 @@ export const ProfileContent = () => {
 
                 {/* 3. Package Store */}
                 <section>
-                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 px-2 dark:text-zinc-500">Choose Plan</p>
+                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 px-2 dark:text-zinc-500">สมัครสมาชิก</p>
                     <PackageStore />
                 </section>
 
                 {/* 4. Menu Actions */}
                 <section>
-                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 px-2 dark:text-zinc-500">Settings</p>
+                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 px-2 dark:text-zinc-500">ตั้งค่าอื่นๆ</p>
                     <ul className="space-y-2">
                         {menuItems.map((item, index) => (
                             <li key={index}>
