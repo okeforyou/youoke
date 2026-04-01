@@ -77,12 +77,9 @@ export const MobileBottomNav = () => {
                                 isActive ? "text-primary bg-primary/10" : "text-black group-hover:text-black"
                             )}>
                                 {unreadCount > 0 && item.id === 5 && (
-                                    <div className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-red-600 border-2 border-white rounded-full flex items-center justify-center z-10 shadow-[0_2px_4px_rgba(220,38,38,0.3)] animate-in zoom-in-50 duration-300">
-                                        <span className="text-[10px] font-black text-white leading-none">
-                                            {unreadCount > 99 ? '99+' : unreadCount}
-                                        </span>
-                                    </div>
+                                    <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-600 border-2 border-white rounded-full z-10 animate-pulse shadow-sm" />
                                 )}
+
                                 {item.id === 5 ? (
                                     (() => {
                                         const photoURL = user?.photoURL || auth?.currentUser?.photoURL;

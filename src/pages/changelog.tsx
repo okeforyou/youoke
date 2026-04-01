@@ -5,6 +5,15 @@ import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 
 const CHANGELOGS = [
     {
+        version: "4.2.2 (Billboard Master)",
+        date: "1 เม.ย. 2569",
+        changes: [
+            "[UI/UX] Pulse Dot Mass Update: กวาดล้างตัวเลข Badge ออกจากทุุกจุด (Sidebar, Mobile Bar, Bottom Nav) เปลี่ยนเป็นจุดกระพริบเพื่อความ Minimalist",
+            "[Admin] Billboard Edit Mode: เพิ่มระบบ 'แก้ไข' (Edit) ประกาศเดิม สามารถแก้หัวข้อและเนื้อหาได้ทันทีโดยไม่ต้องลบสร้างใหม่",
+            "[System] Custom Modal Integration: เปลี่ยนจาก window.confirm เป็นการใช้ระบบ Confirm Modal พรีเมียมของ YouOKE ในทุุกจุด"
+        ]
+    },
+    {
         version: "4.2.1 (Management Update)",
         date: "1 เม.ย. 2569",
         changes: [

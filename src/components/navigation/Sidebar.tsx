@@ -232,22 +232,16 @@ export const Sidebar = memo(() => {
                                     <div className="relative">
                                         <img src={user.photoURL} className="w-10 h-10 rounded-full border border-gray-100 group-hover:ring-2 ring-primary/20 transition-all shadow-sm" alt="" />
                                         {mounted && unreadCount > 0 && (
-                                            <div className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-red-600 border-2 border-white rounded-full flex items-center justify-center z-10 shadow-[0_2px_4px_rgba(220,38,38,0.3)] animate-in zoom-in-50 duration-500">
-                                                <span className="text-[9px] font-black text-white leading-none">
-                                                    {unreadCount > 99 ? '99+' : unreadCount}
-                                                </span>
-                                            </div>
+                                            <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-600 border-2 border-white rounded-full z-10 animate-pulse shadow-sm" />
                                         )}
+
                                     </div>
                                     : <div className="relative">
                                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">{user.email?.[0]?.toUpperCase() || 'G'}</div>
                                         {mounted && unreadCount > 0 && (
-                                            <div className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-red-600 border-2 border-white rounded-full flex items-center justify-center z-10 shadow-[0_2px_4px_rgba(220,38,38,0.3)] animate-in zoom-in-50 duration-500">
-                                                <span className="text-[9px] font-black text-white leading-none">
-                                                    {unreadCount > 99 ? '99+' : unreadCount}
-                                                </span>
-                                            </div>
+                                            <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-600 border-2 border-white rounded-full z-10 animate-pulse shadow-sm" />
                                         )}
+
                                       </div>
                                 }
                                 <div className={clsx("overflow-hidden transition-all duration-300", isSidebarCollapsed ? "w-0 opacity-0" : "w-auto opacity-100")}>
@@ -332,9 +326,10 @@ export const Sidebar = memo(() => {
                 )}>
                     <Link href="/changelog" className="hover:opacity-70 transition-opacity">
                         <span className="text-[9px] font-black tracking-widest text-gray-300 uppercase">
-                            {isSidebarCollapsed ? '4.2.1' : 'Version v4.2.1'}
+                            {isSidebarCollapsed ? '4.2.2' : 'Version v4.2.2'}
                         </span>
                     </Link>
+
                 </div>
             </div>
         </aside>

@@ -140,7 +140,7 @@ export const NotificationBell: React.FC = () => {
           <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl border border-slate-100 z-40 shadow-2xl flex flex-col overflow-hidden transform origin-top-right animate-in fade-in zoom-in-95">
             <div className="p-4 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
               <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ข่าวสารและประกาศ</h3>
-              {unreadCount > 0 && <span className="text-[9px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold">ใหม่ {unreadCount}</span>}
+
             </div>
             
             <div className="max-h-96 overflow-y-auto no-scrollbar">
