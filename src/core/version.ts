@@ -3,11 +3,20 @@
  * ศูนย์รวมเลขเวอร์ชันของทัังระบบ เพื่อความแม่นยำและไม่ซ้ำซ้อน
  */
 
-export const SYSTEM_VERSION = "4.3.3";
-export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (Simple LINE Flow)`;
+export const SYSTEM_VERSION = "4.3.7";
+export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (Iconic Simplicity)`;
 export const BUILD_DATE = "1 เม.ย. 2569";
 
 export const CHANGELOGS = [
+    {
+        version: "4.3.7 (Iconic Simplicity)",
+        date: "1 เม.ย. 2569",
+        changes: [
+            "[Design] Emoji Eradication: กำจัด Emoji ทั่วทัังแอปและเปลี่ยนเป็นระบบ Icon (Lucide/Heroicons) เพื่อความพรีเมียม",
+            "[UI] Clean Layout: ปรับปรุง Spacing และความหนาของตัวอักษรให้ดูสะอาดตาและเป็นระเบียบแบบ Enterprise",
+            "[Sync] Unified Visuals: หน้าโปรไฟล์และตัวสไลด์ (Drawer) มีหน้าตาเหมือนกัน 100% ไร้รอยต่อ"
+        ]
+    },
     {
         version: "4.3.3 (Simple LINE Flow / No-Upload Mode)",
         date: "1 เม.ย. 2569",

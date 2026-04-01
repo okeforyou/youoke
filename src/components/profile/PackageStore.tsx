@@ -85,14 +85,14 @@ export const PackageStore = () => {
             try {
                 await axios.post('/api/notify/line-push', {
                     to: "U0862085736780c136365a26c92d5353", // Admin
-                    message: `📢 ลูกค้าสนใจสมัคร!\n👤 จาก: ${user.displayName || user.email}\n📦 แพ็กเกจ: ${pkg.name}\n💰 ยอด: ${pkg.price.toLocaleString()} บาท\n\n*รอรับสลิปในแชท LINE นี้*\n🔗 กดอนุมัติเมื่อมียอดเข้า: https://play.okeforyou.com/admin/payments?id=${paymentId}`
+                    message: `[ADMIN ALERT] สนใจสมัครแพ็กเกจ\nจาก: ${user.displayName || user.email}\nแพ็กเกจ: ${pkg.name}\nยอดโอน: ${pkg.price.toLocaleString()} บาท\n\n- รอรับสลิปในแชท LINE นี้\n- ตรวจสอบ: https://play.okeforyou.com/admin/payments?id=${paymentId}`
                 });
                 
                 // 3. Send instructions to User
                 if ((user as any).lineUserId) {
                     await axios.post('/api/notify/line-push', {
                         to: (user as any).lineUserId,
-                        message: `✅ คุณได้เลือกแพ็กเกจ: ${pkg.name}\n💰 ยอดโอน: ${pkg.price.toLocaleString()} บาท\n🏦 ธนาคาร: กสิกรไทย\n🔢 เลขบัญชี: 012-3-45678-9\n\nรบกวน "ส่งรูปสลิป" มาในแชทนี้ได้เลยครับ แอดมินจะกดอนุมัติให้ทันที!`
+                        message: `ยืนยันการเลือกแพ็กเกจ: ${pkg.name}\nยอดโอนเงิน: ${pkg.price.toLocaleString()} บาท\nธนาคาร: กสิกรไทย\nเลขบัญชี: 012-3-45678-9\n\nกรุณาส่งรูปสลิปมาในแชทนี้ เพื่อให้แอดมินอนุมัติการใช้งานทันทีครับ`
                     });
                 }
             } catch (e) {

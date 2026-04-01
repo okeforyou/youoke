@@ -121,7 +121,7 @@ export const ProfileContent = () => {
                 <div className="flex-1 min-w-0">
                     <h2 className="text-xl font-black text-slate-900 truncate flex items-center gap-2 dark:text-white">
                         {profile?.displayName || user?.displayName || "YouOke User"}
-                        {isPremium && !isAdmin && <SparklesIcon className="w-5 h-5 text-yellow-500" />}
+                        {isPremium && !isAdmin && <SparklesIcon className="w-5 h-5 text-yellow-500 fill-current" />}
                     </h2>
                     <p className="text-sm font-bold text-slate-400 truncate mb-3 dark:text-zinc-500">{profile?.email || user?.email}</p>
 
@@ -174,14 +174,15 @@ export const ProfileContent = () => {
                         ) : (
                             <div className="space-y-3">
                                 <p className="text-[11px] font-bold text-slate-500 px-1 leading-relaxed dark:text-zinc-400">
-                                    * เชื่อมต่อ LINE เพื่อรับแจ้งเตือนการสมัครและยอดโอนเงินแบบ Real-time
+                                    เชื่อมต่อบัญชี LINE เพื่อความปลอดภัยและรับข่าวสารโปรโมชั่น
                                 </p>
                                 <Link 
                                     href="/profile/line-connect"
                                     className="w-full bg-[#00B900] hover:bg-[#009e00] text-white py-3.5 rounded-[20px] font-black text-center text-sm shadow-xl shadow-green-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                                 >
-                                    <span>🟢 เชื่อมต่อ LINE (Sync ข้อมูล)</span>
-                                    <ChevronRightIcon className="w-4 h-4" />
+                                    <ChatBubbleLeftRightIcon className="w-4 h-4" />
+                                    <span>เชื่อมต่อ LINE Account</span>
+                                    <ChevronRightIcon className="w-4 h-4 ml-auto opacity-50" />
                                 </Link>
                             </div>
                         )}
@@ -190,9 +191,10 @@ export const ProfileContent = () => {
                             href="https://line.me/R/ti/p/@243lercy" 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            className="w-full bg-white border border-slate-100 text-slate-400 py-3 rounded-[20px] font-black text-center text-[11px] hover:bg-slate-50 transition-all dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-500"
+                            className="w-full bg-white border border-slate-100 text-slate-400 py-3 rounded-[20px] font-black text-center text-[11px] hover:bg-slate-50 transition-all dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-500 flex items-center justify-center gap-2"
                         >
-                            แจ้งปัญหา / คุยกับแอดมิน
+                            <BookOpenIcon className="w-3.5 h-3.5" />
+                            <span>แจ้งปัญหา / ติดต่อแอดมิน</span>
                         </a>
                     </div>
                 </section>
