@@ -58,6 +58,12 @@ export interface UserProfile {
       newAds: boolean;
     };
   };
+
+  // LINE Messaging (v4.2.8)
+  lineUserId?: string;      // Unique LINE UID for Push Messaging
+  lineDisplayName?: string; // Captured LINE display name
+  lineConnectedAt?: any;    // Timestamp of sync event
+
   createdAt: Date;
   updatedAt: Date;
 }

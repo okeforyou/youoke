@@ -261,7 +261,7 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                                                         </div>
                                                                         <p className="text-[11px] font-black text-gray-900 uppercase">LINE Connection</p>
                                                                     </div>
-                                                                    {profile?.lineUserId || (profile as any)?.lineUserId ? (
+                                                                    {profile?.lineUserId ? (
                                                                         <span className="flex items-center gap-1 text-[9px] font-black text-[#00B900] bg-[#00B900]/10 px-2 py-0.5 rounded-full border border-[#00B900]/20 uppercase tracking-tighter animate-pulse">
                                                                             Linked
                                                                         </span>
@@ -270,13 +270,13 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                                                     )}
                                                                 </div>
 
-                                                                {(profile as any)?.lineUserId ? (
+                                                                {profile?.lineUserId ? (
                                                                     <div className="flex items-center gap-3 bg-white p-2.5 rounded-2xl border border-gray-100">
                                                                         <div className="w-8 h-8 rounded-full bg-[#00B900]/10 flex items-center justify-center text-[#00B900] font-bold text-xs">
-                                                                             {(profile as any).lineDisplayName?.charAt(0) || 'L'}
+                                                                             {profile.lineDisplayName?.charAt(0) || 'L'}
                                                                         </div>
                                                                         <div className="flex-1 min-w-0">
-                                                                            <p className="text-xs font-bold text-gray-800 truncate">{(profile as any).lineDisplayName || 'LINE Linked Account'}</p>
+                                                                            <p className="text-xs font-bold text-gray-800 truncate">{profile.lineDisplayName || 'LINE Linked Account'}</p>
                                                                             <p className="text-[9px] text-gray-400 font-medium">เชื่อมต่อกับ Gmail สำเร็จแล้ว</p>
                                                                         </div>
                                                                     </div>
