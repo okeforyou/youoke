@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { BellIcon } from '@heroicons/react/24/outline';
+import { collection, onSnapshot, orderBy, query, limit, getFirestore } from 'firebase/firestore';
+import { app } from '@/firebase';
 import { useAuthStore } from '@/modules/auth/useAuthStore';
-import clsx from 'clsx';
+
+const db = app ? getFirestore(app) : null;
 
 export const NotificationBell: React.FC = () => {
   const { user } = useAuthStore();
@@ -10,24 +13,17 @@ export const NotificationBell: React.FC = () => {
   const [announcements, setAnnouncements] = useState<any[]>([]);
 
   useEffect(() => {
-    // ✅ Only show announcements to logged-in users
-    if (!user?.uid) return;
+    if (!user?.uid || !db) return;
 
-    const fetchNews = async () => {
-      try {
-        const res = await fetch('/api/public/news');
-        if (!res.ok) return;
-        const data = await res.json();
-        setAnnouncements(data);
-        setUnreadCount(data.length);
-      } catch (err) {
-        console.error('❌ [NotifBell] Fetch fail:', err);
-      }
-    };
+    // ✅ Read directly from Firestore — no API needed, no quota issues
+    const q = query(collection(db, 'announcements'), orderBy('createdAt', 'desc'), limit(20));
+    const unsub = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setAnnouncements(data);
+      setUnreadCount(data.length);
+    }, (err) => console.error('❌ [NotifBell]:', err));
 
-    fetchNews();
-    const pollId = setInterval(fetchNews, 60000);
-    return () => clearInterval(pollId);
+    return () => unsub();
   }, [user?.uid]);
 
   // Don't render for anonymous users

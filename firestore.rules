@@ -120,6 +120,12 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // ✅ Announcements (Simple bulletin board — logged-in users can read, admin writes)
+    match /announcements/{announcementId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAdmin();
+    }
+
     // Orders
     match /orders/{orderId} {
        allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());

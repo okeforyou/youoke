@@ -1,14 +1,18 @@
 import { useState, useEffect } from "react";
+import { collection, onSnapshot, orderBy, query, limit, getFirestore } from "firebase/firestore";
+import { app } from "@/firebase";
 import { Bell, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/modules/auth/useAuthStore";
+
+const db = app ? getFirestore(app) : null;
 
 interface Announcement {
     id: string;
     title: string;
     body: string;
     link?: string;
-    createdAt: string;
+    createdAt: any;
 }
 
 export const NotificationList = () => {
@@ -17,26 +21,23 @@ export const NotificationList = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // ✅ Only fetch for logged-in users
-        if (!user?.uid) {
+        if (!user?.uid || !db) {
             setLoading(false);
             return;
         }
 
-        const fetchAnnouncements = async () => {
-            try {
-                const res = await fetch('/api/public/news');
-                if (!res.ok) throw new Error('API fail');
-                const data = await res.json();
-                setAnnouncements(data);
-            } catch (err) {
-                console.error("❌ [NotifList] Fetch fail:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
+        // ✅ Read directly from Firestore — real-time, no API, no quota issues
+        const q = query(collection(db, 'announcements'), orderBy('createdAt', 'desc'), limit(30));
+        const unsub = onSnapshot(q, (snapshot) => {
+            const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Announcement[];
+            setAnnouncements(data);
+            setLoading(false);
+        }, (err) => {
+            console.error('❌ [NotifList]:', err);
+            setLoading(false);
+        });
 
-        fetchAnnouncements();
+        return () => unsub();
     }, [user?.uid]);
 
 
