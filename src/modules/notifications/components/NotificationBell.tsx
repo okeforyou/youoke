@@ -23,7 +23,20 @@ export const NotificationBell: React.FC = () => {
       const unsub = onSnapshot(q, (snapshot) => {
         const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setAnnouncements(data);
-        setUnreadCount(data.length);
+
+        // 🛡️ v4.1.4 Client-side Unread Logic: Compare with last read ID from storage
+        const lastReadId = localStorage.getItem('youoke_last_read_announcement_id');
+        if (data.length > 0) {
+          const latestId = data[0].id;
+          if (lastReadId === latestId) {
+            setUnreadCount(0);
+          } else {
+             // If we have seen some but not all, or if it is a fresh install
+             // Count items newer than lastReadId (data is sorted desc by createdAt)
+             const lastReadIndex = data.findIndex(item => item.id === lastReadId);
+             setUnreadCount(lastReadIndex === -1 ? data.length : lastReadIndex);
+          }
+        }
       }, (err) => console.error('❌ [NotifBell]:', err));
 
       return () => unsub();
@@ -34,6 +47,17 @@ export const NotificationBell: React.FC = () => {
 
   // Don't render for anonymous users
   if (!user?.uid) return null;
+
+  const handleOpenBell = () => {
+    const nextState = !isOpen;
+    setIsOpen(nextState);
+    
+    // 🛡️ v4.1.4: Mark as read locally when opened
+    if (nextState && announcements.length > 0) {
+      localStorage.setItem('youoke_last_read_announcement_id', announcements[0].id);
+      setUnreadCount(0);
+    }
+  };
 
   const formatDate = (createdAt: any) => {
     if (!createdAt) return 'เมื่อสักครู่';
@@ -66,7 +90,7 @@ export const NotificationBell: React.FC = () => {
   return (
     <div className="relative">
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleOpenBell}
         className="p-2 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors relative"
       >
         <BellIcon className="w-6 h-6" />
@@ -79,20 +103,27 @@ export const NotificationBell: React.FC = () => {
         )}
       </button>
 
+      {/* Dropdown Menu - Standard YouOke patterns */}
       {isOpen && (
         <>
-          <div className="fixed inset-0 z-30" onClick={() => setIsOpen(false)} />
+          <div 
+            className="fixed inset-0 z-30" 
+            onClick={() => setIsOpen(false)} 
+          />
           <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl border border-slate-100 z-40 overflow-hidden transform origin-top-right animate-in fade-in zoom-in-95">
-            <div className="p-4 border-b border-slate-50 bg-slate-50/50">
+            <div className="p-4 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
               <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ข่าวสารและประกาศ</h3>
             </div>
-
+            
             <div className="max-h-96 overflow-y-auto">
               {announcements.length > 0 ? (
                 announcements.map((item) => (
-                  <div key={item.id} className="p-4 border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                  <div 
+                    key={item.id} 
+                    className="p-4 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer"
+                  >
                     <p className="text-sm font-bold text-slate-900">{item.title}</p>
-                    <p className="text-xs text-slate-500 mt-1 leading-relaxed">{item.body}</p>
+                    <p className="text-xs text-slate-500 mt-1">{item.body}</p>
                     {item.link && (
                       <a
                         href={item.link}
@@ -115,7 +146,7 @@ export const NotificationBell: React.FC = () => {
             </div>
 
             <div className="p-3 bg-slate-50 text-center border-t border-slate-50">
-              <button className="text-[10px] font-bold text-slate-400 hover:text-slate-900 uppercase tracking-tight">อ่านข่าวทั้งหมด</button>
+              <button className="text-[10px] font-bold text-slate-400 hover:text-gray-600 uppercase tracking-tight">อ่านข่าวทั้งหมด</button>
             </div>
           </div>
         </>
