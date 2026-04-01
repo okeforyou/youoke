@@ -3,11 +3,20 @@
  * ศูนย์รวมเลขเวอร์ชันของทัังระบบ เพื่อความแม่นยำและไม่ซ้ำซ้อน
  */
 
-export const SYSTEM_VERSION = "4.3.1";
-export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (LINE Master Workflow)`;
+export const SYSTEM_VERSION = "4.3.2";
+export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (LINE Image Evidence)`;
 export const BUILD_DATE = "1 เม.ย. 2569";
 
 export const CHANGELOGS = [
+    {
+        version: "4.3.2 (LINE Image Evidence)",
+        date: "1 เม.ย. 2569",
+        changes: [
+            "[Messaging] Image Evidence: ระบบยิง 'รูปภาพสลิปจริง' เข้า LINE แอดมินทันทีที่ลูกค้าแจ้งโอน เพื่อการตรวจสอบที่รวดเร็วที่สุด",
+            "[Admin] Visual Verification: แอดมินสามารถดูสลิปได้จากแจ้งเตือน LINE โดยไม่ต้องกดเปิดแอป (Zero-Click Visibility)",
+            "[Workflow] Optimized Push: แยกข้อความรูปภาพและข้อความรายละเอียดเพื่อให้อ่านง่ายและเป็นระเบียบ"
+        ]
+    },
     {
         version: "4.3.1 (LINE Master Workflow)",
         date: "1 เม.ย. 2569",

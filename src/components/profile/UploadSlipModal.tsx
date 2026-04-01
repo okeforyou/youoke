@@ -132,18 +132,31 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
             // 3. Send Notification to Admins via FCM
             await notifyAdmins(paymentId);
 
-            // 4. Send LINE Notification to Admin (v4.3.0 Engine)
+            // 4. Send LINE Notification to Admin (v4.3.2 - Send Actual Slip Image!)
             try {
+                const adminLineId = "U0862085736780c136365a26c92d5353"; // Admin/System LINE ID
+                
+                // Message 1: The Actual Slip Image (v4.3.2 Mastery)
                 await axios.post('/api/notify/line-push', {
-                    to: "U0862085736780c136365a26c92d5353", // Admin/System LINE ID
-                    message: `💰 แจ้งโอนเงินใหม่!\n👤 จาก: ${user.displayName || user.email}\n📦 แพ็กเกจ: ${pkg.name}\n💸 ยอด: ${pkg.price.toLocaleString()} บาท\n🔗 ดูรายละเอียด: https://play.okeforyou.com/admin/payments?id=${paymentId}`
+                    to: adminLineId,
+                    flexMessage: {
+                        type: "image",
+                        originalContentUrl: slipUrl,
+                        previewImageUrl: slipUrl
+                    }
+                });
+
+                // Message 2: Details and Approval Link
+                await axios.post('/api/notify/line-push', {
+                    to: adminLineId,
+                    message: `💰 แจ้งโอนเงินใหม่!\n👤 จาก: ${user.displayName || user.email}\n📦 แพ็กเกจ: ${pkg.name}\n💸 ยอด: ${pkg.price.toLocaleString()} บาท\n🔗 ตรวจสอบเพื่ออนุมัติ: https://play.okeforyou.com/admin/payments?id=${paymentId}`
                 });
                 
                 // Also notify the user if they have linked LINE
                 if ((user as any).lineUserId) {
                     await axios.post('/api/notify/line-push', {
                         to: (user as any).lineUserId,
-                        message: `✅ ระบบรับข้อมูลแจ้งโอนของคุณแล้ว!\n📦 แพ็กเกจ: ${pkg.name}\n💰 ยอด: ${pkg.price.toLocaleString()} บาท\n\nแอดมินกำลังตรวจสอบความถูกต้อง และจะเปิดใช้งานให้คุณในเร็วๆ นี้ครับ`
+                        message: `✅ ระบบรับรูปสลิปของคุณแล้ว!\n📦 แพ็กเกจ: ${pkg.name}\n💰 ยอด: ${pkg.price.toLocaleString()} บาท\n\nแอดมินตรวจสอบเสร็จจะแจ้งให้ทราบทันทีครับ!`
                     });
                 }
             } catch (notifyError) {
