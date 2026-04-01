@@ -332,7 +332,7 @@ export const Sidebar = memo(() => {
                 )}>
                     <Link href="/changelog" className="hover:opacity-70 transition-opacity">
                         <span className="text-[9px] font-black tracking-widest text-gray-300 uppercase">
-                            {isSidebarCollapsed ? '4.1.8' : 'Version v4.1.8'}
+                            {isSidebarCollapsed ? '4.2.0' : 'Version v4.2.0'}
                         </span>
                     </Link>
                 </div>

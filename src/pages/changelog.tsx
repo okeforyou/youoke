@@ -5,6 +5,15 @@ import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 
 const CHANGELOGS = [
     {
+        version: "4.2.0 (Unified Sync)",
+        date: "1 เม.ย. 2569",
+        changes: [
+            "[Announcement] Unified Read Status: เชื่อมต่อระบบกะดิ่งและรายการใน Sidebar ให้ซิงค์สถานะการอ่านและ Badge Count พร้อมกัน 100%",
+            "[Announcement] Multi-Component Messaging: เพิ่มระบบ Event Listener เพื่อเคลียร์ Badge บนหน้า Dashboard ทันทีที่กดอ่านจาก Sidebar",
+            "[Announcement] UI Polishing: ปรับปรุงสถานะจาง (Dim) และปุ่ม 'อ่านทั้งหมด' ให้แสดงผลถูกต้องในทุุกอุปกรณ์"
+        ]
+    },
+    {
         version: "4.1.8 (Agent Standards)",
         date: "1 เม.ย. 2569",
         changes: [
