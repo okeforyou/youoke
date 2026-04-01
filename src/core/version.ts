@@ -3,11 +3,20 @@
  * ศูนย์รวมเลขเวอร์ชันของทัังระบบ เพื่อความแม่นยำและไม่ซ้ำซ้อน
  */
 
-export const SYSTEM_VERSION = "4.3.2";
-export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (LINE Image Evidence)`;
+export const SYSTEM_VERSION = "4.3.3";
+export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (Simple LINE Flow)`;
 export const BUILD_DATE = "1 เม.ย. 2569";
 
 export const CHANGELOGS = [
+    {
+        version: "4.3.3 (Simple LINE Flow / No-Upload Mode)",
+        date: "1 เม.ย. 2569",
+        changes: [
+            "[UX] Simple Flow: ยกเลิกการบังคับ Upload สลิปหน้าเว็บเพื่อลดความยุ่งยาก",
+            "[Sync] Intent Messaging: ระบบจะแจ้งเตือนเจตนาการซื้อของลูกค้าเข้า LINE แอดมินโดยตรง เพื่อให้รอรับสลิปในแชท",
+            "[Admin] One-Click Link: แอดมินเพียงแค่ดูสลิปที่ลูกค้าส่งมาในแชท แล้วกด Link แจ้งเตือนเพื่อทำการอนุมัติในระบบได้ทันที"
+        ]
+    },
     {
         version: "4.3.2 (LINE Image Evidence)",
         date: "1 เม.ย. 2569",

@@ -53,13 +53,63 @@ export const PackageStore = () => {
     }, []);
 
 
-    const handleManualTransfer = (pkg: Package) => {
+    const handleManualTransfer = async (pkg: Package) => {
         if (!user) {
             router.push('/login');
             return;
         }
-        setSelectedPkg(pkg);
-        setShowUploadModal(true);
+        
+        setLoading(true);
+        try {
+            // 1. Create a "Waiting in LINE" record (v4.3.3 Simple Flow)
+            let paymentId = "";
+            if (db) {
+                const { collection, addDoc, serverTimestamp } = await import('firebase/firestore');
+                const docRef = await addDoc(collection(db, 'payment_proofs'), {
+                    userId: user.uid,
+                    userDisplayName: user.displayName || user.email?.split('@')[0],
+                    userEmail: user.email,
+                    packageId: pkg.id,
+                    packageName: pkg.name,
+                    amount: pkg.price,
+                    status: 'pending',
+                    method: 'line_direct', // Track that it's coming via LINE chat
+                    slipUrl: null,         // Admin will see image in LINE chat instead
+                    createdAt: serverTimestamp()
+                });
+                paymentId = docRef.id;
+            }
+
+            // 2. Notify Admin: "Expect a slip in LINE"
+            const { default: axios } = await import('axios');
+            try {
+                await axios.post('/api/notify/line-push', {
+                    to: "U0862085736780c136365a26c92d5353", // Admin
+                    message: `📢 ลูกค้าสนใจสมัคร!\n👤 จาก: ${user.displayName || user.email}\n📦 แพ็กเกจ: ${pkg.name}\n💰 ยอด: ${pkg.price.toLocaleString()} บาท\n\n*รอรับสลิปในแชท LINE นี้*\n🔗 กดอนุมัติเมื่อมียอดเข้า: https://play.okeforyou.com/admin/payments?id=${paymentId}`
+                });
+                
+                // 3. Send instructions to User
+                if ((user as any).lineUserId) {
+                    await axios.post('/api/notify/line-push', {
+                        to: (user as any).lineUserId,
+                        message: `✅ คุณได้เลือกแพ็กเกจ: ${pkg.name}\n💰 ยอดโอน: ${pkg.price.toLocaleString()} บาท\n🏦 ธนาคาร: กสิกรไทย\n🔢 เลขบัญชี: 012-3-45678-9\n\nรบกวน "ส่งรูปสลิป" มาในแชทนี้ได้เลยครับ แอดมินจะกดอนุมัติให้ทันที!`
+                    });
+                }
+            } catch (e) {
+                console.error("LINE Notify failed:", e);
+            }
+
+            // 4. Redirect user to status page or show success
+            const message = `คุณได้แจ้งความสนใจแพ็กเกจ ${pkg.name} แล้ว!\nกรุณาส่งสลิปการโอนเงินมาที่ LINE@ เพื่อให้แอดมินอนุมัติครับ`;
+            alert(message);
+            window.open("https://line.me/ti/p/@243lercy", '_blank');
+
+        } catch (error) {
+            console.error("Simple Flow error:", error);
+            alert("เกิดข้อผิดพลาดในการแจ้งระบบ กรุณาลองใหม่อีกครั้ง");
+        } finally {
+            setLoading(false);
+        }
     };
 
     if (loading) return <div className="flex justify-center p-8"><span className="loading loading-spinner text-primary"></span></div>;
