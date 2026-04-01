@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { memo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { memo, useState, useEffect } from 'react';
 import clsx from 'clsx';
+import { SYSTEM_VERSION, COMMIT_ID } from '@/core/version';
 import { Home, Star, Flame, Library, MessageCircle, Shield, LogOut, Key, Grid, Lock, PlusCircle, ChevronLeft, Headphones, BarChart2 } from 'lucide-react';
 import { UserGroupIcon } from '@heroicons/react/24/outline'; // Import Heroicon for Party
 import { useSystem } from '../../core/container/SystemContext'; // DI Container
@@ -326,9 +326,8 @@ export const Sidebar = memo(() => {
                 )}>
                     <Link href="/changelog" className="hover:opacity-70 transition-opacity">
                         <span className="text-[9px] font-black tracking-widest text-gray-300 uppercase">
-                            {isSidebarCollapsed ? '4.2.7' : 'Version v4.2.7'}
+                            {isSidebarCollapsed ? SYSTEM_VERSION : `Version v${SYSTEM_VERSION}`}
                         </span>
-
                     </Link>
 
                 </div>
