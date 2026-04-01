@@ -5,6 +5,14 @@ import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 
 const CHANGELOGS = [
     {
+        version: "4.1.8 (Agent Standards)",
+        date: "1 เม.ย. 2569",
+        changes: [
+            "[Governance] บันทึกกฎเหล็ก Agnet.md: กำหนดมาตรฐานการอัปเดตเวอร์ชันและ Changelog ทุกครั้งที่มีการแก้ไข (Formalize Versioning Policy)",
+            "[System] Sync Logic: ปรับปรุงโครงสร้างโปรเจกต์ให้เลขเวอร์ชันในหน้าจอตรงกับในบันทึกการเปลี่ยนแปลง (Changelog) ทั้งระบบ"
+        ]
+    },
+    {
         version: "4.1.7 (Announcement UX)",
         date: "1 เม.ย. 2569",
         changes: [
