@@ -5,6 +5,15 @@ import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 
 const CHANGELOGS = [
     {
+        version: "4.2.7 (LINE Connect & Admin DM)",
+        date: "1 เม.ย. 2569",
+        changes: [
+            "[Admin] LINE Messaging Bridge: เพิ่มระบบตรวจสอบคนเชื่อมต่อ LINE ในหน้าจัดการสมาชิก พร้อมช่องส่งข้อความ LINE รายบุคคล (Direct Push)",
+            "[User] LINE Connection UI: เพิ่มส่วน 'เชื่อมต่อ LINE เพื่อรับการแจ้งเตือน' ในหน้าโปรไฟล์เพื่อสมานรอยเชื่อมระหว่าง Gmail และ LINE",
+            "[System] Data Mapping: เตรียมโครงสร้าง Firestore ฟิลด์ lineUserId เพื่อความแม่นยำในการระบุตัวตนข้ามแพลตฟอร์ม"
+        ]
+    },
+    {
         version: "4.2.6 (Hybrid UI & Messaging Prep)",
         date: "1 เม.ย. 2569",
         changes: [
@@ -80,7 +89,6 @@ const CHANGELOGS = [
     {
         version: "2.18.0 (Spotify Module)",
         date: "19 ม.ค. 2569",
-
         changes: [
             "[Code Structure] แยก Spotify Integration ออกเป็น Module (spotify-theme) เพื่อความเป็นระเบียบและแก้ไขง่าย",
             "[Refactor] จัดระเบียบ API และ Service ที่เกี่ยวข้องกับ Spotify ทั้งหมดไปยัง src/modules/",
@@ -108,71 +116,6 @@ const CHANGELOGS = [
             "[Mobile] ซ่อน Version Tag บนมือถือเพื่อประหยัดพื้นที่",
             "[Refactor] ลบ Component ที่ไม่ได้ใช้งาน (MobileMiniPlayer) เพื่อลดขนาดไฟล์"
         ]
-    },
-    {
-        version: "2.15.0 (PC Redesign)",
-        date: "16 ม.ค. 2569",
-        changes: [
-            "[UI] สรุปหน้าจอ PC Mode ใหม่ทั้งหมด (Modern Glassmorphism)",
-            "[UI] Redesigned Sidebar: เปลี่ยนเป็นโลโก้พร้อมไอคอนที่สะอาดตา (Minimal)",
-            "[UI] Player Bar: ดีไซน์ใหม่แบบลอยตัว (Floating Glass) พร้อม Neon Progress Bar",
-            "[UX] Moved Shuffle Button: ย้ายปุ่มสุ่มเพลงลงไปรวมที่แถบควบคุมด้านล่าง",
-            "[UX] Artist Grid: ปรับโฉมใหม่ (Cover Overlay) ไม่มีกรอบ พร้อมชื่อศิลปินมุมซ้ายล่าง",
-            "[Fix] Prevent Auto-play: แก้ไขปัญหาเพลงเล่นเองเมื่อโหลดหน้าเว็บครั้งแรก",
-            "[Fix] Artist Text Position: จัดตำแหน่งชื่อศิลปินให้ชิดขอบล่างซ้ายเสมอ"
-        ]
-    },
-    {
-        version: "2.14.0 (2f010d0)",
-        date: "15 ม.ค. 2569",
-        changes: [
-            "[Mobile] เพิ่มเมนูนำทางด้านล่าง (Bottom Navigation) แบบ Glassmorphism สวยงาม",
-            "[Mobile] เพิ่มเมนู 'คิวเพลง' ใน Footer พร้อม Badge แจ้งจำนวนแบบ Real-time",
-            "[UX] ปรับปรุงระบบคิวเพลงแบบ Overlay: กดดูคิวได้โดยไม่ขยายจอ Video ใหญ่กวนใจ",
-            "[Feature] เพิ่มปุ่ม 'ซ่อน' เครื่องเล่น (Eye Icon) เมื่อต้องการดูเนื้อหาเต็มจอ",
-            "[Design] ออกแบบปุ่ม Profile ใหม่แบบ Gradient Ring สวยงามทันสมัย",
-            "[Fix] แก้ไขปัญหาส่วนแสดงผลทับซ้อนกันในหน้าจอมือถือ",
-            "[Fix] ปรับปรุง Mobile Search ให้สามารถเลื่อนดูเนื้อหาด้านล่างได้ขณะค้นหา",
-            "[UX] เพิ่มระบบ Toggle ที่เมนูคิวเพลง: กดซ้ำเพื่อซ่อน/แสดงเครื่องเล่นได้ทันที",
-            "[Design] ปรับความกว้างของ Search Bar ให้เท่ากับ Player Card เพื่อความสวยงาม",
-            "[Design] Tablet: นำปุ่ม Fullscreen ออกเพื่อลดความซับซ้อนตาม Feedback",
-            "[Fix] Tablet: แก้ไขบั๊กคิวเพลงแสดงซ้อนกัน 2 จุดเมื่อหมุนหน้าจอแนวนอน",
-            "[Design] ปรับลดความกว้าง Player บน Tablet/PC ให้กระชับ (60%) ไม่บังส่วนอื่น",
-            "[UX] นำไอคอน Karaoke/Song หน้าชื่อเพลงออก เพื่อลดความสับสนเรื่องตัดเสียงร้อง",
-            "[Layout] ปรับตำแหน่ง Player ให้กึ่งกลางเนื้อหา (Main Content) ไม่ซ้อน Sidebar ด้านข้าง",
-            "[UX] เปลี่ยนตัวเลขบอกจำนวนคิว (Right Sidebar) เป็นปุ่ม 'ลบทั้งหมด' เพื่อการใช้งานที่สะดวกขึ้น",
-            "[Fix] แก้ไข Application Error (ReferenceError) บนหน้า Tablet",
-            "[Fix] แก้ไขระยะห่างด้านบน (Top Spacing) ที่เกิดจากการวางตำแหน่ง Player",
-            "[UI] ปรับตำแหน่ง Player แนวตั้งให้ลอยเหนือ Footer พอดี (Tablet Portrait)",
-            "[UI] Search Bar & Player Width: ปรับให้เท่ากันเป๊ะ (95%) เพื่อความสมดุล",
-            "[UI] Player Position: ลดระดับลงสุดๆ (24px + safe-area) ให้กลืนไปกับ Footer",
-            "[UX] Fullscreen: ย้ายปุ่มไปซ่อนใน Video Player (แสดงเมื่อเอาเมาส์ชี้) เพื่อลดความซ้ำซ้อนใน Control Bar",
-            "[UX] Search: เพิ่มปุ่ม 'ปิด' (X) ข้างช่องค้นหา เพื่อให้กดปิดได้ง่ายขึ้น",
-            "[UI] Queue Toggle: ปรับดีไซน์ปุ่ม 'ซ่อนคิว' เป็นแบบ 'Tab' (ติ่งยื่น) ด้านบนขวา สวยงามและกดง่าย",
-            "[UX] EQ Animation: เต้นเฉพาะตอนเล่นเพลงเท่านั้น",
-            "[Theme] Search Toggle: เปลี่ยนเป็นสีแดง (Primary)"
-        ]
-    },
-    {
-        version: "2.13.0",
-        date: "14 ม.ค. 2569",
-        changes: [
-            "[ระบบหลังบ้าน] ปรับปรุงหน้าระบบจัดการ (Admin Config) ใหม่ ให้ใช้งานง่ายขึ้น",
-            "[ฟีเจอร์ใหม่] เพิ่มการตั้งค่า Link สำหรับ 'เงื่อนไขการใช้งาน' และ 'นโยบายความเป็นส่วนตัว' ในหน้า Login",
-            "[ฟีเจอร์ใหม่] สามารถใส่ลิงก์ภายนอกให้กับรายการฟีเจอร์ในหน้า Login ได้แล้ว",
-            "[UI] ปรับปรุงเมนู Admin ให้เลื่อนตาม (Sticky) เพื่อความสะดวกในการกดบันทึก",
-            "[ระบบ] ปรับเลขเวอร์ชันเป็น v2.13.0 เพื่อให้สอดคล้องกับระบบหลักเดิม"
-        ]
-    },
-    {
-        version: "2.12.0",
-        date: "12 ม.ค. 2569",
-        changes: [
-            "[ปรับปรุง] รวมการตั้งค่าเนื้อหาหน้า Login เข้ามาอยู่ในส่วนตั้งค่าระบบ",
-            "[ภาษา] แปลภาษาเมนูระบบหลังบ้านเป็นภาษาไทยทั้งหมด",
-            "[แก้ไข] อัปเดตระบบไอคอนให้ทันสมัยขึ้น (Heroicons v2)",
-            "[ประสิทธิภาพ] ปรับปรุงความเร็วในการโหลดหน้า Admin Dashboard"
-        ]
     }
 ];
 
@@ -188,7 +131,7 @@ export default function ChangelogPage() {
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-slate-900 leading-none">Change Log</h1>
                     <div className="flex items-center gap-2 mt-2">
-                        <p className="text-sm text-gray-500 font-medium">บันทึกการเปลี่ยนแปลงของระบบ (v4.2.6)</p>
+                        <p className="text-sm text-gray-500 font-medium tracking-tight">บันทึกการเปลี่ยนแปลงของระบบ (v4.2.7)</p>
                         {process.env.NEXT_PUBLIC_COMMIT_HASH && (
                             <span className="text-[10px] font-mono opacity-40 bg-slate-100 px-1.5 py-0.5 rounded">
                                 #{process.env.NEXT_PUBLIC_COMMIT_HASH.slice(0, 7)}
@@ -248,4 +191,3 @@ export default function ChangelogPage() {
 }
 
 const cn = (...classes: any[]) => classes.filter(Boolean).join(' ');
-

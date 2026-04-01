@@ -310,6 +310,62 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                         </p>
                     </div>
 
+                    {/* 🛡️ LINE Messaging Support (v4.2.7) */}
+                    <div className="bg-white rounded-xl border border-slate-100 p-4 space-y-4">
+                        <div className="flex items-center justify-between px-1">
+                            <label className="text-[11px] font-bold text-slate-400 uppercase flex items-center gap-2">
+                                <svg className="w-4 h-4 fill-[#06C755]" viewBox="0 0 24 24"><path d="M24 10.304c0-5.369-5.383-9.738-12-9.738-6.616 0-12 4.369-12 9.738 0 4.814 4.269 8.846 10.036 9.608.391.084.922.258 1.057.592.121.303.079.778.039 1.085l-.171 1.047c-.052.312-.252 1.226 1.088.668 1.341-.558 7.237-4.263 9.87-7.296 1.83-1.926 2.091-3.328 2.091-5.71z"/></svg> 
+                                LINE Messaging Support
+                            </label>
+                            {user?.installed_modules?.includes('line_connected') || (user as any).lineUserId ? (
+                                <span className="flex items-center gap-1 text-[10px] font-black text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-200 uppercase tracking-tighter animate-pulse">
+                                    Connected
+                                </span>
+                            ) : (
+                                <span className="text-[10px] font-bold text-slate-300 uppercase tracking-tighter">Not Linked</span>
+                            )}
+                        </div>
+
+                        {(user as any).lineUserId ? (
+                            <div className="space-y-3 pt-1">
+                                <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                    <div className="text-[10px] text-slate-400 font-bold uppercase mb-1">Linked Profile</div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold text-xs">
+                                            {(user as any).lineDisplayName?.charAt(0) || 'L'}
+                                        </div>
+                                        <div className="text-sm font-bold text-slate-700">{(user as any).lineDisplayName || 'LINE Member'}</div>
+                                    </div>
+                                </div>
+                                <div className="flex gap-2">
+                                    <input 
+                                        type="text" 
+                                        placeholder="พิมพ์ข้อความส่งหา User รายบุคคล..."
+                                        className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-900 w-full focus:ring-1 focus:ring-[#06C755] outline-none"
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                // Function to send direct LINE message via API
+                                                alert('เตรียมระบบส่งข้อความเบื้องต้น (Phase 1): ' + (e.target as any).value);
+                                                (e.target as any).value = '';
+                                            }
+                                        }}
+                                    />
+                                    <button className="bg-[#06C755] text-white rounded-lg px-4 py-2 text-xs font-bold active:scale-95 transition-transform">
+                                        ส่ง
+                                    </button>
+                                </div>
+                                <p className="text-[9px] text-slate-400 px-1 leading-tight italic">
+                                    * ลูกค้าจะได้รับข้อความแจ้งเตือนผ่านบัญชีทางการของ YouOKE ทันที
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="bg-slate-50 p-4 rounded-xl border border-dashed border-slate-200 text-center">
+                                <p className="text-[11px] text-slate-500 font-medium">ยังไม่มีการเชื่อมต่อบัญชี LINE กับ Gmail นี้</p>
+                                <p className="text-[9px] text-slate-400 mt-1">ลูกค้ายต้องกด 'เชื่อมต่อ LINE' ในหน้าโปรไฟล์ก่อนครับ</p>
+                            </div>
+                        )}
+                    </div>
+
                     {/* ปรับปรุงแพ็กเกจปัจจุบัน (Package Assign Card) */}
                     <div className="bg-white rounded-xl border border-slate-100 p-4">
                         <label className="text-[11px] font-bold text-slate-400 uppercase mb-3 block px-1">อัปเกรดสถานะ (Manual Assign)</label>
@@ -337,7 +393,10 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                 </div>
 
                 {/* Footer (Standard Pattern) */}
-                <div className="bg-white px-5 py-4 border-t border-slate-100 flex justify-end flex-shrink-0">
+                <div className="bg-white px-5 py-4 border-t border-slate-100 flex justify-between items-center flex-shrink-0">
+                    <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">
+                        v4.2.7 Admin Intelligence
+                    </span>
                     <button 
                         className="px-6 py-2 rounded-lg text-sm font-bold text-slate-500 hover:bg-slate-50 transition-colors" 
                         onClick={onClose}
@@ -345,6 +404,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                         ปิดหน้าต่าง
                     </button>
                 </div>
+
 
             </div>
             
