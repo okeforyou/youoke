@@ -7,6 +7,7 @@ const BroadcastPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
+  const [link, setLink] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error', msg: string } | null>(null);
 
@@ -19,18 +20,16 @@ const BroadcastPage = () => {
       const res = await fetch('/api/admin/send-broadcast', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, body }),
+        body: JSON.stringify({ title, body, link: link.trim() || undefined }),
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        setStatus({ 
-          type: 'success', 
-          msg: `🎉 เผยแพร่ข่าวประกาศลงกระดานข่าวสารระบบเรียบร้อยแล้ว!` 
-        });
+        setStatus({ type: 'success', msg: `✅ เผยแพร่ประกาศสำเร็จ!` });
         setTitle('');
         setBody('');
+        setLink('');
       } else {
         throw new Error(data.error || 'Failed to send');
       }
@@ -84,6 +83,17 @@ const BroadcastPage = () => {
                     onChange={(e) => setBody(e.target.value)}
                     placeholder="ใส่รายละเอียดที่ต้องการแจ้งให้สมาชิกทราบ..."
                     className="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 text-sm leading-relaxed resize-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase mb-2">ลิงก์ (ไม่บังคับ)</label>
+                  <input
+                    type="url"
+                    value={link}
+                    onChange={(e) => setLink(e.target.value)}
+                    placeholder="https://..."
+                    className="w-full h-11 px-4 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 text-sm"
                   />
                 </div>
 

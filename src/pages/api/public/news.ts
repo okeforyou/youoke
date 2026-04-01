@@ -11,11 +11,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             throw new Error('Firestore not initialized');
         }
 
-        // 🚀 v3.9.9 Unified News Discovery: Fetch all Global Announcements
-        // This is simplified to only look for 'userId: all'
-        const snapshot = await adminFirestore.collection('notifications')
-            .where('userId', '==', 'all')
-            .get();
+        // ✅ Simple: Read all from 'announcements' — no userId filter, no index needed
+        const snapshot = await adminFirestore.collection('announcements').get();
 
         const news = snapshot.docs
             .map(doc => ({
@@ -33,3 +30,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(500).json({ error: 'Failed to fetch news', details: error.message });
     }
 }
+

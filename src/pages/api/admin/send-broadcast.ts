@@ -1,44 +1,36 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import admin, { adminMessaging, adminFirestore } from '@/firebase-admin';
+import admin, { adminFirestore } from '@/firebase-admin';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { title, body, targetUids } = req.body;
+  const { title, body, link } = req.body;
 
   if (!title || !body) {
     return res.status(400).json({ error: 'Title and body are required' });
   }
 
   if (!adminFirestore) {
-    return res.status(500).json({ error: 'Firebase services not configured' });
+    return res.status(500).json({ error: 'Firebase not configured' });
   }
 
   try {
-    const db = adminFirestore;
-
-    // 🚀 v3.9.9 Unified Structure: Single point of truth in 'notifications'
-    // This is the simplest model: Write a document with userId: 'all'
-    const newsDoc = await db.collection('notifications').add({
-      userId: 'all',
+    // ✅ Simple: Write plain announcement to its own collection
+    // No userId, no read status, no user coupling at all
+    const doc: any = {
       title,
       body,
-      type: 'broadcast',
-      read: false,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    });
+    };
 
-    return res.status(200).json({ 
-      success: true, 
-      newsId: newsDoc.id,
-      mode: 'unified-broadcast'
-    });
+    if (link) doc.link = link;
+
+    const ref = await adminFirestore.collection('announcements').add(doc);
+
+    return res.status(200).json({ success: true, id: ref.id });
 
   } catch (error: any) {
-    console.error('❌ [Broadcast API] Critical Error:', error);
-    return res.status(500).json({ 
-      success: false, 
-      error: error.message || 'Internal Server Error' 
-    });
+    console.error('❌ [Broadcast API] Error:', error);
+    return res.status(500).json({ success: false, error: error.message });
   }
 }
