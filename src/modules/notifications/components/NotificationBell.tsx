@@ -11,31 +11,25 @@ export const NotificationBell: React.FC = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [announcements, setAnnouncements] = useState<any[]>([]);
+  const [lastReadId, setLastReadId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user?.uid || !db) return;
 
-    // 🛡️ v4.1.2 Optimization: Wait 2s before starting listener
-    // This allows the main AuthStore to finish fetching the User Profile (Membership etc.)
-    // without competing for Firestore connection/quota during the critical login moment.
+    // Load last read ID from storage
+    setLastReadId(localStorage.getItem('youoke_last_read_announcement_id'));
+
     const timer = setTimeout(() => {
       const q = query(collection(db, 'announcements'), orderBy('createdAt', 'desc'), limit(20));
       const unsub = onSnapshot(q, (snapshot) => {
         const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setAnnouncements(data);
 
-        // 🛡️ v4.1.4 Client-side Unread Logic: Compare with last read ID from storage
-        const lastReadId = localStorage.getItem('youoke_last_read_announcement_id');
+        // Calculate unread based on storage
+        const storedId = localStorage.getItem('youoke_last_read_announcement_id');
         if (data.length > 0) {
-          const latestId = data[0].id;
-          if (lastReadId === latestId) {
-            setUnreadCount(0);
-          } else {
-             // If we have seen some but not all, or if it is a fresh install
-             // Count items newer than lastReadId (data is sorted desc by createdAt)
-             const lastReadIndex = data.findIndex(item => item.id === lastReadId);
-             setUnreadCount(lastReadIndex === -1 ? data.length : lastReadIndex);
-          }
+          const lastReadIndex = data.findIndex(item => item.id === storedId);
+          setUnreadCount(lastReadIndex === -1 ? data.length : lastReadIndex);
         }
       }, (err) => console.error('❌ [NotifBell]:', err));
 
@@ -52,9 +46,11 @@ export const NotificationBell: React.FC = () => {
     const nextState = !isOpen;
     setIsOpen(nextState);
     
-    // 🛡️ v4.1.4: Mark as read locally when opened
+    // Mark everything as read when opening
     if (nextState && announcements.length > 0) {
-      localStorage.setItem('youoke_last_read_announcement_id', announcements[0].id);
+      const latestId = announcements[0].id;
+      localStorage.setItem('youoke_last_read_announcement_id', latestId);
+      setLastReadId(latestId);
       setUnreadCount(0);
     }
   };
@@ -87,6 +83,16 @@ export const NotificationBell: React.FC = () => {
     }
   };
 
+  // Helper to check if an individual item is "new"
+  const isNew = (itemId: string) => {
+    if (!lastReadId) return true;
+    const itemIndex = announcements.findIndex(a => a.id === itemId);
+    const lastReadIndex = announcements.findIndex(a => a.id === lastReadId);
+    
+    if (lastReadIndex === -1) return true; // If stored ID is old/gone, treat based on chronological order
+    return itemIndex < lastReadIndex;
+  };
+
   return (
     <div className="relative">
       <button
@@ -103,50 +109,63 @@ export const NotificationBell: React.FC = () => {
         )}
       </button>
 
-      {/* Dropdown Menu - Standard YouOke patterns */}
       {isOpen && (
         <>
           <div 
             className="fixed inset-0 z-30" 
             onClick={() => setIsOpen(false)} 
           />
-          <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl border border-slate-100 z-40 overflow-hidden transform origin-top-right animate-in fade-in zoom-in-95">
+          <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl border border-slate-100 z-40 shadow-2xl flex flex-col overflow-hidden transform origin-top-right animate-in fade-in zoom-in-95">
             <div className="p-4 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
               <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ข่าวสารและประกาศ</h3>
+              {unreadCount > 0 && <span className="text-[9px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold">ใหม่ {unreadCount}</span>}
             </div>
             
-            <div className="max-h-96 overflow-y-auto">
+            <div className="max-h-96 overflow-y-auto no-scrollbar">
               {announcements.length > 0 ? (
-                announcements.map((item) => (
-                  <div 
-                    key={item.id} 
-                    className="p-4 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer"
-                  >
-                    <p className="text-sm font-bold text-slate-900">{item.title}</p>
-                    <p className="text-xs text-slate-500 mt-1">{item.body}</p>
-                    {item.link && (
-                      <a
-                        href={item.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-primary font-bold hover:underline mt-2 block"
-                      >
-                        อ่านเพิ่มเติม →
-                      </a>
-                    )}
-                    <span className="text-[10px] text-slate-400 mt-2 block">{formatDate(item.createdAt)}</span>
-                  </div>
-                ))
+                announcements.map((item) => {
+                  const itemIsNew = isNew(item.id);
+                  return (
+                    <div 
+                      key={item.id} 
+                      className={`p-4 border-b border-slate-50 hover:bg-slate-50 transition-all cursor-pointer relative ${!itemIsNew ? 'opacity-50' : ''}`}
+                    >
+                      <div className="flex items-start gap-2">
+                        {itemIsNew && <div className="w-1.5 h-1.5 rounded-full bg-red-600 mt-1.5 shrink-0 animate-pulse" />}
+                        <div className="flex-1">
+                          <p className={`text-sm font-bold ${itemIsNew ? 'text-slate-900' : 'text-slate-500'}`}>{item.title}</p>
+                          <p className="text-xs text-slate-500 mt-1 line-clamp-2">{item.body}</p>
+                          {item.link && (
+                            <a
+                              href={item.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[10px] text-primary font-bold hover:underline mt-2 inline-block"
+                            >
+                              อ่านรายละเอียด →
+                            </a>
+                          )}
+                          <div className="flex items-center gap-2 mt-2">
+                             <span className="text-[9px] text-slate-400 font-medium uppercase">{formatDate(item.createdAt)}</span>
+                             {itemIsNew && <span className="text-[8px] bg-red-50 text-red-600 px-1.5 py-0.5 rounded-md font-black italic">NEW</span>}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
               ) : (
                 <div className="p-12 text-center">
-                  <BellIcon className="w-8 h-8 text-slate-200 mx-auto mb-3" />
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">ไม่มีประกาศใหม่</p>
+                  <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <BellIcon className="w-6 h-6 text-slate-300" />
+                  </div>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">ยังไม่มีข่าวสารในขณะนี้</p>
                 </div>
               )}
             </div>
 
-            <div className="p-3 bg-slate-50 text-center border-t border-slate-50">
-              <button className="text-[10px] font-bold text-slate-400 hover:text-gray-600 uppercase tracking-tight">อ่านข่าวทั้งหมด</button>
+            <div className="p-3 bg-slate-100/50 text-center border-t border-slate-100">
+              <button className="text-[10px] font-bold text-slate-400 hover:text-primary transition-colors uppercase tracking-tight">ทำเครื่องหมายว่าอ่านทั้งหมดแล้ว</button>
             </div>
           </div>
         </>
