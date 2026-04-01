@@ -24,6 +24,7 @@ export const ProfileContent = () => {
     const router = useRouter();
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(false);
+    const [view, setView] = useState<'main' | 'line_connect'>('main');
     const { showConfirm } = useUIStore();
 
     useEffect(() => {
@@ -79,7 +80,7 @@ export const ProfileContent = () => {
     const menuItems = [
         ...((user?.role === 'admin' || profile?.role === 'admin') ? [{
             icon: SparklesIcon,
-            label: 'จัดการระบบ (Admin)',
+            label: 'จัดการระบบ',
             href: '/admin',
         }] : []),
         { icon: UserCircleIcon, label: 'แก้ไขข้อมูลส่วนตัว', href: '/profile/edit' },
@@ -96,12 +97,81 @@ export const ProfileContent = () => {
 
     if (!user) return null;
 
+    // --- LINE CONNECT VIEW ---
+    if (view === 'line_connect') {
+        return (
+            <div className="flex flex-col animate-in fade-in slide-in-from-right-4 duration-300">
+                {/* View Header */}
+                <div className="px-6 py-4 flex items-center gap-4 border-b border-slate-50 dark:border-zinc-900">
+                    <button 
+                        onClick={() => setView('main')}
+                        className="p-2 -ml-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900 transition-colors"
+                    >
+                        <ChevronRightIcon className="w-5 h-5 rotate-180" />
+                    </button>
+                    <h2 className="text-lg font-black text-slate-900 dark:text-white">เชื่อมต่อกับ LINE</h2>
+                </div>
+
+                <div className="p-8 flex flex-col items-center text-center space-y-8">
+                    <div className="w-24 h-24 bg-[#00B900]/10 rounded-[32px] flex items-center justify-center text-[#00B900] shadow-inner">
+                        <ChatBubbleLeftRightIcon className="w-12 h-12" />
+                    </div>
+
+                    <div className="space-y-2">
+                        <h3 className="text-xl font-black text-slate-900 dark:text-white">รับแจ้งเตือนผ่าน LINE</h3>
+                        <p className="text-sm font-bold text-slate-400 dark:text-zinc-500 leading-relaxed px-4">
+                            เชื่อมต่อบัญชี YouOKE ของคุณกับ LINE เพื่อรับสถานะสมาชิกและแจ้งเตือนโปรโมชั่น
+                        </p>
+                    </div>
+
+                    <div className="w-full space-y-4">
+                        <div className="bg-slate-50 dark:bg-zinc-900/50 p-6 rounded-[32px] border border-slate-100 dark:border-zinc-800 border-dashed">
+                             <p className="text-xs font-bold text-slate-500 mb-4 uppercase tracking-widest">ขั้นตอนการเชื่อมต่อ</p>
+                             <ul className="text-left space-y-3 text-[13px] font-bold text-slate-600 dark:text-zinc-400">
+                                <li className="flex gap-2">
+                                    <span className="text-primary">•</span>
+                                    <span>กดปุ่มเชื่อมต่อด้านล่างเพื่อยืนยันตัวตน</span>
+                                </li>
+                                <li className="flex gap-2">
+                                    <span className="text-primary">•</span>
+                                    <span>เพิ่มเพื่อนกับ YouOKE Official</span>
+                                </li>
+                                <li className="flex gap-2">
+                                    <span className="text-primary">•</span>
+                                    <span>รับการแจ้งเตือนได้ทันที!</span>
+                                </li>
+                             </ul>
+                        </div>
+
+                        <a 
+                            href="https://line.me/R/ti/p/@243lercy"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full bg-[#00B900] hover:bg-[#009e00] text-white py-4 rounded-[24px] font-black text-center text-sm shadow-xl shadow-green-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                        >
+                            <ChatBubbleLeftRightIcon className="w-5 h-5" />
+                            <span>เชื่อมต่อบัญชี LINE ตอนนี้</span>
+                        </a>
+
+                        <button 
+                            onClick={() => setView('main')}
+                            className="w-full text-slate-400 font-black text-[11px] uppercase tracking-widest hover:text-slate-600 transition-colors"
+                        >
+                            ไว้วันหลัง
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // --- MAIN PROFILE VIEW ---
     return (
-        <div className="flex flex-col bg-white dark:bg-zinc-950">
-            {/* Compact Profile Header */}
-            <div className="px-6 py-8 flex items-center gap-5 bg-slate-50/50 border-b border-slate-100 mb-8 dark:bg-zinc-900/50 dark:border-zinc-800 rounded-[32px] mx-2">
+        <div className="flex flex-col bg-white dark:bg-zinc-950 animate-in fade-in duration-300">
+            {/* Simple Profile Header */}
+            <div className="px-6 pt-8 pb-4 flex items-center gap-5">
                 <div className="relative">
-                    <div className="w-20 h-20 rounded-[24px] ring-4 ring-white shadow-lg overflow-hidden bg-white flex items-center justify-center text-primary font-black text-3xl dark:ring-zinc-800 dark:bg-zinc-900">
+                    <div className="w-16 h-16 rounded-[20px] shadow-sm overflow-hidden bg-slate-50 flex items-center justify-center text-primary font-black text-2xl dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800">
                         {(() => {
                             const displayPhoto = profile?.photoURL || user?.photoURL || auth?.currentUser?.photoURL;
                             return displayPhoto ? (
@@ -112,124 +182,90 @@ export const ProfileContent = () => {
                         })()}
                     </div>
                     {isAdmin && (
-                        <div className="absolute -bottom-2 -right-2 bg-red-600 text-white text-[10px] font-black px-2 py-1 rounded-xl shadow-lg border-2 border-white dark:border-zinc-800">
+                        <div className="absolute -bottom-1 -right-1 bg-red-600 text-[8px] text-white font-black px-1.5 py-0.5 rounded-lg border-2 border-white dark:border-zinc-950">
                             ADMIN
                         </div>
                     )}
                 </div>
 
                 <div className="flex-1 min-w-0">
-                    <h2 className="text-xl font-black text-slate-900 truncate flex items-center gap-2 dark:text-white">
-                        {profile?.displayName || user?.displayName || "YouOke User"}
-                        {isPremium && !isAdmin && <SparklesIcon className="w-5 h-5 text-yellow-500 fill-current" />}
+                    <h2 className="text-lg font-black text-slate-900 truncate dark:text-white">
+                        {profile?.displayName || user?.displayName || "ผู้ใช้งาน"}
+                        {isPremium && !isAdmin && <SparklesIcon className="w-4 h-4 text-yellow-500 inline-block ml-1" />}
                     </h2>
-                    <p className="text-sm font-bold text-slate-400 truncate mb-3 dark:text-zinc-500">{profile?.email || user?.email}</p>
-
-                    <Link
-                        href="/profile/edit"
-                        className="inline-flex items-center gap-2 text-[11px] font-black text-primary bg-primary/10 px-3 py-1 rounded-full hover:bg-primary/20 transition-all active:scale-95"
-                    >
-                        <UserCircleIcon className="w-4 h-4" /> แก้ไขโปรไฟล์
-                    </Link>
+                    <p className="text-xs font-bold text-slate-400 truncate dark:text-zinc-500">{profile?.email || user?.email}</p>
                 </div>
             </div>
 
-            {/* Content Groups */}
-            <div className="px-4 pb-12 space-y-10">
-                {/* 1. Membership Section */}
+            {/* Content List */}
+            <div className="px-4 pb-12 mt-6 space-y-8">
+                {/* 1. Membership */}
                 <section>
-                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 px-2 dark:text-zinc-500">ข้อมูลสมาชิก</p>
+                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-3 px-2">ข้อมูลสมาชิก</p>
                     <MembershipCard
                         membership={displayMembership as any}
                         role={isAdmin ? 'admin' : (user?.role || profile?.role)}
                         onUpgrade={() => router.push('/packages')}
                     />
 
-                    {/* 🟢 LINE Bridge Section */}
-                    <div className="mt-4 bg-slate-50 border border-slate-100 rounded-[32px] p-5 flex flex-col gap-4 shadow-sm dark:bg-zinc-900/50 dark:border-zinc-800">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2.5">
-                                <div className="bg-[#00B900] p-2 rounded-xl shadow-lg shadow-green-500/20">
-                                    <ChatBubbleLeftRightIcon className="w-5 h-5 text-white" />
-                                </div>
-                                <p className="text-xs font-black text-slate-900 dark:text-white">เชื่อมต่อ LINE</p>
-                            </div>
-                            {profile?.lineUserId ? (
-                                <span className="flex items-center gap-1.5 text-[10px] font-black text-[#00B900] bg-[#00B900]/10 px-3 py-1 rounded-full border border-[#00B900]/20 uppercase">เชื่อมต่อแล้ว</span>
-                            ) : (
-                                <span className="text-[10px] font-black text-slate-300 dark:text-zinc-600 uppercase">ยังไม่ได้เชื่อมต่อ</span>
+                    {/* LINE Connection Switcher */}
+                    <div className="mt-4 px-2">
+                        <button 
+                            onClick={() => setView('line_connect')}
+                            className={cn(
+                                "w-full flex items-center justify-between p-4 rounded-[24px] border transition-all text-left",
+                                profile?.lineUserId 
+                                    ? "bg-slate-50/50 border-slate-100 dark:bg-zinc-900/30 dark:border-zinc-800"
+                                    : "bg-white border-slate-100 shadow-sm hover:shadow-md dark:bg-zinc-900 dark:border-zinc-800"
                             )}
-                        </div>
-
-                        {profile?.lineUserId ? (
-                            <div className="flex items-center gap-4 bg-white p-3 rounded-2xl border border-slate-100 dark:bg-zinc-900 dark:border-zinc-800">
-                                <div className="w-10 h-10 rounded-full bg-[#00B900]/10 flex items-center justify-center text-[#00B900] font-black">
-                                    {profile.lineDisplayName?.charAt(0) || 'L'}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-black text-slate-800 truncate dark:text-white">{profile.lineDisplayName || 'Linked Account'}</p>
-                                    <p className="text-[10px] text-slate-400 font-bold dark:text-zinc-500">เชื่อมต่อบริการแจ้งเตือนแล้ว</p>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="space-y-3">
-                                <p className="text-[11px] font-bold text-slate-500 px-1 leading-relaxed dark:text-zinc-400">
-                                    เชื่อมต่อบัญชี LINE เพื่อความปลอดภัยและรับข่าวสารโปรโมชั่น
-                                </p>
-                                <Link 
-                                    href="/profile/line-connect"
-                                    className="w-full bg-[#00B900] hover:bg-[#009e00] text-white py-3.5 rounded-[20px] font-black text-center text-sm shadow-xl shadow-green-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
-                                >
-                                    <ChatBubbleLeftRightIcon className="w-4 h-4" />
-                                    <span>เชื่อมต่อ LINE Account</span>
-                                    <ChevronRightIcon className="w-4 h-4 ml-auto opacity-50" />
-                                </Link>
-                            </div>
-                        )}
-                        
-                        <a 
-                            href="https://line.me/R/ti/p/@243lercy" 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="w-full bg-white border border-slate-100 text-slate-400 py-3 rounded-[20px] font-black text-center text-[11px] hover:bg-slate-50 transition-all dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-500 flex items-center justify-center gap-2"
                         >
-                            <BookOpenIcon className="w-3.5 h-3.5" />
-                            <span>แจ้งปัญหา / ติดต่อแอดมิน</span>
-                        </a>
+                            <div className="flex items-center gap-3">
+                                <div className={cn(
+                                    "w-9 h-9 rounded-xl flex items-center justify-center text-white",
+                                    profile?.lineUserId ? "bg-[#00B900] opacity-50" : "bg-[#00B900]"
+                                )}>
+                                    <ChatBubbleLeftRightIcon className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-black text-slate-900 dark:text-white">เชื่อมต่อบัญชี LINE</p>
+                                    <p className="text-[10px] font-bold text-slate-400">
+                                        {profile?.lineUserId ? `เชื่อมต่อแล้ว: ${profile.lineDisplayName || 'LINE'}` : 'รับการแจ้งเตือนผ่าน LINE ฟรี'}
+                                    </p>
+                                </div>
+                            </div>
+                            <ChevronRightIcon className="w-5 h-5 text-slate-300" />
+                        </button>
                     </div>
                 </section>
 
-                {/* 2. Notifications Section */}
+                {/* 2. Notifications */}
                 <section>
-                    <div className="flex items-center justify-between px-2 mb-4">
-                        <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] dark:text-zinc-500">ข่าวสารและแจ้งเตือน</p>
-                        <Link href="/profile/notifications" className="text-[11px] font-black text-primary hover:underline uppercase tracking-tight">ทั้งหมด</Link>
+                    <div className="flex items-center justify-between px-2 mb-3">
+                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">ข่าวสารและแจ้งเตือน</p>
+                        <Link href="/profile/notifications" className="text-[10px] font-black text-primary uppercase">ทั้งหมด</Link>
                     </div>
-                    <div className="rounded-[32px] border border-slate-100 bg-slate-50/30 p-5 dark:bg-zinc-900/30 dark:border-zinc-800">
+                    <div className="rounded-[24px] border border-slate-100 bg-slate-50/50 p-4 dark:bg-zinc-900/30 dark:border-zinc-800">
                         <NotificationList />
                     </div>
                 </section>
 
-                {/* 3. Package Store */}
+                {/* 3. Packages */}
                 <section>
-                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 px-2 dark:text-zinc-500">สมัครสมาชิก</p>
+                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-3 px-2">เลือกแพ็กเกจ</p>
                     <PackageStore />
                 </section>
 
-                {/* 4. Menu Actions */}
-                <section>
-                    <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 px-2 dark:text-zinc-500">ตั้งค่าอื่นๆ</p>
-                    <ul className="space-y-2">
+                {/* 4. Actions */}
+                <section className="pt-2">
+                    <ul className="space-y-1">
                         {menuItems.map((item, index) => (
                             <li key={index}>
-                                <Link href={item.href} className="flex items-center justify-between p-4 rounded-2xl border border-transparent hover:border-slate-100 hover:bg-slate-50 transition-all group dark:hover:border-zinc-800 dark:hover:bg-zinc-900">
+                                <Link href={item.href} className="flex items-center justify-between p-4 rounded-2xl hover:bg-slate-50 transition-all dark:hover:bg-zinc-900">
                                     <div className="flex items-center gap-4">
-                                        <div className="p-2.5 bg-slate-100 rounded-xl text-slate-500 group-hover:bg-primary/10 group-hover:text-primary transition-all dark:bg-zinc-800 dark:text-zinc-500">
-                                            <item.icon className="w-5 h-5" />
-                                        </div>
-                                        <span className="text-sm font-black text-slate-700 group-hover:text-slate-900 dark:text-zinc-400 dark:group-hover:text-white">{item.label}</span>
+                                        <item.icon className="w-5 h-5 text-slate-400" />
+                                        <span className="text-sm font-bold text-slate-700 dark:text-zinc-400">{item.label}</span>
                                     </div>
-                                    <ChevronRightIcon className="w-5 h-5 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-1 transition-all" />
+                                    <ChevronRightIcon className="w-4 h-4 text-slate-300" />
                                 </Link>
                             </li>
                         ))}
@@ -237,12 +273,10 @@ export const ProfileContent = () => {
 
                     <button
                         onClick={handleLogout}
-                        className="w-full mt-6 flex items-center gap-4 p-4 rounded-2xl hover:bg-rose-50 transition-all group dark:hover:bg-rose-500/10"
+                        className="w-full mt-4 flex items-center gap-4 p-4 text-rose-500 hover:bg-rose-50 rounded-2xl transition-all dark:hover:bg-rose-500/10"
                     >
-                        <div className="p-2.5 bg-rose-50 rounded-xl text-rose-500 group-hover:bg-rose-100 transition-all dark:bg-rose-500/10 dark:text-rose-400">
-                            <ArrowRightOnRectangleIcon className="w-5 h-5" />
-                        </div>
-                        <span className="text-sm font-black text-rose-600 group-hover:text-rose-700 dark:text-rose-400">ออกจากระบบ</span>
+                        <ArrowRightOnRectangleIcon className="w-5 h-5" />
+                        <span className="text-sm font-bold">ออกจากระบบ</span>
                     </button>
                 </section>
             </div>
