@@ -114,22 +114,22 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
             // 3. Send Notification to Admins via FCM
             await notifyAdmins(paymentId);
 
-            // 4. Send LINE Notification (Existing logic)
+            // 4. Send LINE Notification to Admin (v4.3.0 Engine)
             try {
-                await axios.post('/api/payment/line-push', {
-                    message: `💰 แจ้งโอนเงินจาก ${user.displayName || user.email}`,
-                    approvalData: {
-                        paymentId,
-                        userId: user.uid,
-                        userDisplayName: user.displayName || user.email,
-                        packageId: pkg.id,
-                        packageName: pkg.name,
-                        amount: pkg.price,
-                        slipUrl: slipUrl // Include slip URL for Line if needed
-                    }
+                await axios.post('/api/notify/line-push', {
+                    to: "U0862085736780c136365a26c92d5353", // Admin/System LINE ID
+                    message: `💰 แจ้งโอนเงินใหม่!\n👤 จาก: ${user.displayName || user.email}\n📦 แพ็กเกจ: ${pkg.name}\n💸 ยอด: ${pkg.price.toLocaleString()} บาท\n🔗 ดูรายละเอียด: https://play.okeforyou.com/admin/payments?id=${paymentId}`
                 });
+                
+                // Also notify the user if they have linked LINE
+                if ((user as any).lineUserId) {
+                    await axios.post('/api/notify/line-push', {
+                        to: (user as any).lineUserId,
+                        message: `✅ ระบบรับข้อมูลแจ้งโอนของคุณแล้ว!\n📦 แพ็กเกจ: ${pkg.name}\n💰 ยอด: ${pkg.price.toLocaleString()} บาท\n\nแอดมินกำลังตรวจสอบความถูกต้อง และจะเปิดใช้งานให้คุณในเร็วๆ นี้ครับ`
+                    });
+                }
             } catch (notifyError) {
-                console.error("LINE Notify failed:", notifyError);
+                console.error("LINE Messaging failed:", notifyError);
             }
 
             setSent(true);

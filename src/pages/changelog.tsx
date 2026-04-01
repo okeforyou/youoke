@@ -5,6 +5,16 @@ import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 
 const CHANGELOGS = [
     {
+        version: "4.3.0 (LINE Full Integration)",
+        date: "1 เม.ย. 2569",
+        changes: [
+            "[Messaging] LINE Messaging SDK: เปิดใช้งานระบบส่งข้อความ Push Notification แบบ 1-on-1 ผ่าน API (Individual Direct Message)",
+            "[Payment] Real-time Admin Alerts: เมื่อลูกค้าแจ้งโอน ระบบจะยิงรายละเอียดสลิปและข้อมูลการโอนเข้า LINE แอดมินทันที",
+            "[User] Identity Bridge Connector: เพิ่มหน้าเว็บเชื่อมโยงบัญชี เพื่อให้ความแม่นยำในการระบุตัวตนระหว่าง Gmail และ LINE ถึง 100%",
+            "[System] Dynamic Engine: ย้ายศูนย์กลางเลขเวอร์ชันไปที่ Core System ทำให้ทัังแอปแสดงผลเลขเวอร์ชันเดียวกันตลอดเวลา"
+        ]
+    },
+    {
         version: "4.2.8 (LINE Identity Bridge)",
         date: "1 เม.ย. 2569",
         changes: [
