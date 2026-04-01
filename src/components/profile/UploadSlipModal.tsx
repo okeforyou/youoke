@@ -1,4 +1,4 @@
-import { useState, Fragment, useRef } from 'react';
+import { useState, useEffect, Fragment, useRef } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { X, CheckCircle, AlertCircle, Copy, QrCode, MessageCircle, ExternalLink, Upload, ImageIcon, Loader2 } from 'lucide-react';
 import { useAuthStore } from '@/modules/auth/useAuthStore';
@@ -37,6 +37,23 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
     // Use default local path if config doesn't have one
     const qrImage = config.payment?.promptPay?.qrImageUrl || "/img/scb-qr.jpg";
 
+    useEffect(() => {
+        if (isOpen && pkg && user && (user as any).lineUserId) {
+            // Send initial instructions to user via LINE (v4.3.1)
+            const sendInstructions = async () => {
+                try {
+                    await axios.post('/api/notify/line-push', {
+                        to: (user as any).lineUserId,
+                        message: `📢 รายละเอียดการชำระเงินสำหรับ: ${pkg.name}\n💰 ยอดที่ต้องโอน: ${pkg.price.toLocaleString()} บาท\n🏦 ธนาคาร: ${bankInfo.bank}\n🔢 เลขบัญชี: ${bankInfo.accNo}\n👤 ชื่อบัญชี: ${bankInfo.accName}\n\nเมื่อโอนเสร็จแล้ว รบกวนแนบรูปสลิปในแอปเพื่อเปิดใช้งานทันทีครับ!`
+                    });
+                } catch (e) {
+                    console.error("Failed to send LINE instructions:", e);
+                }
+            };
+            sendInstructions();
+        }
+    }, [isOpen, pkg?.id]);
+
     const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = e.target.files?.[0];
         if (selectedFile) {
@@ -47,6 +64,7 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
 
     const notifyAdmins = async (paymentId: string) => {
         try {
+            if (!db) return;
             // Find admins to notify
             const adminsQuery = query(collection(db, 'users'), where('role', 'in', ['admin', 'owner']));
             const adminSnapshot = await getDocs(adminsQuery);
