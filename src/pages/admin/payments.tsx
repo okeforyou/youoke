@@ -1,5 +1,6 @@
 import Head from "next/head";
 import { useState, useEffect } from "react";
+import { useRouter } from 'next/router';
 import AdminLayout from '@/features/admin/layouts/AdminLayout';
 import {
     Search,
@@ -34,6 +35,8 @@ export default function AdminOrdersPage() {
     const [processing, setProcessing] = useState(false);
     const showConfirm = useUIStore(state => state.showConfirm);
     const { addToast } = useToast()!;
+    const router = useRouter();
+    const orderIdToSelect = router.query.id as string;
 
     // Fetch Orders
     const fetchOrders = async () => {
@@ -48,6 +51,15 @@ export default function AdminOrdersPage() {
                     orderList.push({ id: doc.id, ...data } as PaymentSlip);
                 });
                 setOrders(orderList);
+
+                // Auto-select if ID is provided in URL (v4.3.0 Deep Link)
+                if (orderIdToSelect) {
+                    const targetOrder = orderList.find(o => o.id === orderIdToSelect);
+                    if (targetOrder) {
+                        setSelectedOrder(targetOrder);
+                        addToast("เจอรายการสั่งซื้อที่ต้องการตรวจสอบแล้ว!", "success");
+                    }
+                }
             }
         } catch (error) {
             console.error("Error fetching orders:", error);
@@ -57,8 +69,10 @@ export default function AdminOrdersPage() {
     };
 
     useEffect(() => {
-        fetchOrders();
-    }, []);
+        if (router.isReady) {
+            fetchOrders();
+        }
+    }, [router.isReady]);
 
     // Filter Logic
     const filteredOrders = statusFilter === 'all'
