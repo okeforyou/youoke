@@ -325,19 +325,16 @@ export const Sidebar = memo(() => {
                     )
                 )}
 
-                {/* Version Info (v4.1.5 Platinum) */}
+                {/* Version Info (Standard Gray & Linked) */}
                 <div className={clsx(
-                    "mt-4 flex items-center transition-all duration-300 border-t border-gray-100 pt-4 px-3",
+                    "mt-4 flex items-center transition-all duration-300 border-t border-gray-50 pt-4 px-3",
                     isSidebarCollapsed ? "justify-center" : "justify-between"
                 )}>
-                    <span className="text-[9px] font-black tracking-widest text-primary/40 uppercase">
-                        {isSidebarCollapsed ? '4.1.5 P' : 'Version v4.1.5'}
-                    </span>
-                    {!isSidebarCollapsed && (
-                        <span className="text-[8px] bg-primary/5 text-primary px-1.5 py-0.5 rounded-md font-black italic shadow-inner">
-                            PLATINUM
+                    <Link href="/changelog" className="hover:opacity-70 transition-opacity">
+                        <span className="text-[9px] font-black tracking-widest text-gray-300 uppercase">
+                            {isSidebarCollapsed ? '4.1.6' : 'Version v4.1.6'}
                         </span>
-                    )}
+                    </Link>
                 </div>
             </div>
         </aside>

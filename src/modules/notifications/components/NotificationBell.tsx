@@ -17,7 +17,8 @@ export const NotificationBell: React.FC = () => {
     if (!user?.uid || !db) return;
 
     // Load last read ID from storage
-    setLastReadId(localStorage.getItem('youoke_last_read_announcement_id'));
+    const storedId = localStorage.getItem('youoke_last_read_announcement_id');
+    setLastReadId(storedId);
 
     const timer = setTimeout(() => {
       const q = query(collection(db, 'announcements'), orderBy('createdAt', 'desc'), limit(20));
@@ -25,11 +26,14 @@ export const NotificationBell: React.FC = () => {
         const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setAnnouncements(data);
 
-        // Calculate unread based on storage
-        const storedId = localStorage.getItem('youoke_last_read_announcement_id');
+        // Re-read storage on each snapshot to ensure we have the absolute latest state
+        const freshStoredId = localStorage.getItem('youoke_last_read_announcement_id');
         if (data.length > 0) {
-          const lastReadIndex = data.findIndex(item => item.id === storedId);
+          const lastReadIndex = data.findIndex(item => item.id === freshStoredId);
+          // If the last read ID is still the top one, count is 0
           setUnreadCount(lastReadIndex === -1 ? data.length : lastReadIndex);
+        } else {
+          setUnreadCount(0);
         }
       }, (err) => console.error('❌ [NotifBell]:', err));
 
@@ -51,9 +55,10 @@ export const NotificationBell: React.FC = () => {
       const latestId = announcements[0].id;
       localStorage.setItem('youoke_last_read_announcement_id', latestId);
       setLastReadId(latestId);
-      setUnreadCount(0);
+      setUnreadCount(0); // Force UI update immediately
     }
   };
+
 
   const formatDate = (createdAt: any) => {
     if (!createdAt) return 'เมื่อสักครู่';
