@@ -5,6 +5,15 @@ import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 
 const CHANGELOGS = [
     {
+        version: "4.2.4 (Messaging & Logic Fix)",
+        date: "1 เม.ย. 2569",
+        changes: [
+            "[Critical Fix] Notification Sync: แก้ไชระบบคำนวณข่าวที่ยังไม่ได้อ่าน ทำให้จุดกระพริบสีแดงหายไปทันทีเมื่อกดอ่าน (Global Sync)",
+            "[Admin] Messaging Prep: เริ่มวางโครงสร้าง LINE Messaging API เพื่อส่งข้อความแจ้งเตือนสถานะการโอนเงินและอื่นๆ",
+            "[System] UI Polishing: ปรับปรุงความเสถียรของหน้า Dashboard และ Sidebar ให้ซิงค์เวอร์ชันตรงกัน 100%"
+        ]
+    },
+    {
         version: "4.2.2 (Billboard Master)",
         date: "1 เม.ย. 2569",
         changes: [
