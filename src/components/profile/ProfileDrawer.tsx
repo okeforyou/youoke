@@ -286,38 +286,12 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                                          </div>
                                                      </div>
 
-                                                     {/* Update Changelog v4.1.5 Platinum */}
-                                                     <div className="bg-primary/5 border border-primary/10 rounded-2xl p-4">
-                                                         <div className="flex items-center gap-2 mb-3">
-                                                             <SparklesIcon className="w-4 h-4 text-primary animate-pulse" />
-                                                             <p className="text-[10px] font-black text-primary uppercase tracking-widest">ประวัติการอัปเดต v4.1.5</p>
-                                                         </div>
-                                                         <ul className="space-y-2.5">
-                                                             <li className="flex items-start gap-2">
-                                                                 <div className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />
-                                                                 <p className="text-[11px] font-bold text-gray-800 leading-tight">ระบบ Billboard: ประกาศข่าวสารแบบประสิทธิภาพสูง (Direct Firestore)</p>
-                                                             </li>
-                                                             <li className="flex items-start gap-2">
-                                                                 <div className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />
-                                                                 <p className="text-[11px] font-bold text-gray-800 leading-tight">Smart Unread: จำสถานะการอ่านประกาศรายบุคคลแบบออฟไลน์</p>
-                                                             </li>
-                                                             <li className="flex items-start gap-2">
-                                                                 <div className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />
-                                                                 <p className="text-[11px] font-bold text-gray-800 leading-tight">Visual States: เพิ่มจุดแดง (Pulse) และสีจางเมื่ออ่านประกาศเดิมแล้ว</p>
-                                                             </li>
-                                                             <li className="flex items-start gap-2">
-                                                                 <div className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />
-                                                                 <p className="text-[11px] font-bold text-gray-800 leading-tight">Optimization: แก้ไขปัญหา Social Login หน่วงด้วยระบบ Delay Async Fetch</p>
-                                                             </li>
-                                                         </ul>
-                                                     </div>
-
-
                                                     {/* Package Store (Buy Direct) */}
                                                     <div>
                                                         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 px-2">เลือกแพ็กเกจ</p>
                                                         <PackageStore />
                                                     </div>
+
 
                                                     {/* Menu List (Simplified) */}
                                                     <div>

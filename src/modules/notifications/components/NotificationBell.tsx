@@ -11,14 +11,20 @@ export const NotificationBell: React.FC = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [announcements, setAnnouncements] = useState<any[]>([]);
-  const [lastReadId, setLastReadId] = useState<string | null>(null);
+  const [readIds, setReadIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (!user?.uid || !db) return;
 
-    // Load last read ID from storage
-    const storedId = localStorage.getItem('youoke_last_read_announcement_id');
-    setLastReadId(storedId);
+    // Load read IDs from storage
+    const stored = localStorage.getItem('youoke_read_ids');
+    if (stored) {
+      try {
+        setReadIds(JSON.parse(stored));
+      } catch (e) {
+        setReadIds([]);
+      }
+    }
 
     const timer = setTimeout(() => {
       const q = query(collection(db, 'announcements'), orderBy('createdAt', 'desc'), limit(20));
@@ -26,15 +32,15 @@ export const NotificationBell: React.FC = () => {
         const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         setAnnouncements(data);
 
-        // Re-read storage on each snapshot to ensure we have the absolute latest state
-        const freshStoredId = localStorage.getItem('youoke_last_read_announcement_id');
-        if (data.length > 0) {
-          const lastReadIndex = data.findIndex(item => item.id === freshStoredId);
-          // If the last read ID is still the top one, count is 0
-          setUnreadCount(lastReadIndex === -1 ? data.length : lastReadIndex);
-        } else {
-          setUnreadCount(0);
-        }
+        // Recalculate unread count based on current data and read IDs
+        const freshStored = localStorage.getItem('youoke_read_ids');
+        let currentReadIds: string[] = [];
+        try {
+          currentReadIds = freshStored ? JSON.parse(freshStored) : [];
+        } catch (e) {}
+
+        const unreadItems = data.filter(item => !currentReadIds.includes(item.id));
+        setUnreadCount(unreadItems.length);
       }, (err) => console.error('❌ [NotifBell]:', err));
 
       return () => unsub();
@@ -47,18 +53,28 @@ export const NotificationBell: React.FC = () => {
   if (!user?.uid) return null;
 
   const handleOpenBell = () => {
-    const nextState = !isOpen;
-    setIsOpen(nextState);
-    
-    // Mark everything as read when opening
-    if (nextState && announcements.length > 0) {
-      const latestId = announcements[0].id;
-      localStorage.setItem('youoke_last_read_announcement_id', latestId);
-      setLastReadId(latestId);
-      setUnreadCount(0); // Force UI update immediately
-    }
+    setIsOpen(!isOpen);
+    // 🛡️ v4.1.7 Policy: Opening the bell NO LONGER marks everything as read.
+    // User must click individual items or the "Mark All" button.
   };
 
+  const markRead = (id: string) => {
+    const newReadIds = Array.from(new Set([...readIds, id]));
+    setReadIds(newReadIds);
+    localStorage.setItem('youoke_read_ids', JSON.stringify(newReadIds));
+    
+    // Immediate count update
+    const count = announcements.filter(a => !newReadIds.includes(a.id)).length;
+    setUnreadCount(count);
+  };
+
+  const markAllAsRead = () => {
+    const allIds = announcements.map(a => a.id);
+    const newReadIds = Array.from(new Set([...readIds, ...allIds]));
+    setReadIds(newReadIds);
+    localStorage.setItem('youoke_read_ids', JSON.stringify(newReadIds));
+    setUnreadCount(0);
+  };
 
   const formatDate = (createdAt: any) => {
     if (!createdAt) return 'เมื่อสักครู่';
@@ -86,16 +102,6 @@ export const NotificationBell: React.FC = () => {
     } catch (e) {
       return 'เมื่อสักครู่';
     }
-  };
-
-  // Helper to check if an individual item is "new"
-  const isNew = (itemId: string) => {
-    if (!lastReadId) return true;
-    const itemIndex = announcements.findIndex(a => a.id === itemId);
-    const lastReadIndex = announcements.findIndex(a => a.id === lastReadId);
-    
-    if (lastReadIndex === -1) return true; // If stored ID is old/gone, treat based on chronological order
-    return itemIndex < lastReadIndex;
   };
 
   return (
@@ -129,10 +135,11 @@ export const NotificationBell: React.FC = () => {
             <div className="max-h-96 overflow-y-auto no-scrollbar">
               {announcements.length > 0 ? (
                 announcements.map((item) => {
-                  const itemIsNew = isNew(item.id);
+                  const itemIsNew = !readIds.includes(item.id);
                   return (
                     <div 
                       key={item.id} 
+                      onClick={() => markRead(item.id)}
                       className={`p-4 border-b border-slate-50 hover:bg-slate-50 transition-all cursor-pointer relative ${!itemIsNew ? 'opacity-50' : ''}`}
                     >
                       <div className="flex items-start gap-2">
@@ -140,19 +147,21 @@ export const NotificationBell: React.FC = () => {
                         <div className="flex-1">
                           <p className={`text-sm font-bold ${itemIsNew ? 'text-slate-900' : 'text-slate-500'}`}>{item.title}</p>
                           <p className="text-xs text-slate-500 mt-1 line-clamp-2">{item.body}</p>
-                          {item.link && (
-                            <a
-                              href={item.link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-[10px] text-primary font-bold hover:underline mt-2 inline-block"
-                            >
-                              อ่านรายละเอียด →
-                            </a>
-                          )}
-                          <div className="flex items-center gap-2 mt-2">
-                             <span className="text-[9px] text-slate-400 font-medium uppercase">{formatDate(item.createdAt)}</span>
-                             {itemIsNew && <span className="text-[8px] bg-red-50 text-red-600 px-1.5 py-0.5 rounded-md font-black italic">NEW</span>}
+                          <div className="flex items-center justify-between mt-2">
+                             <div className="flex items-center gap-2">
+                                <span className="text-[9px] text-slate-400 font-medium uppercase">{formatDate(item.createdAt)}</span>
+                                {itemIsNew && <span className="text-[8px] bg-red-50 text-red-600 px-1.5 py-0.5 rounded-md font-black italic">NEW</span>}
+                             </div>
+                             {itemIsNew ? (
+                                <button 
+                                  onClick={(e) => { e.stopPropagation(); markRead(item.id); }}
+                                  className="text-[9px] font-bold text-primary hover:underline uppercase"
+                                >
+                                  อ่านแล้ว
+                                </button>
+                             ) : (
+                                <span className="text-[9px] font-bold text-slate-300 uppercase">อ่านแล้ว</span>
+                             )}
                           </div>
                         </div>
                       </div>
@@ -169,8 +178,14 @@ export const NotificationBell: React.FC = () => {
               )}
             </div>
 
-            <div className="p-3 bg-slate-100/50 text-center border-t border-slate-100">
-              <button className="text-[10px] font-bold text-slate-400 hover:text-primary transition-colors uppercase tracking-tight">ทำเครื่องหมายว่าอ่านทั้งหมดแล้ว</button>
+            <div className="p-3 bg-slate-100/50 text-center border-t border-slate-100 px-4">
+              <button 
+                onClick={markAllAsRead}
+                disabled={unreadCount === 0}
+                className="w-full py-2 text-[10px] font-bold text-slate-400 hover:text-primary disabled:opacity-30 disabled:hover:text-slate-400 transition-colors uppercase tracking-tight"
+              >
+                ทำเครื่องหมายว่าอ่านทั้งหมดแล้ว
+              </button>
             </div>
           </div>
         </>
@@ -178,4 +193,5 @@ export const NotificationBell: React.FC = () => {
     </div>
   );
 };
+
 

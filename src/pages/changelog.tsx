@@ -5,8 +5,29 @@ import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 
 const CHANGELOGS = [
     {
+        version: "4.1.7 (Announcement UX)",
+        date: "1 เม.ย. 2569",
+        changes: [
+            "[Announcement] เพิ่มระบบ Interactive Read: ผู้ใช้สามารถเลือกกด 'อ่าน' ทีละรายการเพื่อลดจำนวนแจ้งเตือนได้จริง",
+            "[Announcement] ย้ายระบบ Read Status ไปเก็บแบบ Array ใน LocalStorage เพื่อความแม่นยำรายบุคคล",
+            "[UI/UX] เพิ่มปุ่ม 'ทำเครื่องหมายว่าอ่านทั้งหมด' ที่ใช้งานได้จริง เพื่อความสะดวกของผู้ใช้",
+            "[UI/UX] ปรับปรุง Version Label ใน Sidebar เป็นสีเทาเท่ๆ (Minimalist) ตามมาตรฐาน Master Pattern",
+            "[Navigation] เชื่อมโยงเลขเวอร์ชันใน Sidebar ให้ลิงก์เข้าสู่หน้า Changelog โดยตรง"
+        ]
+    },
+    {
+        version: "4.1.4 (System Billboard)",
+        date: "31 มี.ค. 2569",
+        changes: [
+            "[System] Billboard Engine: เปลี่ยนระบบประกาศข่าวสารมาใช้ Firestore Direct Read แทน API เพื่อตัดปัญหา Quota Exhausted",
+            "[Performance] Social Login Optimization: ปรับปรุงความเร็วในการเข้าสู่ระบบด้วยระบบ Delay Async Initialization",
+            "[Bug Fix] แก้ไขปัญหา Invalid Date ในหน้าแจ้งเตือนด้วย Date Formatter ตัวใหม่ที่รองรับ Firestore Timestamp"
+        ]
+    },
+    {
         version: "2.18.0 (Spotify Module)",
         date: "19 ม.ค. 2569",
+
         changes: [
             "[Code Structure] แยก Spotify Integration ออกเป็น Module (spotify-theme) เพื่อความเป็นระเบียบและแก้ไขง่าย",
             "[Refactor] จัดระเบียบ API และ Service ที่เกี่ยวข้องกับ Spotify ทั้งหมดไปยัง src/modules/",
