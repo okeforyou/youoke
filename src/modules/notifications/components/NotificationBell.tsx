@@ -28,23 +28,37 @@ export const NotificationBell: React.FC = () => {
 
     const timer = setTimeout(() => {
       const q = query(collection(db, 'announcements'), orderBy('createdAt', 'desc'), limit(20));
-      const unsub = onSnapshot(q, (snapshot) => {
-        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setAnnouncements(data);
-
-        // Recalculate unread count based on current data and read IDs
+      
+      const updateCount = (data: any[]) => {
         const freshStored = localStorage.getItem('youoke_read_ids');
         let currentReadIds: string[] = [];
         try {
           currentReadIds = freshStored ? JSON.parse(freshStored) : [];
+          setReadIds(currentReadIds);
         } catch (e) {}
 
         const unreadItems = data.filter(item => !currentReadIds.includes(item.id));
         setUnreadCount(unreadItems.length);
+      };
+
+      const unsub = onSnapshot(q, (snapshot) => {
+        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setAnnouncements(data);
+        updateCount(data);
       }, (err) => console.error('❌ [NotifBell]:', err));
 
-      return () => unsub();
+      // 🛡️ v4.1.9 Cross-component Sync
+      const handleSync = () => {
+        updateCount(announcements);
+      };
+      window.addEventListener('youoke_notifications_updated', handleSync);
+
+      return () => {
+        unsub();
+        window.removeEventListener('youoke_notifications_updated', handleSync);
+      };
     }, 2000);
+
 
     return () => clearTimeout(timer);
   }, [user?.uid]);
