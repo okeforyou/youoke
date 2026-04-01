@@ -58,11 +58,11 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
     const labelMembership = isAdmin ? "สิทธิ์ผู้ดูแลระบบ" : "สิทธิ์การใช้งาน";
 
     const accents = {
-        admin: "border-rose-500 text-rose-500 bg-rose-50/30",
-        lifetime: "border-amber-500 text-amber-500 bg-amber-50/30",
-        yearly: "border-purple-500 text-purple-500 bg-purple-50/30",
-        monthly: "border-blue-500 text-blue-500 bg-blue-50/30",
-        free: "border-slate-200 text-slate-400 bg-slate-50/10",
+        admin: "border-rose-200/50 text-rose-500 bg-white dark:bg-zinc-950",
+        lifetime: "border-amber-200/50 text-amber-500 bg-white dark:bg-zinc-950",
+        yearly: "border-purple-200/50 text-purple-500 bg-white dark:bg-zinc-950",
+        monthly: "border-blue-200/50 text-blue-500 bg-white dark:bg-zinc-950",
+        free: "border-slate-100 text-slate-400 bg-white dark:bg-zinc-950",
     };
 
     let activeAccent = accents.free;
@@ -74,12 +74,12 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
     return (
         <div className="relative group cursor-pointer w-full" onClick={onUpgrade}>
             <div className={cn(
-                "relative rounded-[24px] overflow-hidden border p-4 flex flex-col justify-between min-h-[110px] transition-all duration-500 hover:shadow-lg bg-white dark:bg-zinc-950",
+                "relative rounded-[24px] overflow-hidden border p-4 flex flex-col justify-between min-h-[110px] transition-all duration-500 bg-white dark:bg-zinc-950 shadow-sm hover:shadow-md",
                 activeAccent
             )}>
                 {/* Visual Accent Top Line (Minimal) */}
-                <div className={cn("absolute top-0 left-6 right-6 h-1 rounded-b-full opacity-30", 
-                    isAdmin ? "bg-rose-500" : (isPremium ? "bg-primary" : "bg-slate-200")
+                <div className={cn("absolute top-0 left-6 right-6 h-1 rounded-b-full opacity-40", 
+                    isAdmin ? "bg-rose-500" : (isPremium ? "bg-primary" : "bg-slate-100")
                 )}></div>
 
                 <div className="relative z-10 flex justify-between items-start">
