@@ -5,6 +5,15 @@ import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 
 const CHANGELOGS = [
     {
+        version: "4.2.8 (LINE Identity Bridge)",
+        date: "1 เม.ย. 2569",
+        changes: [
+            "[System] Identity Bridge: เพิ่มระบบตรวจสอบสถานะการเชื่อมต่อ LINE ในหน้าโปรไฟล์ลูกค้า เพื่อผูกบัญชี Gmail เข้ากับ LINE ID อัตโนมัติ",
+            "[UI/UX] Dynamic LINE Support: ปรับปรุงส่วนติดต่อแอดมินใน Profile Drawer ให้แสดงสถานะ 'Linked' เมื่อมีการผูกบัญชีแล้ว",
+            "[Admin] UX Enhancement: แยกปุ่ม 'คุยกับแอดมิน' และปุ่ม 'เชื่อมต่อระบบ' ให้ชัดเจนขึ้นเพื่อลดความสับสนของผู้ใช้งาน"
+        ]
+    },
+    {
         version: "4.2.7 (LINE Connect & Admin DM)",
         date: "1 เม.ย. 2569",
         changes: [
@@ -131,7 +140,7 @@ export default function ChangelogPage() {
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-slate-900 leading-none">Change Log</h1>
                     <div className="flex items-center gap-2 mt-2">
-                        <p className="text-sm text-gray-500 font-medium tracking-tight">บันทึกการเปลี่ยนแปลงของระบบ (v4.2.7)</p>
+                        <p className="text-sm text-gray-500 mt-1 font-medium">ติดตามสถานะและความเคลื่อนไหวล่าสุด (v4.2.8)</p>
                         {process.env.NEXT_PUBLIC_COMMIT_HASH && (
                             <span className="text-[10px] font-mono opacity-40 bg-slate-100 px-1.5 py-0.5 rounded">
                                 #{process.env.NEXT_PUBLIC_COMMIT_HASH.slice(0, 7)}

@@ -252,27 +252,59 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                                               }}
                                                            />
 
-                                                            {/* VIP LINE@ SUPPORT SECTION - Compact & Strategic */}
-                                                            <div className="mt-3 bg-gray-50 border border-gray-100 rounded-3xl p-4 flex flex-col gap-3 shadow-sm transition-all hover:border-[#00B900]/30 hover:bg-[#00B900]/5 group">
-                                                                <div className="flex items-center gap-3">
-                                                                    <div className="bg-[#00B900] p-2 rounded-xl shadow-lg shadow-green-500/10">
-                                                                        <ChatBubbleLeftRightIcon className="w-5 h-5 text-white" />
+                                                            {/* 🔍 VIP LINE@ IDENTITY BRIDGE SECTION (v4.2.8) */}
+                                                            <div className="mt-3 bg-gray-50 border border-gray-100 rounded-3xl p-4 flex flex-col gap-3 shadow-sm transition-all hover:border-[#00B900]/30 group">
+                                                                <div className="flex items-center justify-between px-1">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <div className="bg-[#00B900] p-1.5 rounded-lg shadow-lg shadow-green-500/10">
+                                                                            <ChatBubbleLeftRightIcon className="w-4 h-4 text-white" />
+                                                                        </div>
+                                                                        <p className="text-[11px] font-black text-gray-900 uppercase">LINE Connection</p>
                                                                     </div>
-                                                                    <div>
-                                                                        <p className="text-[12px] font-black text-gray-900 leading-tight">ติดต่อสอบถาม / เชื่อมต่อระบบ</p>
-                                                                        <p className="text-[9px] font-medium text-gray-500 mt-0.5">เพิ่มเพื่อนเพื่อรับข้อมูลและการแจ้งเตือนจากระบบผ่าน LINE</p>
-                                                                    </div>
+                                                                    {profile?.lineUserId || (profile as any)?.lineUserId ? (
+                                                                        <span className="flex items-center gap-1 text-[9px] font-black text-[#00B900] bg-[#00B900]/10 px-2 py-0.5 rounded-full border border-[#00B900]/20 uppercase tracking-tighter animate-pulse">
+                                                                            Linked
+                                                                        </span>
+                                                                    ) : (
+                                                                        <span className="text-[9px] font-bold text-gray-300 uppercase tracking-tighter">Not Linked</span>
+                                                                    )}
                                                                 </div>
+
+                                                                {(profile as any)?.lineUserId ? (
+                                                                    <div className="flex items-center gap-3 bg-white p-2.5 rounded-2xl border border-gray-100">
+                                                                        <div className="w-8 h-8 rounded-full bg-[#00B900]/10 flex items-center justify-center text-[#00B900] font-bold text-xs">
+                                                                             {(profile as any).lineDisplayName?.charAt(0) || 'L'}
+                                                                        </div>
+                                                                        <div className="flex-1 min-w-0">
+                                                                            <p className="text-xs font-bold text-gray-800 truncate">{(profile as any).lineDisplayName || 'LINE Linked Account'}</p>
+                                                                            <p className="text-[9px] text-gray-400 font-medium">เชื่อมต่อกับ Gmail สำเร็จแล้ว</p>
+                                                                        </div>
+                                                                    </div>
+                                                                ) : (
+                                                                    <div className="space-y-2">
+                                                                        <p className="text-[10px] font-medium text-gray-500 px-1 leading-relaxed">
+                                                                            * เชื่อมต่อ LINE เพื่อรับแจ้งเตือนสถานะสมาชิกและยอดโอนเงินแบบ Real-time
+                                                                        </p>
+                                                                        <Link 
+                                                                            href="/profile/line-connect" // Or your LIFF bridge URL
+                                                                            className="w-full bg-[#00B900] hover:bg-[#009e00] text-white py-2.5 rounded-xl font-black text-center text-xs active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
+                                                                        >
+                                                                            <span>🟢 เชื่อมต่อ LINE (Sync ข้อมูล)</span>
+                                                                            <ChevronRightIcon className="w-3.5 h-3.5" />
+                                                                        </Link>
+                                                                    </div>
+                                                                )}
+                                                                
                                                                 <a 
                                                                     href="https://line.me/R/ti/p/@243lercy" 
                                                                     target="_blank" 
                                                                     rel="noopener noreferrer"
-                                                                    className="w-full bg-[#00B900] hover:bg-[#009e00] text-white py-2.5 rounded-xl font-black text-center text-xs active:scale-[0.98] transition-all flex items-center justify-center gap-1.5"
+                                                                    className="w-full bg-white border border-gray-100 text-gray-400 py-2 rounded-xl font-bold text-center text-[10px] hover:bg-gray-50 transition-colors flex items-center justify-center gap-1.5"
                                                                 >
-                                                                    <span>คุยกับแอดมิน (LINE@)</span>
-                                                                    <ChevronRightIcon className="w-3.5 h-3.5" />
+                                                                    <span>แจ้งปัญหา / คุยกับแอดมิน</span>
                                                                 </a>
                                                             </div>
+
                                                      </div>
 
                                                      {/* System News Feed */}
