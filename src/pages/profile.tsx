@@ -1,10 +1,10 @@
 import { useEffect } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
-import { ArrowLeft, Home, Bell, User } from "lucide-react";
 import { useAuthStore } from "@/modules/auth/useAuthStore";
 import { SYSTEM_VERSION } from "@/core/version";
 import { ProfileContent } from "@/components/profile/ProfileContent";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 
 export default function ProfilePage() {
   const { user, isLoading } = useAuthStore();
@@ -18,76 +18,67 @@ export default function ProfilePage() {
 
   if (isLoading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] dark:bg-zinc-950">
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-zinc-950">
         <span className="loading loading-spinner loading-lg text-primary"></span>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] dark:bg-zinc-950 font-sans selection:bg-primary/10">
+    <div className="min-h-screen w-full relative font-sans selection:bg-primary/10 overflow-hidden flex items-center justify-center bg-slate-50/30 dark:bg-zinc-950/30">
       <Head>
-        <title>Account Settings - YouOke v{SYSTEM_VERSION}</title>
+        <title>Identity Hub - YouOke v{SYSTEM_VERSION}</title>
       </Head>
 
-      {/* 🚀 Ultra-Clean Global Navigation Header */}
-      <nav className="fixed top-0 left-0 right-0 z-[100] bg-white/80 backdrop-blur-xl border-b border-slate-100 dark:bg-zinc-900/80 dark:border-zinc-800">
-        <div className="max-w-2xl mx-auto px-6 h-16 flex items-center justify-between">
-            <button 
-                onClick={() => router.push('/')}
-                className="flex items-center gap-2 text-slate-400 hover:text-slate-900 transition-colors group"
-            >
-                <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-                <span className="text-sm font-black uppercase tracking-widest">Back to Home</span>
-            </button>
-            <div className="flex items-center gap-3">
-                <div className="bg-primary/10 p-2 rounded-xl text-primary">
-                    <User className="w-4 h-4" />
-                </div>
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-            </div>
-        </div>
-      </nav>
+      {/* 🌑 Deep Blurred Backdrop (Simulating being over the app) */}
+      <div className="fixed inset-0 bg-slate-200/40 dark:bg-zinc-900/40 backdrop-blur-3xl" />
 
-      {/* 💎 Focused Settings Hub Card */}
-      <main className="max-w-2xl mx-auto pt-24 pb-24 px-4 md:px-0 animate-in fade-in slide-in-from-bottom-8 duration-700">
-        <div className="bg-white shadow-[0_32px_64px_-12px_rgba(0,0,0,0.08)] rounded-[48px] overflow-hidden border border-slate-100 dark:bg-zinc-900 dark:border-zinc-800 relative group transition-all hover:border-slate-200">
+      {/* 🚀 Unified Centered Drawer Card */}
+      <main className="relative z-10 w-full max-w-lg mx-auto sm:px-4 animate-in fade-in zoom-in-95 duration-500">
+        <div className="bg-white dark:bg-zinc-950 shadow-[0_48px_100px_-12px_rgba(0,0,0,0.15)] sm:rounded-[40px] border border-slate-100 dark:border-zinc-800 overflow-hidden flex flex-col h-screen sm:h-auto sm:max-h-[85vh]">
           
-          {/* Internal Page Label */}
-          <div className="px-10 pt-14 pb-4">
-             <div className="flex items-center gap-2 mb-2">
-                 <div className="w-8 h-1 bg-primary rounded-full"></div>
-                 <div className="w-2 h-1 bg-primary/20 rounded-full"></div>
+          {/* Header (Mirrors Drawer Header) */}
+          <header className="px-8 py-5 border-b border-slate-50 dark:border-zinc-900 flex items-center justify-between sticky top-0 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md z-20">
+             <div className="flex flex-col">
+                <h1 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Identity Hub</h1>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Account & System Settings</p>
              </div>
-             <h1 className="text-4xl font-black text-slate-950 dark:text-white tracking-tighter">Identity Hub</h1>
-             <p className="text-slate-400 font-bold mt-2 text-xs uppercase tracking-[0.2em]">User Profile & System Permissions</p>
-          </div>
-
-          <div className="p-2 md:p-6 mb-10">
-            <ProfileContent />
-          </div>
-
-          {/* Minimal Traceback Info */}
-          <div className="p-8 border-t border-slate-50 dark:border-zinc-900 bg-slate-50/10 text-center">
-             <p className="text-[9px] font-black text-slate-200 uppercase tracking-[0.4em]">Official YouOKE System v{SYSTEM_VERSION}</p>
-          </div>
-        </div>
-
-        {/* Home Utility below main card */}
-        <div className="mt-12 text-center">
-            <button 
+             <button 
                 onClick={() => router.push('/')}
-                className="inline-flex items-center gap-3 px-8 py-4 bg-white shadow-sm ring-1 ring-slate-100 hover:ring-primary/20 hover:shadow-xl hover:text-primary transition-all rounded-[24px] text-xs font-black uppercase tracking-widest text-slate-400 active:scale-95 group"
-            >
-                <div className="bg-slate-100 p-2 rounded-xl group-hover:bg-primary/10 transition-colors">
-                    <Home className="w-4 h-4" />
+                className="w-10 h-10 rounded-full flex items-center justify-center bg-slate-50 dark:bg-zinc-900 text-slate-400 hover:bg-slate-100 hover:text-slate-900 transition-all active:scale-95"
+             >
+                <XMarkIcon className="w-6 h-6" />
+             </button>
+          </header>
+
+          {/* Scrollable Body (The Real Content) */}
+          <div className="flex-1 overflow-y-auto no-scrollbar scroll-smooth">
+             <div className="p-2 sm:p-4">
+                <ProfileContent />
+             </div>
+             
+             {/* Footer Mark (Subtle) */}
+             <div className="px-10 py-8 text-center bg-slate-50/30 dark:bg-zinc-900/30">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                    <div className="w-8 h-px bg-slate-200 dark:bg-zinc-800"></div>
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary/30"></div>
+                    <div className="w-8 h-px bg-slate-200 dark:bg-zinc-800"></div>
                 </div>
-                <span>Return to Dashboard</span>
-            </button>
+                <p className="text-[9px] font-black text-slate-300 dark:text-zinc-600 uppercase tracking-[0.4em]">Integrated Identity System v{SYSTEM_VERSION}</p>
+             </div>
+          </div>
         </div>
       </main>
 
-      {/* 🛑 Hiding BottomNavigation for the standalone Hub view to match user's clean flow */}
+      {/* 🏠 Home Shortcut (Floating for safety) */}
+      <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-20 hidden sm:block">
+         <button 
+            onClick={() => router.push('/')}
+            className="px-6 py-2.5 bg-slate-950 dark:bg-white text-white dark:text-zinc-950 rounded-full text-[10px] font-black uppercase tracking-widest shadow-2xl hover:scale-105 active:scale-95 transition-all opacity-40 hover:opacity-100"
+         >
+            Back to Dashboard
+         </button>
+      </div>
     </div>
   );
 }
