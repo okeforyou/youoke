@@ -181,7 +181,7 @@ const AdminDashboard: React.FC = () => {
             <div className="w-1.5 h-10 bg-primary rounded-full"></div>
             <div>
               <h1 className="text-2xl font-black text-gray-900 tracking-tight">ภาพรวมระบบ</h1>
-              <p className="text-sm text-gray-500 mt-1 font-medium">ติดตามสถานะและความเคลื่อนไหวล่าสุด (v4.2.3)</p>
+              <p className="text-sm text-gray-500 mt-1 font-medium">ติดตามสถานะและความเคลื่อนไหวล่าสุด (v4.2.5)</p>
             </div>
           </div>
           <div className="flex flex-col items-end gap-1">
@@ -240,7 +240,7 @@ const AdminDashboard: React.FC = () => {
         <div className="bg-white p-6 rounded-[24px] border border-gray-100">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-1 h-6 bg-primary rounded-full"></div>
-            <h3 className="font-bold text-lg text-gray-900">เมนูจัดการด่วน (v4.2.3)</h3>
+            <h3 className="font-bold text-lg text-gray-900">เมนูจัดการด่วน (v4.2.5)</h3>
           </div>
 
           {/* Quick Action Cards - Corrected to 5 Columns Row */}

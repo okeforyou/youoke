@@ -169,56 +169,73 @@ const CHANGELOGS = [
 
 export default function ChangelogPage() {
     return (
-        <div className="min-h-screen bg-white text-gray-800 font-sans p-6 md:p-12 max-w-3xl mx-auto">
+        <div className="min-h-screen bg-slate-50 text-slate-800 font-sans p-6 md:p-12">
             <Head>
                 <title>Changelog - YouOke</title>
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
             </Head>
 
-            <header className="mb-12 border-b pb-6 flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Change Log</h1>
-                    <div className="flex items-center gap-2 mt-2">
-                        <p className="text-gray-500">บันทึกการเปลี่ยนแปลงของระบบ</p>
-                        {process.env.NEXT_PUBLIC_COMMIT_HASH && (
-                            <span className="badge badge-sm badge-ghost text-xs font-mono opacity-50">
-                                Build: {process.env.NEXT_PUBLIC_COMMIT_HASH}
-                            </span>
-                        )}
-                    </div>
-                </div>
-                <Link href="/" className="btn btn-ghost btn-sm gap-2">
-                    <ArrowLeftIcon className="w-4 h-4" />
-                    Back to Home
-                </Link>
-            </header>
-
-            <main className="space-y-10">
-                {CHANGELOGS.map((log, index) => (
-                    <article key={index} className="relative pl-6 border-l-2 border-gray-200">
-                        <div className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full ${index === 0 ? 'bg-black' : 'bg-gray-300'}`}></div>
-
-                        <header className="mb-3">
-                            <h2 className="text-xl font-bold flex items-center gap-3">
-                                v{log.version}
-                                <span className="text-sm font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full font-mono">
-                                    {log.date}
+            <div className="max-w-3xl mx-auto bg-white p-8 md:p-10 rounded-[32px] border border-slate-100 shadow-sm">
+                <header className="mb-10 flex items-center justify-between">
+                    <div>
+                        <Link href="/" className="inline-flex items-center gap-2 text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-3 hover:opacity-70 transition-opacity">
+                            <ArrowLeftIcon className="w-3 h-3" />
+                            Back to Home
+                        </Link>
+                        <h1 className="text-2xl font-black tracking-tight text-slate-900">Change Log</h1>
+                        <div className="flex items-center gap-3 mt-1">
+                            <p className="text-xs text-slate-400 font-medium tracking-tight">บันทึกการพัฒนาและอัปเดตระบบ (v4.2.5)</p>
+                            {process.env.NEXT_PUBLIC_COMMIT_HASH && (
+                                <span className="text-[9px] font-mono opacity-30 bg-slate-100 px-1.5 py-0.5 rounded">
+                                    #{process.env.NEXT_PUBLIC_COMMIT_HASH.slice(0, 7)}
                                 </span>
-                            </h2>
-                        </header>
+                            )}
+                        </div>
+                    </div>
+                </header>
 
-                        <ul className="list-disc list-inside space-y-1 text-gray-600">
-                            {log.changes.map((change, i) => (
-                                <li key={i} className="pl-2">{change}</li>
-                            ))}
-                        </ul>
-                    </article>
-                ))}
-            </main>
+                <main className="space-y-8">
+                    {CHANGELOGS.map((log, index) => (
+                        <article key={index} className="relative pl-8 border-l border-slate-100 last:border-l-0">
+                            {/* Timeline Node */}
+                            <div className={cn(
+                                "absolute -left-[5px] top-1.5 w-[9px] h-[9px] rounded-full border-2 border-white shadow-sm",
+                                index === 0 ? 'bg-primary scale-125 z-10 ring-4 ring-primary/10' : 'bg-slate-200'
+                            )}></div>
 
-            <footer className="mt-20 pt-6 border-t text-center text-sm text-gray-400">
-                <p>&copy; {new Date().getFullYear()} YouOke. All rights reserved.</p>
-            </footer>
+                            <header className="mb-3">
+                                <div className="flex items-baseline gap-3">
+                                    <h2 className={cn(
+                                        "text-base font-black tracking-tight",
+                                        index === 0 ? "text-slate-900" : "text-slate-500"
+                                    )}>
+                                        v{log.version}
+                                    </h2>
+                                    <span className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">
+                                        {log.date}
+                                    </span>
+                                </div>
+                            </header>
+
+                            <ul className="space-y-2">
+                                {log.changes.map((change, i) => (
+                                    <li key={i} className="group flex gap-3 text-[13px] leading-relaxed text-slate-600 hover:text-slate-900 transition-colors">
+                                        <span className="mt-2 w-1 h-1 rounded-full bg-slate-300 shrink-0 group-hover:bg-primary transition-colors" />
+                                        <span className="font-medium">{change}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </article>
+                    ))}
+                </main>
+
+                <footer className="mt-16 pt-8 border-t border-slate-50 text-center">
+                    <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">&copy; {new Date().getFullYear()} YouOke. All rights reserved.</p>
+                </footer>
+            </div>
         </div>
     );
 }
+
+const cn = (...classes: any[]) => classes.filter(Boolean).join(' ');
+
