@@ -34,8 +34,7 @@ export const NotificationToast: React.FC = () => {
       const q = query(
         collection(db, 'notifications'),
         where('userId', 'in', [user.uid, 'all']),
-        orderBy('createdAt', 'desc'),
-        limit(1)
+        limit(5)
       );
 
       unsubFirestore = onSnapshot(q, (snapshot) => {
