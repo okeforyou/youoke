@@ -181,12 +181,58 @@ const AdminDashboard: React.FC = () => {
             <div className="w-1.5 h-10 bg-primary rounded-full"></div>
             <div>
               <h1 className="text-2xl font-black text-gray-900 tracking-tight">ภาพรวมระบบ</h1>
-              <p className="text-sm text-gray-500 mt-1 font-medium">ติดตามสถานะและความเคลื่อนไหวล่าสุดของ YouOke</p>
+              <p className="text-sm text-gray-500 mt-1 font-medium">ติดตามสถานะและความเคลื่อนไหวล่าสุด (v4.2.3)</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-500 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100 font-bold">
-            <Clock className="w-4 h-4" />
-            <span>ข้อมูลล่าสุด: {new Date().toLocaleTimeString('th-TH')}</span>
+          <div className="flex flex-col items-end gap-1">
+             <div className="flex items-center gap-2 text-sm text-gray-500 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100 font-bold">
+               <Clock className="w-4 h-4" />
+               <span>ข้อมูลล่าสุด: {new Date().toLocaleTimeString('th-TH')}</span>
+             </div>
+          </div>
+        </div>
+
+        {/* 🛡️ Billboard: Admin System Alerts */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <div className="lg:col-span-2 bg-gradient-to-r from-slate-900 to-slate-800 p-6 rounded-[24px] text-white relative overflow-hidden">
+             <div className="absolute top-0 right-0 p-8 opacity-10">
+                <Megaphone className="w-32 h-32 rotate-12" />
+             </div>
+             <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-4">
+                   <span className="px-3 py-1 bg-primary/20 text-primary border border-primary/30 rounded-full text-[10px] font-black uppercase tracking-widest">System Alerts</span>
+                   <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                </div>
+                <h2 className="text-xl font-bold mb-2">สิ่งที่ควรจัดการในวันนี้</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                   <div className="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/10">
+                      <div className="w-10 h-10 bg-orange-500/20 rounded-xl flex items-center justify-center text-orange-500">
+                         <UserCheck className="w-5 h-5" />
+                      </div>
+                      <div>
+                         <div className="text-[10px] font-bold text-slate-400 uppercase">รออนุมัติ</div>
+                         <div className="text-lg font-bold">{stats.pendingPayments || 0} รายการ</div>
+                      </div>
+                   </div>
+                   <div className="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/10">
+                      <div className="w-10 h-10 bg-green-500/20 rounded-xl flex items-center justify-center text-green-500">
+                         <TrendingUp className="w-5 h-5" />
+                      </div>
+                      <div>
+                         <div className="text-[10px] font-bold text-slate-400 uppercase">รายได้เดือนนี้</div>
+                         <div className="text-lg font-bold">฿{stats.totalRevenue.toLocaleString()}</div>
+                      </div>
+                   </div>
+                </div>
+             </div>
+          </div>
+          <div className="bg-white p-6 rounded-[24px] border border-gray-100 flex flex-col justify-center">
+             <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Announcement Quick-Post</div>
+             <p className="text-xs text-slate-500 mb-4 leading-relaxed font-medium">ต้องการประกาศแจ้งสมาชิกด่วนหรือไม่?</p>
+             <Link href="/admin/broadcast" className="w-full h-11 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl flex items-center justify-center gap-2 transition-all font-bold text-sm text-slate-700">
+                <Megaphone className="w-4 h-4" />
+                ไปหน้าประกาศข่าวสาร
+             </Link>
           </div>
         </div>
 
@@ -194,63 +240,64 @@ const AdminDashboard: React.FC = () => {
         <div className="bg-white p-6 rounded-[24px] border border-gray-100">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-1 h-6 bg-primary rounded-full"></div>
-            <h3 className="font-bold text-lg text-gray-900">เมนูจัดการด่วน</h3>
+            <h3 className="font-bold text-lg text-gray-900">เมนูจัดการด่วน (v4.2.3)</h3>
           </div>
 
-          {/* Quick Action Cards - Horizontal Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Quick Action Cards - Corrected to 5 Columns Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Marketing & Upsell */}
             <Link href="/admin/config"
-              className="group bg-gradient-to-br from-pink-50 to-purple-50 hover:from-pink-100 hover:to-purple-100 p-6 rounded-2xl border border-pink-200 transition-all duration-300 cursor-pointer hover:-translate-y-1">
-              <div className="flex items-center justify-center w-12 h-12 bg-white rounded-xl mb-4 group-hover:scale-110 transition-transform duration-300 ring-1 ring-pink-100">
-                <Megaphone className="w-6 h-6 text-pink-500" />
+              className="group bg-gradient-to-br from-pink-50 to-purple-50 hover:from-pink-100 hover:to-purple-100 p-5 rounded-2xl border border-pink-200 transition-all duration-300 cursor-pointer hover:-translate-y-1">
+              <div className="flex items-center justify-center w-10 h-10 bg-white rounded-xl mb-4 group-hover:scale-110 transition-transform duration-300 ring-1 ring-pink-100">
+                <Megaphone className="w-5 h-5 text-pink-500" />
               </div>
-              <div className="text-base font-bold text-gray-900 group-hover:text-pink-700 transition-colors">Marketing & Upsell</div>
-              <div className="text-xs text-gray-500 mt-1.5 leading-relaxed">จัดการโปรโมชั่นและเส้นทางนำเสนอสินค้า</div>
+              <div className="text-sm font-bold text-gray-900 group-hover:text-pink-700 transition-colors leading-tight">Admin & Marketing</div>
+              <div className="text-[10px] text-gray-400 mt-1.5 leading-relaxed font-medium">จัดการโปรโมชั่นต่างๆ</div>
             </Link>
 
             {/* Users & Roles */}
             <Link href="/admin/users"
-              className="group bg-gradient-to-br from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 p-6 rounded-2xl border border-green-200 transition-all duration-300 cursor-pointer hover:-translate-y-1">
-              <div className="flex items-center justify-center w-12 h-12 bg-white rounded-xl mb-4 group-hover:scale-110 transition-transform duration-300 ring-1 ring-green-100">
-                <UserCheck className="w-6 h-6 text-green-600" />
+              className="group bg-gradient-to-br from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 p-5 rounded-2xl border border-green-200 transition-all duration-300 cursor-pointer hover:-translate-y-1">
+              <div className="flex items-center justify-center w-10 h-10 bg-white rounded-xl mb-4 group-hover:scale-110 transition-transform duration-300 ring-1 ring-green-100">
+                <UserCheck className="w-5 h-5 text-green-600" />
               </div>
-              <div className="text-base font-bold text-gray-900 group-hover:text-green-700 transition-colors">Users & Roles</div>
-              <div className="text-xs text-gray-500 mt-1.5 leading-relaxed">จัดการผู้ใช้และสิทธิ์การเข้าถึงระบบ Premium</div>
+              <div className="text-sm font-bold text-gray-900 group-hover:text-green-700 transition-colors leading-tight">Users & Roles</div>
+              <div className="text-[10px] text-gray-400 mt-1.5 leading-relaxed font-medium">จัดการสิทธิ์สมาชิก PRO</div>
             </Link>
 
             {/* System Setup */}
             <Link href="/admin/config"
-              className="group bg-gradient-to-br from-blue-50 to-cyan-50 hover:from-blue-100 hover:to-cyan-100 p-6 rounded-2xl border border-blue-200 transition-all duration-300 cursor-pointer hover:-translate-y-1">
-              <div className="flex items-center justify-center w-12 h-12 bg-white rounded-xl mb-4 group-hover:scale-110 transition-transform duration-300 ring-1 ring-blue-100">
-                <Settings className="w-6 h-6 text-blue-600" />
+              className="group bg-gradient-to-br from-blue-50 to-cyan-50 hover:from-blue-100 hover:to-cyan-100 p-5 rounded-2xl border border-blue-200 transition-all duration-300 cursor-pointer hover:-translate-y-1">
+              <div className="flex items-center justify-center w-10 h-10 bg-white rounded-xl mb-4 group-hover:scale-110 transition-transform duration-300 ring-1 ring-blue-100">
+                <Settings className="w-5 h-5 text-blue-600" />
               </div>
-              <div className="text-base font-bold text-gray-900 group-hover:text-blue-700 transition-colors">System Setup</div>
-              <div className="text-xs text-gray-500 mt-1.5 leading-relaxed">ตั้งค่าระบบ รูปแบบ การกำหนดค่า</div>
+              <div className="text-sm font-bold text-gray-900 group-hover:text-blue-700 transition-colors leading-tight">System Setup</div>
+              <div className="text-[10px] text-gray-400 mt-1.5 leading-relaxed font-medium">ตั้งค่ารูปแบบระบบ</div>
             </Link>
 
             {/* Artist Management */}
             <Link href="/admin/artists"
-              className="group bg-gradient-to-br from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 p-6 rounded-2xl border border-amber-200 transition-all duration-300 cursor-pointer hover:-translate-y-1">
-              <div className="flex items-center justify-center w-12 h-12 bg-white rounded-xl mb-4 group-hover:scale-110 transition-transform duration-300 ring-1 ring-amber-100">
-                <ImageIcon className="w-6 h-6 text-orange-500" />
+              className="group bg-gradient-to-br from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 p-5 rounded-2xl border border-amber-200 transition-all duration-300 cursor-pointer hover:-translate-y-1">
+              <div className="flex items-center justify-center w-10 h-10 bg-white rounded-xl mb-4 group-hover:scale-110 transition-transform duration-300 ring-1 ring-amber-100">
+                <ImageIcon className="w-5 h-5 text-orange-500" />
               </div>
-              <div className="text-base font-bold text-gray-900 group-hover:text-orange-700 transition-colors">Artist Management</div>
-              <div className="text-xs text-gray-500 mt-1.5 leading-relaxed">จัดการรูปศิลปินและข้อมูลหน้าปกจาก IOOX/เวปไซต์</div>
+              <div className="text-sm font-bold text-gray-900 group-hover:text-orange-700 transition-colors leading-tight">Artist Library</div>
+              <div className="text-[10px] text-gray-400 mt-1.5 leading-relaxed font-medium">จัดการรูปศิลปิน/หน้าปก</div>
             </Link>
 
             {/* Revenue */}
-            <div className="bg-gradient-to-br from-primary to-purple-600 p-6 rounded-2xl text-white relative overflow-hidden group">
+            <div className="bg-gradient-to-br from-primary to-purple-600 p-5 rounded-2xl text-white relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-              <div className="flex items-center justify-center w-12 h-12 bg-white/20 rounded-xl mb-4 backdrop-blur-md group-hover:rotate-12 transition-transform duration-500">
-                <DollarSign className="w-6 h-6 text-white" />
+              <div className="flex items-center justify-center w-10 h-10 bg-white/20 rounded-xl mb-4 backdrop-blur-md group-hover:rotate-12 transition-transform duration-500">
+                <DollarSign className="w-5 h-5 text-white" />
               </div>
-              <div className="text-base font-bold relative z-10">Revenue (Monthly)</div>
-              <div className="text-xs opacity-80 mt-1.5 relative z-10">ภาพรวมรายได้ทั้งหมด</div>
-              <div className="text-3xl font-bold mt-3 relative z-10 tracking-tight">฿{stats.totalRevenue.toLocaleString()}</div>
+              <div className="text-sm font-bold relative z-10 leading-tight">Monthly Revenue</div>
+              <div className="text-[10px] opacity-80 mt-1.5 relative z-10 font-bold uppercase tracking-tighter">฿{stats.totalRevenue.toLocaleString()}</div>
+              <div className="text-xl font-bold mt-2 relative z-10 tracking-tight leading-none italic animate-pulse">LIVE</div>
             </div>
           </div>
         </div>
+
 
         {/* Stats Cards Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
