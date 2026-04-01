@@ -5,6 +5,15 @@ import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 
 const CHANGELOGS = [
     {
+        version: "4.2.1 (Management Update)",
+        date: "1 เม.ย. 2569",
+        changes: [
+            "[Announcement] Pulse Indicator: เปลี่ยนจากตัวเลข Badge เป็นจุดสีแดงกระพริบ (Minimal Pulse) เพื่อความสะอาดตา",
+            "[Admin] Billboard Manager: เพิ่มระบบจัดการประกาศในหน้า Admin บรอดแคสต์ สามารถลบข่าวเก่าได้ทันที",
+            "[System] Layout Sync: ปรับปรุงหน้า Broadcast ให้รองรับการแสดงผลรายการข่าวแบบสองคอลัมน์"
+        ]
+    },
+    {
         version: "4.2.0 (Unified Sync)",
         date: "1 เม.ย. 2569",
         changes: [

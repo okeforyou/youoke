@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AdminHeader } from '@/features/admin/components/AdminHeader';
 import { AdminSidebar } from '@/features/admin/layouts/AdminSidebar';
-import { MegaphoneIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
+import { MegaphoneIcon, PaperAirplaneIcon, TrashIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { collection, onSnapshot, orderBy, query, deleteDoc, doc, getFirestore } from 'firebase/firestore';
+import { app } from '@/firebase';
+
+const db = app ? getFirestore(app) : null;
 
 const BroadcastPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -10,6 +14,17 @@ const BroadcastPage = () => {
   const [link, setLink] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<{ type: 'success' | 'error', msg: string } | null>(null);
+  const [announcements, setAnnouncements] = useState<any[]>([]);
+
+  // 🛡️ Fetch existing announcements
+  useEffect(() => {
+    if (!db) return;
+    const q = query(collection(db, 'announcements'), orderBy('createdAt', 'desc'));
+    const unsub = onSnapshot(q, (snapshot) => {
+      setAnnouncements(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+    return () => unsub();
+  }, []);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +56,16 @@ const BroadcastPage = () => {
     }
   };
 
+  const handleDelete = async (id: string) => {
+    if (!db || !window.confirm('ยืนยันการลบประกาศนี้?')) return;
+    try {
+      await deleteDoc(doc(db, 'announcements', id));
+    } catch (err) {
+      console.error(err);
+      alert('ลบไม่สำเร็จ');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       <AdminSidebar isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
@@ -49,84 +74,112 @@ const BroadcastPage = () => {
         <AdminHeader onMenuClick={() => setIsSidebarOpen(true)} />
         
         <main className="flex-1 p-4 lg:p-8">
-          <div className="max-w-2xl mx-auto">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="p-3 bg-primary/10 rounded-xl text-primary">
-                <MegaphoneIcon className="w-6 h-6" />
+          <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Left: Form */}
+            <div>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 bg-primary/10 rounded-xl text-primary">
+                  <MegaphoneIcon className="w-6 h-6" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-slate-900">ประกาศข่าวสาร</h1>
+                  <p className="text-slate-500 text-xs ">เขียนข่าวประกาศขึ้นกะดิ่ง (v4.2.1)</p>
+                </div>
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-slate-900">ประกาศข่าวสารระบบ</h1>
-                <p className="text-slate-500 text-sm">เขียนข่าวประกาศเพื่อให้แสดงผลในกระดิ่งของทุกคน (Public News)</p>
+
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                <form onSubmit={handleSend} className="p-5 space-y-5">
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">หัวข้อประกาศ</label>
+                    <input
+                      type="text"
+                      required
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="แจ้งวันหยุดสงกรานต์ 🎤"
+                      className="w-full h-11 px-4 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">เนื้อหา</label>
+                    <textarea
+                      required
+                      rows={4}
+                      value={body}
+                      onChange={(e) => setBody(e.target.value)}
+                      placeholder="ใส่รายละเอียด..."
+                      className="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-sm leading-relaxed resize-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">ลิงก์</label>
+                    <input
+                      type="url"
+                      value={link}
+                      onChange={(e) => setLink(e.target.value)}
+                      placeholder="https://..."
+                      className="w-full h-11 px-4 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none text-sm"
+                    />
+                  </div>
+
+                  {status && (
+                    <div className={`p-4 rounded-xl text-xs font-bold ${
+                      status.type === 'success' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
+                    }`}>
+                      {status.msg}
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full h-12 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
+                  >
+                    {isLoading ? <span className="loading loading-spinner loading-xs"></span> : <PaperAirplaneIcon className="w-5 h-5 -rotate-45" />}
+                    ส่งประกาศ
+                  </button>
+                </form>
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-100">
-              <form onSubmit={handleSend} className="p-6 space-y-6">
-                <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase mb-2">หัวข้อประกาศ</label>
-                  <input
-                    type="text"
-                    required
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="เช่น: แจ้งวันหยุดสงกรานต์ 🎤"
-                    className="w-full h-11 px-4 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 text-sm font-bold"
-                  />
-                </div>
+            {/* Right: List Management */}
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-bold text-slate-900">จัดการประกาศเดิม</h2>
+                <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full uppercase tracking-widest">{announcements.length} รายการ</span>
+              </div>
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase mb-2">เนื้อหาข่าว</label>
-                  <textarea
-                    required
-                    rows={6}
-                    value={body}
-                    onChange={(e) => setBody(e.target.value)}
-                    placeholder="ใส่รายละเอียดที่ต้องการแจ้งให้สมาชิกทราบ..."
-                    className="w-full p-4 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 text-sm leading-relaxed resize-none"
-                  />
-                </div>
+              <div className="space-y-3">
+                {announcements.map((item) => (
+                  <div key={item.id} className="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm hover:border-primary/20 transition-all group">
+                    <div className="flex justify-between items-start gap-3">
+                      <div className="flex-1">
+                        <h4 className="text-sm font-bold text-slate-900 leading-tight mb-1">{item.title}</h4>
+                        <p className="text-[11px] text-slate-500 line-clamp-2">{item.body}</p>
+                        <div className="flex items-center gap-2 mt-3 text-[9px] text-slate-400 font-bold uppercase tracking-tight">
+                          <ClockIcon className="w-3 h-3" />
+                          {item.createdAt?.toDate ? item.createdAt.toDate().toLocaleString('th-TH') : 'NEW'}
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => handleDelete(item.id)}
+                        className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                      >
+                        <TrashIcon className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-400 uppercase mb-2">ลิงก์ (ไม่บังคับ)</label>
-                  <input
-                    type="url"
-                    value={link}
-                    onChange={(e) => setLink(e.target.value)}
-                    placeholder="https://..."
-                    className="w-full h-11 px-4 bg-slate-50 border border-slate-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 text-sm"
-                  />
-                </div>
-
-                {status && (
-                  <div className={`p-4 rounded-xl text-sm font-medium animate-in fade-in slide-in-from-top-2 ${
-                    status.type === 'success' ? 'bg-green-50 text-green-600 border border-green-100' : 'bg-red-50 text-red-600 border border-red-100'
-                  }`}>
-                    {status.msg}
+                {announcements.length === 0 && (
+                  <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-slate-200">
+                    <MegaphoneIcon className="w-8 h-8 text-slate-200 mx-auto mb-2" />
+                    <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">ไม่มีประกาศที่ถูกส่งไป</p>
                   </div>
                 )}
-
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full h-12 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold transition-all disabled:opacity-50 active:scale-[0.98] shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
-                >
-                  {isLoading ? (
-                    <span className="loading loading-spinner loading-xs"></span>
-                  ) : (
-                    <PaperAirplaneIcon className="w-5 h-5 -rotate-45" />
-                  )}
-                  ส่งประกาศสาธารณะ
-                </button>
-              </form>
-            </div>
-
-            <div className="mt-8 p-6 bg-blue-50/30 rounded-2xl border border-dashed border-blue-100">
-              <h4 className="text-[10px] font-bold text-blue-500 uppercase mb-3 tracking-widest">การทำงานของระบบ</h4>
-              <ul className="text-xs text-blue-600/70 space-y-2 list-disc pl-4 font-medium">
-                <li>เมื่อกดส่ง ข้อความจะขึ้นที่กระดิ่งของ **สมาชิกทุกคน** ทันที</li>
-                <li>User ไม่จำเป็นต้องอนุญาต Notification ก็สามารถเห็นจุดสีแดงที่กะดิ่งได้</li>
-                <li>ระบบจะบันทึกประวัติไว้ในหน้า "ข่าวสารและประกาศ" เพื่อให้อ่านย้อนหลังได้</li>
-              </ul>
+              </div>
             </div>
           </div>
         </main>

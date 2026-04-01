@@ -126,12 +126,9 @@ export const NotificationBell: React.FC = () => {
       >
         <BellIcon className="w-6 h-6" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-600 border border-white rounded-full flex items-center justify-center z-10 animate-in zoom-in-50 duration-500">
-            <span className="text-[10px] font-black text-white leading-none">
-              {unreadCount > 9 ? '9+' : unreadCount}
-            </span>
-          </span>
+          <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-600 border-2 border-white rounded-full z-10 animate-pulse shadow-sm" />
         )}
+
       </button>
 
       {isOpen && (
