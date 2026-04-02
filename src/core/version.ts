@@ -3,13 +3,23 @@
  * ศูนย์รวมเลขเวอร์ชันของทัังระบบ เพื่อความแม่นยำและไม่ซ้ำซ้อน
  */
 
-export const SYSTEM_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || "4.8.2";
-export const SYSTEM_CODENAME = "Universal Persistence Achievement";
+export const SYSTEM_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || "4.8.5";
+export const SYSTEM_CODENAME = "Green Bridge Achievement";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
 export const BUILD_DATE = "2 เม.ย. 2569";
 
 export const CHANGELOGS = [
+    {
+        version: "4.8.5 (Green Bridge Achievement)",
+        date: "2 เม.ย. 2569",
+        changes: [
+            "[UI/UX] Green Bridge Mastery: เปลี่ยนทัั้งไอคอนและปุ่มเชื่อมต่อ LINE ให้เป็นสีเขียวพรีเมียม (#00B900) ตามมาตรฐานสากล",
+            "[UI/UX] Subtle Indicators: ปรับแต่ง Badge สถานะให้มีความนุ่มนวลและเป็นโทนเดียวกับแบรนด์ LINE",
+            "[Sync] Professional Heartbeat: เพิ่มประสิทธิภาพการดึงข้อมูลเพื่อให้สถานะการผูกบัญชีอัปเดตตรงตามจริงที่สุด"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
     {
         version: "4.8.2 (Universal Persistence Milestone)",
         date: "2 เม.ย. 2569",
@@ -17,17 +27,6 @@ export const CHANGELOGS = [
             "[Sync] Hybrid Database Persistence: เปิดใช้งานระบบบันทึกข้อมูลขนาน (Firestore + Realtime DB) เพื่อความแม่นยำของสถานะ LINE 100%",
             "[UI/UX] Minimalist Bridge: ดีไซน์ส่วนเชื่อมต่อ LINE แบบ Flat & Clean ลดความรกตา และเน้นความพรีเมียมสไตล์เรียบหรู",
             "[System] Anti-Cache Enforcement: บังคับการดึงข้อมูลโปรไฟล์แบบข้าม Cache ทันทีที่เข้าหน้า Profile เพื่อสถานะที่รวดเร็วที่สุด"
-        ],
-        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
-    },
-    {
-        version: "4.8.0 (Identity Bridge Milestone)",
-        date: "2 เม.ย. 2569",
-        changes: [
-            "[Sync] Identity Bridge Core: เปิดใช้งานระบบผูกบัญชี LINE Login สากล (Identity Bridge) ที่เสถียรที่สุด ทดแทนระบบ LIFF เก่า",
-            "[Sync] Professional Handshake: เพิ่มระบบ State-Mapping เพื่อผูกบัญชี Gmail เดิมเข้ากับ LINE โดยไม่ต้องพิมพ์ข้อความยืนยัน",
-            "[Security] 0% Hardcode Policy: กวาดล้างรหัส ID และ URL ที่ฝังในโค้ดออกทัั้งระบบ เพื่อความปลอดภัยสูงสุด",
-            "[UI/UX] 404 Recovery: ล้างจุดบอดที่ทำให้สมาชิกเจอหน้า 404 ขณะสแกน และปรับปรุงทัั้งระบบเชื่อมต่อใหม่แบบ 1-Click"
         ]
     },
     {
