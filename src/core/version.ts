@@ -78,6 +78,11 @@ export const CHANGELOGS = [
     {
         version: "4.3.0 (LINE Full Integration)",
         date: "1 เม.ย. 2569",
+        changes: [
+            "[Messaging] LINE Messaging SDK: เปิดใช้งานระบบส่งข้อความ Push Notification แบบ 1-on-1 ผ่าน API (Individual Direct Message)",
+            "[Payment] Real-time Admin Alerts: เมื่อลูกค้าแจ้งโอน ระบบจะยิงรายละเอียดสลิปและข้อมูลการโอนเข้า LINE แอดมินทันที",
+            "[User] Identity Bridge Connector: เพิ่มหน้าเว็บเชื่อมโยงบัญชี เพื่อให้ความแม่นยำในการระบุตัวตนข้ามแพลตฟอร์ม"
+        ]
     }
 ];
 

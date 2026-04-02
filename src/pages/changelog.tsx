@@ -87,7 +87,7 @@ export default function ChangelogPage() {
                         </header>
 
                         <ul className="space-y-2.5">
-                            {log.changes.map((change, i) => (
+                            {log.changes?.map((change, i) => (
                                 <li key={i} className="group flex gap-3 text-[13px] leading-relaxed text-slate-500 hover:text-slate-900 transition-colors dark:hover:text-zinc-300">
                                     <span className="mt-2 w-1 h-1 rounded-full bg-slate-200 shrink-0 group-hover:bg-primary transition-colors dark:bg-zinc-800" />
                                     <span className="font-medium">{change}</span>
