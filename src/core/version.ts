@@ -3,13 +3,24 @@
  * ศูนย์รวมเลขเวอร์ชันของทัังระบบ เพื่อความแม่นยำและไม่ซ้ำซ้อน
  */
 
-export const SYSTEM_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || "4.8.7";
-export const SYSTEM_CODENAME = "Compact Status Achievement";
+export const SYSTEM_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || "4.9.0";
+export const SYSTEM_CODENAME = "LINE Messaging Bridge";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
 export const BUILD_DATE = "2 เม.ย. 2569";
 
 export const CHANGELOGS = [
+    {
+        version: "4.9.0 (LINE Messaging Bridge)",
+        date: "2 เม.ย. 2569",
+        changes: [
+            "[Messaging] LINE Private Push: แอดมินส่งข้อความ LINE ส่วนตัวหาสมาชิกที่ผูกบัญชีแล้วได้โดยตรงจากหน้าจัดการ",
+            "[System] Smart Expiry Notify: แจ้งเตือนหมดอายุเข้า LINE ของสมาชิกทุกคนที่ผูกบัญชีแล้ว (ไม่จำกัดวิธีล็อกอิน)",
+            "[System] Payment Approval Notify: แจ้งอนุมัติพรีเมียมเข้า LINE อัตโนมัติสำหรับทุกคนที่ผูกบัญชี",
+            "[Admin] LINE Badge: แสดงไอคอน LINE สีเขียวในรายชื่อสมาชิกเพื่อให้แอดมินเห็นว่าใครส่งได้"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
     {
         version: "4.8.7 (Compact Status Achievement)",
         date: "2 เม.ย. 2569",

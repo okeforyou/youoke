@@ -70,6 +70,8 @@ interface User {
     createdAt: any;
     banned?: boolean;
     provider?: 'line' | 'google' | 'password' | string;
+    lineUserId?: string;
+    lineDisplayName?: string;
 }
 
 interface PackageOption {
@@ -447,10 +449,28 @@ export default function AdminUsersPage() {
 
             if (!result.success) throw new Error(result.error || 'API Error');
 
+            // 🟢 v4.9.0: ส่ง LINE ด้วย (ถ้าผูกบัญชีแล้ว)
+            let lineSent = false;
+            if ((notificationUser as any)?.lineUserId) {
+                try {
+                    await fetch('/api/notify/line-push', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            to: (notificationUser as any).lineUserId,
+                            message: `[YouOKE] ${msgTitle}\n${msgBody}`
+                        })
+                    });
+                    lineSent = true;
+                } catch (lineErr) {
+                    console.warn('LINE push failed (non-critical):', lineErr);
+                }
+            }
+
             setConfirmModal({
                 isOpen: true,
                 title: "ส่งข้อความสำเร็จ",
-                message: `ส่งการแจ้งเตือนไปยังคุณ ${notificationUser.displayName} เรียบร้อยแล้ว (OneSignal: ${result.pushResult?.success ? 'Success' : 'Fail'})`,
+                message: `ส่งการแจ้งเตือนไปยังคุณ ${notificationUser.displayName} เรียบร้อยแล้ว\n(OneSignal: ${result.pushResult?.success ? '✅' : '❌'} | LINE: ${lineSent ? '✅' : (notificationUser as any)?.lineUserId ? '❌' : 'ไม่ได้ผูก'})`,
                 type: 'info',
                 onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
             });
@@ -845,7 +865,10 @@ export default function AdminUsersPage() {
                                                     <span className="font-bold text-gray-900 text-sm group-hover:text-indigo-600 transition-colors">
                                                         {user.displayName || 'Unknown'}
                                                     </span>
-                                                    <span className="text-[10px] text-gray-400 font-medium">{user.email || 'GUEST USER'}</span>
+                                                    <span className="text-[10px] text-gray-400 font-medium">
+                                                        {user.email || 'GUEST USER'}
+                                                        {(user as any).lineUserId && <LineIcon className="w-3 h-3 text-[#00B900] ml-1 inline-block" />}
+                                                    </span>
                                                 </div>
                                             </div>
                                         </td>
@@ -981,6 +1004,20 @@ export default function AdminUsersPage() {
                                 </div>
                                 <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
                             </button>
+
+                            {/* 🟢 v4.9.0: ปุ่มส่งข้อความ LINE ส่วนตัว (เฉพาะคนที่ผูกแล้ว) */}
+                            {(actionUser as any)?.lineUserId && (
+                                <button 
+                                    onClick={() => { setNotificationUser(actionUser); setNotificationDialogOpen(true); setActionUser(null); }}
+                                    className="w-full flex items-center justify-between gap-3 p-4 rounded-2xl bg-white border border-[#00B900]/20 hover:border-[#00B900]/40 hover:bg-[#00B900]/5 hover:text-[#00B900] transition-all group"
+                                >
+                                    <div className="flex items-center gap-3">
+                                        <LineIcon className="h-5 w-5 text-[#00B900]" />
+                                        <span className="text-sm font-bold">ส่งข้อความ LINE ส่วนตัว</span>
+                                    </div>
+                                    <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+                                </button>
+                            )}
 
                             <div className="h-px bg-slate-50 my-2" />
 

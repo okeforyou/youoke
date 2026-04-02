@@ -38,9 +38,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             
             if (!membership?.expiresAt) continue;
 
-            // Only notify LINE users
-            if (userId.startsWith('line:')) {
-                const lineUserId = userId.split(':')[1];
+            // Send LINE notification to ANY user who has linked LINE
+            const lineUserId = userData.lineUserId;
+            if (lineUserId && channelAccessToken) {
                 const expiryDate = membership.expiresAt.toDate ? membership.expiresAt.toDate() : new Date(membership.expiresAt);
                 const expiryStr = expiryDate.toLocaleDateString('th-TH', { 
                     day: 'numeric', month: 'long', year: 'numeric' 

@@ -101,9 +101,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             });
         }
 
-        // 6. Notify User via LINE
-        if ((userId as string).startsWith('line:')) {
-            const lineUserId = (userId as string).split(':')[1];
+        // 6. Notify User via LINE (if they have linked LINE)
+        const userDataSnap = await userRef.get();
+        const lineUserId = userDataSnap.data()?.lineUserId;
+        
+        if (lineUserId) {
             const expiryText = expiresAt 
                 ? expiresAt.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' })
                 : "ไม่มีกำหนด (ตลอดชีพ)";
