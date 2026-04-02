@@ -181,7 +181,7 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
         if (!user || !pkg) return;
         
         // Define the pre-filled message for the manual slip submission
-        const message = `แจ้งส่งสลิปการโอนเงินครับ 💰\n👤 ชื่อผู้ใช้: ${user.displayName || user.email}\n📦 แพ็กเกจ: ${pkg.name}\n💰 ยอดโอน: ${pkg.price.toLocaleString()} บาท\n\n(รบกวนแนบรูปสลิปในแชทนี้เพื่อยืนยันด้วยนะครับ)`;
+        const message = `👋 แจ้งส่งสลิปการโอนเงินครับ (YouOKE)\n━━━━━━━━━━━━━━━\n👤 สมาชิก: ${user.displayName || user.email}\n📦 แพ็กเกจ: ${pkg.name}\n💰 ยอดโอน: ${pkg.price.toLocaleString()} บาท\n━━━━━━━━━━━━━━━\n📸 แนบสลิปในแชท: รบกวนกด "แนบรูปสลิป" ใน LINE นี้เพื่อให้แอดมินอนุมัติครับ\n━━━━━━━━━━━━━━━\n*ขอบคุณที่ไว้วางใจ YouOKE ครับ*`;
         
         // URL for LINE Official Account with pre-filled message
         // Reference: https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/

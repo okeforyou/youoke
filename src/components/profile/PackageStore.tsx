@@ -89,20 +89,13 @@ export const PackageStore = () => {
                 });
                 
                 // 3. Send instructions to User
-                if ((user as any).lineUserId) {
-                    await axios.post('/api/notify/line-push', {
-                        to: (user as any).lineUserId,
-                        message: `ยืนยันการเลือกแพ็กเกจ: ${pkg.name}\nยอดโอนเงิน: ${pkg.price.toLocaleString()} บาท\nธนาคาร: กสิกรไทย\nเลขบัญชี: 012-3-45678-9\n\nกรุณาส่งรูปสลิปมาในแชทนี้ เพื่อให้แอดมินอนุมัติการใช้งานทันทีครับ`
-                    });
-                }
+                const message = `👋 สวัสดีครับ (YouOKE)\n━━━━━━━━━━━━━━━\nสนใจแพ็กเกจ: ${pkg.name}\n💰 ยอดโอนเงิน: ${pkg.price.toLocaleString()} บาท\n━━━━━━━━━━━━━━━\n🏦 ช่องทางการโอนเงิน:\n• ธนาคาร: ไทยพาณิชย์ (SCB)\n• ชื่อบัญชี: บุญยานันทน์ ชูพินิจ\n• เลขบัญชี: 408-006876-3\n━━━━━━━━━━━━━━━\n📸 เมื่อโอนแล้ว: \nรบกวน "แนบสลิปในแชท LINE" เพื่อความสะดวกในการตรวจสอบครับ\n━━━━━━━━━━━━━━━\n*รอการยืนยันจากแอดมินสักครู่นะครับ*`;
+                alert(message);
+                window.open("https://line.me/ti/p/@243lercy", '_blank');
+
             } catch (e) {
                 console.error("LINE Notify failed:", e);
             }
-
-            // 4. Redirect user to status page or show success
-            const message = `คุณได้แจ้งความสนใจแพ็กเกจ ${pkg.name} แล้ว!\nกรุณาส่งสลิปการโอนเงินมาที่ LINE@ เพื่อให้แอดมินอนุมัติครับ`;
-            alert(message);
-            window.open("https://line.me/ti/p/@243lercy", '_blank');
 
         } catch (error) {
             console.error("Simple Flow error:", error);
