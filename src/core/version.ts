@@ -3,13 +3,22 @@
  * ศูนย์รวมเลขเวอร์ชันของทัังระบบ เพื่อความแม่นยำและไม่ซ้ำซ้อน
  */
 
-export const SYSTEM_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || "4.8.5";
-export const SYSTEM_CODENAME = "Green Bridge Achievement";
+export const SYSTEM_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || "4.8.6";
+export const SYSTEM_CODENAME = "Flat Aesthetic Achievement";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
 export const BUILD_DATE = "2 เม.ย. 2569";
 
 export const CHANGELOGS = [
+    {
+        version: "4.8.6 (Flat Aesthetic Achievement)",
+        date: "2 เม.ย. 2569",
+        changes: [
+            "[UI/UX] Flat Aesthetic Mastery: ปรับโฉมปุ่มสถานะ LINE ให้เป็นแบบ Flat Design (ขาวสะอ้าน/เส้นขอบบาง) เพื่อความเป็นพรีเมียม",
+            "[UI/UX] UI Softening: แก้ไขความเเข็งกระด้างของส่วนต่อประสาน ลดเงาที่ไม่จำเป็นออกเพื่อให้ดูนิ่งและสะอาดตาขึ้น"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
     {
         version: "4.8.5 (Green Bridge Achievement)",
         date: "2 เม.ย. 2569",
@@ -17,16 +26,6 @@ export const CHANGELOGS = [
             "[UI/UX] Green Bridge Mastery: เปลี่ยนทัั้งไอคอนและปุ่มเชื่อมต่อ LINE ให้เป็นสีเขียวพรีเมียม (#00B900) ตามมาตรฐานสากล",
             "[UI/UX] Subtle Indicators: ปรับแต่ง Badge สถานะให้มีความนุ่มนวลและเป็นโทนเดียวกับแบรนด์ LINE",
             "[Sync] Professional Heartbeat: เพิ่มประสิทธิภาพการดึงข้อมูลเพื่อให้สถานะการผูกบัญชีอัปเดตตรงตามจริงที่สุด"
-        ],
-        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
-    },
-    {
-        version: "4.8.2 (Universal Persistence Milestone)",
-        date: "2 เม.ย. 2569",
-        changes: [
-            "[Sync] Hybrid Database Persistence: เปิดใช้งานระบบบันทึกข้อมูลขนาน (Firestore + Realtime DB) เพื่อความแม่นยำของสถานะ LINE 100%",
-            "[UI/UX] Minimalist Bridge: ดีไซน์ส่วนเชื่อมต่อ LINE แบบ Flat & Clean ลดความรกตา และเน้นความพรีเมียมสไตล์เรียบหรู",
-            "[System] Anti-Cache Enforcement: บังคับการดึงข้อมูลโปรไฟล์แบบข้าม Cache ทันทีที่เข้าหน้า Profile เพื่อสถานะที่รวดเร็วที่สุด"
         ]
     },
     {
