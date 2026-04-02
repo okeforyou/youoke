@@ -431,58 +431,57 @@ export default function AdminUsersPage() {
         if (!notificationUser || !msgTitle.trim() || !msgBody.trim()) return;
         setSendingMsg(true);
         try {
-            // 🛡️ v3.7.8 Unified: Admin NO longer writes to Firestore from client.
-            // Let the API handle both Firestore entry AND Push for atomicity.
-            const response = await fetch('/api/admin/send-broadcast', {
+            const lineUserId = (notificationUser as any)?.lineUserId;
+
+            // 🟢 v4.9.1: LINE เป็นช่องทางหลักเดียว
+            if (!lineUserId) {
+                setConfirmModal({
+                    isOpen: true,
+                    title: "ไม่สามารถส่งได้",
+                    message: `คุณ ${notificationUser.displayName} ยังไม่ได้ผูกบัญชี LINE กรุณาแจ้งให้สมาชิกผูกบัญชี LINE ก่อนครับ`,
+                    type: 'warning',
+                    onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+                });
+                return;
+            }
+
+            const lineRes = await fetch('/api/notify/line-push', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    targetUids: [notificationUser.uid],
-                    title: msgTitle,
-                    body: msgBody
+                    to: lineUserId,
+                    message: `[YouOKE] ${msgTitle}\n${msgBody}`
                 })
             });
 
-            const result = await response.json();
+            const lineResult = await lineRes.json();
 
-            if (!result.success) throw new Error(result.error || 'API Error');
-
-            // 🟢 v4.9.0: ส่ง LINE ด้วย (ถ้าผูกบัญชีแล้ว)
-            let lineSent = false;
-            if ((notificationUser as any)?.lineUserId) {
-                try {
-                    await fetch('/api/notify/line-push', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            to: (notificationUser as any).lineUserId,
-                            message: `[YouOKE] ${msgTitle}\n${msgBody}`
-                        })
-                    });
-                    lineSent = true;
-                } catch (lineErr) {
-                    console.warn('LINE push failed (non-critical):', lineErr);
-                }
-            }
+            if (!lineRes.ok) throw new Error(lineResult.error || lineResult.message || 'LINE API Error');
 
             setConfirmModal({
                 isOpen: true,
                 title: "ส่งข้อความสำเร็จ",
-                message: `ส่งการแจ้งเตือนไปยังคุณ ${notificationUser.displayName} เรียบร้อยแล้ว\n(OneSignal: ${result.pushResult?.success ? '✅' : '❌'} | LINE: ${lineSent ? '✅' : (notificationUser as any)?.lineUserId ? '❌' : 'ไม่ได้ผูก'})`,
+                message: `ส่งข้อความ LINE ไปยังคุณ ${notificationUser.displayName} เรียบร้อยแล้ว ✅`,
                 type: 'info',
                 onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
             });
             setMsgTitle("");
             setMsgBody("");
             setNotificationDialogOpen(false);
+
+            /* 🔒 OneSignal (ซ่อนไว้สำหรับอนาคต)
+            const response = await fetch('/api/admin/send-broadcast', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ targetUids: [notificationUser.uid], title: msgTitle, body: msgBody })
+            });
+            */
         } catch (error: any) {
             console.error(error);
             setConfirmModal({
                 isOpen: true,
                 title: "ผิดพลาด",
-                message: `ไม่สามารถส่งข้อความได้: ${error.message}`,
+                message: `ไม่สามารถส่งข้อความ LINE ได้: ${error.message}`,
                 type: 'danger',
                 onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
             });

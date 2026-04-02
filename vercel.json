@@ -7,6 +7,10 @@
     {
       "path": "/api/admin/bulk-cleanup",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/check-expiries",
+      "schedule": "0 2 * * *"
     }
   ]
 }

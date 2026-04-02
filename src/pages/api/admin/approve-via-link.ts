@@ -122,6 +122,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                                 { type: "text", text: `ยินดีด้วย! บัญชีของคุณเป็นพรีเมียมแล้ว (${pkgName})`, weight: "bold", size: "sm", wrap: true },
                                 { type: "text", text: `หมดอายุ: ${expiryText}`, size: "xs", color: "#f44336", margin: "md" }
                             ]
+                        },
+                        footer: {
+                            type: "box", layout: "vertical", contents: [
+                                { 
+                                    type: "button", 
+                                    style: "primary", 
+                                    color: "#06C755", 
+                                    action: { type: "uri", label: "เข้าสู่แอป YouOKE", uri: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://play.okeforyou.com'}/` } 
+                                }
+                            ]
                         }
                     }
                 }]

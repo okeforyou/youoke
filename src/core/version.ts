@@ -3,23 +3,32 @@
  * ศูนย์รวมเลขเวอร์ชันของทัังระบบ เพื่อความแม่นยำและไม่ซ้ำซ้อน
  */
 
-export const SYSTEM_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || "4.9.0";
-export const SYSTEM_CODENAME = "LINE Messaging Bridge";
+export const SYSTEM_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || "4.9.1";
+export const SYSTEM_CODENAME = "LINE Direct Gateway";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
 export const BUILD_DATE = "2 เม.ย. 2569";
 
 export const CHANGELOGS = [
     {
-        version: "4.9.0 (LINE Messaging Bridge)",
+        version: "4.9.1 (LINE Direct Gateway)",
+        date: "2 เม.ย. 2569",
+        changes: [
+            "[Messaging] Line Exclusivity: สลับระบบทั้งหมดไปใช้ LINE เป็นช่องทางส่งข้อความส่วนตัว (ซ่อน OneSignal ไว้ในเบื้องหลัง)",
+            "[System] Cron Automation: เปิดใช้งานระบบตั้งเวลาใน Vercel ให้ตรวจสอบและแจ้งเตือนวันหมดอายุอัตโนมัติ (9 โมงเช้าทุกวัน)",
+            "[UX] Quick Access Button: เพิ่มปุ่ม 'เข้าสู่แอป YouOKE' ในบับเบิ้ล LINE เมื่อการอนุมัติพรีเมียมเสร็จสิ้น"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
+    {
+        version: "4.9.1 (LINE Messaging Bridge)",
         date: "2 เม.ย. 2569",
         changes: [
             "[Messaging] LINE Private Push: แอดมินส่งข้อความ LINE ส่วนตัวหาสมาชิกที่ผูกบัญชีแล้วได้โดยตรงจากหน้าจัดการ",
             "[System] Smart Expiry Notify: แจ้งเตือนหมดอายุเข้า LINE ของสมาชิกทุกคนที่ผูกบัญชีแล้ว (ไม่จำกัดวิธีล็อกอิน)",
             "[System] Payment Approval Notify: แจ้งอนุมัติพรีเมียมเข้า LINE อัตโนมัติสำหรับทุกคนที่ผูกบัญชี",
             "[Admin] LINE Badge: แสดงไอคอน LINE สีเขียวในรายชื่อสมาชิกเพื่อให้แอดมินเห็นว่าใครส่งได้"
-        ],
-        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+        ]
     },
     {
         version: "4.8.7 (Compact Status Achievement)",
