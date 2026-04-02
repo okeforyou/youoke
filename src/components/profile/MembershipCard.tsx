@@ -58,11 +58,11 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
     const labelMembership = isAdmin ? "สิทธิ์ผู้ดูแลระบบ" : "สิทธิ์การใช้งาน";
 
     const accents = {
-        admin: "border-rose-200/50 text-rose-500 bg-white dark:bg-zinc-950",
-        lifetime: "border-amber-200/50 text-amber-500 bg-white dark:bg-zinc-950",
-        yearly: "border-purple-200/50 text-purple-500 bg-white dark:bg-zinc-950",
-        monthly: "border-blue-200/50 text-blue-500 bg-white dark:bg-zinc-950",
-        free: "border-slate-100 text-slate-400 bg-white dark:bg-zinc-950",
+        admin: "bg-rose-500 text-white shadow-sm",
+        lifetime: "bg-amber-500 text-white shadow-sm",
+        yearly: "bg-purple-600 text-white shadow-sm",
+        monthly: "bg-blue-600 text-white shadow-sm",
+        free: "bg-slate-100 text-slate-500 shadow-sm",
     };
 
     let activeAccent = accents.free;
@@ -71,45 +71,42 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
     else if (safeMembership.type === 'yearly') activeAccent = accents.yearly;
     else if (safeMembership.type === 'monthly') activeAccent = accents.monthly;
 
+    const isLightBg = !isAdmin && !isLifetime && safeMembership.type !== 'yearly' && safeMembership.type !== 'monthly';
+
     return (
         <div className="relative group cursor-pointer w-full" onClick={onUpgrade}>
             <div className={cn(
-                "relative rounded-[24px] overflow-hidden border p-4 flex flex-col justify-between min-h-[110px] transition-all duration-500 bg-white dark:bg-zinc-950 shadow-sm hover:shadow-md",
+                "relative rounded-3xl overflow-hidden p-5 flex flex-col justify-between min-h-[110px] transition-all duration-300 active:scale-[0.98] border-none",
                 activeAccent
             )}>
-                {/* Visual Accent Top Line (Minimal) */}
-                <div className={cn("absolute top-0 left-6 right-6 h-1 rounded-b-full opacity-40", 
-                    isAdmin ? "bg-rose-500" : (isPremium ? "bg-primary" : "bg-slate-100")
-                )}></div>
-
                 <div className="relative z-10 flex justify-between items-start">
                     <div className="flex items-center gap-3">
-                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shadow-inner", 
-                            isAdmin ? "bg-rose-100 text-rose-600" : (isPremium ? "bg-primary/10 text-primary" : "bg-slate-100 text-slate-400")
+                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", 
+                            isLightBg ? "bg-slate-200 text-slate-500" : "bg-white/20 text-white"
                         )}>
                             {isAdmin || isLifetime ? <Crown className="w-5 h-5" /> : (isPremium ? <Zap className="w-5 h-5" /> : <Clock className="w-5 h-5" />)}
                         </div>
                         <div>
-                            <div className="text-[9px] font-black uppercase tracking-widest opacity-40">{labelMembership}</div>
-                            <h3 className="text-base font-black tracking-tight mt-0.5 text-slate-900 dark:text-white leading-none">{planName}</h3>
+                            <div className={cn("text-[9px] font-black uppercase tracking-widest", isLightBg ? "opacity-40" : "opacity-60")}>{labelMembership}</div>
+                            <h3 className={cn("text-base font-black tracking-tight mt-0.5 leading-none", isLightBg ? "text-slate-900" : "text-white")}>{planName}</h3>
                         </div>
                     </div>
                 </div>
 
                 {!isAdmin && (
-                    <div className="mt-3.5 space-y-1.5">
+                    <div className="mt-4 space-y-1.5">
                         <div className="flex justify-between items-end">
-                            <span className="text-[9px] uppercase font-black tracking-widest opacity-30">โควต้าเพลงวันนี้</span>
-                            <span className="text-[10px] font-black text-slate-700 dark:text-zinc-300">
+                            <span className={cn("text-[9px] uppercase font-black tracking-widest", isLightBg ? "opacity-40" : "opacity-60")}>โควต้าเพลงวันนี้</span>
+                            <span className={cn("text-[10px] font-black", isLightBg ? "text-slate-700" : "text-white")}>
                                 {membership?.quota?.daily_limit === 0 || isLifetime 
                                     ? "ใช้งานได้ไม่จำกัด" 
                                     : `${membership?.quota?.used || 0} / ${membership?.quota?.daily_limit || 0}`
                                 }
                             </span>
                         </div>
-                        <div className="h-1 w-full bg-slate-100 dark:bg-zinc-900 rounded-full overflow-hidden">
+                        <div className={cn("h-1.5 w-full rounded-full overflow-hidden", isLightBg ? "bg-slate-200" : "bg-white/20")}>
                             <div 
-                                className={cn("h-full rounded-full transition-all duration-1000", isPremium ? "bg-primary" : "bg-slate-300")}
+                                className={cn("h-full rounded-full transition-all duration-1000", isLightBg ? "bg-primary" : "bg-white")}
                                 style={{ 
                                     width: (membership?.quota?.daily_limit === 0 || isLifetime) 
                                         ? '100%' 
@@ -121,16 +118,17 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
                 )}
 
                 <div className={cn(
-                    "mt-3.5 pt-2.5 border-t border-slate-50 dark:border-zinc-900 flex justify-between items-end",
+                    "mt-4 pt-3 flex justify-between items-end border-t border-dashed",
+                    isLightBg ? "border-slate-200" : "border-white/20",
                     isAdmin && "mt-1 pt-2"
                 )}>
                     <div>
-                        <div className="text-[8px] uppercase tracking-widest font-black opacity-30 mb-0.5">หมดอายุวันที่</div>
-                        <div className="text-[11px] font-bold text-slate-500 dark:text-zinc-500">
+                        <div className={cn("text-[8px] uppercase tracking-widest font-black mb-0.5", isLightBg ? "opacity-40" : "opacity-60")}>หมดอายุวันที่</div>
+                        <div className={cn("text-[11px] font-bold", isLightBg ? "text-slate-500" : "text-white/80")}>
                             {isAdmin ? "สิทธิ์ผู้ดูแลระบบ" : (isLifetime ? "ใช้งานได้ตลอดชีพ" : (safeMembership.expiresAt ? formatDate(safeMembership.expiresAt) : "ยังไม่ได้เลือกแพ็กเกจ"))}
                         </div>
                     </div>
-                    <div className="flex items-center gap-1 opacity-40">
+                    <div className={cn("flex items-center gap-1", isLightBg ? "opacity-30" : "opacity-60")}>
                         <ChevronRight className="w-4 h-4" />
                     </div>
                 </div>

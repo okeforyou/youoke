@@ -213,27 +213,34 @@ export const ProfileContent = () => {
                         <button 
                             onClick={() => setView('line_connect')}
                             className={cn(
-                                "w-full flex items-center justify-between p-4 rounded-[24px] border transition-all text-left",
+                                "w-full flex items-center justify-between p-4 rounded-[28px] border-none transition-all text-left",
                                 profile?.lineUserId 
-                                    ? "bg-slate-50/50 border-slate-100 dark:bg-zinc-900/30 dark:border-zinc-800"
-                                    : "bg-white border-slate-100 shadow-sm hover:shadow-md dark:bg-zinc-900 dark:border-zinc-800"
+                                    ? "bg-slate-50 dark:bg-zinc-900/50"
+                                    : "bg-emerald-50 dark:bg-emerald-500/10 ring-1 ring-emerald-500/10"
                             )}
                         >
                             <div className="flex items-center gap-3">
                                 <div className={cn(
-                                    "w-9 h-9 rounded-xl flex items-center justify-center text-white",
-                                    profile?.lineUserId ? "bg-[#00B900] opacity-50" : "bg-[#00B900]"
+                                    "w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-sm",
+                                    profile?.lineUserId ? "bg-slate-300 dark:bg-zinc-700" : "bg-[#00B900]"
                                 )}>
                                     <ChatBubbleLeftRightIcon className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <p className="text-sm font-black text-slate-900 dark:text-white">เชื่อมต่อบัญชี LINE</p>
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-sm font-black text-slate-900 dark:text-white">เชื่อมต่อ LINE</p>
+                                        {profile?.lineUserId ? (
+                                            <span className="text-[8px] font-black bg-emerald-500 text-white px-1.5 py-0.5 rounded-lg uppercase">เชื่อมต่อแล้ว</span>
+                                        ) : (
+                                            <span className="text-[8px] font-black bg-slate-200 text-slate-400 px-1.5 py-0.5 rounded-lg uppercase">ยังไม่เชื่อมต่อ</span>
+                                        )}
+                                    </div>
                                     <p className="text-[10px] font-bold text-slate-400">
-                                        {profile?.lineUserId ? `เชื่อมต่อแล้ว: ${profile.lineDisplayName || 'LINE'}` : 'รับการแจ้งเตือนผ่าน LINE ฟรี'}
+                                        {profile?.lineUserId ? `${profile.lineDisplayName || 'บัญชี LINE'}` : 'รับแจ้งเตือนและสิทธิพิเศษฟรี'}
                                     </p>
                                 </div>
                             </div>
-                            <ChevronRightIcon className="w-5 h-5 text-slate-300" />
+                            <ChevronRightIcon className="w-4 h-4 text-slate-300" />
                         </button>
                     </div>
                 </section>
