@@ -101,8 +101,7 @@ export const ProfileContent = () => {
 
     // --- LINE CONNECT VIEW ---
     if (view === 'line_connect') {
-        const handshakeText = `สวัสดีครับ ยืนยันการเชื่อมต่อ YouOKE ID : ${user.uid}`;
-        const lineOaUrl = `https://line.me/R/oaMessage/@243lercy/?${encodeURIComponent(handshakeText)}`; 
+        const liffUrl = `https://liff.line.me/2006894054-O8E2Rz96?u=${user.uid}`; 
         
         return (
             <div className="flex flex-col animate-in fade-in slide-in-from-right-4 duration-300">
@@ -118,35 +117,35 @@ export const ProfileContent = () => {
                 </div>
 
                 <div className="p-8 flex flex-col items-center text-center space-y-8">
-                    {/* Simplified QR Section */}
+                    {/* Professional Bridge QR Section */}
                     <div className="relative p-6 bg-white rounded-[40px] shadow-2xl shadow-green-500/10 border-8 border-emerald-500/5 ring-1 ring-emerald-500/20">
                         <QRCodeSVG 
-                            value={lineOaUrl}
+                            value={liffUrl}
                             size={180}
                             level="H"
                             includeMargin={false}
                         />
                         <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[10px] font-black px-4 py-1.5 rounded-full shadow-lg whitespace-nowrap">
-                           สแกน 1 ครั้ง-กดส่ง 1 ครั้ง
+                           สแกนเพื่อยืนยันตัวตน
                         </div>
                     </div>
 
                     <div className="space-y-2">
-                        <h3 className="text-xl font-black text-slate-900 dark:text-white">ง่ายที่สุด!</h3>
+                        <h3 className="text-xl font-black text-slate-900 dark:text-white">เชื่อมต่อง่ายนิดเดียว!</h3>
                         <p className="text-sm font-bold text-slate-400 dark:text-zinc-500 leading-relaxed px-4">
-                            สแกน QR แล้วกดปุ่ม <span className="text-emerald-500">"ส่ง"</span> ในแอป LINE ของคุณเพื่อผูกบัญชีทันทีครับ 🧼✨
+                            สแกน QR แล้วกดปุ่มที่ระบุว่า <span className="text-emerald-500">"กดยอมรับ"</span> (Confirmed) เพื่อผูกบัญชีได้ทันทีครับ 🧼✨
                         </p>
                     </div>
 
                     <div className="w-full space-y-4 pt-4">
                         <a 
-                            href={lineOaUrl}
+                            href={liffUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="w-full bg-[#00B900] hover:bg-[#009e00] text-white py-4 rounded-[28px] font-black text-center text-sm shadow-xl shadow-green-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                         >
                             <ChatBubbleLeftRightIcon className="w-5 h-5" />
-                            <span>กดเชื่อมต่อผ่าน LINE ตอนนี้</span>
+                            <span>กดเพื่อเชื่อมต่อทันที (มือถือ)</span>
                         </a>
 
                         <button 

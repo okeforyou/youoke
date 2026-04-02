@@ -14,10 +14,11 @@ export const CHANGELOGS = [
         version: "4.7.5 (Identity Binding Update)",
         date: "2 เม.ย. 2569",
         changes: [
-            "[System] Smart Identity Binding: ผูกเลขเวอร์ชันเข้ากับ package.json ทัั้งระบบ เพื่อลดงาน Manual และความผิดพลาด",
-            "[System] Environment Bridge: ใช้ NEXT_PUBLIC_APP_VERSION เป็นตัวส่งต่อความจริงเพียงหนึ่งเดียวสู่หน้าแอป",
-            "[Debug] LINE Identity Bridge: ตรวจสอบและปรับปรุงระบบการเชื่อมต่อให้ 'นิ่ง' และรองรับสมาชิกเดิม 100%"
-        ]
+            "[System] Smart Identity Binding: ผูกเลขเวอร์ชันเข้ากับ package.json ทัั้งระบบ เพื่อลดงาน Manual",
+            "[System] Smart Auto-Log: ดึงหัวข้อการแก้ไขจาก Git มาทำ Change Log หน้าแอปอัตโนมัติ 100%",
+            "[Security] Professional Identity Bridge: กู้คืนระบบ LIFF (Scan-to-Confirm) สำหรับสมาชิก LINE อย่างเป็นทางการ"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
     },
     {
         version: "4.7.4 (Easy-Connect Milestone)",

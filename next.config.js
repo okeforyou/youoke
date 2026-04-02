@@ -18,6 +18,13 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_COMMIT_HASH: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) || 'dev',
     NEXT_PUBLIC_APP_VERSION: require('./package.json').version,
+    NEXT_PUBLIC_LATEST_UPDATES: (() => {
+        try {
+            return require('child_process').execSync('git log -n 3 --pretty=format:"%s"').toString();
+        } catch (e) {
+            return "Latest system optimizations and identity bridging.";
+        }
+    })(),
   },
   async rewrites() {
     return [
