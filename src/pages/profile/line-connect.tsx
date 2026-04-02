@@ -25,16 +25,18 @@ export default function LineConnectPage() {
             return;
         }
 
-        // Logic to capture LINE ID from URL Params (If redirected from LIFF/OAuth)
-        const { l_uid, l_name } = router.query;
+        // Logic to capture LINE ID from URL Params or Direct UID
+        const { l_uid, l_name, u } = router.query;
         
         if (l_uid && l_name) {
             handleLinking(l_uid as string, l_name as string);
+        } else if (u) {
+            // If coming directly from the QR scan with UID
+            // We can now show a simplified linking screen or integration
+            setMessage('กรุณารอสักครู่ ระบบกำลังเตรียมข้อมูลการเชื่อมต่อ...');
         } else {
-            // Mocking for testing or Waiting for LIFF
-            // In a real LIFF app, we would initialize liff here
             setStatus('error');
-            setMessage('ไม่พบข้อมูลการยืนยันตัวตนจาก LINE กรุณาลองใหม่อีกครั้งผ่านแอป LINE ครับ');
+            setMessage('ไม่พบข้อมูลการเชื่อมต่อ กรุณากลับไปที่หน้าโปรไฟล์แล้วลองใหม่อีกครั้งครับ');
         }
     }, [user, router.query]);
 

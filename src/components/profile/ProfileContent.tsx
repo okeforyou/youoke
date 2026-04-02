@@ -101,8 +101,7 @@ export const ProfileContent = () => {
 
     // --- LINE CONNECT VIEW ---
     if (view === 'line_connect') {
-        const handshakeText = `เชื่อมต่อบัญชี : ${user.uid}`;
-        const lineOaUrl = `https://line.me/R/oaMessage/@243lercy/?${encodeURIComponent(handshakeText)}`; 
+        const directConnectUrl = `https://play.okeforyou.com/profile/line-connect?u=${user.uid}`; 
         
         return (
             <div className="flex flex-col animate-in fade-in slide-in-from-right-4 duration-300">
@@ -114,47 +113,47 @@ export const ProfileContent = () => {
                     >
                         <ChevronRightIcon className="w-5 h-5 rotate-180" />
                     </button>
-                    <h2 className="text-lg font-black text-slate-900 dark:text-white">เชื่อมต่อ LINE ของคุณ</h2>
+                    <h2 className="text-lg font-black text-slate-900 dark:text-white">เชื่อมต่อ LINE</h2>
                 </div>
 
                 <div className="p-8 flex flex-col items-center text-center space-y-8">
                     {/* Personalized QR Code Section */}
-                    <div className="relative p-6 bg-white rounded-[40px] shadow-2xl shadow-green-500/10 border-8 border-emerald-500/5 ring-1 ring-emerald-500/20">
+                    <div className="relative p-6 bg-white rounded-[40px] shadow-2xl shadow-emerald-500/10 border-8 border-emerald-500/5 ring-1 ring-emerald-500/20">
                         <QRCodeSVG 
-                            value={lineOaUrl}
+                            value={directConnectUrl}
                             size={180}
                             level="H"
                             includeMargin={false}
                         />
                         {/* Status Label on QR */}
                         <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[10px] font-black px-4 py-1.5 rounded-full shadow-lg whitespace-nowrap">
-                           สแกนแล้วกด "ส่ง"
+                           สแกนที่นี่ครับ
                         </div>
                     </div>
 
                     <div className="space-y-2">
-                        <h3 className="text-xl font-black text-slate-900 dark:text-white">ง่ายและรวดเร็ว!</h3>
+                        <h3 className="text-xl font-black text-slate-900 dark:text-white">ง่ายนิดเดียว!</h3>
                         <p className="text-sm font-bold text-slate-400 dark:text-zinc-500 leading-relaxed px-4">
-                            สแกน QR Code แล้วกดปุ่ม <span className="text-emerald-500">"ส่ง"</span> (Send) ในแอป LINE ของคุณได้เลยครับ 🧼✨
+                            ใช้มือถือสแกนแล้วกดปุ่ม <span className="text-emerald-500">"ยืนยัน"</span> เพื่อผูกบัญชีได้ทันทีครับ 🧼✨
                         </p>
                     </div>
 
                     <div className="w-full space-y-4 pt-4">
                         <a 
-                            href={lineOaUrl}
+                            href={directConnectUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="w-full bg-[#00B900] hover:bg-[#009e00] text-white py-4 rounded-[28px] font-black text-center text-sm shadow-xl shadow-green-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                         >
                             <ChatBubbleLeftRightIcon className="w-5 h-5" />
-                            <span>กดเชื่อมต่อผ่านมือถือเครื่องนี้</span>
+                            <span>กดเชื่อมต่อที่นี่ (สำหรับมือถือ)</span>
                         </a>
 
                         <button 
                             onClick={() => setView('main')}
                             className="w-full text-slate-300 font-black text-[11px] uppercase tracking-widest hover:text-slate-400 transition-colors"
                         >
-                            ยกเลิก
+                            ย้อนกลับ
                         </button>
                     </div>
                 </div>
