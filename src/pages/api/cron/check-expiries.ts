@@ -85,7 +85,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                                                 action: {
                                                     type: "uri",
                                                     label: "ต่ออายุสมาชิก",
-                                                    uri: "https://play.okeforyou.com/packages"
+                                                    uri: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://play.okeforyou.com'}/packages`
                                                 }
                                             }
                                         ]

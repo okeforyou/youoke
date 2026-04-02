@@ -28,3 +28,15 @@ This workflow ensures the Agent strictly follows the project's 'AGENTS.md' guide
 
 5.  **Final Verification**:
     -   Ensure the change works and didn't break other features (e.g., Chromecast).
+
+6.  **ZERO Hardcode URL Policy**: 
+    -   NEVER use hardcoded domains like `play.okeforyou.com` or `vercel.app`.
+    -   ALWAYS use `window.location.origin` (Client) or environmental base URLs (API) to ensure portability.
+
+7.  **Mandatory Version Synchronization**: 
+    -   Every architectural or visible change MUST be reflected in `src/core/version.ts`.
+    -   Maintain a clear, incremental versioning system (e.g., v4.7.4).
+
+8.  **Instructional Clarity for Seniors**: 
+    -   UI labels and instructions must be in friendly, non-technical Thai.
+    -   Avoid showing raw system IDs (UIDs) to the end user.

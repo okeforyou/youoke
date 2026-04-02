@@ -3,13 +3,23 @@
  * ศูนย์รวมเลขเวอร์ชันของทัังระบบ เพื่อความแม่นยำและไม่ซ้ำซ้อน
  */
 
-export const SYSTEM_VERSION = "4.7.0";
-export const SYSTEM_CODENAME = "Senior-Friendly Integration";
+export const SYSTEM_VERSION = "4.7.4";
+export const SYSTEM_CODENAME = "Easy-Connect Milestone";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
-export const BUILD_DATE = "1 เม.ย. 2569";
+export const BUILD_DATE = "2 เม.ย. 2569";
 
 export const CHANGELOGS = [
+    {
+        version: "4.7.4 (Easy-Connect Milestone)",
+        date: "2 เม.ย. 2569",
+        changes: [
+            "[UX] Zero-Friction Handshake: ตัดรหัส UID ที่ซับซ้อนออกทัั้งหมด สมาชิกกดปุ่มเดียวในหน้าสีเขียวเพื่อเชื่อมต่อ LINE ได้ทันที",
+            "[System] Dynamic Origin Deployment: กวาดล้าง Hardcode URL ทัั้งใน Client และ API รองรับการย้าย Domain โดยไม่สะดุด",
+            "[Standard] Workflow Hardening: บันทึกกฎเหล็ก 0% Hardcode และ Mandatory Versioning ลงในระบบพัฒนาหลัก",
+            "uri: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://play.okeforyou.com'}/packages`"
+        ]
+    },
     {
         version: "4.7.0 (Senior-Friendly Integration)",
         date: "1 เม.ย. 2569",

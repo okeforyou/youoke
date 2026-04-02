@@ -101,7 +101,8 @@ export const ProfileContent = () => {
 
     // --- LINE CONNECT VIEW ---
     if (view === 'line_connect') {
-        const directConnectUrl = `https://play.okeforyou.com/profile/line-connect?u=${user.uid}`; 
+        const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://play.okeforyou.com';
+        const directConnectUrl = `${baseUrl}/profile/line-connect?u=${user.uid}`; 
         
         return (
             <div className="flex flex-col animate-in fade-in slide-in-from-right-4 duration-300">
