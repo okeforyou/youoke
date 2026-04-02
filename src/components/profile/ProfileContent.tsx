@@ -205,40 +205,55 @@ export const ProfileContent = () => {
                         onUpgrade={() => router.push('/packages')}
                     />
 
-                    {/* LINE Connection Switcher */}
+                    {/* LINE Connection Status (Zero-Friction v4.7.3) */}
                     <div className="mt-4 px-2">
-                        <button 
-                            onClick={() => setView('line_connect')}
-                            className={cn(
-                                "w-full flex items-center justify-between p-4 rounded-[28px] border-none transition-all text-left",
-                                profile?.lineUserId 
-                                    ? "bg-slate-50 dark:bg-zinc-900/50"
-                                    : "bg-emerald-50 dark:bg-emerald-500/10 ring-1 ring-emerald-500/10"
-                            )}
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className={cn(
-                                    "w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-sm",
-                                    profile?.lineUserId ? "bg-slate-300 dark:bg-zinc-700" : "bg-[#00B900]"
-                                )}>
-                                    <ChatBubbleLeftRightIcon className="w-5 h-5" />
-                                </div>
-                                <div>
-                                    <div className="flex items-center gap-2">
-                                        <p className="text-sm font-black text-slate-900 dark:text-white">เชื่อมต่อ LINE</p>
-                                        {profile?.lineUserId ? (
-                                            <span className="text-[8px] font-black bg-emerald-500 text-white px-1.5 py-0.5 rounded-lg uppercase">เชื่อมต่อแล้ว</span>
-                                        ) : (
-                                            <span className="text-[8px] font-black bg-slate-200 text-slate-400 px-1.5 py-0.5 rounded-lg uppercase">ยังไม่เชื่อมต่อ</span>
-                                        )}
+                        <div className={cn(
+                            "w-full flex flex-col p-5 rounded-[32px] border-none transition-all text-left",
+                            profile?.lineUserId 
+                                ? "bg-emerald-50 dark:bg-emerald-500/5 ring-1 ring-emerald-500/10 shadow-sm"
+                                : "bg-slate-50 dark:bg-zinc-900/50"
+                        )}>
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-3">
+                                    <div className={cn(
+                                        "w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-sm",
+                                        profile?.lineUserId ? "bg-[#00B900]" : "bg-slate-300 dark:bg-zinc-700"
+                                    )}>
+                                        <ChatBubbleLeftRightIcon className="w-5 h-5" />
                                     </div>
-                                    <p className="text-[10px] font-bold text-slate-400">
-                                        {profile?.lineUserId ? `${profile.lineDisplayName || 'บัญชี LINE'}` : 'รับแจ้งเตือนและสิทธิพิเศษฟรี'}
-                                    </p>
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-sm font-black text-slate-900 dark:text-white">การเชื่อมต่อ LINE</p>
+                                            {profile?.lineUserId ? (
+                                                <span className="text-[8px] font-black bg-emerald-500 text-white px-1.5 py-0.5 rounded-lg uppercase">เชื่อมต่อแล้ว</span>
+                                            ) : (
+                                                <span className="text-[8px] font-black bg-slate-200 text-slate-400 px-1.5 py-0.5 rounded-lg uppercase">ยังไม่ผูกบัญชี</span>
+                                            )}
+                                        </div>
+                                        <p className="text-[10px] font-bold text-slate-400">
+                                            {profile?.lineUserId ? `${profile.lineDisplayName || 'บัญชี LINE ของคุณ'}` : 'เพื่อรับสิทธิพิเศษและแจ้งเตือน'}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="p-1">
+                                    {profile?.lineUserId && (
+                                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                                    )}
                                 </div>
                             </div>
-                            <ChevronRightIcon className="w-4 h-4 text-slate-300" />
-                        </button>
+                            
+                            <button 
+                                onClick={() => setView('line_connect')}
+                                className={cn(
+                                    "w-full py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-[0.98]",
+                                    profile?.lineUserId 
+                                        ? "bg-white dark:bg-zinc-900 text-emerald-600 shadow-sm"
+                                        : "bg-slate-900 text-white dark:bg-white dark:text-slate-900"
+                                )}
+                            >
+                                {profile?.lineUserId ? 'อัปเดต / เปลี่ยนบัญชี' : 'เริ่มเชื่อมต่อตอนนี้'}
+                            </button>
+                        </div>
                     </div>
                 </section>
 
