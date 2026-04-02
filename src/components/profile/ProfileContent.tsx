@@ -6,8 +6,10 @@ import {
     SparklesIcon,
     ArrowRightOnRectangleIcon,
     ChevronRightIcon,
-    ChatBubbleLeftRightIcon
+    ChatBubbleLeftRightIcon,
+    ArrowTopRightOnSquareIcon
 } from '@heroicons/react/24/outline';
+import { QRCodeSVG } from 'qrcode.react';
 import { useUIStore } from '@/stores/useUIStore';
 import { useSystem } from '@/core/container/SystemContext';
 import Link from 'next/link';
@@ -99,10 +101,12 @@ export const ProfileContent = () => {
 
     // --- LINE CONNECT VIEW ---
     if (view === 'line_connect') {
+        const liffUrl = `https://liff.line.me/2006894054-O8E2Rz96?uid=${user.uid}`; // 🟢 Personalized Link
+        
         return (
             <div className="flex flex-col animate-in fade-in slide-in-from-right-4 duration-300">
                 {/* View Header */}
-                <div className="px-6 py-4 flex items-center gap-4 border-b border-slate-50 dark:border-zinc-900">
+                <div className="px-6 py-4 flex items-center gap-4 border-b border-slate-50 dark:border-zinc-900/50">
                     <button 
                         onClick={() => setView('main')}
                         className="p-2 -ml-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900 transition-colors"
@@ -113,51 +117,52 @@ export const ProfileContent = () => {
                 </div>
 
                 <div className="p-8 flex flex-col items-center text-center space-y-8">
-                    <div className="w-24 h-24 bg-[#00B900]/10 rounded-[32px] flex items-center justify-center text-[#00B900] shadow-inner">
-                        <ChatBubbleLeftRightIcon className="w-12 h-12" />
+                    {/* Personalized QR Code Section */}
+                    <div className="relative p-6 bg-white rounded-[40px] shadow-2xl shadow-green-500/10 border-8 border-[#00C300]/5 ring-1 ring-[#00C300]/20">
+                        <QRCodeSVG 
+                            value={liffUrl}
+                            size={180}
+                            level="H"
+                            includeMargin={false}
+                            imageSettings={{
+                                src: "/images/line-icon.png", // Ensure this exists or use a simpler version
+                                x: undefined,
+                                y: undefined,
+                                height: 32,
+                                width: 32,
+                                excavate: true,
+                            }}
+                        />
+                        {/* Status Label on QR */}
+                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-[#00C300] text-white text-[10px] font-black px-4 py-1.5 rounded-full shadow-lg whitespace-nowrap">
+                           สแกนเพื่อเชื่อมต่อ
+                        </div>
                     </div>
 
                     <div className="space-y-2">
-                        <h3 className="text-xl font-black text-slate-900 dark:text-white">รับแจ้งเตือนผ่าน LINE</h3>
+                        <h3 className="text-xl font-black text-slate-900 dark:text-white">เชื่อมต่อง่ายนิดเดียว!</h3>
                         <p className="text-sm font-bold text-slate-400 dark:text-zinc-500 leading-relaxed px-4">
-                            เชื่อมต่อบัญชี YouOKE ของคุณกับ LINE เพื่อรับสถานะสมาชิกและแจ้งเตือนโปรโมชั่น
+                            ใช้แอป LINE ในมือถือของคุณสแกน QR Code เพื่อผูกบัญชีเข้าหน้าเว็บทันทีครับ 🧼✨
                         </p>
                     </div>
 
-                    <div className="w-full space-y-4">
-                        <div className="bg-slate-50 dark:bg-zinc-900/50 p-6 rounded-[32px] border border-slate-100 dark:border-zinc-800 border-dashed">
-                             <p className="text-xs font-bold text-slate-500 mb-4 uppercase tracking-widest">ขั้นตอนการเชื่อมต่อ</p>
-                             <ul className="text-left space-y-3 text-[13px] font-bold text-slate-600 dark:text-zinc-400">
-                                <li className="flex gap-2">
-                                    <span className="text-primary">•</span>
-                                    <span>กดปุ่มเชื่อมต่อด้านล่างเพื่อยืนยันตัวตน</span>
-                                </li>
-                                <li className="flex gap-2">
-                                    <span className="text-primary">•</span>
-                                    <span>เพิ่มเพื่อนกับ YouOKE Official</span>
-                                </li>
-                                <li className="flex gap-2">
-                                    <span className="text-primary">•</span>
-                                    <span>รับการแจ้งเตือนได้ทันที!</span>
-                                </li>
-                             </ul>
-                        </div>
-
+                    <div className="w-full space-y-4 pt-4">
+                         {/* Option for users who can't scan (e.g. browsing on mobile) */}
                         <a 
-                            href="https://line.me/R/ti/p/@243lercy"
+                            href={liffUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="w-full bg-[#00B900] hover:bg-[#009e00] text-white py-4 rounded-[24px] font-black text-center text-sm shadow-xl shadow-green-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                            className="w-full bg-slate-50 hover:bg-slate-100 text-slate-500 py-4 rounded-[28px] font-black text-center text-xs transition-all active:scale-[0.98] flex items-center justify-center gap-2 border border-slate-100 dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-400"
                         >
-                            <ChatBubbleLeftRightIcon className="w-5 h-5" />
-                            <span>เชื่อมต่อบัญชี LINE ตอนนี้</span>
+                            <ArrowTopRightOnSquareIcon className="w-4 h-4" />
+                            <span>กรณีสแกนไม่ได้: กดที่นี่แทนครับ</span>
                         </a>
 
                         <button 
                             onClick={() => setView('main')}
-                            className="w-full text-slate-400 font-black text-[11px] uppercase tracking-widest hover:text-slate-600 transition-colors"
+                            className="w-full text-slate-300 font-black text-[11px] uppercase tracking-widest hover:text-slate-400 transition-colors"
                         >
-                            ไว้วันหลัง
+                            ย้อนกลับไปหน้าโปรไฟล์
                         </button>
                     </div>
                 </div>
