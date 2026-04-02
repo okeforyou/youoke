@@ -1,9 +1,6 @@
-/** 
- * YouOKE Dynamic Versioning Engine (v4.2.9)
- * ศูนย์รวมเลขเวอร์ชันของทัังระบบ เพื่อความแม่นยำและไม่ซ้ำซ้อน
- */
+import packageInfo from "../../package.json";
 
-export const SYSTEM_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || "4.9.1";
+export const SYSTEM_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || packageInfo.version;
 export const SYSTEM_CODENAME = "LINE Direct Gateway";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
@@ -21,7 +18,7 @@ export const CHANGELOGS = [
         recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
     },
     {
-        version: "4.9.1 (LINE Messaging Bridge)",
+        version: "4.9.0 (LINE Messaging Bridge)",
         date: "2 เม.ย. 2569",
         changes: [
             "[Messaging] LINE Private Push: แอดมินส่งข้อความ LINE ส่วนตัวหาสมาชิกที่ผูกบัญชีแล้วได้โดยตรงจากหน้าจัดการ",
