@@ -8,6 +8,14 @@ export const BUILD_DATE = "2 เม.ย. 2569";
 
 export const CHANGELOGS = [
     {
+        version: "4.9.4 (LINE Handshake)",
+        date: "2 เม.ย. 2569",
+        changes: [
+            "[Messaging] Welcome Handshake: ระบบจะส่งข้อความต้อนรับและยืนยันการผูกบัญชีเข้า LINE อัตโนมัติทันทีที่ผู้ใช้ผูกบัญชีสำเร็จ"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
+    {
         version: "4.9.2 (LINE Smart Pulse)",
         date: "2 เม.ย. 2569",
         changes: [

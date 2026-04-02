@@ -120,7 +120,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         await Promise.all(writePromises);
 
-        // 5. Generate Custom Token for Login
+        // 5. Send Welcome/Link Message via LINE Push API
+        const channelAccessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
+        if (channelAccessToken) {
+            try {
+                const isLinking = state && state !== 'auth_login';
+                const welcomeMsg = isLinking 
+                    ? `ผูกบัญชีสำเร็จ! 🎉\nบัญชี YouOKE ของคุณได้เชื่อมต่อกับ LINE เรียบร้อยแล้วครับ`
+                    : `ยินดีต้อนรับคุณ ${name} เข้าสู่ YouOKE! 🎉\nคุณได้เข้าสู่ระบบด้วย LINE เรียบร้อยแล้ว`;
+
+                await axios.post('https://api.line.me/v2/bot/message/push', {
+                    to: lineUserId,
+                    messages: [{ type: "text", text: welcomeMsg }]
+                }, {
+                    headers: { 'Authorization': `Bearer ${channelAccessToken}` }
+                });
+            } catch (err: any) {
+                console.warn('⚠️ [LINE] Could not send welcome message (User might not have added the bot as friend):', err.message);
+            }
+        }
+
+        // 6. Generate Custom Token for Login
         const customToken = await adminAuth.createCustomToken(targetUid);
         return res.status(200).json({ 
             token: customToken, 
