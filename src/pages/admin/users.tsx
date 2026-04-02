@@ -299,6 +299,23 @@ export default function AdminUsersPage() {
                 }
             });
 
+            // 🟢 v4.9.2: แจ้งเตือน LINE อัตโนมัติ (ขอบคุณลูกค้า)
+            const lineUserId = (selectedUser as any).lineUserId;
+            if (lineUserId) {
+                try {
+                    await fetch('/api/notify/line-push', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            to: lineUserId,
+                            message: `[YouOKE] แอดมินได้ทำการอนุมัติสถานะพรีเมียมแพ็กเกจ "${targetPkg.name}" ให้คุณเรียบร้อยแล้วครับ! 🎉\n\nขอให้มีความสุขกับการร้องเพลงนะครับ\n\nเข้าใช้งานได้ที่: ${window.location.origin}`
+                        })
+                    });
+                } catch (err) {
+                    console.warn('LINE notify failed:', err);
+                }
+            }
+
         } catch (error: any) {
             console.error(error);
             setConfirmModal({
@@ -337,6 +354,24 @@ export default function AdminUsersPage() {
                             fetchUsers();
                         }
                     });
+
+                    // 🟢 v4.9.2: แจ้งเตือน LINE อัตโนมัติ (ขอบคุณลูกค้า - ตลอดชีพ)
+                    const lineUserId = (selectedUser as any).lineUserId;
+                    if (lineUserId) {
+                        try {
+                            await fetch('/api/notify/line-push', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    to: lineUserId,
+                                    message: `[YouOKE] 🎉 ยินดีด้วยครับ! แอดมินได้ทำการปลดล็อกสถานะสมาชิก "ตลอดชีพ" (LIFETIME) ให้คุณเรียบร้อยแล้ว\n\nขอให้สนุกกับการร้องเพลงไปยาวๆ เลยนะครับ!\n\nเข้าใช้งานแอป: ${window.location.origin}`
+                                })
+                            });
+                        } catch (err) {
+                            console.warn('LINE notify failed:', err);
+                        }
+                    }
+
                 } catch (error: any) {
                     console.error(error);
                     alert("Failed to assign lifetime: " + error.message);

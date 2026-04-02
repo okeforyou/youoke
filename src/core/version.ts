@@ -8,6 +8,15 @@ export const BUILD_DATE = "2 เม.ย. 2569";
 
 export const CHANGELOGS = [
     {
+        version: "4.9.2 (LINE Smart Pulse)",
+        date: "2 เม.ย. 2569",
+        changes: [
+            "[Admin] Smart Assignment Notify: ระบบส่ง LINE แจ้งเตือนลูกค้าอัตโนมัติทันที เมื่อแอดมินกดต่ออายุหรือปลดล็อกตลอดชีพจากหน้า Dashboard",
+            "[UX] Instant Confirmation: เพิ่มปุ่มทางลัดเข้าแอปในข้อความแจ้งเตือน เพื่อให้ลูกค้าใช้งานต่อได้ทันที"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
+    {
         version: "4.9.1 (LINE Direct Gateway)",
         date: "2 เม.ย. 2569",
         changes: [
