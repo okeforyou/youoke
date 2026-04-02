@@ -22,7 +22,7 @@ import { cn } from '@/lib/utils';
 import { auth } from '@/firebase';
 
 export const ProfileContent = () => {
-    const { user, signOut: logOut } = useSystem().auth();
+    const { user, signOut: logOut, signInWithLine } = useSystem().auth();
     const router = useRouter();
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(false);
@@ -138,15 +138,13 @@ export const ProfileContent = () => {
                     </div>
 
                     <div className="w-full space-y-4 pt-4">
-                        <a 
-                            href={liffUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                        <button 
+                            onClick={() => (user as any)?.uid && signInWithLine((user as any).uid)}
                             className="w-full bg-[#00B900] hover:bg-[#009e00] text-white py-4 rounded-[28px] font-black text-center text-sm shadow-xl shadow-green-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                         >
                             <ChatBubbleLeftRightIcon className="w-5 h-5" />
-                            <span>กดเพื่อเชื่อมต่อทันที (มือถือ)</span>
-                        </a>
+                            <span>ยืนยันสิทธิ์และเชื่อมต่อ LINE</span>
+                        </button>
 
                         <button 
                             onClick={() => setView('main')}

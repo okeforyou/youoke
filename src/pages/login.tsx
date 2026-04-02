@@ -77,7 +77,7 @@ export default function LoginPage() {
 
     // Handle LINE Callback
     useEffect(() => {
-        const { code } = router.query;
+        const { code, state } = router.query;
         if (code && !user) {
             setLineLoading(true);
             const verifyLineLogin = async () => {
@@ -89,7 +89,7 @@ export default function LoginPage() {
                     const res = await fetch('/api/auth/line-token', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ code, redirectUri })
+                        body: JSON.stringify({ code, redirectUri, state })
                     });
                     if (!res.ok) throw new Error('Failed to verify LINE login');
                     const { token } = await res.json();
@@ -276,7 +276,7 @@ export default function LoginPage() {
 
                             {/* Social Login: STABLE & FAST FAST FAST */}
                             <div className="grid grid-cols-1 gap-3 mb-8">
-                                <button onClick={signInWithLine} disabled={isLoading || lineLoading || !acceptedTerms} className="h-12 flex justify-center items-center gap-3 px-6 rounded-xl bg-[#06C755] hover:bg-[#05b34d] text-white font-bold transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <button onClick={() => signInWithLine()} disabled={isLoading || lineLoading || !acceptedTerms} className="h-12 flex justify-center items-center gap-3 px-6 rounded-xl bg-[#06C755] hover:bg-[#05b34d] text-white font-bold transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
                                     {lineLoading ? <span className="loading loading-spinner loading-sm" /> : (
                                         <>
                                             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M24 10.3c0-4.6-4.6-8.3-10.4-8.3C7.8 2 3.1 5.7 3.1 10.3c0 4.1 3.7 7.5 8.7 8.2.3.1.8.2 1 .5.1.1.2.4.1.6l-.3 1.9c-.1.4-.4 1.5-.4 1.5l3.2-1.9s1.4-.8 2-.7l.1-.1c4.5-1.1 6.5-4.5 6.5-10z"/></svg>

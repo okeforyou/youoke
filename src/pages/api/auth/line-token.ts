@@ -8,14 +8,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { code, redirectUri } = req.body;
+    const { code, redirectUri, state } = req.body;
 
     if (!code || !redirectUri) {
         return res.status(400).json({ error: 'Missing code or redirectUri' });
     }
 
     try {
-        const clientId = process.env.LINE_LOGIN_CHANNEL_ID;
+        const clientId = process.env.LINE_LOGIN_CHANNEL_ID || process.env.NEXT_PUBLIC_LINE_LOGIN_CHANNEL_ID;
         const clientSecret = process.env.LINE_LOGIN_CHANNEL_SECRET;
 
         if (!clientId || !clientSecret) {
@@ -35,14 +35,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         });
 
-        const { access_token, id_token } = tokenRes.data;
+        const { id_token } = tokenRes.data;
 
-        if (!id_token) {
-            throw new Error("No ID Token received from LINE");
-        }
-
-        // 2. Verify ID Token and Get Profile (Local verification or Call LINE Verify API)
-        // Calling LINE verify is safer to ensure audience matches
+        // 2. Verify ID Token
         const verifyRes = await axios.post('https://api.line.me/oauth2/v2.1/verify',
             new URLSearchParams({
                 id_token: id_token,
@@ -50,56 +45,56 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             })
         );
 
-        // 3. User Info from Verify Response
         const lineProfile = verifyRes.data;
         const lineUserId = lineProfile.sub;
-        const email = lineProfile.email; // Requires 'email' scope
         const name = lineProfile.name;
         const picture = lineProfile.picture;
 
-        console.log(`✅ LINE Login: ${name} (${lineUserId})`);
+        let targetUid = state && state !== 'auth_login' ? state : `line:${lineUserId}`;
+        
+        console.log(`✅ [Identity Bridge] Target UID: ${targetUid} | LINE: ${name}`);
 
-        // 4. Create or Update Firebase User
-        let uid = `line:${lineUserId}`;
+        // 3. Link or Create User
+        if (!adminAuth || !adminFirestore) throw new Error("Firebase Admin not initialized");
+
         let firebaseUser;
-
         try {
-            if (!adminAuth) throw new Error("Admin Auth not initialized");
-            firebaseUser = await adminAuth.getUser(uid);
-            console.log("Found existing Firebase user:", uid);
+            firebaseUser = await adminAuth.getUser(targetUid);
         } catch (error: any) {
-            if (error.code === 'auth/user-not-found') {
-                // Create new user
-                console.log("Creating new Firebase user:", uid);
-                if (!adminAuth) throw new Error("Admin Auth not initialized");
+            if (error.code === 'auth/user-not-found' && targetUid.startsWith('line:')) {
+                // Create new LINE user if it's a login and user doesn't exist
                 firebaseUser = await adminAuth.createUser({
-                    uid: uid,
+                    uid: targetUid,
                     displayName: name,
                     photoURL: picture,
-                    email: email, // Optional, might be duplicates if user signed up with email before
                     emailVerified: true
                 });
             } else {
-                throw error;
+                throw error; // If state UID is invalid/missing, it should error here
             }
         }
 
-        // 5. Update Firestore Profile (Sync)
-        if (!adminFirestore) throw new Error("Admin Firestore not initialized");
-        const userRef = adminFirestore.collection('users').doc(uid);
-        await userRef.set({
-            uid: uid,
-            displayName: name,
-            photoURL: picture,
-            email: email || null,
-            provider: 'line',
+        // 4. Update Profile with LINE Data (The Bridge)
+        const userRef = adminFirestore.collection('users').doc(targetUid);
+        const bridgeData: any = {
+            lineUserId: lineUserId,
+            lineDisplayName: name,
+            linePhotoURL: picture,
             updatedAt: FieldValue.serverTimestamp()
-        }, { merge: true });
+        };
 
-        // 6. Generate Custom Token
-        if (!adminAuth) throw new Error("Admin Auth not initialized");
-        const customToken = await adminAuth.createCustomToken(uid);
+        // If it's a new LINE user, fill in basic info too
+        if (targetUid.startsWith('line:')) {
+            bridgeData.uid = targetUid;
+            bridgeData.displayName = name;
+            bridgeData.photoURL = picture;
+            bridgeData.provider = 'line';
+        }
 
+        await userRef.set(bridgeData, { merge: true });
+
+        // 5. Generate Custom Token for Login
+        const customToken = await adminAuth.createCustomToken(targetUid);
         return res.status(200).json({ token: customToken });
 
     } catch (error: any) {

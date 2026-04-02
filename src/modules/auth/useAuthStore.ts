@@ -71,7 +71,7 @@ interface AuthActions {
     signUp: (email: string, pass: string) => Promise<void>;
     signInWithGoogle: () => Promise<void>;
     linkGoogleAccount: () => Promise<void>;
-    signInWithLine: () => void;
+    signInWithLine: (state?: string) => void;
     signInWithCustomToken: (token: string) => Promise<void>;
     signOut: () => Promise<void>;
     setHydrated: () => void;
@@ -538,10 +538,10 @@ export const useAuthStore = create<UserState & AuthActions>()(
                 }
             },
 
-            signInWithLine: () => {
+            signInWithLine: (state?: string) => {
                 const clientId = process.env.NEXT_PUBLIC_LINE_LOGIN_CHANNEL_ID;
                 // CRITICAL: This URL must MATCH EXACTLY with LINE Developers Console
-                // 1. https://playyouoke.vercel.app/login/
+                // 1. https://play.okeforyou.com/login/
                 // 2. http://localhost:3000/login/ (For testing)
 
                 let redirectUri = 'https://play.okeforyou.com/login/';
@@ -551,7 +551,7 @@ export const useAuthStore = create<UserState & AuthActions>()(
                 }
 
                 console.log('🔗 LINE Redirect URI:', redirectUri);
-                const state = 'random_state_string'; // Should be random
+                const queryState = state || 'auth_login'; 
 
                 if (!clientId) {
                     console.error("LINE_LOGIN_CHANNEL_ID not set");
@@ -559,7 +559,7 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     return;
                 }
 
-                const lineAuthUrl = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&scope=profile%20openid%20email`;
+                const lineAuthUrl = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${queryState}&scope=profile%20openid%20email`;
 
                 window.location.replace(lineAuthUrl);
             },
