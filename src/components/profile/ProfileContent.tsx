@@ -39,7 +39,7 @@ export const ProfileContent = () => {
         if (!user?.uid) return;
         setLoading(true);
         try {
-            const result = await getUserProfile(user.uid);
+            const result = await getUserProfile(user.uid, true); // Force Refresh (v4.8.2)
             if (result.success && result.data) {
                 setProfile(result.data);
             }
@@ -201,39 +201,33 @@ export const ProfileContent = () => {
                         onUpgrade={() => router.push('/packages')}
                     />
 
-                    {/* LINE Connection Status (Vivid Recognition v4.8.1) */}
+                    {/* LINE Connection Status (Minimalist Bridge v4.8.2) */}
                     <div className="mt-4 px-2">
                         <div className={cn(
-                            "w-full flex flex-col p-5 rounded-[32px] border-none transition-all text-left",
+                            "w-full flex flex-col p-5 rounded-[28px] border transition-all text-left bg-white dark:bg-zinc-900",
                             profile?.lineUserId 
-                                ? "bg-emerald-50 dark:bg-emerald-500/5 ring-1 ring-emerald-500/10 shadow-sm"
-                                : "bg-rose-50 dark:bg-rose-500/5 ring-2 ring-rose-500/20 shadow-lg shadow-rose-500/10 animate-in fade-in zoom-in-95 duration-500"
+                                ? "border-emerald-100 dark:border-emerald-500/10 shadow-sm"
+                                : "border-slate-100 dark:border-zinc-800 shadow-sm"
                         )}>
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-3">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-4">
                                     <div className={cn(
-                                        "w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-sm",
-                                        profile?.lineUserId ? "bg-[#00B900]" : "bg-rose-500 shadow-rose-500/20"
+                                        "w-10 h-10 rounded-2xl flex items-center justify-center text-white",
+                                        profile?.lineUserId ? "bg-[#00B900]" : "bg-slate-100 dark:bg-zinc-800 text-slate-400"
                                     )}>
-                                        <ChatBubbleLeftRightIcon className="w-5 h-5" />
+                                        <ChatBubbleLeftRightIcon className={cn("w-5 h-5", !profile?.lineUserId && "text-slate-400")} />
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-2">
-                                            <p className={cn(
-                                                "text-sm font-black",
-                                                profile?.lineUserId ? "text-slate-900 dark:text-white" : "text-rose-900 dark:text-rose-100"
-                                            )}>การเชื่อมต่อ LINE</p>
+                                            <p className="text-[15px] font-black text-slate-900 dark:text-white">การเชื่อมต่อ LINE</p>
                                             {profile?.lineUserId ? (
                                                 <span className="text-[8px] font-black bg-emerald-500 text-white px-1.5 py-0.5 rounded-lg uppercase">เชื่อมต่อแล้ว</span>
                                             ) : (
-                                                <span className="text-[8px] font-black bg-rose-500 text-white px-1.5 py-0.5 rounded-lg uppercase animate-pulse">ยังไม่ผูกบัญชี</span>
+                                                <span className="text-[8px] font-black bg-slate-200 text-slate-400 px-1.5 py-0.5 rounded-lg uppercase">ยังไม่ผูกบัญชี</span>
                                             )}
                                         </div>
-                                        <p className={cn(
-                                            "text-[10px] font-bold",
-                                            profile?.lineUserId ? "text-slate-400" : "text-rose-400"
-                                        )}>
-                                            {profile?.lineUserId ? `${profile.lineDisplayName || 'บัญชี LINE ของคุณ'}` : 'กรุณาเชื่อมต่อเพื่อรับสิทธิพิเศษ'}
+                                        <p className="text-[11px] font-bold text-slate-400 dark:text-zinc-500">
+                                            {profile?.lineUserId ? `${profile.lineDisplayName || 'บัญชี LINE ของคุณ'}` : 'เพื่อรับสิทธิพิเศษและแจ้งเตือน'}
                                         </p>
                                     </div>
                                 </div>
@@ -241,7 +235,7 @@ export const ProfileContent = () => {
                                     {profile?.lineUserId ? (
                                         <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
                                     ) : (
-                                        <div className="w-2 h-2 rounded-full bg-rose-300"></div>
+                                        <div className="w-2 h-2 rounded-full bg-slate-200 dark:bg-zinc-800"></div>
                                     )}
                                 </div>
                             </div>
@@ -249,13 +243,13 @@ export const ProfileContent = () => {
                             <button 
                                 onClick={() => setView('line_connect')}
                                 className={cn(
-                                    "w-full py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-[0.98] shadow-sm",
+                                    "w-full py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-[0.98]",
                                     profile?.lineUserId 
-                                        ? "bg-white dark:bg-zinc-900 text-emerald-600"
-                                        : "bg-rose-600 text-white hover:bg-rose-700 shadow-rose-600/20"
+                                        ? "bg-slate-50 dark:bg-zinc-950 text-emerald-600 hover:bg-emerald-50"
+                                        : "bg-slate-900 text-white dark:bg-white dark:text-slate-900 hover:brightness-110 shadow-lg shadow-slate-900/10"
                                 )}
                             >
-                                {profile?.lineUserId ? 'อัปเดตข้อมูล / เปลี่ยนบัญชี' : 'คลิกเพื่อเริ่มผูกบัญชีทันที'}
+                                {profile?.lineUserId ? 'อัปเดตข้อมูล / เปลี่ยนบัญชี' : 'คลิกเพื่อเริ่มเชื่อมต่อตอนนี้'}
                             </button>
                         </div>
                     </div>

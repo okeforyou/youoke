@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
-import { adminAuth, adminFirestore } from '../../../firebase-admin';
+import { adminAuth, adminFirestore, adminDb } from '../../../firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -74,7 +74,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
         }
 
-        // 4. Update Profile with LINE Data (The Bridge)
+        // 4. Update Profile with LINE Data (The Bridge - Hybrid Sync)
         const userRef = adminFirestore.collection('users').doc(targetUid);
         const bridgeData: any = {
             lineUserId: lineUserId,
@@ -91,7 +91,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             bridgeData.provider = 'line';
         }
 
-        await userRef.set(bridgeData, { merge: true });
+        // Parallel Sync to both DBs (v4.8.2)
+        await Promise.all([
+            userRef.set(bridgeData, { merge: true }),
+            adminDb ? adminDb.ref(`users/${targetUid}`).update(bridgeData) : Promise.resolve()
+        ]);
 
         // 5. Generate Custom Token for Login
         const customToken = await adminAuth.createCustomToken(targetUid);
