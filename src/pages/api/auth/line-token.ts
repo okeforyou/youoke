@@ -74,9 +74,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
         }
 
-        // 4. Update Profile with LINE Data (The Bridge - Hybrid Sync)
+        // 4. Update Profile with LINE Data (The Bridge - v4.8.5 Dual-DB Fix)
         const userRef = adminFirestore.collection('users').doc(targetUid);
-        const bridgeData: any = {
+        const firestoreBridgeData: any = {
             lineUserId: lineUserId,
             lineDisplayName: name,
             linePhotoURL: picture,
@@ -85,21 +85,49 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // If it's a new LINE user, fill in basic info too
         if (targetUid.startsWith('line:')) {
-            bridgeData.uid = targetUid;
-            bridgeData.displayName = name;
-            bridgeData.photoURL = picture;
-            bridgeData.provider = 'line';
+            firestoreBridgeData.uid = targetUid;
+            firestoreBridgeData.displayName = name;
+            firestoreBridgeData.photoURL = picture;
+            firestoreBridgeData.provider = 'line';
         }
 
-        // Parallel Sync to both DBs (v4.8.2)
-        await Promise.all([
-            userRef.set(bridgeData, { merge: true }),
-            adminDb ? adminDb.ref(`users/${targetUid}`).update(bridgeData) : Promise.resolve()
-        ]);
+        // RTDB uses its own timestamp format
+        const rtdbBridgeData: any = {
+            lineUserId: lineUserId,
+            lineDisplayName: name,
+            linePhotoURL: picture,
+            updatedAt: adminDb ? require('firebase-admin').database.ServerValue.TIMESTAMP : null
+        };
+
+        if (targetUid.startsWith('line:')) {
+            rtdbBridgeData.uid = targetUid;
+            rtdbBridgeData.displayName = name;
+            rtdbBridgeData.photoURL = picture;
+            rtdbBridgeData.provider = 'line';
+        }
+
+        // Parallel Sync to both DBs (v4.8.5)
+        const writePromises: Promise<any>[] = [
+            userRef.set(firestoreBridgeData, { merge: true })
+        ];
+
+        if (adminDb) {
+            writePromises.push(adminDb.ref(`users/${targetUid}`).update(rtdbBridgeData));
+            console.log(`✅ [Bridge] Writing to BOTH Firestore + RTDB for UID: ${targetUid}`);
+        } else {
+            console.warn(`⚠️ [Bridge] adminDb is null — writing to Firestore ONLY for UID: ${targetUid}`);
+        }
+
+        await Promise.all(writePromises);
 
         // 5. Generate Custom Token for Login
         const customToken = await adminAuth.createCustomToken(targetUid);
-        return res.status(200).json({ token: customToken });
+        return res.status(200).json({ 
+            token: customToken, 
+            lineUserId, 
+            lineDisplayName: name,
+            linked: !!(state && state !== 'auth_login')
+        });
 
     } catch (error: any) {
         console.error('❌ LINE Login Error:', error.response?.data || error.message);

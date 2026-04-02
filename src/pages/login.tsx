@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useAuthStore } from '@/modules/auth/useAuthStore';
@@ -60,12 +60,18 @@ export default function LoginPage() {
         { icon: Heart, title: "โหมดส่วนตัว", desc: "เซฟเพลงโปรดและเพลย์ลิสต์ส่วนตัว", color: "text-pink-600", bg: "bg-pink-50" },
     ];
 
+    // 🛡️ Guard: Prevent double-processing of LINE callback
+    const lineProcessedRef = useRef(false);
+
     // Redirect if logged in (Instant)
     useEffect(() => {
         if (!router.isReady) return;
         
         // 🛡️ Skip redirect if we are here to LINK an account (YouTube Shell Connection)
         if (user && router.query.action === 'link') return;
+
+        // 🛡️ Skip redirect if LINE callback is being processed (v4.8.5 Critical Fix)
+        if (router.query.code) return;
 
         if (user) {
             // 🚀 ALWAYS REDIRECT TO HOME (as requested)
@@ -75,35 +81,74 @@ export default function LoginPage() {
         }
     }, [user, router.isReady, router.query, router.asPath]);
 
-    // Handle LINE Callback
+    // Handle LINE Callback (v4.8.5 - Supports both Login & Linking)
     useEffect(() => {
+        if (!router.isReady) return;
         const { code, state } = router.query;
-        if (code && !user) {
-            setLineLoading(true);
-            const verifyLineLogin = async () => {
-                try {
-                    const redirectUri = typeof window !== 'undefined' 
-                        ? `${window.location.origin}/login/` 
-                        : '';
-                    
-                    const res = await fetch('/api/auth/line-token', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ code, redirectUri, state })
-                    });
-                    if (!res.ok) throw new Error('Failed to verify LINE login');
-                    const { token } = await res.json();
-                    await signInWithCustomToken(token);
-                } catch (err: any) {
-                    setLocalError('การเข้าสู่ระบบด้วย LINE ล้มเหลว กรุณาลองใหม่');
-                    setLineLoading(false); // ปลดล็อกเฉพาะตอน Error
+        if (!code || lineProcessedRef.current) return;
+        
+        const isLinkingFlow = state && state !== 'auth_login';
+
+        // Login flow: need to wait for auth to settle (user must be null)
+        // Linking flow: user is already logged in, proceed immediately
+        if (!isLinkingFlow && user) return;
+
+        lineProcessedRef.current = true;
+        setLineLoading(true);
+
+        const processLineCallback = async () => {
+            try {
+                const redirectUri = typeof window !== 'undefined' 
+                    ? `${window.location.origin}/login/` 
+                    : '';
+                
+                console.log(`🔗 LINE Callback: ${isLinkingFlow ? 'LINKING' : 'LOGIN'} flow | state=${state}`);
+                
+                const res = await fetch('/api/auth/line-token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code, redirectUri, state })
+                });
+                if (!res.ok) {
+                    const errorData = await res.json().catch(() => ({}));
+                    console.error('❌ LINE API Error:', errorData);
+                    throw new Error(errorData.error || 'Failed to verify LINE login');
                 }
-                // 🚀 SPEED FIX: ไม่ต้องล้าง URL กลับไปที่ /login แล้ว เพราะแอปกำลังจะถูกดีดไปหน้าแรก
-                // และปล่อย spinner ให้หมุนค้างไว้เนียนๆ จนกว่าจะเปลี่ยนหน้าเสร็จสิ้น
-            };
-            verifyLineLogin();
-        }
-    }, [router.query, user]);
+                const data = await res.json();
+
+                if (isLinkingFlow) {
+                    // Linking: เขียนข้อมูล LINE ลง RTDB ผ่าน Client SDK (Fallback สำหรับ Hybrid Mode)
+                    if (data.lineUserId && user?.uid) {
+                        try {
+                            const { realtimeDb } = await import('@/firebase');
+                            const { ref, update } = await import('firebase/database');
+                            if (realtimeDb) {
+                                await update(ref(realtimeDb, `users/${user.uid}`), {
+                                    lineUserId: data.lineUserId,
+                                    lineDisplayName: data.lineDisplayName || '',
+                                });
+                                console.log('✅ LINE data written to RTDB via Client SDK');
+                            }
+                        } catch (rtdbErr) {
+                            console.warn('⚠️ Client RTDB write failed (non-critical):', rtdbErr);
+                        }
+                    }
+                    // ไม่ต้อง signIn ใหม่ (ล็อกอินอยู่แล้ว) แค่ redirect กลับหน้าแรก
+                    console.log('✅ LINE Linking Success! Redirecting...');
+                    router.replace('/');
+                } else {
+                    // Login: signIn ด้วย Custom Token แล้วระบบจะ redirect ไปหน้าแรกเอง
+                    await signInWithCustomToken(data.token);
+                }
+            } catch (err: any) {
+                console.error('❌ LINE Callback Error:', err);
+                setLocalError('การเชื่อมต่อ LINE ล้มเหลว กรุณาลองใหม่');
+                setLineLoading(false);
+                lineProcessedRef.current = false; // Allow retry
+            }
+        };
+        processLineCallback();
+    }, [router.isReady, router.query, user]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
