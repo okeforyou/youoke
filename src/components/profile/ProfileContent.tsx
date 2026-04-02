@@ -101,7 +101,8 @@ export const ProfileContent = () => {
 
     // --- LINE CONNECT VIEW ---
     if (view === 'line_connect') {
-        const liffUrl = `https://liff.line.me/2006894054-O8E2Rz96?uid=${user.uid}`; // 🟢 Personalized Link
+        const handshakeText = `เชื่อมต่อบัญชี : ${user.uid}`;
+        const lineOaUrl = `https://line.me/R/oaMessage/@243lercy/?${encodeURIComponent(handshakeText)}`; 
         
         return (
             <div className="flex flex-col animate-in fade-in slide-in-from-right-4 duration-300">
@@ -113,56 +114,47 @@ export const ProfileContent = () => {
                     >
                         <ChevronRightIcon className="w-5 h-5 rotate-180" />
                     </button>
-                    <h2 className="text-lg font-black text-slate-900 dark:text-white">เชื่อมต่อกับ LINE</h2>
+                    <h2 className="text-lg font-black text-slate-900 dark:text-white">เชื่อมต่อ LINE ของคุณ</h2>
                 </div>
 
                 <div className="p-8 flex flex-col items-center text-center space-y-8">
                     {/* Personalized QR Code Section */}
-                    <div className="relative p-6 bg-white rounded-[40px] shadow-2xl shadow-green-500/10 border-8 border-[#00C300]/5 ring-1 ring-[#00C300]/20">
+                    <div className="relative p-6 bg-white rounded-[40px] shadow-2xl shadow-green-500/10 border-8 border-emerald-500/5 ring-1 ring-emerald-500/20">
                         <QRCodeSVG 
-                            value={liffUrl}
+                            value={lineOaUrl}
                             size={180}
                             level="H"
                             includeMargin={false}
-                            imageSettings={{
-                                src: "/images/line-icon.png", // Ensure this exists or use a simpler version
-                                x: undefined,
-                                y: undefined,
-                                height: 32,
-                                width: 32,
-                                excavate: true,
-                            }}
                         />
                         {/* Status Label on QR */}
-                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-[#00C300] text-white text-[10px] font-black px-4 py-1.5 rounded-full shadow-lg whitespace-nowrap">
-                           สแกนเพื่อเชื่อมต่อ
+                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[10px] font-black px-4 py-1.5 rounded-full shadow-lg whitespace-nowrap">
+                           สแกนแล้วกด "ส่ง"
                         </div>
                     </div>
 
                     <div className="space-y-2">
-                        <h3 className="text-xl font-black text-slate-900 dark:text-white">เชื่อมต่อง่ายนิดเดียว!</h3>
+                        <h3 className="text-xl font-black text-slate-900 dark:text-white">ง่ายและรวดเร็ว!</h3>
                         <p className="text-sm font-bold text-slate-400 dark:text-zinc-500 leading-relaxed px-4">
-                            ใช้แอป LINE ในมือถือของคุณสแกน QR Code เพื่อผูกบัญชีเข้าหน้าเว็บทันทีครับ 🧼✨
+                            สแกน QR Code แล้วกดปุ่ม <span className="text-emerald-500">"ส่ง"</span> (Send) ในแอป LINE ของคุณได้เลยครับ 🧼✨
                         </p>
                     </div>
 
                     <div className="w-full space-y-4 pt-4">
-                         {/* Option for users who can't scan (e.g. browsing on mobile) */}
                         <a 
-                            href={liffUrl}
+                            href={lineOaUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="w-full bg-slate-50 hover:bg-slate-100 text-slate-500 py-4 rounded-[28px] font-black text-center text-xs transition-all active:scale-[0.98] flex items-center justify-center gap-2 border border-slate-100 dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-400"
+                            className="w-full bg-[#00B900] hover:bg-[#009e00] text-white py-4 rounded-[28px] font-black text-center text-sm shadow-xl shadow-green-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                         >
-                            <ArrowTopRightOnSquareIcon className="w-4 h-4" />
-                            <span>กรณีสแกนไม่ได้: กดที่นี่แทนครับ</span>
+                            <ChatBubbleLeftRightIcon className="w-5 h-5" />
+                            <span>กดเชื่อมต่อผ่านมือถือเครื่องนี้</span>
                         </a>
 
                         <button 
                             onClick={() => setView('main')}
                             className="w-full text-slate-300 font-black text-[11px] uppercase tracking-widest hover:text-slate-400 transition-colors"
                         >
-                            ย้อนกลับไปหน้าโปรไฟล์
+                            ยกเลิก
                         </button>
                     </div>
                 </div>
