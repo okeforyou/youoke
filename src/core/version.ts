@@ -3,29 +3,29 @@
  * ศูนย์รวมเลขเวอร์ชันของทัังระบบ เพื่อความแม่นยำและไม่ซ้ำซ้อน
  */
 
-export const SYSTEM_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || "4.8.6";
-export const SYSTEM_CODENAME = "Flat Aesthetic Achievement";
+export const SYSTEM_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || "4.8.7";
+export const SYSTEM_CODENAME = "Compact Status Achievement";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
 export const BUILD_DATE = "2 เม.ย. 2569";
 
 export const CHANGELOGS = [
     {
+        version: "4.8.7 (Compact Status Achievement)",
+        date: "2 เม.ย. 2569",
+        changes: [
+            "[UI/UX] Compact Status Master Plan: ปรับขนาดปุ่มให้กะทัดรัด (Py-2.5) เพื่อลดความหนาแน่นของหน้าจอ",
+            "[UI/UX] Color as Status: คืนค่าสีพื้นหลัง 'เขียวมรกต' ให้กับสถานะเชื่อมต่อแล้ว เพื่อความชัดเจนในการสื่อสารสูงสุด",
+            "[UI/UX] Neutral Minimalism: ใช้สี Slate/Black สำหรับปุ่มที่ยังไม่เชื่อมต่อ เพื่อคงความเรียบง่ายตามคอนเซปต์ YouOKE"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
+    {
         version: "4.8.6 (Flat Aesthetic Achievement)",
         date: "2 เม.ย. 2569",
         changes: [
             "[UI/UX] Flat Aesthetic Mastery: ปรับโฉมปุ่มสถานะ LINE ให้เป็นแบบ Flat Design (ขาวสะอ้าน/เส้นขอบบาง) เพื่อความเป็นพรีเมียม",
             "[UI/UX] UI Softening: แก้ไขความเเข็งกระด้างของส่วนต่อประสาน ลดเงาที่ไม่จำเป็นออกเพื่อให้ดูนิ่งและสะอาดตาขึ้น"
-        ],
-        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
-    },
-    {
-        version: "4.8.5 (Green Bridge Achievement)",
-        date: "2 เม.ย. 2569",
-        changes: [
-            "[UI/UX] Green Bridge Mastery: เปลี่ยนทัั้งไอคอนและปุ่มเชื่อมต่อ LINE ให้เป็นสีเขียวพรีเมียม (#00B900) ตามมาตรฐานสากล",
-            "[UI/UX] Subtle Indicators: ปรับแต่ง Badge สถานะให้มีความนุ่มนวลและเป็นโทนเดียวกับแบรนด์ LINE",
-            "[Sync] Professional Heartbeat: เพิ่มประสิทธิภาพการดึงข้อมูลเพื่อให้สถานะการผูกบัญชีอัปเดตตรงตามจริงที่สุด"
         ]
     },
     {

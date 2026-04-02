@@ -243,10 +243,10 @@ export const ProfileContent = () => {
                             <button 
                                 onClick={() => setView('line_connect')}
                                 className={cn(
-                                    "w-full py-4 rounded-[20px] font-black uppercase text-[11px] tracking-wider transition-all active:scale-[0.95]",
+                                    "w-full py-2.5 rounded-[12px] font-black uppercase text-[10px] tracking-wider transition-all active:scale-[0.98]",
                                     profile?.lineUserId 
-                                        ? "bg-white dark:bg-zinc-950 border border-slate-100 dark:border-zinc-800 text-emerald-600 hover:bg-emerald-50/50"
-                                        : "bg-[#00B900] hover:bg-[#00a300] text-white shadow-lg shadow-emerald-500/20"
+                                        ? "bg-[#00B900] hover:bg-[#00a300] text-white shadow-md shadow-emerald-500/10"
+                                        : "bg-slate-900 text-white dark:bg-white dark:text-slate-900"
                                 )}
                             >
                                 {profile?.lineUserId ? 'อัปเดตข้อมูล / เปลี่ยนบัญชี' : 'คลิกเพื่อเริ่มเชื่อมต่อตอนนี้'}
