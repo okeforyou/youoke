@@ -40,3 +40,8 @@ This workflow ensures the Agent strictly follows the project's 'AGENTS.md' guide
 8.  **Instructional Clarity for Seniors**: 
     -   UI labels and instructions must be in friendly, non-technical Thai.
     -   Avoid showing raw system IDs (UIDs) to the end user.
+
+9.  **Smart Versioning Control (v4.7.5+)**: 
+    -   NEVER update SYSTEM_VERSION in src/core/version.ts manually. 
+    -   ALWAYS update the version in 'package.json' ONLY.
+    -   The system is now bound to pull the version automatically via NEXT_PUBLIC_APP_VERSION.

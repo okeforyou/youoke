@@ -17,6 +17,7 @@ const nextConfig = {
   },
   env: {
     NEXT_PUBLIC_COMMIT_HASH: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) || 'dev',
+    NEXT_PUBLIC_APP_VERSION: require('./package.json').version,
   },
   async rewrites() {
     return [

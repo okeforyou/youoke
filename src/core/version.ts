@@ -3,13 +3,22 @@
  * ศูนย์รวมเลขเวอร์ชันของทัังระบบ เพื่อความแม่นยำและไม่ซ้ำซ้อน
  */
 
-export const SYSTEM_VERSION = "4.7.4";
-export const SYSTEM_CODENAME = "Easy-Connect Milestone";
+export const SYSTEM_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || "4.7.5";
+export const SYSTEM_CODENAME = "Identity Binding Achievement";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
 export const BUILD_DATE = "2 เม.ย. 2569";
 
 export const CHANGELOGS = [
+    {
+        version: "4.7.5 (Identity Binding Update)",
+        date: "2 เม.ย. 2569",
+        changes: [
+            "[System] Smart Identity Binding: ผูกเลขเวอร์ชันเข้ากับ package.json ทัั้งระบบ เพื่อลดงาน Manual และความผิดพลาด",
+            "[System] Environment Bridge: ใช้ NEXT_PUBLIC_APP_VERSION เป็นตัวส่งต่อความจริงเพียงหนึ่งเดียวสู่หน้าแอป",
+            "[Debug] LINE Identity Bridge: ตรวจสอบและปรับปรุงระบบการเชื่อมต่อให้ 'นิ่ง' และรองรับสมาชิกเดิม 100%"
+        ]
+    },
     {
         version: "4.7.4 (Easy-Connect Milestone)",
         date: "2 เม.ย. 2569",
