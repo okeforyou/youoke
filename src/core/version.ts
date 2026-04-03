@@ -1,12 +1,30 @@
 import packageInfo from "../../package.json";
 
-export const SYSTEM_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || packageInfo.version;
+export const SYSTEM_VERSION = packageInfo.version;
 export const SYSTEM_CODENAME = "LINE Direct Gateway";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
-export const BUILD_DATE = "2 เม.ย. 2569";
+export const BUILD_DATE = "3 เม.ย. 2569";
 
 export const CHANGELOGS = [
+    {
+        version: "4.9.19 (Solid Green Clarity Update)",
+        date: "3 เม.ย. 2569",
+        changes: [
+            "[Profile] Solid Green Branding: ปรับชุดสี Card LINE ให้เป็นสีเขียวมาตรฐาน (#06C755) ทั้งกรณีที่เชื่อมต่อแล้วและยังไม่เชื่อม เพื่อความมั่นคงของแบรนด์",
+            "[UX] High-Contrast Badges: เพิ่มระบบป้ายกำกับ [SUCCESS] และ [ACTION] ที่ชัดเจน พร้อมระบบ Pulsing แจ้งเตือนจุดที่ต้องดำเนินการ เพื่อแก้ปัญหาความสับสนของสมาชิก"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
+    {
+        version: "4.9.17 (Premium UI Alignment)",
+        date: "3 เม.ย. 2569",
+        changes: [
+            "[Profile] Card Alignment: ปรับขนาดความกว้าง (Width), ความโค้ง (Border Radius), และ Padding ของ Card สมาชิกและ Card LINE ให้เท่ากันเป๊ะเพื่อความสมมาตร",
+            "[System] Version Lock: แก้ไขปัญหาตัวเลขเวอร์ชันค้าง โดยการล็อกการดึงข้อมูลจาก package.json เป็นหลัก"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
     {
         version: "4.9.11 (Payment Flow Optimization)",
         date: "3 เม.ย. 2569",
