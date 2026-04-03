@@ -16,7 +16,8 @@ import {
     QrCode,
     Upload,
     Heart,
-    Zap
+    Zap,
+    Crown
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/modules/auth/useAuthStore';
