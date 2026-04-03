@@ -38,19 +38,31 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
     const qrImage = config.payment?.promptPay?.qrImageUrl || "/img/scb-qr.jpg";
 
     useEffect(() => {
-        if (isOpen && pkg && user && (user as any).lineUserId) {
-            // Send initial instructions to user via LINE (v4.3.1)
-            const sendInstructions = async () => {
+        if (isOpen && pkg && user) {
+            const lineUserId = (user as any).lineUserId;
+            const adminLineId = "U0862085736780c136365a26c92d5353"; // Admin/System LINE ID
+            
+            // 🟢 v4.9.11: Dual Notification (User & Admin)
+            const sendInitialAlerts = async () => {
                 try {
+                    // 1. Send Instructions to User
+                    if (lineUserId) {
+                        await axios.post('/api/notify/line-push', {
+                            to: lineUserId,
+                            message: `📢 รายละเอียดการชำระเงินสำหรับ: ${pkg.name}\n💰 ยอดที่ต้องโอน: ${pkg.price.toLocaleString()} บาท\n🏦 ธนาคาร: ${bankInfo.bank}\n🔢 เลขบัญชี: ${bankInfo.accNo}\n👤 ชื่อบัญชี: ${bankInfo.accName}\n\nเมื่อโอนเสร็จแล้ว รบกวนแนบรูปสลิปในแอปเพื่อเปิดใช้งานทันทีครับ!`
+                        });
+                    }
+                    
+                    // 2. Alert Admin (New Potential Order)
                     await axios.post('/api/notify/line-push', {
-                        to: (user as any).lineUserId,
-                        message: `📢 รายละเอียดการชำระเงินสำหรับ: ${pkg.name}\n💰 ยอดที่ต้องโอน: ${pkg.price.toLocaleString()} บาท\n🏦 ธนาคาร: ${bankInfo.bank}\n🔢 เลขบัญชี: ${bankInfo.accNo}\n👤 ชื่อบัญชี: ${bankInfo.accName}\n\nเมื่อโอนเสร็จแล้ว รบกวนแนบรูปสลิปในแอปเพื่อเปิดใช้งานทันทีครับ!`
+                        to: adminLineId,
+                        message: `👀 [YouOKE] มีลูกค้าสนใจแพ็กเกจ!\n👤 คุณ: ${user.displayName || user.email}\n📦 แพ็กเกจ: ${pkg.name}\n💰 ยอด: ${pkg.price.toLocaleString()} บาท\n\n(ลูกค้ากำลังดูเลขบัญชี เตรียมรอรับยอดได้เลยครับ! 🚀)`
                     });
                 } catch (e) {
-                    console.error("Failed to send LINE instructions:", e);
+                    console.error("Failed to send initial LINE alerts:", e);
                 }
             };
-            sendInstructions();
+            sendInitialAlerts();
         }
     }, [isOpen, pkg?.id]);
 
@@ -132,11 +144,11 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
             // 3. Send Notification to Admins via FCM
             await notifyAdmins(paymentId);
 
-            // 4. Send LINE Notification to Admin (v4.3.2 - Send Actual Slip Image!)
+            // 4. Send LINE Notification to Admin (v4.9.11 Mastery)
             try {
                 const adminLineId = "U0862085736780c136365a26c92d5353"; // Admin/System LINE ID
                 
-                // Message 1: The Actual Slip Image (v4.3.2 Mastery)
+                // Message 1: The Actual Slip Image
                 await axios.post('/api/notify/line-push', {
                     to: adminLineId,
                     flexMessage: {
@@ -146,17 +158,18 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
                     }
                 });
 
-                // Message 2: Details and Approval Link
+                // Message 2: Details and Approval Link (Better Layout)
+                const approvalUrl = `${window.location.origin}/admin/payments?id=${paymentId}`;
                 await axios.post('/api/notify/line-push', {
                     to: adminLineId,
-                    message: `💰 แจ้งโอนเงินใหม่!\n👤 จาก: ${user.displayName || user.email}\n📦 แพ็กเกจ: ${pkg.name}\n💸 ยอด: ${pkg.price.toLocaleString()} บาท\n🔗 ตรวจสอบเพื่ออนุมัติ: https://play.okeforyou.com/admin/payments?id=${paymentId}`
+                    message: `💰 แจ้งโอนเงินใหม่เรียบร้อย!\n━━━━━━━━━━━━━━━\n👤 จาก: ${user.displayName || user.email}\n📦 แพ็กเกจ: ${pkg.name}\n💸 ยอด: ${pkg.price.toLocaleString()} บาท\n━━━━━━━━━━━━━━━\n🔗 ตรวจสอบเพื่ออนุมัติทันที:\n${approvalUrl}`
                 });
                 
-                // Also notify the user if they have linked LINE
+                // 🟢 v4.9.11: Notify User with Heart
                 if ((user as any).lineUserId) {
                     await axios.post('/api/notify/line-push', {
                         to: (user as any).lineUserId,
-                        message: `✅ ระบบรับรูปสลิปของคุณแล้ว!\n📦 แพ็กเกจ: ${pkg.name}\n💰 ยอด: ${pkg.price.toLocaleString()} บาท\n\nแอดมินตรวจสอบเสร็จจะแจ้งให้ทราบทันทีครับ!`
+                        message: `✅ ระบบได้รับรูปสลิปของคุณเรียบร้อยแล้วครับ!\n📦 แพ็กเกจ: ${pkg.name}\n💰 ยอด: ${pkg.price.toLocaleString()} บาท\n\nแอดมินจะรีบทำการตรวจสอบและอนุมัติให้โดยไวที่สุดครับ ขอบคุณที่ร่วมเป็นส่วนหนึ่งของ YouOKE นะครับ! ❤️✨`
                     });
                 }
             } catch (notifyError) {

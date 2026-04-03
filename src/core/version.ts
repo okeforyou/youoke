@@ -8,6 +8,16 @@ export const BUILD_DATE = "2 เม.ย. 2569";
 
 export const CHANGELOGS = [
     {
+        version: "4.9.11 (Payment Flow Optimization)",
+        date: "3 เม.ย. 2569",
+        changes: [
+            "[Admin] Real-time Lead Notification: แจ้งเตือนแอดมินทันทีที่ลูกค้าเปิดดูยอดโอน เพื่อให้เตรียมอนุมัติได้ทันท่วงที",
+            "[Admin] Smart Approval Link: ปรับปรุงข้อความแจ้งโอนให้มีลิงก์ทางลัดที่อนุมัติได้ง่ายขึ้นจากมือถือ",
+            "[User] Interactive Experience: เพิ่มการส่งรายละเอียดการโอนเข้า LINE อัตโนมัติ และข้อความขอบคุณหลังจากได้รับสลิป"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
+    {
         version: "4.9.10 (Clarity Update)",
         date: "3 เม.ย. 2569",
         changes: [
