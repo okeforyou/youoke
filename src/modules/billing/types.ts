@@ -13,4 +13,5 @@ export interface PaymentSlip {
     processedAt?: any;
     processedBy?: string; // Admin ID
     rejectionReason?: string;
+    method?: string; // e.g., 'direct_upload', 'line_manual'
 }

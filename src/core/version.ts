@@ -8,6 +8,37 @@ export const BUILD_DATE = "3 เม.ย. 2569";
 
 export const CHANGELOGS = [
     {
+        version: "4.9.25 (PromptPay Details Update)",
+        date: "3 เม.ย. 2569",
+        changes: [
+            "[Payment] Update Provider: เปลี่ยนช่องทางการรับชำระเงินหลักเป็นบัญชีพร้อมเพย์ (PromptPay) หมายเลข 0864653950 อย่างเป็นทางการ",
+            "[UX] Easy Copy: ปรับปรุงปุ่มคัดลอกให้คัดลอกเลขพร้อมเพย์ได้อย่างถูกต้องและรวดเร็ว",
+            "[System] Type Debt Clear: แก้ไขโครงสร้าง Type ของ Payment ให้รองรับ LINE Direct Model อย่างสมบูรณ์ ไร้บั๊กแอบแฝง"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
+    {
+        version: "4.9.24 (Backend & QR Stability Patch)",
+        date: "3 เม.ย. 2569",
+        changes: [
+            "[Admin] Data Visibility Fix: ปรับปรุงระบบหลังบ้านให้แสดงรายการสั่งซื้อแบบ LINE Manual ได้อย่างถูกต้อง พร้อมไอคอนแจ้งเตือนชัดเจน",
+            "[Fix] QR Imaging: ปรับปรุง Logic การแสดงผลรูปภาพ QR PromptPay ให้เสถียร 100% แม้การตั้งค่า Config จะเป็นค่าว่าง (Empty String)",
+            "[UX] Backend Feedback: เพิ่มข้อความแนะนำในหน้าตรวจสอบสลิปสำหรับรายการที่ส่งผ่าน LINE เพื่อให้แอดมินทำงานง่ายขึ้น"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
+    {
+        version: "4.9.23 (LINE-Centric Payment Experience)",
+        date: "3 เม.ย. 2569",
+        changes: [
+            "[Payment] LINE-Only Flow: ตัดระบบอัปโหลดสลิปหน้าเว็บออก เพื่อความง่ายและลดความสับสน สมาชิกจะแจ้งโอนผ่าน LINE 100%",
+            "[UX] Instant Billing: เมื่อกดสมัคร สมาชิกจะได้รับรายละเอียดเลขบัญชีและยอดโอนเข้า LINE ส่วนตัวทันทีโดยอัตโนมัติ",
+            "[Admin] Instant Dual Alert: แก้ไขระบบแจ้งเตือนแอดมินให้ทำงานทันทีผ่าน LINE เมื่อมีการกดสั่งซื้อ (Lead) เพื่อแก้ปัญหาแจ้งเตือนล่าช้า",
+            "[Fix] QR Code Visibility: ปรับปรุง Logic การดึงรูปภาพ QR PromptPay ให้เสถียรขึ้น (Fallback to Local)"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
+    {
         version: "4.9.22 (Stealth Frame Update)",
         date: "3 เม.ย. 2569",
         changes: [

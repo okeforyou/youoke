@@ -17,7 +17,8 @@ import {
     Users,
     TrendingUp,
     TrendingDown,
-    Minus
+    Minus,
+    MessageCircle
 } from "lucide-react";
 import { StatCard } from "@/features/admin/components/StatCard";
 import { collection, query, orderBy, getDocs } from "firebase/firestore";
@@ -399,11 +400,21 @@ export default function AdminOrdersPage() {
                     <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-xl shadow-xl overflow-hidden flex flex-col md:row-span-1 lg:flex-row border border-border">
                         {/* Image side */}
                         <div className="flex-1 bg-slate-900 flex items-center justify-center p-4 relative min-h-[300px]">
-                            <img
-                                src={selectedOrder.slipUrl}
-                                alt="Slip"
-                                className="max-w-full max-h-full object-contain rounded shadow-lg"
-                            />
+                            {selectedOrder.method === 'line_manual' || selectedOrder.slipUrl === 'line_manual' ? (
+                                <div className="flex flex-col items-center gap-4 text-white">
+                                    <MessageCircle size={64} className="text-[#06C755]" />
+                                    <div className="text-center">
+                                        <p className="text-xl font-black">รอรับหลักฐานผ่าน LINE</p>
+                                        <p className="text-sm opacity-60">สลิปใบนี้จะถูกส่งมาทางหน้าแชทของแอดมินครับ</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <img
+                                    src={selectedOrder.slipUrl}
+                                    alt="Slip"
+                                    className="max-w-full max-h-full object-contain rounded shadow-lg"
+                                />
+                            )}
                         </div>
 
                         {/* Details side */}

@@ -17,7 +17,8 @@ import {
     Upload,
     Heart,
     Zap,
-    Crown
+    Crown,
+    MessageCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/modules/auth/useAuthStore';
@@ -238,8 +239,8 @@ export default function PackagesPage() {
                                                     : "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 hover:opacity-90 shadow-zinc-200/50 dark:shadow-none"
                                             )}
                                         >
-                                            {pkg.price === 0 ? <Zap className="w-5 h-5" /> : <QrCode className="w-5 h-5" />}
-                                            {pkg.price === 0 ? "รับสิทธิ์ใช้งานฟรี" : (isLineConnected ? "ชำระเงินด้วย QR Code" : "เชื่อมต่อ LINE เพื่อสั่งซื้อ")}
+                                            {pkg.price === 0 ? <Zap className="w-5 h-5" /> : <MessageCircle className="w-5 h-5" />}
+                                            {pkg.price === 0 ? "รับสิทธิ์ใช้งานฟรี" : (isLineConnected ? "สมัครแพ็กเกจ (แจ้งผ่าน LINE)" : "เชื่อมต่อ LINE เพื่อสั่งซื้อ")}
                                         </button>
                                     </div>
                                 </div>
