@@ -559,7 +559,7 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     return;
                 }
 
-                const lineAuthUrl = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${queryState}&scope=profile%20openid%20email`;
+                const lineAuthUrl = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${queryState}&scope=profile%20openid%20email&bot_prompt=aggressive`;
 
                 window.location.replace(lineAuthUrl);
             },

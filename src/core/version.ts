@@ -8,6 +8,14 @@ export const BUILD_DATE = "2 เม.ย. 2569";
 
 export const CHANGELOGS = [
     {
+        version: "4.9.6 (Force Handshake)",
+        date: "3 เม.ย. 2569",
+        changes: [
+            "[Messaging] Force Bot Prompt: บังคับส่ง parameter &bot_prompt=aggressive ผ่านโค้ด เพื่อความชัวร์ในการเชื่อมต่อกับ LINE@"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
+    {
         version: "4.9.4 (LINE Handshake)",
         date: "2 เม.ย. 2569",
         changes: [
