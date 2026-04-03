@@ -41,6 +41,7 @@ interface UserData {
     isYouTubeConnected?: boolean;
     youtubeEmail?: string | null;
     googleAccessToken?: string | null;
+    lineUserId?: string | null;
     // Marketplace & Apps
     credits?: number;
     installed_modules?: string[];
@@ -356,7 +357,8 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                         quota: userData.quota || undefined,
                                         isYouTubeConnected: userData.isYouTubeConnected || firebaseUser.providerData.some(p => p.providerId === 'google.com'),
                                         youtubeEmail: userData.youtubeEmail || (firebaseUser.providerData.find(p => p.providerId === 'google.com')?.email) || null,
-                                        googleAccessToken: userData.googleAccessToken || null
+                                        googleAccessToken: userData.googleAccessToken || null,
+                                        lineUserId: userData.lineUserId || null
                                     },
                                     isLoading: false
                                 });

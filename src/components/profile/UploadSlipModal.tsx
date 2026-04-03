@@ -42,21 +42,24 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
             const lineUserId = (user as any).lineUserId;
             const adminLineId = "U0862085736780c136365a26c92d5353"; // Admin/System LINE ID
             
-            // 🟢 v4.9.11: Dual Notification (User & Admin)
+            // 🟢 v4.9.13: Dual Notification (User Billing & Admin Lead) - DYNAMIC ORIGIN
             const sendInitialAlerts = async () => {
+                if (!user || !pkg) return;
                 try {
-                    // 1. Send Instructions to User
+                    const magicLink = `${window.location.origin}/admin/users?uid=${user.uid}`;
+                    
+                    // 1. Send Instructions to User (BILL SUMMARY)
                     if (lineUserId) {
                         await axios.post('/api/notify/line-push', {
                             to: lineUserId,
-                            message: `📢 รายละเอียดการชำระเงินสำหรับ: ${pkg.name}\n💰 ยอดที่ต้องโอน: ${pkg.price.toLocaleString()} บาท\n🏦 ธนาคาร: ${bankInfo.bank}\n🔢 เลขบัญชี: ${bankInfo.accNo}\n👤 ชื่อบัญชี: ${bankInfo.accName}\n\nเมื่อโอนเสร็จแล้ว รบกวนแนบรูปสลิปในแอปเพื่อเปิดใช้งานทันทีครับ!`
+                            message: `📢 รายละเอียดการชำระเงิน: ${pkg.name}\n━━━━━━━━━━━━━━━\n💰 ยอดที่ต้องโอน: ${pkg.price.toLocaleString()} บาท\n🏦 ธนาคาร: ${bankInfo.bank}\n🔢 เลขบัญชี: ${bankInfo.accNo}\n👤 ชื่อบัญชี: ${bankInfo.accName}\n━━━━━━━━━━━━━━━\n📸 โอนแล้วรบกวนส่งรูปสลิปในแชทนี้\nเพื่อให้แอดมินเปิดใช้งานระบบทันทีครับ! ❤️✨`
                         });
                     }
                     
-                    // 2. Alert Admin (New Potential Order)
+                    // 2. Alert Admin (New Potential Order / LEAD)
                     await axios.post('/api/notify/line-push', {
                         to: adminLineId,
-                        message: `👀 [YouOKE] มีลูกค้าสนใจแพ็กเกจ!\n👤 คุณ: ${user.displayName || user.email}\n📦 แพ็กเกจ: ${pkg.name}\n💰 ยอด: ${pkg.price.toLocaleString()} บาท\n\n(ลูกค้ากำลังดูเลขบัญชี เตรียมรอรับยอดได้เลยครับ! 🚀)`
+                        message: `👀 [YouOKE] มีลูกค้าสนใจแพ็กเกจเพิ่ม!\n━━━━━━━━━━━━━━━\n👤 สมาชิก: ${user.displayName || user.email}\n📦 แพ็กเกจ: ${pkg.name}\n💸 ยอดที่รอ: ${pkg.price.toLocaleString()} บาท\n━━━━━━━━━━━━━━━\n🔗 อนุมัติสมาชิกทันที (One-Click):\n${magicLink}`
                     });
                 } catch (e) {
                     console.error("Failed to send initial LINE alerts:", e);
@@ -76,7 +79,7 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
 
     const notifyAdmins = async (paymentId: string) => {
         try {
-            if (!db) return;
+            if (!db || !user || !pkg) return;
             // Find admins to notify
             const adminsQuery = query(collection(db, 'users'), where('role', 'in', ['admin', 'owner']));
             const adminSnapshot = await getDocs(adminsQuery);
@@ -141,35 +144,24 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
                 paymentId = docRef.id;
             }
 
-            // 3. Send Notification to Admins via FCM
+            // 3. Notify Admin via OneSignal and Internal System
             await notifyAdmins(paymentId);
 
-            // 4. Send LINE Notification to Admin (v4.9.11 Mastery)
+            // 4. v4.9.13: Special LINE Notification for Admin (Actionable)
             try {
-                const adminLineId = "U0862085736780c136365a26c92d5353"; // Admin/System LINE ID
+                const adminLineId = "U0862085736780c136365a26c92d5353";
+                const magicLink = `${window.location.origin}/admin/users?uid=${user.uid}`;
                 
-                // Message 1: The Actual Slip Image
                 await axios.post('/api/notify/line-push', {
                     to: adminLineId,
-                    flexMessage: {
-                        type: "image",
-                        originalContentUrl: slipUrl,
-                        previewImageUrl: slipUrl
-                    }
+                    message: `💰 [PAYMENT] มีการแจ้งโอนเงินใหม่!\n━━━━━━━━━━━━━━━\n👤 สมาชิก: ${user.displayName || user.email}\n📦 แพ็กเกจ: ${pkg.name}\n💰 ยอดเงิน: ${pkg.price.toLocaleString()} บาท\n━━━━━━━━━━━━━━━\n📸 ตรวจสอบสลิปและอนุมัติ:\n${magicLink}`
                 });
 
-                // Message 2: Details and Approval Link (Better Layout)
-                const approvalUrl = `${window.location.origin}/admin/payments?id=${paymentId}`;
-                await axios.post('/api/notify/line-push', {
-                    to: adminLineId,
-                    message: `💰 แจ้งโอนเงินใหม่เรียบร้อย!\n━━━━━━━━━━━━━━━\n👤 จาก: ${user.displayName || user.email}\n📦 แพ็กเกจ: ${pkg.name}\n💸 ยอด: ${pkg.price.toLocaleString()} บาท\n━━━━━━━━━━━━━━━\n🔗 ตรวจสอบเพื่ออนุมัติทันที:\n${approvalUrl}`
-                });
-                
-                // 🟢 v4.9.11: Notify User with Heart
+                // Auto-confirm to User if they have LINE
                 if ((user as any).lineUserId) {
                     await axios.post('/api/notify/line-push', {
                         to: (user as any).lineUserId,
-                        message: `✅ ระบบได้รับรูปสลิปของคุณเรียบร้อยแล้วครับ!\n📦 แพ็กเกจ: ${pkg.name}\n💰 ยอด: ${pkg.price.toLocaleString()} บาท\n\nแอดมินจะรีบทำการตรวจสอบและอนุมัติให้โดยไวที่สุดครับ ขอบคุณที่ร่วมเป็นส่วนหนึ่งของ YouOKE นะครับ! ❤️✨`
+                        message: `✅ ระบบได้รับรูปสลิปของคุณเรียบร้อยแล้วครับ!\n━━━━━━━━━━━━━━━\n📦 แพ็กเกจ: ${pkg.name}\n💰 ยอด: ${pkg.price.toLocaleString()} บาท\n━━━━━━━━━━━━━━━\nแอดมินจะรีบทำการตรวจสอบและอนุมัติให้โดยไวที่สุดครับ ขอบคุณที่ร่วมเป็นส่วนหนึ่งของ YouOKE นะครับ! ❤️✨`
                     });
                 }
             } catch (notifyError) {
@@ -197,7 +189,6 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
         const message = `👋 แจ้งส่งสลิปการโอนเงินครับ (YouOKE)\n━━━━━━━━━━━━━━━\n👤 สมาชิก: ${user.displayName || user.email}\n📦 แพ็กเกจ: ${pkg.name}\n💰 ยอดโอน: ${pkg.price.toLocaleString()} บาท\n━━━━━━━━━━━━━━━\n📸 แนบสลิปในแชท: รบกวนกด "แนบรูปสลิป" ใน LINE นี้เพื่อให้แอดมินอนุมัติครับ\n━━━━━━━━━━━━━━━\n*ขอบคุณที่ไว้วางใจ YouOKE ครับ*`;
         
         // URL for LINE Official Account with pre-filled message
-        // Reference: https://developers.line.biz/en/docs/messaging-api/using-line-url-scheme/
         const lineUrl = `https://line.me/R/oaMessage/@243lercy/?${encodeURIComponent(message)}`;
         
         window.open(lineUrl, '_blank');
@@ -299,72 +290,71 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
                                     {!previewUrl ? (
                                         <button 
                                             onClick={() => fileInputRef.current?.click()}
-                                            className="w-full h-32 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-all group"
+                                            className="w-full flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-200 rounded-3xl hover:border-primary/50 hover:bg-primary/5 transition-all text-slate-400"
                                         >
-                                            <div className="p-3 bg-slate-100 rounded-full group-hover:scale-110 transition-transform">
-                                                <Upload className="w-6 h-6 text-slate-400" />
-                                            </div>
-                                            <span className="text-sm font-medium text-slate-400">คลิกเพื่อเลือกรูปภาพสลิป</span>
+                                            <Upload className="w-8 h-8 mb-2" />
+                                            <span className="text-sm font-bold">กดเพื่อเลือกรูปภาพสลิป</span>
                                         </button>
                                     ) : (
-                                        <div className="relative w-full h-48 rounded-2xl overflow-hidden border border-slate-200 group">
-                                            <img src={previewUrl} alt="Slip Preview" className="w-full h-full object-cover" />
-                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                                                <button 
-                                                    onClick={() => fileInputRef.current?.click()}
-                                                    className="p-2 bg-white rounded-full text-slate-900 hover:scale-110 transition-transform"
-                                                >
-                                                    <ImageIcon className="w-5 h-5" />
-                                                </button>
-                                                <button 
-                                                    onClick={() => { setFile(null); setPreviewUrl(null); }}
-                                                    className="p-2 bg-white rounded-full text-red-500 hover:scale-110 transition-transform"
-                                                >
-                                                    <X className="w-5 h-5" />
-                                                </button>
-                                            </div>
+                                        <div className="relative rounded-3xl overflow-hidden border-2 border-primary/20 aspect-square max-h-[300px] mx-auto">
+                                            <img src={previewUrl} className="w-full h-full object-cover" alt="Preview" />
+                                            <button 
+                                                onClick={() => {
+                                                    setFile(null);
+                                                    setPreviewUrl(null);
+                                                }}
+                                                className="absolute top-2 right-2 p-2 bg-black/60 text-white rounded-full hover:bg-black transition-colors"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
                                         </div>
                                     )}
                                 </div>
 
-                                <button
-                                    onClick={handleNotifyAdmin}
-                                    disabled={sending || sent}
-                                    className={cn(
-                                        "w-full h-14 rounded-2xl flex flex-col items-center justify-center gap-0.5 transition-all active:scale-95 shadow-lg",
-                                        sent 
-                                            ? "bg-emerald-50 text-emerald-600 border border-emerald-200" 
-                                            : !file
-                                                ? "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
-                                                : "bg-primary hover:bg-opacity-90 border-none text-white shadow-primary/20"
+                                <div className="pt-2">
+                                    {!sent ? (
+                                        <button
+                                            onClick={handleNotifyAdmin}
+                                            disabled={sending || !file}
+                                            className={cn(
+                                                "w-full py-4 rounded-2xl font-black text-sm flex items-center justify-center gap-3 transition-all active:scale-95 shadow-lg",
+                                                !file ? "bg-slate-100 text-slate-400 cursor-not-allowed" : "bg-zinc-900 text-white hover:bg-black shadow-zinc-200"
+                                            )}
+                                        >
+                                            {sending ? (
+                                                <>
+                                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                                    {uploading ? 'กำลังอัปโหลดสลิป...' : 'กำลังแจ้งแอดมิน...'}
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <CheckCircle className="w-5 h-5 text-emerald-400" />
+                                                    แจ้งโอนและเปิดใช้งานทันที
+                                                </>
+                                            )}
+                                        </button>
+                                    ) : (
+                                        <div className="w-full py-4 bg-emerald-500 text-white rounded-2xl font-black text-sm flex items-center justify-center gap-3 animate-in zoom-in-95 duration-300">
+                                            <CheckCircle className="w-5 h-5" />
+                                            แจ้งโอนเรียบร้อย! กำลังกลับ...
+                                        </div>
                                     )}
-                                >
-                                    <div className="flex items-center gap-2">
-                                        {sending ? (
-                                            <Loader2 className="w-6 h-6 animate-spin" />
-                                        ) : sent ? (
-                                            <CheckCircle className="w-6 h-6" />
-                                        ) : (
-                                            <CheckCircle className="w-6 h-6" />
-                                        )}
-                                        <span className="text-lg font-black">
-                                            {sent ? "ส่งข้อมูลสำเร็จแล้ว" : sending ? (uploading ? "กำลังอัปโหลด..." : "กำลังแจ้งระบบ...") : "กดยืนยันการแจ้งโอน"}
-                                        </span>
-                                    </div>
-                                    {!sent && !sending && file && (
-                                        <span className="text-[10px] opacity-80 font-bold uppercase tracking-tight">ระบบจะแจ้งแอดมินเพื่อตรวจสอบทันที</span>
-                                    )}
-                                </button>
-
-                                <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 flex items-start gap-3">
-                                    <div className="bg-slate-200 rounded-full p-1 text-slate-600">
-                                        <AlertCircle className="w-3 h-3" />
-                                    </div>
-                                    <p className="text-[10px] text-slate-600 font-bold leading-tight">
-                                        หมายเหตุ: หลังจากเจ้าหน้าที่ตรวจสอบยอดเงินแล้ว ระบบจะเปิดใช้งานให้คุณโดยอัตโนมัติ พร้อมมีการแจ้งเตือนแจ้งกลับไปครับ
-                                    </p>
                                 </div>
+
+                                <div className="relative text-center">
+                                    <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-100"></div></div>
+                                    <span className="relative px-3 bg-white text-[10px] font-bold text-slate-300 uppercase tracking-widest">หรือแจ้งผ่าน LINE</span>
+                                </div>
+
+                                <button
+                                    onClick={openLineChat}
+                                    className="w-full py-4 rounded-2xl border-2 border-[#06C755]/20 text-[#06C755] font-black text-sm flex items-center justify-center gap-3 hover:bg-[#06C755]/5 transition-all"
+                                >
+                                    <MessageCircle className="w-5 h-5" />
+                                    แจ้งสลิปทางแชท LINE
+                                </button>
                             </div>
+
                         </Dialog.Panel>
                     </div>
                 </div>

@@ -54,6 +54,7 @@ export default function PackagesPage() {
 
     const { user } = useAuthStore();
     const router = useRouter();
+    const isLineConnected = !!user?.lineUserId;
 
     useEffect(() => {
         const fetchPackages = async () => {
@@ -98,16 +99,17 @@ export default function PackagesPage() {
                 alert(`ยินดีด้วย! แพ็กเกจ ${pkg.name} ของคุณถูกเปิดใช้งานแล้ว`);
                 router.push('/');
             } catch (error: any) {
-                console.error("❌ Activation error:", error);
-                alert("เกิดข้อผิดพลาดในการเปิดใช้งาน: " + (error.message || "กรุณาลองใหม่ภายหลัง"));
+                console.error("❌ Activation failed:", error);
+                alert("เกิดข้อผิดพลาดในการเปิดใช้งานแพ็กเกจฟรี");
             } finally {
                 setLoading(false);
             }
             return;
         }
 
+        // For Paid Packages - Open Payment Modal
         setSelectedPkg(pkg);
-        setShowQRModal(true);
+        setShowUploadModal(true);
     };
 
     const handleManualTransfer = (pkg: Package) => {
@@ -119,118 +121,109 @@ export default function PackagesPage() {
         setShowUploadModal(true);
     };
 
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-background">
-                <span className="loading loading-spinner loading-lg text-primary"></span>
-            </div>
-        );
-    }
+    const handleActivateWithQR = (pkg: Package) => {
+        setSelectedPkg(pkg);
+        setShowQRModal(true);
+    };
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-zinc-950 pb-20">
+        <div className="min-h-screen bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100">
             <Head>
-                <title>ยกระดับความสนุก - YouOke Premium</title>
-                <meta name="description" content="เลือกแพ็กเกจพรีเมียม YouOke เพื่อประสบการณ์ร้องคาราโอเกะที่ดีที่สุด" />
+                <title>YouOKE - เลือกแพ็กเกจคาราโอเกะ</title>
+                <meta name="description" content="เลือกแพ็กเกจคาราโอเกะที่ต้องการ ร้องเพลงต่อเนื่องไม่มีโฆษณาคั่น" />
             </Head>
 
-            {/* Sticky Header */}
-            <header className="sticky top-0 z-30 w-full border-b bg-background/80 backdrop-blur-md px-4 py-4 md:px-8">
-                <div className="max-w-6xl mx-auto flex items-center gap-4">
-                    <button
-                        onClick={() => router.push('/')}
-                        className="p-2 hover:bg-muted rounded-full transition-colors"
-                    >
-                        <ChevronLeft className="w-6 h-6" />
-                    </button>
-                    <h1 className="text-xl font-bold">เลือกแพ็กเกจพรีเมียม</h1>
+            {/* Header Content */}
+            <header className="relative pt-24 pb-16 px-6 max-w-7xl mx-auto overflow-hidden">
+                <div className="relative z-10 text-center space-y-6">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-xs font-black tracking-widest uppercase animate-in fade-in slide-in-from-bottom-4 duration-700">
+                        <Crown className="w-4 h-4" />
+                        YouOKE Premium Experience
+                    </div>
+                    
+                    <h1 className="text-5xl md:text-7xl font-black tracking-tighter animate-in fade-in slide-in-from-bottom-6 duration-700">
+                        ร้องเพลงให้สุด <br />
+                        <span className="bg-gradient-to-r from-primary via-purple-500 to-indigo-600 bg-clip-text text-transparent">หยุดทุกโฆษณา</span>
+                    </h1>
+                    
+                    <p className="text-zinc-500 dark:text-zinc-400 text-lg md:text-xl font-bold max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700">
+                        ร่วมเป็นส่วนหนึ่งของครอบครัว YouOKE รับสิทธิพิเศษมากมาย <br className="hidden md:block" /> ปลดล็อกฟีเจอร์พรีเมียมให้การร้องเพลงของคุณสนุกขึ้น 200%
+                    </p>
                 </div>
             </header>
 
-            <main className="max-w-6xl mx-auto px-4 py-8 md:px-8 text-zinc-900 dark:text-zinc-100">
-                {/* Hero Section */}
-                <div className="text-center mb-12">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-black tracking-widest mb-4 uppercase">
-                        <Star className="w-3.5 h-3.5 fill-primary" />
-                        Premium Pass
-                    </div>
-                    <h2 className="text-4xl md:text-5xl font-black mb-4 tracking-tight text-zinc-900 dark:text-white">ปลดล็อกขีดจำกัดความสนุก</h2>
-                    <p className="text-zinc-500 dark:text-zinc-300 text-sm md:text-base max-w-xl mx-auto leading-relaxed font-bold">
-                        สัมผัสประสบการณ์ร้องคาราโอเกะแบบมืออาชีพ ด้วยฟีเจอร์ที่ออกแบบมาเพื่อความสะดวกสบายและอรรถรสสูงสุด
-                    </p>
-                </div>
+            {/* Package Grid */}
+            <main className="max-w-7xl mx-auto px-6 pb-24">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {loading ? (
+                        Array.from({ length: 3 }).map((_, i) => (
+                            <div key={i} className="h-[500px] rounded-[3rem] bg-zinc-100 dark:bg-zinc-900 animate-pulse" />
+                        ))
+                    ) : (
+                        packages.map((pkg) => (
+                            <div 
+                                key={pkg.id}
+                                className={cn(
+                                    "group relative flex flex-col h-full rounded-[3rem] p-8 transition-all duration-500",
+                                    pkg.isPopular 
+                                        ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 border-none shadow-[0_32px_64px_-12px_rgba(0,0,0,0.2)] dark:shadow-[0_32px_64px_-12px_rgba(255,255,255,0.1)] scale-105 z-10" 
+                                        : "bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 hover:shadow-2xl hover:shadow-zinc-200/50 dark:hover:shadow-none"
+                                )}
+                            >
+                                {pkg.isPopular && (
+                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-primary text-white rounded-full text-xs font-black tracking-widest uppercase shadow-xl shadow-primary/20">
+                                        추천 - ยอดนิยม
+                                    </div>
+                                )}
 
-                {/* Features Grid - Restored Larger Style */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
-                    {KILLER_FEATURES.map((feature, i) => (
-                        <div key={i} className="bg-card border rounded-[2rem] p-6 shadow-sm flex flex-col items-center text-center group hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 transition-all duration-500">
-                            <div className={cn(
-                                "w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-xl mb-4 group-hover:scale-110 transition-transform duration-500",
-                                feature.color
-                            )}>
-                                <feature.icon className="w-7 h-7" />
-                            </div>
-                            <h3 className="font-bold text-[13px] md:text-base mb-1 tracking-tight">{feature.title}</h3>
-                            <p className="text-[10px] md:text-xs text-muted-foreground leading-tight font-semibold">{feature.desc}</p>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Pricing Cards - Restored Larger Structure but small fonts & same-line header */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {packages
-                        .filter(pkg => !pkg.id.toLowerCase().includes('test'))
-                        .map((pkg) => {
-                            const featuresList = pkg.features
-                                ? (Array.isArray(pkg.features)
-                                    ? pkg.features
-                                    : Object.entries(pkg.features)
-                                        .filter(([_, enabled]) => enabled === true)
-                                        .map(([label]) => label))
-                                : ["ร้องเพลงได้ไม่จำกัด"];
-
-                            return (
-                                <div
-                                    key={pkg.id}
-                                    className={cn(
-                                        "relative bg-card border rounded-[2.5rem] p-10 flex flex-col transition-all duration-500 group overflow-hidden",
-                                        pkg.isPopular
-                                            ? "border-primary/50 shadow-[0_24px_50px_rgba(var(--primary-rgb),0.15)] ring-1 ring-primary/20"
-                                            : "border-border shadow-sm hover:shadow-2xl hover:shadow-primary/5"
-                                    )}
-                                >
-                                    {pkg.isPopular && (
-                                        <div className="absolute top-0 right-0 bg-primary text-white px-6 py-1.5 rounded-bl-[1.5rem] text-[10px] font-black uppercase tracking-[0.2em] shadow-lg z-10">
-                                            Popular
-                                        </div>
-                                    )}
-
-                                    <div className="mb-8 border-b border-slate-100 dark:border-white/10 pb-6">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <h3 className="text-xl font-black tracking-tight text-slate-900 dark:text-white">{pkg.name}</h3>
-                                            <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-lg uppercase tracking-wider">{pkg.durationDays} วัน</span>
-                                        </div>
-                                        <div className="flex items-baseline gap-1">
-                                            <span className="text-4xl font-black tracking-tighter text-slate-900 dark:text-white">฿{pkg.price.toLocaleString()}</span>
-                                            <span className="text-slate-400 font-bold text-[10px] uppercase opacity-60">บาท</span>
-                                        </div>
+                                <div className="space-y-6 flex-grow">
+                                    <h3 className="text-2xl font-black">{pkg.name}</h3>
+                                    
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="text-5xl font-black tracking-tighter">฿{pkg.price}</span>
+                                        <span className={cn(
+                                            "text-sm font-bold",
+                                            pkg.isPopular ? "opacity-60" : "text-zinc-400"
+                                        )}>
+                                            /{pkg.durationDays} วัน
+                                        </span>
                                     </div>
 
-                                    <div className="space-y-4 mb-10 flex-1 relative z-10">
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-2">สิทธิประโยชน์พรีเมียม</p>
-                                        {featuresList.map((f, i) => (
-                                            <div key={i} className="flex items-start gap-3 text-xs group/item">
-                                                <div className="mt-0.5 bg-primary/10 rounded-full p-1 group-hover/item:bg-primary/20 transition-colors shrink-0">
-                                                    <Check className="w-3 h-3 text-primary" />
+                                    {pkg.description && (
+                                        <p className={cn(
+                                            "text-sm font-bold line-clamp-2",
+                                            pkg.isPopular ? "opacity-70" : "text-zinc-500"
+                                        )}>
+                                            {pkg.description}
+                                        </p>
+                                    )}
+
+                                    <div className="space-y-4 pt-4 border-t border-zinc-100 dark:border-zinc-800">
+                                        {Object.entries(pkg.features || {}).map(([key, val]: [string, any], idx) => (
+                                            <div key={idx} className="flex items-start gap-3">
+                                                <div className={cn(
+                                                    "w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0",
+                                                    pkg.isPopular ? "bg-primary text-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-400"
+                                                )}>
+                                                    <Check className="w-3 h-3 stroke-[3]" />
                                                 </div>
-                                                <span className="text-foreground/80 font-bold group-hover/item:text-foreground transition-colors leading-relaxed">{f}</span>
+                                                <span className="text-sm font-bold">{key} {val && `(${val})`}</span>
                                             </div>
                                         ))}
                                     </div>
+                                </div>
 
+                                <div className="mt-8">
                                     <div className="space-y-3 relative z-10">
                                         <button
                                             onClick={() => {
+                                                // 🛡️ v4.9.13: FORCE LINE CONNECTION FOR BILLING
+                                                if (!isLineConnected && pkg.price > 0) {
+                                                    alert("📢 เพื่อรับเลขบัญชีและแจ้งเตือนผ่าน LINE\nกรุณาเชื่อมต่อ LINE ก่อนดำเนินการสั่งซื้อครับ");
+                                                    router.push('/profile');
+                                                    return;
+                                                }
+
                                                 if (pkg.price === 0) {
                                                     handleBuy(pkg);
                                                 } else {
@@ -245,30 +238,58 @@ export default function PackagesPage() {
                                             )}
                                         >
                                             {pkg.price === 0 ? <Zap className="w-5 h-5" /> : <QrCode className="w-5 h-5" />}
-                                            {pkg.price === 0 ? "รับสิทธิ์ใช้งานฟรี" : "ชำระเงินด้วย QR Code"}
+                                            {pkg.price === 0 ? "รับสิทธิ์ใช้งานฟรี" : (isLineConnected ? "ชำระเงินด้วย QR Code" : "เชื่อมต่อ LINE เพื่อสั่งซื้อ")}
                                         </button>
                                     </div>
-
-                                    {pkg.isPopular && (
-                                        <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-primary/5 rounded-full blur-[80px]" />
-                                    )}
                                 </div>
-                            );
-                        })}
+                            </div>
+                        ))
+                    )}
                 </div>
+
+                {/* Features Section */}
+                <section className="mt-32">
+                    <div className="text-center mb-16 space-y-4">
+                        <h2 className="text-3xl md:text-5xl font-black tracking-tight">ทำไมต้อง YouOKE Premium?</h2>
+                        <p className="text-zinc-500 font-bold max-w-xl mx-auto">ฟีเจอร์ระดับอัจฉริยะที่ออกแบบมาเพื่อให้คุณเป็นราชาและราชินีแห่งคาราโอเกะ</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {KILLER_FEATURES.map((feature, i) => (
+                            <div 
+                                key={i}
+                                className="p-6 rounded-[2rem] bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 hover:border-primary/20 transition-all group"
+                            >
+                                <div className={cn(
+                                    "w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110",
+                                    feature.color,
+                                    "text-white"
+                                )}>
+                                    <feature.icon className="w-6 h-6" />
+                                </div>
+                                <h3 className="font-black text-lg mb-2">{feature.title}</h3>
+                                <p className="text-sm font-bold text-zinc-500 dark:text-zinc-400">{feature.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+                </section>
             </main>
 
-            <OmiseQRModal
-                isOpen={showQRModal}
-                onClose={() => setShowQRModal(false)}
-                pkg={selectedPkg}
-            />
-
-            <UploadSlipModal
-                isOpen={showUploadModal}
-                onClose={() => setShowUploadModal(false)}
-                pkg={selectedPkg}
-            />
+            {/* Modals */}
+            {selectedPkg && (
+                <>
+                    <OmiseQRModal 
+                        isOpen={showQRModal}
+                        onClose={() => setShowQRModal(false)}
+                        pkg={selectedPkg}
+                    />
+                    <UploadSlipModal 
+                        isOpen={showUploadModal}
+                        onClose={() => setShowUploadModal(false)}
+                        pkg={selectedPkg}
+                    />
+                </>
+            )}
         </div>
     );
 }
