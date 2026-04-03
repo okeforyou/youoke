@@ -82,26 +82,30 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
             // 3. Notify Admin via OneSignal and Internal System
             await notifyAdmins(paymentId);
 
-            // 4. v4.9.23: Actionable Messaging Flow (The Heart of LINE-Centric)
+            // 4. v4.9.26: Independent Actionable Messaging Flow (The Heart of LINE-Centric)
+            const adminLineId = "U0862085736780c136365a26c92d5353"; // Admin/Owner ID 
+            const magicLink = `${window.location.origin}/admin/users?uid=${user.uid}`;
+            
+            // --- 4.1 LINE ALERT TO ADMIN ---
             try {
-                const adminLineId = "U0862085736780c136365a26c92d5353"; // Admin/Owner ID
-                const magicLink = `${window.location.origin}/admin/users?uid=${user.uid}`;
-                
-                // --- LINE ALERT TO ADMIN ---
                 await axios.post('/api/notify/line-push', {
                     to: adminLineId,
                     message: `📢 [ORDER] มีการกดสั่งซื้อแพ็กเกจ!\n━━━━━━━━━━━━━━━\n👤 สมาชิก: ${user.displayName || user.email}\n📦 แพ็กเกจ: ${pkg.name}\n💰 ยอดเงิน: ${pkg.price.toLocaleString()} บาท\n━━━━━━━━━━━━━━━\n📸 ลูกค้ากำลังเตรียมส่งสลิปทาง LINE\n🔗 อนุมัติทันทีในระบบ:\n${magicLink}`
                 });
+            } catch (adminError) {
+                console.error("Admin LINE Messaging failed:", adminError);
+            }
 
-                // --- LINE SUMMARY TO USER ---
-                if ((user as any).lineUserId) {
+            // --- 4.2 LINE SUMMARY TO USER ---
+            if ((user as any).lineUserId) {
+                try {
                     await axios.post('/api/notify/line-push', {
                         to: (user as any).lineUserId,
                         message: `✅ ยืนยันการสมัคร ${pkg.name} สำเร็จ!\n━━━━━━━━━━━━━━━\n💰 ยอดที่ต้องโอน: ${pkg.price.toLocaleString()} บาท\n🏦 พร้อมเพย์: 086-465-3950\n👤 ชื่อบัญชี: ${bankInfo.accName}\n━━━━━━━━━━━━━━━\n📸 โอนเงินแล้ว รบกวนกด "ส่งรูปสลิป" มาในแชทนี้ได้เลยครับ แอดมินจะรีบเปิดใช้งานให้ทันที! ❤️✨`
                     });
+                } catch (userError) {
+                    console.error("User LINE Messaging failed:", userError);
                 }
-            } catch (notifyError) {
-                console.error("LINE Messaging failed:", notifyError);
             }
 
             setSent(true);

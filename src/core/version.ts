@@ -8,6 +8,16 @@ export const BUILD_DATE = "3 เม.ย. 2569";
 
 export const CHANGELOGS = [
     {
+        version: "4.9.26 (Independent Notification Patch)",
+        date: "3 เม.ย. 2569",
+        changes: [
+            "[System] Notification Isolation: แยก Try-Catch ของการแจ้งเตือน Admin และ User ออกจากกัน เพื่อป้องกันความผิดพลาดแบบ Domino Effect",
+            "[Stability] Fail-Safe Flow: เพิ่มระบบสำรองข้อมูลให้ชัวร์ว่าถึงแม้ LINE API ฝั่งใดฝั่งหนึ่งขัดข้อง แต่อีกฝั่งหนึ่งจะยังได้รับข้อความและบันทึกลงระบบปกติ",
+            "[Fix] Messaging Logic: ปรับปรุงการส่งข้อความสรุปยอด (Bill Summary) ให้แม่นยำขึ้นสำหรับระบบพร้อมเพย์ใหม่"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
+    {
         version: "4.9.25 (PromptPay Details Update)",
         date: "3 เม.ย. 2569",
         changes: [
