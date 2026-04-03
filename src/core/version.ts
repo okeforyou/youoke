@@ -8,6 +8,16 @@ export const BUILD_DATE = "3 เม.ย. 2569";
 
 export const CHANGELOGS = [
     {
+        version: "4.9.22 (Stealth Frame Update)",
+        date: "3 เม.ย. 2569",
+        changes: [
+            "[Profile] Stealth Frame Logic: เปลี่ยนพื้นหลังไอคอน (Icon Frame) เป็นสีดำกึ่งโปร่งแสงเมื่อยังไม่เชื่อมต่อ เพื่อสร้างมิติและความลึกของสถานะ 'Inactive'",
+            "[UI] Balanced Contrast: คืนค่าไอคอน LINE เป็นสีขาวเพื่อให้ตัดกับกรอบสีดำ บ่งบอกถึงศักยภาพที่พร้อมจะเชื่อมต่อ",
+            "[System] Version Integrity: ยืนยันความเสถียรของระบบ Version Sync จาก package.json"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
+    {
         version: "4.9.21 (Stealth Indicator Update)",
         date: "3 เม.ย. 2569",
         changes: [

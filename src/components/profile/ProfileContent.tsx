@@ -201,7 +201,7 @@ export const ProfileContent = () => {
                         onUpgrade={() => router.push('/packages')}
                     />
 
-                    {/* LINE Connection Status (Stealth Indicator v4.9.21) */}
+                    {/* LINE Connection Status (Stealth Frame v4.9.22) */}
                     <div className="mt-2 text-left">
                         <div className={cn(
                             "w-full flex items-center justify-between p-5 rounded-3xl transition-all shadow-none border-none bg-[#06C755] text-white",
@@ -210,9 +210,9 @@ export const ProfileContent = () => {
                                 <div className="relative">
                                     <div className={cn(
                                         "w-10 h-10 rounded-xl flex items-center justify-center transition-all shadow-none",
-                                        profile?.lineUserId ? "bg-white/20 text-white" : "bg-white/10 text-zinc-900/80"
+                                        profile?.lineUserId ? "bg-white/20" : "bg-black/40"
                                     )}>
-                                        <ChatBubbleLeftRightIcon className="w-5 h-5" />
+                                        <ChatBubbleLeftRightIcon className="w-5 h-5 text-white" />
                                     </div>
                                     {/* Status Indicator Dot */}
                                     <div className={cn(
