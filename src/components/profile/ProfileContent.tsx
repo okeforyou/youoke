@@ -26,7 +26,7 @@ export const ProfileContent = () => {
     const router = useRouter();
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(false);
-    const [view, setView] = useState<'main' | 'line_connect'>('main');
+    const [view, setView] = useState<'main' | 'line_connect' | 'packages'>('main');
     const { showConfirm } = useUIStore();
 
     useEffect(() => {
@@ -34,6 +34,15 @@ export const ProfileContent = () => {
             loadProfile();
         }
     }, [user]);
+
+    // v4.9.31: Dynamic View Switcher for Packages (Drawer Context Persistence)
+    const handleOpenPackages = (e?: React.MouseEvent) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        setView('packages');
+    };
 
     const loadProfile = async () => {
         if (!user?.uid) return;
@@ -101,7 +110,7 @@ export const ProfileContent = () => {
 
     // --- LINE CONNECT VIEW ---
     if (view === 'line_connect') {
-        const liffUrl = `https://liff.line.me/2006894054-O8E2Rz96?u=${user.uid}`; 
+        const liffUrl = `https://liff.me/2006894054-O8E2Rz96?u=${user.uid}`; 
         
         return (
             <div className="flex flex-col animate-in fade-in slide-in-from-right-4 duration-300">
@@ -158,6 +167,28 @@ export const ProfileContent = () => {
         );
     }
 
+    // --- v4.9.31: PACKAGES INTEGRATED VIEW ---
+    if (view === 'packages') {
+        return (
+            <div className="flex flex-col animate-in fade-in slide-in-from-right-4 duration-300">
+                {/* View Header */}
+                <div className="px-6 py-4 flex items-center gap-4 border-b border-gray-100 bg-white sticky top-0 z-[110]">
+                    <button 
+                        onClick={() => setView('main')}
+                        className="p-2 -ml-2 rounded-full hover:bg-slate-100 transition-colors"
+                    >
+                        <ChevronRightIcon className="w-5 h-5 rotate-180" />
+                    </button>
+                    <h2 className="text-lg font-black text-gray-900">เลือกแพ็กเกจ (Shop)</h2>
+                </div>
+
+                <div className="px-4 py-6">
+                    <PackageStore />
+                </div>
+            </div>
+        );
+    }
+
     // --- MAIN PROFILE VIEW ---
     return (
         <div className="flex flex-col bg-white dark:bg-zinc-950 animate-in fade-in duration-300">
@@ -198,7 +229,7 @@ export const ProfileContent = () => {
                     <MembershipCard
                         membership={displayMembership as any}
                         role={isAdmin ? 'admin' : (user?.role || profile?.role)}
-                        onUpgrade={() => router.push('/packages')}
+                        onUpgrade={handleOpenPackages}
                     />
 
                     {/* LINE Connection Status (Stealth Frame v4.9.22) */}

@@ -8,6 +8,16 @@ export const BUILD_DATE = "3 เม.ย. 2569";
 
 export const CHANGELOGS = [
     {
+        version: "4.9.31 (Integrated Shop Update)",
+        date: "3 เม.ย. 2569",
+        changes: [
+            "[UX] Seamless Package Selection: รวมระบบเลือกแพ็กเกจ (Shop) เข้ากับหน้าต่างโปรไฟล์หลัก สมาชิสามารถเลือกสมัครสมาชิกได้ทันทีโดยไม่ต้องโหลดหน้าใหม่",
+            "[Navigation] Internal Flow Controller: เพิ่มระบบนำทางย่อยภายในโปรไฟล์ (Profile <-> Shop) พร้อมปุ่มย้อนกลับอัจฉริยะ เพื่อรักษาความต่อเนื่องในการใช้งาน",
+            "[UI] Premium Shop Drawer: สไลด์รายการแพ็กเกจแบบพรีเมียมในพื้นที่ Drawer ช่วยลดขั้นตอนการคลิก (Click-to-Buy) และแก้ปัญหาผู้ใช้งานสับสนเมื่อสลับหน้า"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
+    {
         version: "4.9.30 (Mobile Bottom Sheet Update)",
         date: "3 เม.ย. 2569",
         changes: [

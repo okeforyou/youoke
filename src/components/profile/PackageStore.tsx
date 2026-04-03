@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { collection, query, getDocs, orderBy } from "firebase/firestore";
 import { db } from "@/firebase";
-import { Check, Star, Loader2, Upload, QrCode, ChevronLeft } from "lucide-react";
+import { Star, Loader2, QrCode } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/modules/auth/useAuthStore";
 import { UploadSlipModal } from "./UploadSlipModal";
@@ -53,151 +53,134 @@ export const PackageStore = () => {
     }, []);
 
 
-    const handleManualTransfer = async (pkg: Package) => {
+    const handleBuy = async (pkg: Package) => {
         if (!user) {
             router.push('/login');
             return;
         }
-        
-        setLoading(true);
-        try {
-            // 1. Create a "Waiting in LINE" record (v4.3.3 Simple Flow)
-            let paymentId = "";
-            if (db) {
-                const { collection, addDoc, serverTimestamp } = await import('firebase/firestore');
-                const docRef = await addDoc(collection(db, 'payment_proofs'), {
-                    userId: user.uid,
-                    userDisplayName: user.displayName || user.email?.split('@')[0],
-                    userEmail: user.email,
-                    packageId: pkg.id,
-                    packageName: pkg.name,
-                    amount: pkg.price,
-                    status: 'pending',
-                    method: 'line_direct', // Track that it's coming via LINE chat
-                    slipUrl: null,         // Admin will see image in LINE chat instead
-                    createdAt: serverTimestamp()
-                });
-                paymentId = docRef.id;
-            }
 
-            // 2. Notify Admin: "Expect a slip in LINE"
-            const { default: axios } = await import('axios');
+        // v4.9.31: Premium Integration Flow
+        if (pkg.price === 0) {
+            // Instant Activation for Free/Trial packages
             try {
-                await axios.post('/api/notify/line-push', {
-                    to: "U0862085736780c136365a26c92d5353", // Admin
-                    message: `[ADMIN ALERT] สนใจสมัครแพ็กเกจ\nจาก: ${user.displayName || user.email}\nแพ็กเกจ: ${pkg.name}\nยอดโอน: ${pkg.price.toLocaleString()} บาท\n\n- รอรับสลิปในแชท LINE นี้\n- ตรวจสอบ: https://play.okeforyou.com/admin/payments?id=${paymentId}`
-                });
-                
-                // 3. Send instructions to User
-                const message = `👋 สวัสดีครับ (YouOKE)\n━━━━━━━━━━━━━━━\nสนใจแพ็กเกจ: ${pkg.name}\n💰 ยอดโอนเงิน: ${pkg.price.toLocaleString()} บาท\n━━━━━━━━━━━━━━━\n🏦 ช่องทางการโอนเงิน:\n• ธนาคาร: ไทยพาณิชย์ (SCB)\n• ชื่อบัญชี: บุญยานันทน์ ชูพินิจ\n• เลขบัญชี: 408-006876-3\n━━━━━━━━━━━━━━━\n📸 เมื่อโอนแล้ว: \nรบกวน "แนบสลิปในแชท LINE" เพื่อความสะดวกในการตรวจสอบครับ\n━━━━━━━━━━━━━━━\n*รอการยืนยันจากแอดมินสักครู่นะครับ*`;
-                alert(message);
-                window.open("https://line.me/ti/p/@243lercy", '_blank');
-
-            } catch (e) {
-                console.error("LINE Notify failed:", e);
+                setLoading(true);
+                const { activateFreePackage } = await import('@/modules/billing/services/paymentService');
+                await activateFreePackage(user.uid!, pkg.id);
+                alert(`ยินดีด้วย! แพ็กเกจ ${pkg.name} ของคุณถูกเปิดใช้งานแล้ว`);
+                window.location.reload(); 
+            } catch (error: any) {
+                console.error("❌ Activation failed:", error);
+                alert("เกิดข้อผิดพลาดในการเปิดใช้งานแพ็กเกจฟรี");
+            } finally {
+                setLoading(false);
             }
-
-        } catch (error) {
-            console.error("Simple Flow error:", error);
-            alert("เกิดข้อผิดพลาดในการแจ้งระบบ กรุณาลองใหม่อีกครั้ง");
-        } finally {
-            setLoading(false);
+            return;
         }
+
+        // Paid Packages -> Open Upload Modal
+        setSelectedPkg(pkg);
+        setShowUploadModal(true);
     };
 
-    if (loading) return <div className="flex justify-center p-8"><span className="loading loading-spinner text-primary"></span></div>;
+    if (loading) return (
+        <div className="flex flex-col items-center justify-center p-12 space-y-4">
+            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+            <p className="text-xs font-bold text-slate-400">กำลังดึงข้อมูลแพ็กเกจ...</p>
+        </div>
+    );
 
     if (packages.length === 0) {
         return (
-            <div className="text-center p-8 border-2 border-dashed border-base-300 rounded-xl">
-                <p className="text-base-content/60">ไม่พบแพ็กเกจที่เปิดขายในขณะนี้</p>
+            <div className="text-center p-8 border-2 border-dashed border-slate-100 rounded-[32px]">
+                <p className="text-sm font-bold text-slate-400">ไม่พบแพ็กเกจที่เปิดขายในขณะนี้</p>
             </div>
         );
     }
 
     return (
-        <div>
-            <div className="mb-6">
-                <h3 className="text-lg font-bold flex items-center gap-2 text-foreground">
-                    <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
-                    เลือกแพ็กเกจความสนุก
-                </h3>
-                <p className="text-sm text-muted-foreground mt-1">ปลดล็อคฟีเจอร์พรีเมียม ร้องเพลงได้ไม่จำกัด!</p>
-            </div>
-
-            <div className="space-y-2">
+        <div className="space-y-4">
+            <div className="space-y-3">
                 {packages
-                    .filter(pkg => !pkg.id.toLowerCase().includes('test')) // Filter out test packages
+                    .filter(pkg => !pkg.id.toLowerCase().includes('test'))
                     .map((pkg) => {
-                        // Color logic
-                        const isFree = pkg.price === 0;
-                        const isAnnual = pkg.durationDays >= 365 && pkg.durationDays < 9999;
-                        const isPermanent = pkg.durationDays >= 9999;
-
-                        let accentClass = "bg-blue-600";
-                        let bgClass = "bg-blue-50/50 border-blue-100 dark:bg-blue-900/20 dark:border-blue-800";
-                        if (isFree) {
-                            accentClass = "bg-slate-500";
-                            bgClass = "bg-slate-50 border-slate-200 dark:bg-slate-800/40 dark:border-slate-700";
-                        }
-                        if (isAnnual) {
-                            accentClass = "bg-purple-600";
-                            bgClass = "bg-purple-50 border-purple-100 dark:bg-purple-900/20 dark:border-purple-800";
-                        }
-                        if (isPermanent) {
-                            accentClass = "bg-amber-500";
-                            bgClass = "bg-amber-50 border-amber-100 dark:bg-amber-900/20 dark:border-amber-800";
-                        }
-
+                        const isPopular = pkg.isPopular;
+                        
                         return (
                             <div
                                 key={pkg.id}
+                                onClick={() => handleBuy(pkg)}
                                 className={cn(
-                                    "group relative overflow-hidden rounded-2xl border p-3.5 mb-2 transition-all duration-200 cursor-pointer flex items-center justify-between",
-                                    bgClass,
-                                    "hover:shadow-md hover:scale-[1.01] active:scale-[0.99]"
+                                    "group relative overflow-hidden rounded-[28px] border p-4 transition-all duration-300 cursor-pointer",
+                                    isPopular 
+                                        ? "bg-slate-900 border-slate-800 shadow-xl shadow-slate-200" 
+                                        : "bg-white border-slate-100 hover:border-primary/30"
                                 )}
-                                onClick={() => router.push('/packages')}
                             >
-                                <div className="flex items-center gap-3.5 overflow-hidden ml-0.5">
-                                    {/* Color Indicator Vertical Bar (Thicker) */}
-                                    <div className={cn("w-2 h-7 rounded-full shrink-0 shadow-sm", accentClass)} />
-
-                                    <div className="flex items-center gap-2.5 overflow-hidden">
-                                        <h4 className="font-bold text-[14px] text-foreground tracking-tight shrink-0">{pkg.name}</h4>
-                                        <span className="opacity-20 text-[10px] shrink-0">|</span>
-                                        <div className="flex items-center gap-1.5">
-                                            <span className="text-base font-black text-foreground shrink-0 leading-none">฿{pkg.price.toLocaleString()}</span>
-                                            <span className="text-[9px] font-bold text-muted-foreground shrink-0 leading-none opacity-60">
-                                                ({pkg.durationDays} วัน)
-                                            </span>
+                                {isPopular && (
+                                    <div className="absolute top-3 right-4">
+                                        <div className="px-2 py-0.5 bg-primary text-[8px] font-black text-white rounded-full uppercase tracking-widest">
+                                            POPULAR
                                         </div>
                                     </div>
-                                </div>
+                                )}
 
-                                <div className="flex items-center gap-2 mr-1">
-                                    {pkg.isPopular && (
-                                        <span className="text-[7px] font-black bg-primary text-white px-1.5 py-0.5 rounded-md uppercase tracking-widest italic shrink-0">แนะนำ</span>
-                                    )}
-                                    <ChevronLeft className="w-4 h-4 rotate-180 text-muted-foreground group-hover:text-primary transition-colors" />
+                                <div className="flex flex-col gap-3">
+                                    <div className="flex items-center gap-3">
+                                        <div className={cn(
+                                            "w-10 h-10 rounded-2xl flex items-center justify-center shrink-0",
+                                            isPopular ? "bg-primary text-white" : "bg-slate-50 text-slate-400"
+                                        )}>
+                                            <Star className={cn("w-5 h-5", isPopular && "fill-current")} />
+                                        </div>
+                                        <div>
+                                            <h4 className={cn("font-black text-sm", isPopular ? "text-white" : "text-slate-900")}>
+                                                {pkg.name}
+                                            </h4>
+                                            <p className={cn("text-[10px] font-bold text-slate-400")}>
+                                                ระยะเวลา {pkg.durationDays} วัน
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-between mt-1">
+                                        <div className="flex items-baseline gap-1">
+                                            <span className={cn("text-2xl font-black", isPopular ? "text-primary" : "text-slate-900")}>
+                                                ฿{pkg.price.toLocaleString()}
+                                            </span>
+                                        </div>
+                                        <div className={cn(
+                                            "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all",
+                                            isPopular ? "bg-white text-slate-900" : "bg-slate-900 text-white"
+                                        )}>
+                                            เลือกแพ็กเกจ
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         );
                     })}
             </div>
 
+            <div className="p-4 bg-slate-50 rounded-[28px] border border-slate-100">
+                <p className="text-[10px] font-bold text-slate-400 leading-relaxed">
+                    * เมื่อเลือกแพ็กเกจแล้ว ระบบจะพาคุณไปยังหน้ายืนยันการโอนเงิน เพื่อตรวจสอบข้อมูลและแจ้งชำระเงินผ่าน LINE ครับ
+                </p>
+            </div>
+
             <button
                 onClick={() => router.push('/packages')}
-                className="w-full mt-6 py-3 rounded-2xl border-2 border-dashed border-primary/20 hover:border-primary/50 text-xs font-bold text-primary transition-all hover:bg-primary/5 flex items-center justify-center gap-2"
+                className="w-full mt-2 py-3 rounded-2xl border border-dashed border-slate-200 hover:border-primary/50 text-[10px] font-black text-slate-300 hover:text-primary transition-all flex items-center justify-center gap-2"
             >
-                <QrCode className="w-4 h-4" /> ดูฟีเจอร์พรีเมียมทั้งหมดและชำระเงิน
+                <QrCode className="w-3 h-3" /> ดูฟีเจอร์พรีเมียมทั้งหมด
             </button>
 
-            <UploadSlipModal
-                isOpen={showUploadModal}
-                onClose={() => setShowUploadModal(false)}
-                pkg={selectedPkg}
-            />
+            {selectedPkg && (
+                <UploadSlipModal
+                    isOpen={showUploadModal}
+                    onClose={() => setShowUploadModal(false)}
+                    pkg={selectedPkg}
+                />
+            )}
         </div>
     );
 };
