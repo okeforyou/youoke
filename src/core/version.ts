@@ -8,6 +8,16 @@ export const BUILD_DATE = "3 เม.ย. 2569";
 
 export const CHANGELOGS = [
     {
+        version: "4.9.34 (Visual Stability Update)",
+        date: "3 เม.ย. 2569",
+        changes: [
+            "[UX] Transition Smoothing: นำแอนิเมชันแบบขยาย (Scaling) และการเลื่อน (Sliding) ออกจากการสลับหน้าจอภายในโปรไฟล์ เพื่อความนิ่งและสบายตา",
+            "[UI] Snappy Feel: ปรับปรุงความเร็วในการตอบสนอง (Transition Duration) ให้ทันใจสมาชิกมากขึ้น ลดอาการ 'ภาพบวม' ขณะเปลี่ยนหน้า",
+            "[Logic] Content Persistence: รักษาความต่อเนื่องของข้อมูลในทุกมุมมอง (Views) ให้มีความเสถียรสูงสุด"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
+    {
         version: "4.9.33 (The Trial Bridge Update)",
         date: "3 เม.ย. 2569",
         changes: [

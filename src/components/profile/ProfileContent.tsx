@@ -113,7 +113,7 @@ export const ProfileContent = () => {
         const liffUrl = `https://liff.me/2006894054-O8E2Rz96?u=${user.uid}`; 
         
         return (
-            <div className="flex flex-col animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="flex flex-col animate-in fade-in duration-200">
                 {/* View Header */}
                 <div className="px-6 py-4 flex items-center gap-4 border-b border-slate-50 dark:border-zinc-900/50">
                     <button 
@@ -170,7 +170,7 @@ export const ProfileContent = () => {
     // --- v4.9.31: PACKAGES INTEGRATED VIEW ---
     if (view === 'packages') {
         return (
-            <div className="flex flex-col animate-in fade-in slide-in-from-right-4 duration-300">
+            <div className="flex flex-col animate-in fade-in duration-200">
                 {/* View Header */}
                 <div className="px-6 py-4 flex items-center gap-4 border-b border-gray-100 bg-white sticky top-0 z-[110]">
                     <button 
@@ -191,7 +191,7 @@ export const ProfileContent = () => {
 
     // --- MAIN PROFILE VIEW ---
     return (
-        <div className="flex flex-col bg-white dark:bg-zinc-950 animate-in fade-in duration-300">
+        <div className="flex flex-col bg-white dark:bg-zinc-950 animate-in fade-in duration-200">
             {/* Simple Profile Header */}
             <div className="px-6 pt-8 pb-4 flex items-center gap-5">
                 <div className="relative">
