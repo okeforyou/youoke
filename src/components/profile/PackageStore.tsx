@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { collection, query, getDocs, orderBy } from "firebase/firestore";
 import { db } from "@/firebase";
-import { Star, Loader2, QrCode, ChevronRight } from "lucide-react";
+import { Star, Loader2, QrCode, Zap, Sparkles, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/modules/auth/useAuthStore";
 import { UploadSlipModal } from "./UploadSlipModal";
@@ -99,6 +99,31 @@ export const PackageStore = () => {
 
     return (
         <div className="space-y-4">
+            {/* v4.9.33: Quick Trial Activation Spotlight */}
+            <div 
+                onClick={() => {
+                    const trialPkg = packages.find(p => p.price === 0 && p.durationDays === 1) || packages.find(p => p.price === 0);
+                    if (trialPkg) handleBuy(trialPkg);
+                }}
+                className="relative group overflow-hidden rounded-[28px] p-4 cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-emerald-500/10"
+            >
+                <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 to-teal-500 opacity-90 group-hover:opacity-100 transition-opacity"></div>
+                <div className="relative flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
+                            <Zap className="w-6 h-6 fill-current" />
+                        </div>
+                        <div>
+                            <h4 className="font-black text-sm text-white leading-tight">รับสิทธิ์พรีเมียมฟรี 1 วัน</h4>
+                            <p className="text-[10px] font-bold text-white/80 uppercase tracking-widest mt-0.5">Full Unlocked Experience</p>
+                        </div>
+                    </div>
+                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-emerald-500 shadow-lg">
+                        <Sparkles className="w-4 h-4" />
+                    </div>
+                </div>
+            </div>
+
             <div className="space-y-2">
                 {packages
                     .filter(pkg => !pkg.id.toLowerCase().includes('test'))

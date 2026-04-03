@@ -8,6 +8,16 @@ export const BUILD_DATE = "3 เม.ย. 2569";
 
 export const CHANGELOGS = [
     {
+        version: "4.9.33 (The Trial Bridge Update)",
+        date: "3 เม.ย. 2569",
+        changes: [
+            "[Marketing] 1-Day Premium Trial: เพิ่มระบบมอบสิทธิ์ทดลองใช้งานพรีเมียมฟรี 1 วัน (Full Options) เพื่อแก้ปัญหา Guest ติดขัดเรื่องการเล่นเพลงยาวหรือสถานีเพลง",
+            "[Navigation] Seamless Back Link: เพิ่มปุ่ม 'กลับสู่หน้าเครื่องคาราโอเกะ' ในหน้าเลือกแพ็กเกจ เพื่อลดขั้นตอนการสลับหน้าและเพิ่มความสะดวกในการใช้งาน",
+            "[UI] Trial Hero Spotlight: ออกแบบการ์ดรับสิทธิ์ทดลองใช้แบบ Emerald Gradient ที่โดดเด่นและจูงใจให้กดสมัครมากที่สุด"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
+    {
         version: "4.9.32 (Compact Premium Shop Update)",
         date: "3 เม.ย. 2569",
         changes: [
