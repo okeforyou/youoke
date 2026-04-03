@@ -8,6 +8,15 @@ export const BUILD_DATE = "2 เม.ย. 2569";
 
 export const CHANGELOGS = [
     {
+        version: "4.9.8 (Live Messaging)",
+        date: "3 เม.ย. 2569",
+        changes: [
+            "[Admin] Live Messaging: เปิดใช้งานปุ่มส่งข้อความ LINE รายบุคคลในหน้าจัดการสมาชิก (Surgical Fix)",
+            "[System] UI Sync: อัปเดต UI ของ Modal ให้ส่งข้อมูลไปยัง API line-push ได้จริง"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
+    {
         version: "4.9.6 (Force Handshake)",
         date: "3 เม.ย. 2569",
         changes: [

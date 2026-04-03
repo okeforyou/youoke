@@ -56,6 +56,8 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
             : ''
     );
     const [savingDates, setSavingDates] = useState(false);
+    const [messageText, setMessageText] = useState('');
+    const [sendingMessage, setSendingMessage] = useState(false);
     const [copied, setCopied] = useState(false);
     const [confirmModal, setConfirmModal] = useState<{
         isOpen: boolean;
@@ -133,6 +135,44 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                 type: 'danger',
                 onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
             });
+        }
+    };
+
+    const handleSendLineMessage = async () => {
+        if (!messageText.trim() || !(user as any).lineUserId) return;
+
+        setSendingMessage(true);
+        try {
+            const response = await fetch('/api/notify/line-push', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    to: (user as any).lineUserId,
+                    message: messageText
+                })
+            });
+
+            if (!response.ok) throw new Error('ส่งข้อความไม่สำเร็จ');
+
+            setMessageText('');
+            setConfirmModal({
+                isOpen: true,
+                title: "ส่งข้อความสำเร็จ",
+                message: "ข้อความถูกส่งไปยัง LINE ของผู้ใช้งานเรียบร้อยแล้ว",
+                type: 'info',
+                onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+            });
+        } catch (err: any) {
+            console.error('LINE Message Error:', err);
+            setConfirmModal({
+                isOpen: true,
+                title: "ส่งไม่สำเร็จ",
+                message: err.message || "เกิดข้อผิดพลาดในการส่งข้อความ",
+                type: 'danger',
+                onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+            });
+        } finally {
+            setSendingMessage(false);
         }
     };
 
@@ -340,18 +380,26 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                                 <div className="flex gap-2">
                                     <input 
                                         type="text" 
+                                        value={messageText}
+                                        onChange={(e) => setMessageText(e.target.value)}
+                                        disabled={sendingMessage}
                                         placeholder="พิมพ์ข้อความส่งหา User รายบุคคล..."
-                                        className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-900 w-full focus:ring-1 focus:ring-[#06C755] outline-none"
+                                        className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-900 w-full focus:ring-1 focus:ring-[#06C755] outline-none disabled:bg-slate-50"
                                         onKeyDown={(e) => {
                                             if (e.key === 'Enter') {
-                                                // Function to send direct LINE message via API
-                                                alert('เตรียมระบบส่งข้อความเบื้องต้น (Phase 1): ' + (e.target as any).value);
-                                                (e.target as any).value = '';
+                                                handleSendLineMessage();
                                             }
                                         }}
                                     />
-                                    <button className="bg-[#06C755] text-white rounded-lg px-4 py-2 text-xs font-bold active:scale-95 transition-transform">
-                                        ส่ง
+                                    <button 
+                                        onClick={handleSendLineMessage}
+                                        disabled={sendingMessage || !messageText.trim()}
+                                        className={cn(
+                                            "text-white rounded-lg px-4 py-2 text-xs font-bold active:scale-95 transition-transform whitespace-nowrap",
+                                            sendingMessage ? "bg-slate-400" : "bg-[#06C755] hover:bg-[#05b34c]"
+                                        )}
+                                    >
+                                        {sendingMessage ? '...' : 'ส่ง'}
                                     </button>
                                 </div>
                                 <p className="text-[9px] text-slate-400 px-1 leading-tight italic">
@@ -395,7 +443,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                 {/* Footer (Standard Pattern) */}
                 <div className="bg-white px-5 py-4 border-t border-slate-100 flex justify-between items-center flex-shrink-0">
                     <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">
-                        v4.2.7 Admin Intelligence
+                        v4.9.8 Admin Intelligence
                     </span>
                     <button 
                         className="px-6 py-2 rounded-lg text-sm font-bold text-slate-500 hover:bg-slate-50 transition-colors" 
