@@ -8,6 +8,15 @@ export const BUILD_DATE = "2 เม.ย. 2569";
 
 export const CHANGELOGS = [
     {
+        version: "4.9.10 (Clarity Update)",
+        date: "3 เม.ย. 2569",
+        changes: [
+            "[Admin] Dashboard Intelligence: ปรับให้รายชื่อแขก (Guest) ซ่อนเป็นค่าเริ่มต้น และเพิ่ม LINE Linked Badge ให้เห็นชัดเจนในตาราง",
+            "[User] Identity Branding: ปรับดีไซน์ส่วนเชื่อมต่อ LINE ในหน้าโปรไฟล์ให้เป็น Flat & Premium แสดงสถานะสีเขียวเรืองแสง"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
+    {
         version: "4.9.8 (Live Messaging)",
         date: "3 เม.ย. 2569",
         changes: [

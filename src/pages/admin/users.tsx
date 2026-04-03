@@ -128,7 +128,7 @@ export default function AdminUsersPage() {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
-    const [showGuests, setShowGuests] = useState(true);
+    const [showGuests, setShowGuests] = useState(false);
     const [syncing, setSyncing] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [packages, setPackages] = useState<PackageOption[]>([]);
@@ -899,10 +899,17 @@ export default function AdminUsersPage() {
                                                     <span className="font-bold text-gray-900 text-sm group-hover:text-indigo-600 transition-colors">
                                                         {user.displayName || 'Unknown'}
                                                     </span>
-                                                    <span className="text-[10px] text-gray-400 font-medium">
-                                                        {user.email || 'GUEST USER'}
-                                                        {(user as any).lineUserId && <LineIcon className="w-3 h-3 text-[#00B900] ml-1 inline-block" />}
-                                                    </span>
+                                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                                        <span className="text-[10px] text-gray-400 font-medium truncate max-w-[120px]">
+                                                            {user.email || 'GUEST USER'}
+                                                        </span>
+                                                        {(user as any).lineUserId && (
+                                                            <div className="flex items-center gap-0.5 px-1.5 py-0.5 bg-emerald-50 text-[#06C755] rounded-md border border-emerald-100 animate-in fade-in zoom-in duration-300">
+                                                                <LineIcon className="w-2.5 h-2.5" />
+                                                                <span className="text-[7px] font-black uppercase tracking-tighter">Linked</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </td>

@@ -201,56 +201,52 @@ export const ProfileContent = () => {
                         onUpgrade={() => router.push('/packages')}
                     />
 
-                    {/* LINE Connection Status (Green Bridge v4.8.5) */}
+                    {/* LINE Connection Status (Premium Flat v4.9.9) */}
                     <div className="mt-4 px-2">
                         <div className={cn(
-                            "w-full flex flex-col p-5 rounded-[28px] border transition-all text-left bg-white dark:bg-zinc-900 shadow-sm",
+                            "w-full flex flex-col p-4 rounded-[24px] border transition-all text-left bg-white dark:bg-zinc-900",
                             profile?.lineUserId 
-                                ? "border-emerald-100 dark:border-emerald-500/10"
+                                ? "border-emerald-500/30 shadow-sm shadow-emerald-500/5 ring-1 ring-emerald-500/10"
                                 : "border-slate-100 dark:border-zinc-800"
                         )}>
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-4">
+                            <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-3">
                                     <div className={cn(
-                                        "w-10 h-10 rounded-2xl flex items-center justify-center text-white",
-                                        profile?.lineUserId ? "bg-[#00B900]" : "bg-emerald-50 dark:bg-emerald-500/5 text-[#00B900]"
+                                        "w-9 h-9 rounded-xl flex items-center justify-center transition-all",
+                                        profile?.lineUserId 
+                                            ? "bg-[#06C755] text-white shadow-[0_0_15px_rgba(6,199,85,0.3)]" 
+                                            : "bg-slate-50 dark:bg-zinc-800 text-slate-300"
                                     )}>
                                         <ChatBubbleLeftRightIcon className="w-5 h-5" />
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-2">
-                                            <p className="text-[15px] font-black text-slate-900 dark:text-white">การเชื่อมต่อ LINE</p>
-                                            {profile?.lineUserId ? (
-                                                <span className="text-[8px] font-black bg-emerald-500 text-white px-1.5 py-0.5 rounded-lg uppercase">เชื่อมต่อแล้ว</span>
-                                            ) : (
-                                                <span className="text-[8px] font-black bg-emerald-100 text-emerald-600 px-1.5 py-0.5 rounded-lg uppercase">ยังไม่ผูกบัญชี</span>
+                                            <p className="text-sm font-black text-slate-900 dark:text-white">เชื่อมต่อ LINE</p>
+                                            {profile?.lineUserId && (
+                                                <div className="w-1.5 h-1.5 rounded-full bg-[#06C755] animate-pulse"></div>
                                             )}
                                         </div>
-                                        <p className="text-[11px] font-bold text-slate-400 dark:text-zinc-500">
-                                            {profile?.lineUserId ? `${profile.lineDisplayName || 'บัญชี LINE ของคุณ'}` : 'เพื่อรับสิทธิพิเศษและแจ้งเตือน'}
+                                        <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-500">
+                                            {profile?.lineUserId ? (
+                                                <span className="text-[#06C755]">{profile.lineDisplayName || 'ผูกบัญชีสำเร็จแล้ว'}</span>
+                                            ) : (
+                                                'เพื่อรับคิวเพลงและการแจ้งเตือน'
+                                            )}
                                         </p>
                                     </div>
                                 </div>
-                                <div className="p-1">
-                                    {profile?.lineUserId ? (
-                                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                                    ) : (
-                                        <div className="w-2 h-2 rounded-full bg-emerald-100"></div>
+                                <button 
+                                    onClick={() => setView('line_connect')}
+                                    className={cn(
+                                        "px-4 py-2 rounded-xl font-black uppercase text-[9px] tracking-wider transition-all active:scale-[0.98]",
+                                        profile?.lineUserId 
+                                            ? "bg-slate-50 text-slate-400 hover:bg-slate-100 dark:bg-zinc-800 dark:text-zinc-500"
+                                            : "bg-[#06C755] text-white shadow-lg shadow-emerald-500/20"
                                     )}
-                                </div>
+                                >
+                                    {profile?.lineUserId ? 'จัดการ' : 'เชื่อมต่อ'}
+                                </button>
                             </div>
-                            
-                            <button 
-                                onClick={() => setView('line_connect')}
-                                className={cn(
-                                    "w-full py-2.5 rounded-[12px] font-black uppercase text-[10px] tracking-wider transition-all active:scale-[0.98]",
-                                    profile?.lineUserId 
-                                        ? "bg-[#00B900] hover:bg-[#00a300] text-white shadow-md shadow-emerald-500/10"
-                                        : "bg-slate-900 text-white dark:bg-white dark:text-slate-900"
-                                )}
-                            >
-                                {profile?.lineUserId ? 'อัปเดตข้อมูล / เปลี่ยนบัญชี' : 'คลิกเพื่อเริ่มเชื่อมต่อตอนนี้'}
-                            </button>
                         </div>
                     </div>
                 </section>
