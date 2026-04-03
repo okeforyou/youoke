@@ -8,6 +8,16 @@ export const BUILD_DATE = "3 เม.ย. 2569";
 
 export const CHANGELOGS = [
     {
+        version: "4.9.32 (Compact Premium Shop Update)",
+        date: "3 เม.ย. 2569",
+        changes: [
+            "[UI/UX] High-Density Layout: ปรับดีไซน์รายการแพ็กเกจให้เป็นแนวราบ (Horizontal) ประหยัดพื้นที่และอ่านง่าย สบายตากว่าเดิม",
+            "[Design] Multi-Color Indicators: นำระบบสีระบุตัวตน (Standard Blue, VIP Purple, Premium Gold) กลับมาใช้เพื่อให้สมาชิกแยกแยะประเภทแพ็กเกจได้ทันที",
+            "[Visibility] Accessibility Reboot: ปรับปรุงความชัดเจนของปุ่มนำทาง 'ดูฟีเจอร์พรีเมียม' ให้โดดเด่นและอ่านง่ายที่สุด แม้ในหน้าจอที่มีแสงจ้า"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
+    {
         version: "4.9.31 (Integrated Shop Update)",
         date: "3 เม.ย. 2569",
         changes: [

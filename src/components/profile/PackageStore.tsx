@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { collection, query, getDocs, orderBy } from "firebase/firestore";
 import { db } from "@/firebase";
-import { Star, Loader2, QrCode } from "lucide-react";
+import { Star, Loader2, QrCode, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/modules/auth/useAuthStore";
 import { UploadSlipModal } from "./UploadSlipModal";
@@ -99,61 +99,62 @@ export const PackageStore = () => {
 
     return (
         <div className="space-y-4">
-            <div className="space-y-3">
+            <div className="space-y-2">
                 {packages
                     .filter(pkg => !pkg.id.toLowerCase().includes('test'))
                     .map((pkg) => {
+                        const isFree = pkg.price === 0;
+                        const isAnnual = pkg.durationDays >= 300 && pkg.durationDays < 9999;
+                        const isPermanent = pkg.durationDays >= 9999;
                         const isPopular = pkg.isPopular;
+
+                        // v4.9.32 Dynamic Color Coding Logic
+                        let accentClass = "bg-primary";
+                        let bgClass = "bg-white dark:bg-zinc-900 border-slate-100 dark:border-zinc-800";
+                        
+                        if (isFree) accentClass = "bg-slate-400";
+                        if (isAnnual) accentClass = "bg-purple-600";
+                        if (isPermanent) accentClass = "bg-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.3)]";
                         
                         return (
                             <div
                                 key={pkg.id}
                                 onClick={() => handleBuy(pkg)}
                                 className={cn(
-                                    "group relative overflow-hidden rounded-[28px] border p-4 transition-all duration-300 cursor-pointer",
-                                    isPopular 
-                                        ? "bg-slate-900 border-slate-800 shadow-xl shadow-slate-200" 
-                                        : "bg-white border-slate-100 hover:border-primary/30"
+                                    "group relative overflow-hidden rounded-[24px] border transition-all duration-300 cursor-pointer flex items-center justify-between p-3.5",
+                                    bgClass,
+                                    "hover:shadow-lg hover:scale-[1.01] active:scale-[0.98]",
+                                    isPopular && "border-primary/20 ring-1 ring-primary/5"
                                 )}
                             >
-                                {isPopular && (
-                                    <div className="absolute top-3 right-4">
-                                        <div className="px-2 py-0.5 bg-primary text-[8px] font-black text-white rounded-full uppercase tracking-widest">
-                                            POPULAR
-                                        </div>
-                                    </div>
-                                )}
+                                <div className="flex items-center gap-4 flex-1 min-w-0">
+                                    {/* Color Indicator Vertical Bar (v4.3.4 style return) */}
+                                    <div className={cn("w-1.5 h-10 rounded-full shrink-0 shadow-sm", accentClass)} />
 
-                                <div className="flex flex-col gap-3">
-                                    <div className="flex items-center gap-3">
-                                        <div className={cn(
-                                            "w-10 h-10 rounded-2xl flex items-center justify-center shrink-0",
-                                            isPopular ? "bg-primary text-white" : "bg-slate-50 text-slate-400"
-                                        )}>
-                                            <Star className={cn("w-5 h-5", isPopular && "fill-current")} />
+                                    <div className="flex flex-col min-w-0">
+                                        <div className="flex items-center gap-1.5 min-w-0">
+                                            <h4 className="font-black text-[15px] text-slate-900 dark:text-white truncate tracking-tight shrink-0">{pkg.name}</h4>
+                                            {isPopular && (
+                                                <span className="text-[7px] font-black bg-primary text-white px-1.5 py-0.5 rounded-md uppercase tracking-tighter shrink-0">แนะนำ</span>
+                                            )}
                                         </div>
-                                        <div>
-                                            <h4 className={cn("font-black text-sm", isPopular ? "text-white" : "text-slate-900")}>
-                                                {pkg.name}
-                                            </h4>
-                                            <p className={cn("text-[10px] font-bold text-slate-400")}>
-                                                ระยะเวลา {pkg.durationDays} วัน
-                                            </p>
-                                        </div>
+                                        <p className="text-[10px] font-bold text-slate-400 truncate opacity-80 uppercase tracking-widest mt-0.5">
+                                            {pkg.durationDays >= 9999 ? 'เปิดใช้งานถาวร' : `${pkg.durationDays} วัน`}
+                                        </p>
                                     </div>
+                                </div>
 
-                                    <div className="flex items-center justify-between mt-1">
-                                        <div className="flex items-baseline gap-1">
-                                            <span className={cn("text-2xl font-black", isPopular ? "text-primary" : "text-slate-900")}>
-                                                ฿{pkg.price.toLocaleString()}
-                                            </span>
-                                        </div>
-                                        <div className={cn(
-                                            "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all",
-                                            isPopular ? "bg-white text-slate-900" : "bg-slate-900 text-white"
-                                        )}>
-                                            เลือกแพ็กเกจ
-                                        </div>
+                                <div className="flex items-center gap-3 shrink-0 ml-4">
+                                    <div className="text-right">
+                                        <span className="text-xl font-black text-slate-900 dark:text-white tabular-nums tracking-tighter">
+                                            ฿{pkg.price.toLocaleString()}
+                                        </span>
+                                    </div>
+                                    <div className={cn(
+                                        "w-8 h-8 rounded-full flex items-center justify-center transition-all",
+                                        "bg-slate-50 group-hover:bg-primary group-hover:text-white dark:bg-zinc-800"
+                                    )}>
+                                        <ChevronRight className="w-5 h-5" />
                                     </div>
                                 </div>
                             </div>
@@ -161,17 +162,19 @@ export const PackageStore = () => {
                     })}
             </div>
 
-            <div className="p-4 bg-slate-50 rounded-[28px] border border-slate-100">
-                <p className="text-[10px] font-bold text-slate-400 leading-relaxed">
-                    * เมื่อเลือกแพ็กเกจแล้ว ระบบจะพาคุณไปยังหน้ายืนยันการโอนเงิน เพื่อตรวจสอบข้อมูลและแจ้งชำระเงินผ่าน LINE ครับ
+            <div className="p-4 bg-primary/5 rounded-[24px] border border-primary/10">
+                <p className="text-[10px] font-black text-primary/70 leading-relaxed text-center">
+                    * เมื่อเลือกแพ็กเกจแล้ว ระบบจะพาคุณไปที่หน้าชำระเงิน <br />
+                    คุณสามารถแจ้งโอนเงินผ่านแชท LINE @243lercy ได้ทันทีครับ
                 </p>
             </div>
 
             <button
                 onClick={() => router.push('/packages')}
-                className="w-full mt-2 py-3 rounded-2xl border border-dashed border-slate-200 hover:border-primary/50 text-[10px] font-black text-slate-300 hover:text-primary transition-all flex items-center justify-center gap-2"
+                className="w-full mt-2 py-4 rounded-[28px] border-2 border-dashed border-primary/30 hover:border-primary text-xs font-black text-primary hover:bg-primary/5 transition-all flex items-center justify-center gap-2 shadow-sm"
             >
-                <QrCode className="w-3 h-3" /> ดูฟีเจอร์พรีเมียมทั้งหมด
+                <QrCode className="w-5 h-5" /> 
+                <span>ดูรายละเอียดฟีเจอร์พรีเมียมทั้งหมด</span>
             </button>
 
             {selectedPkg && (
