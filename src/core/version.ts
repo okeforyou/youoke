@@ -8,6 +8,27 @@ export const BUILD_DATE = "3 เม.ย. 2569";
 
 export const CHANGELOGS = [
     {
+        version: "4.9.29 (Clean Dashboard Update)",
+        date: "3 เม.ย. 2569",
+        changes: [
+            "[Admin UI] Modal Layout Refinement: ปรับการแสดงผลหน้าต่างตรวจสอบยอดเงิน โดยซ่อนส่วนรูปภาพสำหรับรายการที่ส่งผ่าน LINE เพื่อลดพื้นที่ว่าง",
+            "[Design] Smart Centering: ปรับการ์ดสรุปข้อมูลให้แสดงผลกึ่งกลางหน้าจอ (Minimal Look) เมื่อไม่มีรูปภาพสลิป ช่วยให้แอดมินโฟกัสข้อมูลได้ดีขึ้น",
+            "[UX] Proactive Cleanup: ล้างส่วนติดต่อผู้ใช้ (Component) ที่ซ้ำซ้อนออก เพื่อความรวดเร็วในการโหลดหน้า Dashboard"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
+    {
+        version: "4.9.28 (Full Flex Premium Update)",
+        date: "3 เม.ย. 2569",
+        changes: [
+            "[UX/UI] Premium Flex Cards: อัปเกรดการแจ้งเตือนเป็นแบบการ์ด (Flex Message) ทั้งฝั่งแอดมินและสมาชิก ให้ความรู้สึกพรีเมียมระดับสากล",
+            "[Payment] QR Direct Image: ฝังรูป QR Code PromptPay ลงในบัตรแจ้งหนี้สมาชิกโดยตรง เพื่อให้แคปหน้าจอไปโอนเงินได้ทันที",
+            "[System] Tracking Reference: เพิ่มรหัสอ้างอิงชำระเงิน (REF ID) 8 หลัก เพื่อความแม่นยำในการตรวจสอบรายการสั่งซื้อ",
+            "[Stability] ID Integration: เชื่อมโยงรหัส Admin LINE ID และ Magic Link เข้ากับระบบการ์ดแบบไร้รอยต่อ"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
+    {
         version: "4.9.27 (Admin ID Verification Patch)",
         date: "3 เม.ย. 2569",
         changes: [

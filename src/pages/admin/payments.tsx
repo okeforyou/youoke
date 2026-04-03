@@ -392,33 +392,35 @@ export default function AdminOrdersPage() {
                 )}
             </div>
 
-            {/* Split Modal */}
+            {/* Split Modal (v4.9.29 Clean UI) */}
             {selectedOrder && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={(e) => {
                     if (e.target === e.currentTarget) setSelectedOrder(null)
                 }}>
-                    <div className="bg-white w-full max-w-4xl max-h-[90vh] rounded-xl shadow-xl overflow-hidden flex flex-col md:row-span-1 lg:flex-row border border-border">
-                        {/* Image side */}
-                        <div className="flex-1 bg-slate-900 flex items-center justify-center p-4 relative min-h-[300px]">
-                            {selectedOrder.method === 'line_manual' || selectedOrder.slipUrl === 'line_manual' ? (
-                                <div className="flex flex-col items-center gap-4 text-white">
-                                    <MessageCircle size={64} className="text-[#06C755]" />
-                                    <div className="text-center">
-                                        <p className="text-xl font-black">รอรับหลักฐานผ่าน LINE</p>
-                                        <p className="text-sm opacity-60">สลิปใบนี้จะถูกส่งมาทางหน้าแชทของแอดมินครับ</p>
-                                    </div>
-                                </div>
-                            ) : (
+                    <div className={cn(
+                        "bg-white w-full rounded-[40px] shadow-2xl overflow-hidden flex flex-col lg:flex-row border-none transition-all duration-300",
+                        (selectedOrder.method === 'line_manual' || selectedOrder.slipUrl === 'line_manual') 
+                            ? "max-w-md scale-100" 
+                            : "max-w-4xl"
+                    )}>
+                        {/* Image side (Hidden if LINE Manual) */}
+                        {!(selectedOrder.method === 'line_manual' || selectedOrder.slipUrl === 'line_manual') && (
+                            <div className="flex-1 bg-slate-900 flex items-center justify-center p-4 relative min-h-[400px]">
                                 <img
                                     src={selectedOrder.slipUrl}
                                     alt="Slip"
-                                    className="max-w-full max-h-full object-contain rounded shadow-lg"
+                                    className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl"
                                 />
-                            )}
-                        </div>
+                            </div>
+                        )}
 
                         {/* Details side */}
-                        <div className="w-full lg:w-80 flex flex-col bg-white h-full border-l border-gray-100">
+                        <div className={cn(
+                            "flex flex-col bg-white h-full",
+                            (selectedOrder.method === 'line_manual' || selectedOrder.slipUrl === 'line_manual') 
+                                ? "w-full" 
+                                : "w-full lg:w-96 border-l border-gray-50"
+                        )}>
                             <div className="p-6 border-b border-gray-50 flex justify-between items-center bg-gray-50/30">
                                 <h3 className="font-black text-gray-900 tracking-tight">รายละเอียดการแจ้งโอน</h3>
                                 <button onClick={() => setSelectedOrder(null)} className="p-2 hover:bg-gray-100 rounded-xl transition-all">
