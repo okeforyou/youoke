@@ -20,7 +20,7 @@ import { EditUserModal } from "@/features/admin/components/EditUserModal";
 import { collection, query, getDocs, orderBy, doc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/firebase";
 import { useAuthStore } from "@/modules/auth/useAuthStore";
-import { useToast } from "@/components/ui/toast-context";
+import { useToast } from "@/context/ToastContext";
 import { cn } from "@/lib/utils";
 import axios from "axios";
 
