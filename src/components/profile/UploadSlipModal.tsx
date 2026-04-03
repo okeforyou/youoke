@@ -82,11 +82,10 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
             // 3. Notify Admin via OneSignal and Internal System
             await notifyAdmins(paymentId);
 
-            // 4. v4.9.26: Independent Actionable Messaging Flow (The Heart of LINE-Centric)
-            const adminLineId = "U0862085736780c136365a26c92d5353"; // Admin/Owner ID 
+            // --- 4.1 LINE ALERT TO ADMIN ---
+            const adminLineId = "Ub8ea2b9830c838a8df71333dee79c0dd"; // Verified Admin ID (v4.9.27)
             const magicLink = `${window.location.origin}/admin/users?uid=${user.uid}`;
             
-            // --- 4.1 LINE ALERT TO ADMIN ---
             try {
                 await axios.post('/api/notify/line-push', {
                     to: adminLineId,

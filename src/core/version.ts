@@ -8,6 +8,16 @@ export const BUILD_DATE = "3 เม.ย. 2569";
 
 export const CHANGELOGS = [
     {
+        version: "4.9.27 (Admin ID Verification Patch)",
+        date: "3 เม.ย. 2569",
+        changes: [
+            "[Notification] Admin ID Sync: อัปเดตรหัส LINE Admin ID ให้ตรงกับค่าจริงที่ยืนยันจากหน้า Developers Console (Ub8ea2b...)",
+            "[Fix] Route Directing: ปรับปรุง Magic Link ในการแจ้งเตือนแอดมินให้ชี้ไปยังหน้าจัดการผู้ใช้ที่ถูกต้องพร้อมข้อมูลเบื้องต้น",
+            "[Stability] ID Integrity: ล้างข้อมูล Hardcode เก่าที่อาจทำให้การแจ้งเตือนส่งไม่ถึงมือแอดมินตัวจริง"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
+    {
         version: "4.9.26 (Independent Notification Patch)",
         date: "3 เม.ย. 2569",
         changes: [
