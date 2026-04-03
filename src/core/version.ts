@@ -8,6 +8,16 @@ export const BUILD_DATE = "3 เม.ย. 2569";
 
 export const CHANGELOGS = [
     {
+        version: "4.9.20 (Indicator Dot Clarity Update)",
+        date: "3 เม.ย. 2569",
+        changes: [
+            "[Profile] Actionless UI: ถอดป้ายกำกับ [ACTION] ที่รกตาออก เพื่อความคลีนสูงสุดตามคำแนะนำของแอดมิน",
+            "[UX] Pulse Indicator System: เปลี่ยนมาใช้ระบบ 'จุดไฟสถานะ' (Indicator Dot) ที่กะพริบแจ้งเตือนเหนือไอคอน LINE แทนการใช้ตัวอักษร",
+            "[Layout] Text Fit Optimization: ปรับปรุงขนาดปุ่มและตัวหนังสือให้พอดีกับหน้าจอ ไม่ล้นขอบ และดูสมมาตร 100%"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
+    {
         version: "4.9.19 (Solid Green Clarity Update)",
         date: "3 เม.ย. 2569",
         changes: [
