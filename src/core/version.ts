@@ -8,6 +8,16 @@ export const BUILD_DATE = "3 เม.ย. 2569";
 
 export const CHANGELOGS = [
     {
+        version: "4.9.30 (Mobile Bottom Sheet Update)",
+        date: "3 เม.ย. 2569",
+        changes: [
+            "[Mobile UX] Bottom Sheet Navigation: เปลี่ยนรูปแบบการแสดงผลโปรไฟล์ในมือถือ จากการเลื่อนข้างเป็นแบบ 'เลื่อนจากล่างขึ้นบน' (Bottom Sheet) ตามมาตรฐานแอป Apple/Spotify",
+            "[UI] Grab Handle & Rounded Corners: เพิ่มสัญลักษณ์ขีดเพื่อการปัดปิด และปรับความโค้งมนของมุมด้านบน (Rounded Top) เพื่อความสวยงามพรีเมียม",
+            "[Layout] Viewport Optimization: ปรับความสูงของหน้านำทางมือถือให้เหลือพื้นที่ด้านบนเล็กน้อย เพื่อรักษาความต่อเนื่องของแอปเดิม"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
+    {
         version: "4.9.29 (Clean Dashboard Update)",
         date: "3 เม.ย. 2569",
         changes: [

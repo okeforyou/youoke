@@ -25,19 +25,24 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                 </Transition.Child>
 
                 <div className="fixed inset-0 overflow-hidden">
-                    <div className="absolute inset-0 overflow-hidden">
-                        <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+                    <div className="absolute inset-0 overflow-hidden flex items-end sm:items-stretch sm:justify-end">
+                        <div className="pointer-events-none fixed inset-x-0 bottom-0 sm:inset-y-0 sm:right-0 sm:left-auto flex max-w-full">
                             <Transition.Child
                                 as={Fragment}
-                                enter="transform transition ease-in-out duration-500 sm:duration-700"
-                                enterFrom="translate-x-full"
-                                enterTo="translate-x-0"
-                                leave="transform transition ease-in-out duration-500 sm:duration-700"
-                                leaveFrom="translate-x-0"
-                                leaveTo="translate-x-full"
+                                enter="transform transition ease-in-out duration-500"
+                                enterFrom="translate-y-full sm:translate-y-0 sm:translate-x-full"
+                                enterTo="translate-y-0 sm:translate-x-0"
+                                leave="transform transition ease-in-out duration-500"
+                                leaveFrom="translate-y-0 sm:translate-x-0"
+                                leaveTo="translate-y-full sm:translate-y-0 sm:translate-x-full"
                             >
-                                <Dialog.Panel className="pointer-events-auto w-screen max-w-sm">
-                                    <div className="flex h-full flex-col overflow-hidden bg-white shadow-2xl relative">
+                                <Dialog.Panel className="pointer-events-auto w-full sm:w-screen sm:max-w-sm">
+                                    <div className="flex h-[92vh] sm:h-full flex-col overflow-hidden bg-white shadow-2xl relative rounded-t-[32px] sm:rounded-t-none">
+                                        {/* Mobile Grab Handle */}
+                                        <div className="sm:hidden flex justify-center pt-3 pb-1 bg-white">
+                                            <div className="w-12 h-1.5 bg-gray-200 rounded-full"></div>
+                                        </div>
+
                                         {/* Header */}
                                         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white sticky top-0 z-[110]">
                                             <Dialog.Title className="text-lg font-bold text-gray-900">
