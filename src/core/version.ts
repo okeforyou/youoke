@@ -8,6 +8,16 @@ export const BUILD_DATE = "3 เม.ย. 2569";
 
 export const CHANGELOGS = [
     {
+        version: "4.9.21 (Stealth Indicator Update)",
+        date: "3 เม.ย. 2569",
+        changes: [
+            "[Profile] Stealth Icon Logic: เปลี่ยนไอคอน LINE เป็นสีดำเข้ม (Zinc-900) เมื่อยังไม่เชื่อมต่อ เพื่อแสดงสถานะ 'Inactive' ให้ชัดเจนขึ้น",
+            "[UX] High-Contrast Pulse: ปรับเพิ่มความสว่างของจุดกะพริบ (White Pulse) ให้เด่นชัดบนพื้นไอคอนสีดำ เพื่อเรียกความสนใจอย่างพรีเมียม",
+            "[Layout] Text Alignment: ปรับจูนระยะข้อความ 'ศูนย์รวมข่าวสาร' ให้สมดุลกับ Card ทั้งระบบ"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
+    {
         version: "4.9.20 (Indicator Dot Clarity Update)",
         date: "3 เม.ย. 2569",
         changes: [
