@@ -23,6 +23,7 @@ import { useUIStore } from "../../../stores/useUIStore";
 import { Headphones, Library, ChevronRight, Grid as GridIcon, Headphones as HeadphonesIcon, Music, Guitar, Disc, Mic2, Star, Globe, Heart, Mic, Coffee, Radio, PlayCircle } from "lucide-react";
 import { clsx } from "clsx";
 import { ARTIST_CATEGORIES, ArtistCategory } from "../../../data/artist-categories";
+import { PackageStore } from "../../../components/profile/PackageStore";
 
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../../firebase";
@@ -41,6 +42,8 @@ const GENRES = [
   "ร็อกแอนด์โรล",
   "ริทึมแอนด์บลูส์",
 ];
+
+
 
 export default function SpotifyDashboard({ showTab = true, mode = 'default' }: { showTab?: boolean, mode?: 'default' | 'listening' | 'genres' | 'station' }) {
   const router = useRouter();
@@ -380,6 +383,20 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                         </div>
                       );
                     })}
+                  </div>
+
+                  {/* 💳 v4.9.61: Membership Package Spotlight (Direct Integration) */}
+                  <div className="px-4 pt-10 pb-4">
+                    <div className="flex items-center justify-between mb-4">
+                       <div>
+                          <h2 className="text-xl font-bold text-black">แพ็กเกจพรีเมียม</h2>
+                          <p className="text-[12px] text-black font-black uppercase tracking-widest opacity-70">Unlock Full Potential</p>
+                       </div>
+                       <button onClick={() => router.push('/packages')} className="text-[10px] font-black text-primary px-3 py-1.5 bg-primary/5 rounded-lg hover:bg-primary/10 transition-all uppercase tracking-tighter shadow-sm border border-primary/20">เปรียบเทียบฟีเจอร์</button>
+                    </div>
+                    <div className="bg-white/40 backdrop-blur-md rounded-[32px] p-1 border border-gray-100/50 shadow-sm overflow-hidden">
+                       <PackageStore />
+                    </div>
                   </div>
                 </div>
               )}
