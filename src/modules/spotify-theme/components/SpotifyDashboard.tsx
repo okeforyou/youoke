@@ -195,16 +195,30 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
 
   const { searchTerm, setSearchTerm, addToQueue } = usePlayerStore();
 
-  // Search results for Station Mode (Long Videos)
-  const { data: stationResults, isLoading: isLoadStation } = useQuery({
+  // v4.9.41: Enhanced Infinite Search for Station Mode (Long Videos)
+  const { 
+    data: stationData, 
+    isLoading: isLoadStation,
+    fetchNextPage: fetchNextStationPage,
+    hasNextPage: hasNextStationPage,
+    isFetchingNextPage: isFetchingNextStationPage
+  } = useInfiniteQuery({
     queryKey: ["stationSearch", genreText || searchTerm, mode],
-    queryFn: () => getSearchResult({ 
+    queryFn: ({ pageParam = 0 }) => getSearchResult({ 
         q: (genreText || searchTerm) + " รวมเพลง", 
-        long: true 
+        long: true,
+        page: pageParam as number
     }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) => {
+        // If we got results, allow fetching the next page
+        return lastPage && lastPage.length > 0 ? allPages.length : undefined;
+    },
     enabled: mode === 'station' && !!(genreText || searchTerm),
     retry: false,
   });
+
+  const stationResults = stationData?.pages?.flatMap(page => page) || [];
 
   const topArtists = tempTopArtistsData?.artist || [];
   const isGenreDefault = genreText === "เพลงไทย" || !genreText;
@@ -579,8 +593,8 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                           {isLoadStation ? (
                             getSkeletonItems(8).map(s => <div key={s} className="aspect-video bg-gray-100 rounded-2xl animate-pulse" />)
                           ) : (
-                            stationResults?.map(video => (
-                                <div key={video.videoId} onClick={() => {
+                            stationResults?.map((video, idx) => (
+                                <div key={video.videoId + idx} onClick={() => {
                                     const videoToAdd = {
                                         id: video.videoId,
                                         sourceType: 'youtube',
@@ -617,6 +631,34 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                                     </p>
                                 </div>
                             ))
+                          )}
+
+                          {/* v4.9.41: Load More Station Results */}
+                          {hasNextStationPage && (
+                            <div className="col-span-full py-8 flex justify-center">
+                              <button
+                                onClick={() => fetchNextStationPage()}
+                                disabled={isFetchingNextStationPage}
+                                className={clsx(
+                                  "px-8 py-3 rounded-2xl font-black text-sm transition-all flex items-center gap-2",
+                                  isFetchingNextStationPage 
+                                    ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
+                                    : "bg-white text-primary border border-primary/20 hover:bg-primary/5 hover:shadow-lg active:scale-95"
+                                )}
+                              >
+                                {isFetchingNextStationPage ? (
+                                  <>
+                                    <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                                    <span>กำลังค้นหาเพิ่ม...</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Radio className="w-4 h-4" />
+                                    <span>ค้นหาชุดเพลงยาวเพิ่มเติม (+)</span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
                           )}
                         </div>
                      </div>

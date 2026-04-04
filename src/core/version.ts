@@ -1,12 +1,22 @@
 import packageInfo from "../../package.json";
 
-export const SYSTEM_VERSION = packageInfo.version;
+export const SYSTEM_VERSION = packageInfo.version || "4.9.41";
 export const SYSTEM_CODENAME = "LINE Direct Gateway";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
 export const BUILD_DATE = "4 เม.ย. 2569";
 
 export const CHANGELOGS = [
+    {
+        version: "4.9.41 (Infinite Station Expansion)",
+        date: "4 เม.ย. 2569",
+        changes: [
+            "[Station] Infinite Expansion: ปรับปรุงระบบค้นหาสถานีเพลง (Music Station) ให้รองรับการดึงข้อมูลแบบไม่จำกัดหน้า (Infinite Search)",
+            "[Station] Content Booster: เพิ่มปุ่ม 'ค้นหาชุดเพลงยาวเพิ่มเติม' เพื่อให้สมาชิกเข้าถึงคลังเพลงรวมยาวได้มากกว่าเดิมหลายเท่าตัว",
+            "[Station] UI Optimization: ปรับปรุงตารางแสดงผลสถานีเพลงให้รองรับข้อมูลปริมาณมากได้ไหลลื่นยิ่งขึ้น"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
     {
         version: "4.9.40 (Cast Resilience Update)",
         date: "4 เม.ย. 2569",
