@@ -1,12 +1,21 @@
 import packageInfo from "../../package.json";
 
-export const SYSTEM_VERSION = "4.9.64";
-export const SYSTEM_CODENAME = "Package Visibility Patch";
+export const SYSTEM_VERSION = "4.9.65";
+export const SYSTEM_CODENAME = "Robust Package Filtering";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
 export const BUILD_DATE = "4 เม.ย. 2569";
 
 export const CHANGELOGS = [
+    {
+        version: "4.9.65 (Robust Filtering)",
+        date: "4 เม.ย. 2569",
+        changes: [
+            "[Fix] Package Store Engine: เปลี่ยนระบบดึงแพ็กเกจเป็น Client-side Filtering เพื่อแก้ปัญหาฟิลด์ Active ไม่ตรงกันหรือขาดหาย",
+            "[Sync] Real-time Visibility: การเปิด/ปิดแพ็กเกจจากหลังบ้านจะสะท้อนผลทันทีและแม่นยำ 100% โดยไม่ติดปัญหา Query Index"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
     {
         version: "4.9.64 (Visibility Patch)",
         date: "4 เม.ย. 2569",

@@ -34,17 +34,27 @@ export const PackageStore = () => {
                 if (!db) return;
                 const q = query(
                     collection(db, "packages"),
-                    where("active", "==", true),
                     orderBy("price", "asc")
                 );
 
                 const snapshot = await getDocs(q);
-                const pkgList = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                })) as Package[];
+                const pkgList = snapshot.docs.map(doc => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        ...data,
+                        // v4.9.65: Normalize 'active' field
+                        active: data.active !== undefined ? data.active : true 
+                    };
+                }) as (Package & { active?: boolean })[];
 
-                setPackages(pkgList);
+                // Filter out non-active or test packages at client side to ensure robustness
+                const activePackages = pkgList.filter(pkg => 
+                    pkg.active !== false && 
+                    !pkg.id.toLowerCase().includes('test')
+                );
+
+                setPackages(activePackages);
             } catch (error) {
                 console.error("Error fetching packages:", error);
             } finally {
