@@ -1,12 +1,22 @@
 import packageInfo from "../../package.json";
 
-export const SYSTEM_VERSION = "4.9.66";
-export const SYSTEM_CODENAME = "Strict Package Visibility";
+export const SYSTEM_VERSION = "4.9.67";
+export const SYSTEM_CODENAME = "Simple Hide Mastery";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
 export const BUILD_DATE = "4 เม.ย. 2569";
 
 export const CHANGELOGS = [
+    {
+        version: "4.9.67 (Simple Hide)",
+        date: "4 เม.ย. 2569",
+        changes: [
+            "[Fix] Global Package Visibility: ซ่อมแซมระบบแสดงผลแพ็กเกจให้ใช้ Logic แบบ 'คลายล็อก' (Show by Default) เพื่อป้องกันปัญหาไม่พบแพ็กเกจเมื่อมีการสร้างใหม่หรือตั้งค่าไม่ครบถ้วน",
+            "[Sync] UI Persistence: รายการที่ถูก Disable (active: false) จะถูกซ่อนจริง 100% โดยไม่กระทบกับข้อมูลของสมาชิกเดิมที่มีรายการนั้นอยู่",
+            "[System] Version Unified Lock: ซิงค์เลขเวอร์ชัน v4.9.67 ตลอดทั้งระบบเพื่อการ Deploy ที่แม่นยำ"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
     {
         version: "4.9.66 (Strict Visibility)",
         date: "4 เม.ย. 2569",

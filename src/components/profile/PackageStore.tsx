@@ -43,18 +43,18 @@ export const PackageStore = () => {
                     return {
                         id: doc.id,
                         ...data,
-                        // v4.9.66: Normalize for strict checking
-                        active: data.active === true 
+                        // v4.9.67: Simpler logic - default to showing unless explicitly disabled
+                        active: data.active !== false 
                     };
                 }) as (Package & { active: boolean })[];
 
-                // v4.9.66: Strict Active Filter - only show if active is explicitly true
+                // v4.9.67: Show everything except explicitly disabled or test packages
                 const activePackages = pkgList.filter(pkg => 
-                    pkg.active === true && 
+                    pkg.active !== false && 
                     !pkg.id.toLowerCase().includes('test')
                 );
 
-                console.log("📦 Loaded Packages (Strict Filter):", activePackages.length);
+                console.log("📦 Active Packages Count:", activePackages.length);
                 setPackages(activePackages);
             } catch (error) {
                 console.error("Error fetching packages:", error);
