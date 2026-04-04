@@ -1,42 +1,20 @@
 import packageInfo from "../../package.json";
 
-export const SYSTEM_VERSION = packageInfo.version || "4.9.58";
-export const SYSTEM_CODENAME = "Stable Baseline Restore";
+export const SYSTEM_VERSION = packageInfo.version || "4.9.59";
+export const SYSTEM_CODENAME = "Stable Emergency Restore";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
 export const BUILD_DATE = "4 เม.ย. 2569";
 
 export const CHANGELOGS = [
     {
-        version: "4.9.58 (Clean Revert & Stable Restore)",
+        version: "4.9.59 (Emergency Restore Baseline)",
         date: "4 เม.ย. 2569",
         changes: [
-            "[System] Clean Revert: ย้อนคืนโครงสร้างระบบให้กลับสู่สถานะ Stable Baseline ที่เสถียรที่สุด",
-            "[Stability] Restore Integrity: กู้คืนการตั้งค่าระบบและสิทธิ์การเข้าถึงให้กลับมาทำงานได้เต็มประสิทธิภาพ 100%",
-            "[Fix] Version Lock: ปรับปรุงเลขเวอร์ชันให้ตรงกับ package.json เพื่อป้องกันความสับสนในการ Deploy",
-            "[UX] Performance Optimization: ปรับแต่งการตอบสนองของระบบให้รวดเร็วและลื่นไหลตามมาตรฐานเดิม"
-        ],
-        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
-    },
-    {
-        version: "4.9.56 (GitHub Integrity Update)",
-        date: "4 เม.ย. 2569",
-        changes: [
-            "[System] GitHub SHA Lock: เชื่อมโยงเลขเวอร์ชันกับรหัส Commit โดยตรงผ่าน Vercel SHA เพื่อความแม่นยำ 100% หลัง Deploy",
-            "[UX] Smooth Notification Dismissal: แก้ไขบั๊กป๊อปอัพแจ้งเตือนเด้งปิดเมื่อกดลบรายการ (Stay-Open Logic)",
-            "[UI] Instant List Refinement: รายการแจ้งเตือนจะหายไปทันทีเมื่อกดปัดทิ้งโดยไม่ต้อง Refresh หน้าจอ",
-            "[Backend] State Sync Hardening: ปรับปรุงการจัดการ State ในส่วนประกาศระบบให้ตอบสนองไวระดับแอปมาตรฐาน"
-        ],
-        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
-    },
-    {
-        version: "4.9.57 (Stable Restore Baseline)",
-        date: "4 เม.ย. 2569",
-        changes: [
-            "[Critical] Admin Restoration: แก้ไขสิทธิ์แอดมินที่หลุด และกู้คืนความเสถียรของระบบ Permission 100% (Database-First)",
-            "[System] Static Version Lock: ล็อกเลขเวอร์ชันให้ตรงกับ package.json อย่างเดียวเพื่อป้องกันความสับสนจากระบบ Build SHA",
-            "[UI] Standardized Notification: ปรับปรุงศูนย์แจ้งเตือนให้กลับสู่ความเสถียรแบบมาตรฐาน เพื่อป้องกัน State Sync Error",
-            "[UX] Nuclear Cleanup: กวาดล้างโค้ดส่วนเกินที่ขัดแย้งกับสิทธิ์การเข้าถึงหลังบ้านออกทั้งหมด"
+            "[Critical] Emergency System Restoration: กู้คืนระบบสู่สถานะเสถียรที่สุด (Hard Reset to v4.9.54) เพื่อแก้ปัญหา Login และสิทธิ์แอดมิน",
+            "[Login] Authentication Fix: แก้ไขปัญหาหน้า Login ค้างและขึ้น Error 100% หลังการ Revert",
+            "[System] Manual Version Lock: ปรับเลขเวอร์ชันเป็น v4.9.59 แบบแมนนวลเพื่อความชัดเจนและถูกต้องในการแสดงผล",
+            "[UI] Dashboard Stability: คืนชีพแผงควบคุมแอดมินแบบดั้งเดิมที่เสถียรและแม่นยำที่สุด"
         ],
         recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
     },
@@ -415,3 +393,8 @@ export const CHANGELOGS = [
         ]
     }
 ];
+
+// สำหรับการดึง Commit Hash จาก Vercel (ถ้ามี)
+export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA 
+    ? `#${process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA.slice(0, 7)}` 
+    : "";

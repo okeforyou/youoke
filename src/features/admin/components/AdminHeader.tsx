@@ -17,12 +17,6 @@ import { collection, query, where, onSnapshot, orderBy, limit } from 'firebase/f
 import { db } from '@/firebase';
 import { useAuthStore } from "@/modules/auth/useAuthStore";
 
-export const SYSTEM_VERSION = "4.9.58";
-export const SYSTEM_CODENAME = "Stable Standard Baseline";
-export const SYSTEM_STATUS = "Stable";
-export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
-export const BUILD_DATE = "4 เม.ย. 2569";
-
 interface AdminHeaderProps {
     onMenuClick?: () => void;
 }

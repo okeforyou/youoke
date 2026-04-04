@@ -329,11 +329,11 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                 let role = userData.role || 'user';
                                 let isAdmin = userData.role === 'admin';
 
-                                // 👑 HARDCODE OWNER/ADMIN ROLE
-                                if (firebaseUser.email === 'boonyanone@gmail.com' || firebaseUser.email === 'okeforyou@gmail.com') {
-                                    role = 'admin';
+                                // 👑 HARDCODE OWNER ROLE
+                                if (firebaseUser.email === 'boonyanone@gmail.com') {
+                                    role = 'owner';
                                     isAdmin = true;
-                                    console.log('👑 [AuthStore] Admin/Owner Identified: Access Granted');
+                                    console.log('👑 [AuthStore] Owner Identified: Access Granted');
                                 }
 
                                 // 🛡️ SELF-HEALING: SYNC MISSING photoURL FROM AUTH PROVIDER
