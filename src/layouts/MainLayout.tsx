@@ -14,7 +14,7 @@ import { SidebarControls } from '../modules/player/components/SidebarControls';
 import { QueueList } from '../modules/player/components/QueueList';
 import { useSystemConfig } from '../hooks/useSystemConfig';
 import { useUIStore } from '../stores/useUIStore';
-import { sanitizeForFirebase } from '../utils/firebase';
+import { collection, query, orderBy, getDocs, doc, updateDoc, serverTimestamp } from "firebase/firestore";
 
 // Static critical imports
 import { GlobalConfirmModal } from '@/components/common/GlobalConfirmModal';
@@ -27,7 +27,7 @@ import useIsMobile from '../hooks/isMobile';
 import { useRemoteHost } from '../hooks/useRemoteHost';
 import { useVoiceSearch } from '../hooks/useVoiceSearch';
 import { useShallow } from 'zustand/react/shallow';
-import { realtimeDb } from '@/firebase';
+import { db, realtimeDb } from '@/firebase';
 import { ref, push, set } from 'firebase/database';
 
 // Dynamic (Lazy) Imports for Heavy/hidden Components
@@ -355,6 +355,33 @@ export default function MainLayout({ children }: MainLayoutProps) {
     }, [castMode, partyPIN]);
 
 
+    // 🟢 v4.9.50: User Presence Activity Tracker (Throttled)
+    const lastUpdateRef = useRef<number>(0);
+
+    useEffect(() => {
+        if (!user?.uid || !db) return;
+        
+        const updateActivity = async () => {
+            const now = Date.now();
+            // Only update every 5 minutes (300,000ms) to preserve performance
+            if (now - lastUpdateRef.current < 300000) return;
+            
+            try {
+                const userRef = doc(db as any, 'users', user.uid as string);
+                await updateDoc(userRef, {
+                    last_activity: serverTimestamp()
+                });
+                lastUpdateRef.current = now;
+            } catch (err) {
+                console.warn("Activity update skipped:", err);
+            }
+        };
+
+        updateActivity();
+        const interval = setInterval(updateActivity, 300000);
+        return () => clearInterval(interval);
+    }, [user?.uid]);
+
     useEffect(() => {
         setMounted(true);
 
@@ -374,7 +401,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const isFirstLoad = useRef(true);
     const prevQueueLen = useRef(0);
     useEffect(() => {
-        // v4.9.46: Auto-open queue ONLY for Desktop to show Sidebar Player.
+        // v4.9.50: Auto-open queue ONLY for Desktop to show Sidebar Player.
         // For Mobile, we keep it closed to prevent intrusive overlays.
         if (prevQueueLen.current === 0 && queue.length > 0 && !isMobile) {
             useUIStore.getState().setQueueOpen(true);

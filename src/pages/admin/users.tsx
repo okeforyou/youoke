@@ -957,6 +957,22 @@ export default function AdminUsersPage() {
                                                         <span className="text-[10px] text-gray-400 font-medium truncate max-w-[120px]">
                                                             {user.email || 'GUEST USER'}
                                                         </span>
+                                                        {(user as any).last_activity && (
+                                                            <div className="flex items-center gap-1.5 mt-0.5">
+                                                                {(() => {
+                                                                    const lastSeen = (user as any).last_activity.seconds ? new Date((user as any).last_activity.seconds * 1000) : new Date((user as any).last_activity);
+                                                                    const isOnline = (Date.now() - lastSeen.getTime()) < 300000; // < 5 mins
+                                                                    return (
+                                                                        <>
+                                                                            <div className={cn("w-1.5 h-1.5 rounded-full", isOnline ? "bg-emerald-500 animate-pulse" : "bg-gray-300")} />
+                                                                            <span className={cn("text-[9px] font-bold uppercase tracking-tight", isOnline ? "text-emerald-500" : "text-gray-400")}>
+                                                                                {isOnline ? 'Online' : `Seen ${lastSeen.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
+                                                                            </span>
+                                                                        </>
+                                                                    );
+                                                                })()}
+                                                            </div>
+                                                        )}
                                                         {(user as any).lineUserId && (
                                                             <div className="flex items-center gap-0.5 px-1.5 py-0.5 bg-emerald-50 text-[#06C755] rounded-md border border-emerald-100 animate-in fade-in zoom-in duration-300">
                                                                 <LineIcon className="w-2.5 h-2.5" />

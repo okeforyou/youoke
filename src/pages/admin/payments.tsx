@@ -86,6 +86,9 @@ export default function AdminOrdersPage() {
         pending: orders.filter(o => o.status === 'pending').length,
         approved: orders.filter(o => o.status === 'approved').length,
         rejected: orders.filter(o => o.status === 'rejected').length,
+        // 🟢 v4.9.50: BI Revenue Metrics
+        revenue: orders.filter(o => o.status === 'approved').reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0),
+        pendingAmount: orders.filter(o => o.status === 'pending').reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0),
     };
 
     // Format Timestamp
@@ -229,29 +232,25 @@ export default function AdminOrdersPage() {
             {/* Stats Items */}
             <div className="mb-8 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                 <StatCard 
-                    title="ทั้งหมด"
-                    value={stats.total}
-                    icon={IconCard}
-                    iconColor="primary"
-                    className="border-primary/20 bg-gradient-to-br from-white to-primary/5"
-                />
-                <StatCard 
-                    title="รอตรวจสอบ"
-                    value={stats.pending}
-                    icon={Clock}
-                    iconColor="warning"
-                />
-                <StatCard 
-                    title="อนุมัติแล้ว"
-                    value={stats.approved}
-                    icon={CheckCircle}
+                    title="ยอดเปิดใช้งาน"
+                    value={`฿${stats.revenue.toLocaleString()}`}
+                    icon={TrendingUp}
                     iconColor="success"
+                    className="border-emerald-200 bg-emerald-50/20"
+                />
+                <StatCard 
+                    title="ยอดรอตรวจสอบ"
+                    value={`฿${stats.pendingAmount.toLocaleString()}`}
+                    icon={Activity}
+                    iconColor="warning"
+                    className="border-amber-200 bg-amber-50/20"
                 />
                 <StatCard 
                     title="ปฏิเสธแล้ว"
                     value={stats.rejected}
                     icon={XCircle}
                     iconColor="secondary"
+                    className="border-gray-200 bg-gray-50/50"
                 />
             </div>
 
