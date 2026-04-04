@@ -499,7 +499,47 @@ export default function AdminUsersPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     to: lineUserId,
-                    message: `[YouOKE] ${msgTitle}\n${msgBody}`
+                    flexMessage: {
+                        type: "flex",
+                        altText: `[YouOKE] ${msgTitle}`,
+                        contents: {
+                            type: "bubble",
+                            header: {
+                                type: "box",
+                                layout: "vertical",
+                                backgroundColor: "#4f46e5", // Indigo Primary
+                                contents: [
+                                    { type: "text", text: "MESSAGE FROM ADMIN", color: "#ffffff", weight: "bold", size: "xs", letterSpacing: "sm" }
+                                ]
+                            },
+                            body: {
+                                type: "box",
+                                layout: "vertical",
+                                spacing: "sm",
+                                contents: [
+                                    { type: "text", text: msgTitle, weight: "bold", size: "md", wrap: true },
+                                    { type: "text", text: msgBody, size: "sm", color: "#666666", wrap: true, margin: "md" }
+                                ]
+                            },
+                            footer: {
+                                type: "box",
+                                layout: "vertical",
+                                contents: [
+                                    {
+                                        type: "button",
+                                        style: "link",
+                                        height: "sm",
+                                        color: "#4f46e5",
+                                        action: {
+                                            type: "uri",
+                                            label: "เข้าสู่แอป YouOKE",
+                                            uri: window.location.origin
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
                 })
             });
 
