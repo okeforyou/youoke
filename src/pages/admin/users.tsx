@@ -95,6 +95,8 @@ const statusStyles = {
 const membershipStyles = {
     free: { bg: "bg-muted", text: "text-muted-foreground", label: "Free" },
     pro: { bg: "bg-primary/15", text: "text-primary", label: "Pro" },
+    monthly: { bg: "bg-blue-100", text: "text-blue-600", label: "Monthly" },
+    yearly: { bg: "bg-amber-100", text: "text-amber-600", label: "Yearly" },
     vip: { bg: "bg-accent/15", text: "text-accent", label: "VIP" },
     lifetime: { bg: "bg-success/15", text: "text-success", label: "Lifetime" },
 };
