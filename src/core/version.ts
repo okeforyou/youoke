@@ -1,12 +1,29 @@
 import packageInfo from "../../package.json";
 
-export const SYSTEM_VERSION = packageInfo.version || "4.9.43";
-export const SYSTEM_CODENAME = "LINE Direct Gateway";
+export const SYSTEM_VERSION = packageInfo.version || "4.9.56";
+export const SYSTEM_CODENAME = "GitHub Integrity Sync";
 export const SYSTEM_STATUS = "Stable";
-export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
+
+// 🔴 v4.9.56: GitHub SHA Integration (Ensure 100% accuracy from Vercel/GitHub Metadata)
+export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA 
+    ? `#${process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA.slice(0, 7)}` 
+    : "";
+
+export const VERSION_LABEL = `Version v${SYSTEM_VERSION} ${COMMIT_ID} (${SYSTEM_CODENAME})`;
 export const BUILD_DATE = "4 เม.ย. 2569";
 
 export const CHANGELOGS = [
+    {
+        version: "4.9.56 (GitHub Integrity Update)",
+        date: "4 เม.ย. 2569",
+        changes: [
+            "[System] GitHub SHA Lock: เชื่อมโยงเลขเวอร์ชันกับรหัส Commit โดยตรงผ่าน Vercel SHA เพื่อความแม่นยำ 100% หลัง Deploy",
+            "[UX] Smooth Notification Dismissal: แก้ไขบั๊กป๊อปอัพแจ้งเตือนเด้งปิดเมื่อกดลบรายการ (Stay-Open Logic)",
+            "[UI] Instant List Refinement: รายการแจ้งเตือนจะหายไปทันทีเมื่อกดปัดทิ้งโดยไม่ต้อง Refresh หน้าจอ",
+            "[Backend] State Sync Hardening: ปรับปรุงการจัดการ State ในส่วนประกาศระบบให้ตอบสนองไวระดับแอปมาตรฐาน"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
     {
         version: "4.9.54 (Admin BI Harmony)",
         date: "4 เม.ย. 2569",
@@ -382,8 +399,3 @@ export const CHANGELOGS = [
         ]
     }
 ];
-
-// สำหรับการดึง Commit Hash จาก Vercel (ถ้ามี)
-export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA 
-    ? `#${process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA.slice(0, 7)}` 
-    : "";
