@@ -133,11 +133,13 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
             }
 
             // --- 4.2 PREMIUM FLEX SUMMARY TO USER (Member) ---
-            if ((user as any).lineUserId) {
+            const targetLineUserId = (user as any).lineUserId || (user as any).providerData?.find((p: any) => p.providerId === 'line')?.uid;
+            
+            if (targetLineUserId) {
                 const lineUrl = `https://line.me/R/oaMessage/@243lercy/?${encodeURIComponent(`👋 แจ้งส่งสลิปครับ\nรหัสอ้างอิง: ${refId}\nแพ็กเกจ: ${pkg.name}`)}`;
                 try {
                     await axios.post('/api/notify/line-push', {
-                        to: (user as any).lineUserId,
+                        to: targetLineUserId,
                         flexMessage: {
                             type: "flex",
                             altText: `✅ ยืนยันกระเป๋าชำระเงิน ${pkg.name}`,
