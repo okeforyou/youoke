@@ -374,14 +374,15 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const isFirstLoad = useRef(true);
     const prevQueueLen = useRef(0);
     useEffect(() => {
-        // Skip auto-open on initial mount if queue exists (avoid starting on queue page)
-        // v4.9.45: Removed auto-open queue logic to prevent intrusive overlays on mobile.
-        // We only maintain the auto-close logic when the queue becomes empty.
-        if (queue.length === 0) {
+        // v4.9.46: Auto-open queue ONLY for Desktop to show Sidebar Player.
+        // For Mobile, we keep it closed to prevent intrusive overlays.
+        if (prevQueueLen.current === 0 && queue.length > 0 && !isMobile) {
+            useUIStore.getState().setQueueOpen(true);
+        } else if (queue.length === 0) {
             useUIStore.getState().setQueueOpen(false);
         }
         prevQueueLen.current = queue.length;
-    }, [queue.length]);
+    }, [queue.length, isMobile]);
 
     // 🛡️ Expiry Alert Logic (Admin v2.1)
     const { showExpiryAlert, setExpiryAlert } = useAuthStore();
