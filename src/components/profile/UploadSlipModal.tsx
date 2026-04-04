@@ -88,104 +88,29 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
             const refId = paymentId.slice(-8).toUpperCase();
             const qrUrl = `${window.location.origin}/img/scb-qr.jpg`;
             
-            // --- 4.1 PREMIUM FLEX ALERT TO ADMIN ---
+            // --- 4.1 SIMPLE TEXT ALERT TO ADMIN ---
+            const adminMsg = `📢 [Admin] รายการแจ้งโอนเงินใหม่!\n━━━━━━━━━━━━━━━\n👤 สมาชิก: ${user.displayName || user.email}\n📦 แพ็กเกจ: ${pkg.name}\n💰 ยอดโอน: ฿${pkg.price.toLocaleString()}\n🆔 อ้างอิง: ${refId}\n━━━━━━━━━━━━━━━\n✅ กดเพื่ออนุมัติ: ${magicLink}`;
             try {
                 await axios.post('/api/notify/line-push', {
                     to: adminLineId,
-                    flexMessage: {
-                        type: "flex",
-                        altText: "📢 มีรายการแจ้งโอนเงินใหม่ (Admin)",
-                        contents: {
-                            type: "bubble",
-                            header: {
-                                type: "box",
-                                layout: "vertical",
-                                contents: [{ type: "text", text: "📢 รายการแจ้งโอนเงินใหม่ (Admin) 🎤", weight: "bold", color: "#ffffff", size: "md" }],
-                                backgroundColor: "#22C55E"
-                            },
-                            body: {
-                                type: "box",
-                                layout: "vertical",
-                                contents: [
-                                    { type: "text", text: `👤 สมาชิก: ${user.displayName || user.email}`, size: "sm", margin: "md" },
-                                    { type: "text", text: `📦 แพ็กเกจ: ${pkg.name}`, size: "sm" },
-                                    { type: "text", text: `💰 ยอดเงิน: ฿${pkg.price.toLocaleString()}`, weight: "bold", color: "#16a34a", size: "xl", margin: "md" },
-                                    { type: "text", text: `🆔 รหัสอ้างอิง: ${refId}`, size: "xs", color: "#9ca3af", margin: "lg" }
-                                ]
-                            },
-                            footer: {
-                                type: "box",
-                                layout: "vertical",
-                                contents: [
-                                    {
-                                        type: "button",
-                                        action: { type: "uri", label: "✅ กดเพื่ออนุมัติใช้งาน", uri: magicLink },
-                                        style: "primary",
-                                        color: "#22C55E"
-                                    }
-                                ]
-                            }
-                        }
-                    }
+                    message: adminMsg
                 });
             } catch (adminError) {
-                console.error("Admin Flex Messaging failed:", adminError);
+                console.error("Admin text messaging failed:", adminError);
             }
 
-            // --- 4.2 PREMIUM FLEX SUMMARY TO USER (Member) ---
+            // --- 4.2 SIMPLE TEXT SUMMARY TO USER (Member) ---
             const targetLineUserId = (user as any).lineUserId || (user as any).providerData?.find((p: any) => p.providerId === 'line')?.uid;
             
             if (targetLineUserId) {
-                const lineUrl = `https://line.me/R/oaMessage/@243lercy/?${encodeURIComponent(`👋 แจ้งส่งสลิปครับ\nรหัสอ้างอิง: ${refId}\nแพ็กเกจ: ${pkg.name}`)}`;
+                const userMsg = `✅ [YouOKE] แจ้งรายละเอียดการโอนเงินครับ\n━━━━━━━━━━━━━━━\n📦 แพ็กเกจ: ${pkg.name}\n💰 ยอดที่ต้องโอน: ฿${pkg.price.toLocaleString()}\n🏦 พร้อมเพย์: 086-465-3950\n👤 ชื่อบัญชี: ${bankInfo.accName}\n🆔 รหัสอ้างอิง: ${refId}\n━━━━━━━━━━━━━━━\n📸 รบกวนส่งสลิปให้แอดมินในแชทนี้ได้เลยครับ!`;
                 try {
                     await axios.post('/api/notify/line-push', {
                         to: targetLineUserId,
-                        flexMessage: {
-                            type: "flex",
-                            altText: `✅ ยืนยันกระเป๋าชำระเงิน ${pkg.name}`,
-                            contents: {
-                                type: "bubble",
-                                header: {
-                                    type: "box",
-                                    layout: "vertical",
-                                    contents: [{ type: "text", text: "✅ ยืนยันการเลือกแพ็กเกจ", weight: "bold", color: "#ffffff", size: "md" }],
-                                    backgroundColor: "#6366F1"
-                                },
-                                hero: {
-                                    type: "image",
-                                    url: qrUrl,
-                                    size: "full",
-                                    aspectRatio: "1:1",
-                                    aspectMode: "contain",
-                                    backgroundColor: "#FFFFFF"
-                                },
-                                body: {
-                                    type: "box",
-                                    layout: "vertical",
-                                    contents: [
-                                        { type: "text", text: `💰 ยอดที่ต้องโอน: ฿${pkg.price.toLocaleString()}`, weight: "bold", size: "lg", color: "#111827" },
-                                        { type: "text", text: `🏦 พร้อมเพย์: 086-465-3950`, size: "sm", margin: "sm" },
-                                        { type: "text", text: `👤 ชื่อบัญชี: ${bankInfo.accName}`, size: "sm" },
-                                        { type: "text", text: `🆔 รหัสอ้างอิง: ${refId}`, size: "xs", color: "#9ca3af", margin: "lg" }
-                                    ]
-                                },
-                                footer: {
-                                    type: "box",
-                                    layout: "vertical",
-                                    contents: [
-                                        {
-                                            type: "button",
-                                            action: { type: "uri", label: "📸 คุยแจ้งส่งสลิปที่นี่", uri: lineUrl },
-                                            style: "secondary"
-                                        },
-                                        { type: "text", text: "*แคปรูป QR ด้านบนเพื่อโอนเงินได้ทันที", size: "xxs", color: "#9ca3af", align: "center", margin: "md" }
-                                    ]
-                                }
-                            }
-                        }
+                        message: userMsg
                     });
                 } catch (userError) {
-                    console.error("User Flex Messaging failed:", userError);
+                    console.error("User text messaging failed:", userError);
                 }
             }
 
