@@ -43,17 +43,18 @@ export const PackageStore = () => {
                     return {
                         id: doc.id,
                         ...data,
-                        // v4.9.65: Normalize 'active' field
-                        active: data.active !== undefined ? data.active : true 
+                        // v4.9.66: Normalize for strict checking
+                        active: data.active === true 
                     };
-                }) as (Package & { active?: boolean })[];
+                }) as (Package & { active: boolean })[];
 
-                // Filter out non-active or test packages at client side to ensure robustness
+                // v4.9.66: Strict Active Filter - only show if active is explicitly true
                 const activePackages = pkgList.filter(pkg => 
-                    pkg.active !== false && 
+                    pkg.active === true && 
                     !pkg.id.toLowerCase().includes('test')
                 );
 
+                console.log("📦 Loaded Packages (Strict Filter):", activePackages.length);
                 setPackages(activePackages);
             } catch (error) {
                 console.error("Error fetching packages:", error);

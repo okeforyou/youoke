@@ -1,12 +1,21 @@
 import packageInfo from "../../package.json";
 
-export const SYSTEM_VERSION = "4.9.65";
-export const SYSTEM_CODENAME = "Robust Package Filtering";
+export const SYSTEM_VERSION = "4.9.66";
+export const SYSTEM_CODENAME = "Strict Package Visibility";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
 export const BUILD_DATE = "4 เม.ย. 2569";
 
 export const CHANGELOGS = [
+    {
+        version: "4.9.66 (Strict Visibility)",
+        date: "4 เม.ย. 2569",
+        changes: [
+            "[Fix] Strict Package Filter: บังคับใช้การกรองเฉพาะแพ็กเกจที่ตั้งค่า 'active: true' ใน Firestore เท่านั้น เพื่อซ่อนรายการที่ถูก Disable 100%",
+            "[System] Version Lock Sync: ยืนยันการซิงค์เลขเวอร์ชัน v4.9.66 ทั้งระบบ"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
     {
         version: "4.9.65 (Robust Filtering)",
         date: "4 เม.ย. 2569",
