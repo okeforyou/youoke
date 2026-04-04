@@ -375,7 +375,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const prevQueueLen = useRef(0);
     useEffect(() => {
         // Skip auto-open on initial mount if queue exists (avoid starting on queue page)
-        // v4.9.44: Removed auto-open queue logic to prevent intrusive overlays on mobile.
+        // v4.9.45: Removed auto-open queue logic to prevent intrusive overlays on mobile.
         // We only maintain the auto-close logic when the queue becomes empty.
         if (queue.length === 0) {
             useUIStore.getState().setQueueOpen(false);
@@ -463,11 +463,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
                         {/* Native App Search History Chips (v4.9.44) */}
                         {searchHistory?.length > 0 && (
-                            <div className="absolute -bottom-10 left-0 right-0 flex items-center gap-2 overflow-x-auto scrollbar-hide py-2 px-1 animate-in fade-in slide-in-from-top-1 duration-300">
+                            <div className="absolute -bottom-10 left-0 right-0 flex items-center gap-2 overflow-x-auto scrollbar-hide py-2 px-1 animate-in fade-in slide-in-from-top-1 duration-300 pointer-events-none">
                                 {searchHistory.map((term, i) => (
                                     <div 
                                         key={`${term}-${i}`}
-                                        className="flex items-center bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-full pl-3 pr-2 py-1 gap-1.5 cursor-pointer shrink-0 transition-all group/chip"
+                                        className="flex items-center bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-full pl-3 pr-2 py-1 gap-1.5 cursor-pointer shrink-0 transition-all group/chip pointer-events-auto"
                                         onClick={() => {
                                             setSearchTerm(term);
                                             router.replace({ pathname: '/', query: { ...router.query, search: term } }, undefined, { shallow: true });
@@ -487,7 +487,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                 ))}
                                 <button 
                                     onClick={clearSearchHistory}
-                                    className="text-[9px] font-black text-gray-300 hover:text-primary uppercase tracking-widest px-2 shrink-0 transition-colors"
+                                    className="text-[9px] font-black text-gray-300 hover:text-primary uppercase tracking-widest px-2 shrink-0 transition-colors pointer-events-auto"
                                 >
                                     ล้างทั้งหมด
                                 </button>
