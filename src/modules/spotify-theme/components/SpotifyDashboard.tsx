@@ -1,6 +1,6 @@
 // Deploy trigger: updated-line-api-credentials-v2
 import Image from "next/image";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState, useMemo } from "react";
 import { useRouter } from "next/router";
 import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 
@@ -195,7 +195,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
 
   const { searchTerm, setSearchTerm, addToQueue } = usePlayerStore();
 
-  // v4.9.41: Enhanced Infinite Search for Station Mode (Long Videos)
+  // v4.9.42: Enhanced Infinite Search for Station Mode (Long Videos)
   const { 
     data: stationData, 
     isLoading: isLoadStation,
@@ -218,7 +218,18 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
     retry: false,
   });
 
-  const stationResults = stationData?.pages?.flatMap(page => page) || [];
+  // v4.9.42: Enhanced Infinite Search with De-duplication Logic
+  const stationResults = useMemo(() => {
+    const rawResults = stationData?.pages?.flatMap(page => page) || [];
+    // Using Map to filter out duplicates based on videoId (keeping the first occurrence)
+    const uniqueMap = new Map();
+    return rawResults.filter(video => {
+        if (!video.videoId) return false;
+        if (uniqueMap.has(video.videoId)) return false;
+        uniqueMap.set(video.videoId, true);
+        return true;
+    });
+  }, [stationData?.pages]);
 
   const topArtists = tempTopArtistsData?.artist || [];
   const isGenreDefault = genreText === "เพลงไทย" || !genreText;
@@ -593,7 +604,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                           {isLoadStation ? (
                             getSkeletonItems(8).map(s => <div key={s} className="aspect-video bg-gray-100 rounded-2xl animate-pulse" />)
                           ) : (
-                            stationResults?.map((video, idx) => (
+                            stationResults?.map((video: any, idx: number) => (
                                 <div key={video.videoId + idx} onClick={() => {
                                     const videoToAdd = {
                                         id: video.videoId,
