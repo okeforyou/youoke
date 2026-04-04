@@ -34,7 +34,8 @@ import {
     BellRing,
     Star,
     Zap,
-    UserCheck
+    UserCheck,
+    Sparkles
 } from "lucide-react";
 import { StatCard } from "@/features/admin/components/StatCard";
 import { EditUserModal } from "@/features/admin/components/EditUserModal";
@@ -94,6 +95,8 @@ const statusStyles = {
 
 const membershipStyles = {
     free: { bg: "bg-muted", text: "text-muted-foreground", label: "Free" },
+    legacy: { bg: "bg-indigo-50", text: "text-indigo-600", label: "สมาชิกเดิม" },
+    trial: { bg: "bg-emerald-50", text: "text-emerald-600", label: "ทดลองใช้งาน" },
     pro: { bg: "bg-primary/15", text: "text-primary", label: "Pro" },
     monthly: { bg: "bg-blue-100", text: "text-blue-600", label: "Monthly" },
     yearly: { bg: "bg-amber-100", text: "text-amber-600", label: "Yearly" },
@@ -200,9 +203,12 @@ export default function AdminUsersPage() {
         }
 
         if (membership.type === 'lifetime') return 'lifetime';
-        if (membership.type === 'day_pass') return 'pro';
+        if (membership.type === 'day_pass') return 'trial';
         if (membership.type === 'monthly') return 'monthly';
         if (membership.type === 'yearly') return 'yearly';
+        
+        // 🟢 v4.9.53: Legacy Protection (If User has no expiry but is a user role)
+        if (!membership.expiresAt && user.role === 'user') return 'legacy';
         
         return 'free';
     };
@@ -714,10 +720,11 @@ export default function AdminUsersPage() {
 
 
 
-    // Calculate Stats (Business Focussed)
+    // Calculate Stats (Business Focussed v4.9.53)
     const stats = {
         total: users.length,
-        registered: users.filter(u => u.email).length,
+        legacy: users.filter(u => getMembershipType(u) === 'legacy').length,
+        trial: users.filter(u => getMembershipType(u) === 'trial').length,
         lifetime: users.filter(u => getMembershipType(u) === 'lifetime').length,
         yearly: users.filter(u => getMembershipType(u) === 'yearly').length,
         monthly: users.filter(u => getMembershipType(u) === 'monthly').length,
@@ -823,11 +830,18 @@ export default function AdminUsersPage() {
                     className="border-primary/10 bg-gradient-to-br from-white to-primary/5"
                 />
                 <StatCard 
-                    title="ลงทะเบียนจริง"
-                    value={stats.registered}
+                    title="สมาชิกเดิม (Legacy)"
+                    value={stats.legacy}
                     icon={Mail}
                     iconColor="accent"
                     className="ring-1 ring-indigo-500/10 bg-indigo-50/10"
+                />
+                <StatCard 
+                    title="ทดลองใช้ (Trial)"
+                    value={stats.trial}
+                    icon={Sparkles}
+                    iconColor="success"
+                    className="ring-1 ring-emerald-500/10 bg-emerald-50/10"
                 />
                 <StatCard 
                     title="สมาชิกตลอดชีพ"
