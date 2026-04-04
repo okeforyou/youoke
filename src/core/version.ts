@@ -1,12 +1,23 @@
 import packageInfo from "../../package.json";
 
-export const SYSTEM_VERSION = packageInfo.version || "4.9.57";
-export const SYSTEM_CODENAME = "Stable Sync Baseline";
+export const SYSTEM_VERSION = packageInfo.version || "4.9.58";
+export const SYSTEM_CODENAME = "Stable Baseline Restore";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
 export const BUILD_DATE = "4 เม.ย. 2569";
 
 export const CHANGELOGS = [
+    {
+        version: "4.9.58 (Clean Revert & Stable Restore)",
+        date: "4 เม.ย. 2569",
+        changes: [
+            "[System] Clean Revert: ย้อนคืนโครงสร้างระบบให้กลับสู่สถานะ Stable Baseline ที่เสถียรที่สุด",
+            "[Stability] Restore Integrity: กู้คืนการตั้งค่าระบบและสิทธิ์การเข้าถึงให้กลับมาทำงานได้เต็มประสิทธิภาพ 100%",
+            "[Fix] Version Lock: ปรับปรุงเลขเวอร์ชันให้ตรงกับ package.json เพื่อป้องกันความสับสนในการ Deploy",
+            "[UX] Performance Optimization: ปรับแต่งการตอบสนองของระบบให้รวดเร็วและลื่นไหลตามมาตรฐานเดิม"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
     {
         version: "4.9.56 (GitHub Integrity Update)",
         date: "4 เม.ย. 2569",
