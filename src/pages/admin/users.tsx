@@ -94,14 +94,14 @@ const statusStyles = {
 };
 
 const membershipStyles = {
-    free: { bg: "bg-muted", text: "text-muted-foreground", label: "Free" },
+    free: { bg: "bg-muted", text: "text-muted-foreground", label: "ทั่วไป" },
     legacy: { bg: "bg-indigo-50", text: "text-indigo-600", label: "สมาชิกเดิม" },
     trial: { bg: "bg-emerald-50", text: "text-emerald-600", label: "ทดลองใช้งาน" },
     pro: { bg: "bg-primary/15", text: "text-primary", label: "Pro" },
-    monthly: { bg: "bg-blue-100", text: "text-blue-600", label: "Monthly" },
-    yearly: { bg: "bg-amber-100", text: "text-amber-600", label: "Yearly" },
+    monthly: { bg: "bg-blue-100", text: "text-blue-600", label: "รายเดือน" },
+    yearly: { bg: "bg-amber-100", text: "text-amber-600", label: "รายปี" },
     vip: { bg: "bg-accent/15", text: "text-accent", label: "VIP" },
-    lifetime: { bg: "bg-success/15", text: "text-success", label: "Lifetime" },
+    lifetime: { bg: "bg-success/15", text: "text-success", label: "ตลอดชีพ" },
 };
 
 import { MODULES } from "@/config/modules";
@@ -207,7 +207,7 @@ export default function AdminUsersPage() {
         if (membership.type === 'monthly') return 'monthly';
         if (membership.type === 'yearly') return 'yearly';
         
-        // 🟢 v4.9.53: Legacy Protection (If User has no expiry but is a user role)
+        // 🟢 v4.9.54: Legacy Protection (If User has no expiry but is a user role)
         if (!membership.expiresAt && user.role === 'user') return 'legacy';
         
         return 'free';
@@ -820,52 +820,56 @@ export default function AdminUsersPage() {
                 </div>
             </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 mb-6">
+            {/* Stats Grid - v4.9.54 High Density Single Row */}
+            <div className="grid grid-cols-3 lg:grid-cols-7 gap-2 mb-6">
                 <StatCard 
-                    title="ยอดผู้ใช้รวม"
+                    title="ยอดรวม"
                     value={stats.total}
                     icon={Users}
                     iconColor="primary"
-                    className="border-primary/10 bg-gradient-to-br from-white to-primary/5"
+                    className="border-primary/10 bg-gradient-to-br from-white to-primary/5 py-3"
                 />
                 <StatCard 
-                    title="สมาชิกเดิม (Legacy)"
+                    title="สมาชิกเดิม"
                     value={stats.legacy}
                     icon={Mail}
                     iconColor="accent"
-                    className="ring-1 ring-indigo-500/10 bg-indigo-50/10"
+                    className="ring-1 ring-indigo-500/10 bg-indigo-50/10 py-3"
                 />
                 <StatCard 
-                    title="ทดลองใช้ (Trial)"
+                    title="ทดลองใช้"
                     value={stats.trial}
                     icon={Sparkles}
                     iconColor="success"
-                    className="ring-1 ring-emerald-500/10 bg-emerald-50/10"
+                    className="ring-1 ring-emerald-500/10 bg-emerald-50/10 py-3"
                 />
                 <StatCard 
-                    title="สมาชิกตลอดชีพ"
+                    title="ตลอดชีพ"
                     value={stats.lifetime}
                     icon={Crown}
                     iconColor="warning"
+                    className="py-3"
                 />
                 <StatCard 
-                    title="สมาชิกรายปี"
+                    title="รายปี"
                     value={stats.yearly}
                     icon={Star}
                     iconColor="info"
+                    className="py-3"
                 />
                 <StatCard 
-                    title="สมาชิกรายเดือน"
+                    title="รายเดือน"
                     value={stats.monthly}
                     icon={Zap}
                     iconColor="success"
+                    className="py-3"
                 />
                 <StatCard 
-                    title="สมาชิกทั่วไป"
+                    title="ทั่วไป"
                     value={stats.free}
                     icon={UserCheck}
                     iconColor="secondary"
+                    className="py-3"
                 />
             </div>
 

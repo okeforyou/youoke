@@ -8,6 +8,17 @@ export const BUILD_DATE = "4 เม.ย. 2569";
 
 export const CHANGELOGS = [
     {
+        version: "4.9.54 (Admin BI Harmony)",
+        date: "4 เม.ย. 2569",
+        changes: [
+            "[BI] Dashboard Refinement: ปรับปรุง Stat Card ให้แสดงผลในแถวเดียวแบบไฮเดนซิตี้ (High-Density Row) เพื่อความกระชับ",
+            "[Localization] Thai Language Mastery: ปรับระดับสมาชิกและเมนูสถิติให้เป็นภาษาไทย 100% (รายเดือน, รายปี, ตลอดชีพ)",
+            "[System] Permanent Version Lock: เปลี่ยนระบบแสดงผลเวอร์ชันให้ผูกกับ package.json อัตโนมัติ เพื่อแก้ปัญหาเลขไม่ตรงถาวร",
+            "[User] Membership Guard: สมาชิกเดิม (Legacy) จะยังคงสิทธิการใช้งานได้ปกติแม้ยังไม่ได้ระบุวันหมดอายุ"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
+    {
         version: "4.9.43 (Intuitive UI Sync)",
         date: "4 เม.ย. 2569",
         changes: [
