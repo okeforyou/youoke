@@ -127,8 +127,12 @@ export default function ListHitsGrid() {
                 </div>
                 
                 <div className="absolute inset-0 p-3 sm:p-4 flex flex-col justify-end">
-                  <h3 className="text-sm sm:text-base font-bold text-white leading-tight drop-shadow-sm line-clamp-2 mb-1">{cat.title}</h3>
-                  <p className="text-[10px] text-white font-black line-clamp-1">{cat.description}</p>
+                  <h3 className="text-xs sm:text-sm md:text-base font-bold text-white leading-tight drop-shadow-sm line-clamp-2 mb-0.5 sm:mb-1">
+                    {cat.title}
+                  </h3>
+                  <p className="text-[9px] sm:text-[10px] text-white/90 font-black line-clamp-1 opacity-90">
+                    {cat.description}
+                  </p>
                 </div>
                
                {isActive && (
