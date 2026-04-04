@@ -43,14 +43,14 @@ export const PackageStore = () => {
                     return {
                         id: doc.id,
                         ...data,
-                        // v4.9.67: Simpler logic - default to showing unless explicitly disabled
-                        active: data.active !== false 
+                        // v4.9.68: Fix field name to match admin UI (isActive)
+                        isActive: data.isActive !== false 
                     };
-                }) as (Package & { active: boolean })[];
+                }) as (Package & { isActive: boolean })[];
 
-                // v4.9.67: Show everything except explicitly disabled or test packages
+                // v4.9.68: Hide if isActive is explicitly false
                 const activePackages = pkgList.filter(pkg => 
-                    pkg.active !== false && 
+                    pkg.isActive !== false && 
                     !pkg.id.toLowerCase().includes('test')
                 );
 

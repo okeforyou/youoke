@@ -1,24 +1,23 @@
 import packageInfo from "../../package.json";
 
-export const SYSTEM_VERSION = "4.9.67";
-export const SYSTEM_CODENAME = "Simple Hide Mastery";
+export const SYSTEM_VERSION = "4.9.68";
+export const SYSTEM_CODENAME = "Database Field Alignment";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
 export const BUILD_DATE = "4 เม.ย. 2569";
 
 export const CHANGELOGS = [
     {
-        version: "4.9.67 (Simple Hide)",
+        version: "4.9.68 (Database Alignment)",
         date: "4 เม.ย. 2569",
         changes: [
-            "[Fix] Global Package Visibility: ซ่อมแซมระบบแสดงผลแพ็กเกจให้ใช้ Logic แบบ 'คลายล็อก' (Show by Default) เพื่อป้องกันปัญหาไม่พบแพ็กเกจเมื่อมีการสร้างใหม่หรือตั้งค่าไม่ครบถ้วน",
-            "[Sync] UI Persistence: รายการที่ถูก Disable (active: false) จะถูกซ่อนจริง 100% โดยไม่กระทบกับข้อมูลของสมาชิกเดิมที่มีรายการนั้นอยู่",
-            "[System] Version Unified Lock: ซิงค์เลขเวอร์ชัน v4.9.67 ตลอดทั้งระบบเพื่อการ Deploy ที่แม่นยำ"
+            "[Fix] True Package Hiding: แก้ไขตัวแปรสถานะให้ตรงกับ Database ('isActive' แทน 'active') ทำให้สามารถซ่อนแพ็กเกจที่เกิดจากการกด Disable ที่หน้าบ้านได้อย่างแม่นยำ 100% โดยไม่กระทบรายการอื่น",
+            "[System] Component Sync: ประสานงาน Logic ระหว่างหน้า Admin และ PackageStore ให้ใช้ชื่อตัวแปรที่ตรงกันเด๊ะๆ"
         ],
         recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
     },
     {
-        version: "4.9.66 (Strict Visibility)",
+        version: "4.9.67 (Simple Hide)",
         date: "4 เม.ย. 2569",
         changes: [
             "[Fix] Strict Package Filter: บังคับใช้การกรองเฉพาะแพ็กเกจที่ตั้งค่า 'active: true' ใน Firestore เท่านั้น เพื่อซ่อนรายการที่ถูก Disable 100%",
