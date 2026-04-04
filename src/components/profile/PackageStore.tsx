@@ -34,8 +34,7 @@ export const PackageStore = () => {
                 if (!db) return;
                 const q = query(
                     collection(db, "packages"),
-                    // v4.9.62: Removing strict 'active' filter temporarily to ensure visibility
-                    // where("active", "==", true),
+                    where("active", "==", true),
                     orderBy("price", "asc")
                 );
 

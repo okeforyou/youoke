@@ -1,12 +1,21 @@
 import packageInfo from "../../package.json";
 
-export const SYSTEM_VERSION = "4.9.63";
-export const SYSTEM_CODENAME = "The Membership Unity Update";
+export const SYSTEM_VERSION = "4.9.64";
+export const SYSTEM_CODENAME = "Package Visibility Patch";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
 export const BUILD_DATE = "4 เม.ย. 2569";
 
 export const CHANGELOGS = [
+    {
+        version: "4.9.64 (Visibility Patch)",
+        date: "4 เม.ย. 2569",
+        changes: [
+            "[Fix] Disabled Package Hiding: กู้คืน Logic การกรองสถานะ 'Active' ใน Package Store เพื่อซ่อนแพ็กเกจที่ถูกปิดการใช้งาน (Disable) ออกจากหน้าหลัก",
+            "[System] Data Integrity: ปรับจูน Query Firestore ให้มีความแม่นยำตามการตั้งค่าจากแผงควบคุมแอดมิน"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
     {
         version: "4.9.63 (Membership Unity)",
         date: "4 เม.ย. 2569",
