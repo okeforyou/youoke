@@ -4,9 +4,19 @@ export const SYSTEM_VERSION = packageInfo.version;
 export const SYSTEM_CODENAME = "LINE Direct Gateway";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
-export const BUILD_DATE = "3 เม.ย. 2569";
+export const BUILD_DATE = "4 เม.ย. 2569";
 
 export const CHANGELOGS = [
+    {
+        version: "4.9.40 (Cast Resilience Update)",
+        date: "4 เม.ย. 2569",
+        changes: [
+            "[Cast] Session Recovery: เพิ่มระบบกู้คืนการเชื่อมต่อ Chromecast อัตโนมัติเมื่อมือถือตื่นจากโหมดประหยัดพลังงาน (Sleep Mode Recovery)",
+            "[Cast] Dynamic Message Sync: ปรับปรุงการส่งข้อมูลคำสั่ง (Control Message) ให้ดึงข้อมูล Session ล่าสุดจาก SDK โดยตรง เพื่อลดปัญหาคำสั่งไม่ทำงานหลังจอดับ",
+            "[Cast] Re-handshake Logic: เพิ่มระบบถามสถานะจากทีวีทันทีที่เชื่อมต่อใหม่ เพื่อให้คิวเพลงในมือถือและทีวีตรงกัน 100%"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
     {
         version: "4.9.34 (Visual Stability Update)",
         date: "3 เม.ย. 2569",

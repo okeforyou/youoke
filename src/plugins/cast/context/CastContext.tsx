@@ -343,6 +343,14 @@ export function CastProvider({ children }: { children: ReactNode }) {
     // Reset receiver state flag to trigger re-sync
     setReceiverStateReceived(false);
 
+    // v4.9.40: Proactive Session Sync (Request current state from TV)
+    try {
+      session.sendMessage(CAST_NAMESPACE, { type: 'GET_STATE' });
+      addDebugLog('📤 Sent GET_STATE to trigger receiver sync');
+    } catch (e) {
+      console.warn('⚠️ Could not send GET_STATE immediately');
+    }
+
     // Removed invalid hooks from here (moved to top-level of CastProvider)
 
 
@@ -516,31 +524,67 @@ export function CastProvider({ children }: { children: ReactNode }) {
     console.log('Cast session ended');
   };
 
+  // v4.9.40: Global Session Recovery Listener
+  // Automatically re-binds listeners when the mobile device wakes up from sleep
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        logger.log('📱 Screen woke up! Checking Cast session health...');
+        const cast = (window as any).cast;
+        if (!cast?.framework) return;
+
+        const context = cast.framework.CastContext.getInstance();
+        const activeSession = context.getCurrentSession();
+        
+        // If we have an active session but local state thinks we're disconnected, re-bind!
+        if (activeSession && !isConnected) {
+          logger.log('🔄 Session persistent after wake-up. Re-binding listeners...');
+          handleSessionStarted(activeSession);
+        } else if (activeSession && isConnected) {
+          // even if connected, refresh the session ref
+          setCastSession(activeSession);
+          // Trigger a silent sync to ensure TV is still there
+          try {
+            activeSession.sendMessage(CAST_NAMESPACE, { type: 'PING' });
+          } catch(e) {}
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [isConnected]); // Re-run when connection status changes
+
   // Send message to receiver
   const sendMessage = (message: CastMessage) => {
-    console.log('🎯 sendMessage called:', {
-      type: message.type,
-      isConnected,
-      hasCastSession: !!castSession,
-      sessionId: castSession?.sessionId,
-    });
+    // v4.9.40: Dynamic Session Refresh
+    // Don't just rely on state, get the freshest session from the framework
+    const currentSession = (window as any).cast?.framework?.CastContext.getInstance().getCurrentSession() || castSession;
 
-    if (!castSession) {
-      console.error('❌ No cast session available!', {
+    if (!currentSession) {
+      console.error('❌ No active cast session found!', {
         isConnected,
         castSessionExists: !!castSession,
+        currentFrameworkSession: !!(window as any).cast?.framework?.CastContext.getInstance().getCurrentSession()
       });
-      console.error('❌ Please reconnect to Cast');
       return;
     }
 
     try {
       logger.debug('📤 Sending message to receiver...', message);
-      castSession.sendMessage(
+      currentSession.sendMessage(
         CAST_NAMESPACE,
         message,
         () => console.log('✅ Message sent successfully:', message.type),
-        (error) => console.error('❌ Error sending message:', error)
+        (error: any) => {
+          console.error('❌ Error sending message:', error);
+          if (error && error.code === 'session_error') {
+            console.log('🔄 Attempting to re-sync session due to error...');
+            setIsConnected(false);
+          }
+        }
       );
     } catch (error) {
       console.error('❌ Exception when sending message:', error);
