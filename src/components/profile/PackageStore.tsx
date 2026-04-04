@@ -7,6 +7,8 @@ import { useAuthStore } from "@/modules/auth/useAuthStore";
 import { UploadSlipModal } from "./UploadSlipModal";
 import { useRouter } from "next/router";
 
+
+
 interface Package {
     id: string;
     name: string;
@@ -32,7 +34,8 @@ export const PackageStore = () => {
                 if (!db) return;
                 const q = query(
                     collection(db, "packages"),
-                    where("active", "==", true),
+                    // v4.9.62: Removing strict 'active' filter temporarily to ensure visibility
+                    // where("active", "==", true),
                     orderBy("price", "asc")
                 );
 
