@@ -8,6 +8,9 @@ import { PlayerState, Video, QueueItem, PlayerStore } from '../types';
 // Wait, TS will complain. checking types file location.
 import { generateUUID, broadcast, bc } from '../utils';
 
+import { useUIStore } from '../../../stores/useUIStore';
+import { useAuthStore } from '@/modules/auth/useAuthStore';
+
 let lastTimeSync = 0;
 
 export const usePlayerStore = create<PlayerStore>()(
@@ -288,6 +291,31 @@ export const usePlayerStore = create<PlayerStore>()(
             },
 
             addToQueue: (video, autoPlay = true) => set((state) => {
+                // 🛡️ [GATEKEEPER] v4.9.63: Daily Song Count & Membership Enforcement
+                const authUser = useAuthStore.getState().user;
+                const today = new Date().toISOString().split('T')[0];
+                const storageKey = `daily_songs_${today}`;
+                
+                let currentUsed = 0;
+                let dailyLimit = 0;
+
+                if (authUser) {
+                    currentUsed = authUser.quota?.used || 0;
+                    dailyLimit = authUser.quota?.daily_limit || 0;
+                    const isPremium = ['premium', 'monthly', 'yearly', 'lifetime', 'day_pass', 'trial'].includes(authUser.membership?.type || '') || authUser.role === 'admin';
+                    if (isPremium) dailyLimit = -1; // Unlimited
+                } else {
+                    currentUsed = parseInt(localStorage.getItem(storageKey) || '0');
+                    dailyLimit = 5; // Default for guests if config not available
+                }
+
+                // If limit reached, block adding and show modal (allow adding if already playing)
+                if (dailyLimit !== -1 && currentUsed >= dailyLimit && dailyLimit > 0) {
+                    console.warn("🚫 Global Gatekeeper: Daily limit reached. Blocking addition.");
+                    useUIStore.getState().setLimitModalOpen(true);
+                    return {};
+                }
+
                 const videos = Array.isArray(video) ? video : [video];
                 console.log(`🏗️ Store Action: addToQueue (${videos.length} items)`);
 
@@ -370,6 +398,29 @@ export const usePlayerStore = create<PlayerStore>()(
             },
 
             setCurrentIndex: (index) => set((state) => {
+                // 🛡️ [GATEKEEPER] v4.9.63: Enforce quota on manual song switch
+                const authUser = useAuthStore.getState().user;
+                const today = new Date().toISOString().split('T')[0];
+                const storageKey = `daily_songs_${today}`;
+                
+                let currentUsed = 0;
+                let dailyLimit = 0;
+
+                if (authUser) {
+                    currentUsed = authUser.quota?.used || 0;
+                    dailyLimit = authUser.quota?.daily_limit || 0;
+                    const isPremium = ['premium', 'monthly', 'yearly', 'lifetime', 'day_pass', 'trial'].includes(authUser.membership?.type || '') || authUser.role === 'admin';
+                    if (isPremium) dailyLimit = -1; // Unlimited
+                } else {
+                    currentUsed = parseInt(localStorage.getItem(storageKey) || '0');
+                    dailyLimit = 5; // Default guess
+                }
+
+                if (dailyLimit !== -1 && currentUsed >= dailyLimit && dailyLimit > 0) {
+                    useUIStore.getState().setLimitModalOpen(true);
+                    return { isPlaying: false };
+                }
+
                 if (index < 0 || index >= state.queue.length) return {};
                 const video = state.queue[index];
 

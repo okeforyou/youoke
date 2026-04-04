@@ -42,7 +42,7 @@ const CHART_CATEGORIES = [
   }
 ];
 
-export default function ListHitsGrid() {
+export default function ListHitsGrid({ onClick: onPlay }: { onClick?: (hit: Single) => void }) {
   const router = useRouter();
   const [selectedChart, setSelectedChart] = useState<string | null>(null);
   const songListRef = useRef<HTMLDivElement>(null);
@@ -72,6 +72,10 @@ export default function ListHitsGrid() {
   }, [selectedChart]);
 
   const handleClick = (hit: Single) => {
+    if (onPlay) {
+      onPlay(hit);
+      return;
+    }
     const artist = (hit.artist_name && hit.artist_name !== "Unknown Artist") ? hit.artist_name : "";
     const query = `${hit.title} ${artist}`.trim();
     router.push({
@@ -177,7 +181,7 @@ export default function ListHitsGrid() {
              </div>
            ) : (
               <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-4">
-               {chartItems.map((hit: Single, index: number) => (
+               {chartItems.map((hit: any, index: number) => (
                  <div 
                    key={`${hit.jooxId || index}-${index}`} 
                    onClick={() => handleClick(hit)} 

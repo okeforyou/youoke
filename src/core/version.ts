@@ -1,12 +1,24 @@
 import packageInfo from "../../package.json";
 
-export const SYSTEM_VERSION = packageInfo.version || "4.9.59";
-export const SYSTEM_CODENAME = "Stable Emergency Restore";
+export const SYSTEM_VERSION = "4.9.63";
+export const SYSTEM_CODENAME = "The Membership Unity Update";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
 export const BUILD_DATE = "4 เม.ย. 2569";
 
 export const CHANGELOGS = [
+    {
+        version: "4.9.63 (Membership Unity)",
+        date: "4 เม.ย. 2569",
+        changes: [
+            "[Membership] Package Store Restoration: กู้คืนการแสดงผลแพ็กเกจสมาชิกทั้งหมด (รวมส่วนลดและทดลองใช้ฟรี) ให้กลับมาแสดงผล 100%",
+            "[Quota] Global Playback Gatekeeper: บังคับใช้โควตาการเล่นเพลงรายวันในระดับ Store เพื่อป้องกันการข้ามระบบสำหรับ Guest และสมาชิกฟรี",
+            "[Gatekeeper] Music Station Restriction: ล็อกระบบสถานีเพลง (Music Station) สำหรับสมาชิกพรีเมียมเท่านั้น พร้อมหน้าจออัปเกรดที่สวยงาม",
+            "[UI] Search & Chart Direct Play: ปรับปรุงการกดเล่นเพลงจากหน้าค้นหาและชาร์ตเพลงให้รองรับการตรวจสอบโควตาแบบ Real-time",
+            "[UX] Free 1-Day Trial Bridge: ยืนยัน Logic การเปิดใช้งานพรีเมียมฟรี 1 วันสำหรับผู้ใช้ใหม่ ให้ทำงานได้ราบรื่นไร้รอยต่อ"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
     {
         version: "4.9.59 (Emergency Restore Baseline)",
         date: "4 เม.ย. 2569",

@@ -47,10 +47,26 @@ export const HomePageContent = memo(() => {
                 author: video.author,
                 thumbnail: undefined,
             } as any;
+            
+            // 🛡️ Global Store will handle the quota check inside addToQueue (v4.9.63)
             usePlayerStore.getState().addToQueue(videoToAdd);
         }} />;
         case 1: return <MusicProviderContainer showTab={false} />; // "หน้าแรก" -> Main Dashboard
-        case 2: return <ListHitsGrid />; // "ชาร์ตเพลง" -> Charts
+        case 2: return <ListHitsGrid onClick={(hit: any) => {
+            const artist = (hit.artist_name && hit.artist_name !== "Unknown Artist") ? hit.artist_name : "";
+            const query = `${hit.title} ${artist}`.trim();
+
+            // v4.9.63: Direct playback from Chart with Quota Check
+            const videoToAdd = {
+                id: `search:${query}`,
+                sourceType: 'youtube',
+                title: hit.title,
+                author: hit.artist_name,
+                thumbnail: hit.coverImageURL
+            } as any;
+            
+            usePlayerStore.getState().addToQueue(videoToAdd);
+        }} />; // "ชาร์ตเพลง" -> Charts
         case 3: return <MusicProviderContainer showTab={false} mode="station" />; // "สถานีเพลง"
         case 4: return <ListPlaylistsGrid />; // "เพลย์ลิสต์" -> My Playlists
         default: return <MusicProviderContainer showTab={false} />;
