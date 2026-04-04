@@ -123,6 +123,7 @@ export const usePlayerStore = create<PlayerStore>()(
             searchTerm: "",
             isKaraoke: true, // Default true
             activeIndex: 1, // Default 1 (Recommend)
+            searchHistory: [], // Native App History
 
             setSearchTerm: (term) => {
                 set({ searchTerm: term });
@@ -135,6 +136,29 @@ export const usePlayerStore = create<PlayerStore>()(
             setActiveIndex: (index) => {
                 set({ activeIndex: index });
                 broadcast({ activeIndex: index });
+            },
+
+            addSearchHistory: (term) => set((state) => {
+                if (!term || term.trim() === "") return {};
+                const cleanTerm = term.trim();
+                // Filter out existing and add to front (limit 10)
+                const newHistory = [
+                    cleanTerm,
+                    ...state.searchHistory.filter(h => h.toLowerCase() !== cleanTerm.toLowerCase())
+                ].slice(0, 10);
+                broadcast({ searchHistory: newHistory });
+                return { searchHistory: newHistory };
+            }),
+
+            removeSearchHistory: (term) => set((state) => {
+                const newHistory = state.searchHistory.filter(h => h !== term);
+                broadcast({ searchHistory: newHistory });
+                return { searchHistory: newHistory };
+            }),
+
+            clearSearchHistory: () => {
+                set({ searchHistory: [] });
+                broadcast({ searchHistory: [] });
             },
 
             play: () => {
@@ -540,6 +564,7 @@ export const usePlayerStore = create<PlayerStore>()(
                 isKaraoke: state.isKaraoke,
                 activeIndex: state.activeIndex,
                 repeatMode: state.repeatMode,
+                searchHistory: state.searchHistory,
             }),
         }
     )

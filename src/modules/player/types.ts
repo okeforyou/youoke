@@ -69,6 +69,7 @@ export interface PlayerStore extends PlayerState {
     searchTerm: string;
     isKaraoke: boolean;
     activeIndex: number;
+    searchHistory: string[]; // Native App History
 
     // Sync State
     seekTarget: number | null;
@@ -90,6 +91,9 @@ export interface PlayerStore extends PlayerState {
     setSearchTerm: (term: string) => void;
     setIsKaraoke: (isKaraoke: boolean) => void;
     setActiveIndex: (index: number) => void;
+    addSearchHistory: (term: string) => void;
+    removeSearchHistory: (term: string) => void;
+    clearSearchHistory: () => void;
 
     play: () => void;
     pause: () => void;

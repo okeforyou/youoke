@@ -68,10 +68,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const [mounted, setMounted] = useState(false);
     const [showQRCode, setShowQRCode] = useState(false);
 
-    const {
+    const { 
         searchTerm, setSearchTerm, activeIndex, setActiveIndex, isKaraoke, setIsKaraoke,
         queue: playerQueue, addToQueue, reorderQueue, isPlaying, layoutMode, triggerFullscreen,
-        currentVideo, currentIndex
+        currentVideo, currentIndex,
+        searchHistory, addSearchHistory, removeSearchHistory, clearSearchHistory
     } = usePlayerStore(
         useShallow(state => ({
             searchTerm: state.searchTerm,
@@ -87,7 +88,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
             isPlaying: state.isPlaying,
             layoutMode: state.layoutMode,
             triggerFullscreen: state.triggerFullscreen,
-            currentVideo: state.currentVideo
+            currentVideo: state.currentVideo,
+            searchHistory: state.searchHistory,
+            addSearchHistory: state.addSearchHistory,
+            removeSearchHistory: state.removeSearchHistory,
+            clearSearchHistory: state.clearSearchHistory
         }))
     );
 
@@ -370,7 +375,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const prevQueueLen = useRef(0);
     useEffect(() => {
         // Skip auto-open on initial mount if queue exists (avoid starting on queue page)
-        // v4.9.43: Removed auto-open queue logic to prevent intrusive overlays on mobile.
+        // v4.9.44: Removed auto-open queue logic to prevent intrusive overlays on mobile.
         // We only maintain the auto-close logic when the queue becomes empty.
         if (queue.length === 0) {
             useUIStore.getState().setQueueOpen(false);
@@ -456,6 +461,38 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             )}
                         </div>
 
+                        {/* Native App Search History Chips (v4.9.44) */}
+                        {searchHistory?.length > 0 && (
+                            <div className="absolute -bottom-10 left-0 right-0 flex items-center gap-2 overflow-x-auto scrollbar-hide py-2 px-1 animate-in fade-in slide-in-from-top-1 duration-300">
+                                {searchHistory.map((term, i) => (
+                                    <div 
+                                        key={`${term}-${i}`}
+                                        className="flex items-center bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-full pl-3 pr-2 py-1 gap-1.5 cursor-pointer shrink-0 transition-all group/chip"
+                                        onClick={() => {
+                                            setSearchTerm(term);
+                                            router.replace({ pathname: '/', query: { ...router.query, search: term } }, undefined, { shallow: true });
+                                        }}
+                                    >
+                                        <span className="text-[10px] font-black text-gray-500 uppercase tracking-tight">{term}</span>
+                                        <button 
+                                            onClick={(e: React.MouseEvent) => {
+                                                e.stopPropagation();
+                                                removeSearchHistory(term);
+                                            }}
+                                            className="p-0.5 rounded-full hover:bg-gray-200 text-gray-300 hover:text-gray-600 transition-colors"
+                                        >
+                                            <X className="w-2.5 h-2.5" />
+                                        </button>
+                                    </div>
+                                ))}
+                                <button 
+                                    onClick={clearSearchHistory}
+                                    className="text-[9px] font-black text-gray-300 hover:text-primary uppercase tracking-widest px-2 shrink-0 transition-colors"
+                                >
+                                    ล้างทั้งหมด
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex items-center gap-6 ml-6">
@@ -675,6 +712,39 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                 )}
                                             </button>
                                         </div>
+
+                                        {/* Mobile Recent Search Chips (v4.9.44) */}
+                                        {searchHistory?.length > 0 && (
+                                            <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide py-1.5 px-0.5 mt-1 border-t border-gray-50 animate-in fade-in duration-500">
+                                                {searchHistory.map((term, i) => (
+                                                    <div 
+                                                        key={`mob-${term}-${i}`}
+                                                        className="flex items-center bg-gray-50 active:bg-gray-100 border border-gray-100 rounded-full pl-3 pr-2 py-0.5 gap-1.5 shrink-0 transition-all"
+                                                        onClick={() => {
+                                                            setSearchTerm(term);
+                                                            router.replace({ pathname: '/', query: { ...router.query, search: term } }, undefined, { shallow: true });
+                                                        }}
+                                                    >
+                                                        <span className="text-[9px] font-black text-gray-500 uppercase tracking-tight">{term}</span>
+                                                        <button 
+                                                            onClick={(e: React.MouseEvent) => {
+                                                                e.stopPropagation();
+                                                                removeSearchHistory(term);
+                                                            }}
+                                                            className="p-1 rounded-full active:bg-gray-200 text-gray-300"
+                                                        >
+                                                            <X className="w-2.5 h-2.5" />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                                <button 
+                                                    onClick={clearSearchHistory}
+                                                    className="text-[9px] font-black text-gray-300 active:text-primary uppercase tracking-widest px-2 shrink-0"
+                                                >
+                                                    ล้าง
+                                                </button>
+                                            </div>
+                                        )}
                                     </header>
                                 </>
                             )}
