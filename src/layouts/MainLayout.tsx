@@ -370,15 +370,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const prevQueueLen = useRef(0);
     useEffect(() => {
         // Skip auto-open on initial mount if queue exists (avoid starting on queue page)
-        if (isFirstLoad.current) {
-            isFirstLoad.current = false;
-            prevQueueLen.current = queue.length;
-            return;
-        }
-
-        if (prevQueueLen.current === 0 && queue.length > 0) {
-            useUIStore.getState().setQueueOpen(true);
-        } else if (queue.length === 0) {
+        // v4.9.43: Removed auto-open queue logic to prevent intrusive overlays on mobile.
+        // We only maintain the auto-close logic when the queue becomes empty.
+        if (queue.length === 0) {
             useUIStore.getState().setQueueOpen(false);
         }
         prevQueueLen.current = queue.length;

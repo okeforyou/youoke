@@ -1,12 +1,21 @@
 import packageInfo from "../../package.json";
 
-export const SYSTEM_VERSION = packageInfo.version || "4.9.42";
+export const SYSTEM_VERSION = packageInfo.version || "4.9.43";
 export const SYSTEM_CODENAME = "LINE Direct Gateway";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
 export const BUILD_DATE = "4 เม.ย. 2569";
 
 export const CHANGELOGS = [
+    {
+        version: "4.9.43 (Intuitive UI Sync)",
+        date: "4 เม.ย. 2569",
+        changes: [
+            "[UI] Manual Queue Control: ยกเลิกการเปิดคิวเพลงอัตโนมัติเมื่อเพิ่มเพลงแรก เพื่อความเป็นส่วนตัวและลดการรบกวนบนมือถือ",
+            "[UX] Seamless Navigation: ผู้ใช้สามารถเลือกเพลงต่อเนื่องได้โดยไม่มีหน้ารายการคิวขึ้นมาบังหน้าจอ"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
     {
         version: "4.9.42 (Search Integrity Update)",
         date: "4 เม.ย. 2569",
