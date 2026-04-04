@@ -5,8 +5,7 @@ import {
     ChevronDown,
     Menu,
     Megaphone,
-    LogOut,
-    X
+    LogOut
 } from "lucide-react";
 import { cn } from "../../../utils/cn";
 import { useAuth } from "@/context/AuthContext";
@@ -61,40 +60,14 @@ export const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
         return () => unsubscribe();
     }, [storeUser?.uid]);
 
-    const [dismissedIds, setDismissedIds] = React.useState<string[]>([]);
-
-    // 📡 Load Dismissed IDs from LocalStorage
-    React.useEffect(() => {
-        const saved = localStorage.getItem('admin_dismissed_notifs');
-        if (saved) setDismissedIds(JSON.parse(saved));
-    }, []);
-
-    const handleDismiss = (e: React.MouseEvent, id: string) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const updated = [...dismissedIds, id];
-        setDismissedIds(updated);
-        localStorage.setItem('admin_dismissed_notifs', JSON.stringify(updated));
-    };
-
-    const handleClearAll = () => {
-        const allIds = allNotifications.map(n => n.id);
-        const combined = [...dismissedIds, ...allIds];
-        const updated = combined.filter((id, index) => combined.indexOf(id) === index);
-        setDismissedIds(updated);
-        localStorage.setItem('admin_dismissed_notifs', JSON.stringify(updated));
-    };
-
     // Combine and Sort
-    const allNotifications = [...adminNotifs, ...userNotifs]
-        .filter(n => !dismissedIds.includes(n.id))
-        .sort((a, b) => {
+    const allNotifications = [...adminNotifs, ...userNotifs].sort((a, b) => {
         const timeA = a.timestamp?.seconds || 0;
         const timeB = b.timestamp?.seconds || 0;
         return timeB - timeA;
     });
 
-    const totalUnreadCount = allNotifications.filter(n => !n.read).length;
+    const totalUnreadCount = adminCount + userCount;
 
     const timeAgo = (date: Date) => {
         const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
@@ -164,14 +137,6 @@ export const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
                                     <h3 className="font-black text-gray-900 text-sm tracking-tight">ศูนย์ควบคุมแจ้งเตือน</h3>
                                     <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none mt-0.5">Unified Center</p>
                                 </div>
-                                {allNotifications.length > 0 && (
-                                    <button 
-                                        onClick={handleClearAll}
-                                        className="text-[10px] font-black text-gray-400 hover:text-red-500 uppercase tracking-tighter transition-colors"
-                                    >
-                                        ล้างทั้งหมด
-                                    </button>
-                                )}
                                 {totalUnreadCount > 0 && (
                                     <span className="text-[11px] bg-red-600 text-white px-2.5 py-1 rounded-full font-black uppercase tracking-tighter border border-white/20">
                                         {totalUnreadCount} NEW
@@ -202,20 +167,13 @@ export const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
                                                                 {notif.type === 'payment_pending' ? 'Task' : 'Info'}
                                                             </span>
                                                         </div>
-                                                        <h4 className="text-[13px] font-black text-gray-900 group-hover:text-primary transition-colors leading-snug pr-6">
+                                                        <h4 className="text-[13px] font-black text-gray-900 group-hover:text-primary transition-colors leading-snug">
                                                             {notif.title}
                                                         </h4>
                                                         <p className="text-[11px] text-gray-500 line-clamp-2 mt-1 font-medium leading-relaxed">
                                                             {notif.message}
                                                         </p>
                                                     </div>
-                                                    <button 
-                                                        onClick={(e) => handleDismiss(e, notif.id)}
-                                                        className="absolute top-3 right-3 p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all z-10 opacity-0 group-hover:opacity-100"
-                                                        title="ลบการแจ้งเตือน"
-                                                    >
-                                                        <X className="w-3.5 h-3.5" />
-                                                    </button>
                                                 </div>
                                                 <div className="mt-2 text-[10px] font-bold text-gray-400 flex items-center gap-1 opacity-70">
                                                     {notif.timestamp ? timeAgo(notif.timestamp.toDate()) : 'เมื่อสักครู่'}

@@ -1,15 +1,9 @@
 import packageInfo from "../../package.json";
 
-export const SYSTEM_VERSION = packageInfo.version || "4.9.56";
-export const SYSTEM_CODENAME = "GitHub Integrity Sync";
+export const SYSTEM_VERSION = packageInfo.version || "4.9.57";
+export const SYSTEM_CODENAME = "Stable Sync Baseline";
 export const SYSTEM_STATUS = "Stable";
-
-// 🔴 v4.9.56: GitHub SHA Integration (Ensure 100% accuracy from Vercel/GitHub Metadata)
-export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA 
-    ? `#${process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA.slice(0, 7)}` 
-    : "";
-
-export const VERSION_LABEL = `Version v${SYSTEM_VERSION} ${COMMIT_ID} (${SYSTEM_CODENAME})`;
+export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
 export const BUILD_DATE = "4 เม.ย. 2569";
 
 export const CHANGELOGS = [
@@ -21,6 +15,17 @@ export const CHANGELOGS = [
             "[UX] Smooth Notification Dismissal: แก้ไขบั๊กป๊อปอัพแจ้งเตือนเด้งปิดเมื่อกดลบรายการ (Stay-Open Logic)",
             "[UI] Instant List Refinement: รายการแจ้งเตือนจะหายไปทันทีเมื่อกดปัดทิ้งโดยไม่ต้อง Refresh หน้าจอ",
             "[Backend] State Sync Hardening: ปรับปรุงการจัดการ State ในส่วนประกาศระบบให้ตอบสนองไวระดับแอปมาตรฐาน"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
+    {
+        version: "4.9.57 (Stable Restore Baseline)",
+        date: "4 เม.ย. 2569",
+        changes: [
+            "[Critical] Admin Restoration: แก้ไขสิทธิ์แอดมินที่หลุด และกู้คืนความเสถียรของระบบ Permission 100% (Database-First)",
+            "[System] Static Version Lock: ล็อกเลขเวอร์ชันให้ตรงกับ package.json อย่างเดียวเพื่อป้องกันความสับสนจากระบบ Build SHA",
+            "[UI] Standardized Notification: ปรับปรุงศูนย์แจ้งเตือนให้กลับสู่ความเสถียรแบบมาตรฐาน เพื่อป้องกัน State Sync Error",
+            "[UX] Nuclear Cleanup: กวาดล้างโค้ดส่วนเกินที่ขัดแย้งกับสิทธิ์การเข้าถึงหลังบ้านออกทั้งหมด"
         ],
         recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
     },
