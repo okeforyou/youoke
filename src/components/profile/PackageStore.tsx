@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { collection, query, getDocs, orderBy } from "firebase/firestore";
+import { collection, query, getDocs, orderBy, where } from "firebase/firestore";
 import { db } from "@/firebase";
 import { Star, Loader2, QrCode, Zap, Sparkles, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -32,6 +32,7 @@ export const PackageStore = () => {
                 if (!db) return;
                 const q = query(
                     collection(db, "packages"),
+                    where("active", "==", true),
                     orderBy("price", "asc")
                 );
 
@@ -59,7 +60,7 @@ export const PackageStore = () => {
             return;
         }
 
-        // v4.9.31: Premium Integration Flow
+        // v4.9.52: Premium Integration Flow
         if (pkg.price === 0) {
             // Instant Activation for Free/Trial packages
             try {
