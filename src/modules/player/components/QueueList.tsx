@@ -61,7 +61,7 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
             </div>
 
             {/* Card Content - V1 Style with red border on hover (No Gray, No Shadow) */}
-            <div className="flex-1 flex items-center gap-4 rounded-xl border border-gray-100 dark:border-zinc-900 transition-all overflow-hidden hover:border-primary/50 bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md">
+            <div className="flex-1 flex items-center gap-4 rounded-xl border border-gray-100 dark:border-zinc-800 transition-all overflow-hidden hover:border-primary/50 bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md">
                 {/* Thumbnail - Flush with the card's left side (Enlarged) */}
                 <div
                     className="relative w-36 h-20 flex-shrink-0 bg-black cursor-pointer group/thumb"
@@ -160,7 +160,7 @@ export function QueueList() {
             </div>
 
             {/* Sticky Queue Header (Restored from SidebarControls) */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-900 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md sticky top-0 z-30 shrink-0">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 backdrop-blur-md sticky top-0 z-30 shrink-0">
                 <div className="flex items-center gap-4">
                     {/* Mobile Close Button (Chevron Down) */}
                     <button

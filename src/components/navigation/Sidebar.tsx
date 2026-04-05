@@ -200,7 +200,7 @@ export const Sidebar = memo(() => {
             </nav>
 
             <div className={clsx(
-                "border-t border-gray-100 dark:border-zinc-800/60 bg-white dark:bg-zinc-900/40 transition-all duration-300",
+                "border-t border-gray-100 dark:border-zinc-800/60 bg-white dark:bg-zinc-900 transition-all duration-300",
                 isSidebarCollapsed ? "p-2" : "p-4"
             )}>
                 <ProfileDrawer
