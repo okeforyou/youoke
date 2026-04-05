@@ -174,16 +174,18 @@ export const AdminService = {
         if (!db) throw new Error("Firestore not initialized");
 
         // Simplified logic: Assuming standard packages exist (monthly, yearly)
+        // 🛡️ v4.9.91: Correct Package Matching Logic
         let durationDays = 30;
         let membershipType = 'monthly';
 
-        if (packageId.includes('year')) {
+        const lowPkgId = packageId.toLowerCase();
+        if (lowPkgId.includes('year')) {
             durationDays = 365;
             membershipType = 'yearly';
-        } else if (packageId.includes('life')) {
+        } else if (lowPkgId.includes('life') || lowPkgId.includes('perman') || lowPkgId.includes('ถาวร')) {
             durationDays = 0;
             membershipType = 'lifetime';
-        } else if (packageId.includes('day')) {
+        } else if (lowPkgId.includes('day') || lowPkgId.includes('trial') || lowPkgId.includes('free')) {
             durationDays = 1;
             membershipType = 'day_pass';
         }

@@ -95,13 +95,10 @@ const statusStyles = {
 
 const membershipStyles = {
     free: { bg: "bg-muted", text: "text-muted-foreground", label: "ทั่วไป" },
-    legacy: { bg: "bg-indigo-50", text: "text-indigo-600", label: "สมาชิกเดิม" },
-    trial: { bg: "bg-emerald-50", text: "text-emerald-600", label: "ทดลองใช้งาน" },
-    pro: { bg: "bg-primary/15", text: "text-primary", label: "Pro" },
+    trial: { bg: "bg-emerald-50", text: "text-emerald-600", label: "ฟรี 1 วัน" },
     monthly: { bg: "bg-blue-100", text: "text-blue-600", label: "รายเดือน" },
-    yearly: { bg: "bg-amber-100", text: "text-amber-600", label: "รายปี" },
-    vip: { bg: "bg-accent/15", text: "text-accent", label: "VIP" },
-    lifetime: { bg: "bg-success/15", text: "text-success", label: "ตลอดชีพ" },
+    yearly: { bg: "bg-purple-100", text: "text-purple-600", label: "รายปี" },
+    lifetime: { bg: "bg-amber-100", text: "text-amber-600", label: "ถาวร" },
 };
 
 import { MODULES } from "@/config/modules";
@@ -196,19 +193,21 @@ export default function AdminUsersPage() {
         const membership = user.membership;
         if (!membership) return 'free';
 
-        // SMART CHECK: Expiration Detection
-        if (membership.type !== 'lifetime' && membership.expiresAt) {
+        // 🛡️ v4.9.91: Explicit Membership Type Priority
+        // Use tier if available, otherwise fallback to membership type
+        const type = (user as any).tier || membership.type || 'free';
+
+        if (type === 'lifetime' || type === 'permanent') return 'lifetime';
+        
+        // Expiration Check for time-limited plans
+        if (membership.expiresAt) {
             const expiry = membership.expiresAt.toDate ? membership.expiresAt.toDate() : new Date(membership.expiresAt);
             if (new Date() > expiry) return 'free';
         }
 
-        if (membership.type === 'lifetime') return 'lifetime';
-        if (membership.type === 'day_pass') return 'trial';
-        if (membership.type === 'monthly') return 'monthly';
-        if (membership.type === 'yearly') return 'yearly';
-        
-        // 🟢 v4.9.54: Legacy Protection (If User has no expiry but is a user role)
-        if (!membership.expiresAt && user.role === 'user') return 'legacy';
+        if (type === 'day_pass') return 'trial';
+        if (type === 'monthly') return 'monthly';
+        if (type === 'yearly') return 'yearly';
         
         return 'free';
     };
@@ -723,7 +722,6 @@ export default function AdminUsersPage() {
     // Calculate Stats (Business Focussed v4.9.53)
     const stats = {
         total: users.length,
-        legacy: users.filter(u => getMembershipType(u) === 'legacy').length,
         trial: users.filter(u => getMembershipType(u) === 'trial').length,
         lifetime: users.filter(u => getMembershipType(u) === 'lifetime').length,
         yearly: users.filter(u => getMembershipType(u) === 'yearly').length,
@@ -820,8 +818,7 @@ export default function AdminUsersPage() {
                 </div>
             </div>
 
-            {/* Stats Grid - v4.9.54 High Density Single Row */}
-            <div className="grid grid-cols-3 lg:grid-cols-7 gap-2 mb-6">
+            <div className="grid grid-cols-3 lg:grid-cols-6 gap-2 mb-6">
                 <StatCard 
                     title="ยอดรวม"
                     value={stats.total}
@@ -830,21 +827,21 @@ export default function AdminUsersPage() {
                     className="border-primary/10 bg-gradient-to-br from-white to-primary/5 py-3"
                 />
                 <StatCard 
-                    title="สมาชิกเดิม"
-                    value={stats.legacy}
-                    icon={Mail}
-                    iconColor="accent"
-                    className="ring-1 ring-indigo-500/10 bg-indigo-50/10 py-3"
+                    title="ทั่วไป"
+                    value={stats.free}
+                    icon={Users2}
+                    iconColor="secondary"
+                    className="ring-1 ring-slate-500/10 bg-slate-50/10 py-3"
                 />
                 <StatCard 
-                    title="ทดลองใช้"
+                    title="ฟรี 1 วัน"
                     value={stats.trial}
                     icon={Sparkles}
                     iconColor="success"
                     className="ring-1 ring-emerald-500/10 bg-emerald-50/10 py-3"
                 />
                 <StatCard 
-                    title="ตลอดชีพ"
+                    title="ถาวร"
                     value={stats.lifetime}
                     icon={Crown}
                     iconColor="warning"
