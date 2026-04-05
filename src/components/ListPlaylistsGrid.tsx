@@ -467,11 +467,11 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
       {/* Header */}
       {/* Banner Header */}
       <div className="px-4 pt-4 pb-6">
-        <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-5 sm:p-8 rounded-2xl relative overflow-hidden min-h-[130px] flex flex-col justify-center border border-gray-200/50 shadow-sm">
-           <h2 className="text-2xl sm:text-3xl font-black text-gray-900 leading-tight">คลังเพลย์ลิสต์</h2>
-           <p className="text-[13px] sm:text-base !text-black mt-2 font-black">แหล่งรวมความบันเทิงที่คุณสร้างสรรค์เองได้</p>
+        <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-zinc-900 dark:to-zinc-800 p-5 sm:p-8 rounded-2xl relative overflow-hidden min-h-[130px] flex flex-col justify-center border border-gray-200/50 dark:border-zinc-800 shadow-sm">
+           <h2 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white leading-tight">คลังเพลย์ลิสต์</h2>
+           <p className="text-[13px] sm:text-base !text-black dark:!text-zinc-400 mt-2 font-black">แหล่งรวมความบันเทิงที่คุณสร้างสรรค์เองได้</p>
            <div className="absolute bottom-6 right-8 opacity-10">
-              <RectangleStackIcon className="w-20 h-20 text-black" />
+              <RectangleStackIcon className="w-20 h-20 text-black dark:text-white" />
            </div>
         </div>
       </div>
@@ -480,10 +480,10 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
       <div className="flex flex-col md:flex-row items-center justify-between gap-6 px-4 py-4 mb-6">
         {/* Tabs - Animated Switch */}
         {user?.uid ? (
-          <div className="relative flex items-center bg-gray-100 rounded-2xl p-1 h-12 w-full max-w-[400px]">
+          <div className="relative flex items-center bg-gray-100 dark:bg-zinc-900 rounded-2xl p-1 h-12 w-full max-w-[400px]">
             {/* Sliding Active Background - Updated for 2 Tabs */}
             <div
-              className="absolute top-1.5 bottom-1.5 w-[calc(50%-4px)] bg-white rounded-xl shadow-sm transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+              className="absolute top-1.5 bottom-1.5 w-[calc(50%-4px)] bg-white dark:bg-zinc-800 rounded-xl shadow-sm transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
               style={{
                 left: `calc(${activeIndex * 50}% + ${activeIndex === 0 ? '4px' : '0px'})`
               }}
@@ -493,7 +493,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
               onClick={() => setActiveIndex(0)}
               className={clsx(
                 "relative flex-1 flex items-center justify-center gap-2 h-full rounded-xl text-[12px] sm:text-[13px] font-bold transition-colors z-10",
-                activeIndex === 0 ? "text-gray-900" : "text-gray-400 hover:text-gray-600"
+                activeIndex === 0 ? "text-gray-900 dark:text-white" : "text-gray-400 dark:text-zinc-600 hover:text-gray-600 dark:hover:text-zinc-400"
               )}
             >
               <GlobeAltIcon className="w-4 h-4" />
@@ -504,7 +504,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
               onClick={() => setActiveIndex(1)}
               className={clsx(
                 "relative flex-1 flex items-center justify-center gap-2 h-full rounded-xl text-[12px] sm:text-[13px] font-bold transition-colors z-10",
-                activeIndex === 1 ? "text-gray-900" : "text-gray-400 hover:text-gray-600"
+                activeIndex === 1 ? "text-gray-900 dark:text-white" : "text-gray-400 dark:text-zinc-600 hover:text-gray-600 dark:hover:text-zinc-400"
               )}
             >
               <RectangleStackIcon className="w-4 h-4" />
@@ -513,8 +513,8 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
           </div>
         ) : (
           /* Guest Mode: Single Static Pill */
-          <div className="bg-gray-100 rounded-2xl p-1 h-12 inline-flex items-center">
-            <div className="bg-white rounded-xl shadow-sm h-full px-6 flex items-center gap-2 text-[13px] font-bold text-gray-900">
+          <div className="bg-gray-100 dark:bg-zinc-900 rounded-2xl p-1 h-12 inline-flex items-center">
+            <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-sm h-full px-6 flex items-center gap-2 text-[13px] font-bold text-gray-900 dark:text-white">
               <GlobeAltIcon className="w-4 h-4" />
               <span>ชุมชน</span>
             </div>
@@ -671,7 +671,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
           /* Header Section Passed to Master Modal Title */
           <div className="flex gap-4 items-center">
             {/* Cover */}
-            <div className="w-16 h-16 bg-gray-100 rounded-lg shadow-md overflow-hidden relative group shrink-0 border border-gray-100">
+            <div className="w-16 h-16 bg-gray-100 dark:bg-zinc-800 rounded-lg shadow-md overflow-hidden relative group shrink-0 border border-gray-100 dark:border-zinc-900">
               <Image
                 src={selectedItem?.playlists?.length ? (selectedItem.playlists[0]?.thumbnail || `https://i.ytimg.com/vi/${selectedItem.playlists[0]?.videoId}/mqdefault.jpg`) : "/icon-cover.png"}
                 alt=""
@@ -683,9 +683,9 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
             </div>
             {/* Title & Info */}
             <div className="flex-1 min-w-0">
-              <h2 className="text-[15px] font-black text-black leading-tight mb-1 truncate">{selectedItem?.name}</h2>
-              <div className="flex items-center gap-2 text-[10px] text-gray-500 font-medium font-mono">
-                <span className="bg-gray-100 px-2 py-0.5 rounded text-gray-600">{selectedItem?.playlists?.length || 0} เพลง</span>
+              <h2 className="text-[15px] font-black text-black dark:text-white leading-tight mb-1 truncate">{selectedItem?.name}</h2>
+              <div className="flex items-center gap-2 text-[10px] text-gray-500 dark:text-zinc-500 font-medium font-mono">
+                <span className="bg-gray-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-gray-600 dark:text-zinc-400">{selectedItem?.playlists?.length || 0} เพลง</span>
                 <span>•</span>
                 <span className="truncate max-w-[120px]">{user?.displayName || 'ผู้สร้าง'}</span>
               </div>
@@ -694,22 +694,22 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
         }
         body={
           /* Body: Just the List */
-          <div className="w-full bg-white">
+          <div className="w-full bg-white dark:bg-zinc-950">
             {selectedItem?.playlists?.length === 0 ? (
-              <div className="flex flex-col items-center justify-center p-10 text-gray-400">
+              <div className="flex flex-col items-center justify-center p-10 text-gray-400 dark:text-zinc-600">
                 <RectangleStackIcon className="w-10 h-10 mb-2 opacity-30" />
                 <p className="text-sm">ไม่มีเพลงในรายการนี้</p>
               </div>
             ) : (
               <div className="px-6 py-2 space-y-1">
                 {selectedItem && selectedItem.playlists?.map((v, i) => (
-                  <div key={i + (v.videoId || v.title)} className="group flex items-center gap-3 p-3 pr-4 rounded-2xl hover:bg-gray-50 cursor-pointer transition-all border border-transparent hover:border-gray-100 hover:shadow-sm">
-                    <div className="w-6 text-center text-xs font-bold text-gray-300 group-hover:text-primary font-mono transition-colors">
+                  <div key={i + (v.videoId || v.title)} className="group flex items-center gap-3 p-3 pr-4 rounded-2xl hover:bg-gray-50 dark:hover:bg-zinc-900 cursor-pointer transition-all border border-transparent hover:border-gray-100 dark:hover:border-zinc-800 hover:shadow-sm">
+                    <div className="w-6 text-center text-xs font-bold text-gray-300 dark:text-zinc-700 group-hover:text-primary font-mono transition-colors">
                       <span className="group-hover:hidden">{i + 1}</span>
                       <PlayIcon className="w-3 h-3 hidden group-hover:block mx-auto" />
                     </div>
 
-                    <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden relative shrink-0 shadow-sm ring-1 ring-black/5">
+                    <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-zinc-800 overflow-hidden relative shrink-0 shadow-sm ring-1 ring-black/5 dark:ring-white/5">
                       <Image
                         src={v.thumbnail || `https://i.ytimg.com/vi/${v.videoId}/default.jpg`}
                         fill
@@ -721,12 +721,12 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
                     </div>
 
                     <div className="flex-1 min-w-0 pr-4">
-                      <p className="text-[13px] font-bold text-black truncate group-hover:text-primary transition-colors leading-tight mb-0.5">{v.title}</p>
-                      <p className="text-[10px] text-gray-500 truncate">{v.author}</p>
+                      <p className="text-[13px] font-bold text-black dark:text-white truncate group-hover:text-primary transition-colors leading-tight mb-0.5">{v.title}</p>
+                      <p className="text-[10px] text-gray-500 dark:text-zinc-500 truncate">{v.author}</p>
                     </div>
 
                     {activeIndex === 1 ? (
-                      <button onClick={(e) => { e.stopPropagation(); handleDeleteSong(selectedItem.id, v); }} className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full opacity-0 group-hover:opacity-100 transition-all mr-1"><TrashIcon className="w-4 h-4" /></button>
+                      <button onClick={(e) => { e.stopPropagation(); handleDeleteSong(selectedItem.id, v); }} className="p-2 text-gray-300 dark:text-zinc-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full opacity-0 group-hover:opacity-100 transition-all mr-1"><TrashIcon className="w-4 h-4" /></button>
                     ) : (
                       <div className="opacity-0 group-hover:opacity-100 transition-opacity px-3">
                         <PlayIcon className="w-5 h-5 text-primary" />

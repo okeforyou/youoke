@@ -778,7 +778,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
                 {/* Content Wrapper for Main and Mobile Queue */}
                 <div className="flex-1 relative overflow-hidden flex flex-col">
-                    <main id="main-content" className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-zinc-700 scrollbar-track-transparent relative flex flex-col items-center bg-gray-50/30 dark:bg-zinc-950 transition-colors">
+                    <main id="main-content" className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-zinc-800 scrollbar-track-transparent relative flex flex-col items-center bg-gray-50/10 dark:bg-zinc-950 transition-colors">
                         <div className="w-full pb-20">
                             {children}
                         </div>
@@ -800,14 +800,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
             <aside
                 className={clsx(
-                    "hidden lg:flex w-[420px] border-l border-gray-200 flex-col z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+                    "hidden lg:flex w-[420px] border-l border-gray-200 dark:border-zinc-900 flex-col z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
                     (isQueueOpen && queue.length > 0 && layoutMode !== 'fullscreen') ? "mr-0 w-[420px] opacity-100" : "-mr-[420px] w-0 opacity-0"
                 )}
             >
                 {/* 236px corresponds to the fixed SidebarPlayer height (16:9 for 420px) */}
                 <div className="flex-1 flex flex-col pt-[236px] h-full relative z-10 bg-white dark:bg-zinc-950">
                     {/* Desktop Sidebar Controls (Moved here to prevent blocking QueueList) */}
-                    <div className="shrink-0 bg-white dark:bg-zinc-900 relative z-20">
+                    <div className="shrink-0 bg-white dark:bg-zinc-950 relative z-20">
                         <SidebarControls castMode={castMode} />
                     </div>
                     {/* Main Content Area */}

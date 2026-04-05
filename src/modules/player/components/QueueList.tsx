@@ -42,26 +42,26 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
         // No opacity change to prevent gray tint from showing through
         opacity: isDragging ? 0.95 : 1,
         zIndex: isDragging ? 50 : 'auto',
-        backgroundColor: '#ffffff',
+        backgroundColor: isDragging ? '#18181b' : 'transparent', // Zinc-900 during drag
     };
 
     return (
         <div
             ref={setNodeRef}
             style={style}
-            className="group flex items-center gap-2 py-2 px-3 bg-white dark:bg-zinc-950 transition-colors"
+            className="group flex items-center gap-2 py-2 px-3 bg-transparent dark:bg-transparent transition-colors"
         >
             {/* Drag Handle - Outside the card */}
             <div
                 {...attributes}
                 {...listeners}
-                className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-primary transition-colors flex-shrink-0 touch-none px-2"
+                className="cursor-grab active:cursor-grabbing text-gray-400 dark:text-zinc-600 hover:text-primary transition-colors flex-shrink-0 touch-none px-2"
             >
-                <Menu className="w-5 h-5 opacity-50" />
+                <Menu className="w-5 h-5 opacity-40 group-hover:opacity-100" />
             </div>
 
             {/* Card Content - V1 Style with red border on hover (No Gray, No Shadow) */}
-            <div className="flex-1 flex items-center gap-4 rounded-xl border border-gray-300 dark:border-zinc-800 transition-all overflow-hidden hover:border-primary bg-white dark:bg-zinc-900">
+            <div className="flex-1 flex items-center gap-4 rounded-xl border border-gray-100 dark:border-zinc-900 transition-all overflow-hidden hover:border-primary/50 bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md">
                 {/* Thumbnail - Flush with the card's left side (Enlarged) */}
                 <div
                     className="relative w-36 h-20 flex-shrink-0 bg-black cursor-pointer group/thumb"
@@ -160,7 +160,7 @@ export function QueueList() {
             </div>
 
             {/* Sticky Queue Header (Restored from SidebarControls) */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50 dark:border-zinc-900 bg-white dark:bg-zinc-950 sticky top-0 z-30 shrink-0">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-900 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md sticky top-0 z-30 shrink-0">
                 <div className="flex items-center gap-4">
                     {/* Mobile Close Button (Chevron Down) */}
                     <button
