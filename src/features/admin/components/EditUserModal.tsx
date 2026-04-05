@@ -341,8 +341,14 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                         </button>
                     </div>
 
+                    {/* 📦 มอบสิทธิ์ใช้งาน (The Real Access Creator) */}
                     <div className="bg-white rounded-xl border border-slate-100 p-4">
-                        <label className="text-[11px] font-bold text-slate-400 uppercase mb-3 block px-1">อัปเกรดสถานะ (Manual Assign)</label>
+                        <label className="text-[11px] font-bold text-slate-400 uppercase mb-1 block px-1 flex items-center gap-2">
+                             📦 มอบสิทธิ์ใช้งาน (ให้ลูกค้าเล่นเพลงได้)
+                        </label>
+                        <p className="text-[9px] text-slate-400 mb-3 px-1 leading-tight">
+                            * ระบบจะใส่วันหมดอายุให้อัตโนมัติ และย้ายกลุ่มส่ง LINE ให้ในคลิกเดียว
+                        </p>
                         <div className="grid grid-cols-2 gap-2">
                             {packages?.filter(pkg => !pkg.id.includes('day')).map(pkg => {
                                 let dispName = pkg.name;
@@ -370,10 +376,14 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                         </div>
                     </div>
 
+                    {/* 📌 จัดกลุ่มลูกค้า (Manual Group Overide) */}
                     <div className="bg-slate-50 rounded-xl border border-slate-100 p-4">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase mb-3 block px-1 flex items-center gap-2">
-                             📌 สลับกลุ่มสมาชิก (Custom Segmentation)
+                        <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block px-1 flex items-center gap-2">
+                             📌 จัดกลุ่มลูกค้า (สำหรับส่งข้อความ LINE)
                         </label>
+                        <p className="text-[9px] text-slate-400 mb-3 px-1 leading-tight">
+                            * ใช้สำหรับเปลี่ยนกลุ่มด้วยมือ โดยไม่มีผลกับวันหมดอายุสมาชิก
+                        </p>
                         <div className="grid grid-cols-2 gap-2">
                             {[
                                 { id: 'legacy', label: 'สมาชิกเดิม' },
