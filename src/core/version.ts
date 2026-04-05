@@ -1,12 +1,21 @@
 import packageInfo from "../../package.json";
 
-export const SYSTEM_VERSION = "4.9.71";
-export const SYSTEM_CODENAME = "Performance Level 1: Skeleton";
+export const SYSTEM_VERSION = "4.9.72";
+export const SYSTEM_CODENAME = "Android Adaptive Polish";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
 export const BUILD_DATE = "5 เม.ย. 2569";
 
 export const CHANGELOGS = [
+    {
+        version: "4.9.72 (Adaptive Icons)",
+        date: "5 เม.ย. 2569",
+        changes: [
+            "[PWA] Android Icon Fix: แก้ไขปัญหาไอคอนแอปบน Android มีขอบขาว โดยการจัดลำดับ Maskable Icons ใหม่ใน manifest.json ให้ Android สามารถขยายรูปได้เต็มพื้นที่ (Full Bleed)",
+            "[Sync] Icon Assets: ซิงค์พาธไอคอน maskable-192 และ maskable-512 ให้ตรงกับระบบ Android Adaptive Icons อัตโนมัติ"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
     {
         version: "4.9.71 (Performance L1)",
         date: "5 เม.ย. 2569",
