@@ -24,6 +24,7 @@ export interface SmartTVPlayerProps {
     queue?: VideoItem[];
     isQueueVisible?: boolean;
     notification?: { type: 'added' | 'upnext', video: VideoItem, timestamp: number } | null;
+    roomCode?: string;
     syncMode?: 'local' | 'remote';
     isPassive?: boolean;
 }
@@ -42,6 +43,7 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
     queue = [],
     isQueueVisible = false,
     notification = null,
+    roomCode = '',
     syncMode = 'remote',
     isPassive = false
 }) => {
@@ -309,7 +311,13 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
             }
 
             {/* 5. Queue Overlay (Beautiful List with Glassmorphism) */}
-            <QueueList queue={queue} isVisible={isQueueVisible} onPlay={onPlay} isPassive={isPassive} />
+            <QueueList 
+                queue={queue} 
+                isVisible={isQueueVisible} 
+                onPlay={onPlay} 
+                isPassive={isPassive} 
+                roomCode={roomCode}
+            />
 
             {/* 6. Song Splash Screen Removed as requested */}
             {/* <SongSplash video={currentVideo} isVisible={showSplash} /> */}

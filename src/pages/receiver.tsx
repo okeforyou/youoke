@@ -400,6 +400,7 @@ const Monitor = () => {
             queue={state.queue as unknown as VideoItem[]}
             isQueueVisible={state.isQueueVisible}
             notification={state.notification as any}
+            roomCode={roomCode}
             onReady={(player) => setPlayerRef(player)}
             onStateChange={async (playerState) => {
               if (playerState === 0) {

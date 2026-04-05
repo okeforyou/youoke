@@ -3,15 +3,17 @@ import Image from 'next/image';
 import clsx from 'clsx';
 import { MusicalNoteIcon, UserIcon } from '@heroicons/react/24/outline';
 import { VideoItem } from '../types';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface QueueListProps {
     queue: VideoItem[];
     isVisible: boolean;
     onPlay?: (index: number) => void;
     isPassive?: boolean;
+    roomCode?: string;
 }
 
-export const QueueList: React.FC<QueueListProps> = ({ queue, isVisible, onPlay, isPassive = false }) => {
+export const QueueList: React.FC<QueueListProps> = ({ queue, isVisible, onPlay, isPassive = false, roomCode = '' }) => {
     return (
         <div className={clsx(
             "absolute top-0 right-0 bottom-0 w-[450px] bg-black/80 backdrop-blur-[40px] border-l border-white/5 p-10 transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] z-40 flex flex-col shadow-[-40px_0_80px_rgba(0,0,0,0.5)]",
@@ -72,6 +74,19 @@ export const QueueList: React.FC<QueueListProps> = ({ queue, isVisible, onPlay, 
                     </div>
                 )}
             </div>
+
+            {/* QR Code Section at the Bottom */}
+            {roomCode && (
+                <div className="mt-8 pt-8 border-t border-white/5 flex flex-col items-center animate-in slide-in-from-bottom-5 duration-700">
+                    <div className="bg-white p-3 rounded-2xl shadow-2xl transition-all hover:scale-110 active:scale-95 cursor-none">
+                        <QRCodeSVG value={`${window.location.origin}/remote?room=${roomCode}`} size={160} level="H" />
+                    </div>
+                    <div className="mt-4 text-center">
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/30 mb-1">สแกนเพื่อสั่งเพลง</p>
+                        <p className="text-2xl font-black text-primary tracking-tighter shadow-primary/20 drop-shadow-sm">{roomCode}</p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
