@@ -573,7 +573,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             {mounted && (
                                 <div className={clsx(
                                     "absolute top-2.5 right-2.5 w-2 h-2 rounded-full border-2 border-white dark:border-zinc-900 transition-colors duration-500",
-                                    connectionStatus === 'active' ? "bg-green-500 animate-pulse" :
+                                    connectionStatus === 'active' ? "bg-red-500 animate-pulse" :
                                         connectionStatus === 'background' ? "bg-orange-500" : "bg-gray-300 dark:bg-zinc-700"
                                 )} />
                             )}
@@ -800,7 +800,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
             <aside
                 className={clsx(
-                    "hidden lg:flex w-[420px] border-l border-gray-200 dark:border-zinc-800/20 flex-col z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+                    "hidden lg:flex w-[420px] border-l border-gray-200 dark:border-zinc-950 flex-col z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
                     (isQueueOpen && queue.length > 0 && layoutMode !== 'fullscreen') ? "mr-0 w-[420px] opacity-100" : "-mr-[420px] w-0 opacity-0"
                 )}
             >

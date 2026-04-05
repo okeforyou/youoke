@@ -86,7 +86,7 @@ export const NotificationToast: React.FC = () => {
         <div
           key={toast.id}
           className={cn(
-            "pointer-events-auto flex items-start gap-4 p-4 bg-white/90 backdrop-blur-xl border border-slate-100 rounded-2xl shadow-xl shadow-slate-200/50 animate-in slide-in-from-right duration-300 cursor-pointer hover:bg-white active:scale-[0.98] transition-all",
+            "pointer-events-auto flex items-start gap-4 p-4 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-slate-100 dark:border-zinc-800 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 animate-in slide-in-from-right duration-300 cursor-pointer hover:bg-white dark:hover:bg-zinc-800 active:scale-[0.98] transition-all",
             toast.type === 'success' ? 'border-l-4 border-l-emerald-500' : 'border-l-4 border-l-primary'
           )}
           onClick={() => {
@@ -96,14 +96,14 @@ export const NotificationToast: React.FC = () => {
         >
           <div className={cn(
             "p-2 rounded-xl shrink-0",
-            toast.type === 'success' ? 'bg-emerald-50 text-emerald-600' : 'bg-primary/10 text-primary'
+            toast.type === 'success' ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-500' : 'bg-primary/10 text-primary'
           )}>
             {toast.type === 'success' ? <Bell className="h-5 w-5" /> : <Info className="h-5 w-5" />}
           </div>
           
           <div className="flex-1 min-w-0">
-            <h4 className="text-sm font-bold text-slate-900 line-clamp-1">{toast.title}</h4>
-            <p className="text-xs text-slate-500 mt-1 leading-relaxed line-clamp-2">{toast.body}</p>
+            <h4 className="text-sm font-bold text-slate-900 dark:text-zinc-50 line-clamp-1">{toast.title}</h4>
+            <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1 leading-relaxed line-clamp-2">{toast.body}</p>
           </div>
 
           <button
