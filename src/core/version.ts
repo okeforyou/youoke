@@ -1,12 +1,21 @@
 import packageInfo from "../../package.json";
 
-export const SYSTEM_VERSION = "4.9.69";
-export const SYSTEM_CODENAME = "Global Shop Alignment";
+export const SYSTEM_VERSION = "4.9.70";
+export const SYSTEM_CODENAME = "Localization Polish";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
 export const BUILD_DATE = "5 เม.ย. 2569";
 
 export const CHANGELOGS = [
+    {
+        version: "4.9.70 (Localization Sync)",
+        date: "5 เม.ย. 2569",
+        changes: [
+            "[UI] Shop Badge Localization: ลบข้อความภาษาเกาหลี (추천) ออกจากป้ายยอดนิยมในหน้าเลือกซื้อแพ็กเกจ เพื่อความสวยงานและเป็นไทย 100%",
+            "[System] Version Unified Lock: ซิงค์เลขเวอร์ชัน v4.9.70 เพื่อบันทึกการแก้ไขตำแหน่ง UI"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
     {
         version: "4.9.69 (Global Sync)",
         date: "5 เม.ย. 2569",

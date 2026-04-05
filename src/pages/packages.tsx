@@ -227,8 +227,9 @@ export default function PackagesPage() {
                                 )}
                             >
                                 {pkg.isPopular && (
-                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-primary text-white rounded-full text-xs font-black tracking-widest uppercase shadow-xl shadow-primary/20">
-                                        추천 - ยอดนิยม
+                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-primary text-white rounded-full text-[10px] font-black tracking-widest uppercase shadow-xl shadow-primary/20 flex items-center gap-2">
+                                        <Zap className="w-3 h-3 fill-current" />
+                                        🔥 ยอดนิยม
                                     </div>
                                 )}
 
