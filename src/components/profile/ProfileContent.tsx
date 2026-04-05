@@ -117,7 +117,7 @@ export const ProfileContent = () => {
         return (
             <div className="flex flex-col animate-in fade-in duration-200">
                 {/* View Header */}
-                <div className="px-6 py-4 flex items-center gap-4 border-b border-gray-100 dark:border-zinc-900/50">
+                <div className="px-6 py-4 flex items-center gap-4 border-b border-gray-100 dark:border-zinc-800">
                     <button 
                         onClick={() => setView('main')}
                         className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-900 transition-colors"
@@ -174,7 +174,7 @@ export const ProfileContent = () => {
         return (
             <div className="flex flex-col animate-in fade-in duration-200">
                 {/* View Header */}
-                <div className="px-6 py-4 flex items-center gap-4 border-b border-gray-100 dark:border-zinc-900/50 bg-white dark:bg-zinc-950 sticky top-0 z-[110]">
+                <div className="px-6 py-4 flex items-center gap-4 border-b border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-950 sticky top-0 z-[110]">
                     <button 
                         onClick={() => setView('main')}
                         className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-900 transition-colors"
@@ -308,7 +308,7 @@ export const ProfileContent = () => {
                     <ul className="space-y-1">
                         {menuItems.map((item, index) => (
                             <li key={index}>
-                                <Link href={item.href} className="flex items-center justify-between p-4 rounded-2xl hover:bg-gray-50 transition-all dark:hover:bg-zinc-900">
+                                <Link href={item.href} className="flex items-center justify-between p-4 rounded-2xl hover:bg-gray-50 transition-all dark:bg-zinc-900/40 dark:hover:bg-zinc-900 border border-transparent dark:border-zinc-800/50">
                                     <div className="flex items-center gap-4">
                                         <item.icon className="w-5 h-5 text-gray-400 dark:text-zinc-500" />
                                         <span className="text-sm font-bold text-gray-700 dark:text-zinc-400">{item.label}</span>

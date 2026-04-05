@@ -41,14 +41,14 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                 leaveTo="translate-y-full sm:translate-y-0 sm:translate-x-full"
                             >
                                 <Dialog.Panel className="pointer-events-auto w-full sm:w-screen sm:max-w-sm">
-                                    <div className="flex h-[92vh] sm:h-full flex-col overflow-hidden bg-white dark:bg-zinc-950 shadow-2xl relative rounded-t-[32px] sm:rounded-t-none border-t border-gray-100 dark:border-zinc-900 sm:border-none">
+                                    <div className="flex h-[92vh] sm:h-full flex-col overflow-hidden bg-white dark:bg-zinc-950 shadow-2xl relative rounded-t-[32px] sm:rounded-t-none border-t border-gray-100 dark:border-zinc-800/50 sm:border-none">
                                         {/* Mobile Grab Handle */}
                                         <div className="sm:hidden flex justify-center pt-3 pb-1 bg-white dark:bg-zinc-950">
                                             <div className="w-12 h-1.5 bg-gray-200 dark:bg-zinc-800 rounded-full"></div>
                                         </div>
 
                                         {/* Header */}
-                                        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-910 bg-white dark:bg-zinc-950 sticky top-0 z-[110]">
+                                        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-950 sticky top-0 z-[110]">
                                             <Dialog.Title className="text-lg font-bold text-gray-900 dark:text-white">
                                                 โปรไฟล์ของฉัน
                                             </Dialog.Title>

@@ -60,7 +60,7 @@ const Modal: ForwardRefRenderFunction<ModalHandler, IModalProps> = (
         >
           {/* Header */}
           {title ? (
-            <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-zinc-900 bg-white dark:bg-zinc-950 shrink-0 z-20">
+            <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-950 shrink-0 z-20">
               {typeof title === 'string' ? <h3 className="text-xl font-bold text-gray-900 dark:text-white">{title}</h3> : <div className="w-full pr-8">{title}</div>}
               <button
                 onClick={() => {

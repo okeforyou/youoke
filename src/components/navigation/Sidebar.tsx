@@ -62,7 +62,7 @@ export const Sidebar = memo(() => {
 
             {/* Sidebar Header */}
             <div className={clsx(
-                "h-20 flex items-center shrink-0 z-40 transition-all duration-300",
+                "h-20 flex items-center shrink-0 z-40 transition-all duration-300 border-b border-gray-100 dark:border-zinc-800/40",
                 isSidebarCollapsed ? "px-0 justify-center" : "px-6"
             )}>
                 <div className="flex items-center gap-3">
@@ -200,7 +200,7 @@ export const Sidebar = memo(() => {
             </nav>
 
             <div className={clsx(
-                "border-t border-gray-100 dark:border-zinc-900 bg-white dark:bg-zinc-950 transition-all duration-300",
+                "border-t border-gray-100 dark:border-zinc-800/60 bg-white dark:bg-zinc-900/40 transition-all duration-300",
                 isSidebarCollapsed ? "p-2" : "p-4"
             )}>
                 <ProfileDrawer
@@ -321,7 +321,7 @@ export const Sidebar = memo(() => {
 
                 {/* Version Info (Standard Gray & Linked) */}
                 <div className={clsx(
-                    "mt-4 flex items-center transition-all duration-300 border-t border-gray-100 dark:border-zinc-900 pt-4 px-3",
+                    "mt-4 flex items-center transition-all duration-300 border-t border-gray-100 dark:border-zinc-800/40 pt-4 px-3",
                     isSidebarCollapsed ? "justify-center" : "justify-between"
                 )}>
                     <Link href="/changelog" className="hover:opacity-70 transition-opacity">
