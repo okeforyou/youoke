@@ -1,6 +1,6 @@
 {
   "name": "youoke",
-  "version": "4.9.85",
+  "version": "4.9.86",
   "private": true,
   "scripts": {
     "dev": "next dev",

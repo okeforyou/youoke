@@ -560,7 +560,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
                         </div>
 
 
-                        {/* Mobile Connect Button (Smartphone) */}
                         <button
                             onClick={() => {
                                 setShowQRCode(true);
@@ -573,8 +572,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             {mounted && (
                                 <div className={clsx(
                                     "absolute top-2.5 right-2.5 w-2 h-2 rounded-full border-2 border-white dark:border-zinc-900 transition-colors duration-500",
-                                    connectionStatus === 'active' ? "bg-red-500 animate-pulse" :
-                                        connectionStatus === 'background' ? "bg-orange-500" : "bg-gray-300 dark:bg-zinc-700"
+                                    connectionStatus === 'active' ? "bg-green-500" :
+                                        connectionStatus === 'background' ? "bg-orange-500" : "bg-red-500 animate-pulse"
                                 )} />
                             )}
                         </button>
@@ -586,7 +585,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     <div
                         id="global-video-player-container"
                         className={clsx(
-                            "transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] z-[100] overflow-hidden lg:border-l lg:border-gray-200 shrink-0",
+                            "transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] z-[100] overflow-hidden lg:border-l lg:border-gray-200 dark:border-zinc-950 shrink-0",
 
                             // Optimized Fullscreen Transition
                             layoutMode === 'fullscreen'
