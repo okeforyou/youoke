@@ -317,7 +317,8 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                         </label>
                         <div className="grid grid-cols-2 gap-2">
                             {[
-                                { id: 'free', label: 'ทั่วไป' },
+                                { id: 'legacy', label: 'สมาชิกเดิม' },
+                                { id: 'free', label: 'ทั่วไป (หมดอายุ)' },
                                 { id: 'monthly', label: 'รายเดือน' },
                                 { id: 'yearly', label: 'รายปี' },
                                 { id: 'lifetime', label: 'ถาวร' }
