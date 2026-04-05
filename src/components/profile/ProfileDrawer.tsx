@@ -1,6 +1,6 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { ProfileContent } from './ProfileContent';
 
 interface ProfileDrawerProps {
@@ -9,6 +9,10 @@ interface ProfileDrawerProps {
 }
 
 export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
+    // Note: To truly control views, we'd need to lift state up.
+    // However, ProfileContent already handles its own internal routing.
+    // We'll keep the Drawer header simple and consistent with the Drawer's job.
+    
     return (
         <Transition.Root show={isOpen} as={Fragment}>
             <Dialog as="div" className="relative z-[100]" onClose={onClose}>
@@ -37,20 +41,20 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
                                 leaveTo="translate-y-full sm:translate-y-0 sm:translate-x-full"
                             >
                                 <Dialog.Panel className="pointer-events-auto w-full sm:w-screen sm:max-w-sm">
-                                    <div className="flex h-[92vh] sm:h-full flex-col overflow-hidden bg-white shadow-2xl relative rounded-t-[32px] sm:rounded-t-none">
+                                    <div className="flex h-[92vh] sm:h-full flex-col overflow-hidden bg-white dark:bg-zinc-950 shadow-2xl relative rounded-t-[32px] sm:rounded-t-none border-t border-gray-100 dark:border-zinc-900 sm:border-none">
                                         {/* Mobile Grab Handle */}
-                                        <div className="sm:hidden flex justify-center pt-3 pb-1 bg-white">
-                                            <div className="w-12 h-1.5 bg-gray-200 rounded-full"></div>
+                                        <div className="sm:hidden flex justify-center pt-3 pb-1 bg-white dark:bg-zinc-950">
+                                            <div className="w-12 h-1.5 bg-gray-200 dark:bg-zinc-800 rounded-full"></div>
                                         </div>
 
                                         {/* Header */}
-                                        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white sticky top-0 z-[110]">
-                                            <Dialog.Title className="text-lg font-bold text-gray-900">
+                                        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-910 bg-white dark:bg-zinc-950 sticky top-0 z-[110]">
+                                            <Dialog.Title className="text-lg font-bold text-gray-900 dark:text-white">
                                                 โปรไฟล์ของฉัน
                                             </Dialog.Title>
                                             <button
                                                 type="button"
-                                                className="rounded-full p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 transition-colors focus:outline-none"
+                                                className="rounded-full p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-900 transition-colors focus:outline-none"
                                                 onClick={onClose}
                                             >
                                                 <XMarkIcon className="h-6 w-6" aria-hidden="true" />
@@ -70,3 +74,4 @@ export default function ProfileDrawer({ isOpen, onClose }: ProfileDrawerProps) {
         </Transition.Root>
     );
 }
+

@@ -91,17 +91,26 @@ body,
   height: 100%;
   margin: 0;
   padding: 0;
-  background-color: var(--color-bg-base, white);
+  background-color: white; 
+}
+
+.dark html,
+.dark body,
+.dark #__next {
+  background-color: #09090b !important; /* zinc-950 */
 }
 
 /* Fix for PWA/Mobile background issues */
 @media (display-mode: standalone) {
-
   html,
   body,
   #__next {
     background-color: black;
-    /* Prevent gray bars in PWA */
+  }
+  .dark html,
+  .dark body,
+  .dark #__next {
+    background-color: #000 !important;
   }
 }
 
@@ -133,12 +142,9 @@ html {
   cursor: pointer;
 }
 
-
-
 .chip-container {
   position: relative;
   display: inline-block;
-  /* margin: 1rem; */
 }
 
 .chip {
@@ -149,12 +155,10 @@ html {
 }
 
 @keyframes floating {
-
   0%,
   100% {
     transform: translateY(0);
   }
-
   50% {
     transform: translateY(-2px);
   }
@@ -202,13 +206,11 @@ html {
 }
 
 @keyframes sparkle-animation {
-
   0%,
   100% {
     opacity: 0;
     transform: scale(0);
   }
-
   50% {
     opacity: 1;
     transform: scale(1.5);
@@ -220,7 +222,6 @@ html {
     opacity: 0;
     transform: scale(0.95);
   }
-
   to {
     opacity: 1;
     transform: scale(1);
@@ -232,7 +233,6 @@ html {
     opacity: 0;
     transform: translateY(-1.5rem) scale(0.95);
   }
-
   to {
     opacity: 1;
     transform: translateY(0) scale(1);

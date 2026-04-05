@@ -1,12 +1,22 @@
 import packageInfo from "../../package.json";
 
-export const SYSTEM_VERSION = "4.9.76";
-export const SYSTEM_CODENAME = "Stability Horizon";
+export const SYSTEM_VERSION = "4.9.77";
+export const SYSTEM_CODENAME = "Total Eclipse";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
 export const BUILD_DATE = "5 เม.ย. 2569";
 
 export const CHANGELOGS = [
+    {
+        version: "4.9.77 (Full Darkness)",
+        date: "5 เม.ย. 2569",
+        changes: [
+            "[UI] Universal Dark Mode: กวาดล้างจุดสีขาวทัังหมดในแอป (Drawer Header, Footer, Background) ให้เป็นสีมืดสนิท 100%",
+            "[UI] Global Style Sync: บังคับสีพื้นหลังระดับ Root ผ่าน global.css เพื่อป้องกันปัญหาสีขาวกระพริบระหว่างโหลด",
+            "[System] Component Polish: ปรับจูนสีเส้นขอบ (Borders) ในโหมดมืดให้นุ่มนวลขึ้นสไตล์ Flat Design"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
     {
         version: "4.9.76 (Hotfix)",
         date: "5 เม.ย. 2569",
