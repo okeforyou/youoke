@@ -315,9 +315,10 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                         <label className="text-[11px] font-bold text-slate-400 uppercase mb-3 block px-1 flex items-center gap-2">
                              📌 จัดกลุ่มสมาชิก (Segmentation)
                         </label>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
                             {[
                                 { id: 'legacy', label: 'สมาชิกเดิม' },
+                                { id: 'day_pass', label: 'ทดลองใช้' },
                                 { id: 'free', label: 'ทั่วไป (หมดอายุ)' },
                                 { id: 'monthly', label: 'รายเดือน' },
                                 { id: 'yearly', label: 'รายปี' },
@@ -341,7 +342,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                                         }
                                     }}
                                     className={cn(
-                                        "py-3 rounded-lg border text-[10px] font-black uppercase tracking-widest transition-all active:scale-95",
+                                        "py-2.5 rounded-lg border text-[9px] font-black uppercase tracking-widest transition-all active:scale-95",
                                         (user.membership?.type === item.id || user.tier === item.id)
                                             ? "bg-slate-900 border-slate-900 text-white" 
                                             : "bg-white border-slate-100 text-slate-400 hover:border-slate-200"
