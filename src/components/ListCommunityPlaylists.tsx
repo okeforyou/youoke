@@ -55,19 +55,19 @@ export default function ListCommunityPlaylists({ onPlay }: ListCommunityPlaylist
     return (
         <div className="pb-10">
             <div className="px-6 pt-2 pb-6">
-                <h2 className="text-[17px] font-black text-black flex items-center gap-2">
+                <h2 className="text-[17px] font-black text-black dark:text-white flex items-center gap-2">
                     <FireIcon className="w-5 h-5 text-orange-500" />
                     ฮิตติดชาร์ต (Community Hits)
                 </h2>
-                <p className="text-gray-500 text-[12px] mt-1 ml-7">เพลย์ลิสต์ยอดนิยมจากเพื่อนๆ ในชุมชน YouOke</p>
+                <p className="text-gray-500 dark:text-zinc-500 text-[12px] mt-1 ml-7">เพลย์ลิสต์ยอดนิยมจากเพื่อนๆ ในชุมชน YouOke</p>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-x-6 gap-y-10 px-6">
                 {loading ? (
                     getSkeletonItems(5).map((i) => (
                         <div key={i} className="flex flex-col gap-3">
-                            <div className="aspect-video w-full bg-gray-100 rounded-2xl animate-pulse"></div>
-                            <div className="h-4 w-3/4 bg-gray-100 rounded animate-pulse"></div>
+                            <div className="aspect-video w-full bg-gray-100 dark:bg-zinc-900 rounded-2xl animate-pulse"></div>
+                            <div className="h-4 w-3/4 bg-gray-100 dark:bg-zinc-800 rounded animate-pulse"></div>
                         </div>
                     ))
                 ) : (
@@ -75,7 +75,7 @@ export default function ListCommunityPlaylists({ onPlay }: ListCommunityPlaylist
                         <div key={pl.id} className="relative group">
                             {/* Ranking Badge */}
                             {idx < 3 && (
-                                <div className="absolute -top-3 -left-3 z-20 w-8 h-8 rounded-full flex items-center justify-center font-black text-white shadow-lg border-2 border-white scale-110"
+                                <div className="absolute -top-3 -left-3 z-20 w-8 h-8 rounded-full flex items-center justify-center font-black text-white shadow-lg border-2 border-white dark:border-zinc-950 scale-110"
                                     style={{ backgroundColor: idx === 0 ? '#FFD700' : idx === 1 ? '#C0C0C0' : '#CD7F32' }}>
                                     {idx + 1}
                                 </div>

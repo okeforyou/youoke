@@ -59,9 +59,9 @@ export const MobileBottomNav = () => {
     };
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 z-[60] pb-[env(safe-area-inset-bottom)] lg:hidden subpixel-antialiased antialiased">
+        <div className="fixed bottom-0 left-0 right-0 z-[60] pb-[env(safe-area-inset-bottom)] lg:hidden subpixel-antialiased antialiased transition-colors">
             {/* Glass Background */}
-            <div className="absolute inset-0 bg-[#f4f4f5]/95 backdrop-blur-xl border-t border-gray-200/50" />
+            <div className="absolute inset-0 bg-[#f4f4f5]/95 dark:bg-zinc-950/95 backdrop-blur-xl border-t border-gray-200/50 dark:border-zinc-800/50 transition-colors" />
 
             <div className="relative flex justify-around items-center h-[72px] px-2 pb-2">
                 {navItems.map((item) => {
@@ -74,10 +74,10 @@ export const MobileBottomNav = () => {
                         >
                             <div className={clsx(
                                 "p-1.5 rounded-xl transition-all duration-300 relative",
-                                isActive ? "text-primary bg-primary/10" : "text-black group-hover:text-black"
+                                isActive ? "text-primary bg-primary/10" : "text-black dark:text-zinc-400 group-hover:text-black dark:group-hover:text-white"
                             )}>
                                 {unreadCount > 0 && item.id === 5 && (
-                                    <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-600 border-2 border-white rounded-full z-10 animate-pulse shadow-sm" />
+                                    <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-600 border-2 border-white dark:border-zinc-950 rounded-full z-10 animate-pulse shadow-sm" />
                                 )}
 
                                 {item.id === 5 ? (
@@ -106,7 +106,7 @@ export const MobileBottomNav = () => {
                             </div>
                             <span className={clsx(
                                 "text-[10px] font-medium transition-colors duration-200",
-                                isActive ? "text-primary font-bold" : "text-black"
+                                isActive ? "text-primary font-bold" : "text-black dark:text-zinc-500"
                             )}>
                                 {item.label}
                             </span>

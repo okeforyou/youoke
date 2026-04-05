@@ -88,19 +88,19 @@ export default function ListHitsGrid({ onClick: onPlay }: { onClick?: (hit: Sing
     <div className="animate-in fade-in duration-700 pb-32">
       {/* Header Section */}
       <div className="px-4 pt-4 pb-6">
-        <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-5 sm:p-8 rounded-2xl relative overflow-hidden min-h-[130px] flex flex-col justify-center border border-gray-200/50 shadow-sm">
-           <h2 className="text-2xl sm:text-3xl font-black text-black leading-tight">ชาร์ตเพลง</h2>
-           <p className="text-[13px] sm:text-base !text-black mt-2 font-black">เกาะติดกระแสเพลงฮิต อัปเดตใหม่ล่าสุดตลอดเวลา</p>
+        <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-zinc-900 dark:to-zinc-800 p-5 sm:p-8 rounded-2xl relative overflow-hidden min-h-[130px] flex flex-col justify-center border border-gray-200/50 dark:border-zinc-800 shadow-sm">
+           <h2 className="text-2xl sm:text-3xl font-black text-black dark:text-white leading-tight">ชาร์ตเพลง</h2>
+           <p className="text-[13px] sm:text-base !text-black dark:!text-zinc-400 mt-2 font-black">เกาะติดกระแสเพลงฮิต อัปเดตใหม่ล่าสุดตลอดเวลา</p>
            <div className="absolute bottom-6 right-8 opacity-10">
-              <BarChart2 className="w-20 h-20 text-black" />
+              <BarChart2 className="w-20 h-20 text-black dark:text-white" />
            </div>
         </div>
       </div>
 
       {/* Category Selection Grid */}
       <div className="px-4 mb-4">
-        <h3 className="text-base sm:text-lg font-black text-black mb-1">เลือกหมวดหมู่ชาร์ต</h3>
-        <p className="text-[10px] sm:text-xs text-black font-black">กดเลือกชาร์ตจัดอันดับที่คุณสนใจ</p>
+        <h3 className="text-base sm:text-lg font-black text-black dark:text-white mb-1">เลือกหมวดหมู่ชาร์ต</h3>
+        <p className="text-[10px] sm:text-xs text-black dark:text-zinc-500 font-black">กดเลือกชาร์ตจัดอันดับที่คุณสนใจ</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 mb-8">
@@ -113,7 +113,7 @@ export default function ListHitsGrid({ onClick: onPlay }: { onClick?: (hit: Sing
               onClick={() => setSelectedChart(cat.id === selectedChart ? null : cat.id)}
               className={clsx(
                 "group relative overflow-hidden rounded-2xl aspect-[1.6/1] cursor-pointer transition-all duration-300 shadow-sm border-2",
-                isActive ? "border-primary scale-[1.02] shadow-md ring-4 ring-primary/10" : "border-transparent hover:shadow-lg bg-white"
+                isActive ? "border-primary scale-[1.02] shadow-md ring-4 ring-primary/10" : "border-transparent hover:shadow-lg bg-white dark:bg-zinc-900"
               )}
             >
                <div className={clsx(
@@ -152,13 +152,13 @@ export default function ListHitsGrid({ onClick: onPlay }: { onClick?: (hit: Sing
       {/* Song List Section */}
       {selectedChart && (
         <div ref={songListRef} className="animate-in slide-in-from-bottom-8 duration-500 scroll-mt-20 px-4">
-           <div className="flex items-center justify-between mb-6 pt-8 border-t border-gray-100">
+           <div className="flex items-center justify-between mb-6 pt-8 border-t border-gray-100 dark:border-zinc-800">
               <div>
-                 <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                 <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                     {activeChart?.title}
-                    <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium">#{activeChart?.jooxId}</span>
+                    <span className="text-xs bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 px-2 py-0.5 rounded-full font-medium">#{activeChart?.jooxId}</span>
                  </h2>
-                  <p className="text-[11px] text-black font-black">{activeChart?.description} ({chartItems.length} รายการ)</p>
+                  <p className="text-[11px] text-black dark:text-zinc-500 font-black">{activeChart?.description} ({chartItems.length} รายการ)</p>
               </div>
               <button 
                 onClick={() => setSelectedChart(null)}
@@ -175,7 +175,7 @@ export default function ListHitsGrid({ onClick: onPlay }: { onClick?: (hit: Sing
                 ))}
              </div>
            ) : chartItems.length === 0 ? (
-             <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+             <div className="flex flex-col items-center justify-center py-20 text-gray-400 dark:text-zinc-600">
                 <BarChart2 className="w-12 h-12 mb-4 opacity-20" />
                 <p className="text-sm font-medium">ไม่พบรายการเพลงในขณะนี้ กรุณาลองใหม่ภายหลัง</p>
              </div>
@@ -192,7 +192,7 @@ export default function ListHitsGrid({ onClick: onPlay }: { onClick?: (hit: Sing
                       {index + 1}
                     </div>
 
-                    <div className="relative aspect-video rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm group-hover:shadow-md transition-all">
+                    <div className="relative aspect-video rounded-2xl overflow-hidden bg-white dark:bg-zinc-950 border border-gray-100 dark:border-zinc-800 shadow-sm group-hover:shadow-md transition-all">
                        <Image 
                           src={hit.coverImageURL || "/icon-cover.png"}
                           alt={hit.title} 
@@ -204,10 +204,10 @@ export default function ListHitsGrid({ onClick: onPlay }: { onClick?: (hit: Sing
                           <PlayCircle className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100 transition-all duration-300 drop-shadow-lg" />
                        </div>
                     </div>
-                    <p className="mt-2 px-0.5 text-[10px] sm:text-[11px] font-bold text-black group-hover:text-primary transition-colors block truncate w-full italic-sm text-center">
+                    <p className="mt-2 px-0.5 text-[10px] sm:text-[11px] font-bold text-black dark:text-zinc-400 group-hover:text-primary transition-colors block truncate w-full italic-sm text-center">
                        {hit.title}
                     </p>
-                    <p className="text-[9px] text-gray-400 font-medium block truncate w-full text-center mt-0.5 mb-2">
+                    <p className="text-[9px] text-gray-400 dark:text-zinc-500 font-medium block truncate w-full text-center mt-0.5 mb-2">
                        {(hit.artist_name && hit.artist_name !== "Unknown Artist") ? hit.artist_name : "YouTube Music"}
                     </p>
                  </div>

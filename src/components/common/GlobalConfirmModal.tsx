@@ -53,17 +53,17 @@ export const GlobalConfirmModal = () => {
                             leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                             leaveTo="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95"
                         >
-                            <Dialog.Panel className="relative transform overflow-hidden rounded-[2.5rem] bg-white px-6 pb-6 pt-8 text-left shadow-[0_20px_50px_rgba(0,0,0,0.3)] transition-all sm:my-8 sm:w-full sm:max-w-sm">
+                            <Dialog.Panel className="relative transform overflow-hidden rounded-[2.5rem] bg-white dark:bg-zinc-900 px-6 pb-6 pt-8 text-left shadow-[0_20px_50px_rgba(0,0,0,0.3)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)] transition-all sm:my-8 sm:w-full sm:max-w-sm border border-gray-100 dark:border-zinc-800">
                                 <div>
-                                    <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gray-50 border border-gray-100 shadow-inner overflow-hidden">
+                                    <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gray-50 dark:bg-zinc-950 border border-gray-100 dark:border-zinc-800 shadow-inner overflow-hidden">
                                         {icons[type || 'info']}
                                     </div>
                                     <div className="mt-8 text-center px-2">
-                                        <Dialog.Title as="h3" className="text-2xl font-black leading-tight text-gray-900 tracking-tighter uppercase">
+                                        <Dialog.Title as="h3" className="text-2xl font-black leading-tight text-gray-900 dark:text-white tracking-tighter uppercase">
                                             {title}
                                         </Dialog.Title>
                                         <div className="mt-4">
-                                            <p className="text-sm text-gray-500 font-medium leading-relaxed">
+                                            <p className="text-sm text-gray-500 dark:text-zinc-400 font-medium leading-relaxed">
                                                 {message}
                                             </p>
                                         </div>
@@ -82,7 +82,7 @@ export const GlobalConfirmModal = () => {
                                     </button>
                                     <button
                                         type="button"
-                                        className="inline-flex w-full justify-center rounded-2xl bg-white px-5 py-4 text-sm font-bold text-gray-400 hover:text-gray-600 transition-colors focus:outline-none"
+                                        className="inline-flex w-full justify-center rounded-2xl bg-white dark:bg-zinc-800 px-5 py-4 text-sm font-bold text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-300 transition-colors focus:outline-none"
                                         onClick={hideConfirm}
                                     >
                                         {cancelText || 'ยกเลิก'}

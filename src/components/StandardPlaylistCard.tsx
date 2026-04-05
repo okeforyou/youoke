@@ -49,10 +49,10 @@ export default function PlaylistCard({
         >
             {/* Cover Image - Unified Premium Card Style */}
             {/* Fixed: White Background + Border to prevent "Gray Circle" visual glitch */}
-            <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-white shadow-sm group-hover:shadow-xl transition-all duration-500 ease-out group-hover:-translate-y-1.5 isolation-isolate border-2 border-gray-100 group-hover:border-primary/20">
+            <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-white dark:bg-zinc-950 shadow-sm group-hover:shadow-xl transition-all duration-500 ease-out group-hover:-translate-y-1.5 isolation-isolate border-2 border-gray-100 dark:border-zinc-900 group-hover:border-primary/20">
 
                 {/* Fallback Background (Visible if image missing/error) */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 text-gray-400">
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 dark:bg-zinc-900 text-gray-400 dark:text-zinc-600">
                     {isRecommended ? <FolderPlusIcon className="w-12 h-12" /> : <RectangleStackIcon className="w-12 h-12" />}
                     <span className="text-[10px] font-bold mt-1 uppercase tracking-wider opacity-50">Empty</span>
                 </div>
@@ -91,14 +91,14 @@ export default function PlaylistCard({
             {/* Content */}
             <div className="flex justify-between items-start px-1 mt-1">
                 <div className="min-w-0 flex-1 pr-2">
-                    <h3 className="font-bold text-[11px] sm:text-[12px] text-gray-800 truncate group-hover:text-primary transition-colors leading-tight">
+                    <h3 className="font-bold text-[11px] sm:text-[12px] text-gray-800 dark:text-zinc-200 truncate group-hover:text-primary transition-colors leading-tight">
                         {name}
                     </h3>
                     <div className="flex items-center gap-2 mt-1">
                         {isRecommended ? (
-                            <p className="text-xs text-gray-500">Playlist</p>
+                            <p className="text-xs text-gray-500 dark:text-zinc-500">Playlist</p>
                         ) : (
-                            <span className="text-[10px] font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full border border-gray-200">
+                            <span className="text-[10px] font-medium text-gray-500 dark:text-zinc-500 bg-gray-100 dark:bg-zinc-900 px-2 py-0.5 rounded-full border border-gray-200 dark:border-zinc-800">
                                 {count} เพลง
                             </span>
                         )}
@@ -110,12 +110,12 @@ export default function PlaylistCard({
                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200" onClick={(e) => e.stopPropagation()}>
                         {activeIndex === 1 ? (
                             <div className="dropdown dropdown-end dropdown-top">
-                                <button tabIndex={0} className="btn btn-sm btn-ghost h-8 w-8 min-h-0 rounded-lg hover:bg-base-200 p-0">
-                                    <EllipsisVerticalIcon className="w-5 h-5 text-gray-400" />
+                                <button tabIndex={0} className="btn btn-sm btn-ghost h-8 w-8 min-h-0 rounded-lg hover:bg-base-200 dark:hover:bg-zinc-800 p-0">
+                                    <EllipsisVerticalIcon className="w-5 h-5 text-gray-400 dark:text-zinc-500" />
                                 </button>
-                                <ul tabIndex={0} className="dropdown-content z-[20] menu p-1.5 shadow-xl bg-white rounded-xl w-36 text-xs border border-gray-100">
-                                    <li><button onClick={onEdit} className="py-2.5 font-medium"><PencilIcon className="w-4 h-4" /> แก้ไข</button></li>
-                                    <li><button onClick={onDelete} className="py-2.5 text-error font-medium hover:bg-error/5"><TrashIcon className="w-4 h-4" /> ลบ</button></li>
+                                <ul tabIndex={0} className="dropdown-content z-[20] menu p-1.5 shadow-xl bg-white dark:bg-zinc-900 rounded-xl w-36 text-xs border border-gray-100 dark:border-zinc-800">
+                                    <li><button onClick={onEdit} className="py-2.5 font-medium dark:text-zinc-300 dark:hover:bg-zinc-800"><PencilIcon className="w-4 h-4" /> แก้ไข</button></li>
+                                    <li><button onClick={onDelete} className="py-2.5 text-error font-medium hover:bg-error/5 dark:hover:bg-red-500/10"><TrashIcon className="w-4 h-4" /> ลบ</button></li>
                                 </ul>
                             </div>
                         ) : (

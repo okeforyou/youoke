@@ -117,14 +117,14 @@ export const ProfileContent = () => {
         return (
             <div className="flex flex-col animate-in fade-in duration-200">
                 {/* View Header */}
-                <div className="px-6 py-4 flex items-center gap-4 border-b border-slate-50 dark:border-zinc-900/50">
+                <div className="px-6 py-4 flex items-center gap-4 border-b border-gray-100 dark:border-zinc-900/50">
                     <button 
                         onClick={() => setView('main')}
-                        className="p-2 -ml-2 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-900 transition-colors"
+                        className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-900 transition-colors"
                     >
-                        <ChevronRightIcon className="w-5 h-5 rotate-180" />
+                        <ChevronRightIcon className="w-5 h-5 rotate-180 text-gray-400 dark:text-zinc-500" />
                     </button>
-                    <h2 className="text-lg font-black text-slate-900 dark:text-white">เชื่อมต่อ LINE ของคุณ</h2>
+                    <h2 className="text-lg font-black text-gray-900 dark:text-white">เชื่อมต่อ LINE ของคุณ</h2>
                 </div>
 
                 <div className="p-8 flex flex-col items-center text-center space-y-8">
@@ -174,14 +174,14 @@ export const ProfileContent = () => {
         return (
             <div className="flex flex-col animate-in fade-in duration-200">
                 {/* View Header */}
-                <div className="px-6 py-4 flex items-center gap-4 border-b border-gray-100 bg-white sticky top-0 z-[110]">
+                <div className="px-6 py-4 flex items-center gap-4 border-b border-gray-100 dark:border-zinc-900/50 bg-white dark:bg-zinc-950 sticky top-0 z-[110]">
                     <button 
                         onClick={() => setView('main')}
-                        className="p-2 -ml-2 rounded-full hover:bg-slate-100 transition-colors"
+                        className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-900 transition-colors"
                     >
-                        <ChevronRightIcon className="w-5 h-5 rotate-180" />
+                        <ChevronRightIcon className="w-5 h-5 rotate-180 text-gray-400 dark:text-zinc-500" />
                     </button>
-                    <h2 className="text-lg font-black text-gray-900">เลือกแพ็กเกจ (Shop)</h2>
+                    <h2 className="text-lg font-black text-gray-900 dark:text-white">เลือกแพ็กเกจ (Shop)</h2>
                 </div>
 
                 <div className="px-4 py-6">
@@ -201,7 +201,7 @@ export const ProfileContent = () => {
                         {(() => {
                             const displayPhoto = profile?.photoURL || user?.photoURL || auth?.currentUser?.photoURL;
                             return displayPhoto ? (
-                                <img src={displayPhoto} alt="Avatar" className="w-full h-full object-cover" />
+                                <img src={displayPhoto} alt="Avatar" className="w-full h-full object-cover rounded-[20px]" />
                             ) : (
                                 <span>{(profile?.displayName || user?.displayName || user?.email || "U").charAt(0).toUpperCase()}</span>
                             );
@@ -215,17 +215,17 @@ export const ProfileContent = () => {
                 </div>
 
                 <div className="flex-1 min-w-0">
-                    <h2 className="text-lg font-black text-slate-900 truncate dark:text-white">
+                    <h2 className="text-lg font-black text-gray-900 truncate dark:text-white">
                         {profile?.displayName || user?.displayName || "ผู้ใช้งาน"}
                         {isPremium && !isAdmin && <SparklesIcon className="w-4 h-4 text-yellow-500 inline-block ml-1" />}
                     </h2>
-                    <p className="text-xs font-bold text-slate-400 truncate dark:text-zinc-500">{profile?.email || user?.email}</p>
+                    <p className="text-xs font-bold text-gray-400 truncate dark:text-zinc-500">{profile?.email || user?.email}</p>
                 </div>
 
                 {/* v4.9.75: Theme Toggle - Flat Minimal Style */}
                 <button 
                     onClick={toggleDarkMode}
-                    className="p-3 rounded-[20px] bg-slate-50 dark:bg-zinc-900 text-slate-400 hover:text-primary dark:hover:text-primary transition-all border border-slate-100 dark:border-zinc-800 shadow-sm active:scale-90"
+                    className="p-3 rounded-[20px] bg-gray-50 dark:bg-zinc-900 text-gray-400 hover:text-primary dark:hover:text-primary transition-all border border-gray-100 dark:border-zinc-800 shadow-sm active:scale-90"
                     title={isDarkMode ? "เปลี่ยนเป็นโหมดสว่าง" : "เปลี่ยนเป็นโหมดมืด"}
                 >
                     {isDarkMode ? <SunIcon className="w-5 h-5 text-yellow-500" /> : <MoonIcon className="w-5 h-5" />}
@@ -236,7 +236,7 @@ export const ProfileContent = () => {
             <div className="px-4 pb-12 mt-6 space-y-8">
                 {/* 1. Membership */}
                 <section>
-                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-3 px-2">ข้อมูลสมาชิก</p>
+                    <p className="text-[10px] font-black text-gray-300 dark:text-zinc-600 uppercase tracking-[0.2em] mb-3 px-2">ข้อมูลสมาชิก</p>
                     <MembershipCard
                         membership={displayMembership as any}
                         role={isAdmin ? 'admin' : (user?.role || profile?.role)}
@@ -289,17 +289,17 @@ export const ProfileContent = () => {
                 {/* 2. Notifications */}
                 <section>
                     <div className="flex items-center justify-between px-2 mb-3">
-                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">ข่าวสารและแจ้งเตือน</p>
+                        <p className="text-[10px] font-black text-gray-300 dark:text-zinc-600 uppercase tracking-[0.2em]">ข่าวสารและแจ้งเตือน</p>
                         <Link href="/profile/notifications" className="text-[10px] font-black text-primary uppercase">ทั้งหมด</Link>
                     </div>
-                    <div className="rounded-[24px] border border-slate-100 bg-slate-50/50 p-4 dark:bg-zinc-900/30 dark:border-zinc-800">
+                    <div className="rounded-[24px] border border-gray-100 bg-gray-50/50 p-4 dark:bg-zinc-900/30 dark:border-zinc-800">
                         <NotificationList />
                     </div>
                 </section>
 
                 {/* 3. Packages */}
                 <section>
-                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-3 px-2">เลือกแพ็กเกจ</p>
+                    <p className="text-[10px] font-black text-gray-300 dark:text-zinc-600 uppercase tracking-[0.2em] mb-3 px-2">เลือกแพ็กเกจ</p>
                     <PackageStore />
                 </section>
 
@@ -308,12 +308,12 @@ export const ProfileContent = () => {
                     <ul className="space-y-1">
                         {menuItems.map((item, index) => (
                             <li key={index}>
-                                <Link href={item.href} className="flex items-center justify-between p-4 rounded-2xl hover:bg-slate-50 transition-all dark:hover:bg-zinc-900">
+                                <Link href={item.href} className="flex items-center justify-between p-4 rounded-2xl hover:bg-gray-50 transition-all dark:hover:bg-zinc-900">
                                     <div className="flex items-center gap-4">
-                                        <item.icon className="w-5 h-5 text-slate-400" />
-                                        <span className="text-sm font-bold text-slate-700 dark:text-zinc-400">{item.label}</span>
+                                        <item.icon className="w-5 h-5 text-gray-400 dark:text-zinc-500" />
+                                        <span className="text-sm font-bold text-gray-700 dark:text-zinc-400">{item.label}</span>
                                     </div>
-                                    <ChevronRightIcon className="w-4 h-4 text-slate-300" />
+                                    <ChevronRightIcon className="w-4 h-4 text-gray-300 dark:text-zinc-600" />
                                 </Link>
                             </li>
                         ))}

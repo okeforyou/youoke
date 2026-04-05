@@ -119,7 +119,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
     return (
         <div className="shrink-0 select-none relative shadow-sm">
             {/* Glass Background matching Footer */}
-            <div className="absolute inset-0 bg-[#f4f4f5]/95 backdrop-blur-xl border-b border-gray-200/50" />
+            <div className="absolute inset-0 bg-[#f4f4f5]/95 dark:bg-zinc-900/95 backdrop-blur-xl border-b border-gray-200/50 dark:border-zinc-800/50 transition-colors" />
 
             {/* Horizontal Controls Row - Full Width with depth */}
             <div className="relative flex items-center justify-between px-2 h-[56px]">
@@ -131,7 +131,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                     >
                         <div className={clsx(
                             "p-1 rounded-lg transition-all duration-300 relative",
-                            item.active ? (item.label === "ยกเลิก" ? "text-white bg-red-500 shadow-sm" : "text-primary bg-primary/10") : "text-black group-hover:text-black"
+                            item.active ? (item.label === "ยกเลิก" ? "text-white bg-red-500 shadow-sm" : "text-primary bg-primary/10") : "text-black dark:text-zinc-400 group-hover:text-black dark:group-hover:text-white"
                         )}>
                             <item.icon
                                 size={20}
@@ -139,7 +139,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                 className={clsx("transition-transform duration-300", item.active && "scale-105")}
                             />
                             {item.label === "ยกเลิก" && isAnyCastOn && (
-                                <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full animate-pulse border-2 border-white shadow-sm"></span>
+                                <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full animate-pulse border-2 border-white dark:border-zinc-950 shadow-sm"></span>
                             )}
                             {item.active && item.label !== "ยกเลิก" && (
                                 <div className="absolute inset-0 bg-primary/5 blur-md -z-10" />
@@ -147,7 +147,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                         </div>
                         <span className={clsx(
                             "text-[10px] font-medium uppercase tracking-wide transition-colors duration-200 mt-0.5",
-                            item.active ? (item.label === "ยกเลิก" ? "text-red-600" : "text-black") : "text-black/60"
+                            item.active ? (item.label === "ยกเลิก" ? "text-red-600" : "text-black dark:text-zinc-200") : "text-black/60 dark:text-zinc-500"
                         )}>
                             {item.label}
                         </span>
@@ -155,7 +155,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                 ))}
             </div>
             {/* Optional Progress Bar (Thin line at bottom) */}
-            <div className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-gray-200/30">
+            <div className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-gray-200/30 dark:bg-zinc-800/30">
                 <div
                     className="h-full bg-primary transition-all duration-1000 shadow-[0_0_6px_rgba(239,68,68,0.4)]"
                     style={{ width: `${progressPercent}%` }}

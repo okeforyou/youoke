@@ -135,11 +135,11 @@ export default function ListRecommendedPlaylists() {
     // A. Detail View
     if (selectedPlaylist) {
         return (
-            <div className="flex flex-col h-full bg-white min-h-[500px] animate-in slide-in-from-right duration-300">
-                <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-100 p-4 flex items-center justify-between gap-4">
+            <div className="flex flex-col h-full bg-white dark:bg-zinc-950 min-h-[500px] animate-in slide-in-from-right duration-300">
+                <div className="sticky top-0 z-10 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border-b border-gray-100 dark:border-zinc-900 p-4 flex items-center justify-between gap-4">
                     <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <button onClick={() => router.back()} className="p-2 rounded-full hover:bg-gray-100"><ChevronLeftIcon className="w-6 h-6 text-gray-600" /></button>
-                        <h2 className="text-[14px] font-bold text-black truncate">{selectedPlaylist.tag_name}</h2>
+                        <button onClick={() => router.back()} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-900"><ChevronLeftIcon className="w-6 h-6 text-gray-600 dark:text-zinc-400" /></button>
+                        <h2 className="text-[14px] font-bold text-black dark:text-white truncate">{selectedPlaylist.tag_name}</h2>
                     </div>
                     <button onClick={handleImportPlaylist} disabled={isImporting} className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-full text-sm font-medium disabled:opacity-50">
                         <FolderPlusIcon className="w-4 h-4" /> <span>{isImporting ? "กำลังบันทึก..." : "บันทึกลิสต์"}</span>
@@ -148,16 +148,16 @@ export default function ListRecommendedPlaylists() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4 p-5 pb-32">
                     {isLoadTracks ? (
                         getSkeletonItems(10).map(i => (
-                            <div key={i} className="aspect-video bg-gray-50 rounded-2xl animate-pulse" />
+                            <div key={i} className="aspect-video bg-gray-50 dark:bg-zinc-900 rounded-2xl animate-pulse" />
                         ))
                     ) : (
                         tracksData?.artist?.map((song: any, i: number) => (
-                            <div 
+                             <div 
                                 key={i} 
                                 onClick={() => handlePlaySong(song)} 
-                                className="group cursor-pointer bg-white rounded-xl border border-gray-100 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 flex flex-col h-full transition-all duration-300 active:scale-[0.98] overflow-hidden"
+                                className="group cursor-pointer bg-white dark:bg-zinc-900 rounded-xl border border-gray-100 dark:border-zinc-800 hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 flex flex-col h-full transition-all duration-300 active:scale-[0.98] overflow-hidden"
                             >
-                                <div className="relative aspect-video overflow-hidden bg-gray-50 flex-shrink-0">
+                                <div className="relative aspect-video overflow-hidden bg-gray-50 dark:bg-zinc-950 flex-shrink-0">
                                     <Image 
                                         src={song.coverImageURL || "/icon-cover.png"} 
                                         fill 
@@ -171,11 +171,11 @@ export default function ListRecommendedPlaylists() {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="p-2 sm:p-3 flex-1 flex flex-col justify-center">
-                                    <h3 className="text-[12px] sm:text-[13px] font-bold text-black line-clamp-2 leading-tight group-hover:text-primary transition-colors text-left">
+                                 <div className="p-2 sm:p-3 flex-1 flex flex-col justify-center">
+                                    <h3 className="text-[12px] sm:text-[13px] font-bold text-black dark:text-zinc-200 line-clamp-2 leading-tight group-hover:text-primary transition-colors text-left">
                                         {song.title}
                                     </h3>
-                                    <p className="text-[10px] text-gray-400 mt-1 line-clamp-1 text-left">
+                                    <p className="text-[10px] text-gray-400 dark:text-zinc-500 mt-1 line-clamp-1 text-left">
                                         {song.artist_name || "YouTube Music"}
                                     </p>
                                 </div>
@@ -189,27 +189,27 @@ export default function ListRecommendedPlaylists() {
 
     // B. Discovery View (Main Recommended Hub)
     return (
-        <div className="pb-24 animate-in fade-in duration-500">
+         <div className="pb-24 animate-in fade-in duration-500">
             <div className="px-6 pt-6 pb-2">
-                <h2 className="text-[18px] font-black text-black tracking-tight">เมนูแนะนำสำหรับคุณ</h2>
-                <p className="text-gray-500 text-[11px] mt-1">เพลย์ลิสต์ที่จัดสรรมาเพื่อคุณโดยเฉพาะ อัพเดทรายสัปดาห์</p>
+                <h2 className="text-[18px] font-black text-black dark:text-white tracking-tight">เมนูแนะนำสำหรับคุณ</h2>
+                <p className="text-gray-500 dark:text-zinc-500 text-[11px] mt-1">เพลย์ลิสต์ที่จัดสรรมาเพื่อคุณโดยเฉพาะ อัพเดทรายสัปดาห์</p>
             </div>
 
             {isLoadExplore ? (
                 <div className="space-y-8 p-6">
                     {[1, 2, 3].map(i => (
-                        <div key={i} className="space-y-4">
-                            <div className="h-6 w-32 bg-gray-100 rounded animate-pulse" />
-                            <div className="flex gap-4 overflow-hidden"><div className="w-48 h-48 bg-gray-100 rounded-2xl animate-pulse" /></div>
+                         <div key={i} className="space-y-4">
+                            <div className="h-6 w-32 bg-gray-100 dark:bg-zinc-800 rounded animate-pulse" />
+                            <div className="flex gap-4 overflow-hidden"><div className="w-48 h-48 bg-gray-100 dark:bg-zinc-800 rounded-2xl animate-pulse" /></div>
                         </div>
                     ))}
                 </div>
             ) : (
                 <div className="space-y-10 mt-4">
-                    {genreShelves.map((shelf: any, i: number) => (
+                     {genreShelves.map((shelf: any, i: number) => (
                         <div key={i} className="space-y-4">
                             <div className="px-5">
-                                <h3 className="text-[14px] font-black text-black uppercase tracking-wider">{shelf.title}</h3>
+                                <h3 className="text-[14px] font-black text-black dark:text-white uppercase tracking-wider">{shelf.title}</h3>
                             </div>
 
                             <div className="flex overflow-x-auto gap-4 px-5 pb-4 no-scrollbar snap-x touch-pan-x w-full">
@@ -224,9 +224,9 @@ export default function ListRecommendedPlaylists() {
                                             } as any);
                                             router.push({ pathname: router.pathname, query: { ...router.query, view: 'rec_playlist', id: item.playlistId || item.id } }, undefined, { shallow: true });
                                         }}
-                                        className="flex-shrink-0 w-[160px] sm:w-[220px] group cursor-pointer snap-start"
+                                         className="flex-shrink-0 w-[160px] sm:w-[220px] group cursor-pointer snap-start"
                                     >
-                                        <div className="relative aspect-video rounded-2xl overflow-hidden bg-gray-100 shadow-sm border border-gray-100 group-hover:shadow-xl transition-all duration-300">
+                                        <div className="relative aspect-video rounded-2xl overflow-hidden bg-gray-100 dark:bg-zinc-900 shadow-sm border border-gray-100 dark:border-zinc-800 group-hover:shadow-xl transition-all duration-300">
                                             <Image 
                                                 src={item.thumbnail?.replace('w120-h120', 'w400-h400') || "/icon-cover.png"} 
                                                 fill 
@@ -236,11 +236,11 @@ export default function ListRecommendedPlaylists() {
                                             />
                                             <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors" />
                                         </div>
-                                        <div className="mt-2.5 px-1">
-                                            <p className="text-[12px] font-bold text-black line-clamp-2 leading-tight group-hover:text-primary transition-colors text-left">
+                                         <div className="mt-2.5 px-1">
+                                            <p className="text-[12px] font-bold text-black dark:text-zinc-200 line-clamp-2 leading-tight group-hover:text-primary transition-colors text-left">
                                                 {item.title}
                                             </p>
-                                            <p className="text-[10px] text-gray-400 mt-1 text-left">{item.subtitle}</p>
+                                            <p className="text-[10px] text-gray-400 dark:text-zinc-500 mt-1 text-left">{item.subtitle}</p>
                                         </div>
                                     </div>
                                 ))}

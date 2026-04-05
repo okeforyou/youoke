@@ -20,7 +20,7 @@ export default function SearchResultHorizontalCard({
 }: SearchResultHorizontalCardProps) {
   return (
     <div
-      className="relative bg-white border border-gray-100 hover:shadow-sm rounded overflow-hidden group cursor-pointer transition-all active:scale-[0.99]"
+      className="relative bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 hover:shadow-sm rounded overflow-hidden group cursor-pointer transition-all active:scale-[0.99]"
       onClick={onClick}
     >
       <div className="grid grid-cols-3 overflow-hidden">
@@ -36,7 +36,7 @@ export default function SearchResultHorizontalCard({
             priority
             alt={video.title}
             layout="fill"
-            className="bg-gray-400 object-cover"
+            className="bg-gray-400 dark:bg-zinc-800 object-cover"
             onError={(e) => { e.currentTarget.src = "/icon-cover.png"; }}
           />
           {/* Play Icon Overlay */}
@@ -47,7 +47,7 @@ export default function SearchResultHorizontalCard({
 
         {/* Video Info - Right Side */}
         <div className="col-span-2 flex flex-col py-2 px-3 justify-center overflow-hidden relative">
-          <h2 className="font-semibold text-sm leading-tight line-clamp-2 text-gray-900 pr-6">
+          <h2 className="font-semibold text-sm leading-tight line-clamp-2 text-gray-900 dark:text-zinc-200 pr-6">
             {video.title}
           </h2>
           {/* Removed author/uploader info */}
@@ -59,7 +59,7 @@ export default function SearchResultHorizontalCard({
                 e.stopPropagation();
                 onAddToPlaylist(e);
               }}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-primary transition"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-full text-gray-400 dark:text-zinc-500 hover:text-primary transition"
             >
               <ListPlus className="w-4 h-4" />
             </button>

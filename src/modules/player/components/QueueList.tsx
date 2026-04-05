@@ -48,8 +48,8 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
     return (
         <div
             ref={setNodeRef}
-            style={{ ...style, backgroundColor: '#ffffff' }}
-            className="group flex items-center gap-2 py-2 px-3 bg-white"
+            style={style}
+            className="group flex items-center gap-2 py-2 px-3 bg-white dark:bg-zinc-950 transition-colors"
         >
             {/* Drag Handle - Outside the card */}
             <div
@@ -61,7 +61,7 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
             </div>
 
             {/* Card Content - V1 Style with red border on hover (No Gray, No Shadow) */}
-            <div className="flex-1 flex items-center gap-4 rounded-xl border border-gray-300 transition-all overflow-hidden hover:border-primary bg-white">
+            <div className="flex-1 flex items-center gap-4 rounded-xl border border-gray-300 dark:border-zinc-800 transition-all overflow-hidden hover:border-primary bg-white dark:bg-zinc-900">
                 {/* Thumbnail - Flush with the card's left side (Enlarged) */}
                 <div
                     className="relative w-36 h-20 flex-shrink-0 bg-black cursor-pointer group/thumb"
@@ -84,10 +84,10 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
 
                 {/* Info */}
                 <div className="flex-1 min-w-0 py-3 cursor-pointer" onClick={() => onPlay(actualIndex)}>
-                    <h4 className="text-[14px] font-black text-black line-clamp-1 leading-snug mb-0.5">
+                    <h4 className="text-[14px] font-black text-black dark:text-white line-clamp-1 leading-snug mb-0.5">
                         {video.title}
                     </h4>
-                    <p className="text-[11px] text-gray-500 truncate font-medium">
+                    <p className="text-[11px] text-gray-500 dark:text-zinc-500 truncate font-medium">
                         {video.author}
                     </p>
                 </div>
@@ -99,7 +99,7 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
                             e.stopPropagation();
                             onRemove(video.uuid);
                         }}
-                        className="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all flex-shrink-0"
+                        className="w-9 h-9 flex items-center justify-center text-gray-400 dark:text-zinc-500 hover:text-red-500 dark:hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-all flex-shrink-0"
                         aria-label="ลบออกจากคิว"
                     >
                         <Trash2 className="w-4.5 h-4.5" />
@@ -153,27 +153,27 @@ export function QueueList() {
     };
 
     return (
-        <div className="flex-1 flex flex-col h-full relative z-20 bg-white" style={{ backgroundColor: '#ffffff' }}>
+        <div className="flex-1 flex flex-col h-full relative z-20 bg-white dark:bg-zinc-950 transition-colors">
             {/* Mobile Handle */}
             <div className="lg:hidden flex justify-center pt-3 pb-1 shrink-0">
-                <div className="w-12 h-1.5 bg-gray-200 rounded-full" />
+                <div className="w-12 h-1.5 bg-gray-200 dark:bg-zinc-800 rounded-full" />
             </div>
 
             {/* Sticky Queue Header (Restored from SidebarControls) */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50 bg-white sticky top-0 z-30 shrink-0" style={{ backgroundColor: '#ffffff' }}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-50 dark:border-zinc-900 bg-white dark:bg-zinc-950 sticky top-0 z-30 shrink-0">
                 <div className="flex items-center gap-4">
                     {/* Mobile Close Button (Chevron Down) */}
                     <button
                         onClick={() => useUIStore.getState().setQueueOpen(false)}
-                        className="lg:hidden w-10 h-10 flex items-center justify-center bg-gray-50 rounded-2xl text-gray-500 active:scale-90 transition-all shadow-sm"
+                        className="lg:hidden w-10 h-10 flex items-center justify-center bg-gray-50 dark:bg-zinc-900 rounded-2xl text-gray-500 dark:text-zinc-400 active:scale-90 transition-all shadow-sm"
                     >
                         <ChevronDown size={22} />
                     </button>
                     <div className="flex flex-col">
                         <div className="flex items-center gap-2">
                             <ListMusic size={14} className="text-primary" />
-                            <span className="text-[16px] font-black text-black tracking-tight">
-                                คิวเพลง {remainingCount > 0 && <span className="text-gray-400 font-bold ml-1 text-[13px]">({remainingCount})</span>}
+                            <span className="text-[16px] font-black text-black dark:text-white tracking-tight">
+                                คิวเพลง {remainingCount > 0 && <span className="text-gray-400 dark:text-zinc-500 font-bold ml-1 text-[13px]">({remainingCount})</span>}
                             </span>
                         </div>
                     </div>
@@ -190,7 +190,7 @@ export function QueueList() {
                                 onConfirm: () => clearQueue()
                             });
                         }}
-                        className="group flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-50 text-gray-600 hover:bg-red-50 hover:text-red-500 transition-all duration-300 active:scale-95 border border-gray-100"
+                        className="group flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-50 dark:bg-zinc-900 text-gray-600 dark:text-zinc-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-500 transition-all duration-300 active:scale-95 border border-gray-100 dark:border-zinc-800"
                     >
                         <Trash2 size={11} className="transition-transform group-hover:scale-110" />
                         <span className="text-[10px] font-black uppercase tracking-wider">ล้างทั้งหมด</span>
@@ -199,7 +199,7 @@ export function QueueList() {
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 overflow-y-auto pt-2 pb-24 lg:pb-6 relative z-10 bg-white" style={{ backgroundColor: '#ffffff' }}>
+            <div className="flex-1 overflow-y-auto pt-2 pb-24 lg:pb-6 relative z-10 bg-white dark:bg-zinc-950 transition-colors">
                 {queueItems.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center p-8 text-gray-400 min-h-[300px]">
                         <ListMusic className="w-12 h-12 mb-3 opacity-30" />

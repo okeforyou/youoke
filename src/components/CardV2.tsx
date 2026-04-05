@@ -51,10 +51,10 @@ export default function CardV2({
             className="group relative flex flex-col gap-3 cursor-pointer select-none"
         >
             {/* 1. Card Container: Explicitly 16:9, White Bg, Rounded */}
-            <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-white shadow-sm border-2 border-gray-100 group-hover:border-primary/50 group-hover:shadow-xl transition-all duration-300 group-hover:-translate-y-1">
+            <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-white dark:bg-zinc-950 shadow-sm border-2 border-gray-100 dark:border-zinc-900 group-hover:border-primary/50 group-hover:shadow-xl transition-all duration-300 group-hover:-translate-y-1">
 
                 {/* 2. FALLBACK Layer (Bottom) */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100/50 text-gray-300 z-0">
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100/50 dark:bg-zinc-900/50 text-gray-300 dark:text-zinc-600 z-0">
                     <MusicalNoteIcon className="w-16 h-16 opacity-20" />
                     <span className="text-[10px] font-black uppercase tracking-widest mt-2 opacity-40">ไม่มีปก</span>
                 </div>
@@ -96,11 +96,11 @@ export default function CardV2({
             {/* 7. Info Section */}
             <div className="flex justify-between items-start px-1">
                 <div className="flex-1 min-w-0 pr-2">
-                    <h3 className="font-bold text-gray-900 truncate group-hover:text-primary transition-colors text-[14px] leading-tight">
+                    <h3 className="font-bold text-gray-900 dark:text-zinc-200 truncate group-hover:text-primary transition-colors text-[14px] leading-tight">
                         {name}
                     </h3>
-                    <p className="text-[11px] font-medium text-gray-500 mt-1 flex items-center gap-2">
-                        <span className="inline-block px-2 py-0.5 rounded-md bg-gray-100 border border-gray-200">
+                    <p className="text-[11px] font-medium text-gray-500 dark:text-zinc-500 mt-1 flex items-center gap-2">
+                        <span className="inline-block px-2 py-0.5 rounded-md bg-gray-100 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800">
                             {count} เพลง
                         </span>
                     </p>
@@ -111,12 +111,12 @@ export default function CardV2({
                     <div className="flex items-center gap-1 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
                         {activeIndex === 1 ? (
                             <div className="dropdown dropdown-end dropdown-top">
-                                <button tabIndex={0} className="p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-gray-900 transition-colors">
+                                <button tabIndex={0} className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg text-gray-400 dark:text-zinc-500 hover:text-gray-900 dark:hover:text-white transition-colors">
                                     <EllipsisVerticalIcon className="w-5 h-5" />
                                 </button>
-                                <ul tabIndex={0} className="dropdown-content z-[50] menu p-1 shadow-xl bg-white rounded-xl w-32 border border-gray-100 text-xs font-bold">
-                                    <li><a onClick={onEdit}><PencilIcon className="w-4 h-4" /> แก้ไข</a></li>
-                                    <li><a onClick={onDelete} className="text-red-500 hover:bg-red-50"><TrashIcon className="w-4 h-4" /> ลบ</a></li>
+                                <ul tabIndex={0} className="dropdown-content z-[50] menu p-1 shadow-xl bg-white dark:bg-zinc-900 rounded-xl w-32 border border-gray-100 dark:border-zinc-800 text-xs font-bold">
+                                    <li><a onClick={onEdit} className="dark:text-zinc-300 dark:hover:bg-zinc-800"><PencilIcon className="w-4 h-4" /> แก้ไข</a></li>
+                                    <li><a onClick={onDelete} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10"><TrashIcon className="w-4 h-4" /> ลบ</a></li>
                                 </ul>
                             </div>
                         ) : (
