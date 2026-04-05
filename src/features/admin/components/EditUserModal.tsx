@@ -37,12 +37,12 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
     user,
     onClose,
     onUpdateRole,
-    onAssignPackage,
+    onAssignPackage: parentOnAssignPackage,
     onToggleModule,
     availableModules,
     packages,
     onRefresh,
-    loading
+    loading: parentLoading
 }) => {
     const [editName, setEditName] = useState(user.displayName || '');
     const [startedAt, setStartedAt] = useState<string>(
@@ -58,7 +58,9 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
     const [savingDates, setSavingDates] = useState(false);
     const [messageText, setMessageText] = useState('');
     const [sendingMessage, setSendingMessage] = useState(false);
+    const [localLoading, setLocalLoading] = useState(false);
     const [copied, setCopied] = useState(false);
+    
     const [confirmModal, setConfirmModal] = useState<{
         isOpen: boolean;
         title: string;
@@ -115,6 +117,42 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
         });
     };
 
+    const handleAssignPackage = async (packageId: string) => {
+        try {
+            setLocalLoading(true);
+            await AdminService.assignPackage(user.uid, packageId);
+            
+            // 🛡️ v4.9.98: Auto-Segmentation Logic
+            let segmentType = 'free';
+            if (packageId.includes('month')) segmentType = 'monthly';
+            if (packageId.includes('year')) segmentType = 'yearly';
+            if (packageId === 'lifetime') segmentType = 'lifetime';
+            
+            await AdminService.updateMembershipType(user.uid, segmentType);
+
+            if (onRefresh) onRefresh();
+            setConfirmModal({
+                isOpen: true,
+                title: "อัปเกรดเรียบร้อย",
+                message: `มอบสิทธิ์แพ็กเกจ และจัดเข้ากลุ่ม "${segmentType.toUpperCase()}" สำเร็จแล้ว`,
+                type: 'info',
+                onConfirm: () => {
+                    setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                    onClose();
+                }
+            });
+        } catch (e: any) {
+            setConfirmModal({
+                isOpen: true,
+                title: "เกิดข้อผิดพลาด",
+                message: e.message,
+                type: 'danger',
+                onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+            });
+        } finally {
+            setLocalLoading(false);
+        }
+    };
 
     const handleUpdateName = async () => {
         try {
@@ -176,22 +214,19 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
         }
     };
 
-
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
 
+    const isLoading = parentLoading || localLoading;
+
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center sm:p-4">
-            {/* Backdrop */}
             <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} />
-            
-            {/* Modal Container */}
             <div className="relative w-full max-w-lg h-full sm:h-auto max-h-[95vh] bg-slate-50 overflow-hidden flex flex-col sm:rounded-2xl border border-slate-200/50">
                 
-                {/* Header (Standard Pattern) */}
                 <div className="bg-white px-5 py-4 flex items-center justify-between border-b border-slate-100 flex-shrink-0">
                     <h3 className="text-base font-bold text-slate-900 uppercase">จัดการสมาชิก</h3>
                     <button onClick={onClose} className="p-2 hover:bg-slate-50 rounded-lg text-slate-400 transition-colors">
@@ -199,10 +234,8 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                     </button>
                 </div>
 
-                {/* Body (Compact Card-Based) */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
                     
-                    {/* ข้อมูลพื้นฐาน (Basic Info Card) */}
                     <div className="bg-white rounded-xl border border-slate-100 p-4 space-y-4">
                         <div className="flex items-center gap-4">
                             <div className="w-14 h-14 bg-slate-100 rounded-lg border border-slate-200 overflow-hidden flex items-center justify-center flex-shrink-0">
@@ -248,7 +281,6 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                         </div>
                     </div>
 
-                    {/* จัดการสิทธิ์ (Roles Management Card) */}
                     <div className="bg-white rounded-xl border border-slate-100 p-4">
                         <label className="text-[11px] font-bold text-slate-400 uppercase mb-3 block px-1">ระดับบทบาทผู้ใช้งาน</label>
                         <div className="grid grid-cols-2 gap-2">
@@ -273,7 +305,6 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                         </div>
                     </div>
 
-                    {/* การตั้งค่าพรีเมียม (Membership Dates Card) */}
                     <div className="bg-white rounded-xl border border-slate-100 p-4 space-y-4">
                         <label className="text-[11px] font-bold text-slate-400 uppercase flex items-center gap-2 px-1">
                             <StarIcon className="w-4 h-4 text-amber-500 fill-amber-500" /> ระยะเวลาสมาชิกพรีเมียม
@@ -310,17 +341,45 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                         </button>
                     </div>
 
-                    {/* จัดกลุ่มสมาชิก (Segmentation Card) - UPDATED v3.0 */}
                     <div className="bg-white rounded-xl border border-slate-100 p-4">
-                        <label className="text-[11px] font-bold text-slate-400 uppercase mb-3 block px-1 flex items-center gap-2">
-                             📌 จัดกลุ่มสมาชิก (Segmentation)
+                        <label className="text-[11px] font-bold text-slate-400 uppercase mb-3 block px-1">อัปเกรดสถานะ (Manual Assign)</label>
+                        <div className="grid grid-cols-2 gap-2">
+                            {packages?.filter(pkg => !pkg.id.includes('day')).map(pkg => {
+                                let dispName = pkg.name;
+                                if (pkg.id.includes('month')) dispName = 'รายเดือน';
+                                if (pkg.id.includes('year')) dispName = 'รายปี';
+
+                                return (
+                                    <button
+                                        key={pkg.id}
+                                        onClick={() => handleAssignPackage(pkg.id)}
+                                        disabled={isLoading}
+                                        className="py-3 px-3 rounded-lg border border-slate-200 bg-white text-[11px] font-bold text-slate-600 hover:bg-slate-50 transition-colors active:scale-95 disabled:bg-slate-50"
+                                    >
+                                        มอบสิทธิ์: {dispName}
+                                    </button>
+                                );
+                            })}
+                            <button
+                                onClick={() => handleAssignPackage('lifetime')}
+                                disabled={isLoading}
+                                className="col-span-2 py-4 rounded-lg bg-slate-900 text-white text-[11px] font-black uppercase tracking-widest active:scale-95 transition-transform disabled:bg-slate-800"
+                            >
+                                🌟 ยืนยันมอบสิทธิ์ : ถาวร (PERMANENT)
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="bg-slate-50 rounded-xl border border-slate-100 p-4">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase mb-3 block px-1 flex items-center gap-2">
+                             📌 สลับกลุ่มสมาชิก (Custom Segmentation)
                         </label>
                         <div className="grid grid-cols-2 gap-2">
                             {[
                                 { id: 'legacy', label: 'สมาชิกเดิม' },
+                                { id: 'lifetime', label: 'ถาวร' },
                                 { id: 'monthly', label: 'รายเดือน' },
-                                { id: 'yearly', label: 'รายปี' },
-                                { id: 'lifetime', label: 'ถาวร' }
+                                { id: 'yearly', label: 'รายปี' }
                             ].map(item => (
                                 <button
                                     key={item.id}
@@ -328,21 +387,14 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                                         try {
                                             await AdminService.updateMembershipType(user.uid, item.id);
                                             if (onRefresh) onRefresh();
-                                            setConfirmModal({
-                                                isOpen: true,
-                                                title: "อัปเดตกลุ่มสำเร็จ",
-                                                message: `เปลี่ยนกลุ่มเป็น "${item.label}" เรียบร้อยแล้ว`,
-                                                type: 'info',
-                                                onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
-                                            });
                                         } catch (e: any) {
                                             alert(e.message);
                                         }
                                     }}
                                     className={cn(
-                                        "py-3 rounded-lg border text-[10px] font-black uppercase tracking-widest transition-all active:scale-95",
+                                        "py-2.5 rounded-lg border text-[10px] font-bold transition-all active:scale-95",
                                         (user.membership?.type === item.id || user.tier === item.id)
-                                            ? "bg-slate-900 border-slate-900 text-white" 
+                                            ? "bg-slate-500 border-slate-500 text-white shadow-sm" 
                                             : "bg-white border-slate-100 text-slate-400 hover:border-slate-200"
                                     )}
                                 >
@@ -350,20 +402,16 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                                 </button>
                             ))}
                         </div>
-                        <p className="text-[9px] text-slate-400 mt-3 px-1 leading-tight">
-                            * การเปลี่ยนกลุ่มตรงนี้จะ **ไม่มีผล** กับวันที่หมดอายุเดิม แต่จะมีผลในการเลือกส่ง Broadcast แบบกลุ่มเป้าหมายครับ
-                        </p>
                     </div>
 
-                    {/* 🛡️ LINE Messaging Support (v4.2.7) */}
                     <div className="bg-white rounded-xl border border-slate-100 p-4 space-y-4">
                         <div className="flex items-center justify-between px-1">
                             <label className="text-[11px] font-bold text-slate-400 uppercase flex items-center gap-2">
                                 <svg className="w-4 h-4 fill-[#06C755]" viewBox="0 0 24 24"><path d="M24 10.304c0-5.369-5.383-9.738-12-9.738-6.616 0-12 4.369-12 9.738 0 4.814 4.269 8.846 10.036 9.608.391.084.922.258 1.057.592.121.303.079.778.039 1.085l-.171 1.047c-.052.312-.252 1.226 1.088.668 1.341-.558 7.237-4.263 9.87-7.296 1.83-1.926 2.091-3.328 2.091-5.71z"/></svg> 
                                 LINE Messaging Support
                             </label>
-                            {user?.installed_modules?.includes('line_connected') || (user as any).lineUserId ? (
-                                <span className="flex items-center gap-1 text-[10px] font-black text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-200 uppercase tracking-tighter animate-pulse">
+                            {(user as any).lineUserId ? (
+                                <span className="flex items-center gap-1 text-[10px] font-black text-green-600 bg-green-50 px-2 py-0.5 rounded-full border border-green-200 uppercase tracking-tighter">
                                     Connected
                                 </span>
                             ) : (
@@ -391,9 +439,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                                         placeholder="พิมพ์ข้อความส่งหา User รายบุคคล..."
                                         className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-900 w-full focus:ring-1 focus:ring-[#06C755] outline-none disabled:bg-slate-50"
                                         onKeyDown={(e) => {
-                                            if (e.key === 'Enter') {
-                                                handleSendLineMessage();
-                                            }
+                                            if (e.key === 'Enter') handleSendLineMessage();
                                         }}
                                     />
                                     <button 
@@ -407,53 +453,19 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                                         {sendingMessage ? '...' : 'ส่ง'}
                                     </button>
                                 </div>
-                                <p className="text-[9px] text-slate-400 px-1 leading-tight italic">
-                                    * ลูกค้าจะได้รับข้อความแจ้งเตือนผ่านบัญชีทางการของ YouOKE ทันที
-                                </p>
                             </div>
                         ) : (
                             <div className="bg-slate-50 p-4 rounded-xl border border-dashed border-slate-200 text-center">
                                 <p className="text-[11px] text-slate-500 font-medium">ยังไม่มีการเชื่อมต่อบัญชี LINE กับ Gmail นี้</p>
-                                <p className="text-[9px] text-slate-400 mt-1">ลูกค้ายต้องกด 'เชื่อมต่อ LINE' ในหน้าโปรไฟล์ก่อนครับ</p>
                             </div>
                         )}
                     </div>
 
-                    {/* ปรับปรุงแพ็กเกจปัจจุบัน (Package Assign Card) */}
-                    <div className="bg-white rounded-xl border border-slate-100 p-4">
-                        <label className="text-[11px] font-bold text-slate-400 uppercase mb-3 block px-1">อัปเกรดสถานะ (Manual Assign)</label>
-                        <div className="grid grid-cols-2 gap-2">
-                            {packages?.filter(pkg => !pkg.id.includes('day')).map(pkg => {
-                                // 🛡️ v4.9.93: Local Display Name Translation (Paid Plans only)
-                                let dispName = pkg.name;
-                                if (pkg.id.includes('month')) dispName = 'รายเดือน';
-                                if (pkg.id.includes('year')) dispName = 'รายปี';
-
-                                return (
-                                    <button
-                                        key={pkg.id}
-                                        onClick={() => onAssignPackage(pkg.id)}
-                                        className="py-3 px-3 rounded-lg border border-slate-200 bg-white text-[11px] font-bold text-slate-600 hover:bg-slate-50 transition-colors active:scale-95"
-                                    >
-                                        {dispName}
-                                    </button>
-                                );
-                            })}
-                            <button
-                                onClick={() => onAssignPackage('lifetime')}
-                                className="col-span-2 py-3.5 rounded-lg bg-slate-900 text-white text-[11px] font-bold uppercase tracking-widest active:scale-95 transition-transform"
-                            >
-                                อัปเกรดเป็น : ถาวร (PERMANENT)
-                            </button>
-                        </div>
-                    </div>
-
                 </div>
 
-                {/* Footer (Standard Pattern) */}
                 <div className="bg-white px-5 py-4 border-t border-slate-100 flex justify-between items-center flex-shrink-0">
                     <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">
-                        v4.9.8 Admin Intelligence
+                        v4.9.98 Admin Intelligence
                     </span>
                     <button 
                         className="px-6 py-2 rounded-lg text-sm font-bold text-slate-500 hover:bg-slate-50 transition-colors" 
@@ -462,7 +474,6 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                         ปิดหน้าต่าง
                     </button>
                 </div>
-
 
             </div>
             
@@ -478,4 +489,3 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
         </div>
     );
 };
-
