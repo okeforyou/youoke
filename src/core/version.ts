@@ -1,12 +1,21 @@
 import packageInfo from "../../package.json";
 
-export const SYSTEM_VERSION = "4.9.75";
-export const SYSTEM_CODENAME = "Midnight Harmony";
+export const SYSTEM_VERSION = "4.9.76";
+export const SYSTEM_CODENAME = "Stability Horizon";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
 export const BUILD_DATE = "5 เม.ย. 2569";
 
 export const CHANGELOGS = [
+    {
+        version: "4.9.76 (Hotfix)",
+        date: "5 เม.ย. 2569",
+        changes: [
+            "[Fix] SpotifyDashboard: เพิ่มการ Import ฟังก์ชัน getJooxCharts ที่หายไป แก้ไขปัญหา Client-side Exception (หน้าจอขาว)",
+            "[Fix] _app.tsx Stability: ทำความสะอาดไฟล์ root และแก้ไขการเชื่อมต่อ useUIStore ให้กลับมานิ่งสมบูรณ์"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
     {
         version: "4.9.75 (Dark Mode)",
         date: "5 เม.ย. 2569",

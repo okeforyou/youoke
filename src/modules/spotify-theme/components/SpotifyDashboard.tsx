@@ -16,6 +16,7 @@ import {
   searchPlaylists,
   getSearchResult,
   cleanSearchQuery,
+  getJooxCharts,
 } from "../../../utils/api";
 import JooxError from "../../../components/JooxError";
 import { useSystemConfig } from "../../../hooks/useSystemConfig";
