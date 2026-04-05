@@ -170,8 +170,11 @@ export const AdminService = {
     /**
      * Manually assign a package to a user (Firestore Update)
      */
-    assignPackage: async (uid: string, packageId: string, adminUid: string): Promise<void> => {
+    assignPackage: async (uid: string, packageId: string, adminUid?: string): Promise<void> => {
         if (!db) throw new Error("Firestore not initialized");
+
+        // 🛡️ v4.9.101: Fallback for undefined adminUid to prevent Firebase write error
+        const finalAdminUid = adminUid || auth?.currentUser?.uid || "System Administrator";
 
         // Simplified logic: Assuming standard packages exist (monthly, yearly)
         // 🛡️ v4.9.91: Correct Package Matching Logic
@@ -208,7 +211,7 @@ export const AdminService = {
                 startedAt: now,
                 expiresAt: expiresAt,
                 pkgId: packageId,
-                assignedBy: adminUid
+                assignedBy: finalAdminUid
             },
             isPremium: true,
             tier: membershipType,
@@ -242,8 +245,11 @@ export const AdminService = {
     /**
      * Assign Lifetime access directly (Firestore)
      */
-    assignLifetime: async (uid: string, adminUid: string): Promise<void> => {
+    assignLifetime: async (uid: string, adminUid?: string): Promise<void> => {
         if (!db) throw new Error("Firestore not initialized");
+
+        // 🛡️ v4.9.101: Fallback for undefined adminUid
+        const finalAdminUid = adminUid || auth?.currentUser?.uid || "System Administrator";
 
         const userRef = doc(db, "users", uid);
         await updateDoc(userRef, {
@@ -252,7 +258,7 @@ export const AdminService = {
                 status: 'active',
                 startedAt: new Date(),
                 expiresAt: null,
-                assignedBy: adminUid
+                assignedBy: finalAdminUid
             },
             isPremium: true,
             tier: 'lifetime',

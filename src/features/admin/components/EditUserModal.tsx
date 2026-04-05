@@ -133,8 +133,8 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
             if (onRefresh) onRefresh();
             setConfirmModal({
                 isOpen: true,
-                title: "อัปเกรดเรียบร้อย",
-                message: `มอบสิทธิ์แพ็กเกจ และจัดเข้ากลุ่ม "${segmentType.toUpperCase()}" สำเร็จแล้ว`,
+                title: "อัปเดตสำเร็จ",
+                message: `มอบสิทธิ์แพ็กเกจ และจัดเข้ากลุ่ม "${segmentType.toUpperCase()}" เรียบร้อยแล้ว`,
                 type: 'info',
                 onConfirm: () => {
                     setConfirmModal(prev => ({ ...prev, isOpen: false }));
@@ -397,6 +397,13 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                                         try {
                                             await AdminService.updateMembershipType(user.uid, item.id);
                                             if (onRefresh) onRefresh();
+                                            setConfirmModal({
+                                                isOpen: true,
+                                                title: "สลับกลุ่มสำเร็จ",
+                                                message: `ย้ายลูกค้าเข้ากลุ่ม "${item.label}" เรียบร้อยแล้ว`,
+                                                type: 'info',
+                                                onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+                                            });
                                         } catch (e: any) {
                                             alert(e.message);
                                         }
