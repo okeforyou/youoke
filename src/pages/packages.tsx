@@ -72,9 +72,15 @@ export default function PackagesPage() {
                 const pkgList = snapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data()
-                })) as Package[];
+                })) as (Package & { isActive?: boolean })[];
 
-                setPackages(pkgList);
+                // v4.9.69: Global Sync Filter - Hide packages where isActive is explicitly false
+                const filteredPackages = pkgList.filter(pkg => 
+                    pkg.isActive !== false && 
+                    !pkg.id.toLowerCase().includes('test')
+                );
+
+                setPackages(filteredPackages);
             } catch (error) {
                 console.error("Error fetching packages:", error);
             } finally {

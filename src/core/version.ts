@@ -1,12 +1,21 @@
 import packageInfo from "../../package.json";
 
-export const SYSTEM_VERSION = "4.9.68";
-export const SYSTEM_CODENAME = "Database Field Alignment";
+export const SYSTEM_VERSION = "4.9.69";
+export const SYSTEM_CODENAME = "Global Shop Alignment";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
-export const BUILD_DATE = "4 เม.ย. 2569";
+export const BUILD_DATE = "5 เม.ย. 2569";
 
 export const CHANGELOGS = [
+    {
+        version: "4.9.69 (Global Sync)",
+        date: "5 เม.ย. 2569",
+        changes: [
+            "[Fix] Purchase Shop Visibility: อัปเดตหน้าซื้อแพ็กเกจ (หน้าใหญ่) ให้ซ่อนรายการที่ถูก Disable (isActive: false) ออกอย่างสมบูรณ์แบบเดียวกับหน้าเครื่องคาราโอเกะ",
+            "[System] Component Unified Filtering: ยืนยันการใช้ระบบกรองข้อมูลแบบเดียวขัดกันทั้งระบบ เพื่อความแม่นยำ 100% ในการแสดงผลข้อมูลจาก Firestore"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
     {
         version: "4.9.68 (Database Alignment)",
         date: "4 เม.ย. 2569",
