@@ -1,12 +1,23 @@
 import packageInfo from "../../package.json";
 
-export const SYSTEM_VERSION = "4.9.74";
-export const SYSTEM_CODENAME = "Access & UI Harmony";
+export const SYSTEM_VERSION = "4.9.75";
+export const SYSTEM_CODENAME = "Midnight Harmony";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
 export const BUILD_DATE = "5 เม.ย. 2569";
 
 export const CHANGELOGS = [
+    {
+        version: "4.9.75 (Dark Mode)",
+        date: "5 เม.ย. 2569",
+        changes: [
+            "[UI] Full Dark Mode: ติดตั้งระบบสลับโหมดมืด (Dark Mode) สมบูรณ์แบบทัังแอป เพื่อความสบายตาในการใช้งานตอนกลางคืน",
+            "[UI] Theme Toggle: เพิ่มปุ่มสลับโหมดพระจันทร์/พระอาทิตย์ในหน้าโปรไฟล์ เข้าถึงง่ายและทำงานร่วมกับระบบจดจำ (Persistent Theme)",
+            "[System] Auto-Sync: ระบบจะตรวจเช็คธีมจากเครื่องผู้ใช้งานและปรับเปลี่ยนให้อัตโนมัติในครั้งแรกที่เข้าใช้งาน",
+            "[Design] Flat Zinc Theme: ใช้ชุดสี Zinc-900 สำหรับโหมดมืด เพื่อความพรีเมียมและนุ่มนวลสูงสุด"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
     {
         version: "4.9.74 (Sync Patch)",
         date: "5 เม.ย. 2569",

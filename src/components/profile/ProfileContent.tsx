@@ -7,7 +7,9 @@ import {
     ArrowRightOnRectangleIcon,
     ChevronRightIcon,
     ChatBubbleLeftRightIcon,
-    ArrowTopRightOnSquareIcon
+    ArrowTopRightOnSquareIcon,
+    MoonIcon,
+    SunIcon
 } from '@heroicons/react/24/outline';
 import { QRCodeSVG } from 'qrcode.react';
 import { useUIStore } from '@/stores/useUIStore';
@@ -27,7 +29,7 @@ export const ProfileContent = () => {
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [loading, setLoading] = useState(false);
     const [view, setView] = useState<'main' | 'line_connect' | 'packages'>('main');
-    const { showConfirm } = useUIStore();
+    const { showConfirm, isDarkMode, toggleDarkMode } = useUIStore();
 
     useEffect(() => {
         if (user?.uid) {
@@ -219,6 +221,15 @@ export const ProfileContent = () => {
                     </h2>
                     <p className="text-xs font-bold text-slate-400 truncate dark:text-zinc-500">{profile?.email || user?.email}</p>
                 </div>
+
+                {/* v4.9.75: Theme Toggle - Flat Minimal Style */}
+                <button 
+                    onClick={toggleDarkMode}
+                    className="p-3 rounded-[20px] bg-slate-50 dark:bg-zinc-900 text-slate-400 hover:text-primary dark:hover:text-primary transition-all border border-slate-100 dark:border-zinc-800 shadow-sm active:scale-90"
+                    title={isDarkMode ? "เปลี่ยนเป็นโหมดสว่าง" : "เปลี่ยนเป็นโหมดมืด"}
+                >
+                    {isDarkMode ? <SunIcon className="w-5 h-5 text-yellow-500" /> : <MoonIcon className="w-5 h-5" />}
+                </button>
             </div>
 
             {/* Content List */}

@@ -47,6 +47,9 @@ interface UIState {
     isSidebarCollapsed: boolean;
     setSidebarCollapsed: (collapsed: boolean) => void;
 
+    isDarkMode: boolean;
+    toggleDarkMode: () => void;
+
     confirmModal: {
         isOpen: boolean;
         title: string;
@@ -113,6 +116,19 @@ export const useUIStore = create<UIState>((set) => ({
 
     isSidebarCollapsed: false,
     setSidebarCollapsed: (collapsed) => set({ isSidebarCollapsed: collapsed }),
+
+    // v4.9.75: Full Dark Mode State
+    isDarkMode: typeof window !== 'undefined' ? (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) : false,
+    toggleDarkMode: () => set((state) => {
+        const newVal = !state.isDarkMode;
+        localStorage.setItem('theme', newVal ? 'dark' : 'light');
+        if (newVal) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+        return { isDarkMode: newVal };
+    }),
 
     confirmModal: {
         isOpen: false,

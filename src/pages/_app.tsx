@@ -6,22 +6,21 @@ import Script from 'next/script'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-// import DefaultSeo from 'next-seo';
-// import { SEO } from '../config/seo';
 
 import { Analytics } from '@vercel/analytics/react'
 
 import GoogleAnalytics from '../components/GoogleAnalytics'
 import { AdsProvider } from '@/context/AdsContext'
-import { AuthContextProvider } from '@/context/AuthContext' // Re-enabled
+import { AuthContextProvider } from '@/context/AuthContext' 
 import { useAuthStore } from '@/modules/auth/useAuthStore';
+import { useUIStore } from '@/stores/useUIStore';
 import { CastProvider } from '../plugins/cast/context/CastContext'
 import { FirebaseCastProvider } from '@/context/FirebaseCastContext'
 import { YouTubeCastProvider } from '@/context/YouTubeCastContext'
 import { ToastProvider } from '@/context/ToastContext'
 import { MidiEngineProvider } from '@/context/MidiEngineContext'
 import { FontLoader } from '../components/FontLoader';
-import GlobalErrorBoundary from '../components/GlobalErrorBoundary'; // New global boundary
+import GlobalErrorBoundary from '../components/GlobalErrorBoundary';
 import { GlobalConfirmModal } from '../components/common/GlobalConfirmModal';
 
 import { useSystemThemeSync } from '../hooks/useSystemThemeSync';
@@ -46,9 +45,6 @@ function App({ Component, pageProps }: AppProps) {
   // Initialize FCM Token
   useFcmToken();
 
-  // Optimize: Only load heavy Cast/Player stack on pages that need it
-  // Chromecast receiver = LIGHTEST possible (no MIDI, no Cast Sender, no Ads)
-  // Monitor/TV = needs MIDI but NO Cast Sender
   const isChromecastReceiver = router.pathname === '/chromecast';
   const isReceiverPath = ['/monitor', '/receiver', '/tv'].includes(router.pathname);
   const isLoginPage = router.pathname === '/login';
@@ -56,28 +52,30 @@ function App({ Component, pageProps }: AppProps) {
 
   const shouldLoadCast = !isChromecastReceiver && !isReceiverPath && !isLoginPage && !isAdminPage;
 
-  // Debug (Client-side only)
-  if (typeof window !== 'undefined') {
-    console.log(`[App] Current Path: ${router.pathname} | LoadCast: ${shouldLoadCast}`);
-  }
+  // Initializing Auth Store
+  const { initialize: initializeAuth } = useAuthStore();
 
-
-  // Initializing Auth Store (Optimistic)
-  const initializeAuth = useAuthStore((state) => state.initialize);
   useEffect(() => {
     const unsub = initializeAuth();
+    
+    // v4.9.75: Initial Dark Mode Sync
+    const isDark = localStorage.getItem('theme') === 'dark' || 
+                   (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    
+    if (isDark) {
+        document.documentElement.classList.add('dark');
+    } else {
+        document.documentElement.classList.remove('dark');
+    }
+
     return () => unsub();
   }, [initializeAuth]);
-
-  // 🔔 FCM Service Worker is managed by Firebase SDK. 
-  // DO NOT add broad service worker unregister logic here as it breaks notifications.
 
   return (
     <ToastProvider>
       <AuthContextProvider>
         <GlobalErrorBoundary>
           <FontLoader />
-          {/* DefaultSeo removed due to import issues */}
           <Head>
             <meta
               name="viewport"
@@ -97,23 +95,18 @@ function App({ Component, pageProps }: AppProps) {
             />
             <meta
               property="og:description"
-              content="คาราโอเกะออนไลน์ฟรี ไม่ต้องติดตั้ง ทำงานโดยตรงในเบราว์เซอร์ ใช้ได้กับอุปกรณ์หลากหลาย ฐานข้อมูลเพลงจาก Youtube ครบถ้วนและมีคุณภาพสูง 
-          "
+              content="คาราโอเกะออนไลน์ฟรี ไม่ต้องติดตั้ง ทำงานโดยตรงในเบราว์เซอร์ ใช้ได้กับอุปกรณ์หลากหลาย ฐานข้อมูลเพลงจาก Youtube ครบถ้วนและมีคุณภาพสูง "
             />
             <meta property="og:image" content="/assets/og-image.png" />
             <meta property="twitter:card" content="summary_large_image" />
-            <meta
-              property="twitter:url"
-              content="https://play.okeforyou.com/"
-            />
+            <meta property="twitter:url" content="https://play.okeforyou.com/" />
             <meta
               property="twitter:title"
               content="YouOke - คาราโอเกะออนไลน์บน YouTube"
             />
             <meta
               property="twitter:description"
-              content="คาราโอเกะออนไลน์ฟรี ไม่ต้องติดตั้ง ทำงานโดยตรงในเบราว์เซอร์ ใช้ได้กับอุปกรณ์หลากหลาย ฐานข้อมูลเพลงจาก Youtube ครบถ้วนและมีคุณภาพสูง 
-          "
+              content="คาราโอเกะออนไลน์ฟรี ไม่ต้องติดตั้ง ทำงานโดยตรงในเบราว์เซอร์ ใช้ได้กับอุปกรณ์หลากหลาย ฐานข้อมูลเพลงจาก Youtube ครบถ้วนและมีคุณภาพสูง "
             />
             <meta property="twitter:image" content="/assets/og-image.png" />
             <link rel="icon" href="/favicon.ico" sizes="any" />
@@ -124,16 +117,13 @@ function App({ Component, pageProps }: AppProps) {
             <meta name="theme-color" content="#ef4444" />
           </Head>
           {process.env.NODE_ENV !== "production" ? null : (
-            <>
-              <GoogleAnalytics
-                ga_id={process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS || ""}
-              />
-            </>
+            <GoogleAnalytics
+              ga_id={process.env.NEXT_PUBLIC_GOOGLE_ANALYTICS || ""}
+            />
           )}
           <QueryClientProvider client={queryClient}>
             <SystemProvider>
               {shouldLoadCast ? (
-                // Full Player Stack (Home, Rooms) - Includes Cast SENDER
                 <MidiEngineProvider>
                   <CastProvider>
                     <Script
@@ -150,7 +140,6 @@ function App({ Component, pageProps }: AppProps) {
                   </CastProvider>
                 </MidiEngineProvider>
               ) : (isChromecastReceiver || isReceiverPath) ? (
-                // Monitor/TV Stack (HTML Receiver / Chromecast Receiver)
                 <MidiEngineProvider>
                   <AdsProvider>
                     <CastProvider>
@@ -159,8 +148,6 @@ function App({ Component, pageProps }: AppProps) {
                   </AdsProvider>
                 </MidiEngineProvider>
               ) : (
-                // Lightweight Stack (Login, Admin)
-                // Admin/Login don't really need AdsProvider but keeping it for consistency/safety if they define slots
                 <AdsProvider>
                   <Component {...pageProps} />
                 </AdsProvider>
