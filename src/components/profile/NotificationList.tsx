@@ -120,7 +120,7 @@ export const NotificationList = () => {
             {unreadCount > 0 && (
                 <button 
                   onClick={markAllAsRead}
-                  className="w-full text-center text-[10px] font-black text-primary/60 hover:text-primary uppercase tracking-widest border border-primary/10 py-2 rounded-xl bg-primary/5 transition-all"
+                  className="w-full text-center text-[10px] font-black text-primary/60 hover:text-primary uppercase tracking-widest border border-primary/10 py-2 rounded-xl bg-primary/5 transition-all dark:bg-primary/20 dark:text-indigo-300"
                 >
                   ทำเครื่องหมายว่าอ่านทั้งหมดแล้ว ({unreadCount})
                 </button>
@@ -136,8 +136,8 @@ export const NotificationList = () => {
                             className={cn(
                                 "relative pl-11 pr-4 py-4 rounded-2xl transition-all cursor-pointer",
                                 itemIsNew 
-                                    ? "border border-primary/30 bg-primary/5 shadow-sm" 
-                                    : "border border-slate-100 bg-white opacity-50"
+                                    ? "border border-primary/30 bg-primary/10 shadow-sm dark:bg-primary/20 dark:border-primary/40" 
+                                    : "border border-slate-100 bg-white opacity-40 dark:bg-zinc-800/50 dark:border-zinc-700"
                             )}
                         >
                             <div className="absolute left-3.5 top-4">
@@ -147,31 +147,31 @@ export const NotificationList = () => {
                                         <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-600 rounded-full border border-white animate-pulse" />
                                     </div>
                                 ) : (
-                                    <Bell className="w-5 h-5 text-slate-300" />
+                                    <Bell className="w-5 h-5 text-slate-300 dark:text-zinc-500" />
                                 )}
                             </div>
                             <div>
                                 <div className="flex items-center justify-between mb-1">
-                                    <h4 className={cn("font-bold text-sm", itemIsNew ? "text-slate-900" : "text-slate-500")}>
+                                    <h4 className={cn("font-bold text-sm", itemIsNew ? "text-slate-900 dark:text-slate-100" : "text-slate-500 dark:text-zinc-500")}>
                                         {item.title}
                                     </h4>
                                     {itemIsNew && (
-                                        <span className="text-[8px] bg-red-50 text-red-600 px-1.5 py-0.5 rounded-md font-black italic">NEW</span>
+                                        <span className="text-[8px] bg-red-50 dark:bg-red-900/40 text-red-600 dark:text-red-300 px-1.5 py-0.5 rounded-md font-black italic">NEW</span>
                                     )}
                                 </div>
-                                <p className={cn("text-xs leading-relaxed", itemIsNew ? "text-slate-600" : "text-slate-400 line-clamp-1")}>
+                                <p className={cn("text-xs leading-relaxed", itemIsNew ? "text-slate-600 dark:text-zinc-200" : "text-slate-400 dark:text-zinc-500 line-clamp-1")}>
                                     {item.body}
                                 </p>
                                 
                                 <div className="flex items-center justify-between mt-3">
-                                    <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-400">
+                                    <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-400 dark:text-zinc-500">
                                         <Clock className="w-3 h-3" />
                                         {formatDate(item.createdAt)}
                                     </div>
                                     {itemIsNew && (
                                         <button 
                                           onClick={(e) => { e.stopPropagation(); markRead(item.id); }}
-                                          className="text-[9px] font-black text-primary hover:underline uppercase"
+                                          className="text-[10px] font-black text-primary dark:text-indigo-400 hover:text-primary/80 transition-colors uppercase tracking-widest text-right"
                                         >
                                           อ่านแล้ว
                                         </button>
@@ -185,4 +185,3 @@ export const NotificationList = () => {
         </div>
     );
 };
-

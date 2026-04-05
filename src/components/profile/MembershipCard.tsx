@@ -5,11 +5,8 @@ interface MembershipCardProps {
     membership: {
         type: string;
         status: string;
+        createdAt?: any;
         expiresAt: any;
-        quota?: {
-            used: number;
-            daily_limit: number;
-        }
     };
     role?: string;
     onUpgrade: () => void;
@@ -93,44 +90,25 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
                     </div>
                 </div>
 
-                {!isAdmin && (
-                    <div className="mt-4 space-y-1.5">
-                        <div className="flex justify-between items-end">
-                            <span className={cn("text-[9px] uppercase font-black tracking-widest", isLightBg ? "opacity-40" : "opacity-60")}>โควต้าเพลงวันนี้</span>
-                            <span className={cn("text-[10px] font-black", isLightBg ? "text-slate-700" : "text-white")}>
-                                {membership?.quota?.daily_limit === 0 || isLifetime 
-                                    ? "ใช้งานได้ไม่จำกัด" 
-                                    : `${membership?.quota?.used || 0} / ${membership?.quota?.daily_limit || 0}`
-                                }
-                            </span>
-                        </div>
-                        <div className={cn("h-1.5 w-full rounded-full overflow-hidden", isLightBg ? "bg-slate-200" : "bg-white/20")}>
-                            <div 
-                                className={cn("h-full rounded-full transition-all duration-1000", isLightBg ? "bg-primary" : "bg-white")}
-                                style={{ 
-                                    width: (membership?.quota?.daily_limit === 0 || isLifetime) 
-                                        ? '100%' 
-                                        : `${Math.min(((membership?.quota?.used || 0) / (membership?.quota?.daily_limit || 1)) * 100, 100)}%` 
-                                }}
-                            />
-                        </div>
-                    </div>
-                )}
 
                 <div className={cn(
-                    "mt-4 pt-3 flex justify-between items-end border-t border-dashed",
+                    "mt-4 pt-3 flex justify-between items-center border-t border-dashed",
                     isLightBg ? "border-slate-200" : "border-white/20",
-                    isAdmin && "mt-1 pt-2"
+                    isAdmin && "mt-2"
                 )}>
-                    <div>
-                        <div className={cn("text-[8px] uppercase tracking-widest font-black mb-0.5", isLightBg ? "opacity-40" : "opacity-60")}>หมดอายุวันที่</div>
-                        <div className={cn("text-[11px] font-bold", isLightBg ? "text-slate-500" : "text-white/80")}>
-                            {isAdmin ? "สิทธิ์ผู้ดูแลระบบ" : (isLifetime ? "ใช้งานได้ตลอดชีพ" : (safeMembership.expiresAt ? formatDate(safeMembership.expiresAt) : "ยังไม่ได้เลือกแพ็กเกจ"))}
+                    <div className="flex flex-col">
+                        <div className={cn("text-[8px] uppercase tracking-widest font-black mb-0.5", isLightBg ? "opacity-40" : "opacity-60")}>
+                            {isAdmin ? "สถานะการใช้งาน" : (isLifetime ? "ระดับสมาชิก" : "เริ่ม - หมดอายุ")}
+                        </div>
+                        <div className={cn("text-[11px] font-black tracking-tight", isLightBg ? "text-slate-600" : "text-white/95")}>
+                            {isAdmin ? "ผู้ดูแลระบบ YouOke" : (isLifetime ? "สมาชิก ถาวร" : (
+                                (safeMembership.expiresAt && safeMembership.type !== 'free')
+                                    ? `${formatDate(safeMembership.createdAt)} - ${formatDate(safeMembership.expiresAt)}` 
+                                    : "ยังไม่ได้เลือกแพ็กเกจ"
+                            ))}
                         </div>
                     </div>
-                    <div className={cn("flex items-center gap-1", isLightBg ? "opacity-30" : "opacity-60")}>
-                        <ChevronRight className="w-4 h-4" />
-                    </div>
+                    <ChevronRight className={cn("w-4 h-4", isLightBg ? "opacity-30" : "opacity-60")} />
                 </div>
             </div>
         </div>

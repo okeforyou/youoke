@@ -81,11 +81,12 @@ export const ProfileContent = () => {
 
     const isAdmin = user?.role === 'admin' || profile?.role === 'admin' || user?.email === 'boonyanone@gmail.com';
     
+    // v4.9.104: Compact Membership Data Structure
     const displayMembership = {
         type: profile?.subscription?.plan || user?.membership?.type || 'free',
         status: profile?.subscription?.status || user?.membership?.status || 'active',
-        expiresAt: profile?.subscription?.endDate || user?.membership?.expiresAt || null,
-        quota: profile?.quota || user?.quota || undefined
+        createdAt: (profile?.subscription as any)?.startDate || (user?.membership as any)?.createdAt || null,
+        expiresAt: profile?.subscription?.endDate || user?.membership?.expiresAt || null
     };
 
     const isPremium = isAdmin || (displayMembership.type !== 'free' && displayMembership.status === 'active');

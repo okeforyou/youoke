@@ -189,12 +189,12 @@ export const PackageStore = () => {
 
                                     <div className="flex flex-col min-w-0">
                                         <div className="flex items-center gap-1.5 min-w-0">
-                                            <h4 className="font-black text-[15px] text-slate-900 dark:text-white truncate tracking-tight shrink-0">{pkg.name}</h4>
+                                            <h4 className="font-black text-[15px] text-slate-900 dark:text-zinc-100 truncate tracking-tight shrink-0">{pkg.name}</h4>
                                             {isPopular && (
                                                 <span className="text-[7px] font-black bg-primary text-white px-1.5 py-0.5 rounded-md uppercase tracking-tighter shrink-0">แนะนำ</span>
                                             )}
                                         </div>
-                                        <p className="text-[10px] font-bold text-slate-400 truncate opacity-80 uppercase tracking-widest mt-0.5">
+                                        <p className="text-[10px] font-bold text-slate-400 dark:text-zinc-400 truncate opacity-90 uppercase tracking-widest mt-1">
                                             {pkg.durationDays >= 9999 ? 'เปิดใช้งานถาวร' : `${pkg.durationDays} วัน`}
                                         </p>
                                     </div>
@@ -202,15 +202,16 @@ export const PackageStore = () => {
 
                                 <div className="flex items-center gap-3 shrink-0 ml-4">
                                     <div className="text-right">
-                                        <span className="text-xl font-black text-slate-900 dark:text-white tabular-nums tracking-tighter">
+                                        <span className="text-xl font-black text-slate-900 dark:text-zinc-100 tabular-nums tracking-tighter">
                                             ฿{pkg.price.toLocaleString()}
                                         </span>
                                     </div>
                                     <div className={cn(
-                                        "w-8 h-8 rounded-full flex items-center justify-center transition-all",
-                                        "bg-slate-50 group-hover:bg-primary group-hover:text-white dark:bg-zinc-800"
+                                        "w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-lg active:scale-95",
+                                        "bg-primary text-white",
+                                        "dark:bg-indigo-500"
                                     )}>
-                                        <ChevronRight className="w-5 h-5" />
+                                        <ChevronRight className="w-5 h-5 shadow-sm" />
                                     </div>
                                 </div>
                             </div>
