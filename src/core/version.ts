@@ -1,12 +1,22 @@
 import packageInfo from "../../package.json";
 
-export const SYSTEM_VERSION = "4.9.72";
-export const SYSTEM_CODENAME = "Android Adaptive Polish";
+export const SYSTEM_VERSION = "4.9.73";
+export const SYSTEM_CODENAME = "Performance Level 2: Caching";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
 export const BUILD_DATE = "5 เม.ย. 2569";
 
 export const CHANGELOGS = [
+    {
+        version: "4.9.73 (Performance L2)",
+        date: "5 เม.ย. 2569",
+        changes: [
+            "[Speed] Smart Memory Caching: เพิ่มระบบจดจำข้อมูลแพ็กเกจในหน่วยความจำ (In-Memory Cache) ทำให้การสลับหน้าโปรไฟล์และหน้า Shop โหลดข้อมูลได้ทันที 0 วินาทีแบบไม่ต้องรอ Loading อีกต่อไป",
+            "[Sync] Background Revalidation: ระบบจะยังคงมีการตรวจสอบข้อมูลใหม่จาก Firestore อยู่เบื้องหลังเสมอ เพื่อให้มั่นใจว่าข้อมูลมีความสดใหม่โดยไม่ขัดจังหวะผู้ใช้งาน",
+            "[System] Stability Guard: ใช้กลไก Caching แบบปลอดภัยสูงสุด ไม่กระทบ Logic ระบบการเงินหลัก"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
     {
         version: "4.9.72 (Adaptive Icons)",
         date: "5 เม.ย. 2569",

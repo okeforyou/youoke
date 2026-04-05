@@ -19,9 +19,12 @@ interface Package {
     isPopular?: boolean;
 }
 
+// v4.9.73: Memory Cache to prevent repeated loading flickers
+let packageCache: (Package & { isActive: boolean })[] | null = null;
+
 export const PackageStore = () => {
-    const [packages, setPackages] = useState<Package[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [packages, setPackages] = useState<(Package & { isActive: boolean })[]>(packageCache || []);
+    const [loading, setLoading] = useState(!packageCache);
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [selectedPkg, setSelectedPkg] = useState<Package | undefined>(undefined);
 
@@ -56,6 +59,7 @@ export const PackageStore = () => {
 
                 console.log("📦 Active Packages Count:", activePackages.length);
                 setPackages(activePackages);
+                packageCache = activePackages; // Store for next mount
             } catch (error) {
                 console.error("Error fetching packages:", error);
             } finally {

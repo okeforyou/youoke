@@ -48,9 +48,12 @@ const KILLER_FEATURES = [
     { title: "คลังเพลงทั่วโลก", desc: "เพลงถูกใจจาก YouTube ครบสูตร", icon: Heart, color: "bg-red-500" },
 ];
 
+// v4.9.73: Performance caching for Shop page
+let shopPackageCache: Package[] | null = null;
+
 export default function PackagesPage() {
-    const [packages, setPackages] = useState<Package[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [packages, setPackages] = useState<Package[]>(shopPackageCache || []);
+    const [loading, setLoading] = useState(!shopPackageCache);
     const [selectedPkg, setSelectedPkg] = useState<Package | undefined>(undefined);
     const [showQRModal, setShowQRModal] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
@@ -81,6 +84,7 @@ export default function PackagesPage() {
                 );
 
                 setPackages(filteredPackages);
+                shopPackageCache = filteredPackages; // Cache it
             } catch (error) {
                 console.error("Error fetching packages:", error);
             } finally {
