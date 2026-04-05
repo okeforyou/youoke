@@ -556,18 +556,18 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
         ) : (
           <>
             {(activeIndex === 2 ? youtubePlaylists?.length === 0 : playlists?.length === 0) ? (
-              <div className="mx-4 flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-gray-100 rounded-3xl bg-gray-50/50">
-                <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-6 shadow-sm">
-                  <RectangleStackIcon className="w-8 h-8 text-gray-300" />
+              <div className="mx-4 flex flex-col items-center justify-center py-24 text-center border-2 border-dashed border-gray-100 dark:border-zinc-800 rounded-3xl bg-gray-50/50 dark:bg-zinc-900/20 transition-colors">
+                <div className="w-20 h-20 bg-white dark:bg-zinc-900 rounded-full flex items-center justify-center mb-6 shadow-sm">
+                  <RectangleStackIcon className="w-8 h-8 text-gray-300 dark:text-zinc-700" />
                 </div>
-                <h3 className="text-xl font-black text-black leading-tight">ยังไม่มีเพลย์ลิสต์</h3>
-                <p className="text-gray-500 mt-2 mb-8 max-w-sm text-sm font-medium">
+                <h3 className="text-xl font-black text-black dark:text-white leading-tight">ยังไม่มีเพลย์ลิสต์</h3>
+                <p className="text-gray-500 dark:text-zinc-500 mt-2 mb-8 max-w-sm text-sm font-medium">
                   {activeIndex === 2 
                     ? "เราไม่พบเพลย์ลิสต์ในบัญชี YouTube ของคุณ ลองสร้างเพลย์ลิสต์ใน YouTube ก่อนนะครับ"
                     : "เริ่มสร้างคอลเลกชันเพลงโปรดของคุณได้ง่ายๆ แค่กดปุ่มสร้างด้านล่าง"}
                 </p>
                 {activeIndex === 1 && (
-                  <button onClick={openCreateModal} className="btn btn-primary rounded-full px-8 text-white shadow-lg shadow-primary/20">
+                  <button onClick={openCreateModal} className="btn btn-primary rounded-full px-8 text-white shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95">
                     <PlusIcon className="w-5 h-5 mr-2" /> สร้างเพลย์ลิสต์แรก
                   </button>
                 )}
@@ -626,36 +626,36 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
       )}
 
       {/* Create / Edit Modal */}
-      <Modal ref={createModalRef} title={<span className="text-xl font-bold">{mode === MODE.CREATE ? "สร้างเพลย์ลิสต์ใหม่" : "แก้ไขเพลย์ลิสต์"}</span>} body={
-        <div className="p-6 space-y-6 w-full sm:w-[500px]">
+      <Modal ref={createModalRef} title={<span className="text-xl font-bold text-gray-900 dark:text-white">{mode === MODE.CREATE ? "สร้างเพลย์ลิสต์ใหม่" : "แก้ไขเพลย์ลิสต์"}</span>} body={
+        <div className="p-6 space-y-6 w-full sm:w-[500px] bg-white dark:bg-zinc-950">
           <div className="space-y-3">
-            <label className="text-sm font-bold text-gray-700 block">ชื่อเพลย์ลิสต์</label>
+            <label className="text-sm font-bold text-gray-700 dark:text-zinc-400 block">ชื่อเพลย์ลิสต์</label>
             <input
               autoFocus
-              className="w-full px-5 py-4 bg-gray-50 border border-transparent rounded-2xl text-lg font-medium focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none placeholder:text-gray-300"
+              className="w-full px-5 py-4 bg-gray-50 dark:bg-zinc-900 border border-transparent dark:border-zinc-800 rounded-2xl text-lg font-medium focus:bg-white dark:focus:bg-zinc-800 focus:border-primary dark:focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all outline-none placeholder:text-gray-300 dark:placeholder:text-zinc-700 text-gray-900 dark:text-white"
               placeholder="ตั้งชื่อให้โดนใจ..."
               value={formData.name}
               onChange={e => setFormData({ ...formData, name: e.target.value })}
             />
           </div>
-
-          <div className="p-4 bg-white border border-gray-100 rounded-2xl flex items-center justify-between cursor-pointer hover:border-gray-300 hover:shadow-sm transition-all shadow-sm" onClick={() => setFormData({ ...formData, isPrivate: !formData.isPrivate })}>
+ 
+          <div className="p-4 bg-white dark:bg-zinc-900/50 border border-gray-100 dark:border-zinc-800 rounded-2xl flex items-center justify-between cursor-pointer hover:border-gray-300 dark:hover:border-zinc-700 hover:shadow-sm transition-all shadow-sm" onClick={() => setFormData({ ...formData, isPrivate: !formData.isPrivate })}>
             <div className="flex items-center gap-4">
-              <div className={clsx("w-12 h-12 rounded-full flex items-center justify-center transition-colors", formData.isPrivate ? "bg-gray-100 text-gray-600" : "bg-green-100 text-green-600")}>
+              <div className={clsx("w-12 h-12 rounded-full flex items-center justify-center transition-colors", formData.isPrivate ? "bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400" : "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-500")}>
                 {formData.isPrivate ? <LockClosedIcon className="w-6 h-6" /> : <GlobeAltIcon className="w-6 h-6" />}
               </div>
               <div>
-                <div className="font-bold text-black">{formData.isPrivate ? "ส่วนตัว (Private)" : "สาธารณะ (Public)"}</div>
-                <div className="text-xs text-gray-500 font-medium mt-0.5">{formData.isPrivate ? "เห็นเฉพาะคุณเท่านั้น" : "ทุกคนสามารถค้นหาเจอ"}</div>
+                <div className="font-bold text-black dark:text-white">{formData.isPrivate ? "ส่วนตัว (Private)" : "สาธารณะ (Public)"}</div>
+                <div className="text-xs text-gray-500 dark:text-zinc-500 font-medium mt-0.5">{formData.isPrivate ? "เห็นเฉพาะคุณเท่านั้น" : "ทุกคนสามารถค้นหาเจอ"}</div>
               </div>
             </div>
             <input type="checkbox" className="toggle toggle-success" checked={!formData.isPrivate} readOnly />
           </div>
         </div>
       } footer={
-        <div className="flex justify-end gap-3 w-full">
-          <button onClick={() => createModalRef.current?.close()} className="px-6 py-3 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-50 transition-colors">ยกเลิก</button>
-          <button onClick={handleSavePlaylist} disabled={!formData.name.trim()} className="px-8 py-3 rounded-xl text-sm font-bold bg-gray-900 text-white hover:bg-black shadow-lg shadow-gray-900/20 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none transition-all">
+        <div className="flex justify-end gap-3 w-full bg-white dark:bg-zinc-950 p-2 sm:p-0">
+          <button onClick={() => createModalRef.current?.close()} className="px-6 py-3 rounded-xl text-sm font-bold text-gray-500 dark:text-zinc-500 hover:bg-gray-50 dark:hover:bg-zinc-900 transition-colors">ยกเลิก</button>
+          <button onClick={handleSavePlaylist} disabled={!formData.name.trim()} className="px-8 py-3 rounded-xl text-sm font-bold bg-gray-900 dark:bg-primary text-white dark:text-white hover:bg-black dark:hover:bg-primary/90 shadow-lg shadow-gray-900/20 dark:shadow-primary/20 hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none transition-all">
             {mode === MODE.CREATE ? "สร้างเลย" : "บันทึก"}
           </button>
         </div>
@@ -696,12 +696,12 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
           /* Body: Just the List */
           <div className="w-full bg-white dark:bg-zinc-950">
             {selectedItem?.playlists?.length === 0 ? (
-              <div className="flex flex-col items-center justify-center p-10 text-gray-400 dark:text-zinc-600">
+              <div className="flex flex-col items-center justify-center p-10 text-gray-400 dark:text-zinc-700 transition-colors">
                 <RectangleStackIcon className="w-10 h-10 mb-2 opacity-30" />
                 <p className="text-sm">ไม่มีเพลงในรายการนี้</p>
               </div>
             ) : (
-              <div className="px-6 py-2 space-y-1">
+              <div className="px-3 sm:px-6 py-2 space-y-1">
                 {selectedItem && selectedItem.playlists?.map((v, i) => (
                   <div key={i + (v.videoId || v.title)} className="group flex items-center gap-3 p-3 pr-4 rounded-2xl hover:bg-gray-50 dark:hover:bg-zinc-900 cursor-pointer transition-all border border-transparent hover:border-gray-100 dark:hover:border-zinc-800 hover:shadow-sm">
                     <div className="w-6 text-center text-xs font-bold text-gray-300 dark:text-zinc-700 group-hover:text-primary font-mono transition-colors">
@@ -740,7 +740,7 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
         }
         footer={
           /* Footer: Actions */
-          <div className="flex gap-2 w-full">
+          <div className="flex gap-2 w-full bg-white dark:bg-zinc-950 p-2 sm:p-0">
             <button
               onClick={() => { if (selectedItem) { setVideoPlaylist(selectedItem.playlists); playlistModalRef.current?.close(); } }}
               className="flex-1 btn btn-primary h-11 min-h-0 rounded-xl text-white shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all text-sm font-bold border-none"
@@ -750,8 +750,8 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
 
             {activeIndex === 1 && (
               <>
-                <button onClick={() => { playlistModalRef.current?.close(); openEditModal(selectedItem!); }} className="btn btn-square btn-ghost h-11 w-11 min-h-0 border border-gray-100 bg-gray-50 hover:bg-white hover:border-gray-200 rounded-xl"><PencilIcon className="w-5 h-5 text-gray-500" /></button>
-                <button onClick={() => { if (confirm("ยืนยันการลบ?")) { deletePlaylist(selectedItem!.id); playlistModalRef.current?.close(); } }} className="btn btn-square btn-ghost h-11 w-11 min-h-0 border border-gray-100 bg-gray-50 hover:bg-red-50 hover:border-red-100 hover:text-red-500 rounded-xl"><TrashIcon className="w-5 h-5" /></button>
+                <button onClick={() => { playlistModalRef.current?.close(); openEditModal(selectedItem!); }} className="btn btn-square btn-ghost h-11 w-11 min-h-0 border border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-900 hover:bg-white dark:hover:bg-zinc-800 hover:border-gray-200 dark:hover:border-zinc-700 rounded-xl transition-all"><PencilIcon className="w-5 h-5 text-gray-500 dark:text-zinc-400" /></button>
+                <button onClick={() => { if (confirm("ยืนยันการลบ?")) { deletePlaylist(selectedItem!.id); playlistModalRef.current?.close(); } }} className="btn btn-square btn-ghost h-11 w-11 min-h-0 border border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-900 hover:bg-red-50 dark:hover:bg-red-500/10 hover:border-red-100 dark:hover:border-red-500/20 hover:text-red-500 rounded-xl transition-all"><TrashIcon className="w-5 h-5 text-gray-500 dark:text-zinc-400" /></button>
               </>
             )}
           </div>

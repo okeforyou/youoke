@@ -443,7 +443,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 )}
 
                 {/* Desktop Header */}
-                <header className="hidden lg:flex h-20 items-center justify-between px-8 border-b border-gray-100 dark:border-zinc-900 bg-white dark:bg-zinc-950 sticky top-0 z-20 transition-all">
+                <header className="hidden lg:flex h-20 items-center justify-between px-8 border-b border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-950 sticky top-0 z-20 transition-all">
                     <div className="flex-1 max-w-2xl relative group">
                         <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
                             <Search className="h-5 w-5 text-gray-300 dark:text-zinc-600 group-focus-within:text-primary transition-colors" />
@@ -635,7 +635,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                     <div className="lg:hidden flex flex-col bg-white dark:bg-zinc-950 border-b border-gray-100 dark:border-zinc-900 shadow-sm relative z-20 transition-colors">
                                         <SidebarControls castMode={castMode} />
                                     </div>
-                                    <header className="lg:hidden flex flex-col bg-white dark:bg-zinc-950 border-b border-gray-100 dark:border-zinc-900 sticky top-0 z-[110] px-3 py-2 shadow-sm transition-colors">
+                                    <header className="lg:hidden flex flex-col bg-white dark:bg-zinc-950 border-b border-gray-100 dark:border-zinc-800 sticky top-0 z-[110] px-3 py-2 shadow-sm transition-colors">
                                         <div className="flex items-center gap-2.5">
                                             {/* Search Input Box */}
                                             <div className="flex-1 relative flex items-center bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl px-4 h-10 transition-all focus-within:bg-white dark:focus-within:bg-zinc-800 focus-within:border-black/10 dark:focus-within:border-white/10 shadow-sm">
@@ -800,18 +800,18 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
             <aside
                 className={clsx(
-                    "hidden lg:flex w-[420px] border-l border-gray-200 dark:border-zinc-900 flex-col z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+                    "hidden lg:flex w-[420px] border-l border-gray-200 dark:border-zinc-800 flex-col z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
                     (isQueueOpen && queue.length > 0 && layoutMode !== 'fullscreen') ? "mr-0 w-[420px] opacity-100" : "-mr-[420px] w-0 opacity-0"
                 )}
             >
                 {/* 236px corresponds to the fixed SidebarPlayer height (16:9 for 420px) */}
-                <div className="flex-1 flex flex-col pt-[236px] h-full relative z-10 bg-white dark:bg-zinc-950">
+                <div className="flex-1 flex flex-col pt-[236px] h-full relative z-10 bg-white dark:bg-zinc-900">
                     {/* Desktop Sidebar Controls (Moved here to prevent blocking QueueList) */}
-                    <div className="shrink-0 bg-white dark:bg-zinc-950 relative z-20">
+                    <div className="shrink-0 bg-white dark:bg-zinc-900 relative z-20">
                         <SidebarControls castMode={castMode} />
                     </div>
                     {/* Main Content Area */}
-                    <div className="flex-1 flex flex-col min-h-0 bg-white dark:bg-zinc-950 relative z-10">
+                    <div className="flex-1 flex flex-col min-h-0 bg-white dark:bg-zinc-900 relative z-10">
                         <QueueList />
                     </div>
                 </div>
@@ -820,7 +820,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
             {/* Mobile Nav Drawer */}
             <div className={clsx("fixed inset-0 bg-black/60 z-40 transition-opacity lg:hidden backdrop-blur-sm", isNavOpen ? "opacity-100" : "opacity-0 pointer-events-none")} onClick={() => setNavOpen(false)} />
             <div className={clsx("fixed inset-y-0 left-0 z-50 bg-white dark:bg-zinc-950 w-[280px] shadow-2xl transition-transform duration-300 lg:hidden flex flex-col", isNavOpen ? "translate-x-0" : "-translate-x-full")}>
-                <div className="h-16 flex items-center px-6 shrink-0 border-b border-gray-100 dark:border-zinc-900 bg-white dark:bg-zinc-950">
+                <div className="h-16 flex items-center px-6 shrink-0 border-b border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-950">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold shadow-sm">Y</div>
                         <div>
