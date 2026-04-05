@@ -15,11 +15,11 @@ import {
     linkWithRedirect
 } from 'firebase/auth';
 import { getApps } from 'firebase/app';
-import { doc, setDoc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { serverTimestamp, doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import nookies from 'nookies';
 import { ref, get as rtdbGet, update as rtdbUpdate } from 'firebase/database';
 import { realtimeDb } from '../../firebase';
-import { createNotification } from '@/services/notificationService';
+// Removed unused notification import causing lint errors
 
 interface MembershipState {
     type: 'free' | 'day_pass' | 'monthly' | 'yearly' | 'lifetime';
@@ -326,14 +326,19 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                     };
                                 }
 
+                                // 👑 [HARDENED ROLE SECURITY] - v4.9.90
+                                // Always prioritize 'admin' or 'owner' roles if present in database OR email
                                 let role = userData.role || 'user';
-                                let isAdmin = userData.role === 'admin';
+                                let isAdmin = false;
 
-                                // 👑 HARDCODE OWNER ROLE
-                                if (firebaseUser.email === 'boonyanone@gmail.com') {
-                                    role = 'owner';
+                                if (role === 'admin' || role === 'owner' || firebaseUser.email === 'boonyanone@gmail.com') {
+                                    if (firebaseUser.email === 'boonyanone@gmail.com') {
+                                        role = 'owner';
+                                    } else {
+                                        role = 'admin';
+                                    }
                                     isAdmin = true;
-                                    console.log('👑 [AuthStore] Owner Identified: Access Granted');
+                                    console.log(`👑 [AuthStore] ${role.toUpperCase()} Identified: Shielded Session Active`);
                                 }
 
                                 // 🛡️ SELF-HEALING: SYNC MISSING photoURL FROM AUTH PROVIDER

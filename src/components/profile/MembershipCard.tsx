@@ -43,7 +43,7 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
 
     const getPlanName = () => {
         if (isAdmin) return "ผู้ดูแลระบบ (ADMIN)";
-        if (isLifetime) return "พรีเมียมตลาดชีพ (LIFETIME)";
+        if (isLifetime || safeMembership.type === 'lifetime') return "ตลอดชีพ (LIFETIME)";
         switch (safeMembership.type) {
             case 'day_pass': return "แพ็กเกจ 1 วัน (DAY PASS)";
             case 'yearly': return "พรีเมียมรายปี (YEARLY)";
