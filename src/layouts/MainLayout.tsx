@@ -799,7 +799,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
             <aside
                 className={clsx(
-                    "hidden lg:flex w-[420px] border-l border-gray-200 dark:border-zinc-950 flex-col z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
+                    "hidden lg:flex w-[420px] border-l border-gray-200 dark:border-zinc-800 flex-col z-20 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
                     (isQueueOpen && queue.length > 0 && layoutMode !== 'fullscreen') ? "mr-0 w-[420px] opacity-100" : "-mr-[420px] w-0 opacity-0"
                 )}
             >
