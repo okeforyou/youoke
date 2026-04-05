@@ -869,13 +869,6 @@ export default function AdminUsersPage() {
                     iconColor="success"
                     className="py-3"
                 />
-                <StatCard 
-                    title="ทั่วไป"
-                    value={stats.free}
-                    icon={UserCheck}
-                    iconColor="secondary"
-                    className="py-3"
-                />
             </div>
 
             {/* Main Table Card */}
