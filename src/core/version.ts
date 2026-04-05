@@ -1,14 +1,25 @@
 import packageInfo from "../../package.json";
 
-export const SYSTEM_VERSION = "4.9.77";
-export const SYSTEM_CODENAME = "Total Eclipse";
+export const SYSTEM_VERSION = "4.9.78";
+export const SYSTEM_CODENAME = "Midnight Dashboard";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
 export const BUILD_DATE = "5 เม.ย. 2569";
 
 export const CHANGELOGS = [
     {
-        version: "4.9.77 (Full Darkness)",
+        version: "4.9.78 (Midnight Dashboard)",
+        date: "5 เม.ย. 2569",
+        changes: [
+            "[UI] Dashboard Eclipse: เปลี่ยนโฉมหน้า Dashboard (รายการศิลปิน/ตู้เพลง/สถานี) ให้เป็น Dark Mode พรีเมียม 100%",
+            "[UI] Sidebar Dark Sync: ปรับแต่งเมนูฝั่งซ้าย (Sidebar) และส่วนจัดการบัญชีให้เป็นสี Dark Zinc สอดคล้องกับธีมใหม่",
+            "[UI] Universal Aesthetics: ไล่เก็บจุดสะท้อนแสงและสีพื้นหลังใน Container หลักทัังหมด เพื่อความมืดสนิทและสบายตาที่สุด",
+            "[Fix] Code Integrity: แก้ไขความเสียหายของโครงสร้างไฟล์ SpotifyDashboard จากการอัปเดตเวอร์ชันก่อนหน้า"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
+    {
+        version: "4.9.78 (Full Darkness)",
         date: "5 เม.ย. 2569",
         changes: [
             "[UI] Universal Dark Mode: กวาดล้างจุดสีขาวทัังหมดในแอป (Drawer Header, Footer, Background) ให้เป็นสีมืดสนิท 100%",

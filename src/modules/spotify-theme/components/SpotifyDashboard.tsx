@@ -44,8 +44,6 @@ const GENRES = [
   "ริทึมแอนด์บลูส์",
 ];
 
-
-
 export default function SpotifyDashboard({ showTab = true, mode = 'default' }: { showTab?: boolean, mode?: 'default' | 'listening' | 'genres' | 'station' }) {
   const router = useRouter();
   const { user } = useSystem().auth();
@@ -282,11 +280,11 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
   return isError ? (
     <JooxError />
   ) : (
-    <div className="flex flex-col w-full pb-20">
+    <div className="flex flex-col w-full pb-20 bg-white dark:bg-zinc-950 transition-colors">
       {/* 1. PLAYLIST DETAIL VIEW */}
       {tagId && artist ? (
         <div className="col-span-full animate-in fade-in duration-500">
-          <div className="relative w-full h-[140px] sm:h-[180px] mb-6 group overflow-hidden rounded-2xl mx-2 shadow-sm border border-gray-100 bg-gray-50">
+          <div className="relative w-full h-[140px] sm:h-[180px] mb-6 group overflow-hidden rounded-2xl mx-2 shadow-sm border border-gray-100 dark:border-zinc-900 bg-gray-50 dark:bg-zinc-950">
              <Image 
                 src={playlistInfo?.imageUrl || artist[0]?.imageUrl || "/icon-cover.png"} 
                 alt={playlistInfo?.name || "Playlist"}
@@ -296,7 +294,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
              />
              
              <div className="absolute inset-0 p-4 sm:p-6 flex items-center gap-4 sm:gap-6">
-                <div className="relative w-20 h-20 sm:w-32 sm:h-32 flex-shrink-0 rounded-xl overflow-hidden shadow-md bg-white">
+                <div className="relative w-20 h-20 sm:w-32 sm:h-32 flex-shrink-0 rounded-xl overflow-hidden shadow-md bg-white dark:bg-zinc-900">
                    <Image 
                       src={playlistInfo?.imageUrl || artist[0]?.imageUrl || "/icon-cover.png"} 
                       alt={playlistInfo?.name}
@@ -308,11 +306,11 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                 
                 <div className="flex-1 space-y-1">
                    <p className="text-[10px] font-bold uppercase text-primary">เพลย์ลิสต์</p>
-                   <h1 className="text-xl sm:text-2xl font-bold text-black leading-tight line-clamp-1">
+                   <h1 className="text-xl sm:text-2xl font-bold text-black dark:text-white leading-tight line-clamp-1">
                       {playlistInfo?.name || "รายการเพลง"}
                    </h1>
-                   <div className="flex items-center gap-2 text-[11px] text-black font-black">
-                      <span className="text-black font-black">{playlistInfo?.owner || "YouOke"}</span>
+                   <div className="flex items-center gap-2 text-[11px] text-black dark:text-zinc-400 font-black">
+                      <span className="text-black dark:text-zinc-300 font-black">{playlistInfo?.owner || "YouOke"}</span>
                       <span>•</span>
                       <span>{artist.length} เพลง</span>
                    </div>
@@ -321,7 +319,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                 <div className="absolute top-4 right-4">
                     <button
                         onClick={() => setTagId("")}
-                        className="bg-white hover:bg-gray-50 text-black px-4 py-2 rounded-xl text-[11px] font-bold shadow-sm border border-gray-100 flex items-center gap-2 transition-all"
+                        className="bg-white dark:bg-zinc-900 hover:bg-gray-50 dark:hover:bg-zinc-800 text-black dark:text-white px-4 py-2 rounded-xl text-[11px] font-bold shadow-sm border border-gray-100 dark:border-zinc-800 flex items-center gap-2 transition-all"
                     >
                         ย้อนกลับ
                     </button>
@@ -335,14 +333,14 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                 return (
                 <div
                     key={video.id || video.name + i}
-                    className="group cursor-pointer bg-white rounded-xl border border-gray-100 hover:border-primary/20 hover:shadow-md flex flex-col h-full transition-all active:scale-[0.98] duration-300 relative overflow-hidden"
+                    className="group cursor-pointer bg-white dark:bg-zinc-900 rounded-xl border border-gray-100 dark:border-zinc-800 hover:border-primary/20 hover:shadow-md flex flex-col h-full transition-all active:scale-[0.98] duration-300 relative overflow-hidden"
                     onClick={() => {
                         const artistName = (video.artist_name && video.artist_name !== "Unknown Artist") ? video.artist_name : "";
                         const query = `${video.title} ${artistName}`.trim();
                         setSearchTerm(query);
                     }}
                 >
-                    <div className="relative aspect-video overflow-hidden bg-gray-50 flex-shrink-0">
+                    <div className="relative aspect-video overflow-hidden bg-gray-50 dark:bg-zinc-950 flex-shrink-0">
                     <Image
                         src={video.coverImageURL || "/icon-cover.png"}
                         alt={video.title}
@@ -352,8 +350,8 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                     />
                     </div>
                     <div className="p-2 sm:p-2.5 flex-1">
-                      <h3 className="font-bold text-[12px] line-clamp-2 text-black leading-tight group-hover:text-primary transition-colors text-left">{video.title || video.name}</h3>
-                      <p className="text-[10px] text-gray-400 mt-1 line-clamp-1 text-left">{(video.artist_name && video.artist_name !== "Unknown Artist") ? video.artist_name : "YouTube Music"}</p>
+                      <h3 className="font-bold text-[12px] line-clamp-2 text-black dark:text-white leading-tight group-hover:text-primary transition-colors text-left">{video.title || video.name}</h3>
+                      <p className="text-[10px] text-gray-400 dark:text-zinc-500 mt-1 line-clamp-1 text-left">{(video.artist_name && video.artist_name !== "Unknown Artist") ? video.artist_name : "YouTube Music"}</p>
                     </div>
                 </div>
                 );
@@ -369,8 +367,8 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
               {!selectedCategoryId && (
                 <div className="animate-in fade-in duration-500">
                   <div className="px-4 pt-6 pb-2">
-                    <h1 className="text-xl font-bold text-black">ศิลปินยอดฮิต</h1>
-                    <p className="text-[12px] text-black font-black">ชื่อที่คุณคุ้นเคยและชื่นชอบ</p>
+                    <h1 className="text-xl font-bold text-black dark:text-white">ศิลปินยอดฮิต</h1>
+                    <p className="text-[12px] text-black dark:text-zinc-500 font-black">ชื่อที่คุณคุ้นเคยและชื่นชอบ</p>
                   </div>
 
                   <div className="grid grid-cols-2 min-[500px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 py-3">
@@ -380,27 +378,25 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                       
                       return (
                         <div key={artist.name + i} onClick={() => setSearchTerm(cleanSearchQuery(cleanName))} className="group cursor-pointer">
-                          <div className="relative aspect-square rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm group-hover:shadow-md transition-all duration-300">
+                          <div className="relative aspect-square rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-sm group-hover:shadow-md transition-all duration-300">
                             <Image 
                                src={overrideUrl || `/api/spotify/artists/image?name=${encodeURIComponent(artist.name)}`}
                                alt={artist.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" unoptimized
                             />
                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
                           </div>
-                          <p className="mt-2.5 text-[10px] sm:text-[11px] font-bold text-black text-center truncate italic-sm w-full group-hover:text-primary transition-colors">{cleanName}</p>
+                          <p className="mt-2.5 text-[10px] sm:text-[11px] font-bold text-black dark:text-zinc-400 text-center truncate italic-sm w-full group-hover:text-primary dark:group-hover:text-primary transition-colors">{cleanName}</p>
                         </div>
                       );
                     })}
                   </div>
-
-                  {/* 💳 v4.9.74: Removed Package Spotlight from Home for Flat Design */}
                 </div>
               )}
 
               {/* TIER 2: CATEGORY SELECTION */}
               <div className="px-4 pt-6 pb-3">
-                <h1 className="text-lg font-black text-black">สารบัญศิลปิน</h1>
-                <p className="text-[11px] text-black font-black">แยกตามหมวดหมู่และแนวเพลง</p>
+                <h1 className="text-lg font-black text-black dark:text-white">สารบัญศิลปิน</h1>
+                <p className="text-[11px] text-black dark:text-zinc-500 font-black">แยกตามหมวดหมู่และแนวเพลง</p>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 mb-4">
@@ -425,7 +421,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                       onClick={() => setCategoryId(cat.id === selectedCategoryId ? "" : cat.id)}
                       className={clsx(
                         "group relative overflow-hidden rounded-xl aspect-[1.7/1] min-h-[72px] sm:min-h-[80px] cursor-pointer shadow-sm transition-all border-2",
-                        isActive ? "border-primary scale-[1.02] shadow-md ring-2 ring-primary/20" : "border-transparent bg-white shadow-sm"
+                        isActive ? "border-primary scale-[1.02] shadow-md ring-2 ring-primary/20" : "border-transparent bg-white dark:bg-zinc-900 shadow-sm"
                       )}
                     >
                        <div className={clsx(
@@ -434,7 +430,6 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                           isActive ? "opacity-100" : "opacity-90 group-hover:opacity-100"
                        )} />
 
-                 
                  <div className="absolute -bottom-4 -right-4 opacity-20 transform -rotate-12 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
                    <Icon className="w-24 h-24 text-white" />
                  </div>
@@ -457,10 +452,10 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
               {/* TIER 3: INTEGRATED RESULT LIST */}
               {selectedCategory && (
                 <div ref={songlistRef} className="animate-in slide-in-from-bottom-8 duration-500 scroll-mt-20">
-                  <div className="px-4 pt-4 pb-4 border-t border-gray-100 flex items-center justify-between">
+                  <div className="px-4 pt-4 pb-4 border-t border-gray-100 dark:border-zinc-800 flex items-center justify-between">
                     <div>
-                        <h2 className="text-base sm:text-xl font-bold text-black">{selectedCategory.title}</h2>
-                        <p className="text-[10px] sm:text-[11px] text-black font-black">รายชื่อศิลปินทั้งหมดในหมวดหมู่นี้</p>
+                        <h2 className="text-base sm:text-xl font-bold text-black dark:text-white">{selectedCategory.title}</h2>
+                        <p className="text-[10px] sm:text-[11px] text-black dark:text-zinc-500 font-black">รายชื่อศิลปินทั้งหมดในหมวดหมู่นี้</p>
                     </div>
                     <button onClick={() => setCategoryId("")} className="text-xs font-bold text-primary hover:underline">ปิดรายการ</button>
                   </div>
@@ -472,14 +467,14 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
 
                       return (
                         <div key={artist.name + i} onClick={() => setSearchTerm(cleanSearchQuery(cleanName))} className="group cursor-pointer">
-                          <div className="relative aspect-square rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm group-hover:shadow-md transition-all">
+                          <div className="relative aspect-square rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-sm group-hover:shadow-md transition-all">
                             <Image 
                                src={overrideUrl || `/api/spotify/artists/image?name=${encodeURIComponent(artist.name)}`} 
                                alt={artist.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" unoptimized
                             />
                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
                           </div>
-                          <p className="mt-2 text-[10px] sm:text-[11px] font-bold text-black text-center group-hover:text-primary transition-colors italic-sm">{cleanName}</p>
+                          <p className="mt-2 text-[10px] sm:text-[11px] font-bold text-black dark:text-zinc-400 text-center group-hover:text-primary transition-colors italic-sm">{cleanName}</p>
                         </div>
                       );
                     })}
@@ -494,9 +489,9 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
           {mode === 'genres' && (
             <div className="animate-in fade-in duration-500">
                <div className="px-4 pt-4 pb-6">
-                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-5 sm:p-8 rounded-2xl relative overflow-hidden min-h-[130px] flex flex-col justify-center border border-gray-200/50 shadow-sm">
-                        <h2 className="text-2xl sm:text-3xl font-black text-black leading-tight">ตู้เพลง / แนวเพลง</h2>
-                        <p className="text-[13px] sm:text-base !text-black mt-2 font-black">บทเพลงที่คัดสรรมาเพื่อคุณโดยเฉพาะ</p>
+                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-zinc-900 dark:to-zinc-800 p-5 sm:p-8 rounded-2xl relative overflow-hidden min-h-[130px] flex flex-col justify-center border border-gray-200/50 dark:border-zinc-800 shadow-sm">
+                        <h2 className="text-2xl sm:text-3xl font-black text-black dark:text-white leading-tight">ตู้เพลง / แนวเพลง</h2>
+                        <p className="text-[13px] sm:text-base !text-black dark:!text-zinc-400 mt-2 font-black">บทเพลงที่คัดสรรมาเพื่อคุณโดยเฉพาะ</p>
                         <div className="absolute bottom-6 right-8 opacity-20">
                             <GridIcon className="w-20 h-20 text-white" />
                         </div>
@@ -508,7 +503,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                     <button 
                         key={gen} 
                         onClick={() => setGenreText(gen)}
-                        className={`px-6 py-2.5 rounded-2xl text-xs font-bold transition-all ${genreText === gen ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                        className={`px-6 py-2.5 rounded-2xl text-xs font-bold transition-all ${genreText === gen ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-gray-100 dark:bg-zinc-900 text-gray-600 dark:text-zinc-400 hover:bg-gray-200 dark:hover:bg-zinc-800'}`}
                     >
                         {gen}
                     </button>
@@ -517,11 +512,11 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
 
                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-4 px-4 pb-20">
                   {(isLoadingGenre && artistCategories.length === 0) ? (
-                    getSkeletonItems(10).map(s => <div key={s} className="aspect-video bg-gray-100 rounded-3xl animate-pulse" />)
+                    getSkeletonItems(10).map(s => <div key={s} className="aspect-video bg-gray-100 dark:bg-zinc-900 rounded-3xl animate-pulse" />)
                   ) : (
                     artistCategories.map(cat => (
                         <div key={cat.tag_id} onClick={() => setTagId(cat.tag_id)} className="group cursor-pointer">
-                            <div className="relative aspect-video rounded-3xl overflow-hidden bg-gray-100 shadow-sm group-hover:shadow-xl transition-all duration-300 group-hover:-translate-y-1">
+                            <div className="relative aspect-video rounded-3xl overflow-hidden bg-gray-100 dark:bg-zinc-900 shadow-sm group-hover:shadow-xl transition-all duration-300 group-hover:-translate-y-1">
                                 <Image src={cat.imageUrl || "/icon-cover.png"} alt={cat.tag_name} fill className="object-cover" unoptimized />
                                     <div className="absolute inset-0 p-3 flex flex-col justify-end bg-gradient-to-t from-black/80 via-transparent to-transparent">
                                     <p className="text-white font-bold text-sm leading-tight line-clamp-2">{cat.tag_name}</p>
@@ -540,18 +535,18 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                {!tagId && (
                  <>
                    <div className="px-4 pt-4 pb-6">
-                        <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-5 sm:p-8 rounded-2xl relative overflow-hidden min-h-[130px] flex flex-col justify-center border border-gray-200/50 shadow-sm">
-                            <h2 className="text-2xl sm:text-3xl font-black text-black leading-tight">สถานีเพลง</h2>
-                            <p className="text-[13px] sm:text-base !text-black mt-2 font-black">รวมชุดเพลงยาว ฟังต่อเนื่อง สำหรับเปิดทิ้งไว้</p>
+                        <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-zinc-900 dark:to-zinc-800 p-5 sm:p-8 rounded-2xl relative overflow-hidden min-h-[130px] flex flex-col justify-center border border-gray-200/50 dark:border-zinc-800 shadow-sm">
+                            <h2 className="text-2xl sm:text-3xl font-black text-black dark:text-white leading-tight">สถานีเพลง</h2>
+                            <p className="text-[13px] sm:text-base !text-black dark:!text-zinc-400 mt-2 font-black">รวมชุดเพลงยาว ฟังต่อเนื่อง สำหรับเปิดทิ้งไว้</p>
                             <div className="absolute bottom-6 right-8 opacity-5">
-                                <Headphones className="w-20 h-20 text-black" />
+                                <Headphones className="w-20 h-20 text-black dark:text-white" />
                             </div>
                         </div>
                    </div>
 
                    <div className="px-4 mb-6">
-                      <h3 className="text-base sm:text-lg font-black text-black mb-1">เลือกสถานีเพลง</h3>
-                      <p className="text-[10px] sm:text-xs !text-black font-black">กดเลือกแนวเพลงที่ต้องการฟังได้เลยครับ</p>
+                      <h3 className="text-base sm:text-lg font-black text-black dark:text-white mb-1">เลือกสถานีเพลง</h3>
+                      <p className="text-[10px] sm:text-xs !text-black dark:!text-zinc-500 font-black">กดเลือกแนวเพลงที่ต้องการฟังได้เลยครับ</p>
                    </div>
 
                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 mb-4">
@@ -576,7 +571,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                             onClick={() => setGenreText(cat.title === genreText ? "" : cat.title)}
                             className={clsx(
                               "group relative overflow-hidden rounded-xl aspect-[1.7/1] min-h-[72px] sm:min-h-[80px] cursor-pointer shadow-sm transition-all border-2",
-                              isActive ? "border-primary scale-[1.02] shadow-md ring-2 ring-primary/20" : "border-transparent bg-white shadow-sm"
+                              isActive ? "border-primary scale-[1.02] shadow-md ring-2 ring-primary/20" : "border-transparent bg-white dark:bg-zinc-900 shadow-sm"
                             )}
                           >
                              <div className={clsx(
@@ -605,17 +600,17 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                    {/* Station Result Content (Master Plan UI) */}
                    {(genreText || searchTerm) && (
                      <div ref={stationContentRef} className="animate-in slide-in-from-bottom-8 duration-500 scroll-mt-20 px-4">
-                        <div className="flex items-center justify-between mb-6 pt-4 border-t border-gray-100">
+                        <div className="flex items-center justify-between mb-6 pt-4 border-t border-gray-100 dark:border-zinc-800">
                             <div>
-                                <h2 className="text-xl font-bold text-gray-900">{genreText || searchTerm}</h2>
-                                <p className="text-[11px] text-black font-black">รวมเพลงยาว ({stationResults?.length || 0} รายการ)</p>
+                                <h2 className="text-xl font-bold text-gray-900 dark:text-white">{genreText || searchTerm}</h2>
+                                <p className="text-[11px] text-black dark:text-zinc-500 font-black">รวมเพลงยาว ({stationResults?.length || 0} รายการ)</p>
                             </div>
                             <button onClick={() => setGenreText("")} className="text-xs font-bold text-primary hover:underline">ปิดรายการ</button>
                         </div>
                         
                         <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 pb-20 overflow-hidden">
                           {isLoadStation ? (
-                            getSkeletonItems(8).map(s => <div key={s} className="aspect-video bg-gray-100 rounded-2xl animate-pulse" />)
+                            getSkeletonItems(8).map(s => <div key={s} className="aspect-video bg-gray-100 dark:bg-zinc-900 rounded-2xl animate-pulse" />)
                           ) : (
                             stationResults?.map((video: any, idx: number) => (
                                 <div key={video.videoId + idx} onClick={() => {
@@ -629,7 +624,6 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                                     } as any;
                                     
                                     // 🛡️ v4.9.74: Simple Login Check - If not logged in, block station access.
-                                    // This fixes the issue where Admin/Members were accidentally blocked by complex quota logic.
                                     if (!user) {
                                       showConfirm({
                                           title: "👑 เข้าสู่ระบบเพื่อฟังเพลง",
@@ -643,13 +637,13 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
 
                                     addToQueue(videoToAdd);
                                 }} className="group cursor-pointer overflow-hidden max-w-full">
-                                    <div className="relative aspect-video rounded-2xl overflow-hidden bg-white border border-gray-100 shadow-sm group-hover:shadow-md transition-all">
+                                    <div className="relative aspect-video rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-sm group-hover:shadow-md transition-all">
                                         <Image src={`https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`} alt={video.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" unoptimized />
                                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
                                           <PlayCircle className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100 transition-all duration-300 drop-shadow-lg" />
                                         </div>
                                     </div>
-                                    <p className="mt-2.5 px-0.5 text-[10px] sm:text-[11px] font-bold text-black text-center group-hover:text-primary transition-colors block truncate w-full italic-sm">
+                                    <p className="mt-2.5 px-0.5 text-[10px] sm:text-[11px] font-bold text-black dark:text-zinc-400 text-center group-hover:text-primary transition-colors block truncate w-full italic-sm">
                                         {video.title}
                                     </p>
                                 </div>
@@ -666,7 +660,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                                   "px-8 py-3 rounded-2xl font-black text-sm transition-all flex items-center gap-2",
                                   isFetchingNextStationPage 
                                     ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
-                                    : "bg-white text-primary border border-primary/20 hover:bg-primary/5 hover:shadow-lg active:scale-95"
+                                    : "bg-white dark:bg-zinc-900 text-primary border border-primary/20 hover:bg-primary/5 hover:shadow-lg active:scale-95"
                                 )}
                               >
                                 {isFetchingNextStationPage ? (
@@ -704,3 +698,4 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
     </div>
   );
 }
+
