@@ -316,17 +316,22 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                              📌 จัดกลุ่มสมาชิก (Segmentation)
                         </label>
                         <div className="grid grid-cols-2 gap-2">
-                            {['free', 'monthly', 'yearly', 'lifetime'].map(type => (
+                            {[
+                                { id: 'free', label: 'ทั่วไป' },
+                                { id: 'monthly', label: 'รายเดือน' },
+                                { id: 'yearly', label: 'รายปี' },
+                                { id: 'lifetime', label: 'ถาวร' }
+                            ].map(item => (
                                 <button
-                                    key={type}
+                                    key={item.id}
                                     onClick={async () => {
                                         try {
-                                            await AdminService.updateMembershipType(user.uid, type);
+                                            await AdminService.updateMembershipType(user.uid, item.id);
                                             if (onRefresh) onRefresh();
                                             setConfirmModal({
                                                 isOpen: true,
                                                 title: "อัปเดตกลุ่มสำเร็จ",
-                                                message: `เปลี่ยนกลุ่มเป็น ${type.toUpperCase()} เรียบร้อยแล้ว`,
+                                                message: `เปลี่ยนกลุ่มเป็น "${item.label}" เรียบร้อยแล้ว`,
                                                 type: 'info',
                                                 onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
                                             });
@@ -335,13 +340,13 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                                         }
                                     }}
                                     className={cn(
-                                        "py-2 rounded-lg border text-[10px] font-black uppercase tracking-widest transition-all active:scale-95",
-                                        (user.membership?.type === type || user.tier === type)
+                                        "py-3 rounded-lg border text-[10px] font-black uppercase tracking-widest transition-all active:scale-95",
+                                        (user.membership?.type === item.id || user.tier === item.id)
                                             ? "bg-slate-900 border-slate-900 text-white" 
                                             : "bg-white border-slate-100 text-slate-400 hover:border-slate-200"
                                     )}
                                 >
-                                    {type}
+                                    {item.label}
                                 </button>
                             ))}
                         </div>
@@ -418,22 +423,27 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                     <div className="bg-white rounded-xl border border-slate-100 p-4">
                         <label className="text-[11px] font-bold text-slate-400 uppercase mb-3 block px-1">อัปเกรดสถานะ (Manual Assign)</label>
                         <div className="grid grid-cols-2 gap-2">
-                            {packages?.map(pkg => (
-                                <button
-                                    key={pkg.id}
-                                    onClick={() => onAssignPackage(pkg.id)}
-                                    disabled={loading}
-                                    className="py-2.5 px-3 rounded-lg border border-slate-200 bg-white text-[11px] font-bold text-slate-600 hover:bg-slate-50 transition-colors active:scale-95"
-                                >
-                                    {pkg.name}
-                                </button>
-                            ))}
+                            {packages?.filter(pkg => !pkg.id.includes('day')).map(pkg => {
+                                // 🛡️ v4.9.93: Local Display Name Translation (Paid Plans only)
+                                let dispName = pkg.name;
+                                if (pkg.id.includes('month')) dispName = 'รายเดือน';
+                                if (pkg.id.includes('year')) dispName = 'รายปี';
+
+                                return (
+                                    <button
+                                        key={pkg.id}
+                                        onClick={() => onAssignPackage(pkg.id)}
+                                        className="py-3 px-3 rounded-lg border border-slate-200 bg-white text-[11px] font-bold text-slate-600 hover:bg-slate-50 transition-colors active:scale-95"
+                                    >
+                                        {dispName}
+                                    </button>
+                                );
+                            })}
                             <button
                                 onClick={() => onAssignPackage('lifetime')}
-                                disabled={loading}
-                                className="col-span-2 py-3 rounded-lg bg-slate-900 text-white text-[11px] font-bold uppercase tracking-widest active:scale-95 transition-transform"
+                                className="col-span-2 py-3.5 rounded-lg bg-slate-900 text-white text-[11px] font-bold uppercase tracking-widest active:scale-95 transition-transform"
                             >
-                                ตลอดชีพ (Lifetime)
+                                อัปเกรดเป็น : ถาวร (PERMANENT)
                             </button>
                         </div>
                     </div>

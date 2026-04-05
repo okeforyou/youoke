@@ -818,14 +818,7 @@ export default function AdminUsersPage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-3 lg:grid-cols-6 gap-2 mb-6">
-                <StatCard 
-                    title="ยอดรวม"
-                    value={stats.total}
-                    icon={Users}
-                    iconColor="primary"
-                    className="border-primary/10 bg-gradient-to-br from-white to-primary/5 py-3"
-                />
+            <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 mb-6">
                 <StatCard 
                     title="ทั่วไป"
                     value={stats.free}
@@ -1111,6 +1104,42 @@ export default function AdminUsersPage() {
                         <div className="space-y-2">
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2 mb-1">คำสั่งจัดการข้อมูล</p>
                             
+                            <div className="grid grid-cols-2 gap-2">
+                            {[
+                                { id: 'free', label: 'ทั่วไป' },
+                                { id: 'monthly', label: 'รายเดือน' },
+                                { id: 'yearly', label: 'รายปี' },
+                                { id: 'lifetime', label: 'ถาวร' }
+                            ].map(item => (
+                                <button
+                                    key={item.id}
+                                    onClick={async () => {
+                                        try {
+                                            await AdminService.updateMembershipType(actionUser.uid, item.id);
+                                            if (fetchUsers) fetchUsers();
+                                            setConfirmModal({
+                                                isOpen: true,
+                                                title: "อัปเดตกลุ่มสำเร็จ",
+                                                message: `เปลี่ยนกลุ่มเป็น "${item.label}" เรียบร้อยแล้ว`,
+                                                type: 'info',
+                                                onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+                                            });
+                                        } catch (e: any) {
+                                            alert(e.message);
+                                        }
+                                    }}
+                                    className={cn(
+                                        "py-2 rounded-lg border text-[10px] font-black uppercase tracking-widest transition-all active:scale-95",
+                                        ((actionUser as any).membership?.type === item.id || (actionUser as any).tier === item.id)
+                                            ? "bg-slate-900 border-slate-900 text-white" 
+                                            : "bg-white border-slate-100 text-slate-400 hover:border-slate-200"
+                                    )}
+                                >
+                                    {item.label}
+                                </button>
+                            ))}
+                        </div>
+
                             <button 
                                 onClick={() => { setSelectedUser(actionUser); setActionUser(null); }}
                                 className="w-full flex items-center justify-between gap-3 p-4 rounded-2xl bg-white border border-slate-100 hover:border-primary/20 hover:bg-primary/5 hover:text-primary transition-all group"
