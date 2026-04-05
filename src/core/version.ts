@@ -1,12 +1,23 @@
 import packageInfo from "../../package.json";
 
-export const SYSTEM_VERSION = "4.9.73";
-export const SYSTEM_CODENAME = "Performance Level 2: Caching";
+export const SYSTEM_VERSION = "4.9.74";
+export const SYSTEM_CODENAME = "Access & UI Harmony";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
 export const BUILD_DATE = "5 เม.ย. 2569";
 
 export const CHANGELOGS = [
+    {
+        version: "4.9.74 (Sync Patch)",
+        date: "5 เม.ย. 2569",
+        changes: [
+            "[Access] Station Playback: แก้ไขเงื่อนไขการเข้าถึงสถานีเพลงให้เรียบง่ายขึ้น (Login = Play) ช่วยให้ Admin และสมาชิกพรีเมียมเข้าใช้งานได้ปกติ 100%",
+            "[UI] Home Cleanup: นำส่วน Package Grid ออกจากหน้าแรกตามหลัก Flat Design เพื่อความสะอาดตาและเป็นมืออาชีพ",
+            "[Speed] Chart Performance: เพิ่มระยะเวลา Cache ข้อมูลชาร์ตเพลงเป็น 24 ชม. เพื่อการแสดงผลที่รวดเร็วทันใจ (Instant Display)",
+            "[System] Version Lock v4.9.74: ปรับปรุงความเสถียรของระบบสิทธิ์การเข้าถึง"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
     {
         version: "4.9.73 (Performance L2)",
         date: "5 เม.ย. 2569",

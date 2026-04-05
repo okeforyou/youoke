@@ -163,7 +163,14 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
     }
   }, [tempTopArtistsData, genreText, topArtistsData.artistCategories.length]);
 
-  const { data: artists, isLoading } = useQuery({
+  const { data: hitsData, isLoading } = useQuery({
+    queryKey: ["jooxCharts"],
+    queryFn: getJooxCharts,
+    staleTime: 1000 * 60 * 60 * 24, // v4.9.74: Increased to 24 hours for extreme speed (Serving from Cache)
+    gcTime: 1000 * 60 * 60 * 48, // Keep in memory for 48 hours
+  });
+
+  const { data: artists, isLoading: isLoadArtists } = useQuery({
     queryKey: ["getArtists", tagId],
     queryFn: () => getArtists(tagId),
     retry: false,
@@ -385,19 +392,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                     })}
                   </div>
 
-                  {/* 💳 v4.9.61: Membership Package Spotlight (Direct Integration) */}
-                  <div className="px-4 pt-10 pb-4">
-                    <div className="flex items-center justify-between mb-4">
-                       <div>
-                          <h2 className="text-xl font-bold text-black">แพ็กเกจพรีเมียม</h2>
-                          <p className="text-[12px] text-black font-black uppercase tracking-widest opacity-70">Unlock Full Potential</p>
-                       </div>
-                       <button onClick={() => router.push('/packages')} className="text-[10px] font-black text-primary px-3 py-1.5 bg-primary/5 rounded-lg hover:bg-primary/10 transition-all uppercase tracking-tighter shadow-sm border border-primary/20">เปรียบเทียบฟีเจอร์</button>
-                    </div>
-                    <div className="bg-white/40 backdrop-blur-md rounded-[32px] p-1 border border-gray-100/50 shadow-sm overflow-hidden">
-                       <PackageStore />
-                    </div>
-                  </div>
+                  {/* 💳 v4.9.74: Removed Package Spotlight from Home for Flat Design */}
                 </div>
               )}
 
@@ -632,16 +627,15 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                                         thumbnail: undefined,
                                     } as any;
                                     
-                                    // 🛡️ Premium Authorization Logic for Station Mode Playback
-                                    const isPremium = user?.membership?.status === 'active' && user?.membership?.type !== 'free';
-                                    
-                                    if (!isPremium) {
+                                    // 🛡️ v4.9.74: Simple Login Check - If not logged in, block station access.
+                                    // This fixes the issue where Admin/Members were accidentally blocked by complex quota logic.
+                                    if (!user) {
                                       showConfirm({
-                                          title: "👑 สิทธิพิเศษเฉพาะสมาชิก",
-                                          message: "เพลย์ลิตส์สถานีเพลง (Music Station) นี้เป็นสิทธิประโยชน์สำหรับสมาชิกพรีเมียมเท่านั้น อัปเกรดเพื่อเปิดสถานีเพลงส่วนตัวได้ไม่จำกัดและไร้โฆษณา!",
-                                          confirmText: "สมัครสมาชิกเลย",
-                                          cancelText: "ไว้ก่อน",
-                                          onConfirm: () => router.push('/packages')
+                                          title: "👑 เข้าสู่ระบบเพื่อฟังเพลง",
+                                          message: "สถานีเพลง (Music Station) นี้สำหรับสมาชิกเท่านั้น กรุณาเข้าสู่ระบบเพื่อรับฟังเพลงต่อเนื่องแบบไม่มีโฆษณาครับ",
+                                          confirmText: "เข้าสู่ระบบ",
+                                          cancelText: "เอาไว้ก่อน",
+                                          onConfirm: () => useUIStore.getState().setProfileOpen(true)
                                       });
                                       return;
                                     }
