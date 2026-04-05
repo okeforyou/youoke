@@ -104,7 +104,7 @@ export const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
                     <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400 group-focus-within:text-primary transition-colors" />
                     <input
                         type="search"
-                        placeholder="Search..."
+                        placeholder="ค้นหา..."
                         className="w-full h-9 pl-9 pr-4 bg-gray-50 border border-transparent rounded-full text-xs placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary/30 focus:bg-white transition-all font-medium"
                     />
                 </div>
@@ -139,7 +139,7 @@ export const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
                                 </div>
                                 {totalUnreadCount > 0 && (
                                     <span className="text-[11px] bg-red-600 text-white px-2.5 py-1 rounded-full font-black uppercase tracking-tighter border border-white/20">
-                                        {totalUnreadCount} NEW
+                                        ใหม่ {totalUnreadCount} รายการ
                                     </span>
                                 )}
                             </div>
@@ -164,7 +164,7 @@ export const AdminHeader = ({ onMenuClick }: AdminHeaderProps) => {
                                                                 "text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md",
                                                                 notif.type === 'payment_pending' ? "bg-amber-100 text-amber-700" : "bg-blue-100 text-blue-700"
                                                             )}>
-                                                                {notif.type === 'payment_pending' ? 'Task' : 'Info'}
+                                                                {notif.type === 'payment_pending' ? 'งานที่ต้องทำ' : 'แจ้งเตือน'}
                                                             </span>
                                                         </div>
                                                         <h4 className="text-[13px] font-black text-gray-900 group-hover:text-primary transition-colors leading-snug">

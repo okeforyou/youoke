@@ -83,14 +83,14 @@ interface PackageOption {
 }
 
 const roleStyles = {
-    admin: { bg: "bg-destructive/15", text: "text-destructive", label: "Admin" },
-    user: { bg: "bg-info/15", text: "text-info", label: "User" },
+    admin: { bg: "bg-destructive/15", text: "text-destructive", label: "ผู้ดูแลระบบ" },
+    user: { bg: "bg-info/15", text: "text-info", label: "สมาชิกทั่วไป" },
 };
 
 const statusStyles = {
-    active: { bg: "bg-success/15", text: "text-success", dot: "bg-success" },
-    banned: { bg: "bg-destructive/15", text: "text-destructive", dot: "bg-destructive" },
-    guest: { bg: "bg-muted", text: "text-muted-foreground", dot: "bg-muted-foreground" },
+    active: { bg: "bg-success/15", text: "text-success", dot: "bg-success", label: "ปกติ" },
+    banned: { bg: "bg-destructive/15", text: "text-destructive", dot: "bg-destructive", label: "ระงับ" },
+    guest: { bg: "bg-muted", text: "text-muted-foreground", dot: "bg-muted-foreground", label: "แขก" },
 };
 
 const membershipStyles = {
@@ -768,18 +768,18 @@ export default function AdminUsersPage() {
 
     const getStatusStyle = (status: string) => {
         const s = statusStyles[status as keyof typeof statusStyles];
-        return s || { bg: "bg-muted", text: "text-muted-foreground", dot: "bg-muted-foreground" };
+        return s || { bg: "bg-muted", text: "text-muted-foreground", dot: "bg-muted-foreground", label: "ไม่ทราบ" };
     };
 
     const getMembershipStyle = (type: string) => {
         const s = membershipStyles[type as keyof typeof membershipStyles];
-        return s || { bg: "bg-muted", text: "text-muted-foreground", label: "Free" };
+        return s || { bg: "bg-muted", text: "text-muted-foreground", label: "ทั่วไป" };
     };
 
     return (
-        <AdminLayout headerTitle="User Manager">
+        <AdminLayout headerTitle="จัดการผู้ใช้">
             <Head>
-                <title>Users - YouOke Admin</title>
+                <title>จัดสมาชิก - YouOke Admin</title>
             </Head>
             <GlobalScrollbarStyle />
 
@@ -906,8 +906,8 @@ export default function AdminUsersPage() {
                                 className="px-3 py-2 bg-gray-50 border border-gray-100 rounded-xl font-bold text-[11px] outline-none focus:ring-2 focus:ring-indigo-100 min-w-[120px] text-gray-500 uppercase"
                             >
                                 <option value="all">บทบาททั้งหมด</option>
-                                <option value="admin">ADMIN ONLY</option>
-                                <option value="user">USER ONLY</option>
+                                <option value="admin">ผู้ดูแล (ADMIN)</option>
+                                <option value="user">สมาชิก (USER)</option>
                             </select>
                         </div>
 
@@ -984,7 +984,7 @@ export default function AdminUsersPage() {
                                                                         <>
                                                                             <div className={cn("w-1.5 h-1.5 rounded-full", isOnline ? "bg-emerald-500 animate-pulse" : "bg-gray-300")} />
                                                                             <span className={cn("text-[9px] font-bold uppercase tracking-tight", isOnline ? "text-emerald-500" : "text-gray-400")}>
-                                                                                {isOnline ? 'Online' : `Seen ${lastSeen.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
+                                                                                {isOnline ? 'ออนไลน์' : `เห็นเมื่อ ${lastSeen.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
                                                                             </span>
                                                                         </>
                                                                     );
@@ -994,7 +994,7 @@ export default function AdminUsersPage() {
                                                         {(user as any).lineUserId && (
                                                             <div className="flex items-center gap-0.5 px-1.5 py-0.5 bg-emerald-50 text-[#06C755] rounded-md border border-emerald-100 animate-in fade-in zoom-in duration-300">
                                                                 <LineIcon className="w-2.5 h-2.5" />
-                                                                <span className="text-[7px] font-black uppercase tracking-tighter">Linked</span>
+                                                                <span className="text-[7px] font-black uppercase tracking-tighter">ผูกบัญชีแล้ว</span>
                                                             </div>
                                                         )}
                                                     </div>
@@ -1010,7 +1010,7 @@ export default function AdminUsersPage() {
                                         <td className="px-6 py-4">
                                             <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium", statusStyle.bg, statusStyle.text)}>
                                                 <span className={cn("mr-1.5 h-1.5 w-1.5 rounded-full", statusStyle.dot)} />
-                                                {status.toUpperCase()}
+                                                {statusStyle.label}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
