@@ -213,7 +213,23 @@ export default function PackagesPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {loading ? (
                         Array.from({ length: 3 }).map((_, i) => (
-                            <div key={i} className="h-[500px] rounded-[3rem] bg-zinc-100 dark:bg-zinc-900 animate-pulse" />
+                            <div key={i} className="h-[500px] rounded-[3rem] bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 p-8 space-y-6 animate-pulse">
+                                <div className="h-8 bg-zinc-100 dark:bg-zinc-800 rounded-full w-1/3"></div>
+                                <div className="h-12 bg-zinc-200 dark:bg-zinc-700 rounded-2xl w-1/2"></div>
+                                <div className="space-y-3">
+                                    <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded-lg w-full"></div>
+                                    <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded-lg w-3/4"></div>
+                                </div>
+                                <div className="space-y-4 pt-12">
+                                    {[1, 2, 3, 4].map(j => (
+                                        <div key={j} className="flex gap-4">
+                                            <div className="w-5 h-5 bg-zinc-200 dark:bg-zinc-700 rounded-full"></div>
+                                            <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded-lg flex-1"></div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="mt-auto h-12 bg-zinc-200 dark:bg-zinc-700 rounded-[1.2rem] w-full"></div>
+                            </div>
                         ))
                     ) : (
                         packages.map((pkg) => (

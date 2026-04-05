@@ -1,12 +1,22 @@
 import packageInfo from "../../package.json";
 
-export const SYSTEM_VERSION = "4.9.70";
-export const SYSTEM_CODENAME = "Localization Polish";
+export const SYSTEM_VERSION = "4.9.71";
+export const SYSTEM_CODENAME = "Performance Level 1: Skeleton";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
 export const BUILD_DATE = "5 เม.ย. 2569";
 
 export const CHANGELOGS = [
+    {
+        version: "4.9.71 (Performance L1)",
+        date: "5 เม.ย. 2569",
+        changes: [
+            "[Speed] Flat Skeleton Loading: เพิ่มระบบ Skeleton UI ในหน้าโปรไฟล์และหน้าเลือกซื้อแพ็กเกจ เพื่อลดอาการ 'หน้าขาว' ตอนรอโหลดข้อมูล ช่วยให้สลับหน้าได้ลื่นไหลทันที",
+            "[UX] Minimalist Design: ใช้โทนสี Gray-Zinc และอะนิเมชัน Pulse แบบแบน (Flat) สบายตาแทนการใช้ Loading Spinner แบบดั้งเดิม",
+            "[System] Version Sync v4.9.71: เปิดตัวขั้นที่ 1 ของแผนการพัดนาความเร็วระบบ"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
     {
         version: "4.9.70 (Localization Sync)",
         date: "5 เม.ย. 2569",

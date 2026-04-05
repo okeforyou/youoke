@@ -96,12 +96,25 @@ export const PackageStore = () => {
         setShowUploadModal(true);
     };
 
-    if (loading) return (
-        <div className="flex flex-col items-center justify-center p-12 space-y-4">
-            <Loader2 className="w-8 h-8 text-primary animate-spin" />
-            <p className="text-xs font-bold text-slate-400">กำลังดึงข้อมูลแพ็กเกจ...</p>
-        </div>
-    );
+    if (loading) {
+        return (
+            <div className="space-y-4 animate-pulse px-4">
+                {/* Skeleton for Trial Hero */}
+                <div className="h-24 bg-zinc-100 dark:bg-zinc-800 rounded-3xl w-full"></div>
+                {/* Skeletons for standard packages */}
+                {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-20 bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 rounded-2xl w-full flex items-center px-4 gap-4">
+                        <div className="w-10 h-10 bg-zinc-200 dark:bg-zinc-700 rounded-xl"></div>
+                        <div className="space-y-2 flex-1">
+                            <div className="h-3 bg-zinc-200 dark:bg-zinc-700 rounded w-1/3"></div>
+                            <div className="h-2 bg-zinc-100 dark:bg-zinc-800 rounded w-1/2"></div>
+                        </div>
+                        <div className="w-12 h-4 bg-zinc-200 dark:bg-zinc-700 rounded-lg"></div>
+                    </div>
+                ))}
+            </div>
+        );
+    }
 
     if (packages.length === 0) {
         return (
