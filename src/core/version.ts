@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "4.10.121 (Premium Guard Modal)",
+        date: "6 เม.ย. 2569",
+        changes: [
+            "Replaced legacy browser alert with a premium Headless UI Modal for LINE connection guard",
+            "Added smooth transitions and custom LINE branding to the connection prompt",
+            "Improved UX: Clearer instructions and direct action button to the profile connection page"
+        ],
+        recent_updates: ""
+    },
+    {
         version: "4.10.120 (LINE Connection Guard)",
         date: "6 เม.ย. 2569",
         changes: [

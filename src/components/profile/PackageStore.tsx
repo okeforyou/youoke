@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { collection, query, getDocs, orderBy, where } from "firebase/firestore";
 import { db } from "@/firebase";
-import { Star, Loader2, QrCode, Zap, Sparkles, ChevronRight } from "lucide-react";
+import { Star, Loader2, QrCode, Zap, Sparkles, ChevronRight, MessageCircle, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/modules/auth/useAuthStore";
 import { UploadSlipModal } from "./UploadSlipModal";
 import { useRouter } from "next/router";
+import { Dialog, Transition } from "@headlessui/react";
 
 
 
@@ -27,6 +28,7 @@ export const PackageStore = () => {
     const [loading, setLoading] = useState(!packageCache);
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [selectedPkg, setSelectedPkg] = useState<Package | undefined>(undefined);
+    const [showLineGuard, setShowLineGuard] = useState(false);
 
     const { user } = useAuthStore();
     const router = useRouter();
@@ -80,8 +82,7 @@ export const PackageStore = () => {
         // v4.10.120: LINE CONNECTION GUARD
         // 🔒 Mandatory LINE connection before any purchase or activation
         if (!user.lineUserId) {
-            alert("⚠️ โปรดเชื่อมต่อ LINE ก่อนสั่งซื้อพรีเมียม เพื่อรับการแจ้งเตือนผลการอนุมัติครับ");
-            router.push('/profile?connect=line');
+            setShowLineGuard(true);
             return;
         }
 
@@ -249,6 +250,79 @@ export const PackageStore = () => {
                     pkg={selectedPkg}
                 />
             )}
+
+            {/* v4.10.121: Premium LINE Connection Guard Modal */}
+            <Transition show={showLineGuard} as={Fragment}>
+                <Dialog as="div" className="relative z-[220]" onClose={() => setShowLineGuard(false)}>
+                    <Transition.Child
+                        as={Fragment}
+                        enter="ease-out duration-300"
+                        enterFrom="opacity-0"
+                        enterTo="opacity-100"
+                        leave="ease-in duration-200"
+                        leaveFrom="opacity-100"
+                        leaveTo="opacity-0"
+                    >
+                        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" />
+                    </Transition.Child>
+
+                    <div className="fixed inset-0 z-10 overflow-y-auto">
+                        <div className="flex min-h-full items-center justify-center p-4">
+                            <Transition.Child
+                                as={Fragment}
+                                enter="ease-out duration-300"
+                                enterFrom="opacity-0 scale-95"
+                                enterTo="opacity-100 scale-100"
+                                leave="ease-in duration-200"
+                                leaveFrom="opacity-100 scale-100"
+                                leaveTo="opacity-0 scale-95"
+                            >
+                                <Dialog.Panel className="w-full max-w-sm transform overflow-hidden rounded-[40px] bg-white dark:bg-zinc-900 p-8 shadow-2xl transition-all border-none">
+                                    <div className="flex justify-end -mt-2 -mr-2">
+                                        <button onClick={() => setShowLineGuard(false)} className="p-2 rounded-full hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors text-slate-400">
+                                            <X size={20} />
+                                        </button>
+                                    </div>
+                                    
+                                    <div className="text-center">
+                                        <div className="mx-auto w-20 h-20 bg-[#06C755]/10 rounded-[32px] flex items-center justify-center mb-6">
+                                            <MessageCircle className="w-10 h-10 text-[#06C755]" fill="currentColor" />
+                                        </div>
+                                        
+                                        <Dialog.Title as="h3" className="text-2xl font-black text-slate-900 dark:text-zinc-100 mb-3 leading-tight tracking-tight">
+                                            เชื่อมต่อ LINE ก่อนลุย!
+                                        </Dialog.Title>
+                                        
+                                        <p className="text-sm font-medium text-slate-500 dark:text-zinc-400 mb-8 leading-relaxed px-4">
+                                            เพื่อรับการแจ้งเตือนพรีเมียม <br/>
+                                            และผลการอนุมัติโอนเงิน ผ่านทาง LINE <br/>
+                                            รบกวนเชื่อมต่อบัญชีกับเราก่อนนะครับ
+                                        </p>
+
+                                        <button
+                                            onClick={() => {
+                                                setShowLineGuard(false);
+                                                router.push('/profile?connect=line');
+                                            }}
+                                            className="w-full py-5 bg-[#06C755] hover:bg-[#05b14c] text-white rounded-[28px] font-black text-sm shadow-xl shadow-[#06C755]/20 transition-all active:scale-95 flex items-center justify-center gap-3"
+                                        >
+                                            <MessageCircle size={20} />
+                                            เชื่อมต่อ LINE ตอนนี้
+                                        </button>
+                                        
+                                        <button 
+                                            onClick={() => setShowLineGuard(false)}
+                                            className="w-full mt-4 py-3 text-slate-400 dark:text-zinc-500 font-bold text-xs hover:text-slate-600 dark:hover:text-zinc-300 transition-colors"
+                                        >
+                                            ไว้ทีหลัง
+                                        </button>
+                                    </div>
+                                </Dialog.Panel>
+                            </Transition.Child>
+                        </div>
+                    </div>
+                </Dialog>
+            </Transition>
         </div>
     );
 };
