@@ -179,22 +179,28 @@ export const usePlayerStore = create<PlayerStore>()(
             }),
 
             setCurrentTime: (time) => {
-                const { ignoreUpdatesUntil, seekTarget } = get();
+                const { ignoreUpdatesUntil, seekTarget, currentTime: prevTime } = get();
                 const now = Date.now();
-
-                // SMART LOCK CHECK:
-                // If we have an active lock...
+                
+                // v4.10.119: SMART LOCK ENFORCEMENT
+                // If we are currently in an active seek lock (5s max)...
                 if (ignoreUpdatesUntil && now < ignoreUpdatesUntil && seekTarget !== null) {
-                    // Check if this new time is "close enough" to our target (within 1.5s)
-                    // If it is, it means the player has successfully seeked. We can unlock!
-                    if (Math.abs(time - seekTarget) < 1.5) {
-                        // Unlock early!
+                    // Check if the current player time has finally "landed" near our target (within 2s)
+                    if (Math.abs(time - seekTarget) < 2) {
+                        console.log("🎯 [Store] Seek landed! Success at", time, " - Unlocking.");
                         set({ ignoreUpdatesUntil: 0, seekTarget: null });
                     } else {
-                        // The time is still far from target (likely old stale time).
-                        // Ignore this update to prevent rubber-banding.
+                        // Otherwise, the player is still reporting old 'stale' time.
+                        // WE MUST IGNORE THIS to prevent ProgressBar rubber-banding.
+                        // console.log("⏳ [Store] Ignoring stale time during seek:", time, "target was", seekTarget);
                         return;
                     }
+                }
+
+                // STALE TIME JUMP PROTECTION (Cross-tab Loop Prevention)
+                // If the new time is significantly behind our current time (> 3s) without a seek, ignore it.
+                if (time < prevTime - 3 && !ignoreUpdatesUntil) {
+                    return;
                 }
 
                 set({ currentTime: time });

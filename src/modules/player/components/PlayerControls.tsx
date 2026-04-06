@@ -68,12 +68,14 @@ export const PlayerControls = () => {
     };
 
     // Real time progress
-    const { currentTime, duration, setCurrentTime, seekTo } = usePlayerStore(
+    const { currentTime, duration, setCurrentTime, seekTo, seekTarget, ignoreUpdatesUntil } = usePlayerStore(
         useShallow(state => ({
             currentTime: state.currentTime,
             duration: state.duration,
             setCurrentTime: state.setCurrentTime,
-            seekTo: state.seekTo
+            seekTo: state.seekTo,
+            seekTarget: state.seekTarget,
+            ignoreUpdatesUntil: state.ignoreUpdatesUntil
         }))
     );
 
@@ -83,9 +85,17 @@ export const PlayerControls = () => {
 
     const progressPercent = useMemo(() => {
         if (isDragging) return dragValue;
+        
+        // v4.10.119: SMART PROGRESS OVERRIDE
+        // If we are currently in a seek lock, show the TARGET time instead of the current player time.
+        // This makes the transition look instant and 100% stable.
+        const effectiveTime = (ignoreUpdatesUntil && Date.now() < ignoreUpdatesUntil && seekTarget !== null)
+            ? seekTarget 
+            : currentTime;
+
         if (!duration || duration === 0) return 0;
-        return Math.min((currentTime / duration) * 100, 100);
-    }, [currentTime, duration, isDragging, dragValue]);
+        return Math.min((effectiveTime / duration) * 100, 100);
+    }, [currentTime, duration, isDragging, dragValue, seekTarget, ignoreUpdatesUntil]);
 
     const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
         setIsDragging(true);
