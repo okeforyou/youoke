@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { SystemConfig, DEFAULT_CONFIG } from '../services/systemConfigService';
 
 interface UIState {
     isQueueOpen: boolean;
@@ -68,9 +69,12 @@ interface UIState {
         onConfirm: () => void;
     }) => void;
     hideConfirm: () => void;
+
+    config: SystemConfig;
+    setConfig: (config: SystemConfig) => void;
 }
 
-export const useUIStore = create<UIState>((set) => ({
+export const useUIStore = create<UIState>((set, get) => ({
     isQueueOpen: false,
     setQueueOpen: (isOpen) => set({ isQueueOpen: isOpen }),
     toggleQueue: () => set((state) => ({ isQueueOpen: !state.isQueueOpen })),
@@ -147,7 +151,8 @@ export const useUIStore = create<UIState>((set) => ({
             onConfirm: data.onConfirm
         }
     }),
-    hideConfirm: () => set((state) => ({
-        confirmModal: { ...state.confirmModal, isOpen: false }
-    })),
+    hideConfirm: () => set({ confirmModal: { ...get().confirmModal, isOpen: false } }),
+
+    config: DEFAULT_CONFIG,
+    setConfig: (config) => set({ config }),
 }));

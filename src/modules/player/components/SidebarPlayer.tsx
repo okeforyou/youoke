@@ -91,6 +91,13 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
 
     // System Config Check for Allowed Sources
     const { config } = useSystemConfig();
+    const setUIConfig = useUIStore(state => state.setConfig);
+
+    // Sync config to UIStore for stores to access (v4.10.107)
+    useEffect(() => {
+        if (config) setUIConfig(config);
+    }, [config, setUIConfig]);
+
     const allowedSources = config?.player?.allowedSources || ['youtube'];
     const isSourceAllowed = allowedSources.includes('youtube');
 

@@ -90,8 +90,8 @@ export const usePlayerLifecycle = (currentSource: string | null, showDjOverlay: 
         } else {
             // Guest: use local storage
             currentCount = parseInt(localStorage.getItem(storageKey) || '0');
-            // v4.10.107: Using standard guest limit (10)
-            if (limit === 0 || limit === undefined) limit = 10;
+            // v4.10.107: Pull guest limit from config
+            limit = config?.membership?.guest?.max_daily_songs ?? DEFAULT_CONFIG.membership.guest.max_daily_songs;
         }
 
         setDailyCount(currentCount);
