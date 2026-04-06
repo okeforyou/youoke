@@ -15,7 +15,8 @@ import {
     PhotoIcon,
     PlusIcon,
     TrashIcon,
-    MegaphoneIcon
+    MegaphoneIcon,
+    UserGroupIcon
 } from '@heroicons/react/24/outline';
 import { Save, AlertCircle, PartyPopper, Trash2, Plus, CheckCircle, Smartphone, Youtube, Disc, PlayCircle, Upload } from 'lucide-react';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
@@ -33,7 +34,7 @@ export default function AdminConfigPage() {
     const [saving, setSaving] = useState(false);
     const [initializing, setInitializing] = useState(false);
     const [uploading, setUploading] = useState(false);
-    const [activeTab, setActiveTab] = useState<'system' | 'features' | 'player' | 'ui' | 'login' | 'integrations' | 'payment' | 'marketing' | 'tv'>('system');
+    const [activeTab, setActiveTab] = useState<'system' | 'features' | 'player' | 'ui' | 'login' | 'integrations' | 'payment' | 'marketing' | 'tv' | 'membership'>('system');
     const [toast, setToast] = useState('');
     const router = useRouter();
 
@@ -155,6 +156,7 @@ export default function AdminConfigPage() {
         { id: 'integrations', label: 'เชื่อมต่อ API', icon: WrenchScrewdriverIcon, desc: 'YouTube, Spotify' },
         { id: 'payment', label: 'การชำระเงิน', icon: BanknotesIcon, desc: 'เลขบัญชี, PromptPay' },
         { id: 'tv', label: 'Smart TV', icon: TvIcon, desc: 'ข้อความประกาศ, พื้นหลัง, โควต้า' },
+        { id: 'membership', label: 'โควต้า & สมาชิก', icon: UserGroupIcon, desc: 'จำกัดจำนวนเพลง Guest/Free' },
     ];
 
     return (
@@ -322,6 +324,130 @@ export default function AdminConfigPage() {
                                             checked={localConfig.features?.karaokeMode ?? true}
                                             onChange={(val) => setLocalConfig({ ...localConfig, features: { ...localConfig.features, karaokeMode: val } })}
                                         />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* ==================== MEMBERSHIP TAB (NEW) ==================== */}
+                        {activeTab === 'membership' && (
+                            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-6">
+                                    <div className="flex items-center gap-2 border-b pb-2 mb-4">
+                                        <UserGroupIcon className="w-5 h-5 text-primary" />
+                                        <h3 className="font-bold text-gray-900">กำหนดโควต้าเพลง (Daily Song Quota)</h3>
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        {/* GUEST PLAN */}
+                                        <div className="p-5 rounded-2xl border border-gray-100 bg-gray-50/50 space-y-4">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-bold text-xs">G</div>
+                                                <span className="font-bold text-gray-900">Guest (ทั่วไป)</span>
+                                            </div>
+                                            <div className="form-control">
+                                                <label className="label text-[10px] uppercase font-bold text-gray-400">โควต้าเพลง / วัน</label>
+                                                <input 
+                                                    type="number" 
+                                                    className="input input-bordered w-full font-bold"
+                                                    value={localConfig.membership?.guest?.max_daily_songs ?? 10}
+                                                    onChange={(e) => setLocalConfig({
+                                                        ...localConfig,
+                                                        membership: {
+                                                            ...localConfig.membership,
+                                                            guest: { ...localConfig.membership.guest, max_daily_songs: parseInt(e.target.value) }
+                                                        }
+                                                    })}
+                                                />
+                                            </div>
+                                            <div className="space-y-2 pt-2">
+                                                <ConfigToggle 
+                                                    label="แสดงโฆษณา" 
+                                                    checked={localConfig.membership?.guest?.show_ads ?? true}
+                                                    onChange={(val) => setLocalConfig({
+                                                        ...localConfig,
+                                                        membership: {
+                                                            ...localConfig.membership,
+                                                            guest: { ...localConfig.membership.guest, show_ads: val }
+                                                        }
+                                                    })}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* FREE USER PLAN */}
+                                        <div className="p-5 rounded-2xl border border-blue-100 bg-blue-50/30 space-y-4">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">F</div>
+                                                <span className="font-bold text-gray-900">Free User (สมาชิกฟรี)</span>
+                                            </div>
+                                            <div className="form-control">
+                                                <label className="label text-[10px] uppercase font-bold text-gray-400">โควต้าเพลง / วัน</label>
+                                                <input 
+                                                    type="number" 
+                                                    className="input input-bordered w-full font-bold"
+                                                    value={localConfig.membership?.free?.max_daily_songs ?? 20}
+                                                    onChange={(e) => setLocalConfig({
+                                                        ...localConfig,
+                                                        membership: {
+                                                            ...localConfig.membership,
+                                                            free: { ...localConfig.membership.free, max_daily_songs: parseInt(e.target.value) }
+                                                        }
+                                                    })}
+                                                />
+                                            </div>
+                                            <div className="space-y-2 pt-2">
+                                                <ConfigToggle 
+                                                    label="แสดงโฆษณา" 
+                                                    checked={localConfig.membership?.free?.show_ads ?? true}
+                                                    onChange={(val) => setLocalConfig({
+                                                        ...localConfig,
+                                                        membership: {
+                                                            ...localConfig.membership,
+                                                            free: { ...localConfig.membership.free, show_ads: val }
+                                                        }
+                                                    })}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* PREMIUM PLAN */}
+                                        <div className="p-5 rounded-2xl border border-yellow-100 bg-yellow-50/30 space-y-4">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <div className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600 font-bold text-xs">P</div>
+                                                <span className="font-bold text-gray-900">Premium (วีไอพี)</span>
+                                            </div>
+                                            <div className="form-control">
+                                                <label className="label text-[10px] uppercase font-bold text-gray-400">โควต้าเพลง / วัน</label>
+                                                <input 
+                                                    type="number" 
+                                                    className="input input-bordered w-full font-bold"
+                                                    value={localConfig.membership?.premium?.max_daily_songs ?? 9999}
+                                                    onChange={(e) => setLocalConfig({
+                                                        ...localConfig,
+                                                        membership: {
+                                                            ...localConfig.membership,
+                                                            premium: { ...localConfig.membership.premium, max_daily_songs: parseInt(e.target.value) }
+                                                        }
+                                                    })}
+                                                />
+                                            </div>
+                                            <div className="space-y-2 pt-2 text-xs text-gray-500 italic">
+                                                * สิทธิ์ Premium จะปลดล็อกฟีเจอร์ Cast และไร้โฆษณาโดยอัตโนมัติ
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="p-4 bg-primary/5 rounded-xl border border-primary/10 flex gap-4 items-start">
+                                        <AlertCircle className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                                        <div className="text-xs text-gray-600 leading-relaxed">
+                                            <p className="font-bold text-primary mb-1">คำแนะนำสถาปัตยกรรม Quota:</p>
+                                            <ul className="list-disc pl-4 space-y-1">
+                                                <li><strong>Guest:</strong> นับจาก LocalStorage ในเครื่องนั้นๆ เหมาะสำหรับทดลองใช้</li>
+                                                <li><strong>Logged In:</strong> นับจากฐานข้อมูล Firestore ของ User รายนั้นๆ โดยตรง</li>
+                                                <li><strong>Unlimited:</strong> หากต้องการไม่จำกัด ให้ใส่ค่า <strong>9999</strong> หรือมากกว่า</li>
+                                            </ul>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
