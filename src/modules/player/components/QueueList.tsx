@@ -3,6 +3,7 @@ import { ListMusic, Trash2, Menu, ChevronDown } from "lucide-react";
 import { usePlayerStore } from "../stores/usePlayerStore";
 import { useUIStore } from "../../../stores/useUIStore";
 import Image from 'next/image';
+import clsx from 'clsx';
 import {
     DndContext,
     closestCenter,
@@ -61,7 +62,7 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
             </div>
 
             {/* Card Content - V1 Style with red border on hover (No Shadow - Flat Design) */}
-            <div className="flex-1 flex items-center gap-4 rounded-xl border border-gray-100 dark:border-zinc-700 transition-all overflow-hidden hover:border-primary/50 bg-white dark:bg-zinc-800">
+            <div className="flex-1 flex items-center gap-4 rounded-xl transition-all overflow-hidden hover:bg-zinc-100 dark:hover:bg-zinc-800/50 bg-transparent dark:bg-transparent">
                 <div
                     className="relative w-36 h-20 flex-shrink-0 bg-black cursor-pointer group/thumb"
                     onClick={() => onPlay(actualIndex)}
@@ -111,7 +112,7 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
 
 export function QueueList() {
     const { queue, removeFromQueue, currentIndex, setCurrentIndex, reorderQueue, clearQueue } = usePlayerStore();
-    const { showConfirm } = useUIStore();
+    const { showConfirm, isSidebarCollapsed, setSidebarCollapsed } = useUIStore();
 
     // Derived State
     const queueItems = queue.slice(currentIndex + 1);
@@ -159,7 +160,10 @@ export function QueueList() {
             </div>
 
             {/* Sticky Queue Header (Restored from SidebarControls) */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-900 backdrop-blur-md sticky top-0 z-30 shrink-0">
+            <div className={clsx(
+                "h-20 flex items-center shrink-0 z-40 transition-all duration-300",
+                isSidebarCollapsed ? "px-0 justify-center" : "px-6"
+            )}>
                 <div className="flex items-center gap-4">
                     {/* Mobile Close Button (Chevron Down) */}
                     <button
@@ -198,7 +202,10 @@ export function QueueList() {
             </div>
 
             {/* Content Area */}
-            <div className="flex-1 overflow-y-auto pt-2 pb-24 lg:pb-6 relative z-10 bg-white dark:bg-zinc-950 transition-colors">
+            <div className={clsx(
+                "flex-1 overflow-y-auto pt-2 pb-24 lg:pb-6 relative z-10 bg-white dark:bg-zinc-950 transition-colors",
+                isSidebarCollapsed ? "p-2" : "p-4"
+            )}>
                 {queueItems.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center p-8 text-gray-400 min-h-[300px]">
                         <ListMusic className="w-12 h-12 mb-3 opacity-30" />
@@ -216,13 +223,13 @@ export function QueueList() {
                             strategy={verticalListSortingStrategy}
                         >
                             {queueItems.map((video, index) => {
-                                const actualIndex = currentIndex + 1 + index;
+                                // v4.10.109: Use 0-based index for consumed queue items
                                 return (
                                     <div key={video.uuid}>
                                         <SortableQueueItem
                                             video={video}
                                             index={index}
-                                            actualIndex={actualIndex}
+                                            actualIndex={index}
                                             onRemove={removeFromQueue}
                                             onPlay={setCurrentIndex}
                                         />

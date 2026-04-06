@@ -45,14 +45,14 @@ export const Sidebar = memo(() => {
 
     return (
         <aside className={clsx(
-            "hidden lg:flex flex-col shrink-0 z-30 bg-white dark:bg-zinc-950 border-r border-gray-200 dark:border-zinc-900 transition-all duration-300 ease-in-out relative",
+            "hidden lg:flex flex-col shrink-0 z-30 bg-white dark:bg-zinc-950 transition-all duration-300 ease-in-out relative",
             isSidebarCollapsed ? "w-[80px]" : "w-[260px]"
         )}>
             {/* Collapse Toggle Button - Positioned exactly on the border */}
             <button 
                 onClick={() => setSidebarCollapsed(!isSidebarCollapsed)}
                 className={clsx(
-                    "absolute top-8 -right-3.5 w-7 h-7 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-full text-gray-400 hover:text-primary flex items-center justify-center transition-all duration-300 z-50 hover:scale-110 active:scale-95",
+                    "absolute top-8 -right-3.5 w-7 h-7 bg-white dark:bg-zinc-900 border border-transparent rounded-full text-gray-400 hover:text-primary flex items-center justify-center transition-all duration-300 z-50 hover:scale-110 active:scale-95",
                     isSidebarCollapsed ? "rotate-180" : ""
                 )}
                 title={isSidebarCollapsed ? "ขยายเมนู" : "ยุบเมนู"}
@@ -62,7 +62,7 @@ export const Sidebar = memo(() => {
 
             {/* Sidebar Header */}
             <div className={clsx(
-                "h-20 flex items-center shrink-0 z-40 transition-all duration-300 border-b border-gray-100 dark:border-zinc-800/40",
+                "h-20 flex items-center shrink-0 z-40 transition-all duration-300",
                 isSidebarCollapsed ? "px-0 justify-center" : "px-6"
             )}>
                 <div className="flex items-center gap-3">
@@ -200,7 +200,7 @@ export const Sidebar = memo(() => {
             </nav>
 
             <div className={clsx(
-                "border-t border-gray-100 dark:border-zinc-800/20 bg-white dark:bg-zinc-900/30 transition-all duration-300",
+                "bg-white dark:bg-zinc-900/30 transition-all duration-300",
                 isSidebarCollapsed ? "p-2" : "p-4"
             )}>
                 <ProfileDrawer
@@ -321,7 +321,7 @@ export const Sidebar = memo(() => {
 
                 {/* Version Info (Standard Gray & Linked) */}
                 <div className={clsx(
-                    "mt-4 flex items-center transition-all duration-300 border-t border-gray-100 dark:border-zinc-800/40 pt-4 px-3",
+                    "mt-4 flex items-center transition-all duration-300 pt-4 px-3",
                     isSidebarCollapsed ? "justify-center" : "justify-between"
                 )}>
                     <Link href="/changelog" className="hover:opacity-70 transition-opacity">

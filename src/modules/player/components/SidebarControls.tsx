@@ -119,7 +119,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
     return (
         <div className="shrink-0 select-none relative">
             {/* Glass Background matching Footer */}
-            <div className="absolute inset-0 bg-[#f4f4f5]/95 dark:bg-zinc-900/95 backdrop-blur-xl border-b border-gray-200/50 dark:border-zinc-800/50 transition-colors" />
+            <div className="absolute inset-0 bg-[#f4f4f5]/95 dark:bg-zinc-900/95 backdrop-blur-xl transition-colors" />
 
             {/* Horizontal Controls Row - Full Width with depth */}
             <div className="relative flex items-center justify-between px-2 h-[56px]">
