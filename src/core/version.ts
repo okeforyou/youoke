@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "4.10.120 (LINE Connection Guard)",
+        date: "6 เม.ย. 2569",
+        changes: [
+            "Mandatory LINE Connection: Users must now connect LINE before selecting or purchasing any package",
+            "Enhanced Communication: Ensures Admin can always contact Members via LINE for payment approval",
+            "Fixed Security Loophole: Prevented package registration from Email-only logins without LINE verification"
+        ],
+        recent_updates: ""
+    },
+    {
         version: "4.10.119 (Smooth Progress Lock)",
         date: "6 เม.ย. 2569",
         changes: [

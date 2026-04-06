@@ -77,6 +77,14 @@ export const PackageStore = () => {
             return;
         }
 
+        // v4.10.120: LINE CONNECTION GUARD
+        // 🔒 Mandatory LINE connection before any purchase or activation
+        if (!user.lineUserId) {
+            alert("⚠️ โปรดเชื่อมต่อ LINE ก่อนสั่งซื้อพรีเมียม เพื่อรับการแจ้งเตือนผลการอนุมัติครับ");
+            router.push('/profile?connect=line');
+            return;
+        }
+
         // v4.9.52: Premium Integration Flow
         if (pkg.price === 0) {
             // Instant Activation for Free/Trial packages
