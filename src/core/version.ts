@@ -1,12 +1,23 @@
 import packageInfo from "../../package.json";
 
-export const SYSTEM_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || packageInfo.version || "4.9.86";
+export const SYSTEM_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || packageInfo.version || "4.10.107";
 export const SYSTEM_CODENAME = "Midnight Dashboard";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
 export const BUILD_DATE = "6 เม.ย. 2569";
 
 export const CHANGELOGS = [
+    {
+        version: "4.10.107 (Stability Patch)",
+        date: "6 เม.ย. 2569",
+        changes: [
+            "Fixed missing thumbnails in queue for songs selected from charts",
+            "Refined Guest Permission modal UI with premium shadows and button effects",
+            "Unified Guest song quota to standard 10 songs/day across all layers",
+            "Fixed potential crash in QueueList component"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
     {
         version: "4.10.106 (Cast Visual Reboot)",
         date: "6 เม.ย. 2569",

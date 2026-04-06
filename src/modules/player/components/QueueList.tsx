@@ -62,17 +62,16 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
 
             {/* Card Content - V1 Style with red border on hover (No Gray, No Shadow) */}
             <div className="flex-1 flex items-center gap-4 rounded-xl border border-gray-100 dark:border-zinc-700 transition-all overflow-hidden hover:border-primary/50 bg-white dark:bg-zinc-800 shadow-sm hover:shadow-md hover:-translate-y-0.5">
-                {/* Thumbnail - Flush with the card's left side (Enlarged) */}
                 <div
                     className="relative w-36 h-20 flex-shrink-0 bg-black cursor-pointer group/thumb"
                     onClick={() => onPlay(actualIndex)}
                 >
                     <Image
-                        src={`https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`}
                         alt={video.title}
                         fill
                         className="object-cover transition-transform duration-500 group-hover/thumb:scale-110"
                         unoptimized
+                        src={video.thumbnail || `https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`}
                         onError={(e) => {
                             const target = e.target as HTMLImageElement;
                             if (target) {

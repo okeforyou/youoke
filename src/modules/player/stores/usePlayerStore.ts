@@ -306,7 +306,7 @@ export const usePlayerStore = create<PlayerStore>()(
                     if (isPremium) dailyLimit = -1; // Unlimited
                 } else {
                     currentUsed = parseInt(localStorage.getItem(storageKey) || '0');
-                    dailyLimit = 5; // Default for guests if config not available
+                    dailyLimit = 10; // v4.10.107: Using standard guest limit
                 }
 
                 // If limit reached, block adding and show modal (allow adding if already playing)
@@ -413,7 +413,7 @@ export const usePlayerStore = create<PlayerStore>()(
                     if (isPremium) dailyLimit = -1; // Unlimited
                 } else {
                     currentUsed = parseInt(localStorage.getItem(storageKey) || '0');
-                    dailyLimit = 5; // Default guess
+                    dailyLimit = 10; // v4.10.107: Using standard guest limit
                 }
 
                 if (dailyLimit !== -1 && currentUsed >= dailyLimit && dailyLimit > 0) {

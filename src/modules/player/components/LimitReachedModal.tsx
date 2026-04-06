@@ -144,9 +144,9 @@ export const LimitReachedModal = () => {
                     <div className="flex flex-col gap-3">
                         <button
                             onClick={onAction}
-                            className="w-full py-4 rounded-xl bg-primary hover:bg-primary-dark active:scale-[0.98] transition-all text-white font-bold text-base shadow-lg shadow-primary/30 flex items-center justify-center gap-2"
+                            className="w-full py-4 rounded-2xl bg-primary hover:bg-primary/90 active:scale-[0.98] transition-all text-white font-black text-base shadow-xl shadow-primary/40 flex items-center justify-center gap-2 border-b-4 border-black/20"
                         >
-                            {!isLoggedIn ? <PartyPopper className="w-5 h-5" /> : <Crown className="w-5 h-5" />}
+                            {!isLoggedIn ? <PartyPopper className="w-5 h-5 flex-shrink-0" /> : <Crown className="w-5 h-5 flex-shrink-0" />}
                             <span>{buttonText}</span>
                         </button>
 
