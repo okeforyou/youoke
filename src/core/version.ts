@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "4.10.117 (Cast & QR UI Stability)",
+        date: "6 เม.ย. 2569",
+        changes: [
+            "Fixed Remote QR accessibility: Force clears stale UI castMode when switching from Cast back to Remote pairing",
+            "Ensured SidebarControls re-syncs with SDK status immediately upon button click",
+            "Stabilized Auto-Version Sync across all Dashboard layout components"
+        ],
+        recent_updates: ""
+    },
+    {
         version: "4.10.116 (Sequence Fix)",
         date: "6 เม.ย. 2569",
         changes: [

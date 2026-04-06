@@ -12,7 +12,29 @@ interface SidebarControlsProps {
     castMode?: string;
 }
 
-export const SYSTEM_VERSION = packageInfo.version || "4.10.114";
+export const CHANGELOGS = [
+    {
+        version: "4.10.117 (Cast & QR UI Stability)",
+        date: "6 เม.ย. 2569",
+        changes: [
+            "Fixed Remote QR accessibility: Force clears stale UI castMode when switching from Cast back to Remote pairing",
+            "Ensured SidebarControls re-syncs with SDK status immediately upon button click",
+            "Stabilized Auto-Version Sync across all Dashboard layout components"
+        ],
+        recent_updates: ""
+    },
+    {
+        version: "4.10.116 (Sequence Fix)",
+    }
+];
+
+const getLatestVersion = () => {
+    if (!CHANGELOGS || CHANGELOGS.length === 0) return "4.10.117";
+    const latest = CHANGELOGS[0].version;
+    return latest.split(" ")[0];
+};
+
+export const SYSTEM_VERSION = getLatestVersion();
 
 export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => {
     const {
@@ -114,15 +136,20 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             icon: Cast,
             label: isAnyCastOn ? "ยกเลิก" : "CAST",
             onClick: () => {
-                // v4.10.114: CRITICAL SYNC - If SDK says disconnected, clear UI state before opening Modal
+                // v4.10.117: CRITICAL SYNC - Prioritize SDK status over UI stale state
+                // If the SDK says we are NOT connected, but UI thinks we are (Ghost State), 
+                // we MUST clear UI state to 'none' before opening modal. 
+                // This ensures the Modal shows the 'Selection/QR' screen instead of 'Control' screen.
                 if (!isConnected && isAnyCastOn) {
-                    console.log("🔄 [SidebarControls] Syncing UI state: SDK is disconnected but UI is not. Clearing...");
+                    console.log("🔄 [SidebarControls] Re-syncing stale UI: SDK disconnected. Resetting UI state...");
                     usePlayerStore.getState().setPlayerState({ castMode: 'none' });
                 }
                 
                 if (isConnected) {
-                    // Logic to disconnect if button clicked while active
+                    console.log("🔌 [SidebarControls] Explicit manual disconnect triggered.");
                     cast.disconnect();
+                    // Force UI state to 'none' immediately to allow QR access without delay
+                    usePlayerStore.getState().setPlayerState({ castMode: 'none' });
                 }
                 
                 setCastModalOpen(true);
