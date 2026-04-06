@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "4.10.119 (Smooth Progress Lock)",
+        date: "6 เม.ย. 2569",
+        changes: [
+            "Fixed ProgressBar 'Rubber-banding': Implemented Smart Seek Lock to ignore stale player time updates during seeks",
+            "Enhanced Visual Accuracy: ProgressBar now follows the seek target instantly without jumping back",
+            "Stabilized Remote Sync: Cross-tab time updates are now filtered for consistency during active user interactions"
+        ],
+        recent_updates: ""
+    },
+    {
         version: "4.10.118 (Remote QR Persistence)",
         date: "6 เม.ย. 2569",
         changes: [
