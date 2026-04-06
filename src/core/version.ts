@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "4.10.127 (Refined Typography)",
+        date: "6 เม.ย. 2569",
+        changes: [
+            "Card Typography Polish: Scaled down category headlines to text-sm for a cleaner, more minimalist look",
+            "Responsive Balance: Adjusted line-height and letter-spacing to improve readability at smaller sizes",
+            "Design Consistency: Standardized headtitle sizes across Chart and Station modules"
+        ],
+        recent_updates: ""
+    },
+    {
         version: "4.10.126 (Ultimate Mobile Fix)",
         date: "6 เม.ย. 2569",
         changes: [
@@ -15,7 +25,8 @@ export const CHANGELOGS = [
         changes: [
             "Extreme Responsive Overhaul: Reduced font sizes and adjusted aspect ratios for small screens to prevent overlapping",
             "Text Scaling: Implemented text-[9px] and better line-height management for Card titles on mobile",
-            "Density Adjustments: Refined gap and padding on narrow viewports to give maximum room per card"
+            "Density Adjustments: Refined gap and padding on narrow viewports to give maximum room per card",
+            "Station Card Typography: Scaled down h3 titles to text-xs/text-sm for better visual hierarchy on mobile"
         ],
         recent_updates: ""
     },
