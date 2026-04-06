@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "4.10.126 (Ultimate Mobile Fix)",
+        date: "6 เม.ย. 2569",
+        changes: [
+            "Ultimate Responsive Layout: Switched to 1-column layout for extremely small screens (<440px) to prevent text overlap",
+            "Typography Boost: Improved text size and readability on mobile by taking full width of the viewport",
+            "Stability Fix: Resolved broken file structure in ListHitsGrid from previous partial edits"
+        ],
+        recent_updates: ""
+    },
+    {
         version: "4.10.125 (Extreme Mobile Fix)",
         date: "6 เม.ย. 2569",
         changes: [

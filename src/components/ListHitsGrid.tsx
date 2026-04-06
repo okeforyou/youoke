@@ -88,22 +88,17 @@ export default function ListHitsGrid({ onClick: onPlay }: { onClick?: (hit: Sing
     <div className="animate-in fade-in duration-700 pb-32">
       {/* Header Section */}
       <div className="px-4 pt-4 pb-6">
-        <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-zinc-900 dark:to-zinc-800 p-5 sm:p-8 rounded-2xl relative overflow-hidden min-h-[130px] flex flex-col justify-center border border-gray-200/50 dark:border-zinc-800 shadow-sm">
+        <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-zinc-900 dark:to-zinc-800 p-5 sm:p-8 rounded-2xl relative overflow-hidden min-h-[100px] sm:min-h-[130px] flex flex-col justify-center border border-gray-200/50 dark:border-zinc-800 shadow-sm">
            <h2 className="text-2xl sm:text-3xl font-black text-black dark:text-white leading-tight">ชาร์ตเพลง</h2>
-           <p className="text-[13px] sm:text-base !text-black dark:!text-zinc-400 mt-2 font-black">เกาะติดกระแสเพลงฮิต อัปเดตใหม่ล่าสุดตลอดเวลา</p>
+           <p className="hidden sm:block text-[13px] sm:text-base !text-black dark:!text-zinc-400 mt-2 font-black">เกาะติดกระแสเพลงฮิต อัปเดตใหม่ล่าสุดตลอดเวลา</p>
            <div className="absolute bottom-6 right-8 opacity-10">
-              <BarChart2 className="w-20 h-20 text-black dark:text-white" />
+              <BarChart2 className="w-16 h-16 sm:w-20 sm:h-20 text-black dark:text-white" />
            </div>
         </div>
       </div>
 
-      {/* Category Selection Grid */}
-      <div className="px-4 mb-4">
-        <h3 className="text-base sm:text-lg font-black text-black dark:text-white mb-1">เลือกหมวดหมู่ชาร์ต</h3>
-        <p className="text-[10px] sm:text-xs text-black dark:text-zinc-500 font-black">กดเลือกชาร์ตจัดอันดับที่คุณสนใจ</p>
-      </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 mb-8">
+      {/* Category Selection Grid - Optimized for Mobile Overlapping */}
+      <div className="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 mb-8">
         {CHART_CATEGORIES.map((cat) => {
           const Icon = cat.Icon;
           const isActive = selectedChart === cat.id;
@@ -112,7 +107,7 @@ export default function ListHitsGrid({ onClick: onPlay }: { onClick?: (hit: Sing
               key={cat.id}
               onClick={() => setSelectedChart(cat.id === selectedChart ? null : cat.id)}
               className={clsx(
-                "group relative overflow-hidden rounded-2xl aspect-[1.6/1] cursor-pointer transition-all duration-300 shadow-sm border-2",
+                "group relative overflow-hidden rounded-2xl aspect-[3.2/1] min-[480px]:aspect-[1.6/1] cursor-pointer transition-all duration-300 shadow-sm border-2",
                 isActive ? "border-primary scale-[1.02] shadow-md ring-4 ring-primary/10" : "border-transparent hover:shadow-lg bg-white dark:bg-zinc-900"
               )}
             >
@@ -127,14 +122,14 @@ export default function ListHitsGrid({ onClick: onPlay }: { onClick?: (hit: Sing
                 )} />
                 
                 <div className="absolute -bottom-4 -right-4 opacity-20 transform -rotate-12 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
-                  <Icon className="w-24 h-24 text-white" />
+                  <Icon className="w-20 h-20 sm:w-24 sm:h-24 text-white" />
                 </div>
                 
                 <div className="absolute inset-0 p-3 sm:p-4 flex flex-col justify-end">
-                  <h3 className="text-xs sm:text-sm md:text-base font-bold text-white leading-tight drop-shadow-sm line-clamp-2 mb-0.5 sm:mb-1">
+                  <h3 className="text-sm sm:text-sm md:text-base font-bold text-white leading-tight drop-shadow-sm line-clamp-2 mb-0.5 sm:mb-1">
                     {cat.title}
                   </h3>
-                  <p className="text-[9px] sm:text-[10px] text-white/90 font-black line-clamp-1 opacity-90">
+                  <p className="text-[10px] sm:text-[10px] text-white/90 font-black line-clamp-1 opacity-90">
                     {cat.description}
                   </p>
                 </div>
@@ -188,7 +183,7 @@ export default function ListHitsGrid({ onClick: onPlay }: { onClick?: (hit: Sing
                    className="group cursor-pointer overflow-hidden max-w-full relative"
                  >
                     {/* Ranking Badge */}
-                    <div className="absolute top-2 left-2 z-10 w-6 h-6 bg-black/70 backdrop-blur-md rounded-lg flex items-center justify-center text-white text-[10px] font-bold border border-white/20 shadow-sm">
+                    <div className="absolute top-2 left-2 z-10 w-5 h-5 bg-black/70 backdrop-blur-md rounded-lg flex items-center justify-center text-white text-[9px] font-bold border border-white/20 shadow-sm">
                       {index + 1}
                     </div>
 
@@ -219,4 +214,3 @@ export default function ListHitsGrid({ onClick: onPlay }: { onClick?: (hit: Sing
     </div>
   );
 }
-
