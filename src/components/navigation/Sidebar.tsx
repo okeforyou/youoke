@@ -52,7 +52,7 @@ export const Sidebar = memo(() => {
             <button 
                 onClick={() => setSidebarCollapsed(!isSidebarCollapsed)}
                 className={clsx(
-                    "absolute top-8 -right-3.5 w-7 h-7 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-full shadow-sm hover:shadow-md text-gray-400 hover:text-primary flex items-center justify-center transition-all duration-300 z-50 hover:scale-110 active:scale-95",
+                    "absolute top-8 -right-3.5 w-7 h-7 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-full text-gray-400 hover:text-primary flex items-center justify-center transition-all duration-300 z-50 hover:scale-110 active:scale-95",
                     isSidebarCollapsed ? "rotate-180" : ""
                 )}
                 title={isSidebarCollapsed ? "ขยายเมนู" : "ยุบเมนู"}
@@ -70,7 +70,7 @@ export const Sidebar = memo(() => {
                         src="https://okeforyou.com/wp-content/uploads/2023/07/icon-192.png"
                         alt="Logo"
                         className={clsx(
-                            "rounded-xl shadow-sm object-cover transition-all duration-300",
+                            "rounded-xl object-cover transition-all duration-300",
                             isSidebarCollapsed ? "w-10 h-10" : "w-11 h-11"
                         )}
                     />

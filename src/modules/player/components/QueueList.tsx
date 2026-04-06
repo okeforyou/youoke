@@ -60,8 +60,8 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
                 <Menu className="w-5 h-5 opacity-40 group-hover:opacity-100" />
             </div>
 
-            {/* Card Content - V1 Style with red border on hover (No Gray, No Shadow) */}
-            <div className="flex-1 flex items-center gap-4 rounded-xl border border-gray-100 dark:border-zinc-700 transition-all overflow-hidden hover:border-primary/50 bg-white dark:bg-zinc-800 shadow-sm hover:shadow-md hover:-translate-y-0.5">
+            {/* Card Content - V1 Style with red border on hover (No Shadow - Flat Design) */}
+            <div className="flex-1 flex items-center gap-4 rounded-xl border border-gray-100 dark:border-zinc-700 transition-all overflow-hidden hover:border-primary/50 bg-white dark:bg-zinc-800">
                 <div
                     className="relative w-36 h-20 flex-shrink-0 bg-black cursor-pointer group/thumb"
                     onClick={() => onPlay(actualIndex)}
