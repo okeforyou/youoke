@@ -68,7 +68,7 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
                     onClick={() => onPlay(actualIndex)}
                 >
                     <Image
-                        src={`https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`}
+                        src={video.thumbnail || `https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`}
                         alt={video.title}
                         fill
                         className="object-cover transition-transform duration-500 group-hover/thumb:scale-110"
