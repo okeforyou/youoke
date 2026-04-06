@@ -62,7 +62,7 @@ export const Sidebar = memo(() => {
 
             {/* Sidebar Header */}
             <div className={clsx(
-                "h-20 flex items-center shrink-0 z-40 transition-all duration-300 border-b border-gray-100 dark:border-zinc-800/40",
+                "h-20 flex items-center shrink-0 z-40 transition-all duration-300",
                 isSidebarCollapsed ? "px-0 justify-center" : "px-6"
             )}>
                 <div className="flex items-center gap-3">

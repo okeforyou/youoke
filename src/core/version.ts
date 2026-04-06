@@ -1,5 +1,14 @@
 export const CHANGELOGS = [
     {
+        version: "4.10.123 (Clean Sidebar)",
+        date: "6 เม.ย. 2569",
+        changes: [
+            "Seamless Sidebar Header: Removed the horizontal divider line under the logo for a smoother, integrated aesthetic",
+            "Aligned with Pure Flat Design standards: Direct continuity from Logo to Navigation menu"
+        ],
+        recent_updates: ""
+    },
+    {
         version: "4.10.122 (Pure Flat Purge)",
         date: "6 เม.ย. 2569",
         changes: [
