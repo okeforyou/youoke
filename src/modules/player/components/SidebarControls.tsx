@@ -110,7 +110,14 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
         {
             icon: Cast,
             label: isAnyCastOn ? "ยกเลิก" : "CAST",
-            onClick: () => setCastModalOpen(true),
+            onClick: () => {
+                if (isAnyCastOn) {
+                    // Force a clean disconnect to free up the state for Remote QR or new Cast
+                    if (isConnected) cast.disconnect();
+                    // Also clear local UI store state if applicable
+                }
+                setCastModalOpen(true);
+            },
             active: isAnyCastOn,
             color: isAnyCastOn ? "text-red-500" : "text-black"
         }
