@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "4.10.122 (Pure Flat Purge)",
+        date: "6 เม.ย. 2569",
+        changes: [
+            "Pure Flat Design Purge: Removed all box-shadows from Modals, Buttons, and Package Cards",
+            "Border Enforcement: Replaced shadows with subtle solid borders to maintain UI hierarchy",
+            "Retained ProgressBar structure while cleaning up visual noise in Dashboard and Profile layers"
+        ],
+        recent_updates: ""
+    },
+    {
         version: "4.10.121 (Premium Guard Modal)",
         date: "6 เม.ย. 2569",
         changes: [

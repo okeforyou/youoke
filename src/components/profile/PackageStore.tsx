@@ -145,7 +145,7 @@ export const PackageStore = () => {
                     const trialPkg = packages.find(p => p.price === 0 && p.durationDays === 1) || packages.find(p => p.price === 0);
                     if (trialPkg) handleBuy(trialPkg);
                 }}
-                className="relative group overflow-hidden rounded-[28px] p-4 cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98] shadow-xl shadow-emerald-500/10"
+                className="relative group overflow-hidden rounded-[28px] p-4 cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98] border border-emerald-500/20"
             >
                 <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 to-teal-500 opacity-90 group-hover:opacity-100 transition-opacity"></div>
                 <div className="relative flex items-center justify-between gap-3">
@@ -158,7 +158,7 @@ export const PackageStore = () => {
                             <p className="text-[10px] font-bold text-white/80 uppercase tracking-widest mt-0.5">Full Unlocked Experience</p>
                         </div>
                     </div>
-                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-emerald-500 shadow-lg">
+                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-emerald-500 border border-emerald-100">
                         <Sparkles className="w-4 h-4" />
                     </div>
                 </div>
@@ -188,8 +188,8 @@ export const PackageStore = () => {
                                 className={cn(
                                     "group relative overflow-hidden rounded-[24px] border transition-all duration-300 cursor-pointer flex items-center justify-between p-3.5",
                                     bgClass,
-                                    "hover:shadow-lg hover:scale-[1.01] active:scale-[0.98]",
-                                    isPopular && "border-primary/20 ring-1 ring-primary/5"
+                                    "hover:bg-slate-50 dark:hover:bg-zinc-800 hover:scale-[1.01] active:scale-[0.98]",
+                                    isPopular && "border-primary/40 ring-1 ring-primary/10"
                                 )}
                             >
                                 <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -216,7 +216,7 @@ export const PackageStore = () => {
                                         </span>
                                     </div>
                                     <div className={cn(
-                                        "w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-lg active:scale-95",
+                                        "w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-95 border border-primary/20",
                                         "bg-primary text-white",
                                         "dark:bg-indigo-500"
                                     )}>

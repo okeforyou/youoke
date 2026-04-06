@@ -144,15 +144,15 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
                     </Transition.Child>
                     <div className="fixed inset-0 z-10 overflow-y-auto">
                         <div className="flex min-h-full items-center justify-center p-4">
-                            <Dialog.Panel className="w-full max-w-sm transform overflow-hidden rounded-[40px] bg-white p-12 text-center shadow-2xl transition-all border-none">
-                                <div className="mb-6 inline-flex p-5 rounded-full bg-emerald-50 text-emerald-500 animate-bounce">
+                            <Dialog.Panel className="w-full max-w-sm transform overflow-hidden rounded-[40px] bg-white p-12 text-center transition-all border border-slate-100">
+                                <div className="mb-6 inline-flex p-5 rounded-full bg-emerald-50 text-emerald-500 animate-bounce border border-emerald-100">
                                     <Sparkles className="w-12 h-12" />
                                 </div>
                                 <h3 className="text-2xl font-black text-slate-900 mb-2">ส่งรายละเอียดเข้า LINE แล้ว!</h3>
                                 <p className="text-sm font-bold text-slate-400 mb-8 leading-relaxed">รายละเอียดการชำระเงินถูกส่งเข้า LINE ของคุณเรียบร้อยแล้ว รบกวนส่งสลิปให้แอดมินในแชทได้เลยครับ!</p>
                                 <button
                                     onClick={onClose}
-                                    className="w-full py-4 bg-zinc-900 hover:bg-black text-white rounded-3xl font-black text-sm shadow-xl shadow-zinc-200 transition-all active:scale-95"
+                                    className="w-full py-4 bg-zinc-900 hover:bg-black text-white rounded-3xl font-black text-sm transition-all active:scale-95 border border-zinc-900"
                                 >
                                     รับทราบ
                                 </button>
@@ -181,7 +181,7 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
 
                 <div className="fixed inset-0 z-10 overflow-y-auto">
                     <div className="flex min-h-full items-center justify-center p-4">
-                        <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-[40px] bg-white p-8 shadow-2xl transition-all border-none">
+                        <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-[40px] bg-white p-8 transition-all border border-slate-100">
                             <div className="flex justify-between items-center mb-6">
                                 <Dialog.Title as="h3" className="text-xl font-black text-slate-900 tracking-tight">ขั้นตอนการชำระเงิน</Dialog.Title>
                                 <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-50 transition-colors text-slate-400">
@@ -236,8 +236,8 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
                                     onClick={handleConfirmOrder}
                                     disabled={sending}
                                     className={cn(
-                                        "w-full py-5 rounded-3xl font-black text-sm flex items-center justify-center gap-3 transition-all active:scale-95 shadow-xl",
-                                        "bg-zinc-900 text-white hover:bg-black shadow-zinc-200"
+                                        "w-full py-5 rounded-3xl font-black text-sm flex items-center justify-center gap-3 transition-all active:scale-95",
+                                        "bg-zinc-900 text-white hover:bg-black"
                                     )}
                                 >
                                     {sending ? (
