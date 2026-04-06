@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "4.10.125 (Extreme Mobile Fix)",
+        date: "6 เม.ย. 2569",
+        changes: [
+            "Extreme Responsive Overhaul: Reduced font sizes and adjusted aspect ratios for small screens to prevent overlapping",
+            "Text Scaling: Implemented text-[9px] and better line-height management for Card titles on mobile",
+            "Density Adjustments: Refined gap and padding on narrow viewports to give maximum room per card"
+        ],
+        recent_updates: ""
+    },
+    {
         version: "4.10.124 (Mobile Layout Fix)",
         date: "6 เม.ย. 2569",
         changes: [

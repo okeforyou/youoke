@@ -385,100 +385,98 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                             />
                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
                           </div>
-                          <p className="mt-2.5 text-[10px] sm:text-[11px] font-bold text-black dark:text-zinc-400 text-center truncate italic-sm w-full group-hover:text-primary dark:group-hover:text-primary transition-colors">{cleanName}</p>
+                          <p className="mt-2 text-[9px] sm:text-[11px] font-bold text-black dark:text-zinc-400 text-center truncate w-full group-hover:text-primary dark:group-hover:text-primary transition-colors">{cleanName}</p>
                         </div>
                       );
                     })}
                   </div>
-                </div>
-              )}
 
-              {/* TIER 2: CATEGORY SELECTION */}
-              <div className="px-4 pt-6 pb-3">
-                <h1 className="text-lg font-black text-black dark:text-white">สารบัญศิลปิน</h1>
-                <p className="text-[11px] text-black dark:text-zinc-500 font-black">แยกตามหมวดหมู่และแนวเพลง</p>
-              </div>
-
-              <div className="grid grid-cols-2 min-[400px]:grid-cols-3 sm:grid-cols-4 lg:grid-cols-4 gap-2.5 md:gap-4 px-2.5 md:px-4 mb-4">
-                {ARTIST_CATEGORIES.filter(c => c.id !== 'popular').map((cat) => {
-                  const Icon = 
-                    cat.id === 'luk-thung' ? Mic2 :
-                    cat.id === 'mor-lam' ? Music :
-                    cat.id === 'thai-pop' ? Disc :
-                    cat.id === 'rock-thai' ? Guitar :
-                    cat.id === 'retro-hits' ? Star :
-                    cat.id === 'teen-pop' ? Heart :
-                    cat.id === 'rnb-soul-th' ? Mic :
-                    cat.id === 'indie-th' ? Coffee :
-                    cat.id === 'luk-grung' ? Radio :
-                    Globe;
-                  
-                  const isActive = selectedCategoryId === cat.id;
-
-                  return (
-                    <div 
-                      key={cat.id} 
-                      onClick={() => setCategoryId(cat.id === selectedCategoryId ? "" : cat.id)}
-                      className={clsx(
-                        "group relative overflow-hidden rounded-xl aspect-[1.7/1] min-h-[72px] sm:min-h-[80px] cursor-pointer shadow-sm transition-all border-2",
-                        isActive ? "border-primary scale-[1.02] shadow-md ring-2 ring-primary/20" : "border-transparent bg-white dark:bg-zinc-900 shadow-sm"
-                      )}
-                    >
-                       <div className={clsx(
-                          "absolute inset-0 bg-gradient-to-br transition-opacity duration-300", 
-                          cat.gradient,
-                          isActive ? "opacity-100" : "opacity-90 group-hover:opacity-100"
-                       )} />
-
-                 <div className="absolute -bottom-4 -right-4 opacity-20 transform -rotate-12 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
-                   <Icon className="w-24 h-24 text-white" />
-                 </div>
-                 
-                 <div className="absolute inset-0 p-3 sm:p-4 flex flex-col justify-end">
-                  <h3 className="text-sm sm:text-base font-bold text-white leading-tight drop-shadow-sm line-clamp-2 mb-1">{cat.title}</h3>
-                  <p className="text-[10px] text-white font-black line-clamp-1">{cat.description}</p>
-                 </div>
-
-                       {isActive && (
-                         <div className="absolute top-2 right-2 bg-white/20 backdrop-blur-md p-1 rounded-full border border-white/30 animate-in zoom-in-50 duration-300">
-                            <PlayCircle className="w-3.5 h-3.5 text-white" />
-                         </div>
-                       )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* TIER 3: INTEGRATED RESULT LIST */}
-              {selectedCategory && (
-                <div ref={songlistRef} className="animate-in slide-in-from-bottom-8 duration-500 scroll-mt-20">
-                  <div className="px-4 pt-4 pb-4 border-t border-gray-100 dark:border-zinc-800 flex items-center justify-between">
-                    <div>
-                        <h2 className="text-base sm:text-xl font-bold text-black dark:text-white">{selectedCategory.title}</h2>
-                        <p className="text-[10px] sm:text-[11px] text-black dark:text-zinc-500 font-black">รายชื่อศิลปินทั้งหมดในหมวดหมู่นี้</p>
-                    </div>
-                    <button onClick={() => setCategoryId("")} className="text-xs font-bold text-primary hover:underline">ปิดรายการ</button>
+                  <div className="px-4 pt-6 pb-2">
+                    <h1 className="text-xl font-bold text-black dark:text-white">หมวดหมู่ศิลปิน</h1>
                   </div>
-                  
-                  <div className="grid grid-cols-2 min-[500px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 pb-20">
-                    {selectedCategory.artists.map((artist, i) => {
-                      const cleanName = artist.name.split(' (')[0].trim();
-                      const overrideUrl = artistOverrides[cleanName];
+
+                  <div className="grid grid-cols-2 min-[400px]:grid-cols-3 sm:grid-cols-4 lg:grid-cols-4 gap-2 sm:gap-4 px-2 sm:px-4 mb-4">
+                    {ARTIST_CATEGORIES.filter(c => c.id !== 'popular').map((cat) => {
+                      const Icon = 
+                        cat.id === 'luk-thung' ? Mic2 :
+                        cat.id === 'mor-lam' ? Music :
+                        cat.id === 'thai-pop' ? Disc :
+                        cat.id === 'rock-thai' ? Guitar :
+                        cat.id === 'retro-hits' ? Star :
+                        cat.id === 'teen-pop' ? Heart :
+                        cat.id === 'rnb-soul-th' ? Mic :
+                        cat.id === 'indie-th' ? Coffee :
+                        cat.id === 'luk-grung' ? Radio :
+                        Globe;
+                      
+                      const isActive = selectedCategoryId === cat.id;
 
                       return (
-                        <div key={artist.name + i} onClick={() => setSearchTerm(cleanSearchQuery(cleanName))} className="group cursor-pointer">
-                          <div className="relative aspect-square rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-sm group-hover:shadow-md transition-all">
-                            <Image 
-                               src={overrideUrl || `/api/spotify/artists/image?name=${encodeURIComponent(artist.name)}`} 
-                               alt={artist.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" unoptimized
-                            />
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
-                          </div>
-                          <p className="mt-2 text-[10px] sm:text-[11px] font-bold text-black dark:text-zinc-400 text-center group-hover:text-primary transition-colors italic-sm">{cleanName}</p>
+                        <div 
+                          key={cat.id} 
+                          onClick={() => setCategoryId(cat.id === selectedCategoryId ? "" : cat.id)}
+                          className={clsx(
+                            "group relative overflow-hidden rounded-xl aspect-[1.3/1] min-h-[60px] sm:min-h-[80px] cursor-pointer transition-all border-2",
+                            isActive ? "border-primary scale-[1.02] ring-2 ring-primary/20" : "border-transparent bg-white dark:bg-zinc-900 shadow-sm"
+                          )}
+                        >
+                           <div className={clsx(
+                              "absolute inset-0 bg-gradient-to-br transition-opacity duration-300", 
+                              cat.gradient,
+                              isActive ? "opacity-100" : "opacity-90 group-hover:opacity-100"
+                           )} />
+
+                           <div className="absolute -bottom-3 -right-3 opacity-10 transform -rotate-12 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
+                              <Icon className="w-16 h-16 sm:w-24 sm:h-24 text-white" />
+                           </div>
+                           
+                           <div className="absolute inset-0 p-2 sm:p-4 flex flex-col justify-end">
+                            <h3 className="text-[10px] sm:text-base font-bold text-white leading-[1.1] sm:leading-tight drop-shadow-sm line-clamp-2 mb-0.5">{cat.title}</h3>
+                            <p className="text-[8px] sm:text-[10px] text-white/90 font-medium line-clamp-1">{cat.description}</p>
+                           </div>
+
+                           {isActive && (
+                             <div className="absolute top-2 right-2 bg-white/20 backdrop-blur-md p-1 rounded-full border border-white/30 animate-in zoom-in-50 duration-300">
+                                <PlayCircle className="w-3.5 h-3.5 text-white" />
+                             </div>
+                           )}
                         </div>
                       );
                     })}
                   </div>
+
+                  {/* TIER 3: INTEGRATED RESULT LIST */}
+                  {selectedCategory && (
+                    <div ref={songlistRef} className="animate-in slide-in-from-bottom-8 duration-500 scroll-mt-20">
+                      <div className="px-4 pt-4 pb-4 border-t border-gray-100 dark:border-zinc-800 flex items-center justify-between">
+                        <div>
+                            <h2 className="text-base sm:text-xl font-bold text-black dark:text-white">{selectedCategory.title}</h2>
+                            <p className="text-[10px] sm:text-[11px] text-black dark:text-zinc-500 font-black">รายชื่อศิลปินทั้งหมดในหมวดหมู่นี้</p>
+                        </div>
+                        <button onClick={() => setCategoryId("")} className="text-xs font-bold text-primary hover:underline">ปิดรายการ</button>
+                      </div>
+                      
+                      <div className="grid grid-cols-3 min-[400px]:grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-8 gap-2 md:gap-4 px-3 md:px-4 pb-20">
+                        {selectedCategory.artists.map((artist, i) => {
+                          const cleanName = artist.name.split(' (')[0].trim();
+                          const overrideUrl = artistOverrides[cleanName];
+
+                          return (
+                            <div key={artist.name + i} onClick={() => setSearchTerm(cleanSearchQuery(cleanName))} className="group cursor-pointer">
+                              <div className="relative aspect-square rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-sm group-hover:shadow-md transition-all">
+                                <Image 
+                                   src={overrideUrl || `/api/spotify/artists/image?name=${encodeURIComponent(artist.name)}`} 
+                                   alt={artist.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" unoptimized
+                                />
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
+                              </div>
+                              <p className="mt-2 text-[9px] sm:text-[11px] font-bold text-black dark:text-zinc-400 text-center group-hover:text-primary transition-colors truncate w-full">{cleanName}</p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -549,7 +547,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                       <p className="text-[10px] sm:text-xs !text-black dark:!text-zinc-500 font-black">กดเลือกแนวเพลงที่ต้องการฟังได้เลยครับ</p>
                    </div>
 
-                   <div className="grid grid-cols-2 min-[400px]:grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-2.5 sm:gap-4 px-2.5 sm:px-4 mb-4">
+                   <div className="grid grid-cols-2 min-[440px]:grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-2.5 sm:gap-4 px-2.5 sm:px-4 mb-4">
                       {ARTIST_CATEGORIES.filter(c => c.id !== 'popular').map((cat) => {
                         const Icon = 
                           cat.id === 'luk-thung' ? Mic2 :
@@ -570,7 +568,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                             key={cat.id} 
                             onClick={() => setGenreText(cat.title === genreText ? "" : cat.title)}
                             className={clsx(
-                              "group relative overflow-hidden rounded-xl aspect-[1.5/1] min-h-[64px] sm:min-h-[80px] cursor-pointer transition-all border-2",
+                              "group relative overflow-hidden rounded-xl aspect-[1.4/1] min-h-[60px] sm:min-h-[80px] cursor-pointer transition-all border-2",
                               isActive ? "border-primary scale-[1.02] shadow-md ring-2 ring-primary/20" : "border-transparent bg-white dark:bg-zinc-900"
                             )}
                           >
