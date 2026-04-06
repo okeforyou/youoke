@@ -1,6 +1,6 @@
 import packageInfo from "../../package.json";
 
-export const SYSTEM_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || packageInfo.version || "4.10.107";
+export const SYSTEM_VERSION = packageInfo.version || "4.10.114";
 export const SYSTEM_CODENAME = "Midnight Dashboard";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;

@@ -6,10 +6,13 @@ import { ListMusic, Trash2 } from "lucide-react";
 import { useUIStore } from "../../../stores/useUIStore";
 import { useCast } from "../../../plugins/cast/context/CastContext";
 import clsx from 'clsx';
+import packageInfo from "../../../../package.json";
 
 interface SidebarControlsProps {
     castMode?: string;
 }
+
+export const SYSTEM_VERSION = packageInfo.version || "4.10.114";
 
 export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => {
     const {
@@ -111,11 +114,17 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             icon: Cast,
             label: isAnyCastOn ? "ยกเลิก" : "CAST",
             onClick: () => {
-                if (isAnyCastOn) {
-                    // Force a clean disconnect to free up the state for Remote QR or new Cast
-                    if (isConnected) cast.disconnect();
-                    // Also clear local UI store state if applicable
+                // v4.10.114: CRITICAL SYNC - If SDK says disconnected, clear UI state before opening Modal
+                if (!isConnected && isAnyCastOn) {
+                    console.log("🔄 [SidebarControls] Syncing UI state: SDK is disconnected but UI is not. Clearing...");
+                    usePlayerStore.getState().setPlayerState({ castMode: 'none' });
                 }
+                
+                if (isConnected) {
+                    // Logic to disconnect if button clicked while active
+                    cast.disconnect();
+                }
+                
                 setCastModalOpen(true);
             },
             active: isAnyCastOn,
