@@ -91,13 +91,6 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
 
     // System Config Check for Allowed Sources
     const { config } = useSystemConfig();
-    const setUIConfig = useUIStore(state => state.setConfig);
-
-    // Sync config to UIStore for stores to access (v4.10.107)
-    useEffect(() => {
-        if (config) setUIConfig(config);
-    }, [config, setUIConfig]);
-
     const allowedSources = config?.player?.allowedSources || ['youtube'];
     const isSourceAllowed = allowedSources.includes('youtube');
 
@@ -548,12 +541,12 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
             {
                 !isPassive && layoutMode === 'fullscreen' && (
                     <div
-                        className={`absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-50 flex items-center gap-1 p-1.5 bg-black/60 backdrop-blur-xl border border-white/10 rounded-full transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] cursor-default ${showMiniControls ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}
+                        className={`absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-50 flex items-center gap-1 p-1.5 bg-black/60 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl shadow-black/60 transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] cursor-default ${showMiniControls ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}
                     >
                         {/* Play/Pause */}
                         <button
                             onClick={handlePlayPause}
-                            className={`w-11 h-11 flex items-center justify-center rounded-full transition-all active:scale-90 ${isPlaying ? 'text-white/70 hover:text-white hover:bg-white/10' : 'bg-primary text-white'}`}
+                            className={`w-11 h-11 flex items-center justify-center rounded-full transition-all active:scale-90 ${isPlaying ? 'text-white/70 hover:text-white hover:bg-white/10' : 'bg-primary text-white shadow-lg shadow-primary/20'}`}
                             title={isPlaying ? "Pause" : "Play"}
                         >
                             {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" className="ml-1" />}
@@ -590,9 +583,9 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
 
                     return (
                         <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[110] transition-all duration-[600ms] ease-[cubic-bezier(0.23,1,0.32,1)] ${showToast ? 'opacity-100 translate-y-0 scale-100 blur-0' : 'opacity-0 -translate-y-12 scale-[0.8] pointer-events-none blur-sm'}`}>
-                            <div className="flex items-center gap-3 bg-black/85 backdrop-blur-2xl rounded-full py-2 px-3 pl-2 border border-white/10 min-w-[260px] max-w-[90vw]">
+                            <div className="flex items-center gap-3 bg-black/85 backdrop-blur-2xl rounded-full py-2 px-3 pl-2 shadow-2xl min-w-[260px] max-w-[90vw]">
                                 {/* Thumbnail (Circular) with Ring */}
-                                <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white/10 shrink-0 relative bg-stone-900 group">
+                                <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white/10 shadow-lg shrink-0 relative bg-stone-900 group">
                                     <img
                                         src={thumb}
                                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
@@ -607,7 +600,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                                             {activeToastVideo.title || "Unknown Title"}
                                         </h3>
                                         {toastType === 'upnext' && (
-                                            <span className="text-[9px] font-black uppercase tracking-tighter shrink-0 px-2 py-0.5 rounded-full bg-amber-500 text-black">
+                                            <span className="text-[9px] font-black uppercase tracking-tighter shrink-0 px-2 py-0.5 rounded-full shadow-sm bg-amber-500 text-black">
                                                 ถัดไป
                                             </span>
                                         )}

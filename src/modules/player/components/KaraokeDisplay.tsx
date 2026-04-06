@@ -88,7 +88,7 @@ export const KaraokeDisplay: React.FC<KaraokeDisplayProps> = ({ lyrics, currentT
     return (
         <div className="w-full p-6 bg-black/80 rounded-xl border border-white/10 text-center flex flex-col items-center justify-center space-y-4">
             {/* Current Line */}
-            <div className="text-4xl md:text-5xl font-bold text-yellow-400 tracking-wide font-thai leading-relaxed transition-all duration-300 transform">
+            <div className="text-4xl md:text-5xl font-bold text-yellow-400 drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] tracking-wide font-thai leading-relaxed transition-all duration-300 transform">
                 {activeLine.syllables.map((syl, i) => {
                     // Highlight passed syllables
                     // Future: Interpolate color based on time?

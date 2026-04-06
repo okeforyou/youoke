@@ -113,14 +113,14 @@ export const PlayerControls = () => {
                 {/* Visual Track (Background & Active) */}
                 <div className="absolute inset-x-4 h-[4px] bg-gray-300/30 rounded-full overflow-hidden pointer-events-none backdrop-blur-sm">
                     <div
-                        className="h-full bg-primary transition-all duration-75 relative"
+                        className="h-full bg-primary transition-all duration-75 relative shadow-[0_0_12px_rgba(239,68,68,0.8)]"
                         style={{ width: `${progressPercent}%` }}
                     />
                 </div>
 
                 {/* Scrubber Knob (Visual) */}
                 <div
-                    className="absolute h-3 w-3 bg-white rounded-full border border-gray-200 pointer-events-none transition-all duration-75 z-10"
+                    className="absolute h-3 w-3 bg-white rounded-full shadow-[0_0_10px_rgba(239,68,68,0.8)] pointer-events-none transition-all duration-75 z-10"
                     style={{
                         left: `calc(16px + ${progressPercent}% * 0.92)`
                     }}
@@ -213,7 +213,7 @@ export const PlayerControls = () => {
                             w-11 h-11 sm:w-12 sm:h-12 rounded-full 
                             bg-white text-gray-900 border border-gray-200
                             flex items-center justify-center 
-                            hover:border-primary/20 hover:text-primary 
+                            shadow-sm hover:shadow-md hover:border-primary/20 hover:text-primary 
                             active:scale-95 transition-all duration-200
                         "
                     >
@@ -314,7 +314,7 @@ export const PlayerControls = () => {
                     >
                         <ListMusic size={20} />
                         {queue.length > 0 && (
-                            <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5 border border-white">
+                            <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5 shadow-sm border border-white">
                                 {queue.length}
                             </span>
                         )}

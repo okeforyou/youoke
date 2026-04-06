@@ -306,9 +306,7 @@ export const usePlayerStore = create<PlayerStore>()(
                     if (isPremium) dailyLimit = -1; // Unlimited
                 } else {
                     currentUsed = parseInt(localStorage.getItem(storageKey) || '0');
-                    // v4.10.107: Pulled Guest limit from dynamic config
-                    const guestConfig = useUIStore.getState().config?.membership?.guest;
-                    dailyLimit = guestConfig?.max_daily_songs ?? 10;
+                    dailyLimit = 5; // Default for guests if config not available
                 }
 
                 // If limit reached, block adding and show modal (allow adding if already playing)
@@ -415,9 +413,7 @@ export const usePlayerStore = create<PlayerStore>()(
                     if (isPremium) dailyLimit = -1; // Unlimited
                 } else {
                     currentUsed = parseInt(localStorage.getItem(storageKey) || '0');
-                    // v4.10.107: Pulled Guest limit from dynamic config
-                    const guestConfig = useUIStore.getState().config?.membership?.guest;
-                    dailyLimit = guestConfig?.max_daily_songs ?? 10;
+                    dailyLimit = 5; // Default guess
                 }
 
                 if (dailyLimit !== -1 && currentUsed >= dailyLimit && dailyLimit > 0) {
