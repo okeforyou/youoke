@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "4.10.118 (Remote QR Persistence)",
+        date: "6 เม.ย. 2569",
+        changes: [
+            "Fixed Remote QR Modal disappearing act: Disabled partyPIN deletion upon Cast disconnect",
+            "Ensured roomCode persists so the Mobile Remote feature remains functional post-Cast session",
+            "Fixed Ghost state synchronization by routing UI state clears correctly through useUIStore"
+        ],
+        recent_updates: ""
+    },
+    {
         version: "4.10.117 (Cast & QR UI Stability)",
         date: "6 เม.ย. 2569",
         changes: [

@@ -142,14 +142,14 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                 // This ensures the Modal shows the 'Selection/QR' screen instead of 'Control' screen.
                 if (!isConnected && isAnyCastOn) {
                     console.log("🔄 [SidebarControls] Re-syncing stale UI: SDK disconnected. Resetting UI state...");
-                    usePlayerStore.getState().setPlayerState({ castMode: 'none' });
+                    useUIStore.getState().setCastMode('none');
                 }
                 
                 if (isConnected) {
                     console.log("🔌 [SidebarControls] Explicit manual disconnect triggered.");
                     cast.disconnect();
                     // Force UI state to 'none' immediately to allow QR access without delay
-                    usePlayerStore.getState().setPlayerState({ castMode: 'none' });
+                    useUIStore.getState().setCastMode('none');
                 }
                 
                 setCastModalOpen(true);

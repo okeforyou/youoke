@@ -316,9 +316,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
         setCastModalOpen(false);
         setCastMode('none');
-        setPartyPIN(null);
+        // 🛡️ v4.10.118: DO NOT delete partyPIN on disconnect, otherwise Remote QR modal won't render
+        // setPartyPIN(null);
         localStorage.removeItem('youoke-dual-active');
-        localStorage.removeItem('youoke_party_pin');
+        // localStorage.removeItem('youoke_party_pin');
         useUIStore.getState().setIsCastingLocal(false);
 
         // Cleanup CastService if it exists
