@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "4.10.124 (Mobile Layout Fix)",
+        date: "6 เม.ย. 2569",
+        changes: [
+            "Responsive Polish: Fixed overlapping cards in Station/Home screens by adjusting grid layouts for small devices",
+            "Adaptive Grids: Implemented min-[400px]:grid-cols-3 to prevent text compression on narrow viewports",
+            "UI Refinement: Adjusted icon scaling and padding to ensure readability in Pure Flat design"
+        ],
+        recent_updates: ""
+    },
+    {
         version: "4.10.123 (Clean Sidebar)",
         date: "6 เม.ย. 2569",
         changes: [

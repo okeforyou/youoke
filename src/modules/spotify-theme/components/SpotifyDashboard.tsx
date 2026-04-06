@@ -399,7 +399,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                 <p className="text-[11px] text-black dark:text-zinc-500 font-black">แยกตามหมวดหมู่และแนวเพลง</p>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 mb-4">
+              <div className="grid grid-cols-2 min-[400px]:grid-cols-3 sm:grid-cols-4 lg:grid-cols-4 gap-2.5 md:gap-4 px-2.5 md:px-4 mb-4">
                 {ARTIST_CATEGORIES.filter(c => c.id !== 'popular').map((cat) => {
                   const Icon = 
                     cat.id === 'luk-thung' ? Mic2 :
@@ -549,7 +549,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                       <p className="text-[10px] sm:text-xs !text-black dark:!text-zinc-500 font-black">กดเลือกแนวเพลงที่ต้องการฟังได้เลยครับ</p>
                    </div>
 
-                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 mb-4">
+                   <div className="grid grid-cols-2 min-[400px]:grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-2.5 sm:gap-4 px-2.5 sm:px-4 mb-4">
                       {ARTIST_CATEGORIES.filter(c => c.id !== 'popular').map((cat) => {
                         const Icon = 
                           cat.id === 'luk-thung' ? Mic2 :
@@ -570,8 +570,8 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                             key={cat.id} 
                             onClick={() => setGenreText(cat.title === genreText ? "" : cat.title)}
                             className={clsx(
-                              "group relative overflow-hidden rounded-xl aspect-[1.7/1] min-h-[72px] sm:min-h-[80px] cursor-pointer shadow-sm transition-all border-2",
-                              isActive ? "border-primary scale-[1.02] shadow-md ring-2 ring-primary/20" : "border-transparent bg-white dark:bg-zinc-900 shadow-sm"
+                              "group relative overflow-hidden rounded-xl aspect-[1.5/1] min-h-[64px] sm:min-h-[80px] cursor-pointer transition-all border-2",
+                              isActive ? "border-primary scale-[1.02] shadow-md ring-2 ring-primary/20" : "border-transparent bg-white dark:bg-zinc-900"
                             )}
                           >
                              <div className={clsx(
@@ -580,8 +580,8 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                                 isActive ? "opacity-100" : "opacity-90 group-hover:opacity-100"
                              )} />
 
-                             <div className="absolute -bottom-2 -right-2 opacity-20 transform -rotate-12 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
-                               <Icon className="w-16 h-16 sm:w-20 sm:h-20 text-white" />
+                             <div className="absolute -bottom-1 -right-1 opacity-20 transform -rotate-12 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
+                               <Icon className="w-12 h-12 sm:w-20 sm:h-20 text-white" />
                              </div>
                              <div className="absolute inset-0 p-2 flex flex-col justify-end sm:p-2.5">
                                 <h3 className="text-[10px] min-[320px]:text-[11px] sm:text-[13px] md:text-[14px] font-black leading-[1.1] sm:leading-tight drop-shadow-md text-white line-clamp-2 text-left">{cat.title}</h3>
