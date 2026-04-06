@@ -113,14 +113,14 @@ export const PlayerControls = () => {
                 {/* Visual Track (Background & Active) */}
                 <div className="absolute inset-x-4 h-[4px] bg-gray-300/30 rounded-full overflow-hidden pointer-events-none backdrop-blur-sm">
                     <div
-                        className="h-full bg-primary transition-all duration-75 relative shadow-[0_0_12px_rgba(239,68,68,0.8)]"
+                        className="h-full bg-primary transition-all duration-75 relative"
                         style={{ width: `${progressPercent}%` }}
                     />
                 </div>
 
                 {/* Scrubber Knob (Visual) */}
                 <div
-                    className="absolute h-3 w-3 bg-white rounded-full shadow-[0_0_10px_rgba(239,68,68,0.8)] pointer-events-none transition-all duration-75 z-10"
+                    className="absolute h-3 w-3 bg-white rounded-full pointer-events-none transition-all duration-75 z-10"
                     style={{
                         left: `calc(16px + ${progressPercent}% * 0.92)`
                     }}
@@ -154,7 +154,7 @@ export const PlayerControls = () => {
                         onClick={() => useUIStore.getState().setMobilePlayerExpanded(true)}
                         className={`
                         relative w-10 h-10 sm:w-11 sm:h-11 rounded-md overflow-hidden shrink-0 cursor-pointer active:scale-95
-                        ${coverImage ? 'bg-gray-200 shadow-sm' : 'bg-gray-100 flex items-center justify-center'}
+                        ${coverImage ? 'bg-gray-200' : 'bg-gray-100 flex items-center justify-center'}
                         transition-all duration-300
                     `}>
                         {coverImage ? (
@@ -213,7 +213,7 @@ export const PlayerControls = () => {
                             w-11 h-11 sm:w-12 sm:h-12 rounded-full 
                             bg-white text-gray-900 border border-gray-200
                             flex items-center justify-center 
-                            shadow-sm hover:shadow-md hover:border-primary/20 hover:text-primary 
+                            hover:border-primary/20 hover:text-primary 
                             active:scale-95 transition-all duration-200
                         "
                     >
