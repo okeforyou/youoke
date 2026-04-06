@@ -950,7 +950,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 onSelectDual={handleCastSelectDual}
                 onSelectDj={handleCastSelectDual}
                 onSelectGoogleCast={handleCastSelectGoogle}
-                onSelectYouTube={() => { }}
+                onSelectYouTube={() => {
+                    setCastModalOpen(false);
+                    setCastMode('youtube');
+                    // Open YouTube TV (Leanback) for a specialized big screen experience
+                    window.open('https://www.youtube.com/tv', '_blank');
+                    addToast('กำลังส่งไปยัง YouTube TV App');
+                }}
                 onJoinRoom={handleJoinRoom}
                 onDisconnect={handleDisconnect}
                 castMode={castMode}

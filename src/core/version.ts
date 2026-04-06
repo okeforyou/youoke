@@ -4,9 +4,20 @@ export const SYSTEM_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || packageInfo
 export const SYSTEM_CODENAME = "Midnight Dashboard";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
-export const BUILD_DATE = "5 เม.ย. 2569";
+export const BUILD_DATE = "6 เม.ย. 2569";
 
 export const CHANGELOGS = [
+    {
+        version: "4.10.106 (Cast Visual Reboot)",
+        date: "6 เม.ย. 2569",
+        changes: [
+            "[Cast] Active Connection Glow: เพิ่มระบบไฟสถานะสีเขียว (Green Glow) และขอบเรืองแสงให้กับโหมดที่เชื่อมต่ออยู่ เพื่อให้ระบุสถานะ Active ได้ชัดเจนที่สุด",
+            "[YouTube] Cast to YouTube App: พัฒนาระบบโยนวิดีโอไปยัง YouTube TV App (Leanback) เพื่อการใช้งานบนจอใหญ่ที่สมบูรณ์แบบ",
+            "[UI] Cast Modal Contrast Fix: ปรับปรุงความชัดเจนของข้อความและปุ่มเชื่อมต่อในหน้าจอไร้สาย (Wireless Display) ให้สว่างคมชัดใน Dark Mode",
+            "[System] CastMode Sync: อัปเดตโครงสร้างข้อมูล CastMode ให้รองรับ YouTube Cast อย่างเป็นทางการทัั้งระบบ"
+        ],
+        recent_updates: process.env.NEXT_PUBLIC_LATEST_UPDATES || ""
+    },
     {
         version: "4.9.78 (Midnight Dashboard)",
         date: "5 เม.ย. 2569",

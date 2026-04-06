@@ -41,8 +41,8 @@ interface UIState {
     isCastingLocal: boolean;
     setIsCastingLocal: (isCasting: boolean) => void;
 
-    castMode: 'none' | 'smarttv' | 'webmonitor' | 'dual' | 'google';
-    setCastMode: (mode: 'none' | 'smarttv' | 'webmonitor' | 'dual' | 'google') => void;
+    castMode: 'none' | 'smarttv' | 'webmonitor' | 'dual' | 'google' | 'youtube';
+    setCastMode: (mode: 'none' | 'smarttv' | 'webmonitor' | 'dual' | 'google' | 'youtube') => void;
 
     isSidebarCollapsed: boolean;
     setSidebarCollapsed: (collapsed: boolean) => void;
