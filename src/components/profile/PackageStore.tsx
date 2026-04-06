@@ -277,7 +277,7 @@ export const PackageStore = () => {
                                 leaveFrom="opacity-100 scale-100"
                                 leaveTo="opacity-0 scale-95"
                             >
-                                <Dialog.Panel className="w-full max-w-sm transform overflow-hidden rounded-[40px] bg-white dark:bg-zinc-900 p-8 shadow-2xl transition-all border-none">
+                                <Dialog.Panel className="w-full max-w-sm transform overflow-hidden rounded-[40px] bg-white dark:bg-zinc-900 p-8 transition-all border border-slate-100 dark:border-zinc-800">
                                     <div className="flex justify-end -mt-2 -mr-2">
                                         <button onClick={() => setShowLineGuard(false)} className="p-2 rounded-full hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors text-slate-400">
                                             <X size={20} />
@@ -285,7 +285,7 @@ export const PackageStore = () => {
                                     </div>
                                     
                                     <div className="text-center">
-                                        <div className="mx-auto w-20 h-20 bg-[#06C755]/10 rounded-[32px] flex items-center justify-center mb-6">
+                                        <div className="mx-auto w-20 h-20 bg-[#06C755]/5 rounded-[32px] flex items-center justify-center mb-6 border border-[#06C755]/10">
                                             <MessageCircle className="w-10 h-10 text-[#06C755]" fill="currentColor" />
                                         </div>
                                         
@@ -304,7 +304,7 @@ export const PackageStore = () => {
                                                 setShowLineGuard(false);
                                                 router.push('/profile?connect=line');
                                             }}
-                                            className="w-full py-5 bg-[#06C755] hover:bg-[#05b14c] text-white rounded-[28px] font-black text-sm shadow-xl shadow-[#06C755]/20 transition-all active:scale-95 flex items-center justify-center gap-3"
+                                            className="w-full py-5 bg-[#06C755] hover:bg-[#05b14c] text-white rounded-[28px] font-black text-sm transition-all active:scale-95 flex items-center justify-center gap-3"
                                         >
                                             <MessageCircle size={20} />
                                             เชื่อมต่อ LINE ตอนนี้
