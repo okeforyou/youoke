@@ -59,7 +59,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
     const { search, ...rest } = router.query;
     router.push({
       pathname: router.pathname,
-      query: { ...rest, genre: text, playlist: undefined }
+      query: { ...rest, genre: text, playlist: undefined, version: "4.10.131" }
     }, undefined, { shallow: true });
     setSearchTerm('');
     setShouldScrollToPlaylist(true);
@@ -429,8 +429,8 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                               <Icon className="w-16 h-16 sm:w-24 sm:h-24 text-white" />
                            </div>
                            
-                           <div className="absolute inset-0 p-3 flex flex-col justify-end">
-                            <h3 className="text-[11px] sm:text-base font-black text-white leading-tight uppercase tracking-tighter drop-shadow-md line-clamp-2 text-left">{cat.title}</h3>
+                           <div className="absolute inset-0 p-2.5 flex flex-col justify-end">
+                            <h3 className="text-[9.5px] sm:text-base font-black text-white leading-tight uppercase tracking-tighter drop-shadow-md line-clamp-2 text-left">{cat.title}</h3>
                            </div>
 
                            {isActive && (
@@ -566,7 +566,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                             key={cat.id} 
                             onClick={() => setGenreText(cat.title === genreText ? "" : cat.title)}
                             className={clsx(
-                              "group relative overflow-hidden rounded-xl aspect-[1.4/1] min-h-[60px] sm:min-h-[80px] cursor-pointer transition-all border-2",
+                              "group relative overflow-hidden rounded-xl aspect-[1.3/1] min-h-[60px] sm:min-h-[80px] cursor-pointer transition-all border-2",
                               isActive ? "border-primary scale-[1.02] shadow-md ring-2 ring-primary/20" : "border-transparent bg-white dark:bg-zinc-900"
                             )}
                           >
@@ -579,9 +579,9 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                              <div className="absolute -bottom-1 -right-1 opacity-20 transform -rotate-12 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
                                <Icon className="w-12 h-12 sm:w-20 sm:h-20 text-white" />
                              </div>
-                             <div className="absolute inset-0 p-2 flex flex-col justify-end sm:p-2.5">
-                                <h3 className="text-[10px] min-[320px]:text-[11px] sm:text-[13px] md:text-[14px] font-black leading-[1.1] sm:leading-tight drop-shadow-md text-white line-clamp-2 text-left">{cat.title}</h3>
-                             </div>
+                              <div className="absolute inset-0 p-2.5 flex flex-col justify-end">
+                                 <h3 className="text-[9.5px] sm:text-base font-black leading-tight drop-shadow-md text-white line-clamp-2 text-left uppercase tracking-tighter">{cat.title}</h3>
+                              </div>
 
                              {isActive && (
                                <div className="absolute top-2 right-2 bg-white/20 backdrop-blur-md p-1 rounded-full border border-white/30 animate-in zoom-in-50 duration-300">

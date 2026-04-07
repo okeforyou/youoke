@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "4.10.131 (Final Layout Unification)",
+        date: "7 เม.ย. 2569",
+        changes: [
+            "Definitive Card Sync: All category cards across Artist, Chart, and Station modules are now locked to aspect-[1.3/1] and text-[9.5px] on mobile",
+            "Permanent Video Player: Refined right-side layout so the player and queue are always visible and accessible for elderly users",
+            "Design Lockdown: Hard-coded spacing and typography tokens to ensure absolute visual consistency across all modules"
+        ],
+        recent_updates: ""
+    },
+    {
         version: "4.10.130 (One Design Standard)",
         date: "7 เม.ย. 2569",
         changes: [
