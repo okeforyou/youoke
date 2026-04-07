@@ -394,7 +394,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                     <h1 className="text-xl font-bold text-black dark:text-white">หมวดหมู่ศิลปิน</h1>
                   </div>
 
-                  <div className="grid grid-cols-2 min-[400px]:grid-cols-3 sm:grid-cols-4 lg:grid-cols-4 gap-2 sm:gap-4 px-2 sm:px-4 mb-4">
+                  <div className="grid grid-cols-2 min-[440px]:grid-cols-3 sm:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-4 px-3 md:px-4 mb-6">
                     {ARTIST_CATEGORIES.filter(c => c.id !== 'popular').map((cat) => {
                       const Icon = 
                         cat.id === 'luk-thung' ? Mic2 :
@@ -429,8 +429,8 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                               <Icon className="w-16 h-16 sm:w-24 sm:h-24 text-white" />
                            </div>
                            
-                           <div className="absolute inset-0 p-2.5 flex flex-col justify-end">
-                            <h3 className="text-[9.5px] sm:text-base font-black text-white leading-tight uppercase tracking-tighter drop-shadow-md line-clamp-2 text-left">{cat.title}</h3>
+                           <div className="absolute inset-0 p-2.5 sm:p-3 flex flex-col justify-end">
+                            <h3 className="text-[10px] sm:text-xs font-black text-white leading-tight uppercase tracking-tighter drop-shadow-md line-clamp-2 text-left">{cat.title}</h3>
                            </div>
 
                            {isActive && (
@@ -545,7 +545,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                       <p className="text-[10px] sm:text-xs !text-black dark:!text-zinc-500 font-black">กดเลือกแนวเพลงที่ต้องการฟังได้เลยครับ</p>
                    </div>
 
-                   <div className="grid grid-cols-2 min-[440px]:grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-4 gap-2.5 sm:gap-4 px-2.5 sm:px-4 mb-4">
+                   <div className="grid grid-cols-2 min-[440px]:grid-cols-3 sm:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-4 px-3 md:px-4 mb-6">
                       {ARTIST_CATEGORIES.filter(c => c.id !== 'popular').map((cat) => {
                         const Icon = 
                           cat.id === 'luk-thung' ? Mic2 :
@@ -579,8 +579,8 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                              <div className="absolute -bottom-1 -right-1 opacity-20 transform -rotate-12 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
                                <Icon className="w-12 h-12 sm:w-20 sm:h-20 text-white" />
                              </div>
-                              <div className="absolute inset-0 p-2.5 flex flex-col justify-end">
-                                 <h3 className="text-[9.5px] sm:text-base font-black leading-tight drop-shadow-md text-white line-clamp-2 text-left uppercase tracking-tighter">{cat.title}</h3>
+                              <div className="absolute inset-0 p-2.5 sm:p-3 flex flex-col justify-end">
+                                 <h3 className="text-[10px] sm:text-xs font-black leading-tight drop-shadow-md text-white line-clamp-2 text-left uppercase tracking-tighter">{cat.title}</h3>
                               </div>
 
                              {isActive && (

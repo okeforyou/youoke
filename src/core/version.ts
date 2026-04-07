@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "4.10.132 (Ultimate Desktop Uniformity)",
+        date: "7 เม.ย. 2569",
+        changes: [
+            "Fixed Desktop Scaling: Locked font sizes to text-[10px] sm:text-xs to prevent text from looking huge on wide browser windows",
+            "Hardware Standard Grid: Enforced equal grid break-points (grid-cols-2 to sm:grid-cols-4 lg:grid-cols-4) uniformly across Chart, Station, and Artist modules",
+            "Permanent Queue & Player: Nullified queue toggling logic on desktop to make the Video Player and Queue permanently docked on the right side for all users"
+        ],
+        recent_updates: ""
+    },
+    {
         version: "4.10.131 (Final Layout Unification)",
         date: "7 เม.ย. 2569",
         changes: [

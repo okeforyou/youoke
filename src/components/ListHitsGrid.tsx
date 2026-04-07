@@ -94,7 +94,7 @@ export default function ListHitsGrid({ onClick: onPlay }: { onClick?: (hit: Sing
       </div>
 
       {/* Category Selection Grid - Optimized for Mobile Overlapping */}
-      <div className="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 mb-8">
+      <div className="grid grid-cols-2 min-[440px]:grid-cols-3 sm:grid-cols-4 lg:grid-cols-4 gap-3 sm:gap-4 px-3 md:px-4 mb-8">
         {CHART_CATEGORIES.map((cat) => {
           const Icon = cat.Icon;
           const isActive = selectedChart === cat.id;
@@ -103,7 +103,7 @@ export default function ListHitsGrid({ onClick: onPlay }: { onClick?: (hit: Sing
               key={cat.id}
               onClick={() => setSelectedChart(cat.id === selectedChart ? null : cat.id)}
               className={clsx(
-                "group relative overflow-hidden rounded-2xl aspect-[3.2/1] min-[480px]:aspect-[1.6/1] cursor-pointer transition-all duration-300 shadow-sm border-2",
+                "group relative overflow-hidden rounded-xl aspect-[1.3/1] cursor-pointer transition-all duration-300 shadow-sm border-2",
                 isActive ? "border-primary scale-[1.02] shadow-md ring-4 ring-primary/10" : "border-transparent hover:shadow-lg bg-white dark:bg-zinc-900"
               )}
             >
@@ -121,8 +121,8 @@ export default function ListHitsGrid({ onClick: onPlay }: { onClick?: (hit: Sing
                   <Icon className="w-20 h-20 sm:w-24 sm:h-24 text-white" />
                 </div>
                 
-                <div className="absolute inset-0 p-3 flex flex-col justify-end">
-                  <h3 className="text-[11px] sm:text-base font-black text-white leading-tight uppercase tracking-tighter drop-shadow-md line-clamp-2 text-left">
+                <div className="absolute inset-0 p-2.5 sm:p-3 flex flex-col justify-end">
+                  <h3 className="text-[10px] sm:text-xs font-black text-white leading-tight uppercase tracking-tighter drop-shadow-md line-clamp-2 text-left">
                     {cat.title}
                   </h3>
                 </div>
