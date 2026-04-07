@@ -59,7 +59,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
     const { search, ...rest } = router.query;
     router.push({
       pathname: router.pathname,
-      query: { ...rest, genre: text, playlist: undefined, version: "4.10.131" }
+      query: { ...rest, genre: text, playlist: undefined }
     }, undefined, { shallow: true });
     setSearchTerm('');
     setShouldScrollToPlaylist(true);
@@ -150,7 +150,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
   }, [selectedCategoryId, mode]);
 
   const { data: tempTopArtistsData, isLoading: isLoadTopArtists } = useQuery({
-    queryKey: ["getTopArtists", "v2", mode],
+    queryKey: ["getTopArtists", mode],
     queryFn: () => getTopArtists(mode === 'station' ? 'listening' : (mode as any)),
     retry: false,
     refetchInterval: 0,
@@ -165,8 +165,8 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
   const { data: hitsData, isLoading } = useQuery({
     queryKey: ["jooxCharts"],
     queryFn: getJooxCharts,
-    staleTime: 1000 * 60 * 60 * 24, // v4.9.74: Increased to 24 hours for extreme speed (Serving from Cache)
-    gcTime: 1000 * 60 * 60 * 48, // Keep in memory for 48 hours
+    staleTime: 1000 * 60 * 60 * 24,
+    gcTime: 1000 * 60 * 60 * 48,
   });
 
   const { data: artists, isLoading: isLoadArtists } = useQuery({
@@ -204,7 +204,6 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
 
   const { searchTerm, setSearchTerm, addToQueue } = usePlayerStore();
 
-  // v4.9.42: Enhanced Infinite Search for Station Mode (Long Videos)
   const { 
     data: stationData, 
     isLoading: isLoadStation,
@@ -220,17 +219,14 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
     }),
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {
-        // If we got results, allow fetching the next page
         return lastPage && lastPage.length > 0 ? allPages.length : undefined;
     },
     enabled: mode === 'station' && !!(genreText || searchTerm),
     retry: false,
   });
 
-  // v4.9.42: Enhanced Infinite Search with De-duplication Logic
   const stationResults = useMemo(() => {
     const rawResults = stationData?.pages?.flatMap(page => page) || [];
-    // Using Map to filter out duplicates based on videoId (keeping the first occurrence)
     const uniqueMap = new Map();
     return rawResults.filter(video => {
         if (!video.videoId) return false;
@@ -281,7 +277,6 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
     <JooxError />
   ) : (
     <div className="flex flex-col w-full pb-20 bg-white dark:bg-zinc-950 transition-colors">
-      {/* 1. PLAYLIST DETAIL VIEW */}
       {tagId && artist ? (
         <div className="col-span-full animate-in fade-in duration-500">
           <div className="relative w-full h-[140px] sm:h-[180px] mb-6 group overflow-hidden rounded-2xl mx-2 shadow-sm border border-gray-100 dark:border-zinc-900 bg-gray-50 dark:bg-zinc-950">
@@ -360,10 +355,8 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
         </div>
       ) : (
         <div className="col-span-full">
-          {/* 2. ARTIST DIRECTORY (MODE: DEFAULT) - MASTER PLAN UI */}
           {mode === 'default' && (
             <div className="animate-in fade-in duration-700 pb-20">
-              {/* TIER 1: POPULAR ARTISTS */}
               {!selectedCategoryId && (
                 <div className="animate-in fade-in duration-500">
                   <div className="px-4 pt-6 pb-2">
@@ -444,7 +437,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                   </div>
 
                   {/* TIER 3: INTEGRATED RESULT LIST */}
-                  {selectedCategory && (
+                  {selectedCategoryId && selectedCategory && (
                     <div ref={songlistRef} className="animate-in slide-in-from-bottom-8 duration-500 scroll-mt-20">
                       <div className="px-4 pt-4 pb-4 border-t border-gray-100 dark:border-zinc-800 flex items-center justify-between">
                         <div>

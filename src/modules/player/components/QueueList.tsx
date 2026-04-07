@@ -48,8 +48,8 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
             ref={setNodeRef}
             style={style}
             className={clsx(
-                "group flex items-center gap-2 py-2 px-3 transition-colors",
-                isDragging ? "opacity-30 bg-transparent" : "bg-transparent"
+                "group flex items-center gap-2 py-2 px-3",
+                isDragging ? "opacity-30" : ""
             )}
         >
             {/* Drag Handle - Outside the card */}

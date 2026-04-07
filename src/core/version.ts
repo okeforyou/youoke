@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "4.10.136 (Universal Source Fix)",
+        date: "7 เม.ย. 2569",
+        changes: [
+            "Fixed Artist Module Blank State: Resolved conditional rendering break in SpotifyDashboard from previous edits",
+            "Absolute Source of Truth: Eradicated hardcoded version strings from router queries to allow full automation",
+            "Ultimate Queue Drag Polish: Stripped away all remaining transition properties to achieve perfectly flat, non-bouncing movement",
+            "System-Wide Sync: Verified v4.10.136 alignment across all deployment layers"
+        ],
+        recent_updates: ""
+    },
+    {
         version: "4.10.135 (Smooth Integrity)",
         date: "7 เม.ย. 2569",
         changes: [
