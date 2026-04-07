@@ -185,7 +185,16 @@ const AdminDashboard: React.FC = () => {
               <p className="text-sm text-gray-500 mt-1 font-medium">ติดตามสถานะและความเคลื่อนไหวล่าสุด (v{SYSTEM_VERSION} {COMMIT_ID})</p>
             </div>
           </div>
-          <div className="flex flex-col items-end gap-1">
+          <div className="flex flex-wrap items-center justify-end gap-3">
+             <a 
+               href="https://vercel.com/okeforyou/youoke/analytics" 
+               target="_blank" 
+               rel="noopener noreferrer"
+               className="flex items-center gap-2 text-sm text-white bg-slate-900 hover:bg-black px-4 py-2 rounded-xl border border-white/10 font-bold transition-all active:scale-95 shadow-lg group"
+             >
+               <Activity className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
+               <span>ดูสถิติคนเข้าชม (Live)</span>
+             </a>
              <div className="flex items-center gap-2 text-sm text-gray-500 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100 font-bold">
                <Clock className="w-4 h-4" />
                <span>ข้อมูลล่าสุด: {new Date().toLocaleTimeString('th-TH')}</span>

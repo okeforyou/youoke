@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "4.10.139 (Admin Insights)",
+        date: "7 เม.ย. 2569",
+        changes: [
+            "Integrated Vercel Analytics Quick-Link: Added a live visitor tracking button to the Admin Dashboard header",
+            "Enhanced Dashboard Layout: Improved header responsiveness for analytics and time display symbols",
+            "Refined Analytics Sync: Ensured seamless transition between app administration and traffic monitoring"
+        ],
+        recent_updates: ""
+    },
+    {
         version: "4.10.138 (Remote Debug & Hardening)",
         date: "7 เม.ย. 2569",
         changes: [
