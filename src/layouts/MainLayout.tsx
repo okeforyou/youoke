@@ -365,8 +365,20 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 youtubeLoungeService.pairWithCode(cleanCode).then(success => {
                     if (success) {
                         addToast('📺 เชื่อมต่อ YouTube TV สำเร็จ! คุณสามารถคุมคิวเพลงได้แล้ว');
+                        
+                        // Initial Sync of current queue
+                        if (playerQueue.length > 0) {
+                            const ids = playerQueue
+                                .filter(v => v.sourceType === 'youtube')
+                                .map(v => v.videoId || v.id)
+                                .filter(Boolean) as string[];
+                            
+                            if (ids.length > 0) {
+                                youtubeLoungeService.sendCommand('setQueue', undefined, ids);
+                            }
+                        }
                     } else {
-                        addToast('⚠️ ไม่พบรหัสทีวีนี หรือเกิดข้อผิดพลาดในการเชื่อมต่อ', 'error');
+                        addToast('⚠️ ไม่พบรหัสทีวีนี้ หรือเกิดข้อผิดพลาดในการเชื่อมต่อ', 'error');
                         setCastMode('none');
                     }
                 });

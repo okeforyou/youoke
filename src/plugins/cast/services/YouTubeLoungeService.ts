@@ -76,31 +76,56 @@ export class YouTubeLoungeService {
   /**
    * Phase 2: Send Command to YouTube TV (Direct Push)
    * 
-   * This handles the actual 'Add to Queue' on the TV
+   * This handles the actual 'Add to Queue' or 'Set Playlist' on the TV
    */
   public async sendCommand(command: 'add' | 'remove' | 'play' | 'pause' | 'skip' | 'setQueue', videoId?: string, list?: string[]) {
-    if (!this.loungeToken || !this.screenId) {
-      console.warn('⚠️ YouTube TV not connected');
+    if (!this.loungeToken) {
+      console.warn('⚠️ YouTube TV not connected (No Lounge Token)');
       return;
     }
 
     this.aid++;
-    console.log(`📡 [YouTubeLounge] Sending command [${command}] (AID: ${this.aid}) to TV...`);
+    const RID = Math.floor(Math.random() * 100000);
+    
+    console.log(`📡 [YouTubeLounge] Sending [${command}] (RID: ${RID}) to TV...`);
 
-    // The actual HTTP Post to YouTube's bind API:
-    // POST https://www.youtube.com/api/lounge/bc/bind?RID=...&VER=8&CVER=1&loungeIdToken=...
-    // Body: count=1&req0___sc=videoId&req0_v=...&req0_listId=... (and more)
+    try {
+      const params = new URLSearchParams();
+      params.append('count', '1');
+      params.append('req0_at', '0');
 
-    if (command === 'add' && videoId) {
-        console.log(`➕ Queuing next on TV: https://www.youtube.com/watch?v=${videoId}`);
-        // TODO: Implement axios.post with Form-Data for Lounge Bind
+      if (command === 'add' && videoId) {
+          params.append('req0_sc', 'addVideo');
+          params.append('req0_v', videoId);
+      } else if (command === 'setQueue' && list && list.length > 0) {
+          params.append('req0_sc', 'setPlaylist');
+          params.append('req0_v', list[0]); // Start with first
+          params.append('req0_listId', '');
+          params.append('req0_videoIds', list.join(','));
+      } else if (command === 'play') {
+          params.append('req0_sc', 'play');
+      } else if (command === 'pause') {
+          params.append('req0_sc', 'pause');
+      } else if (command === 'skip') {
+          params.append('req0_sc', 'next');
+      }
+
+      // API: https://www.youtube.com/api/lounge/bc/bind
+      // Needs 'loungeIdToken' in query or body. Most implementations use query.
+      const url = `https://www.youtube.com/api/lounge/bc/bind?device=remote&id=youoke-remote-${Date.now()}&name=YouOke&VER=8&v=2&RID=${RID}&loungeIdToken=${this.loungeToken}`;
+      
+      const response = await axios.post(url, params.toString(), {
+          headers: {
+              'Content-Type': 'application/x-www-form-urlencoded'
+          }
+      });
+
+      console.log('✅ [YouTubeLounge] Command sent!', response.status);
+      return true;
+    } catch (error) {
+      console.error('❌ [YouTubeLounge] Command failed:', error);
+      return false;
     }
-
-    if (command === 'setQueue' && list) {
-        console.log(`📋 Syncing full queue to TV: ${list.length} videos`);
-    }
-
-    return true;
   }
 
   public disconnect() {
