@@ -3,6 +3,7 @@ import { ListMusic, Trash2, Menu, ChevronDown } from "lucide-react";
 import { usePlayerStore } from "../stores/usePlayerStore";
 import { useUIStore } from "../../../stores/useUIStore";
 import Image from 'next/image';
+import clsx from 'clsx';
 import {
     DndContext,
     closestCenter,
@@ -39,17 +40,18 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
 
     const style = {
         transform: CSS.Transform.toString(transform),
-        // No opacity change to prevent gray tint from showing through
-        opacity: isDragging ? 0.95 : 1,
+        opacity: isDragging ? 0.9 : 1,
         zIndex: isDragging ? 50 : 'auto',
-        backgroundColor: isDragging ? '#18181b' : 'transparent', // Zinc-900 during drag
     };
 
     return (
         <div
             ref={setNodeRef}
             style={style}
-            className="group flex items-center gap-2 py-2 px-3 bg-transparent dark:bg-transparent transition-colors"
+            className={clsx(
+                "group flex items-center gap-2 py-2 px-3 transition-all duration-200",
+                isDragging ? "scale-[1.03] shadow-2xl bg-white/10 dark:bg-zinc-800/50 backdrop-blur-sm rounded-2xl ring-2 ring-primary/20" : "bg-transparent"
+            )}
         >
             {/* Drag Handle - Outside the card */}
             <div
