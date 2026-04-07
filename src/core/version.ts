@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "4.10.130 (One Design Standard)",
+        date: "7 เม.ย. 2569",
+        changes: [
+            "Total Unification: Standardized 100% of category cards across Chart, Artist, and Station modules to use identical grid-cols-2 and aspect-[1.3/1] on mobile",
+            "Micro-Typography: Reduced headline font to text-[9.5px] for an ultra-compact, professional look that never overlaps",
+            "Consistent Gaps: Unified p-2.5 padding and gap-3 for all category containers to ensure a balanced aesthetic"
+        ],
+        recent_updates: ""
+    },
+    {
         version: "4.10.129 (Unified Category UI Fix)",
         date: "7 เม.ย. 2569",
         changes: [
