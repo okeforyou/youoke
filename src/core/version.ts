@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "4.10.138 (Remote Debug & Hardening)",
+        date: "7 เม.ย. 2569",
+        changes: [
+            "Debugged and hardened RemoteControlApp with robust type guards for roomCode and localStorage",
+            "Prevented TypeError in Auth Store by adding safe-guards for email.split()",
+            "Improved resiliency of presence logic and guest name handling"
+        ],
+        recent_updates: ""
+    },
+    {
         version: "4.10.137 (MainDashboard Upgrade)",
         date: "7 เม.ย. 2569",
         changes: [

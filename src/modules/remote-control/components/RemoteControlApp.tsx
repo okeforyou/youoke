@@ -50,7 +50,8 @@ interface RoomState {
 
 export default function RemoteControlApp() {
     const router = useRouter();
-    const { room: roomCode } = router.query;
+    const queryRoom = router.query.room;
+    const roomCode = typeof queryRoom === 'string' ? queryRoom : Array.isArray(queryRoom) ? queryRoom[0] : '';
 
     // State
     const [status, setStatus] = useState<RemoteStatus>('connecting');
@@ -183,8 +184,8 @@ export default function RemoteControlApp() {
             }
         }
 
-        const storedName = localStorage.getItem('youoke_guest_name');
-        if (storedName) {
+        const storedName = typeof window !== 'undefined' ? localStorage.getItem('youoke_guest_name') : null;
+        if (storedName && typeof storedName === 'string') {
             setGuestName(storedName);
         } else {
             setShowNameModal(true);
@@ -192,7 +193,8 @@ export default function RemoteControlApp() {
 
         // Load Guest Song Count
         if (typeof window !== 'undefined') {
-            const count = parseInt(localStorage.getItem('youoke_guest_song_count') || '0');
+            const storedCount = localStorage.getItem('youoke_guest_song_count');
+            const count = parseInt(typeof storedCount === 'string' ? storedCount : '0');
             const lastReset = localStorage.getItem('youoke_guest_last_reset');
             const now = new Date();
 
@@ -570,7 +572,8 @@ export default function RemoteControlApp() {
                     <form
                         onSubmit={(e) => {
                             e.preventDefault();
-                            const code = (e.target as any).code.value.trim();
+                            const codeInput = (e.target as any).code;
+                            const code = codeInput && typeof codeInput.value === 'string' ? codeInput.value.trim() : '';
                             if (code.length >= 4) {
                                 router.push(`/remote?room=${code}`);
                             }
