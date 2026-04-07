@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "4.10.137 (MainDashboard Upgrade)",
+        date: "7 เม.ย. 2569",
+        changes: [
+            "Official Renaming: SpotifyDashboard transitioned to MainDashboard to align with YouOKE's independent identity",
+            "UI Polish & Symmetry: Standardized all directory cards (Artist, Station, Charts) to a consistent aspect-[1.3/1] ratio",
+            "Content Purge: Removed redundant descriptions from artist category cards to achieve a cleaner, flat aesthetic",
+            "Native QR Restoration: Replaced external QR API with QRCodeSVG component in MainLayout for instant remote pairing"
+        ],
+        recent_updates: ""
+    },
+    {
         version: "4.10.136 (Universal Source Fix)",
         date: "7 เม.ย. 2569",
         changes: [

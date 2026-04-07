@@ -45,7 +45,7 @@ const GENRES = [
   "ยอมรับ",
 ];
 
-export default function SpotifyDashboard({ showTab = true, mode = 'default' }: { showTab?: boolean, mode?: 'default' | 'listening' | 'genres' | 'station' }) {
+export default function MainDashboard({ showTab = true, mode = 'default' }: { showTab?: boolean, mode?: 'default' | 'listening' | 'genres' | 'station' }) {
   const router = useRouter();
   const { user } = useSystem().auth();
   const { config } = useSystemConfig();
@@ -413,8 +413,8 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                       key={cat.id} 
                       onClick={() => setCategoryId(cat.id === selectedCategoryId ? "" : cat.id)}
                       className={clsx(
-                        "group relative overflow-hidden rounded-xl aspect-[1.7/1] min-h-[72px] sm:min-h-[80px] cursor-pointer shadow-sm transition-all border-2",
-                        isActive ? "border-primary scale-[1.02] shadow-md ring-2 ring-primary/20" : "border-transparent bg-white dark:bg-zinc-900 shadow-sm"
+                        "group relative overflow-hidden rounded-xl aspect-[1.3/1] min-h-[60px] sm:min-h-[80px] cursor-pointer transition-all border-2",
+                        isActive ? "border-primary scale-[1.02] ring-2 ring-primary/20" : "border-transparent bg-white dark:bg-zinc-900 shadow-sm"
                       )}
                     >
                        <div className={clsx(
@@ -423,13 +423,12 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                           isActive ? "opacity-100" : "opacity-90 group-hover:opacity-100"
                        )} />
 
-                 <div className="absolute -bottom-4 -right-4 opacity-20 transform -rotate-12 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
-                   <Icon className="w-24 h-24 text-white" />
+                 <div className="absolute -bottom-3 -right-3 opacity-10 transform -rotate-12 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
+                   <Icon className="w-16 h-16 sm:w-24 sm:h-24 text-white" />
                  </div>
                  
-                 <div className="absolute inset-0 p-3 sm:p-4 flex flex-col justify-end">
-                  <h3 className="text-sm sm:text-base font-bold text-white leading-tight drop-shadow-sm line-clamp-2 mb-1">{cat.title}</h3>
-                  <p className="text-[10px] text-white font-black line-clamp-1">{cat.description}</p>
+                 <div className="absolute inset-0 p-2.5 sm:p-3 flex flex-col justify-end">
+                  <h3 className="text-[10px] sm:text-xs font-black text-white leading-tight uppercase tracking-tighter drop-shadow-md line-clamp-2 text-left">{cat.title}</h3>
                  </div>
 
                        {isActive && (
@@ -467,7 +466,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                             />
                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
                           </div>
-                          <p className="mt-2 text-[10px] sm:text-[11px] font-bold text-black dark:text-zinc-400 text-center group-hover:text-primary transition-colors italic-sm">{cleanName}</p>
+                          <p className="mt-2 text-[9px] sm:text-[11px] font-bold text-black dark:text-zinc-400 text-center group-hover:text-primary transition-colors truncate w-full">{cleanName}</p>
                         </div>
                       );
                     })}
@@ -562,7 +561,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                             key={cat.id} 
                             onClick={() => setGenreText(cat.title === genreText ? "" : cat.title)}
                             className={clsx(
-                              "group relative overflow-hidden rounded-xl aspect-[1.7/1] min-h-[72px] sm:min-h-[80px] cursor-pointer shadow-sm transition-all border-2",
+                              "group relative overflow-hidden rounded-xl aspect-[1.3/1] min-h-[60px] sm:min-h-[80px] cursor-pointer transition-all border-2",
                               isActive ? "border-primary scale-[1.02] shadow-md ring-2 ring-primary/20" : "border-transparent bg-white dark:bg-zinc-900 shadow-sm"
                             )}
                           >
@@ -572,11 +571,11 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                                 isActive ? "opacity-100" : "opacity-90 group-hover:opacity-100"
                              )} />
 
-                             <div className="absolute -bottom-2 -right-2 opacity-20 transform -rotate-12 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
-                               <Icon className="w-16 h-16 sm:w-20 sm:h-20 text-white" />
+                             <div className="absolute -bottom-1 -right-1 opacity-20 transform -rotate-12 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500">
+                               <Icon className="w-12 h-12 sm:w-20 sm:h-20 text-white" />
                              </div>
-                             <div className="absolute inset-0 p-2 flex flex-col justify-end sm:p-2.5">
-                                <h3 className="text-[10px] min-[320px]:text-[11px] sm:text-[13px] md:text-[14px] font-black leading-[1.1] sm:leading-tight drop-shadow-md text-white line-clamp-2 text-left">{cat.title}</h3>
+                             <div className="absolute inset-0 p-2.5 sm:p-3 flex flex-col justify-end">
+                                <h3 className="text-[10px] sm:text-xs font-black leading-tight drop-shadow-md text-white line-clamp-2 text-left uppercase tracking-tighter">{cat.title}</h3>
                              </div>
 
                              {isActive && (

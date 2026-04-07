@@ -1,4 +1,5 @@
 import React, { ReactNode, useState, useEffect, useRef, useCallback } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
 import clsx from 'clsx';
@@ -925,7 +926,15 @@ export default function MainLayout({ children }: MainLayoutProps) {
                             </div>
 
                             <div className="bg-white p-3 rounded-2xl border-2 border-dashed border-primary/20 inline-block shadow-sm">
-                                <img src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(`${typeof window !== 'undefined' ? window.location.origin : ''}/remote?room=${roomCode}`)}`} alt="QR Code" className="w-56 h-56 rounded-lg" />
+                                {typeof window !== 'undefined' && (
+                                    <QRCodeSVG 
+                                        value={`${window.location.origin}/remote?room=${roomCode}`}
+                                        size={220}
+                                        level="H"
+                                        includeMargin={false}
+                                        className="rounded-lg"
+                                    />
+                                )}
                             </div>
 
                             <div className="space-y-2">
