@@ -229,12 +229,27 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     addToast('ขยายจอแล้ว (กด ⛶ ที่หน้าจอหลักเพื่อซ่อนแถบเบราว์เซอร์)');
                 });
             }
-        } else if (layoutMode === 'split') {
+        } else {
             if (document.fullscreenElement) {
                 document.exitFullscreen().catch(() => { });
             }
         }
     }, [layoutMode, mounted]);
+
+    /** 📺 [v5.0 R&D] YouTube Lounge Queue Sync **/
+    useEffect(() => {
+        if (castMode === 'youtube' && playerQueue.length > 0) {
+            const currentItem = playerQueue[currentIndex];
+            if (currentItem && currentItem.sourceType === 'youtube') {
+                const videoId = currentItem.videoId || currentItem.id;
+                if (videoId) {
+                    import('../plugins/cast/services/YouTubeLoungeService').then(({ youtubeLoungeService }) => {
+                        youtubeLoungeService.sendCommand('add', videoId).catch(() => {});
+                    } );
+                }
+            }
+        }
+    }, [castMode, playerQueue, currentIndex]);
 
 
 
@@ -315,6 +330,12 @@ export default function MainLayout({ children }: MainLayoutProps) {
             disconnectGoogleCast();
         }
 
+        if (castMode === 'youtube') {
+            import('../plugins/cast/services/YouTubeLoungeService').then(({ youtubeLoungeService }) => {
+                youtubeLoungeService.disconnect();
+            });
+        }
+
         setCastModalOpen(false);
         setCastMode('none');
         // 🛡️ v4.10.118: DO NOT delete partyPIN on disconnect, otherwise Remote QR modal won't render
@@ -332,6 +353,28 @@ export default function MainLayout({ children }: MainLayoutProps) {
     }, [castMode, roomCode, realtimeDb, addToast, setCastMode, setCastModalOpen]);
 
     const handleJoinRoom = (code: string) => {
+        const cleanCode = code.replace(/\s/g, '');
+        
+        // 📺 Case 1: YouTube Lounge (12 digits)
+        if (cleanCode.length === 12) {
+            setCastModalOpen(false);
+            setCastMode('youtube');
+            
+            // Trigger Lounge Pairing
+            import('../plugins/cast/services/YouTubeLoungeService').then(({ youtubeLoungeService }) => {
+                youtubeLoungeService.pairWithCode(cleanCode).then(success => {
+                    if (success) {
+                        addToast('📺 เชื่อมต่อ YouTube TV สำเร็จ! คุณสามารถคุมคิวเพลงได้แล้ว');
+                    } else {
+                        addToast('⚠️ ไม่พบรหัสทีวีนี หรือเกิดข้อผิดพลาดในการเชื่อมต่อ', 'error');
+                        setCastMode('none');
+                    }
+                });
+            });
+            return;
+        }
+
+        // 🏠 Case 2: Standard Smart TV / Web Monitor (4 digits)
         setPartyPIN(code);
         localStorage.setItem('youoke_party_pin', code);
         setCastModalOpen(false);
@@ -598,7 +641,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
                                     // Desktop Logic
                                     "lg:fixed lg:top-0 lg:w-[420px] lg:h-[236px] bg-black origin-top-right transition-all duration-500",
-                                    (layoutMode !== 'fullscreen') ? "lg:right-0" : "lg:-right-[420px]"
+                                    "lg:right-0"
                                 ]
                         )}>
                         <div className={clsx(

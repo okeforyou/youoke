@@ -201,27 +201,80 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
             </div>
           </button>
 
-          {/* 4. YouTube Cast - HIDDEN as requested implicitly by making it no-op, or just leave as is */}
-          <button
-            onClick={onSelectYouTube}
-            className={clsx(
-                 "w-full text-left bg-white dark:bg-zinc-800/50 hover:bg-gray-50 dark:hover:bg-zinc-800 rounded-3xl p-4.5 border border-gray-100 dark:border-zinc-800 transition-all group relative overflow-hidden shadow-sm",
-                 castMode === 'youtube' && "ring-2 ring-green-500 bg-green-50/50 dark:bg-green-500/10"
+          {/* 4. YouTube Cast (Native App Mode) */}
+          <div className={clsx(
+            "bg-white dark:bg-zinc-800/50 rounded-3xl border border-gray-100 dark:border-zinc-800 shadow-sm overflow-hidden",
+            castMode === 'youtube' && "ring-2 ring-green-500 bg-green-50/50 dark:bg-green-500/10"
+          )}>
+            <button
+              onClick={onSelectYouTube}
+              className="w-full text-left p-4.5 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all group relative"
+            >
+              <div className="flex items-center gap-4">
+                <div className={clsx(
+                  "flex-shrink-0 w-13 h-13 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-all",
+                  castMode === 'youtube' ? "bg-green-500/20 text-green-500 shadow-[0_0_20px_rgba(34,197,94,0.4)]" : "bg-primary/5 text-primary"
+                )}>
+                  <Youtube className="w-6 h-6" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base font-black text-gray-900 dark:text-gray-100">YouTube Cast (TV APP)</h3>
+                  <p className="text-xs text-gray-500 font-bold uppercase tracking-wide leading-tight">คุมแอป YouTube บนทีวีผ่านรหัส 12 หลัก</p>
+                </div>
+              </div>
+            </button>
+            <button
+              onClick={() => setShowTvSteps(!showTvSteps)}
+              className="w-full py-2 px-4 border-t border-gray-50 dark:border-zinc-800 flex items-center justify-between text-[10px] font-black text-gray-400 hover:text-primary transition-colors uppercase tracking-widest"
+            >
+              <span>วิธีเชื่อมต่อ / กรอกรหัส TV</span>
+              {showTvSteps ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+            </button>
+
+            {showTvSteps && (
+              <div className="p-4 pt-0 space-y-4 animate-in slide-in-from-top-1 duration-200">
+                <div className="bg-gray-50 dark:bg-white/5 rounded-2xl p-4 text-xs font-bold text-gray-700 dark:text-zinc-300 leading-relaxed border border-gray-100 dark:border-white/5 shadow-inner">
+                  <div className="flex gap-3">
+                    <span className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 font-black text-[10px]">1</span>
+                    <p>เปิด **แอป YouTube** บนทีวี &rarr; การตั้งค่า &rarr; **เชื่อมต่อด้วยรหัสทีวี**</p>
+                  </div>
+                  <div className="flex gap-3 mt-3">
+                    <span className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 font-black text-[10px]">2</span>
+                    <p>นำรหัส 12 หลักที่ได้มากรอกด้านล่างนี้</p>
+                  </div>
+                </div>
+
+                {/* YouTube Pairing Code Input (12 digits) */}
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    maxLength={15}
+                    placeholder="123 456 789 012"
+                    value={pairingCode}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '').slice(0, 12);
+                      const formatted = val.match(/.{1,3}/g)?.join(' ') || val;
+                      setPairingCode(formatted);
+                    }}
+                    className="flex-1 min-w-0 bg-gray-100 dark:bg-white/5 text-gray-900 dark:text-white border-none rounded-2xl px-4 py-3.5 text-base font-black text-center placeholder:text-gray-400 focus:ring-2 focus:ring-primary/40 focus:bg-white dark:focus:bg-white/10 transition-all outline-none"
+                  />
+                  <button
+                    onClick={() => {
+                        const cleanCode = pairingCode.replace(/\s/g, '');
+                        if (cleanCode.length === 12) {
+                          onJoinRoom(cleanCode);
+                          setPairingCode('');
+                        }
+                    }}
+                    disabled={pairingCode.replace(/\s/g, '').length !== 12}
+                    className="bg-primary hover:bg-primary/90 text-white rounded-2xl px-8 min-h-[52px] h-[52px] font-black text-xs uppercase tracking-[0.2em] shadow-lg shadow-primary/20 hover:shadow-primary/40 disabled:opacity-30 active:scale-95 transition-all whitespace-nowrap border-none"
+                  >
+                    เชื่อมต่อ
+                  </button>
+                </div>
+              </div>
             )}
-          >
-            <div className="flex items-center gap-4">
-              <div className={clsx(
-                   "flex-shrink-0 w-13 h-13 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-all",
-                   castMode === 'youtube' ? "bg-green-500/20 text-green-500 shadow-[0_0_20px_rgba(34,197,94,0.4)]" : "bg-primary/5 text-primary"
-              )}>
-                <Youtube className="w-6 h-6" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-base font-black text-gray-900 dark:text-gray-100">YouTube Cast</h3>
-                <p className="text-xs text-gray-500 font-bold uppercase tracking-wide">ส่งตรงไป TV YouTube App</p>
-              </div>
-            </div>
-          </button>
+          </div>
 
           {/* 🛑 DISCONNECT BUTTON */}
           {isActive && onDisconnect && (
