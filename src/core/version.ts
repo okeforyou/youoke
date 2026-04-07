@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.0.2 (Optimization & Stability)",
+        date: "7 เม.ย. 2569",
+        changes: [
+            "PERFORMANCE: Optimized MainLayout store subscription to eliminate global redundant re-renders during playback",
+            "STABILITY: Implemented 'Echo Loop' filtering in CastContext to prevent message bouncing between TV and App",
+            "CLEANUP: Removed legacy queue references and standardized on playerQueue shallow selectors",
+            "FIX: Improved session recovery logic when mobile devices wake up from background/sleep"
+        ],
+        recent_updates: "Significant performance boost for mobile devices"
+    },
+    {
         version: "v5.0.1 (YouTube TV Playable)",
         date: "7 เม.ย. 2569",
         changes: [

@@ -395,18 +395,20 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
             // 3. Sync In: Cast Receiver -> Local Store
             if (typeof data.currentIndex === 'number') {
-              // Update ref to prevent echo
-              lastReceivedIndexRef.current = data.currentIndex;
-
-              // Update Store if different
               const currentState = usePlayerStore.getState();
-              if (data.currentIndex !== currentState.currentIndex) {
+              
+              // 🛡️ Echo Filter: Only update if the receiver state is truly DIFFERENT from our local state
+              // AND it's not the same value we just sent out recently
+              if (data.currentIndex !== currentState.currentIndex && data.currentIndex !== lastReceivedIndexRef.current) {
                 logger.log('🔄 [Sync In] Updating Store Index to:', data.currentIndex);
+                lastReceivedIndexRef.current = data.currentIndex;
                 currentState.setCurrentIndex(data.currentIndex);
+              } else {
+                console.log('⚡ [Sync In] Index matches local - skipping update to prevent echo');
               }
             }
 
-            addDebugLog('📥 RECEIVER_STATE received', {
+            addDebugLog('📥 RECEIVER_STATE processed', {
               queueLength: data.queue?.length || 0,
               currentIndex: data.currentIndex,
             });

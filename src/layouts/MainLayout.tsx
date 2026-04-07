@@ -163,7 +163,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const { isCastModalOpen, setCastModalOpen } = useUIStore();
     const { connect: connectGoogleCast, disconnect: disconnectGoogleCast, isAvailable: isCastAvailable } = useCast();
     const isMobile = useIsMobile();
-    const { queue } = usePlayerStore();
 
     // Stable callback to close QR modals on connection
     const handleRemoteConnected = useCallback(() => {
@@ -266,13 +265,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
     const handleCastSelectGoogle = () => {
         setCastModalOpen(false);
         localStorage.setItem('youoke-dual-active', 'false');
-        if (queue.length === 0) {
+        if (playerQueue.length === 0) {
             addToast('กรุณาเพิ่มเพลงลงคิวก่อน');
             return;
         }
 
         // Mock Queue for Cast SDK requirements
-        const castPlaylist = queue.map((item, index) => ({
+        const castPlaylist = playerQueue.map((item, index) => ({
             ...item,
             videoThumbnails: [{ quality: 'medium', url: item.thumbnail || '', width: 120, height: 90 }],
             authorId: '',
@@ -405,13 +404,13 @@ export default function MainLayout({ children }: MainLayoutProps) {
     useEffect(() => {
         // v4.9.50: Auto-open queue ONLY for Desktop to show Sidebar Player.
         // For Mobile, we keep it closed to prevent intrusive overlays.
-        if (prevQueueLen.current === 0 && queue.length > 0 && !isMobile) {
+        if (prevQueueLen.current === 0 && playerQueue.length > 0 && !isMobile) {
             useUIStore.getState().setQueueOpen(true);
-        } else if (queue.length === 0) {
+        } else if (playerQueue.length === 0) {
             useUIStore.getState().setQueueOpen(false);
         }
-        prevQueueLen.current = queue.length;
-    }, [queue.length, isMobile]);
+        prevQueueLen.current = playerQueue.length;
+    }, [playerQueue.length, isMobile]);
 
     // 🛡️ Expiry Alert Logic (Admin v2.1)
     const { showExpiryAlert, setExpiryAlert } = useAuthStore();
@@ -727,12 +726,12 @@ export default function MainLayout({ children }: MainLayoutProps) {
                                                 aria-label="คิวเพลง"
                                             >
                                                 <ListMusic className="w-5 h-5" />
-                                                {queue.length > 0 && (
+                                                {playerQueue.length > 0 && (
                                                     <div className={clsx(
                                                         "absolute -top-1.5 -right-1.5 text-white text-[9px] font-black h-4.5 min-w-[18px] px-1 rounded-full flex items-center justify-center border-2 border-white dark:border-zinc-900 shadow-sm transition-all duration-300 animate-bounce",
                                                         isQueueOpen ? "bg-red-500" : "bg-black"
                                                     )} style={{ animationDuration: '3s' }}>
-                                                        {queue.length}
+                                                        {playerQueue.length}
                                                     </div>
                                                 )}
                                             </button>
