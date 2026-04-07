@@ -357,31 +357,33 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
         <div className="col-span-full">
           {mode === 'default' && (
             <div className="animate-in fade-in duration-700 pb-20">
-              {!selectedCategoryId && (
-                <div className="animate-in fade-in duration-500">
-                  <div className="px-4 pt-6 pb-2">
-                    <h1 className="text-xl font-bold text-black dark:text-white">ศิลปินยอดฮิต</h1>
-                  </div>
+                  {!selectedCategoryId && (
+                    <>
+                      <div className="px-4 pt-6 pb-2">
+                        <h1 className="text-xl font-bold text-black dark:text-white">ศิลปินยอดฮิต</h1>
+                      </div>
 
-                  <div className="grid grid-cols-2 min-[500px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 py-3">
-                    {ARTIST_CATEGORIES.find(c => c.id === 'popular')?.artists.slice(0, 12).map((artist, i) => {
-                      const cleanName = artist.name.split(' (')[0].trim();
-                      const overrideUrl = artistOverrides[cleanName];
-                      
-                      return (
-                        <div key={artist.name + i} onClick={() => setSearchTerm(cleanSearchQuery(cleanName))} className="group cursor-pointer">
-                          <div className="relative aspect-square rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-sm group-hover:shadow-md transition-all duration-300">
-                            <Image 
-                               src={overrideUrl || `/api/spotify/artists/image?name=${encodeURIComponent(artist.name)}`}
-                               alt={artist.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" unoptimized
-                            />
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
-                          </div>
-                          <p className="mt-2 text-[11px] font-bold text-black dark:text-zinc-400 text-center truncate w-full group-hover:text-primary dark:group-hover:text-primary transition-colors">{cleanName}</p>
-                        </div>
-                      );
-                    })}
-                  </div>
+                      <div className="grid grid-cols-2 min-[500px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 py-3">
+                        {ARTIST_CATEGORIES.find(c => c.id === 'popular')?.artists.slice(0, 12).map((artist, i) => {
+                          const cleanName = artist.name.split(' (')[0].trim();
+                          const overrideUrl = artistOverrides[cleanName];
+                          
+                          return (
+                            <div key={artist.name + i} onClick={() => setSearchTerm(cleanSearchQuery(cleanName))} className="group cursor-pointer">
+                              <div className="relative aspect-square rounded-2xl overflow-hidden bg-white dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 shadow-sm group-hover:shadow-md transition-all duration-300">
+                                <Image 
+                                   src={overrideUrl || `/api/spotify/artists/image?name=${encodeURIComponent(artist.name)}`}
+                                   alt={artist.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" unoptimized
+                                />
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
+                              </div>
+                              <p className="mt-2 text-[11px] font-bold text-black dark:text-zinc-400 text-center truncate w-full group-hover:text-primary dark:group-hover:text-primary transition-colors">{cleanName}</p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </>
+                  )}
 
                   <div className="px-4 pt-6 pb-2">
                     <h1 className="text-xl font-bold text-black dark:text-white">หมวดหมู่ศิลปิน</h1>
@@ -436,7 +438,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                     })}
                   </div>
 
-                  {/* TIER 3: INTEGRATED RESULT LIST */}
+                  {/* TIER 3: INTEGRATED RESULT LIST (NOW OUTSIDE THE !selectedCategoryId BLOCK) */}
                   {selectedCategoryId && selectedCategory && (
                     <div ref={songlistRef} className="animate-in slide-in-from-bottom-8 duration-500 scroll-mt-20">
                       <div className="px-4 pt-4 pb-4 border-t border-gray-100 dark:border-zinc-800 flex items-center justify-between">
