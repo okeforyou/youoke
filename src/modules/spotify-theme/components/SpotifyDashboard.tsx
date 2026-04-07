@@ -474,9 +474,6 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
               )}
             </div>
           )}
-        </div>
-      )}
-
 
           {/* 3. GENRES / PLAYLISTS (MODE: GENRES) */}
           {mode === 'genres' && (
