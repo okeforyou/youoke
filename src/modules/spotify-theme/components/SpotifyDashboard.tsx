@@ -368,7 +368,6 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                 <div className="animate-in fade-in duration-500">
                   <div className="px-4 pt-6 pb-2">
                     <h1 className="text-xl font-bold text-black dark:text-white">ศิลปินยอดฮิต</h1>
-                    <p className="text-[12px] text-black dark:text-zinc-500 font-black">ชื่อที่คุณคุ้นเคยและชื่นชอบ</p>
                   </div>
 
                   <div className="grid grid-cols-2 min-[500px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 py-3">
@@ -385,7 +384,7 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                             />
                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
                           </div>
-                          <p className="mt-2 text-[9px] sm:text-[11px] font-bold text-black dark:text-zinc-400 text-center truncate w-full group-hover:text-primary dark:group-hover:text-primary transition-colors">{cleanName}</p>
+                          <p className="mt-2 text-[11px] font-bold text-black dark:text-zinc-400 text-center truncate w-full group-hover:text-primary dark:group-hover:text-primary transition-colors">{cleanName}</p>
                         </div>
                       );
                     })}
@@ -430,9 +429,8 @@ export default function SpotifyDashboard({ showTab = true, mode = 'default' }: {
                               <Icon className="w-16 h-16 sm:w-24 sm:h-24 text-white" />
                            </div>
                            
-                           <div className="absolute inset-0 p-2 sm:p-4 flex flex-col justify-end">
-                            <h3 className="text-[10px] sm:text-base font-bold text-white leading-[1.1] sm:leading-tight drop-shadow-sm line-clamp-2 mb-0.5">{cat.title}</h3>
-                            <p className="text-[8px] sm:text-[10px] text-white/90 font-medium line-clamp-1">{cat.description}</p>
+                           <div className="absolute inset-0 p-3 flex flex-col justify-end">
+                            <h3 className="text-[11px] sm:text-base font-black text-white leading-tight uppercase tracking-tighter drop-shadow-md line-clamp-2 text-left">{cat.title}</h3>
                            </div>
 
                            {isActive && (

@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "4.10.128 (Unified UI Architecture)",
+        date: "7 เม.ย. 2569",
+        changes: [
+            "Unified Category Cards: standardizing font size and layout across Artist, Chart, and Station modules",
+            "Clean Look: Removed descriptions from all category cards for a more minimalist and consistent aesthetic",
+            "Responsive Polish: Balanced text proportions (text-[12px] for small mobile) to prevent overlapping"
+        ],
+        recent_updates: ""
+    },
+    {
         version: "4.10.127 (Refined Typography)",
         date: "6 เม.ย. 2569",
         changes: [
