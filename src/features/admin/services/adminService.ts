@@ -462,6 +462,11 @@ export const AdminService = {
     approveUserWithTier: async (uid: string, tier: 'monthly' | 'yearly' | 'lifetime', adminUid: string) => {
         if (!db) throw new Error("Firebase not initialized");
 
+        // 🛡️ v4.10.140: Fetch current user to preserve Admin roles
+        const userRef = doc(db, "users", uid);
+        const currentSnap = await getDoc(userRef);
+        const currentRole = currentSnap.exists() ? currentSnap.data()?.role : 'user';
+
         const now = new Date();
         let expiresAt: Date | null = new Date();
 
@@ -477,6 +482,9 @@ export const AdminService = {
                 break;
         }
 
+        // 🛡️ v4.10.140: Rule - Never downgrade Admin/Owner to 'premium'
+        const finalRole = (currentRole === 'admin' || currentRole === 'owner') ? currentRole : 'premium';
+
         const updates = {
             membership: {
                 type: tier,
@@ -485,21 +493,20 @@ export const AdminService = {
                 expiresAt: expiresAt,
                 assignedBy: adminUid
             },
-            role: 'premium',
+            role: finalRole,
             isPremium: true,
             tier: tier,
             updatedAt: now
         };
 
         // 1. Update Firestore
-        const userRef = doc(db, "users", uid);
         await updateDoc(userRef, updates);
 
         // 2. Update Realtime Database
         if (realtimeDb) {
             const rtdbUserRef = ref(realtimeDb, `users/${uid}`);
             await update(rtdbUserRef, {
-                role: 'premium',
+                role: finalRole,
                 tier: tier,
                 subscription: {
                     plan: tier,
@@ -518,20 +525,22 @@ export const AdminService = {
     updateMembershipDates: async (uid: string, startedAt: Date | null, expiresAt: Date | null) => {
         if (!db) throw new Error("Firebase not initialized");
 
+        // 🛡️ v4.10.140: Fetch current user to preserve Admin roles
+        const userRef = doc(db, "users", uid);
+        const currentSnap = await getDoc(userRef);
+        const currentRole = currentSnap.exists() ? currentSnap.data()?.role : 'user';
+        const finalRole = (currentRole === 'admin' || currentRole === 'owner') ? currentRole : 'premium';
+
         const updates: any = {
             'membership.startedAt': startedAt,
             'membership.expiresAt': expiresAt,
             'membership.status': 'active', // Ensure status is active when dates are set
             'isPremium': true,             // Mark as premium
-            'role': 'premium',             // Ensure role matches
+            'role': finalRole,             // v4.10.140: Preserve Admin role
             'updatedAt': new Date()
         };
 
-        // If tier is not set, default to monthly or yearly based on range
-        // This ensures the profile page displays correctly
-        
         // 1. Update Firestore
-        const userRef = doc(db, "users", uid);
         await updateDoc(userRef, updates);
 
         // 2. Update Realtime Database
@@ -546,7 +555,7 @@ export const AdminService = {
             // Also update top-level role/tier in RTDB
             const rtdbMainRef = ref(realtimeDb, `users/${uid}`);
             await update(rtdbMainRef, {
-                role: 'premium',
+                role: finalRole, // v4.10.140: Preserve Admin role
                 updatedAt: rtdbServerTimestamp()
             });
         }

@@ -296,23 +296,30 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                     const daysRemaining = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
                                     if (isExpired && membership.status !== 'expired') {
-                                        console.warn('⚠️ Membership Expired! Downgrading to Free...');
-                                        membership = {
-                                            ...EXPIRED_MEMBERSHIP
-                                        };
-                                        // Update Firestore and RTDB immediately
-                                        const { updateDoc } = await import('firebase/firestore');
-                                        updateDoc(userRef, { membership }).catch(e => console.error('Firestore expiry sync failed', e));
+                                        // 👑 v4.9.140: NEVER Downgrade Admins/Owners
+                                        if (userData.role === 'admin' || userData.role === 'owner' || firebaseUser.email === 'boonyanone@gmail.com' || firebaseUser.email === 'youoke.okeforyou@gmail.com') {
+                                            console.log('🛡️ [AuthStore] Admin detected. Skipping expiry downgrade.');
+                                            membership.status = 'active'; // Force active
+                                            membership.type = 'lifetime'; // Force lifetime view
+                                        } else {
+                                            console.warn('⚠️ Membership Expired! Downgrading to Free...');
+                                            membership = {
+                                                ...EXPIRED_MEMBERSHIP
+                                            };
+                                            // Update Firestore and RTDB immediately
+                                            const { updateDoc } = await import('firebase/firestore');
+                                            updateDoc(userRef, { membership }).catch(e => console.error('Firestore expiry sync failed', e));
 
-                                        if (realtimeDb) {
-                                            rtdbUpdate(ref(realtimeDb, `users/${firebaseUser.uid}/subscription`), {
-                                                status: 'expired',
-                                                plan: 'free'
-                                            }).catch(e => console.error('RTDB expiry sync failed', e));
+                                            if (realtimeDb) {
+                                                rtdbUpdate(ref(realtimeDb, `users/${firebaseUser.uid}/subscription`), {
+                                                    status: 'expired',
+                                                    plan: 'free'
+                                                }).catch(e => console.error('RTDB expiry sync failed', e));
+                                            }
+
+                                            // Show Alert for recently expired users
+                                            set({ showExpiryAlert: true });
                                         }
-
-                                        // Show Alert for recently expired users
-                                        set({ showExpiryAlert: true });
                                     } else if (!isExpired && daysRemaining <= 3 && daysRemaining >= 0) {
                                         // 🔔 Warn user if expiring soon (last 3 days)
                                         set({ showExpiryAlert: true });
@@ -326,18 +333,29 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                     };
                                 }
 
-                                // 👑 [HARDENED ROLE SECURITY] - v4.9.90
+                                // 👑 [HARDENED ROLE SECURITY] - v4.10.140
                                 // Always prioritize 'admin' or 'owner' roles if present in database OR email
                                 let role = userData.role || 'user';
                                 let isAdmin = false;
 
-                                if (role === 'admin' || role === 'owner' || firebaseUser.email === 'boonyanone@gmail.com') {
-                                    if (firebaseUser.email === 'boonyanone@gmail.com') {
+                                const isOwnerEmail = firebaseUser.email === 'boonyanone@gmail.com' || firebaseUser.email === 'youoke.okeforyou@gmail.com';
+
+                                if (role === 'admin' || role === 'owner' || isOwnerEmail) {
+                                    if (isOwnerEmail) {
                                         role = 'owner';
-                                    } else {
+                                    } else if (role !== 'owner') {
                                         role = 'admin';
                                     }
                                     isAdmin = true;
+
+                                    // 🛡️ v4.10.140: Force Lifetime Membership for Admins in-memory to prevent "Day Pass" glitch
+                                    membership = {
+                                        ...membership,
+                                        type: 'lifetime',
+                                        status: 'active',
+                                        expiresAt: null
+                                    };
+
                                     console.log(`👑 [AuthStore] ${role.toUpperCase()} Identified: Shielded Session Active`);
                                 }
 

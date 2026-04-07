@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "4.10.140 (Security & Role Hardening)",
+        date: "7 เม.ย. 2569",
+        changes: [
+            "Admin/Owner Shielding: Protected youoke.okeforyou@gmail.com and existing admins from role regressions during data sync",
+            "In-Memory Membership Enforcement: Forced 'LIFETIME' membership display and status for all active admins to prevent UI inconsistency",
+            "Defensive Service Architecture: Updated AdminService to verify and preserve existing roles when modifying memberships or payments",
+            "Expiry Logic Protection: Shielded admin accounts from the automatic membership expiry downgrade system"
+        ],
+        recent_updates: ""
+    },
+    {
         version: "4.10.139 (Admin Insights)",
         date: "7 เม.ย. 2569",
         changes: [
