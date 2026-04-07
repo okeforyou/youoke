@@ -187,13 +187,22 @@ const AdminDashboard: React.FC = () => {
           </div>
           <div className="flex flex-wrap items-center justify-end gap-3">
              <a 
+               href="https://analytics.google.com/analytics/web/" 
+               target="_blank" 
+               rel="noopener noreferrer"
+               className="flex items-center gap-2 text-sm text-slate-900 bg-white hover:bg-slate-50 px-4 py-2 rounded-xl border border-slate-200 font-bold transition-all active:scale-95 shadow-lg group"
+             >
+               <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+               สถิติรวม (GA4)
+             </a>
+             <a 
                href="https://vercel.com/okeforyous-projects/youoke/analytics" 
                target="_blank" 
                rel="noopener noreferrer"
                className="flex items-center gap-2 text-sm text-white bg-slate-900 hover:bg-black px-4 py-2 rounded-xl border border-white/10 font-bold transition-all active:scale-95 shadow-lg group"
              >
-               <Activity className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
-               <span>ดูสถิติคนเข้าชม (Live)</span>
+               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+               Vercel Analytics
              </a>
              <div className="flex items-center gap-2 text-sm text-gray-500 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100 font-bold">
                <Clock className="w-4 h-4" />

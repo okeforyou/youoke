@@ -565,18 +565,17 @@ export const useAuthStore = create<UserState & AuthActions>()(
 
             signInWithLine: (state?: string) => {
                 const clientId = process.env.NEXT_PUBLIC_LINE_LOGIN_CHANNEL_ID;
-                // CRITICAL: This URL must MATCH EXACTLY with LINE Developers Console
-                // 1. https://play.okeforyou.com/login/
-                // 2. http://localhost:3000/login/ (For testing)
-
-                let redirectUri = 'https://play.okeforyou.com/login/';
-
-                if (typeof window !== 'undefined') {
-                    redirectUri = `${window.location.origin}/login/`;
-                }
-
-                console.log('🔗 LINE Redirect URI:', redirectUri);
                 const queryState = state || 'auth_login'; 
+
+                if (typeof window === 'undefined') return;
+
+                const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+                // 🛡️ v4.10.142: Ensure redirect matches the current environment
+                const redirectUri = isDev 
+                    ? 'http://localhost:3000/login/' 
+                    : `${window.location.origin}/login/`;
+                
+                console.log('🔗 [AuthStore] LINE Redirect URI:', redirectUri);
 
                 if (!clientId) {
                     console.error("LINE_LOGIN_CHANNEL_ID not set");

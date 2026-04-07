@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "4.10.142 (Global Analytics & URL Fix)",
+        date: "7 เม.ย. 2569",
+        changes: [
+            "GA4 Integration: Added Measurement ID (G-LWHGETR85E) to track traffic across both HostAtom and Vercel",
+            "Zero Hardcode Policy: Refactored LINE Login and Auth logic to use window.location.origin for seamless multi-domain support",
+            "Multi-Stats Dashboard: Added quick-access buttons for both Google Analytics (Total) and Vercel Analytics (Live Staging)",
+            "Environment Hardening: Corrected duplicate variable declarations and fixed redundant logic in Auth Store"
+        ],
+        recent_updates: ""
+    },
+    {
         version: "4.10.141 (Dashboard Hotfix)",
         date: "7 เม.ย. 2569",
         changes: [
