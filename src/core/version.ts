@@ -1,6 +1,17 @@
 export const CHANGELOGS = [
     {
-        version: "5.0.0 (Global Sync & Admin Shield)",
+        version: "v5.0.1 (YouTube TV Playable)",
+        date: "7 เม.ย. 2569",
+        changes: [
+            "FEATURE: YouTube Cast One-shot Playlist (Watch Videos Pool) for a fallback big screen experience",
+            "R&D: Started YouTube Lounge Pairing Service (Phase 1-2) for native Smart TV app control",
+            "FIX: layoutMode type overlap lint errors in MainLayout for stable deployment",
+            "MAJOR: Transitioned to Version 5.0.1 - Optimization for YouTube Smart TV fallback playback"
+        ],
+        recent_updates: "Added playlist support to native YouTube cast button"
+    },
+    {
+        version: "v5.0.0 (Global Sync & Admin Shield)",
         date: "7 เม.ย. 2569",
         changes: [
             "MAJOR: Transitioned to Version 5.0 - Ready for global parallel deployment (Vercel & HostAtom)",

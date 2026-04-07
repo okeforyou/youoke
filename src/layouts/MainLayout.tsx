@@ -229,7 +229,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     addToast('ขยายจอแล้ว (กด ⛶ ที่หน้าจอหลักเพื่อซ่อนแถบเบราว์เซอร์)');
                 });
             }
-        } else if (layoutMode === 'split') {
+        } else {
             if (document.fullscreenElement) {
                 document.exitFullscreen().catch(() => { });
             }
@@ -598,7 +598,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
                                     // Desktop Logic
                                     "lg:fixed lg:top-0 lg:w-[420px] lg:h-[236px] bg-black origin-top-right transition-all duration-500",
-                                    (layoutMode !== 'fullscreen') ? "lg:right-0" : "lg:-right-[420px]"
+                                    "lg:right-0"
                                 ]
                         )}>
                         <div className={clsx(
@@ -963,6 +963,23 @@ export default function MainLayout({ children }: MainLayoutProps) {
                 onSelectYouTube={() => {
                     setCastModalOpen(false);
                     setCastMode('youtube');
+                    
+                    // Fallback Mode: Open as a one-shot playlist
+                    if (playerQueue.length > 0) {
+                        const ids = playerQueue
+                            .filter(v => v.sourceType === 'youtube')
+                            .map(v => v.videoId || v.id)
+                            .filter(Boolean)
+                            .join(',');
+                        
+                        if (ids) {
+                            // Note: watch_videos?video_ids handles a list of ID strings
+                            window.open(`https://www.youtube.com/watch_videos?video_ids=${ids}`, '_blank');
+                            addToast('📺 ส่งเพลย์ลิสต์เพลงเข้า YouTube แล้ว (เล่นครั้งเดียวจบ)');
+                            return;
+                        }
+                    }
+
                     // Open YouTube TV (Leanback) for a specialized big screen experience
                     window.open('https://www.youtube.com/tv', '_blank');
                     addToast('กำลังส่งไปยัง YouTube TV App');
