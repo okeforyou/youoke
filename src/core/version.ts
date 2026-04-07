@@ -1,5 +1,28 @@
 export const CHANGELOGS = [
     {
+        version: "5.0.0 (Global Sync & Admin Shield)",
+        date: "7 เม.ย. 2569",
+        changes: [
+            "MAJOR: Transitioned to Version 5.0 - Ready for global parallel deployment (Vercel & HostAtom)",
+            "Admin Shielding: Implemented owner-level role protection and forced lifetime membership for admins",
+            "Global Analytics: Integrated direct GA4 property tracking with play.okeforyou.com data stream",
+            "Universal URLs: Replaced all hardcoded endpoints with dynamic location-based origin detection",
+            "Infrastructure Hardening: Corrected role overwrite bugs in membership service and improved sync reliability"
+        ],
+        recent_updates: ""
+    },
+    {
+        version: "4.10.143 (Real GA4 Setup)",
+        date: "7 เม.ย. 2569",
+        changes: [
+            "Real GA4 Integration: Created and connected Measurement ID (G-W24PCG0903) specifically for the YouOke project",
+            "Direct Analytics Linking: Updated the Admin Dashboard to link directly to the YouOke Property reports (p427420173)",
+            "Data Stream Setup: Configured a new web stream for play.okeforyou.com in Google Analytics Console",
+            "Environment Sync: Updated production variables to ensure tracking is active immediately upon deployment"
+        ],
+        recent_updates: ""
+    },
+    {
         version: "4.10.142 (Global Analytics & URL Fix)",
         date: "7 เม.ย. 2569",
         changes: [

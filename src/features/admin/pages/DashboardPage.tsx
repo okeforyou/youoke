@@ -187,7 +187,7 @@ const AdminDashboard: React.FC = () => {
           </div>
           <div className="flex flex-wrap items-center justify-end gap-3">
              <a 
-               href="https://analytics.google.com/analytics/web/" 
+               href="https://analytics.google.com/analytics/web/#/p427420173/reports/intelligenthome" 
                target="_blank" 
                rel="noopener noreferrer"
                className="flex items-center gap-2 text-sm text-slate-900 bg-white hover:bg-slate-50 px-4 py-2 rounded-xl border border-slate-200 font-bold transition-all active:scale-95 shadow-lg group"
