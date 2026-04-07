@@ -1,5 +1,14 @@
 export const CHANGELOGS = [
     {
+        version: "4.10.141 (Dashboard Hotfix)",
+        date: "7 เม.ย. 2569",
+        changes: [
+            "Corrected Analytics URL: Updated the Vercel Analytics quick-link to the correct project namespace",
+            "Final Role Verification: Confirmed all admin roles are now protected under the new shielding logic"
+        ],
+        recent_updates: ""
+    },
+    {
         version: "4.10.140 (Security & Role Hardening)",
         date: "7 เม.ย. 2569",
         changes: [

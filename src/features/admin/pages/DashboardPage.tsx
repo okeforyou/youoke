@@ -187,7 +187,7 @@ const AdminDashboard: React.FC = () => {
           </div>
           <div className="flex flex-wrap items-center justify-end gap-3">
              <a 
-               href="https://vercel.com/okeforyou/youoke/analytics" 
+               href="https://vercel.com/okeforyous-projects/youoke/analytics" 
                target="_blank" 
                rel="noopener noreferrer"
                className="flex items-center gap-2 text-sm text-white bg-slate-900 hover:bg-black px-4 py-2 rounded-xl border border-white/10 font-bold transition-all active:scale-95 shadow-lg group"
