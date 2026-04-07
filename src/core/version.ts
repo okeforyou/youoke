@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "4.10.129 (Unified Category UI Fix)",
+        date: "7 เม.ย. 2569",
+        changes: [
+            "Card Consistency Fix: ListHitsGrid (Charts) now strictly matches SpotifyDashboard (Artist/Station) card style",
+            "Typography Unified: All category headings now use text-[11px] on mobile with black/uppercase styling",
+            "Clean Architecture: Removed all lingering description tags inside category cards as per user request"
+        ],
+        recent_updates: ""
+    },
+    {
         version: "4.10.128 (Unified UI Architecture)",
         date: "7 เม.ย. 2569",
         changes: [

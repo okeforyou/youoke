@@ -12,7 +12,6 @@ const CHART_CATEGORIES = [
     id: "top100",
     jooxId: 42,
     title: "ฮิตติดชาร์ต อันดับ 1",
-    description: "รวมเพลงฮิตที่สุดในตารางตอนนี้",
     gradient: "from-amber-500 to-orange-600",
     Icon: Trophy
   },
@@ -20,7 +19,6 @@ const CHART_CATEGORIES = [
     id: "new_releases",
     jooxId: 128,
     title: "เพลงใหม่มาแรง",
-    description: "อัปเดตเพลงใหม่ที่กำลังเป็นกระแส",
     gradient: "from-emerald-500 to-teal-700",
     Icon: Sparkles
   },
@@ -28,7 +26,6 @@ const CHART_CATEGORIES = [
     id: "trending",
     jooxId: 133,
     title: "อัปเดตเพลงฮิต",
-    description: "เพลงฮิตติดหูที่ใครก็ฟังกัน",
     gradient: "from-rose-500 to-red-700",
     Icon: Flame
   },
@@ -36,7 +33,6 @@ const CHART_CATEGORIES = [
     id: "all_time_hits",
     jooxId: 57,
     title: "ฮิตตลอดกาล",
-    description: "รวบรวมเพลงฮิตอมตะยอดนิยม",
     gradient: "from-violet-500 to-purple-700",
     Icon: Star
   }
@@ -125,13 +121,10 @@ export default function ListHitsGrid({ onClick: onPlay }: { onClick?: (hit: Sing
                   <Icon className="w-20 h-20 sm:w-24 sm:h-24 text-white" />
                 </div>
                 
-                <div className="absolute inset-0 p-3 sm:p-4 flex flex-col justify-end">
-                  <h3 className="text-sm min-[480px]:text-sm md:text-base font-bold text-white leading-tight drop-shadow-sm line-clamp-2 mb-0.5 sm:mb-1 uppercase tracking-tight">
+                <div className="absolute inset-0 p-3 flex flex-col justify-end">
+                  <h3 className="text-[11px] sm:text-base font-black text-white leading-tight uppercase tracking-tighter drop-shadow-md line-clamp-2 text-left">
                     {cat.title}
                   </h3>
-                  <p className="text-[10px] sm:text-[10px] text-white/90 font-medium line-clamp-1 opacity-90">
-                    {cat.description}
-                  </p>
                 </div>
                
                {isActive && (
@@ -153,7 +146,7 @@ export default function ListHitsGrid({ onClick: onPlay }: { onClick?: (hit: Sing
                     {activeChart?.title}
                     <span className="text-xs bg-gray-100 dark:bg-zinc-800 text-gray-500 dark:text-zinc-400 px-2 py-0.5 rounded-full font-medium">#{activeChart?.jooxId}</span>
                  </h2>
-                  <p className="text-[11px] text-black dark:text-zinc-500 font-black">{activeChart?.description} ({chartItems.length} รายการ)</p>
+                  <p className="text-[11px] text-black dark:text-zinc-500 font-black">รายการเพลงที่คัดสรรมาเพื่อความสุขของคุณ ({chartItems.length} รายการ)</p>
               </div>
               <button 
                 onClick={() => setSelectedChart(null)}
