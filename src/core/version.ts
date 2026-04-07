@@ -1,5 +1,25 @@
 export const CHANGELOGS = [
     {
+        version: "4.10.135 (Smooth Integrity)",
+        date: "7 เม.ย. 2569",
+        changes: [
+            "Fixed Bouncing Queue: Removed hover transformation and shadow from queue cards to ensure 100% stable drag-and-drop behavior",
+            "Unified Version Hub: Synchronized version labels across all project layers (package.json and changelog) to v4.10.135",
+            "Pure Flat Drag: Locked interaction state to simple opacity changes only, maintaining a calm and predictable UI"
+        ],
+        recent_updates: ""
+    },
+    {
+        version: "4.10.134 (Absolute UX Simplicity)",
+        date: "7 เม.ย. 2569",
+        changes: [
+            "Simplified Queue Drag Interface: Removed all scaling, shadow effects, and decorative rings to match Pure Flat Design standards",
+            "Fixed Theme Inconsistency: Removed hardcoded background colors during drag, using only 0.5 opacity for interaction feedback",
+            "System Information Integrity: Restored automated version synchronization by using CHANGELOGS as the single source of truth for UI labels"
+        ],
+        recent_updates: ""
+    },
+    {
         version: "4.10.132 (Ultimate Desktop Uniformity)",
         date: "7 เม.ย. 2569",
         changes: [

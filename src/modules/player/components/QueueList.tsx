@@ -40,8 +40,7 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
 
     const style = {
         transform: CSS.Transform.toString(transform),
-        opacity: isDragging ? 0.9 : 1,
-        zIndex: isDragging ? 50 : 'auto',
+        opacity: isDragging ? 0.5 : 1,
     };
 
     return (
@@ -49,21 +48,21 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
             ref={setNodeRef}
             style={style}
             className={clsx(
-                "group flex items-center gap-2 py-2 px-3 transition-all duration-200",
-                isDragging ? "scale-[1.03] shadow-2xl bg-white/10 dark:bg-zinc-800/50 backdrop-blur-sm rounded-2xl ring-2 ring-primary/20" : "bg-transparent"
+                "group flex items-center gap-2 py-2 px-3 transition-colors",
+                isDragging ? "opacity-30 bg-transparent" : "bg-transparent"
             )}
         >
             {/* Drag Handle - Outside the card */}
             <div
                 {...attributes}
                 {...listeners}
-                className="cursor-grab active:cursor-grabbing text-gray-400 dark:text-zinc-600 hover:text-primary transition-colors flex-shrink-0 touch-none px-2"
+                className="cursor-grab active:cursor-grabbing text-gray-400 dark:text-zinc-600 transition-colors flex-shrink-0 touch-none px-2"
             >
-                <Menu className="w-5 h-5 opacity-40 group-hover:opacity-100" />
+                <Menu className="w-5 h-5 opacity-40" />
             </div>
 
-            {/* Card Content - V1 Style with red border on hover (No Gray, No Shadow) */}
-            <div className="flex-1 flex items-center gap-4 rounded-xl border border-gray-100 dark:border-zinc-700 transition-all overflow-hidden hover:border-primary/50 bg-white dark:bg-zinc-800 shadow-sm hover:shadow-md hover:-translate-y-0.5">
+            {/* Card Content - Absolute Simplicity (No hover jump or shadows) */}
+            <div className="flex-1 flex items-center gap-4 rounded-xl border border-gray-100 dark:border-zinc-700 overflow-hidden bg-white dark:bg-zinc-800">
                 {/* Thumbnail - Flush with the card's left side (Enlarged) */}
                 <div
                     className="relative w-36 h-20 flex-shrink-0 bg-black cursor-pointer group/thumb"
