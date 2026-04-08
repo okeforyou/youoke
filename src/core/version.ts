@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.0.7 (Remote UX Fix)",
+        date: "8 เม.ย. 2569",
+        changes: [
+            "UI: Replaced browser native confirm() with custom Premium Modal for better UX",
+            "FIX: Improved Search Toggle visibility in Dark Mode (fixed invisible black text)",
+            "STABILITY: Hardened RemoteControlApp to prevent TypeError: split on state transitions",
+            "UX: Added auto-focus and better contrast for search inputs in both themes"
+        ],
+        recent_updates: "Premium Custom Modals and Dark Mode UI visibility fixes"
+    },
+    {
         version: "v5.0.6 (Remote Stability)",
         date: "8 เม.ย. 2569",
         changes: [

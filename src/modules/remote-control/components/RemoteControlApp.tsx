@@ -66,6 +66,21 @@ export default function RemoteControlApp() {
     const { addToast } = useToast() || { addToast: () => { } };
     const [guestName, setGuestName] = useState('');
     const [showNameModal, setShowNameModal] = useState(false);
+    
+    // v5.0.7: Custom Confirmation Modal State
+    const [confirmModal, setConfirmModal] = useState<{
+        open: boolean;
+        title: string;
+        message: string;
+        onConfirm: () => void;
+        confirmText?: string;
+        type?: 'danger' | 'warning';
+    }>({
+        open: false,
+        title: '',
+        message: '',
+        onConfirm: () => { }
+    });
 
     const [loading, setLoading] = useState(true);
     const [hasMounted, setHasMounted] = useState(false);
@@ -428,9 +443,16 @@ export default function RemoteControlApp() {
     }, [roomCode, guestName, currentUser]);
 
     const handleLeaveRoom = () => {
-        if (confirm('คุณต้องการยกเลิกการเชื่อมต่อและออกจากห้องนี้ใช่หรือไม่?')) {
-            router.push('/remote'); // Go back to entry screen
-        }
+        setConfirmModal({
+            open: true,
+            title: 'ออกจากห้อง?',
+            message: 'คุณต้องการยกเลิกการเชื่อมต่อและออกจากห้องนี้ใช่หรือไม่?',
+            confirmText: 'ตกลง',
+            type: 'danger',
+            onConfirm: () => {
+                router.push('/remote');
+            }
+        });
     };
 
     // Command Sender (Refactored to use CastService)
@@ -730,17 +752,19 @@ export default function RemoteControlApp() {
                                 )}
                             </div>
 
-                            <div className={`relative flex p-1 rounded-full gap-1 shrink-0 ${theme === 'dark' ? 'bg-black' : 'bg-gray-100'}`}>
+                            <div className={`relative flex p-1 rounded-full gap-1 shrink-0 ${theme === 'dark' ? 'bg-black/50' : 'bg-gray-100'}`}>
                                 <div className={`absolute inset-1 w-[46px] h-[46px] transition-all duration-300 ease-out ${searchType === 'karaoke' ? 'translate-x-[50px]' : 'translate-x-0'} ${theme === 'dark' ? 'bg-primary/20 border border-primary/40' : 'bg-red-50 border border-red-100 shadow-sm'}`} style={{ borderRadius: '9999px' }} />
                                 <button
                                     onClick={() => handleTypeToggle('video')}
-                                    className={`relative z-10 w-[46px] h-[46px] rounded-full flex items-center justify-center transition-colors duration-300 ${searchType === 'video' ? 'text-primary' : 'text-black hover:text-black/80'}`}
+                                    className={`relative z-10 w-[46px] h-[46px] rounded-full flex items-center justify-center transition-colors duration-300 ${searchType === 'video' ? 'text-primary' : (theme === 'dark' ? 'text-gray-500 hover:text-white' : 'text-black hover:text-black/80')}`}
+                                    title="ค้นหาทั่วไป"
                                 >
                                     <Music size={20} strokeWidth={3} />
                                 </button>
                                 <button
                                     onClick={() => handleTypeToggle('karaoke')}
-                                    className={`relative z-10 w-[46px] h-[46px] rounded-full flex items-center justify-center transition-colors duration-300 ${searchType === 'karaoke' ? 'text-primary' : 'text-black hover:text-black/80'}`}
+                                    className={`relative z-10 w-[46px] h-[46px] rounded-full flex items-center justify-center transition-colors duration-300 ${searchType === 'karaoke' ? 'text-primary' : (theme === 'dark' ? 'text-gray-500 hover:text-white' : 'text-black hover:text-black/80')}`}
+                                    title="ค้นหาคาราโอเกะ"
                                 >
                                     <Mic2 size={20} strokeWidth={3} />
                                 </button>
@@ -806,9 +830,16 @@ export default function RemoteControlApp() {
                                                 index={idx}
                                                 uniqueId={uniqueId}
                                                 onRemove={(id) => {
-                                                    if (confirm('ลบเพลงนี้ออกจากคิว?')) {
-                                                        sendCommand('REMOVE_AT', { uuid: id });
-                                                    }
+                                                    setConfirmModal({
+                                                        open: true,
+                                                        title: 'ลบเพลง?',
+                                                        message: 'ต้องการลบเพลงนี้ออกจากคิวใช่หรือไม่?',
+                                                        confirmText: 'ลบออก',
+                                                        type: 'danger',
+                                                        onConfirm: () => {
+                                                            sendCommand('REMOVE_AT', { uuid: id });
+                                                        }
+                                                    });
                                                 }}
                                                 theme={theme}
                                             />
@@ -960,6 +991,38 @@ export default function RemoteControlApp() {
                                 <p className="text-[11px] text-primary/80 leading-relaxed font-bold uppercase tracking-wider">
                                     สิทธิพิเศษสมาชิก: ไม่มีโฆษณา, คิวเพลงไม่จำกัด, และรองรับการควบคุมจากทุกที่
                                 </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Confirmation Modal - v5.0.7 */}
+                {confirmModal.open && (
+                    <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 animate-in fade-in duration-200">
+                        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setConfirmModal(prev => ({ ...prev, open: false }))} />
+                        <div className={`relative w-full max-w-xs rounded-[2rem] p-8 shadow-2xl scale-in-center transition-colors ${theme === 'dark' ? 'bg-stone-900 border border-white/10' : 'bg-white'}`}>
+                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 ${confirmModal.type === 'danger' ? 'bg-red-500/10 text-red-500' : 'bg-primary/10 text-primary'}`}>
+                                <AlertCircle size={32} />
+                            </div>
+                            <h3 className={`text-xl font-black mb-2 tracking-tight ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{confirmModal.title}</h3>
+                            <p className={`text-sm font-bold opacity-60 mb-8 leading-relaxed ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{confirmModal.message}</p>
+                            
+                            <div className="flex gap-3">
+                                <button 
+                                    onClick={() => setConfirmModal(prev => ({ ...prev, open: false }))}
+                                    className={`flex-1 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${theme === 'dark' ? 'bg-white/5 text-gray-400 hover:text-white' : 'bg-gray-100 text-gray-500 hover:text-black'}`}
+                                >
+                                    ยกเลิก
+                                </button>
+                                <button 
+                                    onClick={() => {
+                                        confirmModal.onConfirm();
+                                        setConfirmModal(prev => ({ ...prev, open: false }));
+                                    }}
+                                    className={`flex-1 py-4 rounded-2xl font-black text-xs uppercase tracking-widest text-white shadow-lg transition-all active:scale-95 ${confirmModal.type === 'danger' ? 'bg-red-500 shadow-red-500/20' : 'bg-primary shadow-primary/20'}`}
+                                >
+                                    {confirmModal.confirmText || 'ยืนยัน'}
+                                </button>
                             </div>
                         </div>
                     </div>
