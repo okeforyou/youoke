@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { X, CheckCircle, Crown, PartyPopper, Sparkles } from 'lucide-react';
+import { PartyPopper, Crown } from 'lucide-react';
 import { useUIStore } from '../../../stores/useUIStore';
 import { useSystemConfig } from '../../../hooks/useSystemConfig';
 import { useAuthStore } from '@/modules/auth/useAuthStore';
 import { useRouter } from 'next/router';
-import { db } from '../../../firebase';
-import { doc, getDoc } from 'firebase/firestore';
 
 export const LimitReachedModal = () => {
     const { isLimitModalOpen, setLimitModalOpen } = useUIStore();
@@ -13,42 +11,16 @@ export const LimitReachedModal = () => {
     const { user } = useAuthStore();
     const router = useRouter();
 
-    // 🏷️ Role Resolution Logic
-    let userRole = 'guest';
-    if (user) userRole = user.membership?.type || 'free';
-
-    const [maxSongs, setMaxSongs] = useState(0);
-
-    // Fetch Real Limits from Firestore
-    useEffect(() => {
-        const fetchLimits = async () => {
-            if (!db || !isLimitModalOpen) return;
-            try {
-                // Fetch current user role limits
-                const planSnap = await getDoc(doc(db, 'plans', userRole));
-                if (planSnap.exists()) {
-                    setMaxSongs(planSnap.data().maxDailySongs || 0);
-                } else {
-                    const limits = config?.membership?.[userRole as keyof typeof config.membership];
-                    setMaxSongs(limits?.max_daily_songs || 0);
-                }
-            } catch (err) {
-                console.error("Error fetching limits for modal:", err);
-            }
-        };
-        fetchLimits();
-    }, [userRole, db, isLimitModalOpen, config]);
-
+    const upsell = config?.upsell;
     const isLoggedIn = !!user;
     const isExpired = user?.membership?.status === 'expired';
 
-    // UI Texts based on strategy
     const title = isLoggedIn && isExpired 
         ? "สิทธิสมาชิกหมดอายุแล้ว!" 
-        : "หมดโควต้าฟังเพลงวันนี้แล้ว";
+        : (upsell?.title || "โควต้าการลองใช้งานสิ้นสุดแล้ว");
 
     const buttonText = !isLoggedIn 
-        ? "เชื่อมต่อบัญชี YouTube (Gmail)" 
+        ? (upsell?.button_text || "เชื่อมต่อผ่าน Gmail เพื่อรับสิทธิพิเศษ") 
         : "อัปเกรดแผนการใช้งาน";
 
     const onClose = () => setLimitModalOpen(false);
@@ -73,12 +45,7 @@ export const LimitReachedModal = () => {
             />
 
             {/* Modal Content */}
-            <div className="relative bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 duration-300 overflow-hidden border border-white/20">
-
-                {/* Decorative Background Glows */}
-                <div className="absolute top-0 right-0 -mt-20 -mr-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
-                <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-
+            <div className="relative bg-white dark:bg-zinc-950 rounded-[2.5rem] w-full max-w-sm p-8 animate-in zoom-in-95 duration-300 overflow-hidden border border-gray-100 dark:border-zinc-800 shadow-none">
                 <div className="relative z-10 text-center">
                     {/* Icon Header */}
                     <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-50 mb-6 shrink-0 ring-4 ring-red-50">
@@ -87,56 +54,41 @@ export const LimitReachedModal = () => {
                         </div>
                     </div>
 
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 leading-tight">
                         {title}
                     </h2>
 
-                    <div className="text-gray-500 mb-8 px-4 leading-relaxed text-sm">
+                    <div className="text-gray-500 dark:text-zinc-400 mb-8 px-2 font-medium leading-relaxed text-sm whitespace-pre-wrap">
                         {!isLoggedIn ? (
-                            <>
-                                กรุณาใช้บัญชี <span className="text-primary font-bold">YouTube (Gmail)</span> ของคุณ
-                                <br />
-                                เพื่อรับสิทธิการเข้าถึงแบบส่วนบุคคลผ่าน YouOke
-                                <br />
-                                <span className="text-red-600 font-bold">
-                                  และเล่นผ่านบัญชีของคุณแบบไร้โฆษณาคั่น 🔐✨
-                                </span>
-                            </>
+                            upsell?.subtitle || (
+                                <>
+                                    กรุณา <span className="text-zinc-900 dark:text-white font-black">เชื่อมต่อผ่าน Gmail</span> เพื่อใช้งานผ่านสิทธิส่วนบุคคลของคุณ
+                                    <br />
+                                    <span className="text-[11px] opacity-80">(YouOke เป็นเพียงระบบจัดคิวเพลงผ่านบัญชีของสมาชิกเท่านั้น)</span>
+                                    <br />
+                                    เพื่อเล่นเพลงโปรดของคุณได้ต่อเนื่องและไม่มีโฆษณาคั่น
+                                </>
+                            )
                         ) : (
-                            <>
-                                สิทธิการใช้งานแบบพรีเมียมส่วนบุคคลของคุณสิ้นสุดแล้ว
-                                <br />
-                                กรุณาเลือกแพ็กเกจที่คุณต้องการ
-                                <br />
-                                <span className="text-primary font-semibold">เพื่อขยายเวลาความสุขกับ YouOke 🎵⏳</span>
-                            </>
+                            "แพ็กเกจพรีเมียมส่วนตัวของคุณสิ้นสุดแล้ว เลือกแผนการใช้งานใหม่เพื่อสนุกต่อได้ทันที"
                         )}
                     </div>
 
                     {/* Premium Offer Box (Shell Strategy) */}
-                    <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-5 mb-8 text-left relative overflow-hidden group border border-gray-700 shadow-xl">
-                        <div className="absolute top-0 right-0 p-2 opacity-10">
-                            <Crown className="w-24 h-24 rotate-12 -mt-4 -mr-4" />
-                        </div>
-
+                    <div className="bg-zinc-50 dark:bg-zinc-900 rounded-2xl p-5 mb-8 text-left relative overflow-hidden border border-zinc-100 dark:border-zinc-800">
                         <div className="relative z-10">
                             <div className="flex items-center gap-2 mb-2">
-                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-yellow-400 text-yellow-900 uppercase tracking-wider">
-                                   YouTube Shell Access
-                                </span>
-                                <span className="text-xs text-yellow-400 font-medium flex items-center gap-1 leading-none">
-                                    <SparkleIcon /> เชื่อมบัญชีรับสิทธิเพิ่ม
+                                <span className="px-2 py-0.5 rounded text-[10px] font-black bg-primary text-white uppercase tracking-wider">
+                                   YouTube Shell
                                 </span>
                             </div>
 
-                            <h3 className="text-lg font-bold text-white mb-1">
-                                {!isLoggedIn ? "รับสิทธิทดลองพรีเมียมส่วนตัว!" : "อัปเกรดเพื่อความสนุกไม่จำกัด"}
+                            <h3 className="text-base font-black text-zinc-900 dark:text-white">
+                                {!isLoggedIn ? (upsell?.offer_text || "ทดลองใช้พรีเมียมส่วนตัว!") : "สนุกแบบไม่จำกัดอีกครั้ง"}
                             </h3>
-                            <p className="text-xs text-gray-400 mb-0">
-                                {!isLoggedIn 
-                                    ? "เพียงเชื่อมต่อ Google เพื่อเข้าถึงการเล่นแบบไม่มีโฆษณาด้วยบัญชีของคุณเอง" 
-                                    : "เลือกแผนการใช้งานที่เหมาะกับคุณเพื่อร้องเพลงได้ไม่อั้น"}
-                            </p>
+                            {upsell?.offer_subtext && !isLoggedIn && (
+                                <p className="text-[10px] text-zinc-400 mt-1 font-medium">{upsell.offer_subtext}</p>
+                            )}
                         </div>
                     </div>
 
@@ -144,9 +96,9 @@ export const LimitReachedModal = () => {
                     <div className="flex flex-col gap-3">
                         <button
                             onClick={onAction}
-                            className="w-full py-4 rounded-2xl bg-primary hover:bg-primary/90 active:scale-[0.98] transition-all text-white font-black text-base shadow-xl shadow-primary/40 flex items-center justify-center gap-2 border-b-4 border-black/20"
+                            className="w-full py-4 rounded-2xl bg-primary hover:bg-red-600 active:scale-[0.98] transition-all text-white font-black text-sm flex items-center justify-center gap-2 shadow-none border-none"
                         >
-                            {!isLoggedIn ? <PartyPopper className="w-5 h-5 flex-shrink-0" /> : <Crown className="w-5 h-5 flex-shrink-0" />}
+                            <PartyPopper className="w-4 h-4 text-white" />
                             <span>{buttonText}</span>
                         </button>
 
@@ -162,9 +114,3 @@ export const LimitReachedModal = () => {
         </div>
     );
 };
-
-const SparkleIcon = () => (
-    <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" fill="currentColor" />
-    </svg>
-);

@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.2.0 (The Final Sync & Purge)",
+        date: "8 เม.ย. 2569",
+        changes: [
+            "CRITICAL: Replaced legacy LimitReachedModal with dynamic version",
+            "SYNC: Fully connected production quota modal to Admin Dashboard settings",
+            "PURGE: Final elimination of all shadows, gradients, and glows from player modals",
+            "STABILITY: Verified real-time Firestore synchronization for upsell messaging"
+        ],
+        recent_updates: "Fully Dynamic and Pure Flat Quota System"
+    },
+    {
         version: "v5.1.9 (Full Dynamic Upsell)",
         date: "8 เม.ย. 2569",
         changes: [
