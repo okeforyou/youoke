@@ -75,19 +75,19 @@ export const LimitReachedModal = () => {
                     </div>
 
                     {/* Premium Offer Box (Shell Strategy) */}
-                    <div className="bg-zinc-50 dark:bg-zinc-900 rounded-2xl p-5 mb-8 text-left relative overflow-hidden border border-zinc-100 dark:border-zinc-800">
-                        <div className="relative z-10">
-                            <div className="flex items-center gap-2 mb-2">
+                    <div className="bg-zinc-950 dark:bg-black rounded-3xl p-6 mb-8 text-center relative overflow-hidden border border-zinc-800">
+                        <div className="relative z-10 flex flex-col items-center">
+                            <div className="flex items-center gap-2 mb-3">
                                 <span className="px-2 py-0.5 rounded text-[10px] font-black bg-primary text-white uppercase tracking-wider">
                                    YouTube Shell
                                 </span>
                             </div>
 
-                            <h3 className="text-base font-black text-zinc-900 dark:text-white">
+                            <h3 className="text-lg font-black text-white mb-2">
                                 {!isLoggedIn ? (upsell?.offer_text || "ทดลองใช้พรีเมียมส่วนตัว!") : "สนุกแบบไม่จำกัดอีกครั้ง"}
                             </h3>
                             {upsell?.offer_subtext && !isLoggedIn && (
-                                <p className="text-[10px] text-zinc-400 mt-1 font-medium">{upsell.offer_subtext}</p>
+                                <p className="text-xs text-zinc-400 font-medium max-w-[200px] mx-auto">{upsell.offer_subtext}</p>
                             )}
                         </div>
                     </div>
