@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.0.3 (Chromecast Recovery Fix)",
+        date: "8 เม.ย. 2569",
+        changes: [
+            "STABILITY: Forced Chromecast listener re-binding on mobile screen wake-up",
+            "CONNECTIVITY: Added 30s Heartbeat (PING) to maintain Cast session during background/sleep",
+            "PWA: Integrated Page Lifecycle API (resume/pageshow) for better Android/iOS standby support"
+        ],
+        recent_updates: "Fixed critical bug where users lose control of Chromecast after screen sleep"
+    },
+    {
         version: "v5.0.2 (Optimization & Stability)",
         date: "7 เม.ย. 2569",
         changes: [

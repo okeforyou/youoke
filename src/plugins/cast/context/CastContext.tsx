@@ -540,24 +540,57 @@ export function CastProvider({ children }: { children: ReactNode }) {
         const context = cast.framework.CastContext.getInstance();
         const activeSession = context.getCurrentSession();
         
-        // If we have an active session but local state thinks we're disconnected, re-bind!
-        if (activeSession && !isConnected) {
-          logger.log('🔄 Session persistent after wake-up. Re-binding listeners...');
+        // v5.0.3: Force re-bind on visible if session exists, regardless of isConnected state
+        // This fixes the issue where listeners are dropped by the browser when screen sleeps
+        if (activeSession) {
+          logger.log('🔄 Session active after wake-up. Force re-binding listeners...');
           handleSessionStarted(activeSession);
-        } else if (activeSession && isConnected) {
-          // even if connected, refresh the session ref
-          setCastSession(activeSession);
-          // Trigger a silent sync to ensure TV is still there
-          try {
-            activeSession.sendMessage(CAST_NAMESPACE, { type: 'PING' });
-          } catch(e) {}
+        } else if (!activeSession && isConnected) {
+          // If state is connected but session is truly gone, reset state
+          logger.log('📴 No active session found after wake-up. Marking as disconnected.');
+          setIsConnected(false);
+          setCastSession(null);
         }
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [isConnected]); // Re-run when connection status changes
+    // Page Lifecycle API - Reliable for Android/iOS Chrome
+    window.addEventListener('resume', handleVisibilityChange);
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted) handleVisibilityChange();
+    });
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('resume', handleVisibilityChange);
+    };
+  }, [isConnected]); // Keep dependency on isConnected for the fallback reset logic
+
+  // v5.0.3: Connection Heartbeat
+  // Keeps the session active and detects drops early
+  useEffect(() => {
+    if (!isConnected) return;
+    
+    const heartbeat = setInterval(() => {
+      const cast = (window as any).cast;
+      if (!cast?.framework) return;
+      
+      const context = cast.framework.CastContext.getInstance();
+      const session = context.getCurrentSession();
+      
+      if (session) {
+        try {
+          session.sendMessage(CAST_NAMESPACE, { type: 'PING' });
+          logger.debug('💓 Heartbeat sent (PING)');
+        } catch(e) {
+          logger.warn('⚠️ Heartbeat failed');
+        }
+      }
+    }, 30000); // 30 seconds
+    
+    return () => clearInterval(heartbeat);
+  }, [isConnected]);
 
   // Send message to receiver
   const sendMessage = (message: CastMessage) => {
