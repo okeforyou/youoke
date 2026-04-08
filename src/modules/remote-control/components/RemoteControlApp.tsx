@@ -1013,7 +1013,7 @@ export default function RemoteControlApp() {
                             <div className="flex gap-3">
                                 <button 
                                     onClick={() => setConfirmModal(prev => ({ ...prev, open: false }))}
-                                    className={`flex-1 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all !shadow-none ${theme === 'dark' ? 'bg-white/10 text-white/70 hover:bg-white/20' : 'bg-zinc-200 text-zinc-900 border border-zinc-300 hover:bg-zinc-300'}`}
+                                    className={`flex-1 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${theme === 'dark' ? 'bg-zinc-800 text-zinc-400 hover:text-white' : 'bg-zinc-100 text-zinc-600 hover:text-black border border-zinc-200'}`}
                                 >
                                     ยกเลิก
                                 </button>
@@ -1022,7 +1022,7 @@ export default function RemoteControlApp() {
                                         confirmModal.onConfirm();
                                         setConfirmModal(prev => ({ ...prev, open: false }));
                                     }}
-                                    className={`flex-1 py-4 rounded-2xl font-black text-xs uppercase tracking-widest text-white transition-all !shadow-none active:scale-95 ${confirmModal.type === 'danger' ? 'bg-red-500 hover:bg-red-600' : 'bg-primary hover:bg-primary/90'}`}
+                                    className={`flex-1 py-4 rounded-2xl font-black text-xs uppercase tracking-widest text-white transition-all active:scale-95 ${confirmModal.type === 'danger' ? 'bg-red-500 hover:bg-red-600' : 'bg-primary hover:bg-primary/90'}`}
                                 >
                                     {confirmModal.confirmText || 'ยืนยัน'}
                                 </button>

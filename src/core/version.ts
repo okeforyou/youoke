@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.1.1 (Shadowless Polish)",
+        date: "8 เม.ย. 2569",
+        changes: [
+            "UI/UX: Rewrote confirmation buttons to use inherently shadow-less structures for ultimate flat appearance",
+            "UI/UX: Realigned 'Cancel' button styling with the project's cleanest modal patterns",
+            "STABILITY: Final polish for Remote Control v5.1 system stability and UX"
+        ],
+        recent_updates: "Comprehensive shadow-less button overhaul for premium flat design"
+    },
+    {
         version: "v5.1.0 (Strict Flat UI)",
         date: "8 เม.ย. 2569",
         changes: [
