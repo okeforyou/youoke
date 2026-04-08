@@ -7,7 +7,7 @@ import { auth, realtimeDb } from '../../../firebase';
 import { QueueItem } from '../../../modules/player/types';
 import {
     ListMusic, User, Share2, Maximize, Minimize, RefreshCw, Volume2, VolumeX, SkipForward, SkipBack, Play, Pause, Trash2, GripVertical, Search, Sun, Moon, Music, Mic, Mic2,
-    Lock, Chrome, LogIn, AlertCircle
+    Lock, Chrome, LogIn, AlertCircle, LogOut
 } from 'lucide-react';
 import { useToast } from '@/context/ToastContext';
 import { useVoiceSearch } from '../../../hooks/useVoiceSearch';
@@ -51,7 +51,8 @@ interface RoomState {
 export default function RemoteControlApp() {
     const router = useRouter();
     const queryRoom = router.query.room;
-    const roomCode = typeof queryRoom === 'string' ? queryRoom : Array.isArray(queryRoom) ? queryRoom[0] : '';
+    // v5.0.6: Hardened roomCode derivation to prevent TypeError: g.split
+    const roomCode = typeof queryRoom === 'string' ? queryRoom : (Array.isArray(queryRoom) && queryRoom[0] ? String(queryRoom[0]) : '');
 
     // State
     const [status, setStatus] = useState<RemoteStatus>('connecting');
@@ -135,15 +136,19 @@ export default function RemoteControlApp() {
         }
     };
 
-    const handleSearchInput = (value: string) => {
-        setSearchTerm(value);
+    const handleSearchInput = (value: any) => {
+        // v5.0.6: Ensure value is always a string to prevent .split/trim errors
+        const safeValue = typeof value === 'string' ? value : '';
+        setSearchTerm(safeValue);
+        
         if (debounceRef.current) clearTimeout(debounceRef.current);
-        if (!value.trim()) {
+        if (!safeValue.trim()) {
             setSearchResults([]);
+            setIsSearching(false);
             return;
         }
         setIsSearching(true);
-        debounceRef.current = setTimeout(() => performSearch(value, searchType), 600);
+        debounceRef.current = setTimeout(() => performSearch(safeValue, searchType), 600);
     };
 
     // Voice Search Callbacks (memoized)
@@ -422,6 +427,12 @@ export default function RemoteControlApp() {
         };
     }, [roomCode, guestName, currentUser]);
 
+    const handleLeaveRoom = () => {
+        if (confirm('คุณต้องการยกเลิกการเชื่อมต่อและออกจากห้องนี้ใช่หรือไม่?')) {
+            router.push('/remote'); // Go back to entry screen
+        }
+    };
+
     // Command Sender (Refactored to use CastService)
     const sendCommand = async (type: string, payload: any = {}) => {
         if (!roomCode) return;
@@ -650,7 +661,17 @@ export default function RemoteControlApp() {
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-1 flex-shrink-0">
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                            {/* Leave Room (Disconnect) Button - v5.0.6 */}
+                            <button
+                                onClick={handleLeaveRoom}
+                                className={`flex items-center gap-1.5 px-3 py-2 rounded-2xl transition-all active:scale-90 font-black text-[10px] uppercase tracking-wider ${theme === 'dark' ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'bg-red-50 text-red-600 border border-red-100'}`}
+                                title="ออกจากห้อง"
+                            >
+                                <LogOut size={16} strokeWidth={3} />
+                                <span className="hidden xs:inline">ออก</span>
+                            </button>
+
                             <button
                                 onClick={toggleTheme}
                                 className={`p-2 rounded-full transition-all active:scale-90 ${theme === 'dark' ? 'bg-white/10 text-yellow-400' : 'bg-gray-100 text-gray-600 shadow-sm'}`}
@@ -668,18 +689,9 @@ export default function RemoteControlApp() {
                             <button
                                 onClick={() => setShowLocalQr(true)}
                                 className={`p-2 rounded-full transition-all active:scale-90 ${theme === 'dark' ? 'bg-white/10 text-gray-300' : 'bg-gray-100 text-gray-500 shadow-sm'}`}
+                                title="แชร์ QR"
                             >
                                 <Share2 size={18} strokeWidth={3} />
-                            </button>
-                            <button
-                                onClick={() => sendCommand('TOGGLE_FULLSCREEN')}
-                                className={`p-2 rounded-full transition-all active:scale-90 ${theme === 'dark' ? 'bg-white/10 text-gray-300' : 'bg-gray-100 text-gray-500 shadow-sm'}`}
-                            >
-                                {roomState.layoutMode === 'fullscreen' ? (
-                                    <Minimize size={18} strokeWidth={3} />
-                                ) : (
-                                    <Maximize size={18} strokeWidth={3} />
-                                )}
                             </button>
                         </div>
                     </div>

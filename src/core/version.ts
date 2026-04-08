@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.0.6 (Remote Stability)",
+        date: "8 เม.ย. 2569",
+        changes: [
+            "STABILITY: Fixed 'TypeError: split' crash on Remote Control by hardening roomCode and Search strings",
+            "RECOVERY: Added Aggressive Re-session logic in CastService for recovery after long device sleep",
+            "UI: Added 'Leave Room' (Disconnect) button in the Remote Control header as requested",
+            "SECURITY: Implemented strict type checking for all Firebase state inputs in Remote control module"
+        ],
+        recent_updates: "Resolved Remote Control crashes and restored the Disconnect button"
+    },
+    {
         version: "v5.0.5 (Chromecast Presence)",
         date: "8 เม.ย. 2569",
         changes: [

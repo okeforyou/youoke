@@ -78,22 +78,29 @@ export class CastService {
         if (!this.roomCode || !realtimeDb || !auth) return false;
 
         try {
-            // 1. Check Auth
+            // 1. Check Auth (Critical for long sleeps)
             if (!auth.currentUser) {
                 console.log('🔐 [CastService] Session lost, re-signing in...');
                 await signInAnonymously(auth);
             }
 
-            // 2. Refresh Listeners if needed (Firebase usually handles this, but we can force it if stale)
-            // For now, we rely on Firebase's internal keep-alive, but we track presence here
+            // 2. Refresh Listeners if they were potentially killed by the browser
+            // v5.0.6: Aggressive re-sync only if we have been away for a while or if listeners are missing
             const statusRef = ref(realtimeDb, `rooms/${this.roomCode}/status`);
             await set(statusRef, {
                 lastSeen: Date.now(),
                 role: this.role,
-                recovered: true
+                recovered: true,
+                userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown'
             });
 
-            console.log('📡 [CastService] Connection verified & recovered');
+            // If we are in Monitor role, re-ensure our polling is active
+            if (this.role === 'monitor' && !this.pollInterval) {
+                console.log('📡 [CastService] Restarting Monitor Poll...');
+                this.pollInterval = setInterval(() => this.syncProgressToFirebase(), 1000);
+            }
+
+            console.log('📡 [CastService] Connection verified & recovered for room:', this.roomCode);
             return true;
         } catch (e) {
             console.error('❌ [CastService] Reconnection failed:', e);

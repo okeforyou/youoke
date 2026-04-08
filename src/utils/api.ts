@@ -118,8 +118,8 @@ export const searchPlaylists = async (
  * Cleans a search query by removing common YouTube noise and clutter
  * like (Official MV), [Lyric], Unknown Artist, etc.
  */
-export const cleanSearchQuery = (query: string): string => {
-  if (!query) return "";
+export const cleanSearchQuery = (query: any): string => {
+  if (!query || typeof query !== 'string') return "";
   
   let cleaned = query;
   
