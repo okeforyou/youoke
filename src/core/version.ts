@@ -1,6 +1,17 @@
 export const CHANGELOGS = [
     {
-        version: "v5.2.0 (The Final Sync & Purge)",
+        version: "v5.2.3 (Complete User Guide)",
+        date: "8 เม.ย. 2569",
+        changes: [
+            "UI: Finalized 5-category Interactive Manual (Search, Remote, Display, Queue, VIP)",
+            "UX: Implemented approved Table of Contents with simplified instructions",
+            "DESIGN: Applied premium Pure Flat aesthetic with high-density step cards",
+            "FEATURE: Added 'Expert Tips' section for advanced system usage"
+        ],
+        recent_updates: "Complete Interactive Step-by-Step Guide"
+    },
+    {
+        version: "v5.2.2 (Interactive User Guide)",
         date: "8 เม.ย. 2569",
         changes: [
             "CRITICAL: Replaced legacy LimitReachedModal with dynamic version",
