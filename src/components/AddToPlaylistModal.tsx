@@ -128,21 +128,21 @@ export default function AddToPlaylistModal({ video, onClose }: AddToPlaylistModa
                     </div>
                 }
                 body={
-                    <div className="w-full sm:w-[360px] h-[420px] flex flex-col p-4 bg-white dark:bg-zinc-950">
+                    <div className="w-full h-[420px] flex flex-col p-4 bg-white dark:bg-zinc-950">
                         {/* New Playlist Input */}
                         <div className="flex gap-2 mb-4">
                             <input
                                 type="text"
-                                className="flex-1 input input-bordered input-sm bg-gray-50 dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 text-black dark:text-white placeholder:text-gray-400 dark:placeholder-zinc-500 focus:bg-white dark:focus:bg-zinc-800 transition-all outline-none"
-                                placeholder="สร้างเพลย์ลิสต์ใหม่..."
+                                className="flex-1 input input-bordered input-sm bg-gray-50 dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 text-black dark:text-white placeholder:text-gray-400 dark:placeholder:text-zinc-600 focus:border-primary dark:focus:border-primary transition-all outline-none"
+                                placeholder="พิมพ์ชื่อเพลย์ลิสต์ใหม่ที่นี่..."
                                 value={newPlaylistName}
                                 onChange={(e) => setNewPlaylistName(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleCreatePlaylist()}
                             />
-                            <button
-                                disabled={!newPlaylistName.trim() || isCreating}
+                             <button
                                 onClick={handleCreatePlaylist}
-                                className="btn btn-primary btn-sm btn-square text-white"
+                                disabled={!newPlaylistName.trim() || isCreating}
+                                className={`btn btn-sm btn-square border-none transition-all ${newPlaylistName.trim() ? 'bg-primary text-white hover:bg-primary-dark' : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-400 dark:text-zinc-600'}`}
                             >
                                 <PlusIcon className="w-5 h-5" />
                             </button>

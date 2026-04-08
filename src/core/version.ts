@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.1.4 (Playlist Width Fix)",
+        date: "8 เม.ย. 2569",
+        changes: [
+            "UI: Fixed Playlist Modal layout to fill full width, eliminating empty gaps",
+            "UI: Enhanced '+' (Create) button visibility with dynamic theme-aware colors",
+            "POLISH: Improved input placeholder contrast for better accessibility in Dark Mode",
+            "STABILITY: Final alignment of all Playlist management UI components"
+        ],
+        recent_updates: "Tight and high-contrast Playlist UI with full-width layout"
+    },
+    {
         version: "v5.1.3 (Playlist UX Overhaul)",
         date: "8 เม.ย. 2569",
         changes: [
