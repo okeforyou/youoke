@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.1.0 (Strict Flat UI)",
+        date: "8 เม.ย. 2569",
+        changes: [
+            "UI: Enforced !shadow-none across confirmation modals to override third-party library defaults (DaisyUI)",
+            "UI: Added ring-0 and border-refinement for ultimate pure flat appearance",
+            "POLISH: Enhanced visibility and contrast for action buttons in high-glare environments"
+        ],
+        recent_updates: "Strict Zero-Shadow Policy enforcement for Remote Control"
+    },
+    {
         version: "v5.0.9 (Pure Flat UI)",
         date: "8 เม.ย. 2569",
         changes: [

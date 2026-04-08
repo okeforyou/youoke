@@ -1003,7 +1003,7 @@ export default function RemoteControlApp() {
                 {confirmModal.open && (
                     <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 animate-in fade-in duration-200">
                         <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setConfirmModal(prev => ({ ...prev, open: false }))} />
-                        <div className={`relative w-full max-w-xs rounded-[2rem] p-8 scale-in-center transition-colors ${theme === 'dark' ? 'bg-stone-900 border border-zinc-800' : 'bg-white border border-zinc-100'}`}>
+                        <div className={`relative w-full max-w-xs rounded-[2rem] p-8 !shadow-none ring-0 scale-in-center transition-colors ${theme === 'dark' ? 'bg-stone-900 border border-zinc-800' : 'bg-white border border-zinc-100'}`}>
                             <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 ${confirmModal.type === 'danger' ? 'bg-red-500/10 text-red-500' : 'bg-primary/10 text-primary'}`}>
                                 <AlertCircle size={32} />
                             </div>
@@ -1013,7 +1013,7 @@ export default function RemoteControlApp() {
                             <div className="flex gap-3">
                                 <button 
                                     onClick={() => setConfirmModal(prev => ({ ...prev, open: false }))}
-                                    className={`flex-1 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${theme === 'dark' ? 'bg-white/10 text-white/70 hover:bg-white/20' : 'bg-zinc-200 text-zinc-900 border border-zinc-300 hover:bg-zinc-300'}`}
+                                    className={`flex-1 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all !shadow-none ${theme === 'dark' ? 'bg-white/10 text-white/70 hover:bg-white/20' : 'bg-zinc-200 text-zinc-900 border border-zinc-300 hover:bg-zinc-300'}`}
                                 >
                                     ยกเลิก
                                 </button>
@@ -1022,7 +1022,7 @@ export default function RemoteControlApp() {
                                         confirmModal.onConfirm();
                                         setConfirmModal(prev => ({ ...prev, open: false }));
                                     }}
-                                    className={`flex-1 py-4 rounded-2xl font-black text-xs uppercase tracking-widest text-white transition-all active:scale-95 ${confirmModal.type === 'danger' ? 'bg-red-500 hover:bg-red-600' : 'bg-primary hover:bg-primary/90'}`}
+                                    className={`flex-1 py-4 rounded-2xl font-black text-xs uppercase tracking-widest text-white transition-all !shadow-none active:scale-95 ${confirmModal.type === 'danger' ? 'bg-red-500 hover:bg-red-600' : 'bg-primary hover:bg-primary/90'}`}
                                 >
                                     {confirmModal.confirmText || 'ยืนยัน'}
                                 </button>
