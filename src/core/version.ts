@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.2.4 (Ultimate Cast Guide)",
+        date: "8 เม.ย. 2569",
+        changes: [
+            "UI: Expanded Display/Cast section with 3 distinct setup methods",
+            "UX: Added detailed HDMI Dual Screen and Smart TV Browser instructions",
+            "DESIGN: Refined step descriptions for better clarity and vertical rhythm",
+            "GUIDE: Unified all casting possibilities into a single responsive tab"
+        ],
+        recent_updates: "Comprehensive Display & Casting Guide"
+    },
+    {
         version: "v5.2.3 (Complete User Guide)",
         date: "8 เม.ย. 2569",
         changes: [
