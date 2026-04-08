@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.1.9 (Full Dynamic Upsell)",
+        date: "8 เม.ย. 2569",
+        changes: [
+            "UI: Connected GuestLimitModal to real-time Admin Dashboard settings",
+            "DYNAMIC: Sync Title, Subtitle, Offer Text, and Button labels from Firestore",
+            "CLEANUP: Removed all hard-coded marketing strings from components",
+            "DESIGN: Maintained 100% Pure Flat architectural consistency"
+        ],
+        recent_updates: "Admin-driven Dynamic Marketing Modal"
+    },
+    {
         version: "v5.1.8 (Compliance & Messaging Polish)",
         date: "8 เม.ย. 2569",
         changes: [

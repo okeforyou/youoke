@@ -1,8 +1,7 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 import { useAuthStore } from '@/modules/auth/useAuthStore';
-import { useUIStore } from '@/stores/useUIStore';
-import { XMarkIcon } from '@heroicons/react/24/solid';
+import { useSystemConfig } from '@/hooks/useSystemConfig';
 import { Crown, PartyPopper } from 'lucide-react';
 
 interface GuestLimitModalProps {
@@ -18,6 +17,8 @@ export default function GuestLimitModal({
 }: GuestLimitModalProps) {
     const router = useRouter();
     const { user } = useAuthStore();
+    const { config } = useSystemConfig();
+    const upsell = config?.upsell;
 
     if (!isOpen) return null;
 
@@ -35,10 +36,10 @@ export default function GuestLimitModal({
 
     const title = isLoggedIn && isExpired 
         ? "สิทธิสมาชิกหมดอายุแล้ว!" 
-        : "โควต้าการลองใช้งานสิ้นสุดแล้ว";
+        : (upsell?.title || "โควต้าการลองใช้งานสิ้นสุดแล้ว");
 
     const buttonText = !isLoggedIn 
-        ? "เชื่อมต่อผ่าน Gmail เพื่อรับสิทธิพิเศษ" 
+        ? (upsell?.button_text || "เชื่อมต่อผ่าน Gmail เพื่อรับสิทธิพิเศษ") 
         : "อัปเกรดแผนการใช้งาน";
 
     return (
@@ -63,15 +64,17 @@ export default function GuestLimitModal({
                         {title}
                     </h2>
 
-                    <div className="text-gray-500 dark:text-zinc-400 mb-8 px-2 font-medium leading-relaxed text-sm">
+                    <div className="text-gray-500 dark:text-zinc-400 mb-8 px-2 font-medium leading-relaxed text-sm whitespace-pre-wrap">
                         {!isLoggedIn ? (
-                            <>
-                                กรุณา <span className="text-zinc-900 dark:text-white font-black">เชื่อมต่อผ่าน Gmail</span> เพื่อใช้งานผ่านสิทธิส่วนบุคคลของคุณ
-                                <br />
-                                <span className="text-[11px] opacity-80">(YouOke เป็นเพียงระบบจัดคิวเพลงผ่านบัญชีของสมาชิกเท่านั้น)</span>
-                                <br />
-                                เพื่อเล่นเพลงโปรดของคุณได้ต่อเนื่องและไม่มีโฆษณาคั่น
-                            </>
+                            upsell?.subtitle || (
+                                <>
+                                    กรุณา <span className="text-zinc-900 dark:text-white font-black">เชื่อมต่อผ่าน Gmail</span> เพื่อใช้งานผ่านสิทธิส่วนบุคคลของคุณ
+                                    <br />
+                                    <span className="text-[11px] opacity-80">(YouOke เป็นเพียงระบบจัดคิวเพลงผ่านบัญชีของสมาชิกเท่านั้น)</span>
+                                    <br />
+                                    เพื่อเล่นเพลงโปรดของคุณได้ต่อเนื่องและไม่มีโฆษณาคั่น
+                                </>
+                            )
                         ) : (
                             "แพ็กเกจพรีเมียมส่วนตัวของคุณสิ้นสุดแล้ว เลือกแผนการใช้งานใหม่เพื่อสนุกต่อได้ทันที"
                         )}
@@ -87,8 +90,11 @@ export default function GuestLimitModal({
                             </div>
 
                             <h3 className="text-base font-black text-zinc-900 dark:text-white">
-                                {!isLoggedIn ? "ทดลองใช้พรีเมียมส่วนตัว!" : "สนุกแบบไม่จำกัดอีกครั้ง"}
+                                {!isLoggedIn ? (upsell?.offer_text || "ทดลองใช้พรีเมียมส่วนตัว!") : "สนุกแบบไม่จำกัดอีกครั้ง"}
                             </h3>
+                            {upsell?.offer_subtext && !isLoggedIn && (
+                                <p className="text-[10px] text-zinc-400 mt-1 font-medium">{upsell.offer_subtext}</p>
+                            )}
                         </div>
                     </div>
 
