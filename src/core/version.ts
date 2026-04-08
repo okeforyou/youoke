@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.2.5 (Wording & Flow Mastery)",
+        date: "8 เม.ย. 2569",
+        changes: [
+            "UI: Improved Dual Screen instructions with operational flow logic",
+            "UX: Fixed awkward 'Player' translations in Remote guide",
+            "DESIGN: Refined step-by-step descriptions for better accessibility",
+            "STABILITY: Verified tutorial responsiveness on mobile and tablet"
+        ],
+        recent_updates: "Professional Manual Wording & Flow"
+    },
+    {
         version: "v5.2.4 (Ultimate Cast Guide)",
         date: "8 เม.ย. 2569",
         changes: [
