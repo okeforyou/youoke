@@ -35,10 +35,10 @@ export default function GuestLimitModal({
 
     const title = isLoggedIn && isExpired 
         ? "สิทธิสมาชิกหมดอายุแล้ว!" 
-        : "หมดโควต้าฟังเพลงวันนี้แล้ว";
+        : "โควต้าการลองใช้งานสิ้นสุดแล้ว";
 
     const buttonText = !isLoggedIn 
-        ? "เชื่อมต่อบัญชี YouTube (Gmail)" 
+        ? "เชื่อมต่อผ่าน Gmail เพื่อรับสิทธิพิเศษ" 
         : "อัปเกรดแผนการใช้งาน";
 
     return (
@@ -65,7 +65,13 @@ export default function GuestLimitModal({
 
                     <div className="text-gray-500 dark:text-zinc-400 mb-8 px-2 font-medium leading-relaxed text-sm">
                         {!isLoggedIn ? (
-                            "เชื่อมต่อบัญชี YouTube ส่วนตัวเพื่อรับสิทธิพิเศษ และเล่นเพลงโปรดของคุณแบบไม่มีโฆษณาคั่น"
+                            <>
+                                กรุณา <span className="text-zinc-900 dark:text-white font-black">เชื่อมต่อผ่าน Gmail</span> เพื่อใช้งานผ่านสิทธิส่วนบุคคลของคุณ
+                                <br />
+                                <span className="text-[11px] opacity-80">(YouOke เป็นเพียงระบบจัดคิวเพลงผ่านบัญชีของสมาชิกเท่านั้น)</span>
+                                <br />
+                                เพื่อเล่นเพลงโปรดของคุณได้ต่อเนื่องและไม่มีโฆษณาคั่น
+                            </>
                         ) : (
                             "แพ็กเกจพรีเมียมส่วนตัวของคุณสิ้นสุดแล้ว เลือกแผนการใช้งานใหม่เพื่อสนุกต่อได้ทันที"
                         )}

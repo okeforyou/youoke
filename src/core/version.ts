@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.1.8 (Compliance & Messaging Polish)",
+        date: "8 เม.ย. 2569",
+        changes: [
+            "UI: Refined GuestLimitModal wording to emphasize YouOke's role as a queue manager",
+            "UI: Integrated Gmail-centric connection language for clarity and legal compliance",
+            "POLISH: Further compacted the modal layout for a tighter, more professional feel",
+            "STABILITY: Final synchronized design for member-linking components"
+        ],
+        recent_updates: "Legally-aware and Compact Quota Messaging"
+    },
+    {
         version: "v5.1.7 (Guest Limit UX Polish)",
         date: "8 เม.ย. 2569",
         changes: [
