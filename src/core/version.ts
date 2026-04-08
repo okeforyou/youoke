@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.1.3 (Playlist UX Overhaul)",
+        date: "8 เม.ย. 2569",
+        changes: [
+            "UI: Redesigned 'Add to Playlist' modal for a more compact and focused layout",
+            "UI: Simplified playlist items by removing broken/complex cover images and using clean icons",
+            "POLISH: Enhanced 'Close Window' button visibility with high-contrast flat styling",
+            "DESIGN: Stripped all remaining hover shadows from playlist items for a pure flat feel"
+        ],
+        recent_updates: "Compact and clean Playlist management UI"
+    },
+    {
         version: "v5.1.2 (Shadow Purify)",
         date: "8 เม.ย. 2569",
         changes: [

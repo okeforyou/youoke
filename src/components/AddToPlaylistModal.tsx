@@ -128,7 +128,7 @@ export default function AddToPlaylistModal({ video, onClose }: AddToPlaylistModa
                     </div>
                 }
                 body={
-                    <div className="w-full sm:w-[400px] h-[400px] flex flex-col p-4 bg-white dark:bg-zinc-950">
+                    <div className="w-full sm:w-[360px] h-[420px] flex flex-col p-4 bg-white dark:bg-zinc-950">
                         {/* New Playlist Input */}
                         <div className="flex gap-2 mb-4">
                             <input
@@ -166,23 +166,11 @@ export default function AddToPlaylistModal({ video, onClose }: AddToPlaylistModa
                                             disabled={isAlreadyAdded}
                                             className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${isAlreadyAdded
                                                 ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-900/30 opacity-80 cursor-default'
-                                                : 'bg-white dark:bg-zinc-900 border-gray-100 dark:border-zinc-800 hover:border-primary dark:hover:border-primary hover:shadow-md active:scale-95'
+                                                : 'bg-white dark:bg-zinc-900 border-gray-100 dark:border-zinc-800 hover:border-primary dark:hover:border-primary active:scale-95'
                                                 }`}
                                         >
-                                            <div className="relative w-12 h-12 rounded-lg bg-gray-200 overflow-hidden shrink-0">
-                                                {playlist.playlists?.[0] ? (
-                                                    <Image
-                                                        unoptimized
-                                                        src={`${process.env.NEXT_PUBLIC_INVIDIOUS_URL}vi/${playlist.playlists[0].videoId}/mqdefault.jpg`}
-                                                        alt=""
-                                                        fill
-                                                        className="object-cover"
-                                                    />
-                                                ) : (
-                                                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                                        <RectangleStackIcon className="w-6 h-6" />
-                                                    </div>
-                                                )}
+                                            <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-zinc-800 flex items-center justify-center text-gray-400 dark:text-zinc-600 shrink-0">
+                                                <RectangleStackIcon className="w-5 h-5 opacity-60" />
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <h4 className={`font-semibold text-sm truncate ${isAlreadyAdded ? 'text-green-700 dark:text-green-500' : 'text-gray-900 dark:text-zinc-100'}`}>{playlist.name}</h4>
@@ -200,9 +188,12 @@ export default function AddToPlaylistModal({ video, onClose }: AddToPlaylistModa
                     </div>
                 }
                 footer={
-                    <div className="flex justify-end p-4 border-t border-gray-100 dark:border-zinc-900 bg-white dark:bg-zinc-950 w-full rounded-b-2xl">
-                        <button onClick={onClose} className="text-gray-500 dark:text-zinc-400 text-sm hover:text-gray-800 dark:hover:text-white font-medium px-4 py-2 hover:bg-gray-50 dark:hover:bg-zinc-900 rounded-lg transition-colors">
-                            ปิด
+                    <div className="flex justify-end p-4 border-t border-gray-100 dark:border-zinc-900 bg-white dark:bg-zinc-950 w-full rounded-b-[2rem]">
+                        <button 
+                            onClick={onClose} 
+                            className="w-full py-3.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 hover:text-black dark:hover:text-white border border-zinc-200 dark:border-zinc-800"
+                        >
+                            ปิดหน้าต่าง
                         </button>
                     </div>
                 }
