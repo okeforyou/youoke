@@ -900,7 +900,7 @@ export default function RemoteControlApp() {
                                     maxLength={15}
                                     autoFocus
                                 />
-                                <button type="submit" className="w-full bg-primary hover:bg-red-600 text-white py-4 rounded-2xl font-black text-lg shadow-lg shadow-primary/30 active:scale-[0.98] transition-all">
+                                <button type="submit" className="w-full bg-primary hover:bg-red-600 text-white py-4 rounded-2xl font-black text-lg active:scale-[0.98] transition-all">
                                     ไปลุยกันเลย! 🚀
                                 </button>
                             </form>
@@ -928,8 +928,8 @@ export default function RemoteControlApp() {
                 {/* Remote Toast Overlay */}
                 {remoteToast && (
                     <div className="fixed top-20 left-4 right-4 z-[100] animate-in fade-in slide-in-from-top-4 duration-500">
-                        <div className={`p-4 rounded-2xl border shadow-2xl backdrop-blur-xl flex items-center gap-4 ${theme === 'dark' ? 'bg-stone-900/95 border-white/10 text-white' : 'bg-white/95 border-gray-100 text-gray-900'}`}>
-                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${remoteToast.type === 'upnext' ? 'bg-amber-500 text-black' : 'bg-primary text-white shadow-lg shadow-primary/20'}`}>
+                        <div className={`p-4 rounded-2xl border backdrop-blur-xl flex items-center gap-4 ${theme === 'dark' ? 'bg-stone-900/95 border-white/10 text-white' : 'bg-white/95 border-gray-100 text-gray-900'}`}>
+                            <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${remoteToast.type === 'upnext' ? 'bg-amber-500 text-black' : 'bg-primary text-white'}`}>
                                 {remoteToast.type === 'upnext' ? <RefreshCw className="animate-spin-slow" /> : <Music />}
                             </div>
                             <div className="flex-1 min-w-0">
@@ -1003,7 +1003,7 @@ export default function RemoteControlApp() {
                 {confirmModal.open && (
                     <div className="fixed inset-0 z-[200] flex items-center justify-center p-6 animate-in fade-in duration-200">
                         <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setConfirmModal(prev => ({ ...prev, open: false }))} />
-                        <div className={`relative w-full max-w-xs rounded-[2rem] p-8 !shadow-none ring-0 scale-in-center transition-colors ${theme === 'dark' ? 'bg-stone-900 border border-zinc-800' : 'bg-white border border-zinc-100'}`}>
+                        <div className={`relative w-full max-w-xs rounded-[2rem] p-8 ring-0 scale-in-center transition-colors ${theme === 'dark' ? 'bg-stone-900 border border-zinc-800' : 'bg-white border border-zinc-100'}`}>
                             <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 ${confirmModal.type === 'danger' ? 'bg-red-500/10 text-red-500' : 'bg-primary/10 text-primary'}`}>
                                 <AlertCircle size={32} />
                             </div>

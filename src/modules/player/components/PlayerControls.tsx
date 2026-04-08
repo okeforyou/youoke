@@ -324,7 +324,7 @@ export const PlayerControls = () => {
                     >
                         <ListMusic size={20} />
                         {queue.length > 0 && (
-                            <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5 shadow-sm border border-white">
+                            <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5 border border-white">
                                 {queue.length}
                             </span>
                         )}

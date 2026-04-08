@@ -440,7 +440,6 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                     <div className="absolute inset-0 bg-[#0a0a0a] flex flex-col items-center justify-center p-8 text-center space-y-8 z-30 animate-in fade-in duration-700">
                         <div className="relative">
                             <div className="text-6xl mb-4 relative z-10">🖥️</div>
-                            <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse z-0" />
                         </div>
 
                         <div className="space-y-3">
@@ -468,8 +467,8 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
 
                         <div className="flex flex-col items-center gap-6 pt-4 w-full">
 
-                            <div className="flex items-center gap-3 px-5 py-2.5 bg-red-500/10 rounded-full border border-red-500/20 shadow-[0_0_20px_rgba(239,68,68,0.1)]">
-                                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(239,68,68,0.5)]"></div>
+                            <div className="flex items-center gap-3 px-5 py-2.5 bg-red-500/10 rounded-full border border-red-500/20">
+                                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse border border-red-400/20"></div>
                                 <span className="text-[11px] font-black text-red-500 uppercase tracking-[0.2em]">Casting Active</span>
                             </div>
                         </div>
@@ -523,7 +522,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                 >
                     <div className="relative w-2 h-2">
                         <div className="absolute inset-0 bg-green-500 rounded-full animate-ping opacity-40"></div>
-                        <div className="absolute inset-0 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.6)]"></div>
+                        <div className="absolute inset-0 bg-green-500 rounded-full border border-green-400/20"></div>
                     </div>
                     <span className="text-[10px] font-black text-white/80 uppercase tracking-widest flex items-center gap-1.5">
                         <LockClosedIcon className="w-3 h-3 text-primary" />
@@ -585,7 +584,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                         <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[110] transition-all duration-[600ms] ease-[cubic-bezier(0.23,1,0.32,1)] ${showToast ? 'opacity-100 translate-y-0 scale-100 blur-0' : 'opacity-0 -translate-y-12 scale-[0.8] pointer-events-none blur-sm'}`}>
                             <div className="flex items-center gap-3 bg-black/85 backdrop-blur-2xl rounded-full py-2 px-3 pl-2 min-w-[260px] max-w-[90vw]">
                                 {/* Thumbnail (Circular) with Ring */}
-                                <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white/10 shrink-0 relative bg-stone-900 group">
+                                <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 shrink-0 relative bg-stone-900 group">
                                     <img
                                         src={thumb}
                                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
@@ -600,7 +599,7 @@ export const SidebarPlayer = ({ isPassive = false, isDjMode = false, castMode = 
                                             {activeToastVideo.title || "Unknown Title"}
                                         </h3>
                                         {toastType === 'upnext' && (
-                                            <span className="text-[9px] font-black uppercase tracking-tighter shrink-0 px-2 py-0.5 rounded-full shadow-sm bg-amber-500 text-black">
+                                            <span className="text-[9px] font-black uppercase tracking-tighter shrink-0 px-2 py-0.5 rounded-full bg-amber-500 text-black border border-amber-600/20">
                                                 ถัดไป
                                             </span>
                                         )}

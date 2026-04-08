@@ -69,7 +69,7 @@ export const AudioOutputSwitcher = () => {
             <button
                 onClick={() => handleSwitch('pc')}
                 className={`p-1.5 rounded-md flex items-center gap-1.5 text-xs font-bold transition-all ${outputMode === 'pc'
-                        ? 'bg-white text-primary shadow-sm ring-1 ring-black/5'
+                        ? 'bg-white text-primary ring-1 ring-black/5'
                         : 'text-gray-400 hover:text-gray-600'
                     }`}
                 title="Sound on PC Only"
@@ -81,7 +81,7 @@ export const AudioOutputSwitcher = () => {
             <button
                 onClick={() => handleSwitch('both')}
                 className={`p-1.5 rounded-md flex items-center gap-1.5 text-xs font-bold transition-all ${outputMode === 'both'
-                        ? 'bg-white text-primary shadow-sm ring-1 ring-black/5'
+                        ? 'bg-white text-primary ring-1 ring-black/5'
                         : 'text-gray-400 hover:text-gray-600'
                     }`}
                 title="Sound on Both"
@@ -93,7 +93,7 @@ export const AudioOutputSwitcher = () => {
             <button
                 onClick={() => handleSwitch('tv')}
                 className={`p-1.5 rounded-md flex items-center gap-1.5 text-xs font-bold transition-all ${outputMode === 'tv'
-                        ? 'bg-white text-primary shadow-sm ring-1 ring-black/5'
+                        ? 'bg-white text-primary ring-1 ring-black/5'
                         : 'text-gray-400 hover:text-gray-600'
                     }`}
                 title="Sound on TV Only"

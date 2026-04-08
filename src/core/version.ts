@@ -1,5 +1,25 @@
 export const CHANGELOGS = [
     {
+        version: "v5.1.6 (Total Shadow Purge - Final)",
+        date: "8 เม.ย. 2569",
+        changes: [
+            "UI: Total Shadow Purge across SidebarPlayer, PlayerControls, and Audio Switcher",
+            "DESIGN: Achieved 100% Pure Flat Design consistency for both Player and Remote Control ecosystems",
+            "POLISH: Eliminated all remaining glows and micro-shadows for a definitive high-end minimalist look"
+        ],
+        recent_updates: "Project-wide 100% Pure Flat Design reached"
+    },
+    {
+        version: "v5.1.5 (Total Shadow Purge)",
+        date: "8 เม.ย. 2569",
+        changes: [
+            "UI: Total Shadow Purge for Remote Control (Toasts, Feedback, and Confirmation containers)",
+            "DESIGN: Reached 100% Pure Flat consistency in the Remote Control module",
+            "POLISH: Removed defensive !shadow-none and replaced with inherently flat structures"
+        ],
+        recent_updates: "100% Zero-Shadow consistency achieved for Remote UI"
+    },
+    {
         version: "v5.1.4 (Playlist Width Fix)",
         date: "8 เม.ย. 2569",
         changes: [
