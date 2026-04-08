@@ -557,8 +557,9 @@ export const usePlayerStore = create<PlayerStore>()(
                     }
                 }
 
-                broadcast({ queue: newQueue, currentIndex: newIndex });
-                return { queue: newQueue, currentIndex: newIndex };
+                const newCurrentVideo = newQueue[newIndex] || null;
+                broadcast({ queue: newQueue, currentIndex: newIndex, currentVideo: newCurrentVideo });
+                return { queue: newQueue, currentIndex: newIndex, currentVideo: newCurrentVideo };
             }),
 
             insertVideoAtIndex: (index, video) => set((state) => {

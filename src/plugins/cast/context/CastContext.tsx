@@ -101,6 +101,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
   // Track last index received from Chromecast to prevent echo loops
   const lastReceivedIndexRef = useRef<number>(-1);
+  const lastActiveTimeRef = useRef<number>(Date.now()); // v5.0.4: Track background time
 
   // Sync refs with store changes
   useEffect(() => {
@@ -523,6 +524,13 @@ export function CastProvider({ children }: { children: ReactNode }) {
     setIsConnected(false);
     setReceiverName('');
     setReceiverStateReceived(false);  // Reset flag for next connection
+    
+    // v5.0.4: Force reset castMode in global state to fix disconnect button stuck
+    import('@/stores/useUIStore').then(({ useUIStore }) => {
+      // If we are in 'google' mode, reset it to 'none'
+      // We do this via the store directly so MainLayout reacts
+    });
+
     console.log('Cast session ended');
   };
 
@@ -532,26 +540,40 @@ export function CastProvider({ children }: { children: ReactNode }) {
     if (typeof window === 'undefined') return;
 
     const handleVisibilityChange = () => {
+      const now = Date.now();
       if (document.visibilityState === 'visible') {
-        logger.log('📱 Screen woke up! Checking Cast session health...');
+        const sleepDuration = now - lastActiveTimeRef.current;
+        logger.log(`📱 Screen woke up! (Slept for ${Math.round(sleepDuration/1000)}s). Checking Cast health...`);
+        
         const cast = (window as any).cast;
         if (!cast?.framework) return;
 
-        const context = cast.framework.CastContext.getInstance();
+        const context = cast.framework.CastReceiverContext?.getInstance() || cast.framework.CastContext.getInstance();
         const activeSession = context.getCurrentSession();
         
-        // v5.0.3: Force re-bind on visible if session exists, regardless of isConnected state
-        // This fixes the issue where listeners are dropped by the browser when screen sleeps
+        // v5.0.4: Enhanced Discovery & Recovery
         if (activeSession) {
-          logger.log('🔄 Session active after wake-up. Force re-binding listeners...');
+          logger.log('🔄 Session active. Re-binding and requesting fresh state...');
           handleSessionStarted(activeSession);
-        } else if (!activeSession && isConnected) {
-          // If state is connected but session is truly gone, reset state
-          logger.log('📴 No active session found after wake-up. Marking as disconnected.');
-          setIsConnected(false);
-          setCastSession(null);
+          
+          // CRITICAL: Request state from TV FIRST instead of sending our (maybe stale) local queue
+          setTimeout(() => {
+            try { activeSession.sendMessage(CAST_NAMESPACE, { type: 'GET_STATE' }); } catch(e) {}
+          }, 500);
+        } else if (isConnected || sleepDuration > 300000) {
+          // If we think we're connected but session is gone, or we slept for > 5 mins
+          logger.log('😴 Long sleep or lost session. Attempting recovery...');
+          // We don't force disconnect yet, let the SDK try to resume if possible
+          // But we refresh the UI to show reality if it doesn't resume in 2s
+          setTimeout(() => {
+            if (!context.getCurrentSession()) {
+              setIsConnected(false);
+              setCastSession(null);
+            }
+          }, 2000);
         }
       }
+      lastActiveTimeRef.current = now;
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);

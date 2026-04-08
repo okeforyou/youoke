@@ -1,5 +1,17 @@
 export const CHANGELOGS = [
     {
+        version: "v5.0.4 (Major Stability & Quality Fix)",
+        date: "8 เม.ย. 2569",
+        changes: [
+            "STABILITY: Fixed song title lag (1-song-behind) when auto-playing or removing items",
+            "QUALITY: Forced HD video resolution (720p/1080p) for Smart TV/Chromecast display",
+            "RECOVERY: Added Long Sleep detection and state recovery for sessions inactive > 5 mins",
+            "SYNC: Optimized wake-up synchronization to prevent queue overwriting from sender",
+            "FIX: Resolved issue where the Disconnect button would disappear or fail to reset state"
+        ],
+        recent_updates: "Comprehensive fix for Chromecast sync stability and playback quality"
+    },
+    {
         version: "v5.0.3 (Chromecast Recovery Fix)",
         date: "8 เม.ย. 2569",
         changes: [

@@ -93,6 +93,15 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
         playerRef.current = event.target;
         onReady(event.target);
 
+        // v5.0.4: Force High Quality (HD)
+        try {
+            if (event.target.setPlaybackQuality) {
+                event.target.setPlaybackQuality('hd720');
+            }
+        } catch (e) {
+            console.warn('📺 TV: Could not force HD quality:', e);
+        }
+
         // Initial Sync
         if (isMuted) event.target.mute();
         else event.target.unMute();
