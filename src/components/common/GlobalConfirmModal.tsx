@@ -21,10 +21,10 @@ export const GlobalConfirmModal = () => {
     };
 
     const buttonStyles = {
-        danger: 'bg-red-600 hover:bg-red-700 focus:ring-red-500 shadow-red-200',
-        warning: 'bg-amber-600 hover:bg-amber-700 focus:ring-amber-500 shadow-amber-200',
-        success: 'bg-green-600 hover:bg-green-700 focus:ring-green-500 shadow-green-200',
-        info: 'bg-gray-900 hover:bg-gray-800 focus:ring-gray-900 shadow-gray-200'
+        danger: 'bg-red-600 hover:bg-red-700 focus:ring-red-500',
+        warning: 'bg-amber-600 hover:bg-amber-700 focus:ring-amber-500',
+        success: 'bg-green-600 hover:bg-green-700 focus:ring-green-500',
+        info: 'bg-gray-900 hover:bg-gray-800 focus:ring-gray-900'
     };
 
     return (
@@ -53,9 +53,9 @@ export const GlobalConfirmModal = () => {
                             leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                             leaveTo="opacity-0 translate-y-8 sm:translate-y-0 sm:scale-95"
                         >
-                            <Dialog.Panel className="relative transform overflow-hidden rounded-[2.5rem] bg-white dark:bg-zinc-900 px-6 pb-6 pt-8 text-left shadow-[0_20px_50px_rgba(0,0,0,0.3)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)] transition-all sm:my-8 sm:w-full sm:max-w-sm border border-gray-100 dark:border-zinc-800">
+                            <Dialog.Panel className="relative transform overflow-hidden rounded-[2.5rem] bg-white dark:bg-zinc-900 px-6 pb-6 pt-8 text-left transition-all sm:my-8 sm:w-full sm:max-w-sm border border-gray-100 dark:border-zinc-800">
                                 <div>
-                                    <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gray-50 dark:bg-zinc-950 border border-gray-100 dark:border-zinc-800 shadow-inner overflow-hidden">
+                                    <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-gray-50 dark:bg-zinc-950 border border-gray-100 dark:border-zinc-800 overflow-hidden">
                                         {icons[type || 'info']}
                                     </div>
                                     <div className="mt-8 text-center px-2">
@@ -73,7 +73,7 @@ export const GlobalConfirmModal = () => {
                                     <button
                                         type="button"
                                         className={cn(
-                                            "inline-flex w-full justify-center rounded-2xl px-5 py-4 text-base font-black text-white shadow-xl transition-all hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2",
+                                            "inline-flex w-full justify-center rounded-2xl px-5 py-4 text-base font-black text-white transition-all hover:scale-[1.02] active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2",
                                             buttonStyles[type || 'info']
                                         )}
                                         onClick={handleConfirm}

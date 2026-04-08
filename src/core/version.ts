@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.1.2 (Shadow Purify)",
+        date: "8 เม.ย. 2569",
+        changes: [
+            "UI: System-wide Shadow Purify for all major modals (GlobalConfirmModal, GuestLimitModal, PremiumUpsell)",
+            "UI: Standardized Pure Flat Design for consistent premium look across different modules",
+            "DESIGN: Replaced remaining shadow-lg/xl with solid borders and high-density zinc backgrounds"
+        ],
+        recent_updates: "Unified Pure Flat Design across all main UI popups"
+    },
+    {
         version: "v5.1.1 (Shadowless Polish)",
         date: "8 เม.ย. 2569",
         changes: [

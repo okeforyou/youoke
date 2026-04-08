@@ -942,11 +942,11 @@ export default function RemoteControlApp() {
                 {/* Song Limit Modal */}
                 {showLimitModal && (
                     <div className="fixed inset-0 bg-black/90 z-[110] flex items-center justify-center p-6 backdrop-blur-md">
-                        <div className={`w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl transition-all scale-in-center ${theme === 'dark' ? 'bg-stone-900 border border-white/10' : 'bg-white'}`}>
+                        <div className={`w-full max-w-sm rounded-[2.5rem] p-8 transition-all scale-in-center ${theme === 'dark' ? 'bg-stone-900 border border-zinc-800' : 'bg-white border border-zinc-100'}`}>
                             <div className="text-center mb-8">
                                 <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 relative">
                                     <Music className="w-12 h-12 text-primary" />
-                                    <div className="absolute -top-1 -right-1 bg-primary text-white p-2 rounded-full shadow-lg">
+                                    <div className="absolute -top-1 -right-1 bg-primary text-white p-2 rounded-full border border-white/20">
                                         <Lock size={16} strokeWidth={3} />
                                     </div>
                                 </div>
@@ -961,7 +961,7 @@ export default function RemoteControlApp() {
                                 <button
                                     onClick={handleGoogleLogin}
                                     disabled={isLoggingIn}
-                                    className="w-full bg-white text-black py-4 rounded-2xl font-black text-lg shadow-xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all hover:bg-gray-100 border border-gray-200"
+                                    className="w-full bg-white text-black py-4 rounded-2xl font-black text-lg flex items-center justify-center gap-3 active:scale-[0.98] transition-all hover:bg-gray-100 border border-gray-200"
                                 >
                                     {isLoggingIn ? (
                                         <div className="w-6 h-6 border-4 border-black border-t-transparent rounded-full animate-spin" />

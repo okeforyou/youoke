@@ -50,7 +50,7 @@ export default function GuestLimitModal({
             />
 
             {/* Modal Content */}
-            <div className="relative bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl animate-in zoom-in-95 duration-300 overflow-hidden border border-white/20">
+            <div className="relative bg-white rounded-3xl w-full max-w-md p-6 animate-in zoom-in-95 duration-300 overflow-hidden border border-gray-100">
 
                 {/* Decorative Background Glows */}
                 <div className="absolute top-0 right-0 -mt-20 -mr-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
@@ -91,7 +91,7 @@ export default function GuestLimitModal({
                     </div>
 
                     {/* Premium Offer Box (Shell Strategy) */}
-                    <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-5 mb-8 text-left relative overflow-hidden group border border-gray-700 shadow-xl">
+                    <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-5 mb-8 text-left relative overflow-hidden group border border-gray-700">
                         <div className="absolute top-0 right-0 p-2 opacity-10">
                             <Crown className="w-24 h-24 rotate-12 -mt-4 -mr-4 opacity-20 text-white" />
                         </div>
@@ -121,7 +121,7 @@ export default function GuestLimitModal({
                     <div className="flex flex-col gap-3">
                         <button
                             onClick={handleAction}
-                            className="w-full py-4 rounded-xl bg-primary hover:bg-primary-dark active:scale-[0.98] transition-all text-white font-bold text-base shadow-lg shadow-primary/30 flex items-center justify-center gap-2"
+                            className="w-full py-4 rounded-xl bg-primary hover:bg-primary-dark active:scale-[0.98] transition-all text-white font-bold text-base flex items-center justify-center gap-2"
                         >
                             {!isLoggedIn ? <PartyPopper className="w-5 h-5 text-white" /> : <Crown className="w-5 h-5 text-white" />}
                             <span>{buttonText}</span>
