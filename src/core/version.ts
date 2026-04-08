@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.1.7 (Guest Limit UX Polish)",
+        date: "8 เม.ย. 2569",
+        changes: [
+            "UI: Streamlined GuestLimitModal with concise, high-impact messaging",
+            "DESIGN: Removed all background flows and persistent shadows from buttons and containers",
+            "POLISH: Implemented a more compact layout with high-density typography for a premium feel",
+            "STABILITY: Final design hardening for quota-limit components"
+        ],
+        recent_updates: "Compact and Shadowless Quota Modal"
+    },
+    {
         version: "v5.1.6 (Total Shadow Purge - Final)",
         date: "8 เม.ย. 2569",
         changes: [
