@@ -27,6 +27,7 @@ export interface SmartTVPlayerProps {
     roomCode?: string;
     syncMode?: 'local' | 'remote';
     isPassive?: boolean;
+    isSenderConnected?: boolean;
 }
 
 export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
@@ -45,7 +46,8 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
     notification = null,
     roomCode = '',
     syncMode = 'remote',
-    isPassive = false
+    isPassive = false,
+    isSenderConnected = false
 }) => {
     const playerRef = useRef<YouTubePlayer | null>(null);
     const [showInfoToast, setShowInfoToast] = useState(false);
@@ -236,6 +238,21 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
                     </div>
                 </div>
             )}
+
+            {/* v5.0.5: Connection Status Indicator (Top Right Dot) */}
+            <div className="absolute top-6 right-6 z-[100] flex items-center gap-3">
+                {roomCode && (
+                    <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] bg-black/20 px-3 py-1 rounded-full backdrop-blur-sm">
+                        ROOM: {roomCode}
+                    </span>
+                )}
+                <div className={clsx(
+                    "w-3 h-3 rounded-full shadow-lg transition-all duration-1000",
+                    isSenderConnected 
+                        ? "bg-green-500 shadow-green-500/50 animate-pulse" 
+                        : "bg-red-500 shadow-red-500/50"
+                )} />
+            </div>
 
             {/* 3. Info Toast (Now Playing) */}
             <div className={clsx(

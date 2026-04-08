@@ -13,6 +13,7 @@ interface CastContextValue {
   isConnected: boolean;
   castSession: chrome.cast.Session | null;
   receiverName: string;
+  connectionQuality: 'good' | 'weak' | 'lost';
 
   // Queue State
   playlist: QueueItem[]; // Changed from QueueVideo
@@ -78,6 +79,8 @@ export function CastProvider({ children }: { children: ReactNode }) {
   const [castSession, setCastSession] = useState<chrome.cast.Session | null>(null);
   const [receiverName, setReceiverName] = useState('');
   const [receiverStateReceived, setReceiverStateReceived] = useState(false);  // Track if we got state from receiver
+  const [connectionQuality, setConnectionQuality] = useState<'good' | 'weak' | 'lost'>('good');
+  const lastPongTimeRef = useRef<number>(Date.now());
 
   // Use Global Store as Source of Truth
   const {
@@ -433,7 +436,13 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
           // ... (Rest of switch) ...
 
-          case 'VIDEO_ENDED':
+          case 'PONG':
+          // logger.log('📡 [Sender] Received PONG from TV');
+          lastPongTimeRef.current = Date.now();
+          setConnectionQuality('good');
+          break;
+
+        case 'VIDEO_ENDED':
             console.log('🎬 Video ended on receiver:', data.videoId, 'at index:', data.currentIndex);
             // Remove the ended video from playlist
             const latestPlaylist = playlistRef.current;
@@ -605,6 +614,16 @@ export function CastProvider({ children }: { children: ReactNode }) {
         try {
           session.sendMessage(CAST_NAMESPACE, { type: 'PING' });
           logger.debug('💓 Heartbeat sent (PING)');
+
+          // v5.0.5: Check Connection Quality based on PONG delay
+          const elapsedSinceLastPong = Date.now() - lastPongTimeRef.current;
+          if (elapsedSinceLastPong < 40000) {
+            setConnectionQuality('good');
+          } else if (elapsedSinceLastPong < 95000) {
+            setConnectionQuality('weak');
+          } else {
+            setConnectionQuality('lost');
+          }
         } catch(e) {
           logger.warn('⚠️ Heartbeat failed');
         }
@@ -1105,6 +1124,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
     setMuted,
     seekTo,
     updateCurrentIndexSilent,
+    connectionQuality,
   }), [
     isAvailable,
     isConnected,
@@ -1113,6 +1133,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
     playlist,
     currentIndex,
     currentVideo,
+    connectionQuality,
     // Functions (memoized implicitly as they are stable or depend on these deps)
     // Note: If functions above are not memoized, this useMemo is less effective but still better than nothing.
     // Ideally, functions like play, pause etc which use refs should be memoized or safe.

@@ -260,6 +260,18 @@ const Monitor = () => {
                 }
                 break;
               }
+
+              case 'PING':
+                // v5.0.5: Health Check Response (PONG)
+                try {
+                  context.sendCustomMessage(CAST_NAMESPACE, undefined, { 
+                    type: 'PONG', 
+                    timestamp: Date.now() 
+                  });
+                } catch (err) {
+                  console.error('❌ [Receiver] PONG failed:', err);
+                }
+                break;
             }
           } catch (err) {
             console.error('❌ Error handling Cast Message:', err);
@@ -401,6 +413,7 @@ const Monitor = () => {
             isQueueVisible={state.isQueueVisible}
             notification={state.notification as any}
             roomCode={roomCode}
+            isSenderConnected={isConnected}
             onReady={(player) => setPlayerRef(player)}
             onStateChange={async (playerState) => {
               if (playerState === 0) {

@@ -1,5 +1,17 @@
 export const CHANGELOGS = [
     {
+        version: "v5.0.5 (Chromecast Presence)",
+        date: "8 เม.ย. 2569",
+        changes: [
+            "PRESENCE: Implemented Bidirectional Heartbeat (PING/PONG) between Sender and TV",
+            "UI: Added connection health indicator dot (Green/Yellow/Red) on both Mobile and TV",
+            "STABILITY: Added Wake Lock API in MainLayout to prevent screen sleep while casting",
+            "RECOVERY: Automatic connection quality tracking (Good/Weak/Lost) with fallback reset",
+            "FIX: Standardized connection status UI across Remote Control and Chromecast modes"
+        ],
+        recent_updates: "Real-time connection health tracking and screen stay-awake system"
+    },
+    {
         version: "v5.0.4 (Major Stability & Quality Fix)",
         date: "8 เม.ย. 2569",
         changes: [

@@ -161,7 +161,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
     // Cast & UI Store
     const { isCastModalOpen, setCastModalOpen } = useUIStore();
-    const { connect: connectGoogleCast, disconnect: disconnectGoogleCast, isAvailable: isCastAvailable } = useCast();
+    const { connect: connectGoogleCast, disconnect: disconnectGoogleCast, isAvailable: isCastAvailable, isConnected } = useCast();
     const isMobile = useIsMobile();
 
     // Stable callback to close QR modals on connection
@@ -355,6 +355,38 @@ export default function MainLayout({ children }: MainLayoutProps) {
         }
     }, [castMode, partyPIN]);
 
+
+    // 💡 v5.0.5: Wake Lock to prevent screen sleep while casting
+    useEffect(() => {
+        if (!isConnected) return;
+        
+        let wakeLock: any = null;
+        const requestWakeLock = async () => {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await (navigator as any).wakeLock.request('screen');
+                    console.log('💡 [Main] Wake Lock active for Chromecast');
+                }
+            } catch (err) {
+                console.warn('💡 [Main] Wake Lock failed:', err);
+            }
+        };
+
+        requestWakeLock();
+
+        // Re-request on visibility change
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible' && isConnected) {
+                requestWakeLock();
+            }
+        };
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            if (wakeLock) wakeLock.release().catch(() => {});
+        };
+    }, [isConnected]);
 
     // 🟢 v4.9.50: User Presence Activity Tracker (Throttled)
     const lastUpdateRef = useRef<number>(0);
