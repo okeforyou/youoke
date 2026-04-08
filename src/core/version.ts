@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.0.8 (Nuclear Stability)",
+        date: "8 เม.ย. 2569",
+        changes: [
+            "FIX: Final resolution for 'TypeError: split' by switching to full-refresh (window.location) on room exit",
+            "STABILITY: Hardened version parsing and room code entry with strict type guards",
+            "STABILITY: Replaced all fragile router.push redirects with clean origin-based navigation for critical state transitions"
+        ],
+        recent_updates: "Critical stability fix for Remote Control navigation crashes"
+    },
+    {
         version: "v5.0.7 (Remote UX Fix)",
         date: "8 เม.ย. 2569",
         changes: [
@@ -425,9 +435,10 @@ export const CHANGELOGS = [
 
 // v4.10.116: Reordered to ensure CHANGELOGS is available before export
 const getLatestVersion = () => {
-    if (!CHANGELOGS || CHANGELOGS.length === 0) return "4.10.116";
-    const latest = CHANGELOGS[0].version;
-    return latest.split(" ")[0];
+    if (!CHANGELOGS || CHANGELOGS.length === 0) return "5.0.8";
+    const latest = CHANGELOGS[0]?.version;
+    if (typeof latest !== 'string') return "5.0.8";
+    return latest.split(" ")[0] || "5.0.8";
 };
 
 export const SYSTEM_VERSION = getLatestVersion();

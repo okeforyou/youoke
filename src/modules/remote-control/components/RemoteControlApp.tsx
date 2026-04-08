@@ -450,7 +450,9 @@ export default function RemoteControlApp() {
             confirmText: 'ตกลง',
             type: 'danger',
             onConfirm: () => {
-                router.push('/remote');
+                // v5.0.8: Use window.location for a clean full refresh when leaving
+                // This prevents React state/unmount race conditions
+                window.location.href = '/remote';
             }
         });
     };
@@ -606,9 +608,10 @@ export default function RemoteControlApp() {
                         onSubmit={(e) => {
                             e.preventDefault();
                             const codeInput = (e.target as any).code;
-                            const code = codeInput && typeof codeInput.value === 'string' ? codeInput.value.trim() : '';
+                            const rawCode = codeInput && typeof codeInput.value === 'string' ? codeInput.value.trim() : '';
+                            const code = String(rawCode).replace(/\s+/g, '');
                             if (code.length >= 4) {
-                                router.push(`/remote?room=${code}`);
+                                window.location.href = `/remote?room=${code}`;
                             }
                         }}
                         className="relative"
