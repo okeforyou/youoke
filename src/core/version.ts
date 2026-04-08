@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.0.9 (Pure Flat UI)",
+        date: "8 เม.ย. 2569",
+        changes: [
+            "UI/UX: Applied 'Zero Shadow Policy' to confirmation modals for a cleaner, premium flat look",
+            "UI/UX: Re-designed 'Cancel' button with high-contrast colors and solid borders for better visibility",
+            "DESIGN: Removed all glows and drop-shadows from action buttons in both light/dark modes"
+        ],
+        recent_updates: "Confirmation Modal UI overhaul for accessibility and flat design standards"
+    },
+    {
         version: "v5.0.8 (Nuclear Stability)",
         date: "8 เม.ย. 2569",
         changes: [
