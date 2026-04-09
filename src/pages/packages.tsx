@@ -19,12 +19,13 @@ import {
     Zap,
     Crown,
     MessageCircle,
-    Sparkles
+    Sparkles,
+    ChevronRight,
+    BookOpen
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/modules/auth/useAuthStore';
 import { useRouter } from 'next/router';
-import { OmiseQRModal } from '@/modules/billing/components/OmiseQRModal';
 import { UploadSlipModal } from '@/components/profile/UploadSlipModal';
 
 interface Package {
@@ -39,23 +40,21 @@ interface Package {
 
 const KILLER_FEATURES = [
     { title: "รีโมทมือถือ", desc: "คุมคิวเพลงผ่านมือถือ 100%", icon: Smartphone, color: "bg-amber-500" },
-    { title: "ระบบ 2 หน้าจอ", desc: "ร้องจอใหญ่ เลือกเพลงบนมือถือ", icon: Tv, color: "bg-purple-500" },
-    { title: "ส่งขึ้นจอ TV", desc: "รองรับ Casting ทุกรูปแบบ", icon: Play, color: "bg-blue-500" },
-    { title: "ไร้โฆษณาคั่น", desc: "ร้องต่อเนื่องแบบ VIP ไร้โฆษณา", icon: Ban, color: "bg-rose-500" },
-    { title: "แยกเพลง/คาราโอเกะ", desc: "ค้นหาแม่นยำ เลือกได้ตรงใจ", icon: Search, color: "bg-indigo-500" },
-    { title: "ค้นหาด้วยเสียง", desc: "ไม่ต้องพิมพ์ แค่พูดก็เจอเพลง", icon: Mic2, color: "bg-pink-500" },
-    { title: "บันทึกเพลงโปรด", desc: "มีสมุดเพลงส่วนตัวเก็บไว้ร้องบ่อย", icon: Bookmark, color: "bg-green-500" },
-    { title: "คลังเพลงทั่วโลก", desc: "เพลงถูกใจจาก YouTube ครบสูตร", icon: Heart, color: "bg-red-500" },
+    { title: "ระบบ 2 หน้าจอ", desc: "ร้องจอใหญ่ เลือกเพลงบนมือถือ", icon: Tv, color: "bg-purple-600" },
+    { title: "ส่งขึ้นจอ TV", desc: "รองรับ Casting ทุกรูปแบบ", icon: Play, color: "bg-blue-600" },
+    { title: "ไร้โฆษณาคั่น", desc: "ร้องต่อเนื่องแบบ VIP ไร้โฆษณา", icon: Ban, color: "bg-rose-600" },
+    { title: "แยกเพลง/คาราโอเกะ", desc: "ค้นหาแม่นยำ เลือกได้ตรงใจ", icon: Search, color: "bg-indigo-600" },
+    { title: "ค้นหาด้วยเสียง", desc: "ไม่ต้องพิมพ์ แค่พูดก็เจอเพลง", icon: Mic2, color: "bg-pink-600" },
+    { title: "บันทึกเพลงโปรด", desc: "มีสมุดเพลงส่วนตัวเก็บไว้ร้องบ่อย", icon: Bookmark, color: "bg-emerald-600" },
+    { title: "คลังเพลงทั่วโลก", desc: "เพลงถูกใจจาก YouTube ครบสูตร", icon: Heart, color: "bg-red-600" },
 ];
 
-// v4.9.73: Performance caching for Shop page
 let shopPackageCache: Package[] | null = null;
 
 export default function PackagesPage() {
     const [packages, setPackages] = useState<Package[]>(shopPackageCache || []);
     const [loading, setLoading] = useState(!shopPackageCache);
     const [selectedPkg, setSelectedPkg] = useState<Package | undefined>(undefined);
-    const [showQRModal, setShowQRModal] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
 
     const { user } = useAuthStore();
@@ -77,14 +76,13 @@ export default function PackagesPage() {
                     ...doc.data()
                 })) as (Package & { isActive?: boolean })[];
 
-                // v4.9.69: Global Sync Filter - Hide packages where isActive is explicitly false
                 const filteredPackages = pkgList.filter(pkg => 
                     pkg.isActive !== false && 
                     !pkg.id.toLowerCase().includes('test')
                 );
 
                 setPackages(filteredPackages);
-                shopPackageCache = filteredPackages; // Cache it
+                shopPackageCache = filteredPackages;
             } catch (error) {
                 console.error("Error fetching packages:", error);
             } finally {
@@ -102,11 +100,11 @@ export default function PackagesPage() {
         }
 
         if (pkg.price === 0) {
-            // Instant Activation for Free/Trial packages
             try {
                 setLoading(true);
                 const { activateFreePackage } = await import('@/modules/billing/services/paymentService');
                 await activateFreePackage(user.uid!, pkg.id);
+                // v5.3: Using standard alerts for high-contrast accessibility (will be replaced by flat toasts later)
                 alert(`ยินดีด้วย! แพ็กเกจ ${pkg.name} ของคุณถูกเปิดใช้งานแล้ว`);
                 router.push('/');
             } catch (error: any) {
@@ -118,253 +116,227 @@ export default function PackagesPage() {
             return;
         }
 
-        // For Paid Packages - Open Payment Modal
-        setSelectedPkg(pkg);
-        setShowUploadModal(true);
-    };
-
-    const handleManualTransfer = (pkg: Package) => {
-        if (!user) {
-            router.push('/login');
-            return;
-        }
         setSelectedPkg(pkg);
         setShowUploadModal(true);
     };
 
     return (
-        <div className="min-h-screen bg-zinc-50 dark:bg-black text-zinc-900 dark:text-zinc-100">
+        <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans selection:bg-primary selection:text-white pb-20">
             <Head>
-                <title>YouOKE - เลือกแพ็กเกจคาราโอเกะ</title>
-                <meta name="description" content="เลือกแพ็กเกจคาราโอเกะที่ต้องการ ร้องเพลงต่อเนื่องไม่มีโฆษณาคั่น" />
+                <title>เลือกแพ็กเกจ - YouOKE</title>
+                <meta name="description" content="ร้องเพลงต่อเนื่องแบบไม่มีโฆษณาคั่นด้วย YouOKE Premium" />
             </Head>
 
-            {/* Navigation Header */}
-            <header className="sticky top-0 z-[100] bg-zinc-50/80 dark:bg-black/80 backdrop-blur-xl border-b border-zinc-100 dark:border-zinc-800">
-                <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            {/* v5.3 Pure Flat Navigation */}
+            <header className="sticky top-0 z-[100] bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border-b-2 border-zinc-100 dark:border-zinc-900">
+                <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
                     <button 
                         onClick={() => router.push('/')}
-                        className="flex items-center gap-2 text-sm font-black text-zinc-500 hover:text-primary transition-colors group"
+                        className="flex items-center gap-2 text-sm font-black text-zinc-950 dark:text-white transition-all active:scale-95 group"
                     >
-                        <ChevronLeft className="w-5 h-5 transition-transform group-hover:-translate-x-1" />
-                        🏠 กลับสู่หน้าเครื่องคาราโอเกะ
+                        <ChevronLeft className="w-5 h-5 stroke-[3] group-hover:-translate-x-1 transition-transform" />
+                        <span>กลับสู่หน้าคาราโอเกะ</span>
                     </button>
                     
                     <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center text-white scale-75">
-                            <Crown className="w-5 h-5" />
+                        <div className="w-8 h-8 rounded-xl bg-[#06C755] flex items-center justify-center text-white scale-90">
+                            <MessageCircle className="w-5 h-5" fill="currentColor" />
                         </div>
-                        <span className="text-xs font-black tracking-widest uppercase opacity-40">Purchase Shop</span>
+                        <span className="text-[10px] font-black tracking-widest uppercase text-zinc-400">LINE Connected</span>
                     </div>
                 </div>
             </header>
 
-            {/* Header Content */}
-            <div className="relative pt-12 pb-16 px-6 max-w-7xl mx-auto">
-                {/* 1-Day Trial Hero Spotlight (v4.9.33) */}
-                <div className="mb-16 animate-in fade-in slide-in-from-bottom-8 duration-1000">
-                    <div className="relative group overflow-hidden rounded-[3rem] p-1 border-none shadow-2xl shadow-emerald-500/10">
-                        {/* Animated Gradient Background */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 via-teal-500 to-primary opacity-90 group-hover:scale-105 transition-transform duration-700"></div>
-                        
-                        <div className="relative bg-white/5 backdrop-blur-sm rounded-[2.9rem] p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 border border-white/20">
+            <main className="max-w-6xl mx-auto px-6 pt-12">
+                {/* 1. Pure Flat Trial Hero */}
+                <div 
+                    onClick={() => {
+                        const trialPkg = packages.find(p => p.price === 0);
+                        if (trialPkg) handleBuy(trialPkg);
+                    }}
+                    className="mb-16 animate-in fade-in slide-in-from-bottom-4 duration-700"
+                >
+                    <div className="group relative overflow-hidden rounded-[40px] p-8 md:p-12 bg-emerald-600 border-4 border-emerald-700 cursor-pointer transition-all active:scale-[0.98]">
+                        <div className="relative flex flex-col md:flex-row items-center justify-between gap-8 z-10">
                             <div className="flex-1 space-y-4 text-center md:text-left">
-                                <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full text-[10px] font-black text-white uppercase tracking-widest border border-white/20">
-                                    <Zap className="w-3 h-3" />
+                                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white text-emerald-700 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                                    <Zap className="w-3 h-3 fill-current" />
                                     Special Trial Gift
                                 </div>
-                                <h1 className="text-3xl md:text-5xl font-black text-white tracking-tighter">
-                                    🎁 ทดลองใช้พรีเมียม <span className="underline decoration-white/30">ฟรี 1 วันเต็ม</span>
+                                <h1 className="text-3xl md:text-6xl font-black text-white tracking-tighter leading-[0.9]">
+                                    รับสิทธิ์พรีเมียม <br />
+                                    <span className="text-emerald-100">ฟรี 1 วันเต็มๆ</span>
                                 </h1>
-                                <p className="text-white/80 font-bold text-sm md:text-base max-w-xl">
-                                    ปลดล็อกทุกขีดจำกัด! ลองเล่นเมนู "สถานีเพลง" ที่คุณชื่นชอบ <br className="hidden md:block" />
-                                    จัดเพลย์ลิสต์ไม่จำกัด และร้องเพลงได้ไม่อั้น 24 ชม. พรีเมียมเต็มสูบเพื่อคุณครับ!
+                                <p className="text-emerald-50/80 font-bold text-sm md:text-lg max-w-xl">
+                                    สัมผัสประสบการณ์ร้องเพลงแบบไม่มีโฆษณาคั่น 24 ชม. <br className="hidden md:block" />
+                                    ปลดล็อกทุกความสามารถเพื่อความบันเทิงที่สมบูรณ์แบบ
                                 </p>
                             </div>
 
-                            <button 
-                                onClick={() => {
-                                    // Find trial package or handle via direct trial service
-                                    const trialPkg = packages.find(p => p.price === 0 && p.durationDays === 1) || packages.find(p => p.price === 0);
-                                    if (trialPkg) {
-                                        handleBuy(trialPkg);
-                                    } else {
-                                        alert("📢 ขออภัยครับ ยูสเซอร์ของคุณได้รับสิทธิ์ทดลองใช้ไปแล้ว หรือแพ็กเกจนี้ถูกจำกัดสิทธิ์ในขณะนี้ครับ");
-                                    }
-                                }}
-                                className="w-full md:w-auto h-16 px-10 bg-white text-emerald-600 rounded-[2rem] font-black text-lg shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-3"
-                            >
-                                <Sparkles className="w-6 h-6 animate-pulse" />
-                                รับสิทธิ์ใช้ฟรีทันที
+                            <button className="w-full md:w-auto h-16 px-10 bg-white text-emerald-950 rounded-3xl font-black text-xl flex items-center justify-center gap-3 transition-all">
+                                <Sparkles className="w-6 h-6" />
+                                ใช้ฟรีทันที
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <div className="relative z-10 text-center space-y-6 mb-16 px-6">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-xs font-black tracking-widest uppercase">
-                        <Crown className="w-4 h-4" />
+                {/* 2. Main Title - High Contrast */}
+                <div className="text-center space-y-4 mb-16">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 text-zinc-950 dark:text-white rounded-2xl text-[10px] font-black tracking-widest uppercase border-2 border-zinc-200 dark:border-zinc-800">
+                        <Crown className="w-4 h-4 text-amber-500" />
                         Premium Selection
                     </div>
-                    
-                    <h2 className="text-4xl md:text-6xl font-black tracking-tighter">
+                    <h2 className="text-4xl md:text-7xl font-black text-zinc-950 dark:text-white tracking-tighter leading-[0.85]">
                         สมัครแพ็กเกจ <br />
-                        <span className="bg-gradient-to-r from-primary via-purple-500 to-indigo-600 bg-clip-text text-transparent">ร้องเพลงให้สุดชีวิต</span>
+                        <span className="text-primary">ร้องเพลงให้สุดชีวิต</span>
                     </h2>
+                    <p className="text-zinc-500 font-bold text-sm md:text-base">เลือกแพ็กเกจที่โดนใจคุณที่สุด ยิ่งสมัครนานยิ่งคุ้มค่า</p>
                 </div>
 
-                {/* Package Grid */}
+                {/* 3. Pure Flat Package Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {loading ? (
                         Array.from({ length: 3 }).map((_, i) => (
-                            <div key={i} className="h-[500px] rounded-[3rem] bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 p-8 space-y-6 animate-pulse">
-                                <div className="h-8 bg-zinc-100 dark:bg-zinc-800 rounded-full w-1/3"></div>
-                                <div className="h-12 bg-zinc-200 dark:bg-zinc-700 rounded-2xl w-1/2"></div>
-                                <div className="space-y-3">
-                                    <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded-lg w-full"></div>
-                                    <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded-lg w-3/4"></div>
-                                </div>
-                                <div className="space-y-4 pt-12">
-                                    {[1, 2, 3, 4].map(j => (
-                                        <div key={j} className="flex gap-4">
-                                            <div className="w-5 h-5 bg-zinc-200 dark:bg-zinc-700 rounded-full"></div>
-                                            <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded-lg flex-1"></div>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="mt-auto h-12 bg-zinc-200 dark:bg-zinc-700 rounded-[1.2rem] w-full"></div>
-                            </div>
+                            <div key={i} className="h-[460px] rounded-[48px] bg-zinc-100 dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-800 animate-pulse" />
                         ))
                     ) : (
-                        packages.map((pkg) => (
-                            <div 
-                                key={pkg.id}
-                                className={cn(
-                                    "group relative flex flex-col h-full rounded-[3rem] p-8 transition-all duration-500",
-                                    pkg.isPopular 
-                                        ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 border-none shadow-[0_32px_64px_-12px_rgba(0,0,0,0.2)] dark:shadow-[0_32px_64px_-12px_rgba(255,255,255,0.1)] scale-105 z-10" 
-                                        : "bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 hover:shadow-2xl hover:shadow-zinc-200/50 dark:hover:shadow-none"
-                                )}
-                            >
-                                {pkg.isPopular && (
-                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-primary text-white rounded-full text-[10px] font-black tracking-widest uppercase shadow-xl shadow-primary/20 flex items-center gap-2">
-                                        <Zap className="w-3 h-3 fill-current" />
-                                        🔥 ยอดนิยม
-                                    </div>
-                                )}
-
-                                <div className="space-y-6 flex-grow">
-                                    <h3 className="text-2xl font-black">{pkg.name}</h3>
-                                    
-                                    <div className="flex items-baseline gap-1">
-                                        <span className="text-5xl font-black tracking-tighter">฿{pkg.price}</span>
-                                        <span className={cn(
-                                            "text-sm font-bold",
-                                            pkg.isPopular ? "opacity-60" : "text-zinc-400"
-                                        )}>
-                                            /{pkg.durationDays} วัน
-                                        </span>
-                                    </div>
-
-                                    {pkg.description && (
-                                        <p className={cn(
-                                            "text-sm font-bold line-clamp-2",
-                                            pkg.isPopular ? "opacity-70" : "text-zinc-500"
-                                        )}>
-                                            {pkg.description}
-                                        </p>
+                        packages.filter(p => p.price > 0).map((pkg) => {
+                            const isAnnual = pkg.durationDays >= 300;
+                            const isPopular = pkg.isPopular || isAnnual;
+                            
+                            return (
+                                <div 
+                                    key={pkg.id}
+                                    className={cn(
+                                        "group relative flex flex-col h-full rounded-[48px] p-10 transition-all duration-300 border-4",
+                                        isPopular 
+                                            ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 border-zinc-950 dark:border-white scale-105 z-10" 
+                                            : "bg-white dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800"
+                                    )}
+                                >
+                                    {isPopular && (
+                                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-primary text-white rounded-full text-[10px] font-black tracking-widest uppercase flex items-center gap-2 border-4 border-white dark:border-zinc-950">
+                                            <Zap className="w-3 h-3 fill-current" />
+                                            🔥 BEST VALUE
+                                        </div>
                                     )}
 
-                                    <div className="space-y-4 pt-4 border-t border-zinc-100 dark:border-zinc-800">
-                                        {Object.entries(pkg.features || {}).map(([key, val]: [string, any], idx) => (
-                                            <div key={idx} className="flex items-start gap-3">
-                                                <div className={cn(
-                                                    "w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0",
-                                                    pkg.isPopular ? "bg-primary text-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-400"
-                                                )}>
-                                                    <Check className="w-3 h-3 stroke-[3]" />
-                                                </div>
-                                                <span className="text-sm font-bold">{key} {val && `(${val})`}</span>
+                                    <div className="space-y-6 flex-grow">
+                                        <div className="space-y-1">
+                                            <p className={cn("text-[10px] font-black uppercase tracking-widest", isPopular ? "text-primary" : "text-zinc-400")}>
+                                                VIP Package
+                                            </p>
+                                            <h3 className="text-3xl font-black tracking-tight">{pkg.name}</h3>
+                                        </div>
+                                        
+                                        <div className="flex flex-col border-t-2 border-dashed border-zinc-100 dark:border-zinc-800 pt-6">
+                                            <div className="flex items-baseline gap-1">
+                                                <span className="text-6xl font-black tracking-tighter">฿{pkg.price}</span>
+                                                <span className={cn("text-sm font-black uppercase tracking-widest opacity-40 ml-1")}>
+                                                    /{pkg.durationDays >= 9999 ? 'LIFETIME' : `${pkg.durationDays} DAYS`}
+                                                </span>
                                             </div>
-                                        ))}
-                                    </div>
-                                </div>
+                                            <p className={cn("text-[11px] font-black uppercase tracking-widest mt-2", isPopular ? "text-zinc-400" : "text-zinc-500")}>
+                                                No recurring hidden fees
+                                            </p>
+                                        </div>
 
-                                <div className="mt-8">
-                                    <div className="space-y-3 relative z-10">
-                                        <button
-                                            onClick={() => {
-                                                if (!isLineConnected && pkg.price > 0) {
-                                                    alert("📢 เพื่อรับเลขบัญชีและแจ้งเตือนผ่าน LINE\nกรุณาเชื่อมต่อ LINE ก่อนดำเนินการสั่งซื้อครับ");
-                                                    router.push('/profile');
-                                                    return;
-                                                }
-
-                                                if (pkg.price === 0) {
-                                                    handleBuy(pkg);
-                                                } else {
-                                                    handleManualTransfer(pkg);
-                                                }
-                                           }}
-                                            className={cn(
-                                                "w-full h-12 rounded-[1.2rem] flex items-center justify-center gap-3 font-black text-sm transition-all active:scale-95 shadow-lg",
-                                                pkg.isPopular
-                                                    ? "bg-primary text-white hover:bg-primary/90 shadow-primary/20"
-                                                    : "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 hover:opacity-90 shadow-zinc-200/50 dark:shadow-none"
-                                            )}
-                                        >
-                                            {pkg.price === 0 ? <Zap className="w-5 h-5" /> : <MessageCircle className="w-5 h-5" />}
-                                            {pkg.price === 0 ? "รับสิทธิ์ใช้งานฟรี" : (isLineConnected ? "สมัครแพ็กเกจ (แจ้งผ่าน LINE)" : "เชื่อมต่อ LINE เพื่อสั่งซื้อ")}
-                                        </button>
+                                        <div className="space-y-4 pt-6">
+                                            {KILLER_FEATURES.slice(0, 4).map((feature, idx) => (
+                                                <div key={idx} className="flex items-center gap-3">
+                                                    <div className={cn(
+                                                        "w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 border-2",
+                                                        isPopular ? "bg-white text-zinc-950 border-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-400 border-zinc-200 dark:border-zinc-800"
+                                                    )}>
+                                                        <Check className="w-3 h-3 stroke-[4]" />
+                                                    </div>
+                                                    <span className="text-sm font-black">{feature.title}</span>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
+
+                                    <button
+                                        onClick={() => handleBuy(pkg)}
+                                        className={cn(
+                                            "mt-10 w-full h-16 rounded-3xl flex items-center justify-center gap-3 font-black text-lg transition-all active:scale-95",
+                                            isPopular
+                                                ? "bg-primary text-white border-2 border-primary"
+                                                : "bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 border-2 border-transparent"
+                                        )}
+                                    >
+                                        {isLineConnected ? <MessageCircle className="w-5 h-5" fill="currentColor" /> : <ChevronRight className="w-5 h-5 stroke-[3]" />}
+                                        {isLineConnected ? "สมัครแพ็กเกจนี้" : "เชื่อมต่อเพื่อสมัคร"}
+                                    </button>
                                 </div>
-                            </div>
-                        ))
+                            );
+                        })
                     )}
                 </div>
 
-                {/* Features Section */}
-                <section className="mt-32">
-                    <div className="text-center mb-16 space-y-4">
-                        <h2 className="text-3xl md:text-5xl font-black tracking-tight">ทำไมต้อง YouOKE Premium?</h2>
-                        <p className="text-zinc-500 font-bold max-w-xl mx-auto">ฟีเจอร์ระดับอัจฉริยะที่ออกแบบมาเพื่อให้คุณเป็นราชาและราชินีแห่งคาราโอเกะ</p>
+                {/* 4. Feature Showcase Section */}
+                <section className="mt-40 border-t-4 border-zinc-100 dark:border-zinc-900 pt-20">
+                    <div className="text-center mb-16 space-y-4 px-6">
+                        <div className="w-16 h-1 bg-primary mx-auto rounded-full mb-6"></div>
+                        <h2 className="text-3xl md:text-5xl font-black tracking-tight text-zinc-950 dark:text-white leading-none">ทำไมต้อง YouOKE Premium?</h2>
+                        <p className="text-zinc-500 font-bold max-w-2xl mx-auto">ฟีเจอร์ระดับอัจฉริยะที่ออกแบบมาเพื่อให้คุณเป็นราชาและราชินีแห่งคาราโอเกะที่บ้านคุณเอง</p>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-4">
                         {KILLER_FEATURES.map((feature, i) => (
                             <div 
                                 key={i}
-                                className="p-6 rounded-[2rem] bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 hover:border-primary/20 transition-all group"
+                                className="p-8 rounded-[40px] bg-white dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800 hover:border-primary transition-all active:scale-[0.98]"
                             >
                                 <div className={cn(
-                                    "w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110",
-                                    feature.color,
-                                    "text-white"
+                                    "w-14 h-14 rounded-[20px] flex items-center justify-center mb-6 shadow-none",
+                                    feature.color, "text-white"
                                 )}>
-                                    <feature.icon className="w-6 h-6" />
+                                    <feature.icon className="w-7 h-7" strokeWidth={2.5} />
                                 </div>
-                                <h3 className="font-black text-lg mb-2">{feature.title}</h3>
-                                <p className="text-sm font-bold text-zinc-500 dark:text-zinc-400">{feature.desc}</p>
+                                <h3 className="font-black text-xl mb-3 text-zinc-950 dark:text-white leading-tight">{feature.title}</h3>
+                                <p className="text-sm font-bold text-zinc-500 leading-relaxed">{feature.desc}</p>
                             </div>
                         ))}
                     </div>
                 </section>
-            </div>
+
+                {/* 5. Final Footer Promotion Content */}
+                <div className="mt-32 p-10 md:p-16 rounded-[60px] bg-zinc-950 text-white text-center border-4 border-zinc-950 space-y-8">
+                    <div className="flex justify-center">
+                        <div className="w-20 h-20 bg-[#06C755] rounded-[32px] flex items-center justify-center border-4 border-[#06C755]">
+                           <MessageCircle className="w-10 h-10" fill="currentColor" />
+                        </div>
+                    </div>
+                    <div className="space-y-4">
+                        <h3 className="text-3xl md:text-5xl font-black tracking-tight leading-[0.9]">
+                            ดูแลคุณ <span className="text-primary italic font-serif">ทุกขั้นตอน</span>
+                        </h3>
+                        <p className="max-w-xl mx-auto text-zinc-400 font-bold">
+                            หากคุณมีข้อสงสัยหรือต้องการความช่วยเหลือในการสมัครสมาชิก <br />
+                            ทักหาแอดมินทาง LINE ได้ตลอด 24 ชม. ครับ
+                        </p>
+                    </div>
+                    <div className="pt-4">
+                        <button 
+                            onClick={() => window.open('https://line.me/ti/p/~@243lercy', '_blank')}
+                            className="bg-[#06C755] text-white h-16 px-10 rounded-3xl font-black text-lg flex items-center justify-center gap-3 mx-auto transition-all active:scale-95"
+                        >
+                            <MessageCircle className="w-6 h-6" fill="currentColor" />
+                            ติดต่อ @243lercy ทาง LINE
+                        </button>
+                    </div>
+                </div>
+            </main>
 
             {/* Modals */}
             {selectedPkg && (
-                <>
-                    <OmiseQRModal 
-                        isOpen={showQRModal}
-                        onClose={() => setShowQRModal(false)}
-                        pkg={selectedPkg}
-                    />
-                    <UploadSlipModal 
-                        isOpen={showUploadModal}
-                        onClose={() => setShowUploadModal(false)}
-                        pkg={selectedPkg}
-                    />
-                </>
+                <UploadSlipModal 
+                    isOpen={showUploadModal}
+                    onClose={() => setShowUploadModal(false)}
+                    pkg={selectedPkg}
+                />
             )}
         </div>
     );

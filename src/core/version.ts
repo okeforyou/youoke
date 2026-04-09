@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.17 (Shop-Wide Pure Flat)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "UI: Full redesign of standalone /packages page into Pure Flat system",
+            "UX: Standardized senior-friendly high-contrast titles and pricing (Zinc-950)",
+            "UX: Implemented rigid Border-4 card layouts for clear pricing tiers",
+            "DESIGN: Replaced legacy gradients with solid Emerald-600 Trial Hero"
+        ],
+        recent_updates: "Comprehensive Packages Page Overhaul"
+    },
+    {
         version: "v5.3.16 (Pure Flat Experience)",
         date: "9 เม.ย. 2569",
         changes: [
