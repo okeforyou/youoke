@@ -200,6 +200,25 @@ export const ProfileContent = () => {
                         onUpgrade={handleOpenPackages}
                     />
 
+                    {/* v5 VIP Invitation Banner (Added for Shop Visibility) */}
+                    {!isPremium && (
+                        <div 
+                            onClick={() => setView('packages')}
+                            className="group cursor-pointer w-full p-4 rounded-3xl bg-zinc-950 dark:bg-white flex items-center justify-between transition-all active:scale-[0.98] border border-zinc-800 dark:border-zinc-200"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center text-white">
+                                    <SparklesIcon className="w-4 h-4" />
+                                </div>
+                                <div>
+                                    <p className="text-[11px] font-black text-white dark:text-zinc-950 leading-tight">ปลดล็อกพรีเมียมเพื่อสนุกไม่จำกัด</p>
+                                    <p className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500">สมัครสมาชิก VIP วันนี้ รับสิทธิพิเศษมากมาย</p>
+                                </div>
+                            </div>
+                            <ChevronRightIcon className="w-4 h-4 text-zinc-600 dark:text-zinc-400 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                    )}
+
                     {/* v5 Neutral LINE Connect Block */}
                     <div className="w-full flex items-center justify-between p-4 rounded-3xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-100 dark:border-zinc-800/50">
                         <div className="flex items-center gap-3">

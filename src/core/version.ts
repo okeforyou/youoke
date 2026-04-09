@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.12 (Action & Upsell Boost)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "UX: Added explicit 'Upgrade VIP' Action Label inside Membership Card",
+            "UI: Integrated high-contrast VIP Invitation Banner for better conversion",
+            "Shop: Improved discoverability of Package Store from Profile drawer",
+            "DESIGN: Refined information hierarchy for membership dashboard"
+        ],
+        recent_updates: "Subscription CTA & Shop Visibility Optimization"
+    },
+    {
         version: "v5.3.11 (Full Thai Branding)",
         date: "9 เม.ย. 2569",
         changes: [
