@@ -86,7 +86,7 @@ export default function ListHitsGrid({ onClick: onPlay }: { onClick?: (hit: Sing
       <div className="px-4 pt-4 pb-6">
         <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-zinc-900 dark:to-zinc-800 p-5 sm:p-8 rounded-2xl relative overflow-hidden min-h-[100px] sm:min-h-[130px] flex flex-col justify-center border border-gray-200/50 dark:border-zinc-800 shadow-sm">
            <h2 className="text-2xl sm:text-3xl font-black text-black dark:text-white leading-tight">ชาร์ตเพลง</h2>
-           <p className="hidden sm:block text-[13px] sm:text-base !text-black dark:!text-zinc-400 mt-2 font-black">เกาะติดกระแสเพลงฮิต อัปเดตใหม่ล่าสุดตลอดเวลา</p>
+           <p className="text-[12px] sm:text-base !text-black dark:!text-zinc-400 mt-2 font-black">เกาะติดกระแสเพลงฮิต อัปเดตอันดับเพลงยอดนิยมล่าสุดตลอดเวลา</p>
            <div className="absolute bottom-6 right-8 opacity-10">
               <BarChart2 className="w-16 h-16 sm:w-20 sm:h-20 text-black dark:text-white" />
            </div>

@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.3 (UI Consistency Sync)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "UI: Synchronized Chart & Station headers for system-wide consistency",
+            "UX: Enabled Charts descriptive subtitle on mobile devices",
+            "DESIGN: Refined typography and weight for better content hierarchy"
+        ],
+        recent_updates: "Dashboard UI Consistency Improvements"
+    },
+    {
         version: "v5.3.2 (Master Responsive Manual)",
         date: "9 เม.ย. 2569",
         changes: [
