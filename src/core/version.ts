@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.26 (Login Forced Light Mode)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "UI: Forced 100% Light Mode on Login page (Removed all Dark Mode classes)",
+            "UX: Enforced Zinc-950 (Pure Black) for platform description to match headline",
+            "ACCESSIBILITY: Guaranteed 100% legibility via high-contrast black-on-white layout"
+        ],
+        recent_updates: "Forced Light Mode Login Overhaul"
+    },
+    {
         version: "v5.3.25 (Thai Copywriting Polish)",
         date: "9 เม.ย. 2569",
         changes: [

@@ -154,16 +154,16 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col lg:flex-row relative font-sans overflow-x-hidden">
+        <div className="min-h-screen bg-white flex flex-col lg:flex-row relative font-sans overflow-x-hidden !text-zinc-950">
             <Head>
                 <title>{isLogin ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก'} - YouOke</title>
             </Head>
 
             {/* Premium Loading Overlay */}
             {((isLoading && isSubmitting) || lineLoading) && (
-                <div className="fixed inset-0 z-[200] bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl flex flex-col items-center justify-center animate-in fade-in duration-300">
-                    <div className="w-16 h-16 bg-zinc-900 dark:bg-white rounded-[2rem] flex items-center justify-center animate-bounce mb-6">
-                         <span className="text-2xl font-black text-white dark:text-zinc-900">Y</span>
+                <div className="fixed inset-0 z-[200] bg-white/90 backdrop-blur-xl flex flex-col items-center justify-center animate-in fade-in duration-300">
+                    <div className="w-16 h-16 bg-zinc-900 rounded-[2rem] flex items-center justify-center animate-bounce mb-6">
+                         <span className="text-2xl font-black text-white">Y</span>
                     </div>
                 </div>
             )}
@@ -173,7 +173,7 @@ export default function LoginPage() {
                 "fixed top-0 left-0 right-0 z-[100] p-6 flex items-center justify-between pointer-events-none transition-all",
                 !showIntro ? "opacity-0 invisible lg:opacity-100 lg:visible" : "opacity-100 visible"
             )}>
-                <Link href="/" className="pointer-events-auto flex items-center gap-2 text-[10px] font-black uppercase text-zinc-600 dark:text-zinc-400 bg-white dark:bg-zinc-900 px-5 py-2.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 active:scale-95 transition-all shadow-none">
+                <Link href="/" className="pointer-events-auto flex items-center gap-2 text-[10px] font-black uppercase text-zinc-600 bg-white px-5 py-2.5 rounded-2xl border border-zinc-200 active:scale-95 transition-all shadow-none">
                     <ArrowLeft size={16} strokeWidth={3} />
                     <span>กลับหน้าหลัก</span>
                 </Link>
@@ -181,9 +181,9 @@ export default function LoginPage() {
 
             <div className="flex-1 flex flex-col lg:flex-row w-full h-full relative">
                 
-                {/* LEFT SIDE: Features Intro */}
+                {/* LEFT SIDE: Features Intro (Forced Light Mode) */}
                 <div className={clsx(
-                    "w-full lg:w-[45%] xl:w-[50%] flex flex-col justify-center p-8 lg:p-24 pt-24 lg:pt-24 bg-zinc-50 dark:bg-zinc-950 lg:border-r border-zinc-100 dark:border-zinc-900/50 min-h-screen lg:h-auto",
+                    "w-full lg:w-[45%] xl:w-[50%] flex flex-col justify-center p-8 lg:p-24 pt-24 lg:pt-24 bg-zinc-50 lg:border-r border-zinc-100 min-h-screen lg:h-auto",
                     !showIntro ? "hidden lg:flex" : "flex"
                 )}>
                     <div className="max-w-xl mx-auto lg:mx-0">
@@ -192,11 +192,11 @@ export default function LoginPage() {
                             <span>{user ? 'เชื่อมบัญชี YouTube รับสิทธิเพิ่ม' : 'ทดลองใช้ฟรี 1 วัน'}</span>
                         </div>
 
-                        <h2 className="text-3xl lg:text-5xl font-black text-zinc-900 dark:text-white leading-[1.1] tracking-tighter mb-6">
+                        <h2 className="text-3xl lg:text-5xl font-black text-zinc-950 leading-[1.1] tracking-tighter mb-6">
                             ร้องคาราโอเกะ<br/>แบบมืออาชีพที่บ้านคุณ
                         </h2>
 
-                        <p className="text-zinc-900 dark:text-zinc-400 text-sm lg:text-base font-black mb-10 leading-relaxed max-w-md">
+                        <p className="text-zinc-950 text-sm lg:text-base font-black mb-10 leading-relaxed max-w-md opacity-70">
                            เข้าสู่ระบบเพื่อจัดการคิวเพลงโปรดผ่านสมาร์ทโฟน และร้องเพลงจากคลัง YouTube ที่ใหญ่ที่สุดในโลก
                         </p>
 
@@ -207,37 +207,37 @@ export default function LoginPage() {
                                         <f.icon size={20} strokeWidth={2.5} />
                                     </div>
                                     <div className="pt-0.5">
-                                        <h3 className="font-black text-zinc-900 dark:text-white text-[13px] lg:text-[15px] leading-tight tracking-tight">{f.title}</h3>
-                                        <p className="text-zinc-400 dark:text-zinc-500 text-[10px] lg:text-[11px] font-bold leading-tight mt-1">{f.desc}</p>
+                                        <h3 className="font-black text-zinc-950 text-[13px] lg:text-[15px] leading-tight tracking-tight">{f.title}</h3>
+                                        <p className="text-zinc-500 text-[10px] lg:text-[11px] font-bold leading-tight mt-1">{f.desc}</p>
                                     </div>
                                 </div>
                             ))}
                         </div>
 
                         <div className="lg:hidden space-y-3">
-                            <button onClick={() => { setIsLogin(false); setShowIntro(false); }} className="w-full h-14 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-black rounded-3xl active:scale-95 transition-all text-base border-none shadow-none">สมัครสมาชิกฟรี</button>
-                            <button onClick={() => { setIsLogin(true); setShowIntro(false); }} className="w-full h-14 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white font-black rounded-3xl active:scale-95 transition-all text-base shadow-none">เข้าสู่ระบบ</button>
+                            <button onClick={() => { setIsLogin(false); setShowIntro(false); }} className="w-full h-14 bg-zinc-900 text-white font-black rounded-3xl active:scale-95 transition-all text-base border-none shadow-none">สมัครสมาชิกฟรี</button>
+                            <button onClick={() => { setIsLogin(true); setShowIntro(false); }} className="w-full h-14 bg-white border border-zinc-200 text-zinc-900 font-black rounded-3xl active:scale-95 transition-all text-base shadow-none">เข้าสู่ระบบ</button>
                         </div>
                     </div>
                 </div>
 
-                {/* RIGHT SIDE: Auth Form */}
+                {/* RIGHT SIDE: Auth Form (Forced Light Mode) */}
                 <div className={clsx(
-                    "w-full lg:w-[55%] xl:w-[50%] flex flex-col justify-center items-center py-12 px-6 lg:px-24 bg-white dark:bg-zinc-900/10 min-h-screen lg:min-h-0 relative",
+                    "w-full lg:w-[55%] xl:w-[50%] flex flex-col justify-center items-center py-12 px-6 lg:px-24 bg-white min-h-screen lg:min-h-0 relative",
                     showIntro ? "hidden lg:flex" : "flex animate-in fade-in slide-in-from-bottom-4 duration-500"
                 )}>
                     {/* Back to Intro (Mobile) */}
-                    <button onClick={() => setShowIntro(true)} className="lg:hidden absolute top-8 left-6 flex items-center gap-2 text-[10px] font-black text-zinc-600 dark:text-zinc-400 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl px-5 py-2.5 active:scale-95 transition-all">
+                    <button onClick={() => setShowIntro(true)} className="lg:hidden absolute top-8 left-6 flex items-center gap-2 text-[10px] font-black text-zinc-600 bg-white border border-zinc-200 rounded-2xl px-5 py-2.5 active:scale-95 transition-all">
                         <ArrowLeft size={16} strokeWidth={3} />
                         <span>กลับ</span>
                     </button>
 
                     <div className="w-full max-w-[380px]">
                         <div className="mb-10 text-center">
-                            <h2 className="text-2xl lg:text-3xl font-black text-zinc-900 dark:text-white mb-2 tracking-tighter">
+                            <h2 className="text-2xl lg:text-3xl font-black text-zinc-950 mb-2 tracking-tighter">
                                 {isLogin ? 'ยินดีต้อนรับกลับมา' : 'เข้าร่วม YouOKE'}
                             </h2>
-                            <p className="text-zinc-400 dark:text-zinc-500 text-[13px] font-bold">
+                            <p className="text-zinc-500 text-[13px] font-bold">
                                 {isLogin ? (
                                     <>ยังไม่มีบัญชี? <button onClick={() => setIsLogin(false)} className="text-primary hover:underline">สมัครสมาชิกใหม่</button></>
                                 ) : (
@@ -251,7 +251,7 @@ export default function LoginPage() {
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M24 10.304c0-4.66-4.66-8.43-10.404-8.43-5.744 0-10.4 3.77-10.4 8.43 0 4.155 3.655 7.63 8.708 8.284.34.074.801.225 1.026.516.23.289.15.743.074 1.042l-.367 2.215s-.204 1.258.944.685c1.149-.574 6.204-3.655 8.46-6.255C22.618 15.352 24 13.013 24 10.304zm-14.757 2.375a.333.333 0 0 1-.333.333H6.84a.332.332 0 0 1-.334-.333V8.165a.333.333 0 0 1 .334-.334h.61c.184 0 .333.15.333.334v3.837h1.127c.184 0 .333.15.333.333v.644zm3.058 0a.334.334 0 0 1-.334.333h-.615a.333.333 0 0 1-.333-.333V8.165c0-.184.15-.334.333-.334h.615c.184 0 .334.15.334.334v4.514zm3.903 0a.332.332 0 0 1-.333.333h-.515a.34.34 0 0 1-.267-.13l-1.422-1.95v1.747a.333.333 0 0 1-.333.333h-.611a.333.333 0 0 1-.333-.333V8.165a.333.333 0 0 1 .333-.334h.511c.101 0 .196.046.257.126l1.432 1.956V8.165a.333.333 0 0 1 .333-.334h.612c.184 0 .333.15.333.334v4.514zm3.015-2.071c.184 0 .333.15.333.333v.644a.333.333 0 0 1-.333.333h-1.616a.333.333 0 0 1-.333-.333V8.165a.333.333 0 0 1 .333-.334h1.616c.184 0 .333.15.333.334v.644a.333.333 0 0 1-.333.334H17.47v.754h1.127c.184 0 .333.15.333.333v.644a.333.333 0 0 1-.333.334H17.47v.775h1.119z"/></svg>
                                 <span>เข้าสู่ระบบด้วย LINE</span>
                             </button>
-                            <button onClick={handleGoogleLogin} disabled={isLoading || !acceptedTerms} className="w-full h-14 flex justify-center items-center gap-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white font-black transition-all active:scale-95 disabled:opacity-40 shadow-none">
+                            <button onClick={handleGoogleLogin} disabled={isLoading || !acceptedTerms} className="w-full h-14 flex justify-center items-center gap-3 rounded-2xl bg-zinc-50 border border-zinc-200 text-zinc-900 font-black transition-all active:scale-95 disabled:opacity-40 shadow-none">
                                 <svg width="20" height="20" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/><path d="M3.964 10.706c-.18-.54-.282-1.117-.282-1.706 0-.589.102-1.166.282-1.706V4.962H.957C.347 6.177 0 7.549 0 9s.347 2.823.957 4.038l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.962L3.964 7.294C4.672 5.167 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
                                 <span>ดำเนินการด้วย Google</span>
                             </button>
@@ -260,18 +260,18 @@ export default function LoginPage() {
                         <div className="mb-6">
                             <label className="flex items-start gap-3 cursor-pointer group">
                                 <input type="checkbox" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} className="peer hidden" />
-                                <div className="w-5 h-5 rounded-lg border-2 border-zinc-200 dark:border-zinc-700 peer-checked:bg-primary peer-checked:border-primary flex items-center justify-center transition-all bg-white dark:bg-zinc-800">
+                                <div className="w-5 h-5 rounded-lg border-2 border-zinc-200 peer-checked:bg-primary peer-checked:border-primary flex items-center justify-center transition-all bg-white">
                                     <CheckCircle2 className="w-3.5 h-3.5 text-white" strokeWidth={4} />
                                 </div>
                                 <span className="text-[11px] font-black text-zinc-500 leading-tight">
-                                    ฉันยอมรับ <Link href="/terms" className="text-zinc-900 dark:text-zinc-200 underline decoration-primary/30">เงื่อนไขการใช้งาน</Link> ของ YouOKE
+                                    ฉันยอมรับ <Link href="/terms" className="text-zinc-900 underline decoration-primary/30">เงื่อนไขการใช้งาน</Link> ของ YouOKE
                                 </span>
                             </label>
                         </div>
 
                         <div className="relative py-8 flex items-center justify-center">
-                            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-zinc-100 dark:border-zinc-800"></div></div>
-                            <span className="relative px-4 bg-white dark:bg-zinc-950 text-[9px] font-black text-zinc-300 dark:text-zinc-700 uppercase tracking-widest">หรือใช้อีเมล</span>
+                            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-zinc-100"></div></div>
+                            <span className="relative px-4 bg-white text-[9px] font-black text-zinc-300 uppercase tracking-widest">หรือใช้อีเมล</span>
                         </div>
 
                         <form className="space-y-4" onSubmit={handleSubmit}>
@@ -283,12 +283,12 @@ export default function LoginPage() {
                             )}
 
                             {!isLogin && (
-                                <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full h-14 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl px-5 text-sm font-bold text-zinc-900 dark:text-white outline-none ring-0 placeholder:text-zinc-400" placeholder="ชื่อเล่นของคุณ" />
+                                <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full h-14 bg-zinc-50 border-none rounded-2xl px-5 text-sm font-bold text-zinc-900 outline-none ring-0 placeholder:text-zinc-400" placeholder="ชื่อเล่นของคุณ" />
                             )}
-                            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full h-14 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl px-5 text-sm font-bold text-zinc-900 dark:text-white outline-none ring-0 placeholder:text-zinc-400" placeholder="อีเมล" />
-                            <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full h-14 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl px-5 text-sm font-bold text-zinc-900 dark:text-white outline-none ring-0 placeholder:text-zinc-400" placeholder="รหัสผ่าน" />
+                            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full h-14 bg-zinc-50 border-none rounded-2xl px-5 text-sm font-bold text-zinc-900 outline-none ring-0 placeholder:text-zinc-400" placeholder="อีเมล" />
+                            <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full h-14 bg-zinc-50 border-none rounded-2xl px-5 text-sm font-bold text-zinc-900 outline-none ring-0 placeholder:text-zinc-400" placeholder="รหัสผ่าน" />
 
-                            <button type="submit" disabled={isLoading || !acceptedTerms} className="w-full h-14 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-black rounded-3xl active:scale-95 transition-all text-base mt-2 shadow-none border-none">
+                            <button type="submit" disabled={isLoading || !acceptedTerms} className="w-full h-14 bg-zinc-900 text-white font-black rounded-3xl active:scale-95 transition-all text-base mt-2 shadow-none border-none">
                                 {isLogin ? 'เข้าสู่ระบบ' : 'เริ่มเป็นสมาชิกตอนนี้'}
                             </button>
                         </form>
