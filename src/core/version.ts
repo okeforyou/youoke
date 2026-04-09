@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.4 (Smart Casting Edition)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "UI: Detailed /tv vs /monitor logic in user guide",
+            "UX: Added specific hardware recommendations for wireless casting",
+            "DESIGN: Re-ordered casting methods based on user preference and ease of use",
+            "TECH: Ensured dynamic domain mapping in all manual instructions"
+        ],
+        recent_updates: "Comprehensive Wireless Control & Casting Guide"
+    },
+    {
         version: "v5.3.3 (UI Consistency Sync)",
         date: "9 เม.ย. 2569",
         changes: [

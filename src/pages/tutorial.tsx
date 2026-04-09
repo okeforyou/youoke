@@ -50,14 +50,14 @@ export default function TutorialPage() {
         casting: [
             { 
                 id: 'c1', 
-                title: "1. จอภาพไร้สาย (Smart TV)", 
-                desc: `เปิดเบราว์เซอร์บนทีวีไปที่ ${domain}/tv แล้วเชื่อมต่อโดย "สแกน QR Code" บนทีวี หรือ "กรอกรหัส 4 หลัก" ในมือถือของคุณ`, 
+                title: "1. โหมด Smart TV (Pure Player)", 
+                desc: `เปิดเบราว์เซอร์บนทีวีไปที่ ${domain}/tv เหมาะสำหรับร้องบนจอใหญ่ที่เน้นดูวิดีโอเนื้อร้องคลีนๆ และคุมเพลงผ่านมือถือ 100%`, 
                 icon: Radio,
                 highlight: true 
             },
-            { id: 'c2', title: "2. สาย HDMI (Dual Screen)", desc: "ต่อสาย HDMI -> ตั้งค่าหน้าจอเป็น Extend -> กดเปิด 'จอแยก' ใน YouOKE แล้วลากหน้าต่างไปไว้ที่จอทีวี", icon: Monitor },
-            { id: 'c3', title: "3. Google Chromecast", desc: "กดไอคอน Cast 📺 ในระบบ YouOKE แล้วเลือกชื่อ Chromecast หรือ Android TV ของคุณเพื่อส่งภาพขึ้นจอทันที", icon: Cast },
-            { id: 'c4', title: "4. YouTube Cast", desc: "ส่งวิดีโอคาราโอเกะโดยตรงเข้าสู่แอป YouTube บนทีวีของคุณ (เหมาะสำหรับทีวีที่รองรับแอป YouTube มาตรฐาน)", icon: Youtube },
+            { id: 'c2', title: "2. ส่งจอแยกไร้สาย (Web Monitor)", desc: `เปิด ${domain}/monitor บนแท็บเล็ตหรือคอมอีกเครื่อง เพื่อแยกหน้าจอเนื้อร้องไปแสดงผลแบบไร้สาย โดยไม่ต้องต่อสาย HDMI`, icon: Laptop },
+            { id: 'c3', title: "3. สาย HDMI (Dual Screen)", desc: "ต่อสาย HDMI -> เลือกโหมด Extend -> ลากหน้าต่างตัวเล่นไปไว้ที่จอทีวี เหมาะสำหรับการตั้งค่าแบบเครื่องเดียวแยกหน้าจอ", icon: Monitor },
+            { id: 'c4', title: "4. Google Chromecast", desc: "กดไอคอน Cast 📺 ในระบบ เพื่อส่งภาพขึ้น Chromecast หรือ Android TV ของคุณทันที (ใช้บน Chrome Browser)", icon: Chromecast },
         ],
         vip: [
             { id: 'v1', title: "เพลิดเพลินแบบไร้โฆษณา", desc: "อัปเกรดเป็น VIP เพื่อร้องเพลงได้ต่อเนื่องไม่มีโฆษณาคั่น ให้ปาร์ตี้ของคุณลื่นไหลตั้งแต่อต้นจนจบ", icon: PlayCircle },
