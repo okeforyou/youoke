@@ -1,15 +1,17 @@
 export const CHANGELOGS = [
     {
-        version: "v5.3.5 (Build Stability Fix)",
+        version: "v5.3.6 (DJ Logic Guide)",
         date: "9 เม.ย. 2569",
         changes: [
-            "FIX: Corrected final invalid icon reference causing Vercel build failure",
-            "STABILITY: Verified Next.js prerendering compatibility for Tutorial page"
+            "UI: Added 'DJ Mode' analogy to wireless monitor guide",
+            "UX: Clarified QR Scanning logic for Smart TV player control",
+            "DESIGN: Refined step-by-step casting descriptions for easier reading",
+            "STABILITY: Final verification of Lucide icon rendering after hotfix"
         ],
-        recent_updates: "Critical Build & Rendering Stability Fix"
+        recent_updates: "Simplified Wireless Control & Monitoring Guide"
     },
     {
-        version: "v5.3.4 (Smart Casting Edition)",
+        version: "v5.3.5 (Build Stability Fix)",
         date: "9 เม.ย. 2569",
         changes: [
             "UI: Detailed /tv vs /monitor logic in user guide",

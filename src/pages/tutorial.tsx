@@ -51,11 +51,11 @@ export default function TutorialPage() {
             { 
                 id: 'c1', 
                 title: "1. โหมด Smart TV (Pure Player)", 
-                desc: `เปิดเบราว์เซอร์บนทีวีไปที่ ${domain}/tv เหมาะสำหรับร้องบนจอใหญ่ที่เน้นดูวิดีโอเนื้อร้องคลีนๆ และคุมเพลงผ่านมือถือ 100%`, 
+                desc: `เปิดเบราว์เซอร์บนทีวีไปที่ ${domain}/tv เพื่อดูวิดีโอแบบเต็มจอ แล้วใช้มือถือสแกน QR Code เพื่อค้นหาและควบคุมเพลงได้ทันที`, 
                 icon: Radio,
                 highlight: true 
             },
-            { id: 'c2', title: "2. ส่งจอแยกไร้สาย (Web Monitor)", desc: `เปิด ${domain}/monitor บนแท็บเล็ตหรือคอมอีกเครื่อง เพื่อแยกหน้าจอเนื้อร้องไปแสดงผลแบบไร้สาย โดยไม่ต้องต่อสาย HDMI`, icon: Laptop },
+            { id: 'c2', title: "2. ส่งจอแยกไร้สาย (Web Monitor)", desc: `เหมือนโหมด DJ ที่ใช้หน้าจอหลักคุมเพลง แต่ส่งเนื้อร้องไปแสดงที่อุปกรณ์อื่น (iPad, Laptop) ได้แบบไร้สาย ไม่ต้องใช้สาย HDMI`, icon: Laptop },
             { id: 'c3', title: "3. สาย HDMI (Dual Screen)", desc: "ต่อสาย HDMI -> เลือกโหมด Extend -> ลากหน้าต่างตัวเล่นไปไว้ที่จอทีวี เหมาะสำหรับการตั้งค่าแบบเครื่องเดียวแยกหน้าจอ", icon: Monitor },
             { id: 'c4', title: "4. Google Chromecast", desc: "กดไอคอน Cast 📺 ในระบบ เพื่อส่งภาพขึ้น Chromecast หรือ Android TV ของคุณทันที (ใช้บน Chrome Browser)", icon: Cast },
         ],
