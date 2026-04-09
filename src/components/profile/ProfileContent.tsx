@@ -113,7 +113,7 @@ export const ProfileContent = () => {
         const liffUrl = `https://liff.me/2006894054-O8E2Rz96?u=${user.uid}`; 
         
         return (
-            <div className="flex flex-col animate-in fade-in duration-200">
+            <div className="flex flex-col">
                 <div className="px-6 py-4 flex items-center gap-4 border-b border-zinc-100 dark:border-zinc-800">
                     <button onClick={() => setView('main')} className="p-2 -ml-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors">
                         <ChevronRightIcon className="w-5 h-5 rotate-180 text-zinc-400" />
@@ -150,7 +150,7 @@ export const ProfileContent = () => {
 
     if (view === 'packages') {
         return (
-            <div className="flex flex-col animate-in fade-in duration-200">
+            <div className="flex flex-col">
                 <div className="px-6 py-4 flex items-center gap-4 border-b border-zinc-100 dark:border-zinc-800 sticky top-0 z-[110] bg-white dark:bg-zinc-950">
                     <button onClick={() => setView('main')} className="p-2 -ml-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900">
                         <ChevronRightIcon className="w-5 h-5 rotate-180 text-zinc-400" />
@@ -163,7 +163,7 @@ export const ProfileContent = () => {
     }
 
     return (
-        <div className="flex flex-col bg-white dark:bg-zinc-950 animate-in fade-in duration-200">
+        <div className="flex flex-col bg-white dark:bg-zinc-950">
             {/* 1. Header Area */}
             <div className="px-6 pt-6 pb-2 flex items-center justify-between">
                 <div className="flex items-center gap-4">

@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.24 (Instant Smooth Transition)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "UX: Removed all 'animate-in' and 'fade-in' transitions in Profile Drawer views",
+            "PERFORMANCE: Forced instantaneous view switching for a faster, 'plain' feel",
+            "ACCESSIBILITY: Eliminated visual stretching/expanding during navigation"
+        ],
+        recent_updates: "Simple Transition Alignment"
+    },
+    {
         version: "v5.3.23 (Login Contrast Recovery)",
         date: "9 เม.ย. 2569",
         changes: [
