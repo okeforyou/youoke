@@ -83,6 +83,7 @@ interface PackageOption {
 }
 
 const roleStyles = {
+    owner: { bg: "bg-purple-100", text: "text-purple-600", label: "เจ้าของระบบ" },
     admin: { bg: "bg-destructive/15", text: "text-destructive", label: "ผู้ดูแลระบบ" },
     user: { bg: "bg-info/15", text: "text-info", label: "สมาชิกทั่วไป" },
 };
