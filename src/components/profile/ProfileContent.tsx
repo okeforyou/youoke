@@ -37,7 +37,6 @@ export const ProfileContent = () => {
         }
     }, [user]);
 
-    // v4.9.31: Dynamic View Switcher for Packages (Drawer Context Persistence)
     const handleOpenPackages = (e?: React.MouseEvent) => {
         if (e) {
             e.preventDefault();
@@ -50,7 +49,7 @@ export const ProfileContent = () => {
         if (!user?.uid) return;
         setLoading(true);
         try {
-            const result = await getUserProfile(user.uid, true); // Force Refresh (v4.8.2)
+            const result = await getUserProfile(user.uid, true); 
             if (result.success && result.data) {
                 setProfile(result.data);
             }
@@ -81,7 +80,6 @@ export const ProfileContent = () => {
 
     const isAdmin = user?.role === 'admin' || profile?.role === 'admin' || user?.email === 'boonyanone@gmail.com';
     
-    // v4.9.104: Compact Membership Data Structure
     const displayMembership = {
         type: profile?.subscription?.plan || user?.membership?.type || 'free',
         status: profile?.subscription?.status || user?.membership?.status || 'active',
@@ -94,11 +92,11 @@ export const ProfileContent = () => {
     const menuItems = [
         ...((user?.role === 'admin' || profile?.role === 'admin') ? [{
             icon: SparklesIcon,
-            label: 'จัดการระบบ',
+            label: 'จัดการระบบแอดมิน',
             href: '/admin',
         }] : []),
-        { icon: UserCircleIcon, label: 'แก้ไขข้อมูลส่วนตัว', href: '/profile/edit' },
-        { icon: BookOpenIcon, label: 'วิธีการใช้งาน', href: '/tutorial' },
+        { icon: BookOpenIcon, label: 'คู่มือการใช้งาน', href: '/tutorial' },
+        { icon: UserCircleIcon, label: 'ตั้งค่าโปรไฟล์', href: '/profile/edit' },
     ];
 
     if (loading && !profile) {
@@ -111,223 +109,161 @@ export const ProfileContent = () => {
 
     if (!user) return null;
 
-    // --- LINE CONNECT VIEW ---
     if (view === 'line_connect') {
         const liffUrl = `https://liff.me/2006894054-O8E2Rz96?u=${user.uid}`; 
         
         return (
             <div className="flex flex-col animate-in fade-in duration-200">
-                {/* View Header */}
-                <div className="px-6 py-4 flex items-center gap-4 border-b border-gray-100 dark:border-zinc-800">
-                    <button 
-                        onClick={() => setView('main')}
-                        className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-900 transition-colors"
-                    >
-                        <ChevronRightIcon className="w-5 h-5 rotate-180 text-gray-400 dark:text-zinc-500" />
+                <div className="px-6 py-4 flex items-center gap-4 border-b border-zinc-100 dark:border-zinc-800">
+                    <button onClick={() => setView('main')} className="p-2 -ml-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors">
+                        <ChevronRightIcon className="w-5 h-5 rotate-180 text-zinc-400" />
                     </button>
-                    <h2 className="text-lg font-black text-gray-900 dark:text-white">เชื่อมต่อ LINE ของคุณ</h2>
+                    <h2 className="text-lg font-black text-zinc-900 dark:text-white">เชื่อมต่อ LINE</h2>
                 </div>
 
                 <div className="p-8 flex flex-col items-center text-center space-y-8">
-                    {/* Professional Bridge QR Section */}
-                    <div className="relative p-6 bg-white rounded-[40px] shadow-2xl shadow-green-500/10 border-8 border-emerald-500/5 ring-1 ring-emerald-500/20">
-                        <QRCodeSVG 
-                            value={liffUrl}
-                            size={180}
-                            level="H"
-                            includeMargin={false}
-                        />
-                        <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[10px] font-black px-4 py-1.5 rounded-full shadow-lg whitespace-nowrap">
-                           สแกนเพื่อยืนยันตัวตน
-                        </div>
+                    <div className="relative p-6 bg-white rounded-[40px] border border-zinc-100">
+                        <QRCodeSVG value={liffUrl} size={180} level="H" includeMargin={false} />
                     </div>
-
                     <div className="space-y-2">
-                        <h3 className="text-xl font-black text-slate-900 dark:text-white">เชื่อมต่อง่ายนิดเดียว!</h3>
-                        <p className="text-sm font-bold text-slate-400 dark:text-zinc-500 leading-relaxed px-4">
-                            สแกน QR แล้วกดปุ่มที่ระบุว่า <span className="text-emerald-500">"กดยอมรับ"</span> (Confirmed) เพื่อผูกบัญชีได้ทันทีครับ 🧼✨
+                        <h3 className="text-xl font-black text-zinc-900 dark:text-white">สแกนเพื่อเริ่มร้องเพลง</h3>
+                        <p className="text-xs font-bold text-zinc-400 dark:text-zinc-500 leading-relaxed px-4">
+                            ผูกบัญชีเพื่อแจ้งเตือนสถานะพรีเมียมและรับบริการพิเศษจากทีมงาน
                         </p>
                     </div>
-
-                    <div className="w-full space-y-4 pt-4">
-                        <button 
-                            onClick={() => (user as any)?.uid && signInWithLine((user as any).uid)}
-                            className="w-full bg-[#00B900] hover:bg-[#009e00] text-white py-4 rounded-[28px] font-black text-center text-sm shadow-xl shadow-green-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
-                        >
-                            <ChatBubbleLeftRightIcon className="w-5 h-5" />
-                            <span>ยืนยันสิทธิ์และเชื่อมต่อ LINE</span>
-                        </button>
-
-                        <button 
-                            onClick={() => setView('main')}
-                            className="w-full text-slate-300 font-black text-[11px] uppercase tracking-widest hover:text-slate-400 transition-colors"
-                        >
-                            ยกเลิก
-                        </button>
-                    </div>
+                    <button 
+                        onClick={() => (user as any)?.uid && signInWithLine((user as any).uid)}
+                        className="w-full bg-[#06C755] text-white py-4 rounded-3xl font-black text-sm transition-all active:scale-[0.98]"
+                    >
+                        เปิดแอป LINE ของคุณ
+                    </button>
                 </div>
             </div>
         );
     }
 
-    // --- v4.9.31: PACKAGES INTEGRATED VIEW ---
     if (view === 'packages') {
         return (
             <div className="flex flex-col animate-in fade-in duration-200">
-                {/* View Header */}
-                <div className="px-6 py-4 flex items-center gap-4 border-b border-gray-100 dark:border-zinc-800 bg-white dark:bg-zinc-950 sticky top-0 z-[110]">
-                    <button 
-                        onClick={() => setView('main')}
-                        className="p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-900 transition-colors"
-                    >
-                        <ChevronRightIcon className="w-5 h-5 rotate-180 text-gray-400 dark:text-zinc-500" />
+                <div className="px-6 py-4 flex items-center gap-4 border-b border-zinc-100 dark:border-zinc-800 sticky top-0 z-[110] bg-white dark:bg-zinc-950">
+                    <button onClick={() => setView('main')} className="p-2 -ml-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900">
+                        <ChevronRightIcon className="w-5 h-5 rotate-180 text-zinc-400" />
                     </button>
-                    <h2 className="text-lg font-black text-gray-900 dark:text-white">เลือกแพ็กเกจ (Shop)</h2>
+                    <h2 className="text-lg font-black text-zinc-900 dark:text-white">แพ็กเกจ (Shop)</h2>
                 </div>
-
-                <div className="px-4 py-6">
-                    <PackageStore />
-                </div>
+                <div className="px-4 py-6"><PackageStore /></div>
             </div>
         );
     }
 
-    // --- MAIN PROFILE VIEW ---
     return (
         <div className="flex flex-col bg-white dark:bg-zinc-950 animate-in fade-in duration-200">
-            {/* Simple Profile Header */}
-            <div className="px-6 pt-8 pb-4 flex items-center gap-5">
-                <div className="relative">
-                    <div className="w-16 h-16 rounded-[20px] shadow-sm overflow-hidden bg-slate-50 flex items-center justify-center text-primary font-black text-2xl dark:bg-zinc-900 border border-slate-100 dark:border-zinc-800">
-                        {(() => {
-                            const displayPhoto = profile?.photoURL || user?.photoURL || auth?.currentUser?.photoURL;
-                            return displayPhoto ? (
-                                <img src={displayPhoto} alt="Avatar" className="w-full h-full object-cover rounded-[20px]" />
-                            ) : (
-                                <span>{(profile?.displayName || user?.displayName || user?.email || "U").charAt(0).toUpperCase()}</span>
-                            );
-                        })()}
-                    </div>
-                    {isAdmin && (
-                        <div className="absolute -bottom-1 -right-1 bg-red-600 text-[8px] text-white font-black px-1.5 py-0.5 rounded-lg border-2 border-white dark:border-zinc-950">
-                            ADMIN
+            {/* 1. Header Area */}
+            <div className="px-6 pt-6 pb-2 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <div className="relative">
+                        <div className="w-14 h-14 rounded-2xl overflow-hidden bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 flex items-center justify-center">
+                            {(() => {
+                                const displayPhoto = profile?.photoURL || user?.photoURL;
+                                return displayPhoto ? (
+                                    <img src={displayPhoto} alt="Avatar" className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="text-primary font-black">{(profile?.displayName || user?.email || "U").charAt(0).toUpperCase()}</span>
+                                );
+                            })()}
                         </div>
-                    )}
+                    </div>
+                    <div className="min-w-0">
+                        <h2 className="text-base font-black text-zinc-900 dark:text-white truncate">
+                            {profile?.displayName || user?.displayName || "Profile User"}
+                        </h2>
+                        <p className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 truncate">{profile?.email || user?.email}</p>
+                    </div>
                 </div>
 
-                <div className="flex-1 min-w-0">
-                    <h2 className="text-lg font-black text-gray-900 truncate dark:text-white">
-                        {profile?.displayName || user?.displayName || "ผู้ใช้งาน"}
-                        {isPremium && !isAdmin && <SparklesIcon className="w-4 h-4 text-yellow-500 inline-block ml-1" />}
-                    </h2>
-                    <p className="text-xs font-bold text-gray-400 truncate dark:text-zinc-500">{profile?.email || user?.email}</p>
-                </div>
-
-                {/* v4.9.75: Theme Toggle - Flat Minimal Style */}
                 <button 
                     onClick={toggleDarkMode}
-                    className="p-3 rounded-[20px] bg-gray-50 dark:bg-zinc-900 text-gray-400 hover:text-primary dark:hover:text-primary transition-all border border-gray-100 dark:border-zinc-800 shadow-sm active:scale-90"
-                    title={isDarkMode ? "เปลี่ยนเป็นโหมดสว่าง" : "เปลี่ยนเป็นโหมดมืด"}
+                    className="w-10 h-10 rounded-2xl bg-zinc-50 dark:bg-zinc-900 flex items-center justify-center text-zinc-400 border border-zinc-100 dark:border-zinc-800 transition-all active:scale-90"
                 >
-                    {isDarkMode ? <SunIcon className="w-5 h-5 text-yellow-500" /> : <MoonIcon className="w-5 h-5" />}
+                    {isDarkMode ? <SunIcon className="w-5 h-5 text-amber-500" /> : <MoonIcon className="w-5 h-5" />}
                 </button>
             </div>
 
-            {/* Content List */}
-            <div className="px-4 pb-12 mt-6 space-y-8">
-                {/* 1. Membership */}
-                <section>
-                    <p className="text-[10px] font-black text-gray-300 dark:text-zinc-600 uppercase tracking-[0.2em] mb-3 px-2">ข้อมูลสมาชิก</p>
+            {/* 2. Main Content */}
+            <div className="px-4 pb-12 mt-4 space-y-6">
+                {/* Membership Row */}
+                <div className="space-y-2">
                     <MembershipCard
                         membership={displayMembership as any}
                         role={isAdmin ? 'admin' : (user?.role || profile?.role)}
                         onUpgrade={handleOpenPackages}
                     />
 
-                    {/* LINE Connection Status (Stealth Frame v4.9.22) */}
-                    <div className="mt-2 text-left">
-                        <div className={cn(
-                            "w-full flex items-center justify-between p-5 rounded-3xl transition-all shadow-none border-none bg-[#06C755] text-white",
-                        )}>
-                            <div className="flex items-center gap-3">
-                                <div className="relative">
-                                    <div className={cn(
-                                        "w-10 h-10 rounded-xl flex items-center justify-center transition-all shadow-none",
-                                        profile?.lineUserId ? "bg-white/20" : "bg-black/40"
-                                    )}>
-                                        <ChatBubbleLeftRightIcon className="w-5 h-5 text-white" />
-                                    </div>
-                                    {/* Status Indicator Dot */}
-                                    <div className={cn(
-                                        "absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-[#06C755]",
-                                        profile?.lineUserId ? "bg-white" : "bg-white animate-pulse shadow-[0_0_10px_rgba(255,255,255,1)]"
-                                    )}></div>
-                                </div>
-                                <div className="min-w-0">
-                                    <p className="text-sm font-black truncate leading-tight">
-                                        {profile?.lineUserId ? 'เชื่อมต่อ LINE สำเร็จ' : 'ยังไม่ได้เชื่อมต่อ LINE'}
-                                    </p>
-                                    <p className="text-[10px] font-bold truncate opacity-80 mt-0.5">
-                                        {profile?.lineUserId ? (profile.lineDisplayName || 'บัญชีของคุณพร้อมใช้งาน') : 'รับแจ้งเตือนและสอบถามข้อมูลที่นี่'}
-                                    </p>
-                                </div>
+                    {/* v5 Neutral LINE Connect Block */}
+                    <div className="w-full flex items-center justify-between p-4 rounded-3xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-100 dark:border-zinc-800/50">
+                        <div className="flex items-center gap-3">
+                            <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center", profile?.lineUserId ? "bg-emerald-500/10" : "bg-zinc-100 dark:bg-zinc-800")}>
+                                <ChatBubbleLeftRightIcon className={cn("w-5 h-5", profile?.lineUserId ? "text-emerald-500" : "text-zinc-400")} />
                             </div>
-                            <button 
-                                onClick={() => setView('line_connect')}
-                                className={cn(
-                                    "px-4 py-2 rounded-xl font-black uppercase text-[10px] tracking-wider transition-all active:scale-[0.98] shadow-none shrink-0 ml-2",
-                                    profile?.lineUserId 
-                                        ? "bg-white/20 text-white hover:bg-white/30 border border-white/30"
-                                        : "bg-white text-[#06C755] hover:bg-white/90"
-                                )}
-                            >
-                                {profile?.lineUserId ? 'จัดการ' : 'เชื่อมต่อ'}
-                            </button>
+                            <div className="min-w-0">
+                                <p className="text-[11px] font-black text-zinc-900 dark:text-white leading-tight">
+                                    {profile?.lineUserId ? 'LINE Connected' : 'Connect LINE'}
+                                </p>
+                                <p className="text-[9px] font-bold text-zinc-400 truncate">
+                                    {profile?.lineUserId ? (profile.lineDisplayName || 'บัญชีเปิดใช้งานแล้ว') : 'ผูกบัญชีเพื่อรับสิทธิพิเศษ'}
+                                </p>
+                            </div>
                         </div>
+                        <button 
+                            onClick={() => setView('line_connect')}
+                            className={cn(
+                                "h-8 px-4 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all active:scale-[0.98]",
+                                profile?.lineUserId 
+                                    ? "bg-zinc-200/50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400"
+                                    : "bg-[#06C755] text-white"
+                            )}
+                        >
+                            {profile?.lineUserId ? 'Manage' : 'Connect'}
+                        </button>
                     </div>
-                </section>
+                </div>
 
-                {/* 2. Notifications */}
-                <section>
-                    <div className="flex items-center justify-between px-2 mb-3">
-                        <p className="text-[10px] font-black text-gray-300 dark:text-zinc-600 uppercase tracking-[0.2em]">ข่าวสารและแจ้งเตือน</p>
-                        <Link href="/profile/notifications" className="text-[10px] font-black text-primary uppercase">ทั้งหมด</Link>
+                {/* Notifications Row */}
+                <div>
+                    <div className="flex items-center justify-between px-2 mb-2">
+                        <p className="text-[10px] font-black text-zinc-300 dark:text-zinc-700 uppercase tracking-widest">Notifications</p>
+                        <Link href="/profile/notifications" className="text-[9px] font-black text-primary uppercase">Read All</Link>
                     </div>
-                    <div className="rounded-[24px] border border-gray-100 bg-gray-50/50 p-4 dark:bg-zinc-900/30 dark:border-zinc-800">
+                    <div className="rounded-3xl border border-zinc-50 dark:border-zinc-900 bg-zinc-50/50 dark:bg-zinc-900/30 p-2">
                         <NotificationList />
                     </div>
-                </section>
+                </div>
 
-                {/* 3. Packages */}
-                <section>
-                    <p className="text-[10px] font-black text-gray-300 dark:text-zinc-600 uppercase tracking-[0.2em] mb-3 px-2">เลือกแพ็กเกจ</p>
-                    <PackageStore />
-                </section>
-
-                {/* 4. Actions */}
-                <section className="pt-2">
+                {/* Menu List Row */}
+                <div className="pt-2">
                     <ul className="space-y-1">
                         {menuItems.map((item, index) => (
                             <li key={index}>
-                                <Link href={item.href} className="flex items-center justify-between p-4 rounded-2xl hover:bg-gray-50 transition-all dark:bg-zinc-900/40 dark:hover:bg-zinc-900 border border-transparent dark:border-zinc-800/50">
+                                <Link href={item.href} className="flex items-center justify-between p-4 rounded-2xl hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all border border-transparent dark:border-zinc-900">
                                     <div className="flex items-center gap-4">
-                                        <item.icon className="w-5 h-5 text-gray-400 dark:text-zinc-500" />
-                                        <span className="text-sm font-bold text-gray-700 dark:text-zinc-400">{item.label}</span>
+                                        <item.icon className="w-5 h-5 text-zinc-400" />
+                                        <span className="text-sm font-bold text-zinc-600 dark:text-zinc-400">{item.label}</span>
                                     </div>
-                                    <ChevronRightIcon className="w-4 h-4 text-gray-300 dark:text-zinc-600" />
+                                    <ChevronRightIcon className="w-4 h-4 text-zinc-300 dark:text-zinc-700" />
                                 </Link>
                             </li>
                         ))}
+                        <li>
+                            <button
+                                onClick={handleLogout}
+                                className="w-full flex items-center gap-4 p-4 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-2xl transition-all"
+                            >
+                                <ArrowRightOnRectangleIcon className="w-5 h-5" />
+                                <span className="text-sm font-bold">ออกจากระบบ</span>
+                            </button>
+                        </li>
                     </ul>
-
-                    <button
-                        onClick={handleLogout}
-                        className="w-full mt-4 flex items-center gap-4 p-4 text-rose-500 hover:bg-rose-50 rounded-2xl transition-all dark:hover:bg-rose-500/10"
-                    >
-                        <ArrowRightOnRectangleIcon className="w-5 h-5" />
-                        <span className="text-sm font-bold">ออกจากระบบ</span>
-                    </button>
-                </section>
+                </div>
             </div>
         </div>
     );

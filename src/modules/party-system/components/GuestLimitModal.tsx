@@ -2,7 +2,7 @@ import React from 'react';
 import { useRouter } from 'next/router';
 import { useAuthStore } from '@/modules/auth/useAuthStore';
 import { useSystemConfig } from '@/hooks/useSystemConfig';
-import { Crown, PartyPopper } from 'lucide-react';
+import { PartyPopper, Crown, Mic2 } from 'lucide-react';
 
 interface GuestLimitModalProps {
   isOpen: boolean;
@@ -56,7 +56,7 @@ export default function GuestLimitModal({
                     {/* Icon Header */}
                     <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-50 mb-6 shrink-0 ring-4 ring-red-50">
                         <div className="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center">
-                            <span className="text-3xl">😢</span>
+                            <Mic2 className="w-7 h-7 text-red-500" />
                         </div>
                     </div>
 

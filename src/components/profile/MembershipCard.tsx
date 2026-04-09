@@ -17,98 +17,74 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
     const safeMembership = membership || { type: 'free', status: 'active', expiresAt: null };
 
     const formatDate = (date: any) => {
-        if (!date) return "ไม่มีกำหนดหมดอายุ";
+        if (!date) return "ไม่มีวันหมดอายุ";
         try {
             if (date.seconds) return new Date(date.seconds * 1000).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
             return new Date(date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
         } catch (e) { return "-"; }
     };
 
-    const getDaysRemaining = () => {
-        if (!safeMembership.expiresAt) return null;
-        try {
-            const now = new Date();
-            const expiry = safeMembership.expiresAt.seconds ? new Date(safeMembership.expiresAt.seconds * 1000) : new Date(safeMembership.expiresAt);
-            return Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-        } catch (e) { return null; }
-    };
-
-    const daysRemaining = getDaysRemaining();
+    const isAdmin = role === 'admin' || role === 'owner';
     const isLifetime = safeMembership.type === 'lifetime';
     const isPremium = safeMembership.type !== 'free' || safeMembership.status === 'active' || safeMembership.status === 'trial';
-    const isAdmin = role === 'admin' || role === 'owner';
 
     const getPlanName = () => {
         if (isAdmin) return "ผู้ดูแลระบบ (ADMIN)";
-        if (isLifetime || safeMembership.type === 'lifetime') return "ตลอดชีพ (LIFETIME)";
+        if (isLifetime) return "ตลอดชีพ (PRO)";
         switch (safeMembership.type) {
-            case 'day_pass': return "แพ็กเกจ 1 วัน (DAY PASS)";
-            case 'yearly': return "พรีเมียมรายปี (YEARLY)";
-            case 'monthly': return "พรีเมียมรายเดือน (MONTHLY)";
-            case 'trial': return "ทดลองใช้งานฟรี (FREE TRIAL)";
-            case 'free': return "ใช้งานฟรี (FREE)";
+            case 'day_pass': return "แพ็กเกจรายวัน";
+            case 'yearly': return "พรีเมียมรายปี";
+            case 'monthly': return "พรีเมียมรายเดือน";
+            case 'trial': return "ทดลองใช้งานฟรี";
+            case 'free': return "ใช้งานฟรี";
             default: return "สมาชิกพรีเมียม";
         }
     };
 
     const planName = getPlanName();
-    const labelMembership = isAdmin ? "สิทธิ์ผู้ดูแลระบบ" : "สิทธิ์การใช้งาน";
 
-    const accents = {
-        admin: "bg-rose-500 text-white shadow-sm",
-        lifetime: "bg-amber-500 text-white shadow-sm",
-        yearly: "bg-purple-600 text-white shadow-sm",
-        monthly: "bg-blue-600 text-white shadow-sm",
-        free: "bg-slate-100 text-slate-500 shadow-sm",
+    // v5 Neural Base Accents
+    const config = {
+        admin: { color: "text-rose-500", bg: "bg-rose-500/5", border: "border-rose-500/10", iconBg: "bg-rose-500" },
+        lifetime: { color: "text-amber-500", bg: "bg-amber-500/5", border: "border-amber-500/10", iconBg: "bg-amber-500" },
+        premium: { color: "text-primary", bg: "bg-primary/5", border: "border-primary/10", iconBg: "bg-primary" },
+        free: { color: "text-zinc-400", bg: "bg-zinc-50 dark:bg-zinc-900", border: "border-zinc-100 dark:border-zinc-800", iconBg: "bg-zinc-200 dark:bg-zinc-800" },
     };
 
-    let activeAccent = accents.free;
-    if (isAdmin) activeAccent = accents.admin;
-    else if (isLifetime) activeAccent = accents.lifetime;
-    else if (safeMembership.type === 'yearly') activeAccent = accents.yearly;
-    else if (safeMembership.type === 'monthly') activeAccent = accents.monthly;
-
-    const isLightBg = !isAdmin && !isLifetime && safeMembership.type !== 'yearly' && safeMembership.type !== 'monthly';
+    let style = config.free;
+    if (isAdmin) style = config.admin;
+    else if (isLifetime) style = config.lifetime;
+    else if (isPremium) style = config.premium;
 
     return (
         <div className="relative group cursor-pointer w-full" onClick={onUpgrade}>
             <div className={cn(
-                "relative rounded-3xl overflow-hidden p-5 flex flex-col justify-between min-h-[110px] transition-all duration-300 active:scale-[0.98] border-none",
-                activeAccent
+                "relative rounded-3xl p-4 flex flex-col justify-between transition-all duration-300 active:scale-[0.98] border shadow-none",
+                style.bg, style.border
             )}>
-                <div className="relative z-10 flex justify-between items-start">
+                <div className="flex justify-between items-center">
                     <div className="flex items-center gap-3">
-                        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", 
-                            isLightBg ? "bg-slate-200 text-slate-500" : "bg-white/20 text-white"
-                        )}>
+                        <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center text-white", style.iconBg)}>
                             {isAdmin || isLifetime ? <Crown className="w-5 h-5" /> : (isPremium ? <Zap className="w-5 h-5" /> : <Clock className="w-5 h-5" />)}
                         </div>
                         <div>
-                            <div className={cn("text-[9px] font-black uppercase tracking-widest", isLightBg ? "opacity-40" : "opacity-60")}>{labelMembership}</div>
-                            <h3 className={cn("text-base font-black tracking-tight mt-0.5 leading-none", isLightBg ? "text-slate-900" : "text-white")}>{planName}</h3>
+                            <div className="text-[10px] font-black uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                                {isAdmin ? "System Role" : "Membership Plan"}
+                            </div>
+                            <h3 className={cn("text-[15px] font-black tracking-tight leading-tight", isAdmin || isPremium ? style.color : "text-zinc-900 dark:text-white")}>
+                                {planName}
+                            </h3>
                         </div>
                     </div>
-                </div>
-
-
-                <div className={cn(
-                    "mt-4 pt-3 flex justify-between items-center border-t border-dashed",
-                    isLightBg ? "border-slate-200" : "border-white/20",
-                    isAdmin && "mt-2"
-                )}>
-                    <div className="flex flex-col">
-                        <div className={cn("text-[8px] uppercase tracking-widest font-black mb-0.5", isLightBg ? "opacity-40" : "opacity-60")}>
-                            {isAdmin ? "สถานะการใช้งาน" : (isLifetime ? "ระดับสมาชิก" : "เริ่ม - หมดอายุ")}
+                    
+                    <div className="flex flex-col items-end">
+                        <div className="text-[8px] uppercase tracking-widest font-black text-zinc-300 dark:text-zinc-700 mb-0.5">
+                            {isAdmin ? "Status" : "Expiry"}
                         </div>
-                        <div className={cn("text-[11px] font-black tracking-tight", isLightBg ? "text-slate-600" : "text-white/95")}>
-                            {isAdmin ? "ผู้ดูแลระบบ YouOke" : (isLifetime ? "สมาชิก ถาวร" : (
-                                (safeMembership.expiresAt && safeMembership.type !== 'free')
-                                    ? `${formatDate(safeMembership.createdAt)} - ${formatDate(safeMembership.expiresAt)}` 
-                                    : "ยังไม่ได้เลือกแพ็กเกจ"
-                            ))}
+                        <div className="text-[10px] font-black text-zinc-500 dark:text-zinc-400">
+                             {isAdmin ? "ระบบสมบูรณ์" : (isLifetime ? "ถาวร" : formatDate(safeMembership.expiresAt))}
                         </div>
                     </div>
-                    <ChevronRight className={cn("w-4 h-4", isLightBg ? "opacity-30" : "opacity-60")} />
                 </div>
             </div>
         </div>

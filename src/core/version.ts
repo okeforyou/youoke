@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.10 (Neutral Base & UI Hardening)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "UI: Redesigned Profile Drawer using 'Neutral Base' design for premium look",
+            "UX: Replaced informal emojis with professional vector icons in Limit Modals",
+            "DESIGN: Finalized accessibility contrast for login description text",
+            "UX: Compacted Profile layout for better mobile usability"
+        ],
+        recent_updates: "Neutral Base Design & Professional UI Hardening"
+    },
+    {
         version: "v5.3.9 (Brand & Legibility Fix)",
         date: "9 เม.ย. 2569",
         changes: [
