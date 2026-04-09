@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.21 (Drawer Sync & LINE Direct)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "I18N: Full Thai localization for PackageStore drawer component",
+            "UX: Restored 'Click to Connect' shortcut button for LINE LIFF on mobile",
+            "UI: Compacted drawer shop cards to match standalone page aesthetics",
+            "FIX: Repaired missing connection link in the LINE QR view"
+        ],
+        recent_updates: "Drawer Shop Thai Sync & LINE Accessibility Fix"
+    },
+    {
         version: "v5.3.20 (Thai Compact Shop Overhaul)",
         date: "9 เม.ย. 2569",
         changes: [
