@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.2 (Master Responsive Manual)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "UI: Fixed responsive title overflow and removed hard-line breaks",
+            "UX: Resolved VIP tab truncation by adding horizontal padding and min-width",
+            "DESIGN: Expanded container width to max-w-2xl for better content balance",
+            "HOTFIX: Restored corrupted tutorial.tsx file structure"
+        ],
+        recent_updates: "Fully Responsive Premium Manual"
+    },
+    {
         version: "v5.3.1 (Hotfix: Icon Restoration)",
         date: "9 เม.ย. 2569",
         changes: [

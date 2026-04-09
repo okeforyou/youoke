@@ -75,7 +75,7 @@ export default function TutorialPage() {
             <header className="bg-white dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800/50 sticky top-0 z-[100] px-6 py-4 flex items-center justify-between">
                 <button 
                     onClick={handleBack}
-                    className="w-10 h-10 flex items-center justify-center rounded-2xl bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
+                    className="w-10 h-10 flex items-center justify-center rounded-2xl bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors shadow-none"
                 >
                     <ChevronLeft className="w-6 h-6" />
                 </button>
@@ -86,35 +86,37 @@ export default function TutorialPage() {
                 <div className="w-10"></div>
             </header>
 
-            <main className="flex-1 w-full max-w-xl mx-auto px-6 py-10 pb-32">
+            <main className="flex-1 w-full max-w-2xl mx-auto px-6 py-10 pb-32">
                 {/* Visual Intro */}
                 <div className="mb-10 text-left">
                     <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full mb-4">
                         <Sparkles className="w-3.5 h-3.5" />
                         <span className="text-[10px] font-black uppercase tracking-wider">Getting Started</span>
                     </div>
-                    <h2 className="text-3xl font-black text-zinc-900 dark:text-white leading-[1.1] tracking-tighter">
-                        มารู้จักวิธีการใช้งาน<br/>YouOKE ให้สนุกที่สุดกัน!
+                    <h2 className="text-2xl md:text-3xl font-black text-zinc-900 dark:text-white leading-tight tracking-tighter">
+                        มารู้จักวิธีการใช้งาน YouOKE ให้สนุกที่สุดกัน!
                     </h2>
                 </div>
 
                 {/* Tabs - Flat Style */}
                 <div className="flex gap-2 overflow-x-auto pb-6 scrollbar-none no-scrollbar -mx-6 px-6 sticky top-[72px] bg-zinc-50 dark:bg-zinc-950 z-50 py-2">
-                    {tabs.map((tab) => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={clsx(
-                                "flex items-center gap-2 px-5 py-3.5 rounded-2xl font-black text-[11px] whitespace-nowrap transition-all border shrink-0",
-                                activeTab === tab.id 
-                                    ? "bg-zinc-900 text-white border-zinc-900 dark:bg-white dark:text-black dark:border-white" 
-                                    : "bg-white dark:bg-zinc-900 text-zinc-400 dark:text-zinc-500 border-zinc-100 dark:border-zinc-800"
-                            )}
-                        >
-                            <tab.icon className="w-4 h-4" />
-                            {tab.label}
-                        </button>
-                    ))}
+                    <div className="flex gap-2 min-w-max pr-10">
+                        {tabs.map((tab) => (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={clsx(
+                                    "flex items-center gap-2 px-5 py-3.5 rounded-2xl font-black text-[11px] whitespace-nowrap transition-all border shrink-0 shadow-none",
+                                    activeTab === tab.id 
+                                        ? "bg-zinc-900 text-white border-zinc-900 dark:bg-white dark:text-black dark:border-white" 
+                                        : "bg-white dark:bg-zinc-900 text-zinc-400 dark:text-zinc-500 border-zinc-100 dark:border-zinc-800"
+                                )}
+                            >
+                                <tab.icon className="w-4 h-4" />
+                                {tab.label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 {/* Content Cards */}
@@ -172,7 +174,7 @@ export default function TutorialPage() {
                 {/* Final Action */}
                 <button 
                     onClick={() => router.push('/')}
-                    className="w-full mt-8 py-5 rounded-[2rem] bg-primary text-white font-black text-lg active:scale-[0.98] transition-all border-none flex items-center justify-center gap-3"
+                    className="w-full mt-8 py-5 rounded-[2rem] bg-primary text-white font-black text-lg active:scale-[0.98] transition-all border-none flex items-center justify-center gap-3 shadow-none"
                 >
                     <PlayCircle className="w-6 h-6" />
                     เริ่มร้องเพลงกันเลย!
