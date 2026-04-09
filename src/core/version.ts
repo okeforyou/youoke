@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.32 (Final Logic Sync)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "AUDIT: Synchronized all remaining LINE connection triggers with Official Flow",
+            "FIX: Removed legacy manual URLs from profile view and banners",
+            "UX: Ensured 'One-Click' connectivity consistency across the entire drawer",
+            "STABILITY: Cleaned up reactive states for Profile and Membership views"
+        ],
+        recent_updates: "Final Logic Audit & Sync Completion"
+    },
+    {
         version: "v5.3.31 (Official LINE Restoration)",
         date: "9 เม.ย. 2569",
         changes: [

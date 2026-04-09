@@ -110,7 +110,9 @@ export const ProfileContent = () => {
     if (!user) return null;
 
     if (view === 'line_connect') {
-        const liffUrl = `https://liff.me/2006894054-O8E2Rz96?u=${user.uid}`; 
+        const handleDirectConnect = () => {
+            signInWithLine('link_account');
+        };
         
         return (
             <div className="flex flex-col">
@@ -123,23 +125,25 @@ export const ProfileContent = () => {
 
                 <div className="p-8 pb-12 flex flex-col items-center text-center space-y-8">
                     <div className="relative p-6 bg-white rounded-[40px] border-4 border-zinc-100">
-                        <QRCodeSVG value={liffUrl} size={180} level="H" includeMargin={false} />
+                        <div className="w-[180px] h-[180px] bg-zinc-50 flex items-center justify-center rounded-2xl">
+                             <QRCodeSVG value={`${window.location.origin}/login?state=link_account`} size={160} level="H" />
+                        </div>
                     </div>
                     <div className="space-y-6">
                         <div className="space-y-2">
-                            <h3 className="text-2xl font-black text-zinc-900 dark:text-white">สแกนเพื่อเชื่อมต่อ</h3>
+                            <h3 className="text-2xl font-black text-zinc-900 dark:text-white">ยืนยันตัวตน LINE</h3>
                             <p className="text-sm font-bold text-zinc-500 dark:text-zinc-400 leading-relaxed px-4">
-                                ผูกบัญชีเพื่อรับแจ้งเตือนและสิทธิพิเศษจาก YouOke
+                                ผูกบัญชีเพื่อรับแจ้งเตือนและสิทธิพิเศษจาก YouOke ได้ทันทีครับ
                             </p>
                         </div>
                         
                         <div className="pt-4">
                             <button 
-                                onClick={() => window.open(liffUrl, '_blank')}
-                                className="w-full h-14 px-10 rounded-2xl bg-[#06C755] text-white font-black flex items-center justify-center gap-3 active:scale-95 transition-all shadow-none"
+                                onClick={handleDirectConnect}
+                                className="w-full h-16 px-10 rounded-2xl bg-[#06C755] text-white font-black flex items-center justify-center gap-3 active:scale-95 transition-all shadow-none border-none"
                             >
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M24 10.304c0-4.66-4.66-8.43-10.404-8.43-5.744 0-10.4 3.77-10.4 8.43 0 4.155 3.655 7.63 8.708 8.284.34.074.801.225 1.026.516.23.289.15.743.074 1.042l-.367 2.215s-.204 1.258.944.685c1.149-.574 6.204-3.655 8.46-6.255C22.618 15.352 24 13.013 24 10.304z"/></svg>
-                                <span>คลิกเพื่อเชื่อมต่อทันที</span>
+                                <span className="text-lg">เชื่อมต่อทันที</span>
                             </button>
                         </div>
                     </div>
@@ -242,7 +246,13 @@ export const ProfileContent = () => {
                             </div>
                         </div>
                         <button 
-                            onClick={() => setView('line_connect')}
+                            onClick={() => {
+                                if (profile?.lineUserId) {
+                                    setView('line_connect');
+                                } else {
+                                    signInWithLine('link_account');
+                                }
+                            }}
                             className={cn(
                                 "h-9 px-4 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-[0.98] border-2",
                                 profile?.lineUserId 
