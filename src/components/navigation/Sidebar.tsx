@@ -45,14 +45,14 @@ export const Sidebar = memo(() => {
 
     return (
         <aside className={clsx(
-            "hidden lg:flex flex-col shrink-0 z-30 bg-white dark:bg-zinc-950 border-r border-gray-200 dark:border-zinc-900 transition-all duration-300 ease-in-out relative",
+            "hidden lg:flex flex-col shrink-0 z-30 bg-zinc-50 dark:bg-zinc-950 border-r border-zinc-200 dark:border-zinc-900 transition-all duration-300 ease-in-out relative",
             isSidebarCollapsed ? "w-[80px]" : "w-[260px]"
         )}>
             {/* Collapse Toggle Button - Positioned exactly on the border */}
             <button 
                 onClick={() => setSidebarCollapsed(!isSidebarCollapsed)}
                 className={clsx(
-                    "absolute top-8 -right-3.5 w-7 h-7 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-full shadow-sm hover:shadow-md text-gray-400 hover:text-primary flex items-center justify-center transition-all duration-300 z-50 hover:scale-110 active:scale-95",
+                    "absolute top-8 -right-3.5 w-7 h-7 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-full shadow-none hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-400 hover:text-primary flex items-center justify-center transition-all duration-300 z-50 hover:scale-110 active:scale-95",
                     isSidebarCollapsed ? "rotate-180" : ""
                 )}
                 title={isSidebarCollapsed ? "ขยายเมนู" : "ยุบเมนู"}

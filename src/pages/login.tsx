@@ -17,6 +17,8 @@ import {
     Zap,
     Heart,
     Star,
+    Home,
+    CheckCircle2
 } from 'lucide-react';
 import { useSystemConfig } from '../hooks/useSystemConfig';
 import clsx from 'clsx';
@@ -31,11 +33,10 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [localError, setLocalError] = useState('');
     const [name, setName] = useState('');
-    const [showIntro, setShowIntro] = useState(true); // New: For Mobile Intro Step
-    const [acceptedTerms, setAcceptedTerms] = useState(false); // New: Terms agreement
-    const [isSubmitting, setIsSubmitting] = useState(false); // New: For actionable loading only
+    const [showIntro, setShowIntro] = useState(true); 
+    const [acceptedTerms, setAcceptedTerms] = useState(false); 
+    const [isSubmitting, setIsSubmitting] = useState(false); 
 
-    // Toggle Mode Logic
     useEffect(() => {
         if (router.isReady) {
             if (router.query.mode === 'register') {
@@ -46,51 +47,37 @@ export default function LoginPage() {
         }
     }, [router.isReady, router.query.mode]);
 
-    // Config
-    const isRegistrationEnabled = true;
     const { config } = useSystemConfig();
     
-    // Premium YouOke Features (Detailed & Balanced for 2 Cols)
     const premiumFeatures = [
-        { icon: Cast, title: "แคสต์ขึ้นจอ", desc: "TV จอยักษ์ คุมผ่านมือถือแบบ DJ", color: "text-blue-600", bg: "bg-blue-50" },
-        { icon: Mic2, title: "ค้นด้วยเสียง", desc: "พูดชื่อศิลปินหรือเพลงได้ทันที", color: "text-red-600", bg: "bg-red-50" },
-        { icon: Smartphone, title: "รีโมทอัจฉริยะ", desc: "เพื่อนช่วยจัดคิว ร้องได้ทุกมุมห้อง", color: "text-green-600", bg: "bg-green-50" },
-        { icon: Music, title: "คลังเพลงไม่อั้น", desc: "อัปเดตเพลงใหม่และยอดนิยมทุกวัน", color: "text-purple-600", bg: "bg-purple-50" },
-        { icon: ShieldCheck, title: "ไร้โฆษณาคั่น", desc: "สนุกต่อเนื่อง ไม่มีโฆษณากวนใจ", color: "text-emerald-600", bg: "bg-emerald-50" },
-        { icon: Heart, title: "โหมดส่วนตัว", desc: "เซฟเพลงโปรดและเพลย์ลิสต์ส่วนตัว", color: "text-pink-600", bg: "bg-pink-50" },
+        { icon: Cast, title: "แคสต์ขึ้นจอ", desc: "TV จอยักษ์ คุมผ่านมือถือแบบ DJ", color: "text-blue-500", bg: "bg-blue-500/10" },
+        { icon: Mic2, title: "ค้นด้วยเสียง", desc: "พูดชื่อศิลปินหรือเพลงได้ทันที", color: "text-red-500", bg: "bg-red-500/10" },
+        { icon: Smartphone, title: "รีโมทอัจฉริยะ", desc: "เพื่อนช่วยจัดคิว ร้องได้ทุกมุมห้อง", color: "text-emerald-500", bg: "bg-emerald-500/10" },
+        { icon: Music, title: "คลังเพลงไม่อั้น", desc: "อัปเดตเพลงใหม่และยอดนิยมทุกวัน", color: "text-purple-500", bg: "bg-purple-500/10" },
+        { icon: ShieldCheck, title: "ไร้โฆษณาคั่น", desc: "สนุกต่อเนื่อง ไม่มีโฆษณากวนใจ", color: "text-amber-500", bg: "bg-amber-500/10" },
+        { icon: Heart, title: "โหมดส่วนตัว", desc: "เซฟเพลงโปรดและเพลย์ลิสต์ส่วนตัว", color: "text-pink-500", bg: "bg-pink-500/10" },
     ];
 
-    // 🛡️ Guard: Prevent double-processing of LINE callback
     const lineProcessedRef = useRef(false);
 
-    // Redirect if logged in (Instant)
     useEffect(() => {
         if (!router.isReady) return;
-        
-        // 🛡️ Skip redirect if we are here to LINK an account (YouTube Shell Connection)
         if (user && router.query.action === 'link') return;
-
-        // 🛡️ Skip redirect if LINE callback is being processed (v4.8.5 Critical Fix)
         if (router.query.code) return;
 
         if (user) {
-            // 🚀 ALWAYS REDIRECT TO HOME (as requested)
             const redirectUrl = (router.query.redirect as string) || '/';
             if (redirectUrl === router.asPath) return;
             router.replace(redirectUrl);
         }
     }, [user, router.isReady, router.query, router.asPath]);
 
-    // Handle LINE Callback (v4.8.5 - Supports both Login & Linking)
     useEffect(() => {
         if (!router.isReady) return;
         const { code, state } = router.query;
         if (!code || lineProcessedRef.current) return;
         
         const isLinkingFlow = state && state !== 'auth_login';
-
-        // Login flow: need to wait for auth to settle (user must be null)
-        // Linking flow: user is already logged in, proceed immediately
         if (!isLinkingFlow && user) return;
 
         lineProcessedRef.current = true;
@@ -102,49 +89,33 @@ export default function LoginPage() {
                     ? `${window.location.origin}/login/` 
                     : '';
                 
-                console.log(`🔗 LINE Callback: ${isLinkingFlow ? 'LINKING' : 'LOGIN'} flow | state=${state}`);
-                
                 const res = await fetch('/api/auth/line-token', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ code, redirectUri, state })
                 });
-                if (!res.ok) {
-                    const errorData = await res.json().catch(() => ({}));
-                    console.error('❌ LINE API Error:', errorData);
-                    throw new Error(errorData.error || 'Failed to verify LINE login');
-                }
+                if (!res.ok) throw new Error('Failed to verify LINE login');
                 const data = await res.json();
 
                 if (isLinkingFlow) {
-                    // Linking: เขียนข้อมูล LINE ลง RTDB ผ่าน Client SDK (Fallback สำหรับ Hybrid Mode)
                     if (data.lineUserId && user?.uid) {
-                        try {
-                            const { realtimeDb } = await import('@/firebase');
-                            const { ref, update } = await import('firebase/database');
-                            if (realtimeDb) {
-                                await update(ref(realtimeDb, `users/${user.uid}`), {
-                                    lineUserId: data.lineUserId,
-                                    lineDisplayName: data.lineDisplayName || '',
-                                });
-                                console.log('✅ LINE data written to RTDB via Client SDK');
-                            }
-                        } catch (rtdbErr) {
-                            console.warn('⚠️ Client RTDB write failed (non-critical):', rtdbErr);
+                        const { realtimeDb } = await import('@/firebase');
+                        const { ref, update } = await import('firebase/database');
+                        if (realtimeDb) {
+                            await update(ref(realtimeDb, `users/${user.uid}`), {
+                                lineUserId: data.lineUserId,
+                                lineDisplayName: data.lineDisplayName || '',
+                            });
                         }
                     }
-                    // ไม่ต้อง signIn ใหม่ (ล็อกอินอยู่แล้ว) แค่ redirect กลับหน้าแรก
-                    console.log('✅ LINE Linking Success! Redirecting...');
                     router.replace('/');
                 } else {
-                    // Login: signIn ด้วย Custom Token แล้วระบบจะ redirect ไปหน้าแรกเอง
                     await signInWithCustomToken(data.token);
                 }
             } catch (err: any) {
-                console.error('❌ LINE Callback Error:', err);
                 setLocalError('การเชื่อมต่อ LINE ล้มเหลว กรุณาลองใหม่');
                 setLineLoading(false);
-                lineProcessedRef.current = false; // Allow retry
+                lineProcessedRef.current = false;
             }
         };
         processLineCallback();
@@ -166,253 +137,169 @@ export default function LoginPage() {
                 msg = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
             } else if (err.code === 'auth/email-already-in-use') {
                 msg = 'อีเมลนี้ถูกใช้งานแล้ว';
-            } else if (err.code === 'auth/weak-password') {
-                msg = 'รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร';
             }
             setLocalError(msg);
+            setIsSubmitting(false);
         }
     };
 
     const handleGoogleLogin = () => {
         if (isLoading || isSubmitting) return;
-
-        // 🚀 SYNCHRONOUS FIX FOR SAFARI POP-UP:
         setIsSubmitting(true);
-        console.log('⚡ [Login] Initiating Google Redirect Flow...');
-        
         const action = user ? linkGoogleAccount() : signInWithGoogle();
-
         action.catch((err: any) => {
-            console.error('⚡ [Login] Google Flow Error:', err);
             setIsSubmitting(false);
             setLocalError(err.message || 'การเชื่อมต่อ Google ล้มเหลว');
         });
     };
 
     return (
-        <div className="min-h-screen bg-white flex flex-col lg:flex-row relative">
+        <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col lg:flex-row relative font-sans overflow-x-hidden">
             <Head>
                 <title>{isLogin ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก'} - YouOke</title>
             </Head>
 
-            {/* 🚀 PREMIUM LOADING OVERLAY (Action-Aware) */}
+            {/* Premium Loading Overlay */}
             {((isLoading && isSubmitting) || lineLoading) && (
-                <div className="fixed inset-0 z-[200] bg-white/60 backdrop-blur-xl flex flex-col items-center justify-center animate-in fade-in duration-300">
-                    <div className="w-16 h-16 bg-gray-900 rounded-2xl flex items-center justify-center shadow-2xl animate-bounce mb-6">
-                         <span className="text-2xl font-black text-white">Y</span>
-                    </div>
-                    <div className="flex flex-col items-center gap-2">
-                        <span className="text-gray-900 font-black text-lg">กำลังประมวลผล...</span>
-                        <span className="text-gray-400 text-sm font-medium px-8 text-center">กรุณารอสักครู่ ระบบกำลังพาคุณเข้าสู่ YouOke</span>
-                    </div>
-                    <div className="mt-8 flex gap-2">
-                        <div className="w-2 h-2 bg-red-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                        <div className="w-2 h-2 bg-red-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                        <div className="w-2 h-2 bg-red-500 rounded-full animate-bounce" />
+                <div className="fixed inset-0 z-[200] bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl flex flex-col items-center justify-center animate-in fade-in duration-300">
+                    <div className="w-16 h-16 bg-zinc-900 dark:bg-white rounded-[2rem] flex items-center justify-center animate-bounce mb-6">
+                         <span className="text-2xl font-black text-white dark:text-zinc-900">Y</span>
                     </div>
                 </div>
             )}
 
-            {/* HEADER: Back Button - Fixed for Native App Feel */}
+            {/* Back Button */}
             <div className={clsx(
-                "fixed top-0 left-0 right-0 z-[100] p-6 flex items-center justify-between pointer-events-none transition-opacity",
+                "fixed top-0 left-0 right-0 z-[100] p-6 flex items-center justify-between pointer-events-none transition-all",
                 !showIntro ? "opacity-0 invisible lg:opacity-100 lg:visible" : "opacity-100 visible"
             )}>
-                <Link href="/" className="pointer-events-auto flex items-center gap-2 text-sm font-black text-gray-700 hover:text-black transition-all bg-white px-5 py-2.5 rounded-2xl border-2 border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200 active:scale-95">
-                    <ArrowLeft size={18} strokeWidth={3} />
-                    <span>กลับ</span>
+                <Link href="/" className="pointer-events-auto flex items-center gap-2 text-[10px] font-black uppercase text-zinc-600 dark:text-zinc-400 bg-white dark:bg-zinc-900 px-5 py-2.5 rounded-2xl border border-zinc-200 dark:border-zinc-800 active:scale-95 transition-all shadow-none">
+                    <ArrowLeft size={16} strokeWidth={3} />
+                    <span>กลับหน้าหลัก</span>
                 </Link>
             </div>
 
-            {/* MAIN CONTENT WRAPPER */}
             <div className="flex-1 flex flex-col lg:flex-row w-full h-full relative">
                 
-                {/* LEFT SIDE: Mobile Intro (Step 1) / Desktop Sidebar */}
+                {/* LEFT SIDE: Features Intro */}
                 <div className={clsx(
-                    "w-full lg:w-[45%] xl:w-[50%] flex flex-col justify-between lg:justify-center p-6 lg:p-24 pt-24 lg:pt-24 bg-white lg:border-r border-gray-100 min-h-screen lg:h-auto",
+                    "w-full lg:w-[45%] xl:w-[50%] flex flex-col justify-center p-8 lg:p-24 pt-24 lg:pt-24 bg-zinc-50 dark:bg-zinc-950 lg:border-r border-zinc-100 dark:border-zinc-900/50 min-h-screen lg:h-auto",
                     !showIntro ? "hidden lg:flex" : "flex"
                 )}>
-                    <div className="max-w-xl mx-auto lg:mx-0 flex flex-col h-full lg:h-auto justify-between lg:justify-center lg:gap-12">
-                        {/* 1. Hero Content */}
-                        <div className="mt-4 lg:mt-0">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-red-50 text-red-600 rounded-full text-[11px] font-black uppercase tracking-widest mb-4">
-                                <Zap size={14} fill="currentColor" />
-                                <span>{user ? 'เชื่อมบัญชี YouTube รับสิทธิเพิ่ม' : 'ทดลองใช้ฟรี 1 วัน'}</span>
-                            </div>
-
-                            <p className="text-gray-500 text-[15px] lg:text-lg font-medium mb-8 lg:mb-12">
-                               {isLogin ? "เข้าสู่ระบบเพื่อร้องเพลงที่ชอบและจัดการคิวเพลงของคุณผ่านระบบ YouTube API ที่ลื่นไหลที่สุด" : "สมัครสมาชิกเพื่อสัมผัสประสบการณ์คาราโอเกะแบบใหม่ที่คุมได้จากมือคุณ"}
-                            </p>
-
-                            {/* Feature Grid: 2 Columns */}
-                            <div className="grid grid-cols-2 gap-x-4 lg:gap-x-10 gap-y-6 lg:gap-y-10">
-                                {premiumFeatures.map((f, i) => (
-                                    <div key={i} className="flex flex-row items-start text-left gap-4 group">
-                                        <div className={clsx("w-10 h-10 lg:w-12 lg:h-12 shrink-0 rounded-xl lg:rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110", f.bg, f.color)}>
-                                            <f.icon size={20} strokeWidth={2.5} />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-bold text-gray-900 text-[14px] lg:text-[16px] leading-tight">{f.title}</h3>
-                                            <p className="text-gray-400 text-[12px] lg:text-[13px] leading-snug mt-1">{f.desc}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                    <div className="max-w-xl mx-auto lg:mx-0">
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full text-[10px] font-black uppercase tracking-widest mb-6">
+                            <Zap size={14} fill="currentColor" />
+                            <span>{user ? 'เชื่อมบัญชี YouTube รับสิทธิเพิ่ม' : 'ทดลองใช้ฟรี 1 วัน'}</span>
                         </div>
 
-                        {/* 2. MOBILE ONLY ACTIONS (Bottom Space) */}
-                        <div className="lg:hidden space-y-3 mt-12 mb-6">
-                            <button 
-                                onClick={() => { setIsLogin(false); setShowIntro(false); }}
-                                className="w-full h-14 bg-gray-900 text-white font-black rounded-2xl shadow-xl shadow-gray-900/10 active:scale-95 transition-all text-[17px]"
-                            >
-                                สมัครสมาชิกฟรี
-                            </button>
-                            <button 
-                                onClick={() => { setIsLogin(true); setShowIntro(false); }}
-                                className="w-full h-14 bg-white border-2 border-gray-100 text-gray-900 font-bold rounded-2xl active:scale-95 transition-all text-[17px]"
-                            >
-                                เข้าสู่ระบบ
-                            </button>
+                        <h2 className="text-3xl lg:text-5xl font-black text-zinc-900 dark:text-white leading-[1.1] tracking-tighter mb-6">
+                            ร้องคาราโอเกะ<br/>แบบมืออาชีพที่บ้านคุณ
+                        </h2>
+
+                        <p className="text-zinc-500 dark:text-zinc-400 text-sm lg:text-base font-bold mb-10 leading-relaxed max-w-md">
+                           เข้าสู่ระบบเพื่อจัดการคิวเพลงโปรดผ่านสมาร์ทโฟน และร้องเพลงจากคลัง YouTube ที่ใหญ่ที่สุดในโลก
+                        </p>
+
+                        <div className="grid grid-cols-2 gap-x-4 lg:gap-x-10 gap-y-6 lg:gap-y-8 mb-12">
+                            {premiumFeatures.map((f, i) => (
+                                <div key={i} className="flex gap-4">
+                                    <div className={clsx("w-10 h-10 lg:w-12 lg:h-12 shrink-0 rounded-2xl flex items-center justify-center border", f.bg, f.color, "border-current/10")}>
+                                        <f.icon size={20} strokeWidth={2.5} />
+                                    </div>
+                                    <div className="pt-0.5">
+                                        <h3 className="font-black text-zinc-900 dark:text-white text-[13px] lg:text-[15px] leading-tight tracking-tight">{f.title}</h3>
+                                        <p className="text-zinc-400 dark:text-zinc-500 text-[10px] lg:text-[11px] font-bold leading-tight mt-1">{f.desc}</p>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
 
-                        {/* Desktop & Mobile Social Proof */}
-                        <div className="flex mt-8 lg:mt-12 pt-8 border-t border-gray-50 items-center gap-3">
-                            <div className="flex -space-x-3">
-                                {[1, 2, 3, 4].map(i => (
-                                    <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-gray-100 overflow-hidden shadow-sm">
-                                        <img src={`https://i.pravatar.cc/100?img=${i+10}`} alt="avatar" />
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="text-sm font-bold text-gray-500">
-                                มีผู้ใช้งาน <span className="text-gray-900">จำนวนมาก</span> กำลังร้องเพลงอยู่ในขณะนี้
-                            </div>
+                        <div className="lg:hidden space-y-3">
+                            <button onClick={() => { setIsLogin(false); setShowIntro(false); }} className="w-full h-14 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-black rounded-3xl active:scale-95 transition-all text-base border-none shadow-none">สมัครสมาชิกฟรี</button>
+                            <button onClick={() => { setIsLogin(true); setShowIntro(false); }} className="w-full h-14 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white font-black rounded-3xl active:scale-95 transition-all text-base shadow-none">เข้าสู่ระบบ</button>
                         </div>
                     </div>
                 </div>
 
-                {/* RIGHT SIDE: Auth Form (Step 2) */}
+                {/* RIGHT SIDE: Auth Form */}
                 <div className={clsx(
-                    "w-full lg:w-[55%] xl:w-[50%] flex flex-col justify-center items-center py-12 px-6 lg:px-24 bg-[#fcfcfd] lg:bg-transparent min-h-screen lg:min-h-0",
+                    "w-full lg:w-[55%] xl:w-[50%] flex flex-col justify-center items-center py-12 px-6 lg:px-24 bg-white dark:bg-zinc-900/10 min-h-screen lg:min-h-0 relative",
                     showIntro ? "hidden lg:flex" : "flex animate-in fade-in slide-in-from-bottom-4 duration-500"
                 )}>
-                    {/* BACK TO INTRO BUTTON (Mobile Only) - Premium Pill Style */}
-                    <button onClick={() => setShowIntro(true)} className="lg:hidden absolute top-8 left-6 flex items-center gap-2 text-sm font-black text-gray-700 bg-white border-2 border-gray-100 rounded-2xl px-5 py-2.5 shadow-sm active:scale-95 transition-all">
-                        <ArrowLeft size={18} strokeWidth={3} />
+                    {/* Back to Intro (Mobile) */}
+                    <button onClick={() => setShowIntro(true)} className="lg:hidden absolute top-8 left-6 flex items-center gap-2 text-[10px] font-black text-zinc-600 dark:text-zinc-400 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-2xl px-5 py-2.5 active:scale-95 transition-all">
+                        <ArrowLeft size={16} strokeWidth={3} />
                         <span>กลับ</span>
                     </button>
 
-                    <div className="w-full max-w-[400px]">
-                        {/* Form Card */}
-                        <div className="bg-transparent transition-all">
-                            <div className="mb-8 text-center">
-                                <h2 className="text-xl lg:text-2xl font-bold text-gray-900 mb-1 tracking-tight">
-                                    {isLogin ? 'เข้าสู่ระบบ' : 'สมัครสมาชิก'}
-                                </h2>
-                                <p className="text-gray-400 text-[13px] font-medium">
-                                    {isLogin ? (
-                                        <>ยังไม่มีบัญชี? <button onClick={() => setIsLogin(false)} className="text-red-500 font-bold hover:underline decoration-1 underline-offset-4">สร้างใหม่</button></>
-                                    ) : (
-                                        <>มีบัญชีอยู่แล้ว? <button onClick={() => setIsLogin(true)} className="text-blue-500 font-bold hover:underline decoration-1 underline-offset-4">เข้าสู่ระบบ</button></>
-                                    )}
-                                </p>
-                            </div>
-
-                            {/* Social Login: STABLE & FAST FAST FAST */}
-                            <div className="grid grid-cols-1 gap-3 mb-8">
-                                <button onClick={() => signInWithLine()} disabled={isLoading || lineLoading || !acceptedTerms} className="h-12 flex justify-center items-center gap-3 px-6 rounded-xl bg-[#06C755] hover:bg-[#05b34d] text-white font-bold transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
-                                    {lineLoading ? <span className="loading loading-spinner loading-sm" /> : (
-                                        <>
-                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M24 10.3c0-4.6-4.6-8.3-10.4-8.3C7.8 2 3.1 5.7 3.1 10.3c0 4.1 3.7 7.5 8.7 8.2.3.1.8.2 1 .5.1.1.2.4.1.6l-.3 1.9c-.1.4-.4 1.5-.4 1.5l3.2-1.9s1.4-.8 2-.7l.1-.1c4.5-1.1 6.5-4.5 6.5-10z"/></svg>
-                                            <span className="text-[14px]">เข้าสู่ระบบด้วย LINE</span>
-                                        </>
-                                    )}
-                                </button>
-                                <button onClick={handleGoogleLogin} disabled={isLoading || !acceptedTerms} className="h-12 flex justify-center items-center gap-3 px-6 rounded-xl bg-white border border-gray-100 hover:border-gray-200 text-gray-700 font-bold transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
-                                    {isLoading ? <span className="loading loading-spinner loading-sm" /> : (
-                                        <>
-                                            <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
-                                                <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/>
-                                                <path d="M3.964 10.706c-.18-.54-.282-1.117-.282-1.706 0-.589.102-1.166.282-1.706V4.962H.957C.347 6.177 0 7.549 0 9s.347 2.823.957 4.038l3.007-2.332z" fill="#FBBC05"/>
-                                                <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.962L3.964 7.294C4.672 5.167 6.656 3.58 9 3.58z" fill="#EA4335"/>
-                                            </svg>
-                                            <span className="text-[14px]">Google Login</span>
-                                        </>
-                                    )}
-                                </button>
-                            </div>
-                            {/* Terms Checkbox */}
-                            <div className="mb-6 px-2">
-                                <label className="flex items-start gap-3 cursor-pointer group">
-                                    <div className="relative flex items-center shrink-0 mt-0.5">
-                                        <input 
-                                            type="checkbox" 
-                                            checked={acceptedTerms} 
-                                            onChange={(e) => setAcceptedTerms(e.target.checked)}
-                                            className="peer w-5 h-5 border-2 border-gray-200 rounded-lg appearance-none checked:bg-gray-900 checked:border-gray-900 transition-all cursor-pointer" 
-                                        />
-                                        <svg className="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 left-1 transition-opacity pointer-events-none" viewBox="0 0 12 10" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="1.5 6 4.5 9 10.5 1"></polyline></svg>
-                                    </div>
-                                    <span className="text-[12px] font-bold text-gray-700 leading-tight group-hover:text-red-600 transition-colors">
-                                        ฉันยอมรับ <Link href="/terms" className="text-red-500 underline decoration-red-200 hover:decoration-red-500 transition-all">เงื่อนไขการใช้งาน</Link> ของ YouOke
-                                    </span>
-                                </label>
-                            </div>
-
-                        <div className="relative mb-8 text-center">
-                            <span className="relative z-10 px-4 bg-white text-[11px] font-black text-gray-400 uppercase tracking-widest">หรือใช้อีเมล</span>
-                            <div className="absolute top-1/2 left-0 right-0 border-t border-gray-50" />
+                    <div className="w-full max-w-[380px]">
+                        <div className="mb-10 text-center">
+                            <h2 className="text-2xl lg:text-3xl font-black text-zinc-900 dark:text-white mb-2 tracking-tighter">
+                                {isLogin ? 'ยินดีต้อนรับกลับมา' : 'เข้าร่วม YouOKE'}
+                            </h2>
+                            <p className="text-zinc-400 dark:text-zinc-500 text-[13px] font-bold">
+                                {isLogin ? (
+                                    <>ยังไม่มีบัญชี? <button onClick={() => setIsLogin(false)} className="text-primary hover:underline">สมัครสมาชิกใหม่</button></>
+                                ) : (
+                                    <>มีบัญชีอยู่แล้ว? <button onClick={() => setIsLogin(true)} className="text-primary hover:underline">เข้าสู่ระบบ</button></>
+                                )}
+                            </p>
                         </div>
 
-                        {/* Traditional Form */}
+                        <div className="space-y-3 mb-8">
+                            <button onClick={() => signInWithLine()} disabled={isLoading || lineLoading || !acceptedTerms} className="w-full h-14 flex justify-center items-center gap-3 rounded-2xl bg-[#06C755] text-white font-black transition-all active:scale-95 disabled:opacity-40 border-none shadow-none">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M24 10.3c0-4.6-4.6-8.3-10.4-8.3C7.8 2 3.1 5.7 3.1 10.3c0 4.1 3.7 7.5 8.7 8.2.3.1.8.2 1 .5.1.1.2.4.1.6l-.3 1.9c-.1.4-.4 1.5-.4 1.5l3.2-1.9s1.4-.8 2-.7l.1-.1c4.5-1.1 6.5-4.5 6.5-10z"/></svg>
+                                <span>เข้าสู่ระบบด้วย LINE</span>
+                            </button>
+                            <button onClick={handleGoogleLogin} disabled={isLoading || !acceptedTerms} className="w-full h-14 flex justify-center items-center gap-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white font-black transition-all active:scale-95 disabled:opacity-40 shadow-none">
+                                <svg width="20" height="20" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/><path d="M3.964 10.706c-.18-.54-.282-1.117-.282-1.706 0-.589.102-1.166.282-1.706V4.962H.957C.347 6.177 0 7.549 0 9s.347 2.823.957 4.038l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.962L3.964 7.294C4.672 5.167 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+                                <span>ดำเนินการด้วย Google</span>
+                            </button>
+                        </div>
+
+                        <div className="mb-6">
+                            <label className="flex items-start gap-3 cursor-pointer group">
+                                <input type="checkbox" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} className="peer hidden" />
+                                <div className="w-5 h-5 rounded-lg border-2 border-zinc-200 dark:border-zinc-700 peer-checked:bg-primary peer-checked:border-primary flex items-center justify-center transition-all bg-white dark:bg-zinc-800">
+                                    <CheckCircle2 className="w-3.5 h-3.5 text-white" strokeWidth={4} />
+                                </div>
+                                <span className="text-[11px] font-black text-zinc-500 leading-tight">
+                                    ฉันยอมรับ <Link href="/terms" className="text-zinc-900 dark:text-zinc-200 underline decoration-primary/30">เงื่อนไขการใช้งาน</Link> ของ YouOKE
+                                </span>
+                            </label>
+                        </div>
+
+                        <div className="relative py-8 flex items-center justify-center">
+                            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-zinc-100 dark:border-zinc-800"></div></div>
+                            <span className="relative px-4 bg-white dark:bg-zinc-950 text-[9px] font-black text-zinc-300 dark:text-zinc-700 uppercase tracking-widest">หรือใช้อีเมล</span>
+                        </div>
+
                         <form className="space-y-4" onSubmit={handleSubmit}>
-                            {(error || localError) && (
-                                <div className="bg-red-50 border border-red-100 text-red-600 text-xs font-bold p-4 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
-                                    <Zap size={16} fill="currentColor" />
-                                    <span>{localError || error}</span>
+                            {localError && (
+                                <div className="bg-red-500/10 text-red-600 text-[11px] font-black p-4 rounded-2xl border border-red-500/20 flex items-center gap-3">
+                                    <Zap size={14} fill="currentColor" />
+                                    <span>{localError}</span>
                                 </div>
                             )}
 
                             {!isLogin && (
-                                <div className="space-y-1.5">
-                                    <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider ml-1">ชื่อเรียก</label>
-                                    <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full h-12 bg-gray-50 border border-gray-100 rounded-xl px-4 text-gray-900 text-sm font-medium transition-all outline-none focus:bg-white focus:border-red-500/20" placeholder="เช่น คุณใจดี" />
-                                </div>
+                                <input type="text" required value={name} onChange={(e) => setName(e.target.value)} className="w-full h-14 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl px-5 text-sm font-bold text-zinc-900 dark:text-white outline-none ring-0 placeholder:text-zinc-400" placeholder="ชื่อเล่นของคุณ" />
                             )}
+                            <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full h-14 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl px-5 text-sm font-bold text-zinc-900 dark:text-white outline-none ring-0 placeholder:text-zinc-400" placeholder="อีเมล" />
+                            <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full h-14 bg-zinc-50 dark:bg-zinc-800 border-none rounded-2xl px-5 text-sm font-bold text-zinc-900 dark:text-white outline-none ring-0 placeholder:text-zinc-400" placeholder="รหัสผ่าน" />
 
-                            <div className="space-y-1.5">
-                                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider ml-1">อีเมล</label>
-                                <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="w-full h-12 bg-gray-50 border border-gray-100 rounded-xl px-4 text-gray-900 text-sm font-medium transition-all outline-none focus:bg-white focus:border-red-500/20" placeholder="name@example.com" />
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider ml-1">รหัสผ่าน</label>
-                                <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full h-12 bg-gray-50 border border-gray-100 rounded-xl px-4 text-gray-900 text-sm font-medium transition-all outline-none focus:bg-white focus:border-red-500/20" placeholder="••••••••" />
-                            </div>
-
-                            <button type="submit" disabled={isLoading || !acceptedTerms} className={clsx(
-                                    "w-full h-12 mt-4 rounded-xl font-bold text-[15px] text-white transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2",
-                                    isLogin ? "bg-gray-900 hover:bg-black" : "bg-primary hover:brightness-110"
-                                )}>
-                                {isLoading ? (
-                                    <span className="loading loading-spinner" />
-                                ) : (
-                                    <>
-                                        <span>{isLogin ? 'เข้าสู่ระบบ' : 'สร้างบัญชีแล้วเริ่มเลย!'}</span>
-                                    </>
-                                )}
+                            <button type="submit" disabled={isLoading || !acceptedTerms} className="w-full h-14 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-black rounded-3xl active:scale-95 transition-all text-base mt-2 shadow-none border-none">
+                                {isLogin ? 'เข้าสู่ระบบ' : 'เริ่มเป็นสมาชิกตอนนี้'}
                             </button>
                         </form>
+
+                        <p className="mt-12 text-center text-[10px] text-zinc-400 font-black uppercase tracking-widest leading-loose">
+                            YouOKE -The Smart Karaoke OS<br/>
+                            © {new Date().getFullYear()} PlayOKE Co., Ltd.
+                        </p>
                     </div>
                 </div>
-
-                <p className="mt-8 text-center text-xs text-gray-400 font-medium pb-8 lg:pb-0">
-                    การเข้าใช้งานแสดงว่าคุณยอมรับ <Link href="/terms" className="underline">นโยบายความเป็นส่วนตัว</Link> ของเรา
-                </p>
             </div>
         </div>
-    </div>
     );
 }

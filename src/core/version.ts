@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.8 (Design Harmony Bundle)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "UI: Unified 'Pure Flat' design across Login, Sidebar, and Terms pages",
+            "DESIGN: Implemented shadowless component architecture system-wide",
+            "SYSTEM: Synchronized package.json and version metadata to v5.3.8",
+            "UX: Fixed Google/LINE login button visibility for better accessibility"
+        ],
+        recent_updates: "Unified Pure Flat Design Synchronization"
+    },
+    {
         version: "v5.3.7 (Legal Design Refit)",
         date: "9 เม.ย. 2569",
         changes: [
