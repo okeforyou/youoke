@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.25 (Thai Copywriting Polish)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "I18N: Localized VIP invitation subtext to persuasive Thai copy",
+            "UX: Updated banner text to 'ร้องเพลงไม่อั้น ไร้โฆษณากวนใจ' for higher conversion",
+            "ACCESSIBILITY: Senior-friendly high-contrast Thai messaging"
+        ],
+        recent_updates: "Persuasive Thai VIP Banner Update"
+    },
+    {
         version: "v5.3.24 (Instant Smooth Transition)",
         date: "9 เม.ย. 2569",
         changes: [

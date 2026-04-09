@@ -217,7 +217,7 @@ export const ProfileContent = () => {
                                 </div>
                                 <div>
                                     <p className="text-[13px] font-black text-white dark:text-zinc-950 leading-tight">สมัครสมาชิก VIP วันนี้!</p>
-                                    <p className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Unlimited Singing Access</p>
+                                    <p className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">ร้องเพลงไม่อั้น ไร้โฆษณากวนใจ</p>
                                 </div>
                             </div>
                             <div className="w-6 h-6 rounded-full bg-white/10 dark:bg-zinc-100 flex items-center justify-center">
