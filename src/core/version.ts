@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.34 (Pure Flat Admin Shield)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "SHIELD: Created infinite auto-sync for Admin/Owner roles to prevent accidental database downgrades",
+            "FIX: Corrected the bug where Self-Healing sets Owner emails to 'user' role in Firestore",
+            "DATA: Ensured that 'lifetime' and 'active' status is permanently synchronized to the server",
+            "DESIGN: Officially adopted 'Pure Flat' convention across operations"
+        ],
+        recent_updates: "Admin Database Discrepancy Fix"
+    },
+    {
         version: "v5.3.33 (Firestore Identity Sync)",
         date: "9 เม.ย. 2569",
         changes: [

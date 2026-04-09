@@ -348,13 +348,34 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                     }
                                     isAdmin = true;
 
-                                    // 🛡️ v4.10.140: Force Lifetime Membership for Admins in-memory to prevent "Day Pass" glitch
-                                    membership = {
+                                    const requiredMembership = {
                                         ...membership,
                                         type: 'lifetime',
                                         status: 'active',
                                         expiresAt: null
                                     };
+
+                                    // 🛡️ v5.3.34: Pure Flat Shield - Force sync to Firestore to fix UI discrepancies in Admin Panel
+                                    if (userData.role !== role || userData.membership?.status !== 'active') {
+                                        console.log('🛡️ [AuthStore] Auto-Healing Admin Role & Lifetime Data in Firestore...');
+                                        const { updateDoc } = await import('firebase/firestore');
+                                        updateDoc(userRef, { 
+                                            role: role, 
+                                            membership: requiredMembership 
+                                        }).catch(e => console.warn('Admin self-healing failed', e));
+
+                                        if (realtimeDb) {
+                                            rtdbUpdate(ref(realtimeDb, `users/${firebaseUser.uid}`), {
+                                                role: role,
+                                            }).catch(e => console.warn('Admin RTDB self-healing failed', e));
+                                            rtdbUpdate(ref(realtimeDb, `users/${firebaseUser.uid}/subscription`), {
+                                                status: 'active',
+                                                plan: 'lifetime'
+                                            }).catch(e => console.warn('Admin RTDB sub healing failed', e));
+                                        }
+                                    }
+
+                                    membership = requiredMembership;
 
                                     console.log(`👑 [AuthStore] ${role.toUpperCase()} Identified: Shielded Session Active`);
                                 }
