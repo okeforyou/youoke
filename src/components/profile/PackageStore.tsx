@@ -38,6 +38,12 @@ export const PackageStore = () => {
             return;
         }
 
+        // v5.3.28 Mandatory LINE Connection Check
+        if (!user.lineUserId) {
+            alert("⚠️ กรุณาเชื่อมต่อบัญชี LINE ก่อนสมัครสมาชิก\n\nเพื่อให้ระบบสามารถส่งรายละเอียดการชำระเงินและแจ้งเตือนสิทธิ์สมาชิก VIP ให้คุณได้อย่างถูกต้องครับ");
+            return;
+        }
+
         if (pkg.price === 0) {
             try {
                 const { activateFreePackage } = await import('@/modules/billing/services/paymentService');

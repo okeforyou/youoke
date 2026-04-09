@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.28 (LINE Mandatory Recovery)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "LOGIC: Re-enforced mandatory LINE connection before subscribing",
+            "UX: Added alert and guidance for unlinked users attempting to purchase",
+            "ADMIN: Ensured all payment records are tied to a valid LINE ID for tracking",
+            "STABILITY: Synchronized 'Force-Line' logic across all store entry points"
+        ],
+        recent_updates: "Mandatory LINE Connection Recovery"
+    },
+    {
         version: "v5.3.27 (Subscription Recovery)",
         date: "9 เม.ย. 2569",
         changes: [
