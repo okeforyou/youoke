@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.14 (Official Brand Sync)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "BRAND: Replaced all LINE icons with the high-fidelity Official Wordmark SVG",
+            "UI: Synchronized branding across Login and Profile management systems",
+            "DESIGN: Finalized visual consistency for third-party integrations"
+        ],
+        recent_updates: "Official LINE Branding & Visual Polish"
+    },
+    {
         version: "v5.3.13 (Accessibility Boost)",
         date: "9 เม.ย. 2569",
         changes: [
