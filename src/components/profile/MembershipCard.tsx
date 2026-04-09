@@ -32,9 +32,9 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
         if (isAdmin) return "ผู้ดูแลระบบ (ADMIN)";
         if (isLifetime) return "ตลอดชีพ (PRO)";
         switch (safeMembership.type) {
-            case 'day_pass': return "แพ็กเกจรายวัน";
-            case 'yearly': return "พรีเมียมรายปี";
-            case 'monthly': return "พรีเมียมรายเดือน";
+            case 'day_pass': return "สมาชิกรายวัน";
+            case 'yearly': return "สมาชิกรายปี";
+            case 'monthly': return "สมาชิกรายเดือน";
             case 'trial': return "ทดลองใช้งานฟรี";
             case 'free': return "ใช้งานฟรี";
             default: return "สมาชิกพรีเมียม";
@@ -44,10 +44,10 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
     const planName = getPlanName();
 
     const config = {
-        admin: { color: "text-rose-600", bg: "bg-rose-500/5", border: "border-rose-500/10", iconBg: "bg-rose-600" },
-        lifetime: { color: "text-amber-600", bg: "bg-amber-500/5", border: "border-amber-500/10", iconBg: "bg-amber-600" },
-        premium: { color: "text-primary", bg: "bg-primary/5", border: "border-primary/10", iconBg: "bg-primary" },
-        free: { color: "text-zinc-950", bg: "bg-zinc-50 dark:bg-zinc-900/50", border: "border-zinc-200 dark:border-zinc-800", iconBg: "bg-zinc-800 dark:bg-zinc-700" },
+        admin: { color: "text-rose-600", bg: "bg-rose-500/5", border: "border-rose-500/10", iconBg: "bg-rose-600", iconColor: "text-white" },
+        lifetime: { color: "text-amber-600", bg: "bg-amber-500/5", border: "border-amber-500/10", iconBg: "bg-amber-600", iconColor: "text-white" },
+        premium: { color: "text-primary", bg: "bg-primary/5", border: "border-primary/10", iconBg: "bg-primary", iconColor: "text-white" },
+        free: { color: "text-zinc-950", bg: "bg-zinc-50 dark:bg-zinc-900/50", border: "border-zinc-200 dark:border-zinc-800", iconBg: "bg-zinc-100 dark:bg-zinc-800", iconColor: "text-zinc-950" },
     };
 
     let style = config.free;
@@ -58,49 +58,48 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
     return (
         <div className="relative group cursor-pointer w-full" onClick={onUpgrade}>
             <div className={cn(
-                "relative rounded-3xl p-4 flex flex-col justify-between transition-all duration-300 active:scale-[0.98] border shadow-none",
+                "relative rounded-2xl p-3 flex flex-col justify-between transition-all duration-300 active:scale-[0.98] border shadow-none",
                 style.bg, style.border
             )}>
-                <div className="flex justify-between items-start">
+                <div className="flex justify-between items-center">
                     <div className="flex items-center gap-3">
-                        {/* Compact Icon */}
-                        <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-sm ring-2 ring-white dark:ring-zinc-800", style.iconBg)}>
-                            {isAdmin || isLifetime ? <Crown className="w-5 h-5" /> : (isPremium ? <Zap className="w-5 h-5" /> : <Clock className="w-5 h-5" />)}
+                        {/* Ultra Compact Icon */}
+                        <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shadow-none border border-zinc-200 dark:border-zinc-800", style.iconBg)}>
+                            {isAdmin || isLifetime ? (
+                                <Crown className={cn("w-5 h-5", style.iconColor)} />
+                            ) : (
+                                isPremium ? <Zap className={cn("w-5 h-5", style.iconColor)} /> : <Clock className="w-5 h-5 text-primary" />
+                            )}
                         </div>
                         <div>
-                            <div className="text-[10px] font-black uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                                {isAdmin ? "ตำแหน่งในระบบ" : "สิทธิ์การใช้งาน"}
+                            <div className="text-[9px] font-black uppercase tracking-widest text-zinc-400">
+                                {isAdmin ? "ตำแหน่ง" : "สิทธิ์เข้าใช้งาน"}
                             </div>
-                            <h3 className={cn("text-base font-black tracking-tight leading-tight", style.color)}>
+                            <h3 className={cn("text-sm font-black tracking-tight leading-none", style.color)}>
                                 {planName}
                             </h3>
                         </div>
                     </div>
                     
-                    {/* Colored Action Button */}
+                    {/* Action Hint */}
                     {!isAdmin && (
-                        <div className="flex flex-col items-center gap-1 group-hover:scale-110 transition-transform">
-                             <div className={cn(
-                                "w-9 h-9 rounded-full flex items-center justify-center text-white shadow-lg",
-                                isPremium ? "bg-amber-500 shadow-amber-500/20" : "bg-primary shadow-primary/20"
-                             )}>
-                                <ArrowRight className="w-4 h-4" strokeWidth={4} />
-                             </div>
-                             <span className={cn("text-[8px] font-black uppercase", isPremium ? "text-amber-600" : "text-primary")}>
+                        <div className="flex items-center gap-2">
+                            <span className={cn("text-[9px] font-black uppercase", isPremium ? "text-amber-500" : "text-primary")}>
                                 {isPremium ? "จัดการ" : "อัปเกรด"}
-                             </span>
+                            </span>
+                             <div className={cn(
+                                "w-7 h-7 rounded-full flex items-center justify-center text-white",
+                                isPremium ? "bg-amber-500" : "bg-primary"
+                             )}>
+                                <ArrowRight className="w-4 h-4" strokeWidth={3} />
+                             </div>
                         </div>
                     )}
                 </div>
 
-                <div className="mt-4 pt-3 flex justify-between items-center border-t border-dashed border-zinc-200 dark:border-zinc-800">
-                    <div className="flex flex-col">
-                        <div className="text-[9px] uppercase tracking-widest font-black text-zinc-950 dark:text-white mb-0.5">
-                            {isAdmin ? "ความปลอดภัย" : (isLifetime ? "สิทธิพิเศษ" : "วันหมดอายุ")}
-                        </div>
-                        <div className="text-[11px] font-black text-zinc-500 dark:text-zinc-400">
-                             {isAdmin ? "ป้องกันข้อมูลระดับสูง" : (isLifetime ? "สมาชิกถาวร ไม่ติดโฆษณา" : formatDate(safeMembership.expiresAt))}
-                        </div>
+                <div className="mt-2.5 pt-2 flex justify-between items-center border-t border-dashed border-zinc-200 dark:border-zinc-800">
+                    <div className="flex items-center gap-2 text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                        {isAdmin ? "ADMIN PRIVILEGE" : (isLifetime ? "PREMIUM FOREVER" : `หมดอายุ: ${formatDate(safeMembership.expiresAt)}`)}
                     </div>
                 </div>
             </div>

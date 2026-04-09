@@ -131,13 +131,6 @@ export const ProfileContent = () => {
                             ผูกบัญชีเพื่อรับแจ้งเตือนและสิทธิพิเศษจาก YouOke
                         </p>
                     </div>
-                    <button 
-                        onClick={() => (user as any)?.uid && signInWithLine((user as any).uid)}
-                        className="w-full bg-[#06C755] text-white py-4 rounded-3xl font-black text-base shadow-xl shadow-green-500/20 active:scale-[0.98] flex items-center justify-center gap-2"
-                    >
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M24 10.304c0-4.6-4.6-8.43-10.404-8.43-5.744 0-10.4 3.77-10.4 8.43 0 4.155 3.655 7.63 8.708 8.284.34.074.801.225 1.026.516.23.289.15.743.074 1.042l-.367 2.215s-.204 1.258.944.685c1.149-.574 6.204-3.655 8.46-6.255C22.618 15.352 24 13.013 24 10.304zm-14.757 2.375a.333.333 0 0 1-.333.333H6.84a.332.332 0 0 1-.334-.333V8.165a.333.333 0 0 1 .334-.334h.61c.184 0 .333.15.333.334v3.837h1.127c.184 0 .333.15.333.333v.644zm3.058 0a.334.334 0 0 1-.334.333h-.615a.333.333 0 0 1-.333-.333V8.165c0-.184.15-.334.333-.334h.615c.184 0 .334.15.334.334v4.514zm3.903 0a.332.332 0 0 1-.333.333h-.515a.34.34 0 0 1-.267-.13l-1.422-1.95v1.747a.333.333 0 0 1-.333.333h-.611a.333.333 0 0 1-.333-.333V8.165a.333.333 0 0 1 .333-.334h.511c.101 0 .196.046.257.126l1.432 1.956V8.165a.333.333 0 0 1 .333-.334h.612c.184 0 .333.15.333.334v4.514zm3.015-2.071c.184 0 .333.15.333.333v.644a.333.333 0 0 1-.333.333h-1.616a.333.333 0 0 1-.333-.333V8.165a.333.333 0 0 1 .333-.334h1.616c.184 0 .333.15.333.334v.644a.333.333 0 0 1-.333.334H17.47v.754h1.127c.184 0 .333.15.333.333v.644a.333.333 0 0 1-.333.334H17.47v.775h1.119z"/></svg>
-                        <span>เปิดแอป LINE ของคุณ</span>
-                    </button>
                 </div>
             </div>
         );
@@ -191,7 +184,7 @@ export const ProfileContent = () => {
             </div>
 
             {/* 2. Main Content */}
-            <div className="px-4 pb-12 mt-4 space-y-6">
+            <div className="px-4 pb-12 mt-4 space-y-4">
                 {/* Membership Row */}
                 <div className="space-y-4">
                     <MembershipCard
@@ -200,47 +193,46 @@ export const ProfileContent = () => {
                         onUpgrade={handleOpenPackages}
                     />
 
-                    {/* v5 VIP Invitation Banner (High Contrast) */}
+                    {/* v5 VIP Invitation Banner (Ultra Compact) */}
                     {!isPremium && (
                         <div 
                             onClick={() => setView('packages')}
-                            className="group cursor-pointer w-full p-4 rounded-3xl bg-zinc-950 dark:bg-white flex items-center justify-between transition-all active:scale-[0.98] shadow-xl shadow-zinc-900/10"
+                            className="group cursor-pointer w-full p-3.5 rounded-2xl bg-zinc-950 dark:bg-white flex items-center justify-between transition-all active:scale-[0.98] border border-zinc-950"
                         >
-                            <div className="flex items-center gap-4">
-                                <div className="w-9 h-9 rounded-2xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/30">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white">
                                     <SparklesIcon className="w-4 h-4" />
                                 </div>
                                 <div>
-                                    <p className="text-sm font-black text-white dark:text-zinc-950 leading-tight">สมัครสมาชิก VIP วันนี้!</p>
-                                    <p className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500">ปลดล็อกการร้องเพลงแบบไร้ขีดจำกัด</p>
+                                    <p className="text-[13px] font-black text-white dark:text-zinc-950 leading-tight">สมัครสมาชิก VIP วันนี้!</p>
+                                    <p className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Unlimited Singing Access</p>
                                 </div>
                             </div>
-                            <div className="w-7 h-7 rounded-full bg-white/10 dark:bg-zinc-100 flex items-center justify-center">
-                                <ChevronRightIcon className="w-4 h-4 text-white dark:text-zinc-900 group-hover:translate-x-1 transition-transform" />
+                            <div className="w-6 h-6 rounded-full bg-white/10 dark:bg-zinc-100 flex items-center justify-center">
+                                <ChevronRightIcon className="w-4 h-4 text-white dark:text-zinc-900" />
                             </div>
                         </div>
                     )}
 
                     {/* v5 High Contrast LINE Block */}
-                    <div className="w-full flex items-center justify-between p-4 rounded-3xl bg-zinc-50 dark:bg-zinc-900/50 border-2 border-zinc-100 dark:border-zinc-800">
-                        <div className="flex items-center gap-4">
-                            {/* Always use Green for LINE Icon */}
-                            <div className="w-11 h-11 rounded-2xl flex items-center justify-center bg-[#06C755]/10 shadow-sm border border-[#06C755]/20">
-                                <svg width="22" height="22" viewBox="0 0 24 24" className="text-[#06C755]" fill="currentColor"><path d="M24 10.304c0-4.66-4.66-8.43-10.404-8.43-5.744 0-10.4 3.77-10.4 8.43 0 4.155 3.655 7.63 8.708 8.284.34.074.801.225 1.026.516.23.289.15.743.074 1.042l-.367 2.215s-.204 1.258.944.685c1.149-.574 6.204-3.655 8.46-6.255C22.618 15.352 24 13.013 24 10.304zm-14.757 2.375a.333.333 0 0 1-.333.333H6.84a.332.332 0 0 1-.334-.333V8.165a.333.333 0 0 1 .334-.334h.61c.184 0 .333.15.333.334v3.837h1.127c.184 0 .333.15.333.333v.644zm3.058 0a.334.334 0 0 1-.334.333h-.615a.333.333 0 0 1-.333-.333V8.165c0-.184.15-.334.333-.334h.615c.184 0 .334.15.334.334v4.514zm3.903 0a.332.332 0 0 1-.333.333h-.515a.34.34 0 0 1-.267-.13l-1.422-1.95v1.747a.333.333 0 0 1-.333.333h-.611a.333.333 0 0 1-.333-.333V8.165a.333.333 0 0 1 .333-.334h.511c.101 0 .196.046.257.126l1.432 1.956V8.165a.333.333 0 0 1 .333-.334h.612c.184 0 .333.15.333.334v4.514zm3.015-2.071c.184 0 .333.15.333.333v.644a.333.333 0 0 1-.333.333h-1.616a.333.333 0 0 1-.333-.333V8.165a.333.333 0 0 1 .333-.334h1.616c.184 0 .333.15.333.334v.644a.333.333 0 0 1-.333.334H17.47v.754h1.127c.184 0 .333.15.333.333v.644a.333.333 0 0 1-.333.334H17.47v.775h1.119z"/></svg>
+                    <div className="w-full flex items-center justify-between p-3.5 rounded-2xl bg-zinc-50 dark:bg-zinc-900/50 border-2 border-zinc-100 dark:border-zinc-800">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-[#06C755]/10 border border-[#06C755]/20">
+                                <svg width="20" height="20" viewBox="0 0 24 24" className="text-[#06C755]" fill="currentColor"><path d="M24 10.304c0-4.66-4.66-8.43-10.404-8.43-5.744 0-10.4 3.77-10.4 8.43 0 4.155 3.655 7.63 8.708 8.284.34.074.801.225 1.026.516.23.289.15.743.074 1.042l-.367 2.215s-.204 1.258.944.685c1.149-.574 6.204-3.655 8.46-6.255C22.618 15.352 24 13.013 24 10.304zm-14.757 2.375a.333.333 0 0 1-.333.333H6.84a.332.332 0 0 1-.334-.333V8.165a.333.333 0 0 1 .334-.334h.61c.184 0 .333.15.333.334v3.837h1.127c.184 0 .333.15.333.333v.644zm3.058 0a.334.334 0 0 1-.334.333h-.615a.333.333 0 0 1-.333-.333V8.165c0-.184.15-.334.333-.334h.615c.184 0 .334.15.334.334v4.514zm3.903 0a.332.332 0 0 1-.333.333h-.515a.34.34 0 0 1-.267-.13l-1.422-1.95v1.747a.333.333 0 0 1-.333.333h-.611a.333.333 0 0 1-.333-.333V8.165a.333.333 0 0 1 .333-.334h.511c.101 0 .196.046.257.126l1.432 1.956V8.165a.333.333 0 0 1 .333-.334h.612c.184 0 .333.15.333.334v4.514zm3.015-2.071c.184 0 .333.15.333.333v.644a.333.333 0 0 1-.333.333h-1.616a.333.333 0 0 1-.333-.333V8.165a.333.333 0 0 1 .333-.334h1.616c.184 0 .333.15.333.334v.644a.333.333 0 0 1-.333.334H17.47v.754h1.127c.184 0 .333.15.333.333v.644a.333.333 0 0 1-.333.334H17.47v.775h1.119z"/></svg>
                             </div>
                             <div className="min-w-0">
-                                <p className="text-sm font-black text-zinc-950 dark:text-white leading-tight">
+                                <p className="text-[14px] font-black text-zinc-950 dark:text-white leading-tight">
                                     {profile?.lineUserId ? 'เชื่อมต่อ LINE สำเร็จ' : 'เชื่อมต่อบัญชี LINE'}
                                 </p>
-                                <p className={cn("text-[11px] font-bold truncate mt-0.5", profile?.lineUserId ? "text-emerald-500" : "text-primary")}>
-                                    {profile?.lineUserId ? (profile.lineDisplayName || 'พร้อมรับบริการแล้ว') : 'สแกนเพื่อรับสิทธิพิเศษ'}
+                                <p className={cn("text-[10px] font-bold truncate mt-0.5", profile?.lineUserId ? "text-emerald-500" : "text-primary")}>
+                                    {profile?.lineUserId ? (profile.lineDisplayName || 'รับสิทธิอย่างเป็นทางการแล้ว') : 'สแกนเพื่อรับสิทธิพิเศษและแจ้งเตือน'}
                                 </p>
                             </div>
                         </div>
                         <button 
                             onClick={() => setView('line_connect')}
                             className={cn(
-                                "h-10 px-5 rounded-2xl text-[11px] font-black uppercase tracking-wider transition-all active:scale-[0.98] border-2 shadow-sm",
+                                "h-9 px-4 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-[0.98] border-2",
                                 profile?.lineUserId 
                                     ? "bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white border-zinc-200 dark:border-zinc-700"
                                     : "bg-[#06C755] text-white border-transparent"
@@ -253,36 +245,38 @@ export const ProfileContent = () => {
 
                 {/* Notifications Row */}
                 <div>
-                    <div className="flex items-center justify-between px-2 mb-3">
-                        <p className="text-[12px] font-black text-zinc-950 dark:text-white uppercase tracking-widest">การแจ้งเตือน</p>
-                        <Link href="/profile/notifications" className="text-[11px] font-black text-primary uppercase underline">ดูทั้งหมด</Link>
+                    <div className="flex items-center justify-between px-2 mb-2">
+                        <p className="text-[11px] font-bold text-zinc-500 uppercase tracking-widest">การแจ้งเตือน</p>
+                        <Link href="/profile/notifications" className="text-[10px] font-black text-primary uppercase underline">ดูทั้งหมด</Link>
                     </div>
-                    <div className="rounded-3xl border-2 border-zinc-100 bg-zinc-50/50 dark:bg-zinc-900/30 dark:border-zinc-800 p-2">
+                    <div className="rounded-2xl border-2 border-zinc-100 bg-zinc-50/50 dark:bg-zinc-900/30 dark:border-zinc-800 p-1.5 overflow-hidden">
                         <NotificationList />
                     </div>
                 </div>
 
                 {/* Menu List Row Row */}
                 <div className="pt-2">
-                    <ul className="space-y-2">
+                    <ul className="space-y-1">
                         {menuItems.map((item, index) => (
                             <li key={index}>
-                                <Link href={item.href} className="flex items-center justify-between p-4 rounded-2xl hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all border border-transparent dark:border-zinc-900">
-                                    <div className="flex items-center gap-4">
-                                        <item.icon className="w-6 h-6 text-zinc-950 dark:text-zinc-500" strokeWidth={2.5} />
-                                        <span className="text-base font-black text-zinc-900 dark:text-white">{item.label}</span>
+                                <Link href={item.href} className="flex items-center justify-between p-3.5 rounded-2xl hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all border border-transparent">
+                                    <div className="flex items-center gap-3.5 text-zinc-950 dark:text-white group">
+                                        <item.icon className="w-5 h-5 text-zinc-400 group-hover:text-zinc-950 transition-colors" strokeWidth={2} />
+                                        <span className="text-[15px] font-bold tracking-tight">{item.label}</span>
                                     </div>
-                                    <ChevronRightIcon className="w-5 h-5 text-zinc-300 dark:text-zinc-700" />
+                                    <ChevronRightIcon className="w-4 h-4 text-zinc-300" />
                                 </Link>
                             </li>
                         ))}
                         <li>
                             <button
                                 onClick={handleLogout}
-                                className="w-full flex items-center gap-4 p-4 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-2xl transition-all active:scale-95 group"
+                                className="w-full flex items-center justify-between p-3.5 rounded-2xl hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all active:scale-95 group"
                             >
-                                <ArrowRightOnRectangleIcon className="w-6 h-6 text-rose-600 dark:text-rose-400 group-hover:scale-110 transition-transform" strokeWidth={3} />
-                                <span className="text-base font-black">ออกจากระบบ</span>
+                                <div className="flex items-center gap-3.5">
+                                    <ArrowRightOnRectangleIcon className="w-5 h-5 text-rose-500 group-hover:scale-110 transition-transform" strokeWidth={2.5} />
+                                    <span className="text-[15px] font-bold text-rose-600 dark:text-rose-400">ออกจากระบบ</span>
+                                </div>
                             </button>
                         </li>
                     </ul>

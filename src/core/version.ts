@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.19 (Ultra-Compact & High-Contrast)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "UI: Ultra-compaction of Membership Card to maximize drawing space",
+            "UX: Fixed Logout text visibility with explicit high-contrast Rose-600",
+            "UI: Normalized menu typography to Font-Bold for better visual crispness",
+            "ICON: Updated Membership clock to vivid Primary Red for better clarity"
+        ],
+        recent_updates: "Ultimate Space Optimization & Typography Fix"
+    },
+    {
         version: "v5.3.18 (Compact Shop & Visibility Fix)",
         date: "9 เม.ย. 2569",
         changes: [
