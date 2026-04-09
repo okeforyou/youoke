@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.27 (Subscription Recovery)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "FIX: Restored direct VIP purchase functionality within the Profile Drawer",
+            "UX: Re-integrated UploadSlipModal into PackageStore for instant checkout",
+            "LOGIC: Repaired trial package (1-day) activation flow",
+            "STABILITY: Synchronized pricing logic between standalone and drawer stores"
+        ],
+        recent_updates: "Direct Drawer Purchase Recovery"
+    },
+    {
         version: "v5.3.26 (Login Forced Light Mode)",
         date: "9 เม.ย. 2569",
         changes: [

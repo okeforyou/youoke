@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { 
     CheckCircleIcon, 
@@ -9,6 +9,7 @@ import {
 import { useAuthStore } from '@/modules/auth/useAuthStore';
 import { cn } from '@/lib/utils';
 import { Zap, QrCode } from 'lucide-react';
+import { UploadSlipModal } from './UploadSlipModal';
 
 interface Package {
     id: string;
@@ -28,16 +29,37 @@ const PACKAGES: Package[] = [
 export const PackageStore = () => {
     const router = useRouter();
     const { user } = useAuthStore();
+    const [selectedPkg, setSelectedPkg] = useState<Package | undefined>(undefined);
+    const [showUploadModal, setShowUploadModal] = useState(false);
 
-    const handleSelect = (pkgId: string) => {
-        router.push('/packages');
+    const handleSelect = async (pkg: Package) => {
+        if (!user) {
+            router.push('/login');
+            return;
+        }
+
+        if (pkg.price === 0) {
+            try {
+                const { activateFreePackage } = await import('@/modules/billing/services/paymentService');
+                await activateFreePackage(user.uid!, pkg.id);
+                alert(`ยินดีด้วย! แพ็กเกจ ${pkg.name} ถูกเปิดใช้งานแล้ว`);
+                window.location.reload();
+            } catch (error) {
+                console.error("Free activation failed:", error);
+                alert("เกิดข้อผิดพลาดในการเปิดใช้งาน");
+            }
+            return;
+        }
+
+        setSelectedPkg(pkg);
+        setShowUploadModal(true);
     };
 
     return (
-        <div className="flex flex-col space-y-4 animate-in fade-in duration-300">
+        <div className="flex flex-col space-y-4">
             {/* v5.4: Trial Hero (Thai & Ultra Compact) */}
             <div 
-                onClick={() => router.push('/packages')}
+                onClick={() => handleSelect(PACKAGES[0])}
                 className="group relative overflow-hidden rounded-3xl p-4 bg-emerald-600 border-2 border-emerald-700 cursor-pointer transition-all active:scale-[0.98]"
             >
                 <div className="relative flex items-center justify-between z-10">
@@ -65,7 +87,7 @@ export const PackageStore = () => {
                     return (
                         <div 
                             key={pkg.id}
-                            onClick={() => handleSelect(pkg.id)}
+                            onClick={() => handleSelect(pkg)}
                             className={cn(
                                 "group relative p-5 rounded-3xl border-2 transition-all cursor-pointer active:scale-[0.98]",
                                 isPremium 
@@ -129,6 +151,15 @@ export const PackageStore = () => {
                     <span>ดูรายละเอียดและเลือกแพ็กเกจทั้งหมด</span>
                 </button>
             </div>
+
+            {/* Subscription Modal Integration */}
+            {selectedPkg && (
+                <UploadSlipModal 
+                    isOpen={showUploadModal}
+                    onClose={() => setShowUploadModal(false)}
+                    pkg={selectedPkg}
+                />
+            )}
         </div>
     );
 };
