@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.0 (The Ultimate Manual)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "UI: Major User Manual overhaul with premium aesthetic and Head meta",
+            "TECH: Added dynamic domain detection for TV casting instructions",
+            "UX: Expanded multi-method casting guides (HDMI, Cast, TV Browser, YouTube)",
+            "DESIGN: Refined step-by-step logic with high-fidelity Lucide icons"
+        ],
+        recent_updates: "Fully Comprehensive Interactive Manual"
+    },
+    {
         version: "v5.2.5 (Wording & Flow Mastery)",
         date: "8 เม.ย. 2569",
         changes: [
