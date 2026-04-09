@@ -99,16 +99,29 @@ export default function LoginPage() {
 
                 if (isLinkingFlow) {
                     if (data.lineUserId && user?.uid) {
-                        const { realtimeDb } = await import('@/firebase');
-                        const { ref, update } = await import('firebase/database');
+                        const { realtimeDb, db } = await import('@/firebase');
+                        
+                        // Update RTDB (Backward Compatibility)
                         if (realtimeDb) {
+                            const { ref, update } = await import('firebase/database');
                             await update(ref(realtimeDb, `users/${user.uid}`), {
                                 lineUserId: data.lineUserId,
                                 lineDisplayName: data.lineDisplayName || '',
                             });
                         }
+                        
+                        // Update Firestore (Crucial for Core System Identity)
+                        if (db) {
+                            const { doc, updateDoc } = await import('firebase/firestore');
+                            await updateDoc(doc(db, 'users', user.uid), {
+                                lineUserId: data.lineUserId,
+                                lineDisplayName: data.lineDisplayName || '',
+                            });
+                        }
                     }
-                    router.replace('/');
+                    
+                    // Force a hard reload to ensure AuthStore re-fetches the latest Firestore state
+                    window.location.href = '/';
                 } else {
                     await signInWithCustomToken(data.token);
                 }

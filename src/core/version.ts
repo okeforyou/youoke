@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.33 (Firestore Identity Sync)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "FIX: Resolved critical bug where linked LINE IDs were not saved to Firestore",
+            "LOGIC: Forced hard reload (window.location.href) after successful connection",
+            "STABILITY: Ensured the AuthStore immediately recognizes the newly linked identity",
+            "DATA: Synchronized backwards compatibility between RTDB and Firestore schemas"
+        ],
+        recent_updates: "Missing Identity Sync Fix"
+    },
+    {
         version: "v5.3.32 (Final Logic Sync)",
         date: "9 เม.ย. 2569",
         changes: [
