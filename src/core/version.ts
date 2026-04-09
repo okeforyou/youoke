@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.23 (Login Contrast Recovery)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "UI: Fixed login description text visibility with Zinc-900 (High Contrast)",
+            "UX: Implemented font-black (Ultra Bold) weight for platform description to improve readability",
+            "ACCESSIBILITY: Senior-friendly visual adjustments for the initial onboarding flow"
+        ],
+        recent_updates: "Login High Contrast Fix & Polish"
+    },
+    {
         version: "v5.3.22 (Stability & Icon Fixes)",
         date: "9 เม.ย. 2569",
         changes: [

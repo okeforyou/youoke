@@ -196,7 +196,7 @@ export default function LoginPage() {
                             ร้องคาราโอเกะ<br/>แบบมืออาชีพที่บ้านคุณ
                         </h2>
 
-                        <p className="text-zinc-800 dark:text-zinc-400 text-sm lg:text-base font-bold mb-10 leading-relaxed max-w-md">
+                        <p className="text-zinc-900 dark:text-zinc-400 text-sm lg:text-base font-black mb-10 leading-relaxed max-w-md">
                            เข้าสู่ระบบเพื่อจัดการคิวเพลงโปรดผ่านสมาร์ทโฟน และร้องเพลงจากคลัง YouTube ที่ใหญ่ที่สุดในโลก
                         </p>
 
