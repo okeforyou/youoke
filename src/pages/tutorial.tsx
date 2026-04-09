@@ -57,7 +57,7 @@ export default function TutorialPage() {
             },
             { id: 'c2', title: "2. ส่งจอแยกไร้สาย (Web Monitor)", desc: `เปิด ${domain}/monitor บนแท็บเล็ตหรือคอมอีกเครื่อง เพื่อแยกหน้าจอเนื้อร้องไปแสดงผลแบบไร้สาย โดยไม่ต้องต่อสาย HDMI`, icon: Laptop },
             { id: 'c3', title: "3. สาย HDMI (Dual Screen)", desc: "ต่อสาย HDMI -> เลือกโหมด Extend -> ลากหน้าต่างตัวเล่นไปไว้ที่จอทีวี เหมาะสำหรับการตั้งค่าแบบเครื่องเดียวแยกหน้าจอ", icon: Monitor },
-            { id: 'c4', title: "4. Google Chromecast", desc: "กดไอคอน Cast 📺 ในระบบ เพื่อส่งภาพขึ้น Chromecast หรือ Android TV ของคุณทันที (ใช้บน Chrome Browser)", icon: Chromecast },
+            { id: 'c4', title: "4. Google Chromecast", desc: "กดไอคอน Cast 📺 ในระบบ เพื่อส่งภาพขึ้น Chromecast หรือ Android TV ของคุณทันที (ใช้บน Chrome Browser)", icon: Cast },
         ],
         vip: [
             { id: 'v1', title: "เพลิดเพลินแบบไร้โฆษณา", desc: "อัปเกรดเป็น VIP เพื่อร้องเพลงได้ต่อเนื่องไม่มีโฆษณาคั่น ให้ปาร์ตี้ของคุณลื่นไหลตั้งแต่อต้นจนจบ", icon: PlayCircle },

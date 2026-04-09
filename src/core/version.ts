@@ -1,5 +1,14 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.5 (Build Stability Fix)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "FIX: Corrected final invalid icon reference causing Vercel build failure",
+            "STABILITY: Verified Next.js prerendering compatibility for Tutorial page"
+        ],
+        recent_updates: "Critical Build & Rendering Stability Fix"
+    },
+    {
         version: "v5.3.4 (Smart Casting Edition)",
         date: "9 เม.ย. 2569",
         changes: [
