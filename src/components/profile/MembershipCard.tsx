@@ -69,7 +69,7 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
                         </div>
                         <div>
                             <div className="text-[10px] font-black uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-                                {isAdmin ? "System Role" : "Membership Plan"}
+                                {isAdmin ? "ตำแหน่งในระบบ" : "สิทธิ์การใช้งาน"}
                             </div>
                             <h3 className={cn("text-[15px] font-black tracking-tight leading-tight", isAdmin || isPremium ? style.color : "text-zinc-900 dark:text-white")}>
                                 {planName}
@@ -79,7 +79,7 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
                     
                     <div className="flex flex-col items-end">
                         <div className="text-[8px] uppercase tracking-widest font-black text-zinc-300 dark:text-zinc-700 mb-0.5">
-                            {isAdmin ? "Status" : "Expiry"}
+                            {isAdmin ? "สถานะ" : "วันหมดอายุ"}
                         </div>
                         <div className="text-[10px] font-black text-zinc-500 dark:text-zinc-400">
                              {isAdmin ? "ระบบสมบูรณ์" : (isLifetime ? "ถาวร" : formatDate(safeMembership.expiresAt))}

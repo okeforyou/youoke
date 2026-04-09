@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.11 (Full Thai Branding)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "BRAND: Integrated official LINE SVG icon into Profile system",
+            "I18N: Full Thai localization for all Membership and Profile labels",
+            "UI: Improved visual recognition for LINE connection status",
+            "UX: Finalized Neutral Base design with Thai terminology"
+        ],
+        recent_updates: "Thai Localization & Official LINE Branding Sync"
+    },
+    {
         version: "v5.3.10 (Neutral Base & UI Hardening)",
         date: "9 เม.ย. 2569",
         changes: [

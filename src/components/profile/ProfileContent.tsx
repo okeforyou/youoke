@@ -133,9 +133,10 @@ export const ProfileContent = () => {
                     </div>
                     <button 
                         onClick={() => (user as any)?.uid && signInWithLine((user as any).uid)}
-                        className="w-full bg-[#06C755] text-white py-4 rounded-3xl font-black text-sm transition-all active:scale-[0.98]"
+                        className="w-full bg-[#06C755] text-white py-4 rounded-3xl font-black text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                     >
-                        เปิดแอป LINE ของคุณ
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M24 10.3c0-4.6-4.6-8.3-10.4-8.3C7.8 2 3.1 5.7 3.1 10.3c0 4.1 3.7 7.5 8.7 8.2.3.1.8.2 1 .5.1.1.2.4.1.6l-.3 1.9c-.1.4-.4 1.5-.4 1.5l3.2-1.9s1.4-.8 2-.7l.1-.1c4.5-1.1 6.5-4.5 6.5-10z"/></svg>
+                        <span>เปิดแอป LINE ของคุณ</span>
                     </button>
                 </div>
             </div>
@@ -203,11 +204,11 @@ export const ProfileContent = () => {
                     <div className="w-full flex items-center justify-between p-4 rounded-3xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-100 dark:border-zinc-800/50">
                         <div className="flex items-center gap-3">
                             <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center", profile?.lineUserId ? "bg-emerald-500/10" : "bg-zinc-100 dark:bg-zinc-800")}>
-                                <ChatBubbleLeftRightIcon className={cn("w-5 h-5", profile?.lineUserId ? "text-emerald-500" : "text-zinc-400")} />
+                                <svg width="20" height="20" viewBox="0 0 24 24" className={cn(profile?.lineUserId ? "text-[#06C755]" : "text-zinc-300")} fill="currentColor"><path d="M24 10.3c0-4.6-4.6-8.3-10.4-8.3C7.8 2 3.1 5.7 3.1 10.3c0 4.1 3.7 7.5 8.7 8.2.3.1.8.2 1 .5.1.1.2.4.1.6l-.3 1.9c-.1.4-.4 1.5-.4 1.5l3.2-1.9s1.4-.8 2-.7l.1-.1c4.5-1.1 6.5-4.5 6.5-10z"/></svg>
                             </div>
                             <div className="min-w-0">
                                 <p className="text-[11px] font-black text-zinc-900 dark:text-white leading-tight">
-                                    {profile?.lineUserId ? 'LINE Connected' : 'Connect LINE'}
+                                    {profile?.lineUserId ? 'เชื่อมต่อ LINE สำเร็จ' : 'เชื่อมต่อบัญชี LINE'}
                                 </p>
                                 <p className="text-[9px] font-bold text-zinc-400 truncate">
                                     {profile?.lineUserId ? (profile.lineDisplayName || 'บัญชีเปิดใช้งานแล้ว') : 'ผูกบัญชีเพื่อรับสิทธิพิเศษ'}
@@ -223,7 +224,7 @@ export const ProfileContent = () => {
                                     : "bg-[#06C755] text-white"
                             )}
                         >
-                            {profile?.lineUserId ? 'Manage' : 'Connect'}
+                            {profile?.lineUserId ? 'จัดการ' : 'เชื่อมต่อ'}
                         </button>
                     </div>
                 </div>
@@ -231,8 +232,8 @@ export const ProfileContent = () => {
                 {/* Notifications Row */}
                 <div>
                     <div className="flex items-center justify-between px-2 mb-2">
-                        <p className="text-[10px] font-black text-zinc-300 dark:text-zinc-700 uppercase tracking-widest">Notifications</p>
-                        <Link href="/profile/notifications" className="text-[9px] font-black text-primary uppercase">Read All</Link>
+                        <p className="text-[10px] font-black text-zinc-300 dark:text-zinc-700 uppercase tracking-widest">การแจ้งเตือน</p>
+                        <Link href="/profile/notifications" className="text-[9px] font-black text-primary uppercase">ดูทั้งหมด</Link>
                     </div>
                     <div className="rounded-3xl border border-zinc-50 dark:border-zinc-900 bg-zinc-50/50 dark:bg-zinc-900/30 p-2">
                         <NotificationList />
