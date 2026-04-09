@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.15 (Color & Scale Polish)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "UI: Restored compact Membership card scale (Old size) with high-contrast font",
+            "UX: Colored Action Buttons (Red/Amber) inside membership for clear CTA",
+            "BRAND: Standardized official LINE green (#06C755) for all status icons",
+            "LAYOUT: Optimized Profile Drawer padding for high-density mobile viewports"
+        ],
+        recent_updates: "Final Brand Color & Scale Refinement"
+    },
+    {
         version: "v5.3.14 (Official Brand Sync)",
         date: "9 เม.ย. 2569",
         changes: [
