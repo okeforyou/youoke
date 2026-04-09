@@ -196,7 +196,7 @@ export default function LoginPage() {
                             ร้องคาราโอเกะ<br/>แบบมืออาชีพที่บ้านคุณ
                         </h2>
 
-                        <p className="text-zinc-500 dark:text-zinc-400 text-sm lg:text-base font-bold mb-10 leading-relaxed max-w-md">
+                        <p className="text-zinc-600 dark:text-zinc-400 text-sm lg:text-base font-bold mb-10 leading-relaxed max-w-md">
                            เข้าสู่ระบบเพื่อจัดการคิวเพลงโปรดผ่านสมาร์ทโฟน และร้องเพลงจากคลัง YouTube ที่ใหญ่ที่สุดในโลก
                         </p>
 
@@ -295,7 +295,7 @@ export default function LoginPage() {
 
                         <p className="mt-12 text-center text-[10px] text-zinc-400 font-black uppercase tracking-widest leading-loose">
                             YouOKE -The Smart Karaoke OS<br/>
-                            © {new Date().getFullYear()} PlayOKE Co., Ltd.
+                            © {new Date().getFullYear()} okeforyou.com
                         </p>
                     </div>
                 </div>

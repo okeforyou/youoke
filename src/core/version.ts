@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.9 (Brand & Legibility Fix)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "UI: Improved text contrast for hero descriptions on login page",
+            "BRAND: Updated footer copyright to 'okeforyou.com' for consistency",
+            "TECH: Finalized version sync for v5.3.9 production release"
+        ],
+        recent_updates: "Legibility & Brand Identity Synchronization"
+    },
+    {
         version: "v5.3.8 (Design Harmony Bundle)",
         date: "9 เม.ย. 2569",
         changes: [
