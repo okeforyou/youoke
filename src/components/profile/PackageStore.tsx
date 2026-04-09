@@ -4,12 +4,11 @@ import {
     CheckCircleIcon, 
     SparklesIcon, 
     ChevronRightIcon, 
-    ShieldCheckIcon,
-    QrCode
+    ShieldCheckIcon
 } from '@heroicons/react/24/outline';
 import { useAuthStore } from '@/modules/auth/useAuthStore';
 import { cn } from '@/lib/utils';
-import { Zap } from 'lucide-react';
+import { Zap, QrCode } from 'lucide-react';
 
 interface Package {
     id: string;

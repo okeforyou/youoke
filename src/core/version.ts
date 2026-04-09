@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.22 (Stability & Icon Fixes)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "FIX: Critical React Error #130 crash by correcting QrCode icon import source",
+            "STABILITY: Verified all icon components in PackageStore to prevent undefined rendering",
+            "SYNC: Standardized localized Thai shopping experience within the drawer"
+        ],
+        recent_updates: "Critical Stability & Icon Crash Fix"
+    },
+    {
         version: "v5.3.21 (Drawer Sync & LINE Direct)",
         date: "9 เม.ย. 2569",
         changes: [
