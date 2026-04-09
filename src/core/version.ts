@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.30 (Fastest Connection Flow)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "UX: Implemented direct LIFF connection shortcut from LineRequiredModal",
+            "LOGIC: Reduced user friction by removing multi-step manual navigation",
+            "UI: Changed call-to-action to 'เชื่อมต่อทันที' with enhanced visibility",
+            "PERFORMANCE: Optimized for 'One-Click' connectivity on mobile devices"
+        ],
+        recent_updates: "Direct Connection Shortcut Implementation"
+    },
+    {
         version: "v5.3.29 (System Modal Restoration)",
         date: "9 เม.ย. 2569",
         changes: [

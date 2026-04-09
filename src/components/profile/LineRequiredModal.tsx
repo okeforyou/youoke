@@ -1,7 +1,7 @@
 import { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { X, MessageCircle, ArrowRight } from 'lucide-react';
-import { useRouter } from 'next/router';
+import { X, MessageCircle, ArrowRight, Zap } from 'lucide-react';
+import { useAuthStore } from '@/modules/auth/useAuthStore';
 
 interface LineRequiredModalProps {
     isOpen: boolean;
@@ -9,12 +9,15 @@ interface LineRequiredModalProps {
 }
 
 export const LineRequiredModal = ({ isOpen, onClose }: LineRequiredModalProps) => {
-    const router = useRouter();
+    const { user } = useAuthStore();
 
     const handleConnect = () => {
+        if (!user) return;
+        
+        // v5.3.30: Direct Shortcut to LINE Connection (Save 3 steps)
+        const liffUrl = `https://liff.me/2006894054-O8E2Rz96?u=${user.uid}`; 
+        window.open(liffUrl, '_blank');
         onClose();
-        router.push('/');
-        // Note: The parent drawer will handle switching to connection view
     };
 
     return (
@@ -36,44 +39,41 @@ export const LineRequiredModal = ({ isOpen, onClose }: LineRequiredModalProps) =
                     <div className="flex min-h-full items-center justify-center p-4">
                         <Dialog.Panel className="w-full max-w-sm transform overflow-hidden rounded-[40px] bg-white p-8 text-center transition-all border-4 border-zinc-100">
                             <div className="flex justify-end mb-2">
-                                <button onClick={onClose} className="p-2 rounded-full hover:bg-zinc-50 text-zinc-400 transition-colors">
+                                <button onClick={onClose} className="p-2 rounded-full hover:bg-zinc-50 text-zinc-400">
                                     <X size={20} />
                                 </button>
                             </div>
 
-                            <div className="mb-6 inline-flex p-5 rounded-[2rem] bg-emerald-50 text-emerald-500 border-4 border-emerald-100 animate-pulse">
+                            <div className="mb-6 inline-flex p-5 rounded-[2rem] bg-emerald-50 text-emerald-500 border-4 border-emerald-100">
                                 <MessageCircle className="w-10 h-10" fill="currentColor" />
                             </div>
 
                             <h3 className="text-2xl font-black text-zinc-950 mb-3 tracking-tighter leading-tight">
-                                ต้องเชื่อมต่อ LINE <br/>ก่อนสมัครสมาชิก
+                                เชื่อมต่อ LINE ทันที
                             </h3>
 
-                            <p className="text-sm font-bold text-zinc-500 mb-8 leading-relaxed">
-                                เพื่อให้ระบบสามารถแจ้งเตือนวันหมดอายุ <br/>
-                                และส่งข้อมูล VIP ให้คุณได้ผ่านช่องทาง LINE ครับ
+                            <p className="text-sm font-bold text-zinc-500 mb-8 leading-relaxed px-2">
+                                จำเป็นต้องเชื่อมต่อ LINE เพื่อรับแจ้งเตือน <br/>
+                                และจัดการสิทธิ์สมาชิกพรีเมียมครับ
                             </p>
 
                             <div className="space-y-3">
                                 <button
                                     onClick={handleConnect}
-                                    className="w-full h-14 bg-[#06C755] text-white rounded-2xl font-black text-sm flex items-center justify-center gap-3 active:scale-95 transition-all"
+                                    className="w-full h-16 bg-[#06C755] text-white rounded-2xl font-black text-base flex items-center justify-center gap-3 active:scale-95 transition-all shadow-none border-none"
                                 >
-                                    <span>ไปที่หน้าเชื่อมต่อ LINE</span>
-                                    <ArrowRight size={18} strokeWidth={3} />
+                                    <Zap size={20} fill="currentColor" className="text-emerald-200" />
+                                    <span>เชื่อมต่อทันที</span>
+                                    <ArrowRight size={20} strokeWidth={3} />
                                 </button>
                                 
                                 <button
                                     onClick={onClose}
-                                    className="w-full h-14 bg-zinc-100 text-zinc-500 rounded-2xl font-black text-sm flex items-center justify-center active:scale-95 transition-all"
+                                    className="w-full py-3 text-zinc-400 font-bold text-xs"
                                 >
-                                    ไว้วันหลัง
+                                    ปิดหน้าต่าง
                                 </button>
                             </div>
-
-                            <p className="mt-6 text-[10px] font-black text-zinc-400 uppercase tracking-widest leading-relaxed">
-                                มั่นใจ ปลอดภัย ด้วยระบบ LINE Official 100%
-                            </p>
                         </Dialog.Panel>
                     </div>
                 </div>
