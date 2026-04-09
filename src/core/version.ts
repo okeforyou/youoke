@@ -1,5 +1,14 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.1 (Hotfix: Icon Restoration)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "FIX: Resolved React Error #130 caused by invalid icon import (Chromecast -> Cast)",
+            "STABILITY: Verified component rendering for Tutorial page"
+        ],
+        recent_updates: "Critical Component Rendering Fix"
+    },
+    {
         version: "v5.3.0 (The Ultimate Manual)",
         date: "9 เม.ย. 2569",
         changes: [

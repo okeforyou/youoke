@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { 
     ChevronLeft, Search, Smartphone, ListMusic, Tv, Crown, 
-    Mic2, PlayCircle, Monitor, Chromecast, Youtube, Radio, 
+    Mic2, PlayCircle, Monitor, Cast, Youtube, Radio, 
     Sparkles, ArrowRight, ScanLine, Laptop, Globe
 } from "lucide-react";
 import { useUIStore } from "@/stores/useUIStore";
@@ -56,7 +56,7 @@ export default function TutorialPage() {
                 highlight: true 
             },
             { id: 'c2', title: "2. สาย HDMI (Dual Screen)", desc: "ต่อสาย HDMI -> ตั้งค่าหน้าจอเป็น Extend -> กดเปิด 'จอแยก' ใน YouOKE แล้วลากหน้าต่างไปไว้ที่จอทีวี", icon: Monitor },
-            { id: 'c3', title: "3. Google Chromecast", desc: "กดไอคอน Cast 📺 ในระบบ YouOKE แล้วเลือกชื่อ Chromecast หรือ Android TV ของคุณเพื่อส่งภาพขึ้นจอทันที", icon: Chromecast },
+            { id: 'c3', title: "3. Google Chromecast", desc: "กดไอคอน Cast 📺 ในระบบ YouOKE แล้วเลือกชื่อ Chromecast หรือ Android TV ของคุณเพื่อส่งภาพขึ้นจอทันที", icon: Cast },
             { id: 'c4', title: "4. YouTube Cast", desc: "ส่งวิดีโอคาราโอเกะโดยตรงเข้าสู่แอป YouTube บนทีวีของคุณ (เหมาะสำหรับทีวีที่รองรับแอป YouTube มาตรฐาน)", icon: Youtube },
         ],
         vip: [
