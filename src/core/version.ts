@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.7 (Legal Design Refit)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "UI: Full renovation of Terms & Conditions page with Pure Flat design",
+            "DARK: Implemented Zinc-950 high-contrast theme for all legal pages",
+            "FIX: Resolved persistent TS2307 import error in root directory",
+            "STABILITY: Updated package.json synchronization to v5.3.7"
+        ],
+        recent_updates: "Comprehensive Design & Technical Hardening"
+    },
+    {
         version: "v5.3.6 (DJ Logic Guide)",
         date: "9 เม.ย. 2569",
         changes: [

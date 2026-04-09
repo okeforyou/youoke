@@ -1,6 +1,6 @@
 import { collection, getDocs } from "firebase/firestore";
 
-import { database } from "../firebase";
+import { database } from "../src/firebase";
 
 export interface Ad {
   text: string;
