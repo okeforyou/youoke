@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.13 (Accessibility Boost)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "UI: High-contrast typography (Zinc-950) for better senior readability",
+            "UX: Enlarged and vivid icons for Membership and LINE connection",
+            "DESIGN: Implemented thicker borders and shadow-less depth for better separation",
+            "UX: Normalized font weight to bold/black for all primary labels"
+        ],
+        recent_updates: "Senior Accessibility & High-Contrast Visual Hardening"
+    },
+    {
         version: "v5.3.12 (Action & Upsell Boost)",
         date: "9 เม.ย. 2569",
         changes: [

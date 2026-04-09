@@ -44,10 +44,10 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
     const planName = getPlanName();
 
     const config = {
-        admin: { color: "text-rose-500", bg: "bg-rose-500/5", border: "border-rose-500/10", iconBg: "bg-rose-500" },
-        lifetime: { color: "text-amber-500", bg: "bg-amber-500/5", border: "border-amber-500/10", iconBg: "bg-amber-500" },
-        premium: { color: "text-primary", bg: "bg-primary/5", border: "border-primary/10", iconBg: "bg-primary" },
-        free: { color: "text-zinc-400", bg: "bg-zinc-50 dark:bg-zinc-900", border: "border-zinc-100 dark:border-zinc-800", iconBg: "bg-zinc-200 dark:bg-zinc-800" },
+        admin: { color: "text-rose-600", bg: "bg-rose-500/10", border: "border-rose-500/20", iconBg: "bg-rose-600" },
+        lifetime: { color: "text-amber-600", bg: "bg-amber-500/10", border: "border-amber-500/20", iconBg: "bg-amber-600" },
+        premium: { color: "text-primary", bg: "bg-primary/10", border: "border-primary/20", iconBg: "bg-primary" },
+        free: { color: "text-zinc-950", bg: "bg-zinc-100/50 dark:bg-zinc-900", border: "border-zinc-200 dark:border-zinc-800", iconBg: "bg-zinc-800 dark:bg-zinc-700" },
     };
 
     let style = config.free;
@@ -62,42 +62,39 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
                 style.bg, style.border
             )}>
                 <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-3">
-                        <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center text-white", style.iconBg)}>
-                            {isAdmin || isLifetime ? <Crown className="w-5 h-5" /> : (isPremium ? <Zap className="w-5 h-5" /> : <Clock className="w-5 h-5" />)}
+                    <div className="flex items-center gap-4">
+                        <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-sm ring-4", style.iconBg, style.bg === "bg-zinc-100/50 dark:bg-zinc-900" ? "ring-zinc-100 dark:ring-zinc-800" : "ring-white/50 dark:ring-black/20")}>
+                            {isAdmin || isLifetime ? <Crown className="w-6 h-6" /> : (isPremium ? <Zap className="w-6 h-6" /> : <Clock className="w-6 h-6" />)}
                         </div>
                         <div>
-                            <div className="text-[10px] font-black uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+                            <div className="text-[11px] font-black uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                                 {isAdmin ? "ตำแหน่งในระบบ" : "สิทธิ์การใช้งาน"}
                             </div>
-                            <h3 className={cn("text-[15px] font-black tracking-tight leading-tight", isAdmin || isPremium ? style.color : "text-zinc-900 dark:text-white")}>
+                            <h3 className={cn("text-lg font-black tracking-tight leading-tight mt-0.5", style.color)}>
                                 {planName}
                             </h3>
                         </div>
                     </div>
                     
-                    {/* Action Hint: Only for non-admins */}
                     {!isAdmin && (
-                        <div className={cn(
-                           "px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all",
-                            isPremium ? "bg-primary/10 text-primary" : "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900"
-                        )}>
-                            <span>{isPremium ? "เปลี่ยนแพ็กเกจ" : "อัปเกรด VIP"}</span>
-                            <ArrowRight className="w-2.5 h-2.5" strokeWidth={4} />
+                        <div className="mt-1 flex flex-col items-center">
+                             <div className="w-8 h-8 rounded-full bg-zinc-950 dark:bg-white flex items-center justify-center text-white dark:text-zinc-900">
+                                <ArrowRight className="w-4 h-4" strokeWidth={4} />
+                             </div>
+                             <span className="text-[8px] font-black uppercase mt-1 text-zinc-900 dark:text-white">อัปเกรด</span>
                         </div>
                     )}
                 </div>
 
-                <div className="mt-4 pt-3 flex justify-between items-center border-t border-dashed border-zinc-200 dark:border-zinc-800">
+                <div className="mt-5 pt-4 flex justify-between items-center border-t-2 border-dashed border-zinc-200 dark:border-zinc-800">
                     <div className="flex flex-col">
-                        <div className="text-[8px] uppercase tracking-widest font-black text-zinc-300 dark:text-zinc-700 mb-0.5">
+                        <div className="text-[10px] uppercase tracking-widest font-black text-zinc-900 dark:text-white mb-0.5">
                             {isAdmin ? "ความปลอดภัย" : (isLifetime ? "สิทธิพิเศษ" : "วันหมดอายุ")}
                         </div>
-                        <div className="text-[10px] font-black text-zinc-500 dark:text-zinc-400">
-                             {isAdmin ? "ป้องกันข้อมูลระดับสูง" : (isLifetime ? "สมาชิกถาวร ไม่ติดโฆษณา" : formatDate(safeMembership.expiresAt))}
+                        <div className="text-[12px] font-black text-zinc-600 dark:text-zinc-400">
+                             {isAdmin ? "ป้องกันข้อมูลระดับสูงสุด" : (isLifetime ? "สมาชิกถาวร ไม่ติดโฆษณา" : formatDate(safeMembership.expiresAt))}
                         </div>
                     </div>
-                    {isAdmin && <Crown className="w-3 h-3 text-rose-500 opacity-20" />}
                 </div>
             </div>
         </div>

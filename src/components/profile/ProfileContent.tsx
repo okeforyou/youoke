@@ -122,21 +122,21 @@ export const ProfileContent = () => {
                 </div>
 
                 <div className="p-8 flex flex-col items-center text-center space-y-8">
-                    <div className="relative p-6 bg-white rounded-[40px] border border-zinc-100">
+                    <div className="relative p-6 bg-white rounded-[40px] border-4 border-zinc-100">
                         <QRCodeSVG value={liffUrl} size={180} level="H" includeMargin={false} />
                     </div>
                     <div className="space-y-2">
-                        <h3 className="text-xl font-black text-zinc-900 dark:text-white">สแกนเพื่อเริ่มร้องเพลง</h3>
-                        <p className="text-xs font-bold text-zinc-400 dark:text-zinc-500 leading-relaxed px-4">
-                            ผูกบัญชีเพื่อแจ้งเตือนสถานะพรีเมียมและรับบริการพิเศษจากทีมงาน
+                        <h3 className="text-2xl font-black text-zinc-900 dark:text-white">สแกนเพื่อเชื่อมต่อ</h3>
+                        <p className="text-sm font-bold text-zinc-500 dark:text-zinc-400 leading-relaxed px-4">
+                            ผูกบัญชีเพื่อรับแจ้งเตือนและสิทธิพิเศษจาก YouOke
                         </p>
                     </div>
                     <button 
                         onClick={() => (user as any)?.uid && signInWithLine((user as any).uid)}
-                        className="w-full bg-[#06C755] text-white py-4 rounded-3xl font-black text-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                        className="w-full bg-[#06C755] text-white py-4 rounded-3xl font-black text-base shadow-xl shadow-green-500/20 active:scale-[0.98] flex items-center justify-center gap-2"
                     >
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M24 10.3c0-4.6-4.6-8.3-10.4-8.3C7.8 2 3.1 5.7 3.1 10.3c0 4.1 3.7 7.5 8.7 8.2.3.1.8.2 1 .5.1.1.2.4.1.6l-.3 1.9c-.1.4-.4 1.5-.4 1.5l3.2-1.9s1.4-.8 2-.7l.1-.1c4.5-1.1 6.5-4.5 6.5-10z"/></svg>
-                        <span>เปิดแอป LINE ของคุณ</span>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M24 10.3c0-4.6-4.6-8.3-10.4-8.3C7.8 2 3.1 5.7 3.1 10.3c0 4.1 3.7 7.5 8.7 8.2.3.1.8.2 1 .5.1.1.2.4.1.6l-.3 1.9c-.1.4-.4 1.5-.4 1.5l3.2-1.9s1.4-.8 2-.7l.1-.1c4.5-1.1 6.5-4.5 6.5-10z"/></svg>
+                        <span>เปิดแแอป LINE ของคุณ</span>
                     </button>
                 </div>
             </div>
@@ -150,7 +150,7 @@ export const ProfileContent = () => {
                     <button onClick={() => setView('main')} className="p-2 -ml-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900">
                         <ChevronRightIcon className="w-5 h-5 rotate-180 text-zinc-400" />
                     </button>
-                    <h2 className="text-lg font-black text-zinc-900 dark:text-white">แพ็กเกจ (Shop)</h2>
+                    <h2 className="text-lg font-black text-zinc-900 dark:text-white">เลือกแพ็กเกจ VIP</h2>
                 </div>
                 <div className="px-4 py-6"><PackageStore /></div>
             </div>
@@ -163,84 +163,86 @@ export const ProfileContent = () => {
             <div className="px-6 pt-6 pb-2 flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <div className="relative">
-                        <div className="w-14 h-14 rounded-2xl overflow-hidden bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 flex items-center justify-center">
+                        <div className="w-16 h-16 rounded-2xl overflow-hidden bg-zinc-50 dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800 flex items-center justify-center">
                             {(() => {
                                 const displayPhoto = profile?.photoURL || user?.photoURL;
                                 return displayPhoto ? (
                                     <img src={displayPhoto} alt="Avatar" className="w-full h-full object-cover" />
                                 ) : (
-                                    <span className="text-primary font-black">{(profile?.displayName || user?.email || "U").charAt(0).toUpperCase()}</span>
+                                    <span className="text-primary font-black text-xl">{(profile?.displayName || user?.email || "U").charAt(0).toUpperCase()}</span>
                                 );
                             })()}
                         </div>
                     </div>
                     <div className="min-w-0">
-                        <h2 className="text-base font-black text-zinc-900 dark:text-white truncate">
-                            {profile?.displayName || user?.displayName || "Profile User"}
+                        <h2 className="text-xl font-black text-zinc-950 dark:text-white truncate tracking-tight">
+                            {profile?.displayName || user?.displayName || "ผู้ใช้งาน"}
                         </h2>
-                        <p className="text-[10px] font-bold text-zinc-400 dark:text-zinc-500 truncate">{profile?.email || user?.email}</p>
+                        <p className="text-[11px] font-bold text-zinc-500 truncate">{profile?.email || user?.email}</p>
                     </div>
                 </div>
 
                 <button 
                     onClick={toggleDarkMode}
-                    className="w-10 h-10 rounded-2xl bg-zinc-50 dark:bg-zinc-900 flex items-center justify-center text-zinc-400 border border-zinc-100 dark:border-zinc-800 transition-all active:scale-90"
+                    className="w-12 h-12 rounded-2xl bg-zinc-50 dark:bg-zinc-900 flex items-center justify-center text-zinc-900 border-2 border-zinc-100 dark:border-zinc-800 shadow-sm transition-all active:scale-90"
                 >
-                    {isDarkMode ? <SunIcon className="w-5 h-5 text-amber-500" /> : <MoonIcon className="w-5 h-5" />}
+                    {isDarkMode ? <SunIcon className="w-6 h-6 text-amber-500" /> : <MoonIcon className="w-6 h-6 text-zinc-900" />}
                 </button>
             </div>
 
             {/* 2. Main Content */}
             <div className="px-4 pb-12 mt-4 space-y-6">
                 {/* Membership Row */}
-                <div className="space-y-2">
+                <div className="space-y-4">
                     <MembershipCard
                         membership={displayMembership as any}
                         role={isAdmin ? 'admin' : (user?.role || profile?.role)}
                         onUpgrade={handleOpenPackages}
                     />
 
-                    {/* v5 VIP Invitation Banner (Added for Shop Visibility) */}
+                    {/* v5 VIP Invitation Banner (High Contrast) */}
                     {!isPremium && (
                         <div 
                             onClick={() => setView('packages')}
-                            className="group cursor-pointer w-full p-4 rounded-3xl bg-zinc-950 dark:bg-white flex items-center justify-between transition-all active:scale-[0.98] border border-zinc-800 dark:border-zinc-200"
+                            className="group cursor-pointer w-full p-5 rounded-3xl bg-zinc-950 dark:bg-white flex items-center justify-between transition-all active:scale-[0.98] shadow-xl shadow-zinc-900/10"
                         >
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center text-white">
-                                    <SparklesIcon className="w-4 h-4" />
+                            <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/30">
+                                    <SparklesIcon className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <p className="text-[11px] font-black text-white dark:text-zinc-950 leading-tight">ปลดล็อกพรีเมียมเพื่อสนุกไม่จำกัด</p>
-                                    <p className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500">สมัครสมาชิก VIP วันนี้ รับสิทธิพิเศษมากมาย</p>
+                                    <p className="text-sm font-black text-white dark:text-zinc-950 leading-tight">สมัครสมาชิก VIP วันนี้!</p>
+                                    <p className="text-[11px] font-bold text-zinc-400 dark:text-zinc-500">ปลดล็อกการร้องเพลงแบบไร้ขีดจำกัด</p>
                                 </div>
                             </div>
-                            <ChevronRightIcon className="w-4 h-4 text-zinc-600 dark:text-zinc-400 group-hover:translate-x-1 transition-transform" />
+                            <div className="w-8 h-8 rounded-full bg-white/10 dark:bg-zinc-100 flex items-center justify-center">
+                                <ChevronRightIcon className="w-5 h-5 text-white dark:text-zinc-900 group-hover:translate-x-1 transition-transform" />
+                            </div>
                         </div>
                     )}
 
-                    {/* v5 Neutral LINE Connect Block */}
-                    <div className="w-full flex items-center justify-between p-4 rounded-3xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-100 dark:border-zinc-800/50">
-                        <div className="flex items-center gap-3">
-                            <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center", profile?.lineUserId ? "bg-emerald-500/10" : "bg-zinc-100 dark:bg-zinc-800")}>
-                                <svg width="20" height="20" viewBox="0 0 24 24" className={cn(profile?.lineUserId ? "text-[#06C755]" : "text-zinc-300")} fill="currentColor"><path d="M24 10.3c0-4.6-4.6-8.3-10.4-8.3C7.8 2 3.1 5.7 3.1 10.3c0 4.1 3.7 7.5 8.7 8.2.3.1.8.2 1 .5.1.1.2.4.1.6l-.3 1.9c-.1.4-.4 1.5-.4 1.5l3.2-1.9s1.4-.8 2-.7l.1-.1c4.5-1.1 6.5-4.5 6.5-10z"/></svg>
+                    {/* v5 High Contrast LINE Block */}
+                    <div className="w-full flex items-center justify-between p-5 rounded-3xl bg-zinc-50 dark:bg-zinc-900/50 border-2 border-zinc-100 dark:border-zinc-800">
+                        <div className="flex items-center gap-4">
+                            <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm", profile?.lineUserId ? "bg-[#06C755] text-white" : "bg-zinc-200 dark:bg-zinc-800")}>
+                                <svg width="24" height="24" viewBox="0 0 24 24" className={cn(profile?.lineUserId ? "text-white" : "text-zinc-500")} fill="currentColor"><path d="M24 10.3c0-4.6-4.6-8.3-10.4-8.3C7.8 2 3.1 5.7 3.1 10.3c0 4.1 3.7 7.5 8.7 8.2.3.1.8.2 1 .5.1.1.2.4.1.6l-.3 1.9c-.1.4-.4 1.5-.4 1.5l3.2-1.9s1.4-.8 2-.7l.1-.1c4.5-1.1 6.5-4.5 6.5-10z"/></svg>
                             </div>
                             <div className="min-w-0">
-                                <p className="text-[11px] font-black text-zinc-900 dark:text-white leading-tight">
+                                <p className="text-sm font-black text-zinc-950 dark:text-white leading-tight">
                                     {profile?.lineUserId ? 'เชื่อมต่อ LINE สำเร็จ' : 'เชื่อมต่อบัญชี LINE'}
                                 </p>
-                                <p className="text-[9px] font-bold text-zinc-400 truncate">
-                                    {profile?.lineUserId ? (profile.lineDisplayName || 'บัญชีเปิดใช้งานแล้ว') : 'ผูกบัญชีเพื่อรับสิทธิพิเศษ'}
+                                <p className="text-[11px] font-bold text-[#06C755] truncate mt-0.5">
+                                    {profile?.lineUserId ? (profile.lineDisplayName || 'พร้อมรับบริการแล้ว') : 'ผูกบัญชีเพื่อรับสิทธิพิเศษ'}
                                 </p>
                             </div>
                         </div>
                         <button 
                             onClick={() => setView('line_connect')}
                             className={cn(
-                                "h-8 px-4 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all active:scale-[0.98]",
+                                "h-10 px-5 rounded-2xl text-[11px] font-black uppercase tracking-wider transition-all active:scale-[0.98] border-2 shadow-sm",
                                 profile?.lineUserId 
-                                    ? "bg-zinc-200/50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400"
-                                    : "bg-[#06C755] text-white"
+                                    ? "bg-white dark:bg-zinc-800 text-zinc-950 dark:text-white border-zinc-200 dark:border-zinc-700"
+                                    : "bg-[#06C755] text-white border-transparent"
                             )}
                         >
                             {profile?.lineUserId ? 'จัดการ' : 'เชื่อมต่อ'}
@@ -250,36 +252,36 @@ export const ProfileContent = () => {
 
                 {/* Notifications Row */}
                 <div>
-                    <div className="flex items-center justify-between px-2 mb-2">
-                        <p className="text-[10px] font-black text-zinc-300 dark:text-zinc-700 uppercase tracking-widest">การแจ้งเตือน</p>
-                        <Link href="/profile/notifications" className="text-[9px] font-black text-primary uppercase">ดูทั้งหมด</Link>
+                    <div className="flex items-center justify-between px-2 mb-3">
+                        <p className="text-[12px] font-black text-zinc-950 dark:text-white uppercase tracking-widest">การแจ้งเตือน</p>
+                        <Link href="/profile/notifications" className="text-[11px] font-black text-primary uppercase underline">ดูทั้งหมด</Link>
                     </div>
-                    <div className="rounded-3xl border border-zinc-50 dark:border-zinc-900 bg-zinc-50/50 dark:bg-zinc-900/30 p-2">
+                    <div className="rounded-3xl border-2 border-zinc-100 bg-zinc-50/50 dark:bg-zinc-900/30 dark:border-zinc-800 p-2">
                         <NotificationList />
                     </div>
                 </div>
 
-                {/* Menu List Row */}
+                {/* Menu List Row Row */}
                 <div className="pt-2">
-                    <ul className="space-y-1">
+                    <ul className="space-y-2">
                         {menuItems.map((item, index) => (
                             <li key={index}>
                                 <Link href={item.href} className="flex items-center justify-between p-4 rounded-2xl hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all border border-transparent dark:border-zinc-900">
                                     <div className="flex items-center gap-4">
-                                        <item.icon className="w-5 h-5 text-zinc-400" />
-                                        <span className="text-sm font-bold text-zinc-600 dark:text-zinc-400">{item.label}</span>
+                                        <item.icon className="w-6 h-6 text-zinc-950 dark:text-zinc-500" strokeWidth={2.5} />
+                                        <span className="text-base font-black text-zinc-900 dark:text-white">{item.label}</span>
                                     </div>
-                                    <ChevronRightIcon className="w-4 h-4 text-zinc-300 dark:text-zinc-700" />
+                                    <ChevronRightIcon className="w-5 h-5 text-zinc-300 dark:text-zinc-700" />
                                 </Link>
                             </li>
                         ))}
                         <li>
                             <button
                                 onClick={handleLogout}
-                                className="w-full flex items-center gap-4 p-4 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-2xl transition-all"
+                                className="w-full flex items-center gap-4 p-4 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-2xl transition-all"
                             >
-                                <ArrowRightOnRectangleIcon className="w-5 h-5" />
-                                <span className="text-sm font-bold">ออกจากระบบ</span>
+                                <ArrowRightOnRectangleIcon className="w-6 h-6" strokeWidth={2.5} />
+                                <span className="text-base font-black">ออกจากระบบ</span>
                             </button>
                         </li>
                     </ul>
