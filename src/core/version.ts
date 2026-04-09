@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.20 (Thai Compact Shop Overhaul)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "I18N: 100% Thai localization for the Packages page (Zero English labels)",
+            "UI: Extreme compaction of package cards with optimized padding and margins",
+            "UX: Standardized Thai-specific value badges (e.g., คุ้มค่าที่สุด, ตลอดชีพ)",
+            "DESIGN: Normalized color tiers for Thai market alignment and readability"
+        ],
+        recent_updates: "Full Thai Localization & Shop Compaction"
+    },
+    {
         version: "v5.3.19 (Ultra-Compact & High-Contrast)",
         date: "9 เม.ย. 2569",
         changes: [

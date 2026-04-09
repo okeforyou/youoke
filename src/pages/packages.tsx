@@ -104,7 +104,6 @@ export default function PackagesPage() {
                 setLoading(true);
                 const { activateFreePackage } = await import('@/modules/billing/services/paymentService');
                 await activateFreePackage(user.uid!, pkg.id);
-                // v5.3: Using standard alerts for high-contrast accessibility (will be replaced by flat toasts later)
                 alert(`ยินดีด้วย! แพ็กเกจ ${pkg.name} ของคุณถูกเปิดใช้งานแล้ว`);
                 router.push('/');
             } catch (error: any) {
@@ -127,7 +126,7 @@ export default function PackagesPage() {
                 <meta name="description" content="ร้องเพลงต่อเนื่องแบบไม่มีโฆษณาคั่นด้วย YouOKE Premium" />
             </Head>
 
-            {/* v5.3 Pure Flat Navigation (Compact) */}
+            {/* v5.4 Pure Flat Navigation (Compact) */}
             <header className="sticky top-0 z-[100] bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border-b-2 border-zinc-100 dark:border-zinc-900">
                 <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
                     <button 
@@ -142,60 +141,61 @@ export default function PackagesPage() {
                         <div className="w-7 h-7 rounded-lg bg-[#06C755] flex items-center justify-center text-white">
                             <MessageCircle className="w-4 h-4" fill="currentColor" />
                         </div>
-                        <span className="text-[10px] font-black tracking-widest uppercase text-zinc-400">Shop</span>
+                        <span className="text-[10px] font-black tracking-widest uppercase text-zinc-400">ร้านค้าพรีเมียม</span>
                     </div>
                 </div>
             </header>
 
             <main className="max-w-5xl mx-auto px-6 pt-10">
-                {/* 1. Pure Flat Trial Hero (More Compact) */}
+                {/* 1. Pure Flat Trial Hero (Thai & Compact) */}
                 <div 
                     onClick={() => {
                         const trialPkg = packages.find(p => p.price === 0);
                         if (trialPkg) handleBuy(trialPkg);
                     }}
-                    className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-700"
+                    className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700"
                 >
-                    <div className="group relative overflow-hidden rounded-[32px] p-6 md:p-10 bg-emerald-600 border-4 border-emerald-700 cursor-pointer transition-all active:scale-[0.98]">
+                    <div className="group relative overflow-hidden rounded-[32px] p-6 md:p-8 bg-emerald-600 border-4 border-emerald-700 cursor-pointer transition-all active:scale-[0.98]">
                         <div className="relative flex flex-col md:flex-row items-center justify-between gap-6 z-10">
-                            <div className="flex-1 space-y-3 text-center md:text-left">
+                            <div className="flex-1 space-y-2 text-center md:text-left">
                                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-white text-emerald-700 rounded-lg text-[9px] font-black uppercase tracking-widest">
                                     <Zap className="w-3 h-3 fill-current" />
-                                    Special Gift
+                                    ของขวัญพิเศษสำหรับคุณ
                                 </div>
                                 <h1 className="text-2xl md:text-5xl font-black text-white tracking-tighter leading-tight">
-                                    ทดลองใช้พรีเมียม <span className="text-emerald-100">ฟรี 1 วัน</span>
+                                    ทดลองใช้พรีเมียม <span className="text-emerald-100 underline decoration-indigo-400">ฟรี 1 วันเต็ม</span>
                                 </h1>
                                 <p className="text-emerald-50/80 font-bold text-xs md:text-base max-w-xl">
-                                    สัมผัสประสบการณ์ร้องเพลงแบบไม่มีโฆษณาคั่น 24 ชม. <br />
-                                    ปลดล็อกทุกความสามารถเพื่อความบันเทิงที่สมบูรณ์แบบ
+                                    สัมผัสประสบการณ์ร้องเพลงแบบไม่มีโฆษณา ปลดล็อกทุกความสามารถ <br />
+                                    เพื่อความบันเทิงที่สมบูรณ์แบบสำหรับทุกคนในครอบครัว
                                 </p>
                             </div>
 
-                            <button className="w-full md:w-auto h-14 px-8 bg-white text-emerald-950 rounded-2xl font-black text-base flex items-center justify-center gap-3 transition-all shadow-none">
+                            <button className="w-full md:w-auto h-14 px-8 bg-white text-emerald-950 rounded-2xl font-black text-base flex items-center justify-center gap-3 transition-all">
                                 <Sparkles className="w-5 h-5" />
-                                ใช้ฟรีทันที
+                                รับสิทธิ์ฟรีทันที
                             </button>
                         </div>
                     </div>
                 </div>
 
-                {/* 2. Main Title - Smaller Scaling */}
+                {/* 2. Main Title - Thai High Contrast */}
                 <div className="text-center space-y-3 mb-12">
                     <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-100 dark:bg-zinc-900 text-zinc-950 dark:text-white rounded-xl text-[10px] font-black tracking-widest uppercase border-2 border-zinc-200 dark:border-zinc-800">
                         <Crown className="w-3 h-3 text-amber-500" />
-                        VIP Packages
+                        แพ็กเกจแนะนำ
                     </div>
-                    <h2 className="text-3xl md:text-5xl font-black text-zinc-950 dark:text-white tracking-tighter leading-none px-4">
-                        สมัครเป็น <span className="text-primary italic">YouOKE VIP</span>
+                    <h2 className="text-3xl md:text-6xl font-black text-zinc-950 dark:text-white tracking-tighter leading-none">
+                        สมัครเป็น <span className="text-primary">สมาชิกพรีเมียม</span>
                     </h2>
+                    <p className="text-zinc-500 font-bold text-xs md:text-base">เลือกแพ็กเกจที่โดนใจ จ่ายครั้งเดียว ร้องเพลงได้ยาวๆ ไม่มีค่าธรรมเนียมแอบแฝง</p>
                 </div>
 
-                {/* 3. Pure Flat Package Grid (Reduced Padding & Sizes) */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* 3. Ultra Compact Thai Package Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                     {loading ? (
                         Array.from({ length: 3 }).map((_, i) => (
-                            <div key={i} className="h-80 rounded-[32px] bg-zinc-100 dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-800 animate-pulse" />
+                            <div key={i} className="h-72 rounded-[32px] bg-zinc-100 dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-800 animate-pulse" />
                         ))
                     ) : (
                         packages.filter(p => p.price > 0).map((pkg) => {
@@ -206,45 +206,45 @@ export default function PackagesPage() {
                                 <div 
                                     key={pkg.id}
                                     className={cn(
-                                        "group relative flex flex-col h-full rounded-[32px] p-8 transition-all duration-300 border-4",
+                                        "group relative flex flex-col h-full rounded-[32px] p-6 transition-all duration-300 border-4",
                                         isPopular 
-                                            ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 border-zinc-950 dark:border-white scale-100 z-10" 
+                                            ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 border-zinc-950 dark:border-white z-10" 
                                             : "bg-white dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800"
                                     )}
                                 >
                                     {isPopular && (
-                                        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-primary text-white rounded-full text-[9px] font-black tracking-widest uppercase flex items-center gap-2 border-4 border-white dark:border-zinc-950">
-                                            🔥 BEST
+                                        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-primary text-white rounded-full text-[9px] font-black tracking-widest uppercase flex items-center gap-2 border-4 border-white dark:border-zinc-950 shadow-none">
+                                            🔥 คุ้มค่าที่สุด
                                         </div>
                                     )}
 
-                                    <div className="space-y-5 flex-grow">
-                                        <div className="space-y-1">
+                                    <div className="space-y-4 flex-grow">
+                                        <div className="space-y-0.5">
                                             <p className={cn("text-[9px] font-black uppercase tracking-widest", isPopular ? "text-primary" : "text-zinc-400")}>
-                                                Member Tier
+                                                ระดับสมาชิก
                                             </p>
                                             <h3 className="text-2xl font-black tracking-tight">{pkg.name}</h3>
                                         </div>
                                         
-                                        <div className="flex flex-col border-t-2 border-dashed border-zinc-100 dark:border-zinc-800 pt-5">
+                                        <div className="flex flex-col border-t-2 border-dashed border-zinc-100 dark:border-zinc-800 pt-4">
                                             <div className="flex items-baseline gap-1">
-                                                <span className="text-5xl font-black tracking-tighter">฿{pkg.price}</span>
+                                                <span className="text-5xl font-black tracking-tighter text-inherit">฿{pkg.price}</span>
                                                 <span className={cn("text-xs font-black uppercase tracking-widest opacity-40 ml-1")}>
-                                                    /{pkg.durationDays >= 9999 ? 'LIFE' : `${pkg.durationDays}D`}
+                                                    /{pkg.durationDays >= 9999 ? 'ตลอดชีพ' : `${pkg.durationDays} วัน`}
                                                 </span>
                                             </div>
                                         </div>
 
-                                        <div className="space-y-3 pt-5">
+                                        <div className="space-y-2.5 pt-4">
                                             {KILLER_FEATURES.slice(0, 4).map((feature, idx) => (
                                                 <div key={idx} className="flex items-center gap-3">
                                                     <div className={cn(
-                                                        "w-5 h-5 rounded-lg flex items-center justify-center flex-shrink-0 border-2",
+                                                        "w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 border",
                                                         isPopular ? "bg-white text-zinc-950 border-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-400 border-zinc-200 dark:border-zinc-800"
                                                     )}>
                                                         <Check className="w-2.5 h-2.5 stroke-[4]" />
                                                     </div>
-                                                    <span className="text-[13px] font-black">{feature.title}</span>
+                                                    <span className="text-[12px] font-black">{feature.title}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -253,13 +253,14 @@ export default function PackagesPage() {
                                     <button
                                         onClick={() => handleBuy(pkg)}
                                         className={cn(
-                                            "mt-8 w-full h-14 rounded-2xl flex items-center justify-center gap-3 font-black text-base transition-all active:scale-95 shadow-none",
+                                            "mt-6 w-full h-14 rounded-2xl flex items-center justify-center gap-3 font-black text-sm transition-all active:scale-95 shadow-none",
                                             isPopular
                                                 ? "bg-primary text-white border-none"
                                                 : "bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 border-none"
                                         )}
                                     >
-                                        {isLineConnected ? "เลือกแพ็กเกจ" : "เชื่อมต่อเพื่อสมัคร"}
+                                        <ChevronRight className="w-5 h-5 stroke-[3]" />
+                                        <span>สมัครแพ็กเกจนี้</span>
                                     </button>
                                 </div>
                             );
@@ -267,24 +268,24 @@ export default function PackagesPage() {
                     )}
                 </div>
 
-                {/* 4. Feature Showcase Section (Smaller Layout) */}
-                <section className="mt-24 border-t-4 border-zinc-100 dark:border-zinc-900 pt-16">
-                    <div className="text-center mb-10 space-y-3 px-6">
-                        <h2 className="text-2xl md:text-4xl font-black tracking-tight text-zinc-950 dark:text-white leading-none">ทำไมต้อง YouOKE Premium?</h2>
-                        <p className="text-zinc-500 font-bold text-xs max-w-xl mx-auto">ฟีเจอร์ที่ออกแบบมาเพื่อให้คุณเป็นราชาและราชินีแห่งคาราโอเกะ</p>
+                {/* 4. Feature Showcase (Thai & Smaller) */}
+                <section className="mt-20 border-t-4 border-zinc-100 dark:border-zinc-900 pt-16 px-2">
+                    <div className="text-center mb-10 space-y-2 px-6">
+                        <h2 className="text-2xl md:text-4xl font-black tracking-tight text-zinc-950 dark:text-white leading-none">ทำไมต้อง YouOKE VIP?</h2>
+                        <p className="text-zinc-500 font-bold text-xs max-w-xl mx-auto">ฟีเจอร์ระดับอัจฉริยะที่ออกแบบมาเพื่อให้คุณเป็นราชาแห่งคาราโอเกะ</p>
                     </div>
 
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 px-2">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                         {KILLER_FEATURES.map((feature, i) => (
                             <div 
                                 key={i}
                                 className="p-6 rounded-[24px] bg-white dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800 transition-all active:scale-[0.98]"
                             >
                                 <div className={cn(
-                                    "w-11 h-11 rounded-xl flex items-center justify-center mb-4",
+                                    "w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-transform",
                                     feature.color, "text-white"
                                 )}>
-                                    <feature.icon className="w-6 h-6" strokeWidth={2.5} />
+                                    <feature.icon className="w-5 h-5" strokeWidth={2.5} />
                                 </div>
                                 <h3 className="font-black text-sm mb-2 text-zinc-950 dark:text-white leading-tight">{feature.title}</h3>
                                 <p className="text-[11px] font-bold text-zinc-500 leading-tight">{feature.desc}</p>
@@ -293,22 +294,25 @@ export default function PackagesPage() {
                     </div>
                 </section>
 
-                {/* 5. Compact Support Banner */}
+                {/* 5. Support Section (Thai) */}
                 <div className="mt-20 p-8 rounded-[40px] bg-zinc-950 text-white text-center border-2 border-zinc-950 space-y-6">
                     <div className="space-y-2">
-                        <h3 className="text-xl md:text-2xl font-black tracking-tight">ติดปัญหาการใช้งาน?</h3>
+                        <h3 className="text-xl md:text-2xl font-black tracking-tight">ต้องการความช่วยเหลือ?</h3>
                         <p className="max-w-xl mx-auto text-zinc-500 text-xs font-bold leading-relaxed">
-                            ต้องการความช่วยเหลือในการสมัครสมาชิก <br />
-                            ทักหาแอดมินทาง LINE ได้ตลอด 24 ชม. ครับ
+                            ทักหาแอดมินเพื่อสอบถามข้อมูลการสมัครสมาชิก <br />
+                            หรือแจ้งปัญหาการใช้งานได้ตลอด 24 ชม. ครับ
                         </p>
                     </div>
                     <button 
                         onClick={() => window.open('https://line.me/ti/p/~@243lercy', '_blank')}
-                        className="bg-[#06C755] text-white h-14 px-8 rounded-2xl font-black text-base flex items-center justify-center gap-3 mx-auto transition-all active:scale-95 shadow-none"
+                        className="bg-[#06C755] text-white h-14 px-8 rounded-2xl font-black text-sm flex items-center justify-center gap-3 mx-auto transition-all active:scale-95"
                     >
                         <MessageCircle className="w-5 h-5" fill="currentColor" />
-                        ติดต่อ @243lercy
+                        ติดต่อแอดมิน @243lercy
                     </button>
+                    <p className="text-[9px] font-black text-zinc-700 uppercase tracking-widest mt-4">
+                        ระบบชำระเงินปลอดภัย 100%
+                    </p>
                 </div>
             </main>
 
