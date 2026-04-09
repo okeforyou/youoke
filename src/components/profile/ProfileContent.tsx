@@ -279,9 +279,9 @@ export const ProfileContent = () => {
                         <li>
                             <button
                                 onClick={handleLogout}
-                                className="w-full flex items-center gap-4 p-4 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-2xl transition-all"
+                                className="w-full flex items-center gap-4 p-4 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-2xl transition-all active:scale-95 group"
                             >
-                                <ArrowRightOnRectangleIcon className="w-6 h-6" strokeWidth={2.5} />
+                                <ArrowRightOnRectangleIcon className="w-6 h-6 text-rose-600 dark:text-rose-400 group-hover:scale-110 transition-transform" strokeWidth={3} />
                                 <span className="text-base font-black">ออกจากระบบ</span>
                             </button>
                         </li>

@@ -127,78 +127,75 @@ export default function PackagesPage() {
                 <meta name="description" content="ร้องเพลงต่อเนื่องแบบไม่มีโฆษณาคั่นด้วย YouOKE Premium" />
             </Head>
 
-            {/* v5.3 Pure Flat Navigation */}
+            {/* v5.3 Pure Flat Navigation (Compact) */}
             <header className="sticky top-0 z-[100] bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border-b-2 border-zinc-100 dark:border-zinc-900">
-                <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+                <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
                     <button 
                         onClick={() => router.push('/')}
-                        className="flex items-center gap-2 text-sm font-black text-zinc-950 dark:text-white transition-all active:scale-95 group"
+                        className="flex items-center gap-2 text-[13px] font-black text-zinc-950 dark:text-white transition-all active:scale-95 group"
                     >
                         <ChevronLeft className="w-5 h-5 stroke-[3] group-hover:-translate-x-1 transition-transform" />
-                        <span>กลับสู่หน้าคาราโอเกะ</span>
+                        <span>กลับ</span>
                     </button>
                     
                     <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-xl bg-[#06C755] flex items-center justify-center text-white scale-90">
-                            <MessageCircle className="w-5 h-5" fill="currentColor" />
+                        <div className="w-7 h-7 rounded-lg bg-[#06C755] flex items-center justify-center text-white">
+                            <MessageCircle className="w-4 h-4" fill="currentColor" />
                         </div>
-                        <span className="text-[10px] font-black tracking-widest uppercase text-zinc-400">LINE Connected</span>
+                        <span className="text-[10px] font-black tracking-widest uppercase text-zinc-400">Shop</span>
                     </div>
                 </div>
             </header>
 
-            <main className="max-w-6xl mx-auto px-6 pt-12">
-                {/* 1. Pure Flat Trial Hero */}
+            <main className="max-w-5xl mx-auto px-6 pt-10">
+                {/* 1. Pure Flat Trial Hero (More Compact) */}
                 <div 
                     onClick={() => {
                         const trialPkg = packages.find(p => p.price === 0);
                         if (trialPkg) handleBuy(trialPkg);
                     }}
-                    className="mb-16 animate-in fade-in slide-in-from-bottom-4 duration-700"
+                    className="mb-12 animate-in fade-in slide-in-from-bottom-4 duration-700"
                 >
-                    <div className="group relative overflow-hidden rounded-[40px] p-8 md:p-12 bg-emerald-600 border-4 border-emerald-700 cursor-pointer transition-all active:scale-[0.98]">
-                        <div className="relative flex flex-col md:flex-row items-center justify-between gap-8 z-10">
-                            <div className="flex-1 space-y-4 text-center md:text-left">
-                                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white text-emerald-700 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                    <div className="group relative overflow-hidden rounded-[32px] p-6 md:p-10 bg-emerald-600 border-4 border-emerald-700 cursor-pointer transition-all active:scale-[0.98]">
+                        <div className="relative flex flex-col md:flex-row items-center justify-between gap-6 z-10">
+                            <div className="flex-1 space-y-3 text-center md:text-left">
+                                <div className="inline-flex items-center gap-2 px-3 py-1 bg-white text-emerald-700 rounded-lg text-[9px] font-black uppercase tracking-widest">
                                     <Zap className="w-3 h-3 fill-current" />
-                                    Special Trial Gift
+                                    Special Gift
                                 </div>
-                                <h1 className="text-3xl md:text-6xl font-black text-white tracking-tighter leading-[0.9]">
-                                    รับสิทธิ์พรีเมียม <br />
-                                    <span className="text-emerald-100">ฟรี 1 วันเต็มๆ</span>
+                                <h1 className="text-2xl md:text-5xl font-black text-white tracking-tighter leading-tight">
+                                    ทดลองใช้พรีเมียม <span className="text-emerald-100">ฟรี 1 วัน</span>
                                 </h1>
-                                <p className="text-emerald-50/80 font-bold text-sm md:text-lg max-w-xl">
-                                    สัมผัสประสบการณ์ร้องเพลงแบบไม่มีโฆษณาคั่น 24 ชม. <br className="hidden md:block" />
+                                <p className="text-emerald-50/80 font-bold text-xs md:text-base max-w-xl">
+                                    สัมผัสประสบการณ์ร้องเพลงแบบไม่มีโฆษณาคั่น 24 ชม. <br />
                                     ปลดล็อกทุกความสามารถเพื่อความบันเทิงที่สมบูรณ์แบบ
                                 </p>
                             </div>
 
-                            <button className="w-full md:w-auto h-16 px-10 bg-white text-emerald-950 rounded-3xl font-black text-xl flex items-center justify-center gap-3 transition-all">
-                                <Sparkles className="w-6 h-6" />
+                            <button className="w-full md:w-auto h-14 px-8 bg-white text-emerald-950 rounded-2xl font-black text-base flex items-center justify-center gap-3 transition-all shadow-none">
+                                <Sparkles className="w-5 h-5" />
                                 ใช้ฟรีทันที
                             </button>
                         </div>
                     </div>
                 </div>
 
-                {/* 2. Main Title - High Contrast */}
-                <div className="text-center space-y-4 mb-16">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 text-zinc-950 dark:text-white rounded-2xl text-[10px] font-black tracking-widest uppercase border-2 border-zinc-200 dark:border-zinc-800">
-                        <Crown className="w-4 h-4 text-amber-500" />
-                        Premium Selection
+                {/* 2. Main Title - Smaller Scaling */}
+                <div className="text-center space-y-3 mb-12">
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-zinc-100 dark:bg-zinc-900 text-zinc-950 dark:text-white rounded-xl text-[10px] font-black tracking-widest uppercase border-2 border-zinc-200 dark:border-zinc-800">
+                        <Crown className="w-3 h-3 text-amber-500" />
+                        VIP Packages
                     </div>
-                    <h2 className="text-4xl md:text-7xl font-black text-zinc-950 dark:text-white tracking-tighter leading-[0.85]">
-                        สมัครแพ็กเกจ <br />
-                        <span className="text-primary">ร้องเพลงให้สุดชีวิต</span>
+                    <h2 className="text-3xl md:text-5xl font-black text-zinc-950 dark:text-white tracking-tighter leading-none px-4">
+                        สมัครเป็น <span className="text-primary italic">YouOKE VIP</span>
                     </h2>
-                    <p className="text-zinc-500 font-bold text-sm md:text-base">เลือกแพ็กเกจที่โดนใจคุณที่สุด ยิ่งสมัครนานยิ่งคุ้มค่า</p>
                 </div>
 
-                {/* 3. Pure Flat Package Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {/* 3. Pure Flat Package Grid (Reduced Padding & Sizes) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {loading ? (
                         Array.from({ length: 3 }).map((_, i) => (
-                            <div key={i} className="h-[460px] rounded-[48px] bg-zinc-100 dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-800 animate-pulse" />
+                            <div key={i} className="h-80 rounded-[32px] bg-zinc-100 dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-800 animate-pulse" />
                         ))
                     ) : (
                         packages.filter(p => p.price > 0).map((pkg) => {
@@ -209,49 +206,45 @@ export default function PackagesPage() {
                                 <div 
                                     key={pkg.id}
                                     className={cn(
-                                        "group relative flex flex-col h-full rounded-[48px] p-10 transition-all duration-300 border-4",
+                                        "group relative flex flex-col h-full rounded-[32px] p-8 transition-all duration-300 border-4",
                                         isPopular 
-                                            ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 border-zinc-950 dark:border-white scale-105 z-10" 
+                                            ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 border-zinc-950 dark:border-white scale-100 z-10" 
                                             : "bg-white dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800"
                                     )}
                                 >
                                     {isPopular && (
-                                        <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-6 py-2 bg-primary text-white rounded-full text-[10px] font-black tracking-widest uppercase flex items-center gap-2 border-4 border-white dark:border-zinc-950">
-                                            <Zap className="w-3 h-3 fill-current" />
-                                            🔥 BEST VALUE
+                                        <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-primary text-white rounded-full text-[9px] font-black tracking-widest uppercase flex items-center gap-2 border-4 border-white dark:border-zinc-950">
+                                            🔥 BEST
                                         </div>
                                     )}
 
-                                    <div className="space-y-6 flex-grow">
+                                    <div className="space-y-5 flex-grow">
                                         <div className="space-y-1">
-                                            <p className={cn("text-[10px] font-black uppercase tracking-widest", isPopular ? "text-primary" : "text-zinc-400")}>
-                                                VIP Package
+                                            <p className={cn("text-[9px] font-black uppercase tracking-widest", isPopular ? "text-primary" : "text-zinc-400")}>
+                                                Member Tier
                                             </p>
-                                            <h3 className="text-3xl font-black tracking-tight">{pkg.name}</h3>
+                                            <h3 className="text-2xl font-black tracking-tight">{pkg.name}</h3>
                                         </div>
                                         
-                                        <div className="flex flex-col border-t-2 border-dashed border-zinc-100 dark:border-zinc-800 pt-6">
+                                        <div className="flex flex-col border-t-2 border-dashed border-zinc-100 dark:border-zinc-800 pt-5">
                                             <div className="flex items-baseline gap-1">
-                                                <span className="text-6xl font-black tracking-tighter">฿{pkg.price}</span>
-                                                <span className={cn("text-sm font-black uppercase tracking-widest opacity-40 ml-1")}>
-                                                    /{pkg.durationDays >= 9999 ? 'LIFETIME' : `${pkg.durationDays} DAYS`}
+                                                <span className="text-5xl font-black tracking-tighter">฿{pkg.price}</span>
+                                                <span className={cn("text-xs font-black uppercase tracking-widest opacity-40 ml-1")}>
+                                                    /{pkg.durationDays >= 9999 ? 'LIFE' : `${pkg.durationDays}D`}
                                                 </span>
                                             </div>
-                                            <p className={cn("text-[11px] font-black uppercase tracking-widest mt-2", isPopular ? "text-zinc-400" : "text-zinc-500")}>
-                                                No recurring hidden fees
-                                            </p>
                                         </div>
 
-                                        <div className="space-y-4 pt-6">
+                                        <div className="space-y-3 pt-5">
                                             {KILLER_FEATURES.slice(0, 4).map((feature, idx) => (
                                                 <div key={idx} className="flex items-center gap-3">
                                                     <div className={cn(
-                                                        "w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 border-2",
+                                                        "w-5 h-5 rounded-lg flex items-center justify-center flex-shrink-0 border-2",
                                                         isPopular ? "bg-white text-zinc-950 border-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-400 border-zinc-200 dark:border-zinc-800"
                                                     )}>
-                                                        <Check className="w-3 h-3 stroke-[4]" />
+                                                        <Check className="w-2.5 h-2.5 stroke-[4]" />
                                                     </div>
-                                                    <span className="text-sm font-black">{feature.title}</span>
+                                                    <span className="text-[13px] font-black">{feature.title}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -260,14 +253,13 @@ export default function PackagesPage() {
                                     <button
                                         onClick={() => handleBuy(pkg)}
                                         className={cn(
-                                            "mt-10 w-full h-16 rounded-3xl flex items-center justify-center gap-3 font-black text-lg transition-all active:scale-95",
+                                            "mt-8 w-full h-14 rounded-2xl flex items-center justify-center gap-3 font-black text-base transition-all active:scale-95 shadow-none",
                                             isPopular
-                                                ? "bg-primary text-white border-2 border-primary"
-                                                : "bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 border-2 border-transparent"
+                                                ? "bg-primary text-white border-none"
+                                                : "bg-zinc-950 text-white dark:bg-zinc-100 dark:text-zinc-950 border-none"
                                         )}
                                     >
-                                        {isLineConnected ? <MessageCircle className="w-5 h-5" fill="currentColor" /> : <ChevronRight className="w-5 h-5 stroke-[3]" />}
-                                        {isLineConnected ? "สมัครแพ็กเกจนี้" : "เชื่อมต่อเพื่อสมัคร"}
+                                        {isLineConnected ? "เลือกแพ็กเกจ" : "เชื่อมต่อเพื่อสมัคร"}
                                     </button>
                                 </div>
                             );
@@ -275,58 +267,48 @@ export default function PackagesPage() {
                     )}
                 </div>
 
-                {/* 4. Feature Showcase Section */}
-                <section className="mt-40 border-t-4 border-zinc-100 dark:border-zinc-900 pt-20">
-                    <div className="text-center mb-16 space-y-4 px-6">
-                        <div className="w-16 h-1 bg-primary mx-auto rounded-full mb-6"></div>
-                        <h2 className="text-3xl md:text-5xl font-black tracking-tight text-zinc-950 dark:text-white leading-none">ทำไมต้อง YouOKE Premium?</h2>
-                        <p className="text-zinc-500 font-bold max-w-2xl mx-auto">ฟีเจอร์ระดับอัจฉริยะที่ออกแบบมาเพื่อให้คุณเป็นราชาและราชินีแห่งคาราโอเกะที่บ้านคุณเอง</p>
+                {/* 4. Feature Showcase Section (Smaller Layout) */}
+                <section className="mt-24 border-t-4 border-zinc-100 dark:border-zinc-900 pt-16">
+                    <div className="text-center mb-10 space-y-3 px-6">
+                        <h2 className="text-2xl md:text-4xl font-black tracking-tight text-zinc-950 dark:text-white leading-none">ทำไมต้อง YouOKE Premium?</h2>
+                        <p className="text-zinc-500 font-bold text-xs max-w-xl mx-auto">ฟีเจอร์ที่ออกแบบมาเพื่อให้คุณเป็นราชาและราชินีแห่งคาราโอเกะ</p>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 px-4">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 px-2">
                         {KILLER_FEATURES.map((feature, i) => (
                             <div 
                                 key={i}
-                                className="p-8 rounded-[40px] bg-white dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800 hover:border-primary transition-all active:scale-[0.98]"
+                                className="p-6 rounded-[24px] bg-white dark:bg-zinc-900 border-2 border-zinc-100 dark:border-zinc-800 transition-all active:scale-[0.98]"
                             >
                                 <div className={cn(
-                                    "w-14 h-14 rounded-[20px] flex items-center justify-center mb-6 shadow-none",
+                                    "w-11 h-11 rounded-xl flex items-center justify-center mb-4",
                                     feature.color, "text-white"
                                 )}>
-                                    <feature.icon className="w-7 h-7" strokeWidth={2.5} />
+                                    <feature.icon className="w-6 h-6" strokeWidth={2.5} />
                                 </div>
-                                <h3 className="font-black text-xl mb-3 text-zinc-950 dark:text-white leading-tight">{feature.title}</h3>
-                                <p className="text-sm font-bold text-zinc-500 leading-relaxed">{feature.desc}</p>
+                                <h3 className="font-black text-sm mb-2 text-zinc-950 dark:text-white leading-tight">{feature.title}</h3>
+                                <p className="text-[11px] font-bold text-zinc-500 leading-tight">{feature.desc}</p>
                             </div>
                         ))}
                     </div>
                 </section>
 
-                {/* 5. Final Footer Promotion Content */}
-                <div className="mt-32 p-10 md:p-16 rounded-[60px] bg-zinc-950 text-white text-center border-4 border-zinc-950 space-y-8">
-                    <div className="flex justify-center">
-                        <div className="w-20 h-20 bg-[#06C755] rounded-[32px] flex items-center justify-center border-4 border-[#06C755]">
-                           <MessageCircle className="w-10 h-10" fill="currentColor" />
-                        </div>
-                    </div>
-                    <div className="space-y-4">
-                        <h3 className="text-3xl md:text-5xl font-black tracking-tight leading-[0.9]">
-                            ดูแลคุณ <span className="text-primary italic font-serif">ทุกขั้นตอน</span>
-                        </h3>
-                        <p className="max-w-xl mx-auto text-zinc-400 font-bold">
-                            หากคุณมีข้อสงสัยหรือต้องการความช่วยเหลือในการสมัครสมาชิก <br />
+                {/* 5. Compact Support Banner */}
+                <div className="mt-20 p-8 rounded-[40px] bg-zinc-950 text-white text-center border-2 border-zinc-950 space-y-6">
+                    <div className="space-y-2">
+                        <h3 className="text-xl md:text-2xl font-black tracking-tight">ติดปัญหาการใช้งาน?</h3>
+                        <p className="max-w-xl mx-auto text-zinc-500 text-xs font-bold leading-relaxed">
+                            ต้องการความช่วยเหลือในการสมัครสมาชิก <br />
                             ทักหาแอดมินทาง LINE ได้ตลอด 24 ชม. ครับ
                         </p>
                     </div>
-                    <div className="pt-4">
-                        <button 
-                            onClick={() => window.open('https://line.me/ti/p/~@243lercy', '_blank')}
-                            className="bg-[#06C755] text-white h-16 px-10 rounded-3xl font-black text-lg flex items-center justify-center gap-3 mx-auto transition-all active:scale-95"
-                        >
-                            <MessageCircle className="w-6 h-6" fill="currentColor" />
-                            ติดต่อ @243lercy ทาง LINE
-                        </button>
-                    </div>
+                    <button 
+                        onClick={() => window.open('https://line.me/ti/p/~@243lercy', '_blank')}
+                        className="bg-[#06C755] text-white h-14 px-8 rounded-2xl font-black text-base flex items-center justify-center gap-3 mx-auto transition-all active:scale-95 shadow-none"
+                    >
+                        <MessageCircle className="w-5 h-5" fill="currentColor" />
+                        ติดต่อ @243lercy
+                    </button>
                 </div>
             </main>
 

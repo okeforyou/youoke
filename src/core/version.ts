@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.18 (Compact Shop & Visibility Fix)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "UI: Compacted /packages page with smaller cards and headlines for better scaling",
+            "UX: Updated internal Shop CTAs to link directly to the standalone Packages page",
+            "UI: Fixed Logout button visibility with high-contrast Rose-600 typography",
+            "LAYOUT: Reduced padding and roundedness for a tighter Pure Flat aesthetic"
+        ],
+        recent_updates: "Layout Compaction & Critical Visibility Fix"
+    },
+    {
         version: "v5.3.17 (Shop-Wide Pure Flat)",
         date: "9 เม.ย. 2569",
         changes: [

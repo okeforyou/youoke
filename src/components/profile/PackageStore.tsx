@@ -242,11 +242,11 @@ export const PackageStore = () => {
             </div>
 
             <button
-                onClick={() => router.push('/tutorial')}
+                onClick={() => router.push('/packages')}
                 className="w-full mt-2 py-5 rounded-[32px] border-2 border-dashed border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 text-xs font-black text-zinc-950 dark:text-white transition-all flex items-center justify-center gap-3 active:scale-95"
             >
-                <BookOpenIcon className="w-5 h-5" /> 
-                <span>เปรียบเทียบฟีเจอร์ Free vs VIP</span>
+                <QrCode className="w-5 h-5" /> 
+                <span>ดูรายละเอียดและเลือกแพ็กเกจทั้งหมด</span>
             </button>
 
             {selectedPkg && (
