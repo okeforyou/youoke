@@ -9,14 +9,13 @@ interface LineRequiredModalProps {
 }
 
 export const LineRequiredModal = ({ isOpen, onClose }: LineRequiredModalProps) => {
-    const { user } = useAuthStore();
+    const { signInWithLine } = useAuthStore();
 
     const handleConnect = () => {
-        if (!user) return;
-        
-        // v5.3.30: Direct Shortcut to LINE Connection (Save 3 steps)
-        const liffUrl = `https://liff.me/2006894054-O8E2Rz96?u=${user.uid}`; 
-        window.open(liffUrl, '_blank');
+        // v5.3.31: Official System Flow for Account Linking
+        // This initiates the direct LINE OAuth flow with 'link_account' state
+        // It is the fastest, safest, and original way we implemented.
+        signInWithLine('link_account');
         onClose();
     };
 
@@ -37,7 +36,7 @@ export const LineRequiredModal = ({ isOpen, onClose }: LineRequiredModalProps) =
 
                 <div className="fixed inset-0 z-10 overflow-y-auto">
                     <div className="flex min-h-full items-center justify-center p-4">
-                        <Dialog.Panel className="w-full max-w-sm transform overflow-hidden rounded-[40px] bg-white p-8 text-center transition-all border-4 border-zinc-100">
+                        <Dialog.Panel className="w-full max-w-sm transform overflow-hidden rounded-[40px] bg-white p-8 text-center transition-all border-4 border-zinc-100 shadow-2xl">
                             <div className="flex justify-end mb-2">
                                 <button onClick={onClose} className="p-2 rounded-full hover:bg-zinc-50 text-zinc-400">
                                     <X size={20} />

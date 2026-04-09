@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.31 (Official LINE Restoration)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "FIX: Restored official signInWithLine('link_account') flow in requirement modal",
+            "BUG: Terminated the use of incorrect 'liff.me' manual URL redirection",
+            "UX: Ensured seamless handoff to secure LINE authorization interface",
+            "STABILITY: Verified integration with the core authentication and linking system"
+        ],
+        recent_updates: "Official LINE Identity Linking Recovery"
+    },
+    {
         version: "v5.3.30 (Fastest Connection Flow)",
         date: "9 เม.ย. 2569",
         changes: [
