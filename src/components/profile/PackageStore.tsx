@@ -10,6 +10,7 @@ import { useAuthStore } from '@/modules/auth/useAuthStore';
 import { cn } from '@/lib/utils';
 import { Zap, QrCode } from 'lucide-react';
 import { UploadSlipModal } from './UploadSlipModal';
+import { LineRequiredModal } from './LineRequiredModal';
 
 interface Package {
     id: string;
@@ -31,6 +32,7 @@ export const PackageStore = () => {
     const { user } = useAuthStore();
     const [selectedPkg, setSelectedPkg] = useState<Package | undefined>(undefined);
     const [showUploadModal, setShowUploadModal] = useState(false);
+    const [showLineModal, setShowLineModal] = useState(false);
 
     const handleSelect = async (pkg: Package) => {
         if (!user) {
@@ -38,9 +40,9 @@ export const PackageStore = () => {
             return;
         }
 
-        // v5.3.28 Mandatory LINE Connection Check
+        // v5.3.28 Mandatory LINE Connection Check (Restore System Modal)
         if (!user.lineUserId) {
-            alert("⚠️ กรุณาเชื่อมต่อบัญชี LINE ก่อนสมัครสมาชิก\n\nเพื่อให้ระบบสามารถส่งรายละเอียดการชำระเงินและแจ้งเตือนสิทธิ์สมาชิก VIP ให้คุณได้อย่างถูกต้องครับ");
+            setShowLineModal(true);
             return;
         }
 
@@ -166,6 +168,12 @@ export const PackageStore = () => {
                     pkg={selectedPkg}
                 />
             )}
+
+            {/* v5.3.29: LINE Connection Mandatory Modal */}
+            <LineRequiredModal 
+                isOpen={showLineModal} 
+                onClose={() => setShowLineModal(false)} 
+            />
         </div>
     );
 };

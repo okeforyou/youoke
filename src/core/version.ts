@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.29 (System Modal Restoration)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "UI: Replaced browser alert with custom System Modal (LineRequiredModal)",
+            "UX: Restored stable and premium 'Force-Line' warning state",
+            "LOGIC: Verified interaction consistency between drawer and store page",
+            "STABILITY: Final logic synchronization for the Pure Flat redesign"
+        ],
+        recent_updates: "System Modal & Logic Consistency Restoration"
+    },
+    {
         version: "v5.3.28 (LINE Mandatory Recovery)",
         date: "9 เม.ย. 2569",
         changes: [

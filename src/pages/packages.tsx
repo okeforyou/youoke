@@ -27,6 +27,7 @@ import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/modules/auth/useAuthStore';
 import { useRouter } from 'next/router';
 import { UploadSlipModal } from '@/components/profile/UploadSlipModal';
+import { LineRequiredModal } from '@/components/profile/LineRequiredModal';
 
 interface Package {
     id: string;
@@ -56,6 +57,7 @@ export default function PackagesPage() {
     const [loading, setLoading] = useState(!shopPackageCache);
     const [selectedPkg, setSelectedPkg] = useState<Package | undefined>(undefined);
     const [showUploadModal, setShowUploadModal] = useState(false);
+    const [showLineModal, setShowLineModal] = useState(false);
 
     const { user } = useAuthStore();
     const router = useRouter();
@@ -99,10 +101,9 @@ export default function PackagesPage() {
             return;
         }
 
-        // v5.3.28 Mandatory LINE Connection Check
+        // v5.3.28 Mandatory LINE Connection Check (Restore System Modal)
         if (!user.lineUserId) {
-            alert("⚠️ กรุณาเชื่อมต่อบัญชี LINE ก่อนสมัครสมาชิก\n\nเพื่อให้ระบบสามารถส่งรายละเอียดการชำระเงินและแจ้งเตือนสิทธิ์สมาชิก VIP ให้คุณได้อย่างถูกต้องครับ");
-            router.push('/');
+            setShowLineModal(true);
             return;
         }
 
@@ -331,6 +332,12 @@ export default function PackagesPage() {
                     pkg={selectedPkg}
                 />
             )}
+
+            {/* v5.3.29: LINE Connection Mandatory Modal */}
+            <LineRequiredModal 
+                isOpen={showLineModal} 
+                onClose={() => setShowLineModal(false)} 
+            />
         </div>
     );
 }
