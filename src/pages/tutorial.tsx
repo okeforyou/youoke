@@ -1,16 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { 
-    ChevronLeft, Search, Music, Mic2, Tv, Smartphone, 
-    ListMusic, Crown, PlayCircle, Info, Sparkles, UserCheck
+    ChevronLeft, Search, Smartphone, ListMusic, Tv, Crown, 
+    Mic2, PlayCircle, Monitor, Chromecast, Youtube, Radio, 
+    Sparkles, ArrowRight, ScanLine, Laptop, Globe
 } from "lucide-react";
 import { useUIStore } from "@/stores/useUIStore";
 import clsx from "clsx";
+import Head from "next/head";
 
 export default function TutorialPage() {
     const router = useRouter();
     const setProfileOpen = useUIStore(state => state.setProfileOpen);
     const [activeTab, setActiveTab] = useState('search');
+    const [domain, setDomain] = useState('play.okeforyou.com');
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            setDomain(window.location.host);
+        }
+    }, []);
 
     const handleBack = () => {
         setProfileOpen(true);
@@ -20,76 +29,86 @@ export default function TutorialPage() {
     const tabs = [
         { id: 'search', label: 'ค้นหาเพลง', icon: Search },
         { id: 'remote', label: 'รีโมทมือถือ', icon: Smartphone },
-        { id: 'display', label: 'ต่อจอทีวี', icon: Tv },
         { id: 'queue', label: 'จัดการคิว', icon: ListMusic },
-        { id: 'account', label: 'สมาชิก VIP', icon: Crown },
+        { id: 'casting', label: 'ต่อหน้าจอ', icon: Tv },
+        { id: 'vip', label: 'สมาชิก VIP', icon: Crown },
     ];
 
     const content = {
         search: [
-            { step: 1, title: "เข้าสู่โหมดค้นหา", desc: "กดไอคอนแว่นขยาย หรือใช้ช่องพิมพ์ด้านบนเพื่อเริ่มหาเพลง" },
-            { step: 2, title: "ระบุชื่อเพลงหรือศิลปิน", desc: "พิมพ์ชื่อที่ต้องการ ระบบจะค้นหาจากคลังเพลงคุณภาพสูงให้ทันที" },
-            { step: 3, title: "สั่งงานด้วยเสียง", desc: "กดไอคอนไมค์แล้วพูดชื่อเพลง คุณจะพบเพลงที่ต้องการในพริบตา" },
+            { id: 's1', title: "พิมพ์ค้นหา", desc: "พิมพ์ชื่อเพลงหรือศิลปินในช่องด้านบน ระบบจะค้นหาและแสดงผลลัพธ์แบบเรียลไทม์ทันทีที่คุณเริ่มพิมพ์", icon: Search },
+            { id: 's2', title: "สั่งงานด้วยเสียง", desc: "กดไอคอนไมโครโฟน 🎙️ แล้วพูดชื่อเพลงที่ต้องการ ระบบจะวิเคราะห์เสียงและดึงเพลงที่ตรงที่สุดมาให้ทันที", icon: Mic2 },
         ],
         remote: [
-            { step: 1, title: "เปิดหน้าจอตัวเล่นเพลง", desc: "เข้าไปที่หน้าจอ Player (ตัวเล่น) เพื่อเตรียมรับการเชื่อมต่อจากรีโมทมือถือ" },
-            { step: 2, title: "สแกน QR Code", desc: "ใช้มือถือเครื่องที่ต้องการให้เป็นรีโมท สแกน QR Code ที่แสดงอยู่บนหน้าจอคอมพิวเตอร์" },
-            { step: 3, title: "สั่งเพลงไร้สาย", desc: "เมื่อเชื่อมต่อแล้ว มือถือจะกลายเป็นรีโมทอัจฉริยะ ให้คุณค้นหาและจัดคิวเพลงได้ทันที" },
-        ],
-        display: [
-            { step: 1, title: "เชื่อมต่อสายสัญญาณ", desc: "ต่อสาย HDMI เข้ากับทีวี แล้วไปที่การตั้งค่าในคอมพิวเตอร์ เลือกโหมด 'Extend' (ขยายหน้าจอ)" },
-            { step: 2, title: "แยกหน้าต่างตัวเล่น", desc: "กดไอคอนรูปหน้าจอในเมนู เพื่อแยกหน้าต่างตัวเล่น (Player) ออกมาจากหน้าหลัก" },
-            { step: 3, title: "ลากและขยายเต็มจอ", desc: "ลากหน้าต่าง Player ไปไว้ที่จอทีวี แล้วกดปุ่ม Fullscreen เพื่อเข้าสู่โหมดคาราโอเกะเต็มรูปแบบ" },
+            { id: 'r1', title: "สแกนเพื่อเริ่ม", desc: "เปิดหน้าจอตัวเล่นเพลง (Player) บนคอมพิวเตอร์ แล้วใช้มือถือสแกน QR Code ที่ปรากฏเพื่อสลับเข้าสู่โหมดรีโมท", icon: ScanLine },
+            { id: 'r2', title: "ควบคุมไร้สาย", desc: "มือถือของคุณจะกลายเป็นรีโมทอัจฉริยะ ให้คุณเพิ่มเพลง จัดคิว และปรับระดับเสียงได้จากทุกมุมห้อง", icon: Smartphone },
         ],
         queue: [
-            { step: 1, title: "ดูรายการคิว", desc: "กดที่รายการเพลงที่กำลังเล่นเพื่อดูคิวทั้งหมดที่รออยู่" },
-            { step: 2, title: "จัดลำดับเพลง", desc: "เลือกแทรกคิว (Insert) หรือลบเพลงที่ไม่ต้องการออกได้ง่ายๆ" },
-            { step: 3, title: "ข้ามเพลงปัจจุบัน", desc: "กดปุ่มถัดไป (Next) เพื่อข้ามไปยังเพลงถัดไปในคิวทันที" },
+            { id: 'q1', title: "แทรกคิว (Insert)", desc: "หากต้องการร้องเพลงด่วน ให้กดไอคอน 'แซงคิว' (ด้านซ้ายของวิดีโอ) เพื่อให้เพลงถูกนำมาเล่นเป็นเพลงถัดไปทันที", icon: ArrowRight },
+            { id: 'q2', title: "จัดการลำดับ", desc: "คลิกรายการคิวที่รออยู่เพื่อดูเพลงทั้งหมด คุณสามารถเลื่อนเปลี่ยนลำดับ หรือลบเพลงออกได้ตามต้องการ", icon: ListMusic },
         ],
-        account: [
-            { step: 1, title: "ซิงค์บัญชี Gmail", desc: "เชื่อมต่อ Gmail เพื่อรับโควต้าเพลงเพิ่มและซิงค์คลังเพลงส่วนตัว" },
-            { step: 2, title: "สมาชิกระดับ PRO", desc: "อัปเกรดเพื่อร้องเพลงไม่อั้น ไร้โฆษณาคั่น และใช้ฟีเจอร์ได้ครบทุกแบบ" },
-            { step: 3, title: "บันทึกเพลย์ลิสต์", desc: "สร้างรายการเพลงโปรดไว้ร้องในปาร์ตี้ครั้งหน้าง่ายๆ แค่กดปุ่มหัวใจ" },
+        casting: [
+            { 
+                id: 'c1', 
+                title: "1. จอภาพไร้สาย (Smart TV)", 
+                desc: `เปิดเบราว์เซอร์บนทีวีไปที่ ${domain}/tv แล้วเชื่อมต่อโดย "สแกน QR Code" บนทีวี หรือ "กรอกรหัส 4 หลัก" ในมือถือของคุณ`, 
+                icon: Radio,
+                highlight: true 
+            },
+            { id: 'c2', title: "2. สาย HDMI (Dual Screen)", desc: "ต่อสาย HDMI -> ตั้งค่าหน้าจอเป็น Extend -> กดเปิด 'จอแยก' ใน YouOKE แล้วลากหน้าต่างไปไว้ที่จอทีวี", icon: Monitor },
+            { id: 'c3', title: "3. Google Chromecast", desc: "กดไอคอน Cast 📺 ในระบบ YouOKE แล้วเลือกชื่อ Chromecast หรือ Android TV ของคุณเพื่อส่งภาพขึ้นจอทันที", icon: Chromecast },
+            { id: 'c4', title: "4. YouTube Cast", desc: "ส่งวิดีโอคาราโอเกะโดยตรงเข้าสู่แอป YouTube บนทีวีของคุณ (เหมาะสำหรับทีวีที่รองรับแอป YouTube มาตรฐาน)", icon: Youtube },
+        ],
+        vip: [
+            { id: 'v1', title: "เพลิดเพลินแบบไร้โฆษณา", desc: "อัปเกรดเป็น VIP เพื่อร้องเพลงได้ต่อเนื่องไม่มีโฆษณาคั่น ให้ปาร์ตี้ของคุณลื่นไหลตั้งแต่อต้นจนจบ", icon: PlayCircle },
+            { id: 'v2', title: "สิทธิพิเศษจัดเต็ม", desc: "ได้รับโควต้าค้นหาไม่จำกัด, บันทึกรายการโปรด และสัมผัสคุณภาพเสียงระดับไฮเอนด์ (Master Grade)", icon: Crown },
         ]
     };
 
     return (
-        <div className="min-h-screen bg-white dark:bg-zinc-950 flex flex-col font-sans select-none">
-            {/* Header */}
-            <header className="bg-white dark:bg-zinc-950 px-6 py-5 flex items-center justify-between sticky top-0 z-50 border-b border-gray-100 dark:border-zinc-900 shadow-none">
-                <button onClick={handleBack} className="p-2 hover:bg-gray-50 dark:hover:bg-zinc-900 rounded-2xl transition-all">
-                    <ChevronLeft className="w-7 h-7 text-zinc-900 dark:text-white" />
+        <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col font-sans select-none overflow-x-hidden">
+            <Head>
+                <title>คู่มือการใช้งาน - YouOKE</title>
+            </Head>
+
+            {/* Premium Header - Pure Flat */}
+            <header className="bg-white dark:bg-zinc-900 border-b border-zinc-100 dark:border-zinc-800/50 sticky top-0 z-[100] px-6 py-4 flex items-center justify-between">
+                <button 
+                    onClick={handleBack}
+                    className="w-10 h-10 flex items-center justify-center rounded-2xl bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
+                >
+                    <ChevronLeft className="w-6 h-6" />
                 </button>
-                <div className="flex flex-col items-center">
-                    <h1 className="text-xl font-black text-zinc-900 dark:text-white tracking-tight leading-none">คู่มือการใช้งาน</h1>
-                    <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mt-1.5 opacity-80">User Manual</span>
+                <div className="text-center">
+                    <h1 className="text-base font-black text-zinc-900 dark:text-white tracking-tight leading-none uppercase">คู่มือการใช้งาน</h1>
+                    <p className="text-[9px] font-black text-primary tracking-[0.3em] uppercase mt-1 opacity-70">User Manual</p>
                 </div>
-                <div className="w-11"></div>
+                <div className="w-10"></div>
             </header>
 
-            <main className="flex-1 max-w-2xl mx-auto w-full px-6 py-12">
+            <main className="flex-1 w-full max-w-xl mx-auto px-6 py-10 pb-32">
                 {/* Visual Intro */}
-                <div className="text-center mb-12">
-                    <div className="inline-flex items-center justify-center w-20 h-20 rounded-[2.5rem] bg-primary/10 mb-6 transform hover:rotate-6 transition-transform">
-                        <PlayCircle className="w-10 h-10 text-primary" />
+                <div className="mb-10 text-left">
+                    <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full mb-4">
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span className="text-[10px] font-black uppercase tracking-wider">Getting Started</span>
                     </div>
-                    <h2 className="text-4xl font-black text-zinc-900 dark:text-white mb-4 leading-[0.9] tracking-tighter">
-                        สนุกกับ YouOke<br/>ง่ายๆ ในไม่กี่ก้าว
+                    <h2 className="text-3xl font-black text-zinc-900 dark:text-white leading-[1.1] tracking-tighter">
+                        มารู้จักวิธีการใช้งาน<br/>YouOKE ให้สนุกที่สุดกัน!
                     </h2>
-                    <p className="text-zinc-500 dark:text-zinc-400 text-sm font-medium">รวมทุกเทคนิคการใช้งานเพื่อให้คุณเป็นเซียนคาราโอเกะ</p>
                 </div>
 
-                {/* Categories Tab - Flat UI */}
-                <div className="flex gap-2 overflow-x-auto pb-8 scrollbar-none no-scrollbar mb-10 -mx-6 px-6">
+                {/* Tabs - Flat Style */}
+                <div className="flex gap-2 overflow-x-auto pb-6 scrollbar-none no-scrollbar -mx-6 px-6 sticky top-[72px] bg-zinc-50 dark:bg-zinc-950 z-50 py-2">
                     {tabs.map((tab) => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={clsx(
-                                "flex items-center gap-2 px-5 py-3.5 rounded-2xl font-black text-[11px] whitespace-nowrap transition-all border shadow-none",
+                                "flex items-center gap-2 px-5 py-3.5 rounded-2xl font-black text-[11px] whitespace-nowrap transition-all border shrink-0",
                                 activeTab === tab.id 
                                     ? "bg-zinc-900 text-white border-zinc-900 dark:bg-white dark:text-black dark:border-white" 
-                                    : "bg-white dark:bg-zinc-900 text-zinc-400 dark:text-zinc-500 border-gray-100 dark:border-zinc-800 hover:border-zinc-200 dark:hover:border-zinc-700 hover:text-zinc-600"
+                                    : "bg-white dark:bg-zinc-900 text-zinc-400 dark:text-zinc-500 border-zinc-100 dark:border-zinc-800"
                             )}
                         >
                             <tab.icon className="w-4 h-4" />
@@ -98,17 +117,35 @@ export default function TutorialPage() {
                     ))}
                 </div>
 
-                {/* Step Cards - Pure Flat */}
+                {/* Content Cards */}
                 <div className="space-y-4">
-                    {content[activeTab as keyof typeof content].map((item, idx) => (
-                        <div key={idx} className="bg-gray-50 dark:bg-zinc-900/40 p-7 rounded-[3rem] border border-transparent dark:border-zinc-900/50 hover:border-zinc-200 dark:hover:border-zinc-800 transition-all group">
-                            <div className="flex items-start gap-8">
-                                <div className="w-14 h-14 rounded-3xl bg-white dark:bg-zinc-800 flex items-center justify-center shrink-0 border border-gray-100 dark:border-zinc-700 font-black text-2xl text-zinc-900 dark:text-white shadow-none transition-transform group-hover:scale-110 group-hover:-rotate-3">
-                                    {item.step}
+                    {content[activeTab as keyof typeof content].map((item: any) => (
+                        <div 
+                            key={item.id} 
+                            className={clsx(
+                                "p-6 sm:p-8 rounded-[2.5rem] border transition-all animate-in fade-in slide-in-from-bottom-2 duration-300",
+                                item.highlight 
+                                    ? "bg-white dark:bg-zinc-900 border-primary/20 ring-1 ring-primary/5 shadow-none" 
+                                    : "bg-white dark:bg-zinc-900 border-zinc-100 dark:border-zinc-800 shadow-none"
+                            )}
+                        >
+                            <div className="flex items-start gap-5 sm:gap-7">
+                                <div className={clsx(
+                                    "w-12 h-12 sm:w-14 sm:h-14 rounded-3xl flex items-center justify-center shrink-0 border transition-transform",
+                                    item.highlight 
+                                        ? "bg-primary text-white border-primary" 
+                                        : "bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white border-zinc-100 dark:border-zinc-700"
+                                )}>
+                                    <item.icon className="w-6 h-6 sm:w-7 sm:h-7" strokeWidth={2.5} />
                                 </div>
-                                <div className="pt-2">
-                                    <h3 className="font-black text-zinc-900 dark:text-white text-xl mb-2 tracking-tight">{item.title}</h3>
-                                    <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed font-semibold">
+                                <div className="pt-1.5 flex-1">
+                                    <h3 className={clsx(
+                                        "font-black text-lg sm:text-xl mb-2 tracking-tight",
+                                        item.highlight ? "text-primary" : "text-zinc-900 dark:text-white"
+                                    )}>
+                                        {item.title}
+                                    </h3>
+                                    <p className="text-zinc-500 dark:text-zinc-400 text-xs sm:text-sm font-bold leading-relaxed">
                                         {item.desc}
                                     </p>
                                 </div>
@@ -117,27 +154,33 @@ export default function TutorialPage() {
                     ))}
                 </div>
 
-                {/* Expert Tips Section */}
-                <div className="mt-14 p-10 rounded-[4rem] bg-zinc-950 dark:bg-zinc-900 border border-zinc-900 dark:border-zinc-800 text-center">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/20 rounded-full mb-6">
-                        <Sparkles className="w-4 h-4 text-primary" />
-                        <span className="text-[10px] font-black text-primary uppercase tracking-widest">Expert Tip</span>
+                {/* Pro Tips / Footer Info */}
+                <div className="mt-12 bg-zinc-900 dark:bg-zinc-900 p-8 rounded-[3rem] text-center border border-zinc-800 overflow-hidden relative group">
+                    <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <PlayCircle size={100} className="text-white" />
                     </div>
-                    <h4 className="text-xl font-black text-white mb-4">เชื่อมต่อความสนุกได้มากกว่า!</h4>
-                    <p className="text-zinc-400 text-sm leading-relaxed font-medium">
-                        คุณรู้หรือไม่? YouOke รองรับการเชื่อมต่อรีโมทหลายเครื่องพร้อมกัน ให้เพื่อนๆ ช่วยกันเลือกเพลงและจัดคิวได้ทันทีโดยไม่ต้องรอกัน!
+                    <h4 className="text-white font-black text-lg mb-4 tracking-tight flex items-center justify-center gap-2">
+                        <Globe className="w-5 h-5 text-primary" />
+                        เชื่อมความสนุกแบบไร้สาย!
+                    </h4>
+                    <p className="text-zinc-400 text-[11px] sm:text-xs font-bold leading-loose px-4">
+                        คุณรู้หรือไม่? YouOKE สามารถเชื่อมต่อรีโมทมือถือได้พร้อมกันหลายเครื่อง 
+                        จะกี่คนก็ช่วยกันเลือกเพลงและจัดการคิวได้ทันทีโดยไม่ต้องแย่งกัน!
                     </p>
                 </div>
 
-                {/* Action Button */}
+                {/* Final Action */}
                 <button 
                     onClick={() => router.push('/')}
-                    className="w-full mt-10 py-6 rounded-[2.5rem] bg-primary hover:bg-red-600 text-white font-black text-xl flex items-center justify-center gap-4 active:scale-95 transition-all shadow-none border-none"
+                    className="w-full mt-8 py-5 rounded-[2rem] bg-primary text-white font-black text-lg active:scale-[0.98] transition-all border-none flex items-center justify-center gap-3"
                 >
-                    <PlayCircle className="w-7 h-7" />
-                    ไปลุยกันเลย!
+                    <PlayCircle className="w-6 h-6" />
+                    เริ่มร้องเพลงกันเลย!
                 </button>
             </main>
+
+            {/* Mobile Tab Spacer */}
+            <div className="h-10"></div>
         </div>
     );
 }
