@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.16 (Pure Flat Experience)",
+        date: "9 เม.ย. 2569",
+        changes: [
+            "UI: Complete Pure Flat redesign of the Package Store (No shadows/gradients)",
+            "UX: Implemented solid color-coded tiers for different package durations",
+            "I18N: senior-friendly high-contrast pricing (Zinc-950) and bold typography",
+            "DESIGN: Modernized the Trial Hero and Line Guard modal with official assets"
+        ],
+        recent_updates: "Pure Flat Package Store Overhaul"
+    },
+    {
         version: "v5.3.15 (Color & Scale Polish)",
         date: "9 เม.ย. 2569",
         changes: [
