@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "#auto v5.3.39 (Auto Notification Hook)",
+        date: "10 เม.ย. 2569",
+        changes: [
+            "AUTOMATION: Linked LINE notifications directly to the Admin 'Approve' action",
+            "BILLING: System now automatically sends payment confirmations to LINE users upon approval",
+            "BILLING: Auto-notify users with reason if subscription payment gets rejected",
+            "FIX: Ensure zero-hardcoded path references using internal fetch API"
+        ],
+        recent_updates: "Automated LINE Notification on Approval"
+    },
+    {
         version: "#9a267d9 v5.3.38 (Admin Response Toolkit)",
         date: "10 เม.ย. 2569",
         changes: [
