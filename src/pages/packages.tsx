@@ -65,10 +65,25 @@ export default function PackagesPage() {
     const router = useRouter();
     const isLineConnected = !!user?.lineUserId;
 
-    const isPremium = user?.isPremium;
-    const membershipType = user?.membership?.type || user?.tier;
+    const [realProfile, setRealProfile] = useState<any>(null);
+
+    useEffect(() => {
+        if (!user?.uid) return;
+        const fetchProfile = async () => {
+            const { getUserProfile } = await import('@/services/userService');
+            const result = await getUserProfile(user.uid);
+            if (result.success) setRealProfile(result.data);
+        };
+        fetchProfile();
+    }, [user?.uid]);
+
+    const isPremium = realProfile?.role === 'premium' || user?.isPremium;
+    const membershipType = realProfile?.subscription?.plan || user?.membership?.type || user?.tier;
+    const membershipStatus = realProfile?.subscription?.status || user?.membership?.status;
     const isTrialActive = isPremium && membershipType === 'trial';
-    const hideTrialCard = isPremium && membershipType !== 'trial';
+    
+    // Hide trial if they are already premium OR currently on trial OR expired
+    const hideTrialCard = membershipType === 'trial' || isPremium || membershipStatus === 'expired';
 
     useEffect(() => {
         const fetchPackages = async () => {

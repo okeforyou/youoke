@@ -1,5 +1,42 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.61 (Emergency Hook Fix)",
+        date: "10 เม.ย. 2569",
+        changes: [
+            "FIX: Added missing useEffect import in PackageStore preventing runtime crash",
+            "STABILITY: Ensured all dynamic hooks are properly imported for trial sync logic"
+        ],
+        recent_updates: "Runtime Hook Fix"
+    },
+    {
+        version: "v5.3.60 (Dynamic Trial Sync System)",
+        date: "10 เม.ย. 2569",
+        changes: [
+            "FIX: Handled stale local auth caches by fetching real-time user profile data dynamically",
+            "SYNC: PackageStore and the MembershipCard now share the exact same logic and source of truth",
+            "UX: Guaranteed the trial banner disappears instantly without requiring a hard refresh"
+        ],
+        recent_updates: "Dynamic RTDB Trial Synchronization"
+    },
+    {
+        version: "v5.3.59 (Absolute Trial Redundancy Fix)",
+        date: "10 เม.ย. 2569",
+        changes: [
+            "UX: Enforced strict hiding of the trial banner if membership type is 'trial' to eliminate all redundant UI elements",
+            "LOGIC: Replaced complex premium checks with simple type-based detection for 100% reliability"
+        ],
+        recent_updates: "Trial Banner Strict Hiding Fix"
+    },
+    {
+        version: "v5.3.58 (Logic Sync - Hide Active Trial Banner)",
+        date: "10 เม.ย. 2569",
+        changes: [
+            "UI/UX: Completely hide the 'Free Trial' banner across all package stores once a user successfully activates it",
+            "LOGIC: Refined boolean logic to accurately detect and clear out the active trial hero components to avoid visual redundancy"
+        ],
+        recent_updates: "Trial Hero Redundancy Clean-Up"
+    },
+    {
         version: "v5.3.57 (Premium Trial Design Overhaul)",
         date: "10 เม.ย. 2569",
         changes: [

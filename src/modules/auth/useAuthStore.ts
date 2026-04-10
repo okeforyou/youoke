@@ -22,7 +22,7 @@ import { realtimeDb } from '../../firebase';
 // Removed unused notification import causing lint errors
 
 interface MembershipState {
-    type: 'free' | 'day_pass' | 'monthly' | 'yearly' | 'lifetime';
+    type: 'free' | 'day_pass' | 'monthly' | 'yearly' | 'lifetime' | 'trial';
     status: 'active' | 'expired' | 'pending';
     startedAt: any;
     expiresAt: any | null;
