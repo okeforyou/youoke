@@ -50,6 +50,7 @@ export const CHANGELOGS = [
         ],
         recent_updates: "Admin Database Discrepancy Fix"
     },
+    {
         version: "v5.3.33 (Firestore Identity Sync)",
         date: "9 เม.ย. 2569",
         changes: [
