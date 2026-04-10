@@ -1,15 +1,46 @@
 export const CHANGELOGS = [
     {
-        version: "v5.3.34 (Pure Flat Admin Shield)",
+        version: "v5.3.38 (Admin Response Toolkit)",
+        date: "10 เม.ย. 2569",
+        changes: [
+            "UI: Added 'Quick Response' buttons in User Management for instant LINE messaging",
+            "UX: Enabled one-click templates for greetings, payment receipts, and troubleshooting",
+            "FIX: Synchronized SYSTEM_VERSION logic to always pull the true latest changelog entry",
+            "ADMIN: Optimized communication flow for manual subscription approvals"
+        ],
+        recent_updates: "One-Click Admin Messaging & Version Sync Fix"
+    },
+    {
+        version: "v5.3.37 (Official Version Sync)",
+        date: "10 เม.ย. 2569",
+        changes: [
+            "FIX: Harmonized versioning between package.json and system core",
+            "STABILITY: Final deployment of Identity Protection and mobile LINE connection fixes",
+            "AUDIT: Verified 'Owner' role shielding across all dashboard layers"
+        ],
+        recent_updates: "System-wide Version & Identity Alignment"
+    },
+    {
+        version: "v5.3.36 (LINE Identity Fix)",
+        date: "10 เม.ย. 2569",
+        changes: [
+            "FIX: Resolved infinite reconnection loop in profile LINE connection",
+            "UI: Added high-visibility 'Connected' state with emerald branding",
+            "API: Patched backend crash when processing 'link_account' state via mobile"
+        ],
+        recent_updates: "Mobile LINE Connection Loop Fix"
+    },
+    {
+        version: "v5.3.35 (Admin Dashboard Identity)",
         date: "9 เม.ย. 2569",
         changes: [
-            "SHIELD: Created infinite auto-sync for Admin/Owner roles to prevent accidental database downgrades",
-            "FIX: Corrected the bug where Self-Healing sets Owner emails to 'user' role in Firestore",
-            "DATA: Ensured that 'lifetime' and 'active' status is permanently synchronized to the server",
-            "DESIGN: Officially adopted 'Pure Flat' convention across operations"
+            "UI: Added 'เจ้าของระบบ' (Owner) styling to the Admin Dashboard user list",
+            "DATA: Locked 'owner' role in the AuthStore to prevent database-driven role regressions"
         ],
-        recent_updates: "Admin Database Discrepancy Fix"
+        recent_updates: "Admin UI Identity Mapping"
     },
+    {
+        version: "v5.3.34 (Pure Flat Admin Shield)",
     {
         version: "v5.3.33 (Firestore Identity Sync)",
         date: "9 เม.ย. 2569",
@@ -957,11 +988,14 @@ export const CHANGELOGS = [
 ];
 
 // v4.10.116: Reordered to ensure CHANGELOGS is available before export
+// v5.3.38: Updated fallback to match current production series
 const getLatestVersion = () => {
-    if (!CHANGELOGS || CHANGELOGS.length === 0) return "5.0.8";
+    if (!CHANGELOGS || CHANGELOGS.length === 0) return "5.3.38";
     const latest = CHANGELOGS[0]?.version;
-    if (typeof latest !== 'string') return "5.0.8";
-    return latest.split(" ")[0] || "5.0.8";
+    if (typeof latest !== 'string') return "5.3.38";
+    // Remove 'v' if present and take the first part
+    const cleanVersion = latest.startsWith('v') ? latest.substring(1) : latest;
+    return cleanVersion.split(" ")[0] || "5.3.38";
 };
 
 export const SYSTEM_VERSION = getLatestVersion();

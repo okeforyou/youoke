@@ -154,6 +154,14 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
         }
     };
 
+    const QUICK_MESSAGES = [
+        { label: 'ทักทาย', text: 'สวัสดีครับ มีอะไรให้แอดมินช่วยดูแลไหมครับ?' },
+        { label: 'แจ้งยอด', text: 'ได้รับยอดโอนเรียบร้อยครับ ระบบกำลังเปิดสิทธิ์ให้สักครู่นะครับ' },
+        { label: 'แก้ไขเสร็จ', text: 'แอดมินแก้ไขระบบให้เรียบร้อยแล้วครับ ลองเข้าใช้งานอีกครั้งนะครับ' },
+        { label: 'ขอบคุณ', text: 'ขอบคุณที่สนับสนุน YouOKE นะครับ ขอให้สนุกกับการร้องเพลงครับ!' },
+        { label: 'เช็ค LINE', text: 'รบกวนตรวจสอบข้อความใน LINE เพื่อยืนยันการตั้งค่าด้วยนะครับ' },
+    ];
+
     const handleUpdateName = async () => {
         try {
             await AdminService.updateUserProfile(user.uid, { displayName: editName });

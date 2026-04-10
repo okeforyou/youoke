@@ -1,4 +1,4 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
+ เดี่ยวมาต่อตรงการส่งขimport type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
 import { adminAuth, adminFirestore, adminDb } from '../../../firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
