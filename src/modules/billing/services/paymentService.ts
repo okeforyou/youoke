@@ -141,6 +141,7 @@ export async function approvePayment(
   // 6. Send LINE Notification (If connected)
   const lineUserId = userSnap.exists() ? userSnap.data().lineUserId : null;
   if (lineUserId) {
+    try {
       const lineMessage = `ยืนยันการชำระเงินและอนุมัติการใช้งานแล้ว ✅\n` +
         `คุณเริ่มใช้งานพรีเมียมได้ทันทีครับ\n` +
         `━━━━━━━━━━━━━━━\n` +
