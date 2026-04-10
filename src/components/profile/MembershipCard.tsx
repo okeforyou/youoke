@@ -19,6 +19,8 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
     const formatDate = (date: any) => {
         if (!date) return "ไม่มีวันหมดอายุ";
         try {
+            if (typeof date === 'string') return new Date(date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
+            if (date.toDate) return date.toDate().toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
             if (date.seconds) return new Date(date.seconds * 1000).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
             return new Date(date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
         } catch (e) { return "-"; }
@@ -26,6 +28,7 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
 
     const isAdmin = role === 'admin' || role === 'owner';
     const isLifetime = safeMembership.type === 'lifetime';
+    const isTrial = safeMembership.type === 'trial';
     const isPremium = safeMembership.type !== 'free' || safeMembership.status === 'active' || safeMembership.status === 'trial';
 
     const getPlanName = () => {
@@ -35,7 +38,7 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
             case 'day_pass': return "สมาชิกรายวัน";
             case 'yearly': return "สมาชิกรายปี";
             case 'monthly': return "สมาชิกรายเดือน";
-            case 'trial': return "ทดลองใช้งานฟรี";
+            case 'trial': return "ได้รับสิทธิ์ใช้งานฟรี 1 วัน";
             case 'free': return "ใช้งานฟรี";
             default: return "สมาชิกพรีเมียม";
         }
@@ -44,15 +47,17 @@ export const MembershipCard = ({ membership, role, onUpgrade }: MembershipCardPr
     const planName = getPlanName();
 
     const config = {
-        admin: { color: "text-rose-600", bg: "bg-rose-500/5", border: "border-rose-500/10", iconBg: "bg-rose-600", iconColor: "text-white" },
-        lifetime: { color: "text-amber-600", bg: "bg-amber-500/5", border: "border-amber-500/10", iconBg: "bg-amber-600", iconColor: "text-white" },
-        premium: { color: "text-primary", bg: "bg-primary/5", border: "border-primary/10", iconBg: "bg-primary", iconColor: "text-white" },
+        admin: { color: "text-rose-600", bg: "bg-rose-500/5", border: "border-rose-500/20", iconBg: "bg-rose-600", iconColor: "text-white" },
+        lifetime: { color: "text-amber-600", bg: "bg-amber-500/5", border: "border-amber-500/20", iconBg: "bg-amber-600", iconColor: "text-white" },
+        premium: { color: "text-primary", bg: "bg-primary/5", border: "border-primary/20", iconBg: "bg-primary", iconColor: "text-white" },
+        trial: { color: "text-red-600", bg: "bg-red-500/5", border: "border-red-500/20", iconBg: "bg-red-600", iconColor: "text-white" },
         free: { color: "text-zinc-950", bg: "bg-zinc-50 dark:bg-zinc-900/50", border: "border-zinc-200 dark:border-zinc-800", iconBg: "bg-zinc-100 dark:bg-zinc-800", iconColor: "text-zinc-950" },
     };
 
     let style = config.free;
     if (isAdmin) style = config.admin;
     else if (isLifetime) style = config.lifetime;
+    else if (isTrial) style = config.trial;
     else if (isPremium) style = config.premium;
 
     return (

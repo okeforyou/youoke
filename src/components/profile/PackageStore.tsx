@@ -36,10 +36,12 @@ export const PackageStore = () => {
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [showLineModal, setShowLineModal] = useState(false);
 
-    const isPremium = (user as any)?.isPremium;
-    const membershipType = user?.membership?.type || (user as any)?.tier;
+    const isPremium = user?.isPremium;
+    const membershipType = user?.membership?.type || user?.tier;
     const isTrialActive = isPremium && membershipType === 'trial';
-    const hideTrialCard = isPremium && membershipType !== 'trial';
+    
+    // Hide trial if they are already premium (non-trial) OR if they have used/expired trial
+    const hideTrialCard = (isPremium && membershipType !== 'trial') || (user?.membership?.status === 'expired');
 
     const handleSelect = async (pkg: Package) => {
         if (!user) {

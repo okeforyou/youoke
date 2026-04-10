@@ -253,7 +253,8 @@ export const Sidebar = memo(() => {
                                             "text-[10px] font-black uppercase tracking-tight",
                                             user?.membership?.status === 'pending' ? "text-orange-500" :
                                                 user?.membership?.status === 'expired' ? "text-red-500" :
-                                                    (user?.role === 'admin' || user?.role === 'owner') ? "text-primary" : "text-gray-500 dark:text-zinc-500"
+                                                    user?.membership?.type === 'trial' ? "text-red-600 font-black animate-pulse" :
+                                                        (user?.role === 'admin' || user?.role === 'owner') ? "text-primary" : "text-gray-500 dark:text-zinc-500"
                                         )}>
                                             {(() => {
                                                 if (user?.role === 'owner') return 'เจ้าของ';
@@ -269,6 +270,7 @@ export const Sidebar = memo(() => {
                                                 if (type === 'yearly') return 'รายปี (PRO)';
                                                 if (type === 'monthly') return 'รายเดือน';
                                                 if (type === 'day_pass') return 'รายวัน';
+                                                if (type === 'trial') return 'ทดลองใช้ (ACTIVE)';
 
                                                 return 'สมาชิก';
                                             })()}

@@ -1,5 +1,27 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.57 (Premium Trial Design Overhaul)",
+        date: "10 เม.ย. 2569",
+        changes: [
+            "DESIGN: Implemented 'Red Frame' (กรอบสีแดง) high-contrast style for active trial cards",
+            "AUTH: Fixed critical data mapping in AuthStore to correctly fetch isPremium and tier from Firestore",
+            "UI: Synchronized PackageStore and Packages page to show DARK emerald 'Received' state for active trials",
+            "SIDEBAR: Added red 'Active Trial' indicator with pulse animation for better user feedback",
+            "STABILITY: Verified 100% logic alignment for trial activation and status detection"
+        ],
+        recent_updates: "High-Contrast Active Trial Visibility & Logic Fix"
+    },
+    {
+        version: "5.3.48 (Automated QR & Identity Unified)",
+        date: "10 เม.ย. 2569",
+        changes: [
+            "Automated QR Delivery: System now sends the PromptPay QR image directly to member's LINE chat upon payment intent",
+            "Unified Notification Identity: Standardized 100% of automated LINE alerts (Approval, Rejection, Welcome, linking) with premium structured layouts",
+            "Enhanced API: Upgraded line-push engine to support multi-message payloads (Text + Images) simultaneously"
+        ],
+        recent_updates: "Direct QR Delivery & Notification Branding"
+    },
+    {
         version: "#auto v5.3.39 (Auto Notification Hook)",
         date: "10 เม.ย. 2569",
         changes: [
@@ -774,16 +796,6 @@ export const CHANGELOGS = [
             "Simplified Queue Drag Interface: Removed all scaling, shadow effects, and decorative rings to match Pure Flat Design standards",
             "Fixed Theme Inconsistency: Removed hardcoded background colors during drag, using only 0.5 opacity for interaction feedback",
             "System Information Integrity: Restored automated version synchronization by using CHANGELOGS as the single source of truth for UI labels"
-        ],
-        recent_updates: ""
-    },
-    {
-        version: "5.3.48 (Automated QR & Identity Unified)",
-        date: "10 เม.ย. 2569",
-        changes: [
-            "Automated QR Delivery: System now sends the PromptPay QR image directly to member's LINE chat upon payment intent",
-            "Unified Notification Identity: Standardized 100% of automated LINE alerts (Approval, Rejection, Welcome, linking) with premium structured layouts",
-            "Enhanced API: Upgraded line-push engine to support multi-message payloads (Text + Images) simultaneously"
         ],
         recent_updates: ""
     },

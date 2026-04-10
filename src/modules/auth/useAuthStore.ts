@@ -37,6 +37,8 @@ interface UserData {
     role: 'admin' | 'user' | 'owner';
     membership: MembershipState;
     isAdmin: boolean;
+    isPremium: boolean;
+    tier: string;
     // YouTube Shell Integration
     isYouTubeConnected?: boolean;
     youtubeEmail?: string | null;
@@ -232,6 +234,8 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                     photoURL: null,
                                     role: 'user',
                                     isAdmin: false,
+                                    isPremium: true,
+                                    tier: 'day_pass',
                                     membership: DEFAULT_MEMBERSHIP
                                 },
                                 isLoading: false
@@ -269,6 +273,8 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
                                         showAds: false
                                     },
+                                    tier: 'free',
+                                    isPremium: false,
                                     quota: {
                                         daily_limit: 5,
                                         used: 0,
@@ -396,6 +402,8 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                             `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.displayName || firebaseUser.displayName || 'YouOke')}&background=000&color=fff&bold=true`,
                                         role: role,
                                         isAdmin: isAdmin,
+                                        isPremium: userData.isPremium || !!isAdmin,
+                                        tier: userData.tier || (isAdmin ? 'lifetime' : 'free'),
                                         membership: membership,
                                         installed_modules: userData.installed_modules || [],
                                         quota: userData.quota || undefined,
@@ -454,6 +462,8 @@ export const useAuthStore = create<UserState & AuthActions>()(
                             photoURL: firebaseUser.photoURL,
                             role: 'user',
                             isAdmin: false,
+                            isPremium: false,
+                            tier: 'free',
                             membership: DEFAULT_MEMBERSHIP,
                             installed_modules: [],
                             quota: undefined
@@ -521,6 +531,8 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                 expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
                                 showAds: false
                             },
+                            isPremium: true,
+                            tier: 'day_pass',
                             installed_modules: [],
                             quota: undefined
                         },
@@ -627,6 +639,8 @@ export const useAuthStore = create<UserState & AuthActions>()(
                             photoURL: firebaseUser.photoURL,
                             role: 'user',
                             isAdmin: false,
+                            isPremium: false,
+                            tier: 'free',
                             membership: DEFAULT_MEMBERSHIP,
                             installed_modules: [],
                             quota: undefined
