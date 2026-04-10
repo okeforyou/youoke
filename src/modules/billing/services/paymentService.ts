@@ -71,6 +71,8 @@ export async function approvePayment(
 
   // 3. Update User Membership (Firestore)
   const userRef = doc(db, USERS_COLLECTION, userId);
+  const userSnap = await getDoc(userRef); // Get user data to extract lineUserId
+
   const membershipData = {
     type: membershipType,
     status: 'active',
@@ -117,7 +119,7 @@ export async function approvePayment(
     processedBy: adminUid
   });
 
-  // 5. Send Notification
+  // 5. Send Notification (In-App)
   await addDoc(collection(db, `users/${userId}/notifications`), {
     title: "การชำระเงินสำเร็จ!",
     message: `แพ็กเกจ "${pkgName}" ของคุณใช้งานได้แล้ว ขอให้สนุกกับการร้องเพลง!`,
@@ -125,6 +127,24 @@ export async function approvePayment(
     read: false,
     createdAt: serverTimestamp()
   });
+
+  // 6. Send LINE Notification (If connected)
+  const lineUserId = userSnap.exists() ? userSnap.data().lineUserId : null;
+  if (lineUserId) {
+    try {
+      await fetch('/api/notify/line-push', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: lineUserId,
+          message: `บิลเสร็จสมบูรณ์ ✅\nแพ็กเกจ "${pkgName}" ของคุณพร้อมใช้งานแล้วครับ ขอให้สนุกกับการร้องเพลงบน YouOKE นะครับ!`
+        })
+      });
+      console.log(`✅ LINE notification sent to ${lineUserId}`);
+    } catch (err) {
+      console.error(`❌ Failed to send LINE notification:`, err);
+    }
+  }
 
   console.log(`Payment ${paymentId} approved. User ${userId} upgraded.`);
 }
@@ -149,7 +169,7 @@ export async function rejectPayment(
     rejectionReason: reason
   });
 
-  // 2. Send Notification
+  // 2. Send Notification (In-App)
   await addDoc(collection(db, `users/${userId}/notifications`), {
     title: "การชำระเงินถูกปฏิเสธ",
     message: `รายการของคุณถูกปฏิเสธเนื่องจาก: ${reason} กรุณาติดต่อทีมงาน`,
@@ -157,6 +177,26 @@ export async function rejectPayment(
     read: false,
     createdAt: serverTimestamp()
   });
+
+  // 3. Send LINE Notification (If connected)
+  const userRef = doc(db, USERS_COLLECTION, userId);
+  const userSnap = await getDoc(userRef);
+  const lineUserId = userSnap.exists() ? userSnap.data().lineUserId : null;
+
+  if (lineUserId) {
+    try {
+      await fetch('/api/notify/line-push', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: lineUserId,
+          message: `แจ้งเตือนบิลการชำระเงิน ⚠️\nระบบปฏิเสธรายการของคุณเนื่องจาก: ${reason}\n\nหากมีข้อสงสัย สามารถพิมพ์สอบถามแอดมินในแชทนี้ได้เลยครับ`
+        })
+      });
+    } catch (err) {
+      console.error(`❌ Failed to send LINE notification:`, err);
+    }
+  }
 
   console.log(`Payment ${paymentId} rejected.`);
 }
