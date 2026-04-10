@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import { Zap, QrCode } from 'lucide-react';
 import { UploadSlipModal } from './UploadSlipModal';
 import { LineRequiredModal } from './LineRequiredModal';
+import { useUIStore } from '@/stores/useUIStore';
 
 interface Package {
     id: string;
@@ -30,9 +31,15 @@ const PACKAGES: Package[] = [
 export const PackageStore = () => {
     const router = useRouter();
     const { user } = useAuthStore();
+    const { showConfirm } = useUIStore();
     const [selectedPkg, setSelectedPkg] = useState<Package | undefined>(undefined);
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [showLineModal, setShowLineModal] = useState(false);
+
+    const isPremium = (user as any)?.isPremium;
+    const membershipType = user?.membership?.type || (user as any)?.tier;
+    const isTrialActive = isPremium && membershipType === 'trial';
+    const hideTrialCard = isPremium && membershipType !== 'trial';
 
     const handleSelect = async (pkg: Package) => {
         if (!user) {
@@ -50,11 +57,22 @@ export const PackageStore = () => {
             try {
                 const { activateFreePackage } = await import('@/modules/billing/services/paymentService');
                 await activateFreePackage(user.uid!, pkg.id);
-                alert(`ยินดีด้วย! แพ็กเกจ ${pkg.name} ถูกเปิดใช้งานแล้ว`);
-                window.location.reload();
+                showConfirm({
+                    title: "เปิดใช้งานสำเร็จ! 🎉",
+                    message: `สิทธิ์ใช้งานฟรี 1 วันถูกเพิ่มให้บัญชีของคุณเรียบร้อยแล้ว ขอให้สนุกกับการร้องเพลงนะครับ!`,
+                    type: "success",
+                    confirmText: "ตกลง",
+                    onConfirm: () => window.location.reload()
+                });
             } catch (error) {
                 console.error("Free activation failed:", error);
-                alert("เกิดข้อผิดพลาดในการเปิดใช้งาน");
+                showConfirm({
+                    title: "เกิดข้อผิดพลาด",
+                    message: "ไม่สามารถเปิดใช้งานแพ็กเกจฟรีได้ กรุณาลองใหม่อีกครั้งครับ",
+                    type: "danger",
+                    confirmText: "ตกลง",
+                    onConfirm: () => {}
+                });
             }
             return;
         }
@@ -66,25 +84,41 @@ export const PackageStore = () => {
     return (
         <div className="flex flex-col space-y-4">
             {/* v5.4: Trial Hero (Thai & Ultra Compact) */}
-            <div 
-                onClick={() => handleSelect(PACKAGES[0])}
-                className="group relative overflow-hidden rounded-3xl p-4 bg-emerald-600 border-2 border-emerald-700 cursor-pointer transition-all active:scale-[0.98]"
-            >
-                <div className="relative flex items-center justify-between z-10">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white">
-                            <Zap className="w-6 h-6 fill-current" />
+            {!hideTrialCard && (
+                <div 
+                    onClick={() => {
+                        if (isTrialActive) return;
+                        handleSelect(PACKAGES[0]);
+                    }}
+                    className={cn(
+                        "group relative overflow-hidden rounded-3xl p-4 border-2 transition-all",
+                        isTrialActive 
+                            ? "bg-emerald-800 border-emerald-900 cursor-default" 
+                            : "bg-emerald-600 border-emerald-700 cursor-pointer active:scale-[0.98]"
+                    )}
+                >
+                    <div className="relative flex items-center justify-between z-10">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-white">
+                                {isTrialActive ? <CheckCircleIcon className="w-6 h-6" /> : <Zap className="w-6 h-6 fill-current" />}
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-black text-white leading-tight">
+                                    {isTrialActive ? "ได้รับสิทธิ์ใช้งานฟรี 1 วันแล้ว" : "ทดลองใช้พรีเมียมฟรี"}
+                                </h3>
+                                <p className="text-[10px] font-bold text-emerald-100/80">
+                                    {isTrialActive ? "สนุกกับการร้องเพลงให้เต็มที่ครับ!" : "รับสิทธิ์ใช้งานฟรี 1 วันเต็ม"}
+                                </p>
+                            </div>
                         </div>
-                        <div>
-                            <h3 className="text-sm font-black text-white leading-tight">ทดลองใช้พรีเมียมฟรี</h3>
-                            <p className="text-[10px] font-bold text-emerald-100/80">รับสิทธิ์ใช้งานฟรี 1 วันเต็ม</p>
-                        </div>
-                    </div>
-                    <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-                        <ChevronRightIcon className="w-5 h-5 text-white" />
+                        {!isTrialActive && (
+                            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                                <ChevronRightIcon className="w-5 h-5 text-white" />
+                            </div>
+                        )}
                     </div>
                 </div>
-            </div>
+            )}
 
             <p className="text-[11px] font-black text-zinc-400 uppercase tracking-widest px-1">เลือกแพ็กเกจ VIP</p>
 

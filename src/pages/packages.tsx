@@ -28,6 +28,7 @@ import { useAuthStore } from '@/modules/auth/useAuthStore';
 import { useRouter } from 'next/router';
 import { UploadSlipModal } from '@/components/profile/UploadSlipModal';
 import { LineRequiredModal } from '@/components/profile/LineRequiredModal';
+import { useUIStore } from '@/stores/useUIStore';
 
 interface Package {
     id: string;
@@ -60,8 +61,14 @@ export default function PackagesPage() {
     const [showLineModal, setShowLineModal] = useState(false);
 
     const { user } = useAuthStore();
+    const { showConfirm } = useUIStore();
     const router = useRouter();
     const isLineConnected = !!user?.lineUserId;
+
+    const isPremium = user?.isPremium;
+    const membershipType = user?.membership?.type || user?.tier;
+    const isTrialActive = isPremium && membershipType === 'trial';
+    const hideTrialCard = isPremium && membershipType !== 'trial';
 
     useEffect(() => {
         const fetchPackages = async () => {
@@ -112,11 +119,22 @@ export default function PackagesPage() {
                 setLoading(true);
                 const { activateFreePackage } = await import('@/modules/billing/services/paymentService');
                 await activateFreePackage(user.uid!, pkg.id);
-                alert(`ยินดีด้วย! แพ็กเกจ ${pkg.name} ของคุณถูกเปิดใช้งานแล้ว`);
-                router.push('/');
+                showConfirm({
+                    title: "เปิดใช้งานสำเร็จ! 🎉",
+                    message: `ระบบได้มอบสิทธิ์การใช้งานพรีเมียมฟรีให้คุณแล้ว 1 วันเต็ม ขอให้สนุกกับการร้องเพลงนะครับ!`,
+                    type: "success",
+                    confirmText: "เริ่มร้องเพลงเลย",
+                    onConfirm: () => router.push('/')
+                });
             } catch (error: any) {
                 console.error("❌ Activation failed:", error);
-                alert("เกิดข้อผิดพลาดในการเปิดใช้งานแพ็กเกจฟรี");
+                showConfirm({
+                    title: "เกิดข้อผิดพลาด",
+                    message: "ไม่สามารถเปิดใช้งานแพ็กเกจฟรีได้ กรุณาลองใหม่อีกครั้งครับ",
+                    type: "danger",
+                    confirmText: "ตกลง",
+                    onConfirm: () => {}
+                });
             } finally {
                 setLoading(false);
             }
@@ -156,36 +174,54 @@ export default function PackagesPage() {
 
             <main className="max-w-5xl mx-auto px-6 pt-10">
                 {/* 1. Pure Flat Trial Hero (Thai & Compact) */}
-                <div 
-                    onClick={() => {
-                        const trialPkg = packages.find(p => p.price === 0);
-                        if (trialPkg) handleBuy(trialPkg);
-                    }}
-                    className="mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700"
-                >
-                    <div className="group relative overflow-hidden rounded-[32px] p-6 md:p-8 bg-emerald-600 border-4 border-emerald-700 cursor-pointer transition-all active:scale-[0.98]">
-                        <div className="relative flex flex-col md:flex-row items-center justify-between gap-6 z-10">
-                            <div className="flex-1 space-y-2 text-center md:text-left">
-                                <div className="inline-flex items-center gap-2 px-3 py-1 bg-white text-emerald-700 rounded-lg text-[9px] font-black uppercase tracking-widest">
-                                    <Zap className="w-3 h-3 fill-current" />
-                                    ของขวัญพิเศษสำหรับคุณ
+                {!hideTrialCard && (
+                    <div 
+                        onClick={() => {
+                            if (isTrialActive) return; // Do nothing if already active
+                            const trialPkg = packages.find(p => p.price === 0);
+                            if (trialPkg) handleBuy(trialPkg);
+                        }}
+                        className={cn(
+                            "mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700",
+                            isTrialActive ? "opacity-90 grayscale-[20%]" : ""
+                        )}
+                    >
+                        <div className={cn(
+                            "group relative overflow-hidden rounded-[32px] p-6 md:p-8 border-4 transition-all",
+                            isTrialActive 
+                                ? "bg-emerald-800 border-emerald-900 cursor-default" 
+                                : "bg-emerald-600 border-emerald-700 cursor-pointer active:scale-[0.98]"
+                        )}>
+                            <div className="relative flex flex-col md:flex-row items-center justify-between gap-6 z-10">
+                                <div className="flex-1 space-y-2 text-center md:text-left">
+                                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-white text-emerald-700 rounded-lg text-[9px] font-black uppercase tracking-widest">
+                                        {isTrialActive ? <Check className="w-3 h-3 fill-current" /> : <Zap className="w-3 h-3 fill-current" />}
+                                        {isTrialActive ? "เปิดใช้งานแล้ว" : "ของขวัญพิเศษสำหรับคุณ"}
+                                    </div>
+                                    <h1 className="text-2xl md:text-5xl font-black text-white tracking-tighter leading-tight">
+                                        {isTrialActive 
+                                            ? "คุณได้รับสิทธิ์ใช้งานฟรี 1 วันแล้ว" 
+                                            : <>ทดลองใช้พรีเมียม <span className="text-emerald-100 underline decoration-indigo-400">ฟรี 1 วันเต็ม</span></>
+                                        }
+                                    </h1>
+                                    <p className="text-emerald-50/80 font-bold text-xs md:text-base max-w-xl">
+                                        {isTrialActive
+                                            ? "ขอให้สนุกตื่นเต้นกับการร้องเพลงคาราโอเกะแบบไร้โฆษณาคั่นอย่างเต็มที่นะครับ!"
+                                            : "สัมผัสประสบการณ์ร้องเพลงแบบไม่มีโฆษณา ปลดล็อกทุกความสามารถ เพื่อความบันเทิงที่สมบูรณ์แบบสำหรับทุกคนในครอบครัว"
+                                        }
+                                    </p>
                                 </div>
-                                <h1 className="text-2xl md:text-5xl font-black text-white tracking-tighter leading-tight">
-                                    ทดลองใช้พรีเมียม <span className="text-emerald-100 underline decoration-indigo-400">ฟรี 1 วันเต็ม</span>
-                                </h1>
-                                <p className="text-emerald-50/80 font-bold text-xs md:text-base max-w-xl">
-                                    สัมผัสประสบการณ์ร้องเพลงแบบไม่มีโฆษณา ปลดล็อกทุกความสามารถ <br />
-                                    เพื่อความบันเทิงที่สมบูรณ์แบบสำหรับทุกคนในครอบครัว
-                                </p>
-                            </div>
 
-                            <button className="w-full md:w-auto h-14 px-8 bg-white text-emerald-950 rounded-2xl font-black text-base flex items-center justify-center gap-3 transition-all">
-                                <Sparkles className="w-5 h-5" />
-                                รับสิทธิ์ฟรีทันที
-                            </button>
+                                {!isTrialActive && (
+                                    <button className="w-full md:w-auto h-14 px-8 bg-white text-emerald-950 rounded-2xl font-black text-base flex items-center justify-center gap-3 transition-all cursor-pointer">
+                                        <Sparkles className="w-5 h-5" />
+                                        รับสิทธิ์ฟรีทันที
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
 
                 {/* 2. Main Title - Thai High Contrast */}
                 <div className="text-center space-y-3 mb-12">
