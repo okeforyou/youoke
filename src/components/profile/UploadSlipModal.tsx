@@ -104,10 +104,17 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
             
             if (targetLineUserId) {
                 const userMsg = `✅ [YouOKE] แจ้งรายละเอียดการโอนเงินครับ\n━━━━━━━━━━━━━━━\n📦 แพ็กเกจ: ${pkg.name}\n💰 ยอดที่ต้องโอน: ฿${pkg.price.toLocaleString()}\n🏦 พร้อมเพย์: 086-465-3950\n👤 ชื่อบัญชี: ${bankInfo.accName}\n🆔 รหัสอ้างอิง: ${refId}\n━━━━━━━━━━━━━━━\n📸 รบกวนส่งสลิปให้แอดมินในแชทนี้ได้เลยครับ!`;
+                
+                // Ensure imageUrl is absolute HTTPS for LINE API
+                const absoluteQrUrl = qrImage.startsWith('http') 
+                    ? qrImage 
+                    : `${window.location.origin}${qrImage}`;
+
                 try {
                     await axios.post('/api/notify/line-push', {
                         to: targetLineUserId,
-                        message: userMsg
+                        message: userMsg,
+                        imageUrl: absoluteQrUrl
                     });
                 } catch (userError) {
                     console.error("User text messaging failed:", userError);

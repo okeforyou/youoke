@@ -14,7 +14,7 @@ export default async function handler(
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
-  const { to, message, flexMessage } = req.body;
+  const { to, message, flexMessage, imageUrl } = req.body;
   const channelAccessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
 
   if (!channelAccessToken) {
@@ -28,17 +28,30 @@ export default async function handler(
   }
 
   try {
-    const payload = flexMessage ? {
+    const lineMessages: any[] = [];
+
+    // 1. Text Message
+    if (message) {
+        lineMessages.push({ type: 'text', text: message });
+    }
+
+    // 2. Image Message (Must be HTTPS)
+    if (imageUrl) {
+        lineMessages.push({
+            type: 'image',
+            originalContentUrl: imageUrl,
+            previewImageUrl: imageUrl
+        });
+    }
+
+    // 3. Flex Message
+    if (flexMessage) {
+        lineMessages.push(flexMessage);
+    }
+
+    const payload = {
         to,
-        messages: [flexMessage]
-    } : {
-        to,
-        messages: [
-            {
-                type: 'text',
-                text: message
-            }
-        ]
+        messages: lineMessages
     };
 
     const response = await axios.post(

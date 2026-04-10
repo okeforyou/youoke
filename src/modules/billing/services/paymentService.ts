@@ -23,6 +23,16 @@ import { PaymentSlip } from "../types"; // Use local module type
 const PAYMENTS_COLLECTION = "payment_proofs"; // Matches orders.tsx
 const USERS_COLLECTION = "users";
 
+// 🛠️ v5.3.43: Localized Date Formatter for Notifications
+const formatThaiDate = (date: Date | null) => {
+  if (!date) return "ไม่มีวันหมดอายุ (Life Time)";
+  return date.toLocaleDateString('th-TH', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+};
+
 /**
  * Approve a Payment (Admin Action)
  * 1. Updates payment status to 'approved'
@@ -131,13 +141,21 @@ export async function approvePayment(
   // 6. Send LINE Notification (If connected)
   const lineUserId = userSnap.exists() ? userSnap.data().lineUserId : null;
   if (lineUserId) {
-    try {
+      const lineMessage = `ยืนยันการชำระเงินและอนุมัติการใช้งานแล้ว ✅\n` +
+        `คุณเริ่มใช้งานพรีเมียมได้ทันทีครับ\n` +
+        `━━━━━━━━━━━━━━━\n` +
+        `📌 แพ็กเกจ: ${pkgName}\n` +
+        `📅 เริ่ม: ${startDateStr}\n` +
+        `⌛ หมดอายุ: ${endDateStr}\n` +
+        `━━━━━━━━━━━━━━━\n` +
+        `ขอให้สนุกกับการร้องเพลงนะครับ! 🎤✨`;
+
       await fetch('/api/notify/line-push', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           to: lineUserId,
-          message: `บิลเสร็จสมบูรณ์ ✅\nแพ็กเกจ "${pkgName}" ของคุณพร้อมใช้งานแล้วครับ ขอให้สนุกกับการร้องเพลงบน YouOKE นะครับ!`
+          message: lineMessage
         })
       });
       console.log(`✅ LINE notification sent to ${lineUserId}`);
@@ -352,13 +370,41 @@ export async function activateFreePackage(
     }
 
     // 4. Notification
+    const startDateStr = formatThaiDate(now);
+    const endDateStr = formatThaiDate(expiresAt);
+
     await addDoc(collection(db, `users/${userId}/notifications`), {
         title: "สมัครทดลองใช้สำเร็จ!",
-        message: `คุณเริ่มใช้งานแพ็กเกจ "${pkgName}" แล้ว ใช้งานได้ฟรีเป็นเวลา ${durationDays} วัน`,
+        message: `คุณเริ่มใช้งานแพ็กเกจ "${pkgName}" แล้ว \n🗓️ หมดอายุวันที่: ${endDateStr}`,
         type: 'success',
         read: false,
         createdAt: serverTimestamp()
     });
+
+    const userSnap = await getDoc(userRef);
+    const lineUserId = userSnap.exists() ? userSnap.data().lineUserId : null;
+    if (lineUserId) {
+      try {
+        const lineMessage = `อนุมัติสิทธิ์ทดลองใช้งานพรีเมียมแล้ว 🎉\n` +
+          `━━━━━━━━━━━━━━━\n` +
+          `📌 แพ็กเกจ: ${pkgName}\n` +
+          `📅 เริ่ม: ${startDateStr}\n` +
+          `⌛ หมดอายุ: ${endDateStr}\n` +
+          `━━━━━━━━━━━━━━━\n` +
+          `คุณสามารถใช้งานฟีเจอร์พรีเมียมได้ทันทีครับ!`;
+
+        await fetch('/api/notify/line-push', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: lineUserId,
+            message: lineMessage
+          })
+        });
+      } catch (err) {
+        console.warn('⚠️ [LINE] Failed to send trial notification');
+      }
+    }
 
     console.log(`Free package ${packageId} activated for user ${userId}.`);
   } catch (error) {

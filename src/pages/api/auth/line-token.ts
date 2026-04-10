@@ -137,8 +137,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             try {
                 const isLinking = state && state !== 'auth_login';
                 const welcomeMsg = isLinking 
-                    ? `ผูกบัญชีสำเร็จ! 🎉\nบัญชี YouOKE ของคุณได้เชื่อมต่อกับ LINE เรียบร้อยแล้วครับ`
-                    : `ยินดีต้อนรับคุณ ${name} เข้าสู่ YouOKE! 🎉\nคุณได้เข้าสู่ระบบด้วย LINE เรียบร้อยแล้ว`;
+                    ? `ผูกบัญชีสำเร็จ! 🎉\n` +
+                      `บัญชี YouOKE ของคุณเชื่อมต่อกับ LINE แล้ว\n` +
+                      `━━━━━━━━━━━━━━━\n` +
+                      `👤 สมาชิก: ${name}\n` +
+                      `✅ สถานะ: เชื่อมต่อสำเร็จ\n` +
+                      `━━━━━━━━━━━━━━━\n` +
+                      `คุณสามารถรับแจ้งเตือนบิลและข่าวสารผ่าน LINE ได้แล้วครับ ✨`
+                    : `ยินดีต้อนรับเข้าสู่ YouOKE! 🎉\n` +
+                      `คุณเข้าสู่ระบบด้วย LINE เรียบร้อยแล้ว\n` +
+                      `━━━━━━━━━━━━━━━\n` +
+                      `👤 สมาชิก: ${name}\n` +
+                      `📱 บริการ: คาราโอเกะออนไลน์\n` +
+                      `━━━━━━━━━━━━━━━\n` +
+                      `ขอให้สนุกกับการร้องเพลงนะครับ! 🎤✨`;
 
                 await axios.post('https://api.line.me/v2/bot/message/push', {
                     to: lineUserId,
