@@ -455,18 +455,31 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                                         <div className="text-sm font-bold text-slate-700">{(user as any).lineDisplayName || 'LINE Member'}</div>
                                     </div>
                                 </div>
-                                <div className="flex gap-2">
-                                    <input 
-                                        type="text" 
-                                        value={messageText}
-                                        onChange={(e) => setMessageText(e.target.value)}
-                                        disabled={sendingMessage}
-                                        placeholder="พิมพ์ข้อความส่งหา User รายบุคคล..."
-                                        className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-900 w-full focus:ring-1 focus:ring-[#06C755] outline-none disabled:bg-slate-50"
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter') handleSendLineMessage();
-                                        }}
-                                    />
+                                    {/* ⚡ Quick Response Chips (Moved Above Input) */}
+                                    <div className="flex flex-wrap gap-1.5 py-1">
+                                        {QUICK_MESSAGES.map((msg, i) => (
+                                            <button
+                                                key={i}
+                                                onClick={() => setMessageText(msg.text)}
+                                                className="px-2 py-0.5 bg-white border border-slate-200 rounded-lg text-[9px] font-bold text-slate-500 hover:border-[#06C755] hover:text-[#06C755] transition-all active:scale-95"
+                                            >
+                                                {msg.label}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    <div className="flex gap-2">
+                                        <input 
+                                            type="text" 
+                                            value={messageText}
+                                            onChange={(e) => setMessageText(e.target.value)}
+                                            disabled={sendingMessage}
+                                            placeholder="พิมพ์ข้อความส่งหา User รายบุคคล..."
+                                            className="bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-900 w-full focus:ring-1 focus:ring-[#06C755] outline-none disabled:bg-slate-50"
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') handleSendLineMessage();
+                                            }}
+                                        />
                                     <button 
                                         onClick={handleSendLineMessage}
                                         disabled={sendingMessage || !messageText.trim()}

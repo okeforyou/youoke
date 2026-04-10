@@ -1018,13 +1018,13 @@ const getLatestVersion = () => {
     return cleanVersion.split(" ")[0] || "5.3.38";
 };
 
+// สำหรับการดึง Commit Hash จาก Vercel (ถ้ามี)
+export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA 
+    ? `#${process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA.slice(0, 7)}` 
+    : "";
+
 export const SYSTEM_VERSION = getLatestVersion();
 export const SYSTEM_CODENAME = "Midnight Dashboard";
 export const SYSTEM_STATUS = "Stable";
 export const VERSION_LABEL = `${COMMIT_ID || '#local'} v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
 export const BUILD_DATE = "6 เม.ย. 2569";
-
-// สำหรับการดึง Commit Hash จาก Vercel (ถ้ามี)
-export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA 
-    ? `#${process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA.slice(0, 7)}` 
-    : "";
