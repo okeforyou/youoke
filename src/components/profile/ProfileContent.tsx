@@ -114,39 +114,72 @@ export const ProfileContent = () => {
             signInWithLine('link_account');
         };
         
+        const isConnected = !!profile?.lineUserId;
+        
         return (
             <div className="flex flex-col">
                 <div className="px-6 py-4 flex items-center gap-4 border-b border-zinc-100 dark:border-zinc-800">
                     <button onClick={() => setView('main')} className="p-2 -ml-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors">
                         <ChevronRightIcon className="w-5 h-5 rotate-180 text-zinc-400" />
                     </button>
-                    <h2 className="text-lg font-black text-zinc-900 dark:text-white">เชื่อมต่อ LINE</h2>
+                    <h2 className="text-lg font-black text-zinc-900 dark:text-white">
+                        {isConnected ? 'สถานะการเชื่อมต่อ LINE' : 'เชื่อมต่อ LINE'}
+                    </h2>
                 </div>
 
                 <div className="p-8 pb-12 flex flex-col items-center text-center space-y-8">
-                    <div className="relative p-6 bg-white rounded-[40px] border-4 border-zinc-100">
-                        <div className="w-[180px] h-[180px] bg-zinc-50 flex items-center justify-center rounded-2xl">
-                             <QRCodeSVG value={`${window.location.origin}/login?state=link_account`} size={160} level="H" />
-                        </div>
-                    </div>
-                    <div className="space-y-6">
-                        <div className="space-y-2">
-                            <h3 className="text-2xl font-black text-zinc-900 dark:text-white">ยืนยันตัวตน LINE</h3>
-                            <p className="text-sm font-bold text-zinc-500 dark:text-zinc-400 leading-relaxed px-4">
-                                ผูกบัญชีเพื่อรับแจ้งเตือนและสิทธิพิเศษจาก YouOke ได้ทันทีครับ
-                            </p>
-                        </div>
-                        
-                        <div className="pt-4">
-                            <button 
-                                onClick={handleDirectConnect}
-                                className="w-full h-16 px-10 rounded-2xl bg-[#06C755] text-white font-black flex items-center justify-center gap-3 active:scale-95 transition-all shadow-none border-none"
-                            >
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M24 10.304c0-4.66-4.66-8.43-10.404-8.43-5.744 0-10.4 3.77-10.4 8.43 0 4.155 3.655 7.63 8.708 8.284.34.074.801.225 1.026.516.23.289.15.743.074 1.042l-.367 2.215s-.204 1.258.944.685c1.149-.574 6.204-3.655 8.46-6.255C22.618 15.352 24 13.013 24 10.304z"/></svg>
-                                <span className="text-lg">เชื่อมต่อทันที</span>
-                            </button>
-                        </div>
-                    </div>
+                    {isConnected ? (
+                        <>
+                            <div className="relative p-6 bg-white rounded-[40px] border-4 border-zinc-100 dark:border-zinc-800 dark:bg-zinc-900">
+                                <div className="w-[120px] h-[120px] bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center rounded-3xl">
+                                    <svg width="48" height="48" viewBox="0 0 24 24" className="text-[#06C755]" fill="currentColor"><path d="M24 10.304c0-4.66-4.66-8.43-10.404-8.43-5.744 0-10.4 3.77-10.4 8.43 0 4.155 3.655 7.63 8.708 8.284.34.074.801.225 1.026.516.23.289.15.743.074 1.042l-.367 2.215s-.204 1.258.944.685c1.149-.574 6.204-3.655 8.46-6.255C22.618 15.352 24 13.013 24 10.304z"/></svg>
+                                </div>
+                            </div>
+                            <div className="space-y-6 w-full">
+                                <div className="space-y-2">
+                                    <h3 className="text-2xl font-black text-zinc-900 dark:text-white">เชื่อมต่อสำเร็จแล้ว!</h3>
+                                    <p className="text-sm font-bold text-zinc-500 dark:text-zinc-400 leading-relaxed px-4">
+                                        บัญชีของคุณผูกกับ LINE: <span className="text-emerald-500 font-black">{profile.lineDisplayName || 'ผูกบัญชีแล้ว'}</span> เรียบร้อยแล้วครับ
+                                    </p>
+                                </div>
+                                
+                                <div className="pt-4">
+                                    <button 
+                                        onClick={() => setView('main')}
+                                        className="w-full h-14 rounded-2xl bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white font-black transition-all active:scale-95 shadow-none border-none"
+                                    >
+                                        กลับไปหน้าโปรไฟล์
+                                    </button>
+                                </div>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <div className="relative p-6 bg-white rounded-[40px] border-4 border-zinc-100">
+                                <div className="w-[180px] h-[180px] bg-zinc-50 flex items-center justify-center rounded-2xl">
+                                     <QRCodeSVG value={`${window.location.origin}/login?state=link_account`} size={160} level="H" />
+                                </div>
+                            </div>
+                            <div className="space-y-6">
+                                <div className="space-y-2">
+                                    <h3 className="text-2xl font-black text-zinc-900 dark:text-white">ยืนยันตัวตน LINE</h3>
+                                    <p className="text-sm font-bold text-zinc-500 dark:text-zinc-400 leading-relaxed px-4">
+                                        ผูกบัญชีเพื่อรับแจ้งเตือนและสิทธิพิเศษจาก YouOke ได้ทันทีครับ
+                                    </p>
+                                </div>
+                                
+                                <div className="pt-4">
+                                    <button 
+                                        onClick={handleDirectConnect}
+                                        className="w-full h-16 px-10 rounded-2xl bg-[#06C755] text-white font-black flex items-center justify-center gap-3 active:scale-95 transition-all shadow-none border-none"
+                                    >
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M24 10.304c0-4.66-4.66-8.43-10.404-8.43-5.744 0-10.4 3.77-10.4 8.43 0 4.155 3.655 7.63 8.708 8.284.34.074.801.225 1.026.516.23.289.15.743.074 1.042l-.367 2.215s-.204 1.258.944.685c1.149-.574 6.204-3.655 8.46-6.255C22.618 15.352 24 13.013 24 10.304z"/></svg>
+                                        <span className="text-lg">เชื่อมต่อทันที</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
         );
