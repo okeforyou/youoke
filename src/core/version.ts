@@ -1007,25 +1007,17 @@ export const CHANGELOGS = [
     }
 ];
 
-// 🛠️ v5.3.41: Aggressive Splitting Shield & Global Identity Ref
+import { safeSplit, safeStartsWith, safeSlice } from '@/utils/stringUtils';
+
+// 🛠️ v5.3.42: Industrial-Grade Splitting Shield
 export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA 
-    ? `#${process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA.slice(0, 7)}` 
+    ? `#${safeSlice(process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA, 0, 7)}` 
     : "";
 
 export const getLatestVersion = () => {
-    // Aggressive safety guard for .split crashes (v5.3.41)
     const latest = CHANGELOGS[0]?.version;
-    if (!latest || typeof latest !== 'string') return "5.3.41";
-    
-    // Triple-layer safety check
-    try {
-        const cleanVersion = latest.startsWith('v') ? latest.substring(1) : latest;
-        const parts = cleanVersion.split(" ");
-        return parts && parts.length > 0 ? parts[0] : "5.3.41";
-    } catch (e) {
-        console.warn("⚠️ Version split failed, using fallback", e);
-        return "5.3.41";
-    }
+    const cleanVersion = safeStartsWith(latest, 'v') ? (latest as string).substring(1) : latest;
+    return safeSplit(cleanVersion, " ", ["5.3.42"])[0];
 };
 
 export const SYSTEM_VERSION = getLatestVersion();
