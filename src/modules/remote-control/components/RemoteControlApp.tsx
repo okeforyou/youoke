@@ -675,14 +675,15 @@ export default function RemoteControlApp() {
                                 <span className="truncate max-w-[60px]">{guestName}</span>
                                 <span className="opacity-30">|</span>
                                 <span>Q: {roomState.queue.length}</span>
-                                {(!user || !user.email) && (
+                                {/** v5.3.65: Hidden confusing LIMIT display as requested */}
+                                {/* {(!user || !user.email) && (
                                     <>
                                         <span className="opacity-30">|</span>
                                         <span className={guestSongCount >= SONG_LIMIT ? 'text-primary' : ''}>
                                             Limit: {guestSongCount}/{SONG_LIMIT}
                                         </span>
                                     </>
-                                )}
+                                )} */}
                             </div>
                         </div>
 
@@ -854,8 +855,8 @@ export default function RemoteControlApp() {
                     )}
                 </div>
 
-                {/* Action Buttons Toggle (Ultimate Rounded Thai) */}
-                <div className="px-4 pb-6">
+                {/** v5.3.65: Hidden redundant TV playlist toggle as requested */}
+                {/* <div className="px-4 pb-6">
                     <button
                         onClick={() => sendCommand('TOGGLE_QUEUE_OVERLAY')}
                         className={`w-full py-5 rounded-[2rem] font-black text-xs uppercase tracking-[0.25em] transition-all flex items-center justify-center gap-3 active:scale-[0.98] ${roomState.isQueueVisible
@@ -866,7 +867,7 @@ export default function RemoteControlApp() {
                         <ListMusic size={20} />
                         {roomState.isQueueVisible ? 'ซ่อนรายการเพลง' : 'แสดงรายการเพลง ใน TV'}
                     </button>
-                </div>
+                </div> */}
 
                 {/* Bottom Player (V1 Control Bar) */}
                 <RemoteMiniPlayer

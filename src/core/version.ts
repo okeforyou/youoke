@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.65 (Remote UI Simplification)",
+        date: "10 เม.ย. 2569",
+        changes: [
+            "UI: Hidden 'LIMIT' display in Remote header to avoid confusion with guest song quotas",
+            "UI: Hidden redundant 'Show playlist on TV' toggle button for a cleaner remote experience",
+            "STABILITY: Finalized v5.3.65 as the new baseline for remote control simplicity"
+        ],
+        recent_updates: "Remote Experience Lock"
+    },
+    {
         version: "v5.3.64 (Workflow Optimization)",
         date: "10 เม.ย. 2569",
         changes: [
