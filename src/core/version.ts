@@ -778,6 +778,16 @@ export const CHANGELOGS = [
         recent_updates: ""
     },
     {
+        version: "5.3.48 (Automated QR & Identity Unified)",
+        date: "10 เม.ย. 2569",
+        changes: [
+            "Automated QR Delivery: System now sends the PromptPay QR image directly to member's LINE chat upon payment intent",
+            "Unified Notification Identity: Standardized 100% of automated LINE alerts (Approval, Rejection, Welcome, linking) with premium structured layouts",
+            "Enhanced API: Upgraded line-push engine to support multi-message payloads (Text + Images) simultaneously"
+        ],
+        recent_updates: ""
+    },
+    {
         version: "4.10.132 (Ultimate Desktop Uniformity)",
         date: "7 เม.ย. 2569",
         changes: [
