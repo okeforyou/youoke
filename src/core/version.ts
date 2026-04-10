@@ -1,5 +1,14 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.63 (Skill Integration)",
+        date: "10 เม.ย. 2569",
+        changes: [
+            "FEATURE: Integrated official Commit Workflow (Skill) for standardized versioning and saving",
+            "SYNC: Updated .agent/workflows with automated commit procedures"
+        ],
+        recent_updates: "Workflow Skill Integration"
+    },
+    {
         version: "v5.3.62 (Remote Stability Fix)",
         date: "10 เม.ย. 2569",
         changes: [
