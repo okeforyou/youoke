@@ -142,6 +142,9 @@ export async function approvePayment(
   const lineUserId = userSnap.exists() ? userSnap.data().lineUserId : null;
   if (lineUserId) {
     try {
+      const startDateStr = formatThaiDate(now);
+      const endDateStr = formatThaiDate(expiresAt);
+
       const lineMessage = `ยืนยันการชำระเงินและอนุมัติการใช้งานแล้ว ✅\n` +
         `คุณเริ่มใช้งานพรีเมียมได้ทันทีครับ\n` +
         `━━━━━━━━━━━━━━━\n` +
