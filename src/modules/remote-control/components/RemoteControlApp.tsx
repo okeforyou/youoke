@@ -1,6 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { VERSION_LABEL, SYSTEM_VERSION } from '@/core/version';
 import { signInAnonymously } from 'firebase/auth';
 import { ref, onValue, off, set, serverTimestamp } from 'firebase/database';
 import { auth, realtimeDb } from '../../../firebase';
@@ -50,8 +50,8 @@ interface RoomState {
 
 export default function RemoteControlApp() {
     const router = useRouter();
-    const queryRoom = router.query.room;
-    // v5.0.6: Hardened roomCode derivation to prevent TypeError: g.split
+    const queryRoom = router.query?.room;
+    // v5.3.62: Hardened roomCode derivation to prevent TypeError: g.split (ReferenceError: VERSION_LABEL)
     const roomCode = typeof queryRoom === 'string' ? queryRoom : (Array.isArray(queryRoom) && queryRoom[0] ? String(queryRoom[0]) : '');
 
     // State

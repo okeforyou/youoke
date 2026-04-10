@@ -1,12 +1,13 @@
 export const CHANGELOGS = [
     {
-        version: "v5.3.61 (Emergency Hook Fix)",
+        version: "v5.3.62 (Remote Stability Fix)",
         date: "10 เม.ย. 2569",
         changes: [
-            "FIX: Added missing useEffect import in PackageStore preventing runtime crash",
-            "STABILITY: Ensured all dynamic hooks are properly imported for trial sync logic"
+            "FIX: Resolved ReferenceError/TypeError (g.split) on Remote page by correctly importing VERSION_LABEL",
+            "STABILITY: Hardened room query parameter handling to prevent crashes when accessed without a room code",
+            "SYNC: Verified cross-device version labeling for 100% UI consistency"
         ],
-        recent_updates: "Runtime Hook Fix"
+        recent_updates: "Remote Control Stability Lock"
     },
     {
         version: "v5.3.60 (Dynamic Trial Sync System)",
