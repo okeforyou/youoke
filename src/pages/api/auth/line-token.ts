@@ -50,6 +50,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const name = lineProfile.name;
         const picture = lineProfile.picture;
 
+        if (state === 'link_account') {
+            // ONLY verify token and return data to frontend for linking.
+            // Do NOT try to fetch or write to Firestore/Firebase Auth since we don't have their true UID here.
+            return res.status(200).json({ 
+                token: null, 
+                lineUserId, 
+                lineDisplayName: name,
+                linked: true
+            });
+        }
+
         let targetUid = state && state !== 'auth_login' ? state : `line:${lineUserId}`;
         
         console.log(`✅ [Identity Bridge] Target UID: ${targetUid} | LINE: ${name}`);
