@@ -1,5 +1,14 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.64 (Workflow Optimization)",
+        date: "10 เม.ย. 2569",
+        changes: [
+            "FEATURE: Finalized Commit & Push Workflow for automated end-to-end deployment",
+            "SYNC: Optimized .agent/workflows with explicit remote push instructions"
+        ],
+        recent_updates: "Complete Commit & Push Implementation"
+    },
+    {
         version: "v5.3.63 (Skill Integration)",
         date: "10 เม.ย. 2569",
         changes: [

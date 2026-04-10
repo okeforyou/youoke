@@ -25,5 +25,10 @@ description: Workflow สำหรับการอัปเดตเวอร�
    - รันคำสั่ง `git commit -m "[VERSION]: [SUMMARY]"`
    - ตัวอย่าง: `git commit -m "v5.3.62: Fix Remote Control ReferenceError/TypeError (g.split)"`
 
-5. **Final Sync**:
-   - ตรวจสอบ `git status` อีกครั้งเพื่อให้แน่ใจว่า Working Tree สะอาดแล้ว
+5. **Push to Remote**:
+// turbo
+   - รันคำสั่ง `git push origin main`
+   - **หมายเหตุ**: หากระบบถามรหัสผ่านหรือความยืนยันตัวตน ให้ผู้ใช้กรอกข้อมูลใน Terminal เพื่อส่งงานขึ้น GitHub
+
+6. **Final Sync**:
+   - ตรวจสอบ `git status` อีกครั้งเพื่อให้แน่ใจว่าทั้ง Local และ Remote ตรงกันแล้ว
