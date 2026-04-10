@@ -1,6 +1,6 @@
 export const CHANGELOGS = [
     {
-        version: "v5.3.38 (Admin Response Toolkit)",
+        version: "#9a267d9 v5.3.38 (Admin Response Toolkit)",
         date: "10 เม.ย. 2569",
         changes: [
             "UI: Added 'Quick Response' buttons in User Management for instant LINE messaging",
@@ -1010,7 +1010,7 @@ const getLatestVersion = () => {
 export const SYSTEM_VERSION = getLatestVersion();
 export const SYSTEM_CODENAME = "Midnight Dashboard";
 export const SYSTEM_STATUS = "Stable";
-export const VERSION_LABEL = `Version v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
+export const VERSION_LABEL = `${COMMIT_ID || '#local'} v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
 export const BUILD_DATE = "6 เม.ย. 2569";
 
 // สำหรับการดึง Commit Hash จาก Vercel (ถ้ามี)
