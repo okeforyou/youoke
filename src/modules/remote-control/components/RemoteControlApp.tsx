@@ -645,7 +645,7 @@ export default function RemoteControlApp() {
                     )}
 
                     <div className="pt-8 text-center">
-                        <p className="text-[10px] font-black uppercase tracking-widest opacity-20">YouOke v2.22.0-FINAL</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest opacity-20">{VERSION_LABEL}</p>
                     </div>
                 </div>
             </div>
@@ -915,7 +915,7 @@ export default function RemoteControlApp() {
                         <div className="bg-white p-6 rounded-3xl text-center space-y-4" onClick={e => e.stopPropagation()}>
                             <div className="flex items-center justify-center gap-2">
                                 <span className="font-bold text-lg text-gray-900">YouOke</span>
-                                <span className="text-[10px] font-bold bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-md hidden sm:inline-block">v2.22.0-FINAL</span>
+                                <span className="text-[10px] font-bold bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-md hidden sm:inline-block">{VERSION_LABEL}</span>
                             </div>
                             <div className="bg-gray-100 p-2 rounded-xl inline-block">
                                 {/* @ts-ignore */}

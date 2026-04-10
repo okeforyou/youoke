@@ -1007,24 +1007,27 @@ export const CHANGELOGS = [
     }
 ];
 
-// v4.10.116: Reordered to ensure CHANGELOGS is available before export
-// v5.3.38: Updated fallback to match current production series
-const getLatestVersion = () => {
-    if (!CHANGELOGS || CHANGELOGS.length === 0) return "5.3.38";
-    const latest = CHANGELOGS[0]?.version;
-    if (typeof latest !== 'string') return "5.3.38";
-    // Remove 'v' if present and take the first part
-    const cleanVersion = latest.startsWith('v') ? latest.substring(1) : latest;
-    return cleanVersion.split(" ")[0] || "5.3.38";
-};
-
-// สำหรับการดึง Commit Hash จาก Vercel (ถ้ามี)
+// 🛠️ v5.3.41: Aggressive Splitting Shield & Global Identity Ref
 export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA 
     ? `#${process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA.slice(0, 7)}` 
     : "";
 
+export const getLatestVersion = () => {
+    // Aggressive safety guard for .split crashes (v5.3.41)
+    const latest = CHANGELOGS[0]?.version;
+    if (!latest || typeof latest !== 'string') return "5.3.41";
+    
+    // Triple-layer safety check
+    try {
+        const cleanVersion = latest.startsWith('v') ? latest.substring(1) : latest;
+        const parts = cleanVersion.split(" ");
+        return parts && parts.length > 0 ? parts[0] : "5.3.41";
+    } catch (e) {
+        console.warn("⚠️ Version split failed, using fallback", e);
+        return "5.3.41";
+    }
+};
+
 export const SYSTEM_VERSION = getLatestVersion();
-export const SYSTEM_CODENAME = "Midnight Dashboard";
-export const SYSTEM_STATUS = "Stable";
+export const SYSTEM_CODENAME = "Pure Flat Shield";
 export const VERSION_LABEL = `${COMMIT_ID || '#local'} v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
-export const BUILD_DATE = "6 เม.ย. 2569";
