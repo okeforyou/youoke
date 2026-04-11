@@ -323,9 +323,9 @@ export const PlayerControls = () => {
                         className={`p-2 rounded-lg transition-colors relative ${useUIStore((state) => state.isQueueOpen) ? 'bg-gray-200 text-primary' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
                     >
                         <ListMusic size={20} />
-                        {queue.length > 0 && (
+                        {queue.length > 0 && Math.max(0, queue.length - (currentIndex + 1)) > 0 && (
                             <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5 border border-white">
-                                {queue.length}
+                                {Math.max(0, queue.length - (currentIndex + 1))}
                             </span>
                         )}
                     </button>

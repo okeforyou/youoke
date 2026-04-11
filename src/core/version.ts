@@ -1,5 +1,14 @@
 export const CHANGELOGS = [
     {
+        version: "v5.4.1 (Queue Sync Fix)",
+        date: "11 เม.ย. 2569",
+        changes: [
+            "FIX: Synchronized queue badge count (circles/indicators) across Dashboard, Player Bar, and Remote Control",
+            "LOGIC: Changed queue counting to show 'remaining songs' (excluding current) to match the visible list items",
+        ],
+        recent_updates: "Queue Badge Sync"
+    },
+    {
         version: "v5.4.0 (UI Restoration & Cast UX)",
         date: "11 เม.ย. 2569",
         changes: [

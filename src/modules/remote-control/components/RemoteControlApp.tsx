@@ -677,7 +677,7 @@ export default function RemoteControlApp() {
                             <div className={`text-[9px] font-black uppercase tracking-widest mt-0.5 flex items-center gap-1.5 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>
                                 <span className="truncate max-w-[60px]">{guestName}</span>
                                 <span className="opacity-30">|</span>
-                                <span>Q: {roomState.queue.length}</span>
+                                <span>Q: {Math.max(0, roomState.queue.length - (roomState.currentIndex + 1))}</span>
                                 {/** v5.3.65: Hidden confusing LIMIT display as requested */}
                                 {/* {(!user || !user.email) && (
                                     <>
