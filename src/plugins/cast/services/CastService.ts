@@ -245,7 +245,11 @@ export class CastService {
     }
 
     private syncMasterState(store: any) {
-        if (!this.roomCode || !realtimeDb || this.role !== 'host') return; // ONLY Dashboard writes Master State
+        if (!this.roomCode || !realtimeDb) return;
+        
+        // v5.3.91: Allow monitor to sync back state IF it's in the middle of a command execution (like REMOVE_AT)
+        // This ensures the remote gets the update even if dashboard is closed.
+        if (this.role !== 'host' && !this.isProcessingSync) return; 
 
         const stateRef = ref(realtimeDb, `rooms/${this.roomCode}/state`);
         const masterState = {

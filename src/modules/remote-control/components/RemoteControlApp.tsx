@@ -507,7 +507,10 @@ export default function RemoteControlApp() {
         }
 
         console.log('➕ Adding video to queue:', video.title);
-        sendCommand('ADD_TO_QUEUE', { video });
+        sendCommand('ADD_TO_QUEUE', { 
+            video,
+            addedBy: { uid: currentUser.uid, name: guestName || 'แขก' }
+        });
 
         // Increment guest count
         if (isAnonymous) {

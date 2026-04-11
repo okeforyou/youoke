@@ -1,14 +1,14 @@
 export const CHANGELOGS = [
     {
-        version: "v5.3.89 (Ultimate Sync Lockdown)",
+        version: "v5.3.91 (Seamless TV Experience)",
         date: "11 เม.ย. 2569",
         changes: [
-            "FIX: Finalized persistent queue deletion by allowing multi-role state updates",
-            "RELIABILITY: Prevented initial state overwrites to ensure shared rooms preserve their queue",
-            "CORE: Balanced Host/Monitor hierarchy for 100% reliable production results",
-            "STABILITY: Hardened reorder and clear queue commands for perfect remote control synchronization"
+            "FIX: Enabled persistent queue deletion by authorizing all devices to update state during commands",
+            "RESTORE: Enabled guest user names in the queue display (addedBy injection)",
+            "SMOOTH: Removed autoplay-blocked popups from TV display for an uninterrupted singing experience",
+            "STABILITY: Hardened Multi-Role Synchronization hierarchy"
         ],
-        recent_updates: "Ultimate Sync Lockdown"
+        recent_updates: "Seamless TV Experience"
     },
     {
         version: "v5.3.65 (Remote UI Simplification)",

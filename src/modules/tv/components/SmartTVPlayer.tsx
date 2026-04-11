@@ -53,7 +53,7 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
     const [showInfoToast, setShowInfoToast] = useState(false);
     // const [showSplash, setShowSplash] = useState(false);
     const [activeNotification, setActiveNotification] = useState<{ message: string, sub: string, type: 'added' | 'upnext' } | null>(null);
-    const [hasInteracted, setHasInteracted] = useState(false);
+    const [hasInteracted, setHasInteracted] = useState(true); // Default true for v5.3.91 (Seamless)
     const [autoplayBlocked, setAutoplayBlocked] = useState(false);
 
     // Effect: Handle Song Splash on Video Change Removed
@@ -111,15 +111,8 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
         if (isPlaying && currentVideo) {
             try {
                 event.target.playVideo();
-                setTimeout(async () => {
-                    const state = await event.target.getPlayerState();
-                    if ((state as any) !== 1 && (state as any) !== 3) {
-                        console.warn('📺 TV: Autoplay blocked or stalling.');
-                        setAutoplayBlocked(true);
-                    }
-                }, 1500);
             } catch (err) {
-                setAutoplayBlocked(true);
+                console.warn('📺 TV: Initial Play failed:', err);
             }
         }
     };
@@ -151,20 +144,8 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
                     }
 
                     player.playVideo();
-
-                    // Verify if it actually started playing
-                    setTimeout(async () => {
-                        const s = await player.getPlayerState();
-                        if ((s as any) !== 1 && (s as any) !== 3) {
-                            console.warn('📺 TV: Playback did not start. Blocking autoplay? State:', s);
-                            setAutoplayBlocked(true);
-                        } else {
-                            setAutoplayBlocked(false);
-                        }
-                    }, 2000);
                 } catch (err) {
                     console.error('📺 TV: Playback error:', err);
-                    setAutoplayBlocked(true);
                 }
             } else {
                 player.pauseVideo();
@@ -229,15 +210,7 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
             )} />
 
             {/* TV Autoplay Block Prompt (Invisible overlay capturing first click) */}
-            {autoplayBlocked && !hasInteracted && (
-                <div onClick={handleInteraction} className="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm cursor-pointer animate-in fade-in">
-                    <div className="bg-primary/20 border border-primary text-white p-8 rounded-3xl text-center space-y-4 shadow-2xl animate-pulse">
-                        <PlayCircleIcon className="w-20 h-20 text-primary mx-auto" />
-                        <h2 className="text-3xl font-black">ระบบเสียงถูกระงับชั่วคราว</h2>
-                        <p className="text-lg opacity-80">โปรดกดปุ่ม <span className="font-bold text-primary px-2 py-1 bg-white/10 rounded">OK</span> บนรีโมททีวี<br />หรือคลิกที่หน้าจอนี้ 1 ครั้งเพื่อเปิดเสียง</p>
-                    </div>
-                </div>
-            )}
+            {/* TV Autoplay Block Prompt Removed for v5.3.91 Seamless Experience */}
 
             {/* v5.0.5: Connection Status Indicator (Top Right Dot) */}
             <div className="absolute top-6 right-6 z-[100] flex items-center gap-3">
