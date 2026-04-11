@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.4.4 (Remote-Style Recovery)",
+        date: "11 เม.ย. 2569",
+        changes: [
+            "FIX: Upgraded Chromecast recovery to a 'Forever-ish' model (20-minute persistent polling) mirroring /remote reliability",
+            "LOGIC: Apps will now aggressively scan and re-bind to previous Chromecast sessions every 2s for up to 20 minutes after screen wake",
+            "STABILITY: Removed short timeout constraints to prevent premature UI disconnection state",
+        ],
+        recent_updates: "Remote-Style Chromecast Recovery"
+    },
+    {
         version: "v5.4.3 (Extra Stability)",
         date: "11 เม.ย. 2569",
         changes: [

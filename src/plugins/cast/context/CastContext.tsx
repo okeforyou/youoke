@@ -570,31 +570,39 @@ export function CastProvider({ children }: { children: ReactNode }) {
           setTimeout(() => {
             try { activeSession.sendMessage(CAST_NAMESPACE, { type: 'GET_STATE' }); } catch(e) {}
           }, 500);
-        } else if (isConnected || sleepDuration > 300000) {
-          // If we think we're connected but session is gone, or we slept for > 5 mins
-          logger.log('😴 Long sleep or lost session. Waiting for SDK to recover (15s Window)...');
-          // v5.4.3: Extended wait window for extra safety as requested.
-          // We check multiple times during the 15s window to recover as soon as SDK is ready.
-          const tryRecoverAt = (delay: number) => setTimeout(() => {
+        } else if (isConnected || sleepDuration > 1200000) {
+          // v5.4.4: Long-lived Persistent Recovery (20-minute window)
+          // To match the /remote system, we don't want to give up quickly.
+          // We will keep the UI in 'Connected' state and poll the SDK aggressively.
+          logger.log('😴 Awake. Attempting silent session recovery (20m window starts)...');
+          
+          let pollCount = 0;
+          const maxPolls = 600; // 20 minutes (one poll every 2s)
+          
+          const recoveryInterval = setInterval(() => {
+            pollCount++;
             const recoveredSession = context.getCurrentSession();
+            
             if (recoveredSession) {
-              logger.log(`✅ Session recovered at ${delay}ms! Re-binding...`);
+              logger.log(`✅ Session recovered successfully after ${pollCount * 2}s!`);
+              clearInterval(recoveryInterval);
               handleSessionStarted(recoveredSession);
               setTimeout(() => {
                 try { recoveredSession.sendMessage(CAST_NAMESPACE, { type: 'GET_STATE' }); } catch(e) {}
-              }, 300);
-            }
-          }, delay);
-
-          [3000, 7000, 10000, 12000].forEach(delay => tryRecoverAt(delay));
-
-          setTimeout(() => {
-            if (!context.getCurrentSession()) {
-              logger.log('❌ Session still null after 15s. Accepting disconnection.');
+              }, 500);
+            } else if (pollCount >= maxPolls) {
+              logger.log('❌ Failed to recover session after 20 minutes. Disconnecting.');
+              clearInterval(recoveryInterval);
               setIsConnected(false);
               setCastSession(null);
+            } else if (pollCount % 15 === 0) {
+              logger.debug(`⏳ Still searching for previous Cast session... (${Math.round((pollCount*2)/60)}m elapsed)`);
             }
-          }, 15000);
+          }, 2000); // Poll every 2 seconds
+
+          // Ensure we cleanup if user navigates or visibility changes again
+          const cleanup = () => clearInterval(recoveryInterval);
+          document.addEventListener('visibilitychange', cleanup, { once: true });
         }
       }
       lastActiveTimeRef.current = now;
