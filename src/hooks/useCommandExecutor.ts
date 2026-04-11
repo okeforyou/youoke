@@ -356,13 +356,17 @@ export function useCommandExecutor({
     if (!roomCode || !realtimeDb) return;
 
     const commandsRef = ref(realtimeDb, `rooms/${roomCode}/commands`);
+    const processedIds = new Set<string>();
 
     // Listen to new commands being added
     const unsubscribe = onChildAdded(commandsRef, (snapshot) => {
-      const envelope = snapshot.val() as CastCommandEnvelope;
-      // Only execute pending commands
-      if (envelope && envelope.status === 'pending') {
-        executeCommand(envelope);
+      const data = snapshot.val();
+      const cmdId = snapshot.key;
+      // Only execute pending commands, and only once
+      if (data && data.status === 'pending' && cmdId && !processedIds.has(cmdId)) {
+        processedIds.add(cmdId);
+        // v5.3.98: Pass snapshot key as id so status updates go to correct path
+        executeCommand({ ...data, id: cmdId });
       }
     });
 
