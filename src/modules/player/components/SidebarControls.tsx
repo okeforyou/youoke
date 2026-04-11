@@ -136,11 +136,10 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             icon: Cast,
             label: isAnyCastOn ? "ยกเลิก" : "CAST",
             onClick: () => {
-                // v5.4.6: FIX - Never disconnect immediately on button click.
-                // Always open the Modal to let the user manage the connection or see status.
-                // The 'Disconnect' button inside the Modal is the correct place for manual cancellation.
-                if (!isConnected && isAnyCastOn) {
-                    console.log("🔄 [SidebarControls] Re-syncing stale UI: SDK disconnected. Resetting UI state...");
+                // v5.5.0: UNIVERSAL NAV - Always open modal regardless of mode.
+                // Re-sync logic is only for 'google' mode ghost states.
+                if (castMode === 'google' && !isConnected) {
+                    console.log("🔄 [SidebarControls] Re-syncing stale Google Cast UI...");
                     useUIStore.getState().setCastMode('none');
                 }
                 

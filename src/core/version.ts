@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.5.0 (Universal Cast Flow)",
+        date: "11 เม.ย. 2569",
+        changes: [
+            "FIX: Unified the Cast button behavior across all modes (Google, Smart TV, Dual Screen) to always open the selection modal",
+            "LOGIC: Removed incorrect auto-reset when clicking the Cast button in Smart TV mode",
+            "UX: Standardized the disconnection path: Users now always navigate to the modal to explicitly confirm cancellation",
+        ],
+        recent_updates: "Universal Cast UX Consistency"
+    },
+    {
         version: "v5.4.9 (Deep Recovery Pulse)",
         date: "11 เม.ย. 2569",
         changes: [
