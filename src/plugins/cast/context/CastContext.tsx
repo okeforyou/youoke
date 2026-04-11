@@ -289,6 +289,32 @@ export function CastProvider({ children }: { children: ReactNode }) {
       setIsAvailable(true);
       logger.log('✅ Google Cast SDK initialized successfully!');
       console.log('📱 Application ID:', applicationId);
+
+      // v5.4.7: Persistent UI Recovery
+      // Check if we were casting before the app was suspended/reloaded
+      const wasCasting = localStorage.getItem('youoke_is_casting_google') === 'true';
+      const currentSession = context.getCurrentSession();
+      
+      if (wasCasting && !currentSession) {
+        logger.log('🔄 [Boot] Was casting but session is null. Starting aggressive boot-up poll...');
+        setIsConnected(true); // Show UI immediately
+        
+        let bootPoll = 0;
+        const bootInterval = setInterval(() => {
+          bootPoll++;
+          const session = context.getCurrentSession();
+          if (session) {
+            logger.log('✅ [Boot] Session recovered via boot-poll!');
+            clearInterval(bootInterval);
+            handleSessionStarted(session);
+          } else if (bootPoll >= 30) { // Give up after 60s of boot-polling
+            logger.log('❌ [Boot] Failed to recover session after 60s.');
+            clearInterval(bootInterval);
+            setIsConnected(false);
+            localStorage.removeItem('youoke_is_casting_google');
+          }
+        }, 2000);
+      }
     } catch (error) {
       console.error('❌ Error initializing Google Cast:', error);
       return;
@@ -344,6 +370,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
     setCastSession(session);
     setIsConnected(true);
     setReceiverName(session.getCastDevice().friendlyName);
+    localStorage.setItem('youoke_is_casting_google', 'true'); // v5.4.7: Remember session status
 
     // Reset receiver state flag to trigger re-sync
     setReceiverStateReceived(false);
@@ -533,7 +560,8 @@ export function CastProvider({ children }: { children: ReactNode }) {
     setCastSession(null);
     setIsConnected(false);
     setReceiverName('');
-    setReceiverStateReceived(false);  // Reset flag for next connection
+    setReceiverStateReceived(false);
+    localStorage.removeItem('youoke_is_casting_google'); // v5.4.7: Clear status
     
     // v5.0.4: Force reset castMode in global state to fix disconnect button stuck
     import('@/stores/useUIStore').then(({ useUIStore }) => {
@@ -771,6 +799,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
     setCastSession(null);
     setReceiverName('');
     setReceiverStateReceived(false);
+    localStorage.removeItem('youoke_is_casting_google'); // v5.4.7: Clear status
 
     const cast = (window as any).cast;
     if (!cast) {

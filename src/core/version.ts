@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.4.7 (Persistent Sync)",
+        date: "11 เม.ย. 2569",
+        changes: [
+            "FIX: Implemented Persistent UI State for Chromecast using localStorage to remember active sessions",
+            "LOGIC: Apps now show 'Connecting/Connected' status immediately on wake or reload, even before SDK finishes scanning",
+            "RECOVERY: Added an aggressive Boot-up Polling mechanism to bridge the 5-second SDK init gap",
+        ],
+        recent_updates: "YouTube-like Persistent Sync"
+    },
+    {
         version: "v5.4.6 (Correct Cast Flow)",
         date: "11 เม.ย. 2569",
         changes: [
