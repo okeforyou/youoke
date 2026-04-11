@@ -161,7 +161,8 @@ const TVPage = () => {
                     await update(ref(realtimeDb, `rooms/${roomCode}`), {
                         'state/currentIndex': nextIndex,
                         'state/currentVideo': queue[nextIndex],
-                        'state/controls/isPlaying': true
+                        'state/controls/isPlaying': true,
+                        'state/timestamp': Date.now()
                     });
                 }
             } else {
@@ -169,7 +170,8 @@ const TVPage = () => {
                 if (realtimeDb) {
                     await update(ref(realtimeDb, `rooms/${roomCode}`), {
                         'state/currentVideo': null,
-                        'state/controls/isPlaying': false
+                        'state/controls/isPlaying': false,
+                        'state/timestamp': Date.now()
                     });
                 }
             }

@@ -390,8 +390,12 @@ export class CastService {
                     if (typeof command.payload?.time === 'number') store.seekTo(command.payload.time);
                     break;
                 case 'REMOVE_AT':
-                    // Need UUID to remove safely
-                    if (command.payload?.uuid) store.removeFromQueue(command.payload.uuid);
+                    // Need UUID to remove safely, but fallback to index or videoId if needed
+                    if (command.payload?.uuid) {
+                        store.removeFromQueue(command.payload.uuid);
+                    } else if (typeof command.payload?.index === 'number') {
+                        store.removeVideoAtIndex(command.payload.index);
+                    }
                     break;
                 case 'SET_VOLUME':
                     if (command.payload?.volume) store.setVolume(command.payload.volume);
