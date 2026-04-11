@@ -42,8 +42,8 @@ export class CastService {
         // ROLE DIFFERENTIATION
         if (this.role === 'host') {
             this.setupHostSync();
-            // v5.3.93: Host MUST also listen to sync from Firebase in case Monitor/Remote updates state (e.g. deletion)
-            this.setupMonitorSync(); 
+            // v5.3.94: Host only needs to listen to queue updates to handle remote deletions
+            this.setupQueueOnlySync(); 
         } else if (this.role === 'monitor') {
             this.setupMonitorSync();
         }
@@ -232,6 +232,20 @@ export class CastService {
 
         // 3. Monitor listens for direct commands (SEEK, NEXT, etc.)
         this.startCommandListener();
+    }
+    
+    private setupQueueOnlySync() {
+        if (!this.roomCode || !realtimeDb) return;
+        const stateRef = ref(realtimeDb, `rooms/${this.roomCode}/state/queue`);
+        this.unsubscribe = onValue(stateRef, (snapshot) => {
+            const queue = snapshot.val() || [];
+            const store = usePlayerStore.getState();
+            // Only update if lengths differ to avoid loops
+            if (queue.length !== store.queue.length) {
+                console.log('📥 Host: Syncing Queue only (Remote update detected)');
+                usePlayerStore.setState({ queue });
+            }
+        });
     }
 
     private applyMonitorState(data: any) {

@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.94 (Audio Recovery)",
+        date: "11 เม.ย. 2569",
+        changes: [
+            "RESTORE: Re-implemented the initial Audio Unlocker (YOUOKE READY) to bypass browser autoplay blocks",
+            "FIX: Corrected Host-Monitor sync logic to prevent playback loops",
+            "PERFORMANCE: Optimized state updates to ensure seamless transitions between songs",
+            "UI: Improved the visual aesthetics of the start-up prompt (Glassmorphism)"
+        ],
+        recent_updates: "Audio Recovery"
+    },
+    {
         version: "v5.3.93 (Peace Treaty Sync)",
         date: "11 เม.ย. 2569",
         changes: [

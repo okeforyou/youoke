@@ -53,7 +53,7 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
     const [showInfoToast, setShowInfoToast] = useState(false);
     // const [showSplash, setShowSplash] = useState(false);
     const [activeNotification, setActiveNotification] = useState<{ message: string, sub: string, type: 'added' | 'upnext' } | null>(null);
-    const [hasInteracted, setHasInteracted] = useState(true); // Default true for v5.3.91 (Seamless)
+    const [hasInteracted, setHasInteracted] = useState(false); // v5.3.94: Must be false initially
     const [autoplayBlocked, setAutoplayBlocked] = useState(false);
 
     // Effect: Handle Song Splash on Video Change Removed
@@ -111,6 +111,13 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
         if (isPlaying && currentVideo) {
             try {
                 event.target.playVideo();
+                // v5.3.94: Minimal check for initial block
+                setTimeout(async () => {
+                    const state = await event.target.getPlayerState();
+                    if ((state as any) !== 1 && (state as any) !== 3 && !hasInteracted) {
+                        setAutoplayBlocked(true);
+                    }
+                }, 2000);
             } catch (err) {
                 console.warn('📺 TV: Initial Play failed:', err);
             }
@@ -210,7 +217,24 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
             )} />
 
             {/* TV Autoplay Block Prompt (Invisible overlay capturing first click) */}
-            {/* TV Autoplay Block Prompt Removed for v5.3.91 Seamless Experience */}
+            {/* v5.3.94: Premium Non-Intrusive Audio Unlocker */}
+            {autoplayBlocked && !hasInteracted && (
+                <div 
+                  onClick={handleInteraction} 
+                  className="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-black/80 backdrop-blur-md cursor-pointer animate-in fade-in duration-500"
+                >
+                    <div className="bg-white/10 border border-white/20 p-10 rounded-[40px] text-center space-y-6 shadow-2xl hover:bg-white/15 transition-all group active:scale-95">
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full group-hover:bg-primary/40 transition-all"></div>
+                          <PlayCircleIcon className="w-24 h-24 text-primary mx-auto relative z-10 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]" />
+                        </div>
+                        <div className="space-y-2">
+                          <h2 className="text-4xl font-black text-white tracking-tighter">YOUOKE READY</h2>
+                          <p className="text-lg text-white/60 font-medium">กดปุ่ม <span className="text-primary font-bold">OK</span> หรือ <span className="text-primary font-bold">คลิก</span> เพื่อเริ่มความบันเทิง</p>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* v5.0.5: Connection Status Indicator (Top Right Dot) */}
             <div className="absolute top-6 right-6 z-[100] flex items-center gap-3">
