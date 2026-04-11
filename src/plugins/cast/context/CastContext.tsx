@@ -600,14 +600,25 @@ export function CastProvider({ children }: { children: ReactNode }) {
             try { activeSession.sendMessage(CAST_NAMESPACE, { type: 'GET_STATE' }); } catch(e) {}
           }, 500);
         } else if (isConnected || sleepDuration > 1200000) {
-          // v5.4.4: Long-lived Persistent Recovery (20-minute window)
-          // To match the /remote system, we don't want to give up quickly.
-          // We will keep the UI in 'Connected' state and poll the SDK aggressively.
-          logger.log('😴 Awake. Attempting silent session recovery (20m window starts)...');
+          // v5.4.9: Deep Wake-up Pulse (Matching /remote behavior)
+          logger.log('💓 Screen Awake: Triggering Deep SDK Recon...');
           
+          try {
+            const cast = (window as any).cast;
+            if (cast?.framework) {
+              const ctx = cast.framework.CastContext.getInstance();
+              ctx.setOptions({
+                autoJoinPolicy: (window as any).chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
+                receiverApplicationId: '4FB4C174'
+              });
+            }
+          } catch(e) { /* ignore */ }
+
           let pollCount = 0;
-          const maxPolls = 600; // 20 minutes (one poll every 2s)
+          const maxPolls = 600; 
           
+          if (recoveryIntervalRef.current) clearInterval(recoveryIntervalRef.current);
+
           const recoveryInterval = setInterval(() => {
             pollCount++;
             const recoveredSession = context.getCurrentSession();
@@ -626,22 +637,11 @@ export function CastProvider({ children }: { children: ReactNode }) {
               recoveryIntervalRef.current = null;
               setIsConnected(false);
               setCastSession(null);
-            } else if (pollCount % 15 === 0) {
-              logger.debug(`⏳ Still searching for previous Cast session... (${Math.round((pollCount*2)/60)}m elapsed)`);
+              localStorage.removeItem('youoke_is_casting_google');
             }
-          }, 2000); // Poll every 2 seconds
+          }, 2000); 
 
           recoveryIntervalRef.current = recoveryInterval;
-
-          // Ensure we cleanup if user navigates or visibility changes again
-          const cleanup = () => {
-            clearInterval(recoveryInterval);
-            if (recoveryIntervalRef.current === recoveryInterval) {
-               recoveryIntervalRef.current = null;
-            }
-          };
-          document.addEventListener('visibilitychange', cleanup, { once: true });
-        }
       }
       lastActiveTimeRef.current = now;
     };

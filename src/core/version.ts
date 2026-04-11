@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.4.9 (Deep Recovery Pulse)",
+        date: "11 เม.ย. 2569",
+        changes: [
+            "FIX: Implemented 'Deep Wake-up' logic that forces Google Cast SDK to re-scan the network immediately upon screen wake",
+            "RECOVERY: Added SDK nudge (options refresh) to eliminate the 5-10 second idle wait time after resuming the app",
+            "UI: Synchronized the recovery heartbeat to match the responsiveness of the /remote system",
+        ],
+        recent_updates: "Chromecast Deep Recon"
+    },
+    {
         version: "v5.4.8 (Universal Persistence)",
         date: "11 เม.ย. 2569",
         changes: [
