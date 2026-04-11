@@ -14,6 +14,7 @@ interface CastContextValue {
   castSession: chrome.cast.Session | null;
   receiverName: string;
   connectionQuality: 'good' | 'weak' | 'lost';
+  isRecovering: boolean; // v5.5.3: Visual Pulse Track
 
   // Queue State
   playlist: QueueItem[]; // Changed from QueueVideo
@@ -86,6 +87,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
   const [receiverName, setReceiverName] = useState('');
   const [receiverStateReceived, setReceiverStateReceived] = useState(false);  // Track if we got state from receiver
   const [connectionQuality, setConnectionQuality] = useState<'good' | 'weak' | 'lost'>('good');
+  const [isRecovering, setIsRecovering] = useState(false); // v5.5.3: Visual Pulse Track
   const lastPongTimeRef = useRef<number>(Date.now());
 
   // Use Global Store as Source of Truth
@@ -304,6 +306,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
       if (wasCasting && !currentSession) {
         logger.log('🔄 [Boot] Was casting but session is null. Starting aggressive boot-up poll...');
         setIsConnected(true); // Show UI immediately
+        setIsRecovering(true); // v5.5.3: Start pulse
         
         let bootPoll = 0;
         const bootInterval = setInterval(() => {
@@ -312,10 +315,12 @@ export function CastProvider({ children }: { children: ReactNode }) {
           if (session) {
             logger.log('✅ [Boot] Session recovered via boot-poll!');
             clearInterval(bootInterval);
+            setIsRecovering(false); // v5.5.3: End pulse
             handleSessionStarted(session);
           } else if (bootPoll >= 30) { // Give up after 60s of boot-polling
             logger.log('❌ [Boot] Failed to recover session after 60s.');
             clearInterval(bootInterval);
+            setIsRecovering(false); // v5.5.3: End pulse
             setIsConnected(false);
             localStorage.removeItem('youoke_is_casting_google');
           }
@@ -622,6 +627,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
 
           let pollCount = 0;
           const maxPolls = 600; 
+          setIsRecovering(true); // v5.5.3: Visual Pulse Start
           
           if (recoveryIntervalRef.current) clearInterval(recoveryIntervalRef.current);
 
@@ -632,6 +638,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
             if (recoveredSession) {
               logger.log(`✅ Session recovered successfully after ${pollCount * 2}s!`);
               clearInterval(recoveryInterval);
+              setIsRecovering(false); // v5.5.3: Visual Pulse End
               recoveryIntervalRef.current = null;
               handleSessionStarted(recoveredSession);
               setTimeout(() => {
@@ -640,6 +647,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
             } else if (pollCount >= maxPolls) {
               logger.log('❌ Failed to recover session after 20 minutes. Disconnecting.');
               clearInterval(recoveryInterval);
+              setIsRecovering(false); // v5.5.3: Visual Pulse End
               recoveryIntervalRef.current = null;
               setIsConnected(false);
               setCastSession(null);
@@ -1207,6 +1215,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
     seekTo,
     updateCurrentIndexSilent,
     connectionQuality,
+    isRecovering,
   }), [
     isAvailable,
     isConnected,
@@ -1216,6 +1225,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
     currentIndex,
     currentVideo,
     connectionQuality,
+    isRecovering,
     // Functions (memoized implicitly as they are stable or depend on these deps)
     // Note: If functions above are not memoized, this useMemo is less effective but still better than nothing.
     // Ideally, functions like play, pause etc which use refs should be memoized or safe.

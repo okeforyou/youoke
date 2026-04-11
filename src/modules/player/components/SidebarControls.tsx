@@ -70,7 +70,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
     const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
     const { setCastModalOpen } = useUIStore();
     const cast = useCast();
-    const { isConnected } = cast;
+    const { isConnected, isRecovering } = cast;
 
     const isAnyCastOn = (castMode !== 'none' && castMode !== undefined) || isConnected;
 
@@ -134,7 +134,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
         },
         {
             icon: Cast,
-            label: isAnyCastOn ? "ยกเลิก" : "CAST",
+            label: isRecovering ? "กำลังเชื่อมต่อ..." : (isAnyCastOn ? "ยกเลิก" : "CAST"),
             onClick: () => {
                 // v5.5.0: UNIVERSAL NAV - Always open modal regardless of mode.
                 // Re-sync logic is only for 'google' mode ghost states.
@@ -146,7 +146,7 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                 setCastModalOpen(true);
             },
             active: isAnyCastOn,
-            color: isAnyCastOn ? "text-red-500" : "text-black"
+            color: isRecovering ? "text-orange-500" : (isAnyCastOn ? "text-red-500" : "text-black")
         }
     ];
 
@@ -165,23 +165,29 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                     >
                         <div className={clsx(
                             "p-1 rounded-lg transition-all duration-300 relative",
-                            item.active ? (item.label === "ยกเลิก" ? "text-white bg-red-500 shadow-sm" : "text-primary bg-primary/10") : "text-black dark:text-zinc-400 group-hover:text-black dark:group-hover:text-white"
+                            item.active ? (
+                                item.label === "CAST" || item.label === "ยกเลิก" || item.label === "กำลังเชื่อมต่อ..." ? 
+                                (isRecovering ? "text-white bg-orange-500 animate-pulse shadow-md" : (isAnyCastOn ? "text-white bg-red-500 shadow-sm" : "text-white bg-black")) 
+                                : "text-primary bg-primary/10"
+                            ) : "text-black dark:text-zinc-400 group-hover:text-black dark:group-hover:text-white"
                         )}>
                             <item.icon
                                 size={20}
                                 strokeWidth={item.active ? 2.2 : 1.5}
                                 className={clsx("transition-transform duration-300", item.active && "scale-105")}
                             />
-                            {item.label === "ยกเลิก" && isAnyCastOn && (
+                            {item.label === "ยกเลิก" && isAnyCastOn && !isRecovering && (
                                 <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full animate-pulse border-2 border-white dark:border-zinc-950 shadow-sm"></span>
                             )}
-                            {item.active && item.label !== "ยกเลิก" && (
+                            {item.active && item.label !== "ยกเลิก" && !isRecovering && (
                                 <div className="absolute inset-0 bg-primary/5 blur-md -z-10" />
                             )}
                         </div>
                         <span className={clsx(
                             "text-[10px] font-medium uppercase tracking-wide transition-colors duration-200 mt-0.5",
-                            item.active ? (item.label === "ยกเลิก" ? "text-red-600" : "text-black dark:text-zinc-200") : "text-black/60 dark:text-zinc-500"
+                            item.active ? (
+                                item.label === "กำลังเชื่อมต่อ..." ? "text-orange-600" : (isAnyCastOn ? "text-red-600" : "text-black dark:text-zinc-200")
+                            ) : "text-black/60 dark:text-zinc-500"
                         )}>
                             {item.label}
                         </span>

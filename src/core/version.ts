@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.5.3 (Tactile Feedback)",
+        date: "11 เม.ย. 2569",
+        changes: [
+            "UI: Implemented visual status pulse on the Cast button (Orange = Reconnecting, Red = Active)",
+            "UX: Added 'กำลังเชื่อมต่อ...' label while the app is silently recovering a lost session",
+            "LOGIC: Exposed isRecovering state to all navigation components for real-time connection feedback",
+        ],
+        recent_updates: "Tactile Cast Feedback"
+    },
+    {
         version: "v5.5.2 (Sticky Core)",
         date: "11 เม.ย. 2569",
         changes: [
