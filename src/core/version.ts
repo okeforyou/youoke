@@ -1,5 +1,14 @@
 export const CHANGELOGS = [
     {
+        version: "v5.5.5 (Disconnect Hotfix)",
+        date: "11 เม.ย. 2569",
+        changes: [
+            "FIX: Corrected handleDisconnect hook dependencies to ensure the disconnect button remains responsive",
+            "STABILITY: Verified manual disconnection across all modes (Google, Smart TV, Dual Screen)",
+        ],
+        recent_updates: "Manual Disconnect Fix"
+    },
+    {
         version: "v5.5.4 (Universal Recovery Pulse)",
         date: "11 เม.ย. 2569",
         changes: [

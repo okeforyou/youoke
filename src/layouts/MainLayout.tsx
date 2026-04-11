@@ -346,7 +346,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         });
 
         addToast('ตัดการเชื่อมต่อสำเร็จ');
-    }, [castMode, roomCode, realtimeDb, addToast, setCastMode, setCastModalOpen, disconnectGoogleCast]);
+    }, [castMode, roomCode, realtimeDb, addToast, setCastMode, setCastModalOpen, disconnectGoogleCast, setIsRecovering]);
 
     const handleJoinRoom = (code: string) => {
         setPartyPIN(code);
