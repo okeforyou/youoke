@@ -105,7 +105,8 @@ const TVPage = () => {
         const stateRef = ref(realtimeDb, `rooms/${roomCode}/state`);
         const unsubscribeState = onValue(stateRef, (snapshot) => {
             const data = snapshot.val();
-            if (data && data.timestamp) {
+            // v5.3.96: Accept state with timestamp OR lastUpdated (CastService writes lastUpdated)
+            if (data && (data.timestamp || data.lastUpdated || data.queue)) {
                 console.log('📥 TV: Received Host State Update', data.currentVideo?.title);
                 setState(prev => ({
                     ...prev,
