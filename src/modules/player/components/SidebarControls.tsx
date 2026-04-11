@@ -136,19 +136,11 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             icon: Cast,
             label: isAnyCastOn ? "ยกเลิก" : "CAST",
             onClick: () => {
-                // v4.10.117: CRITICAL SYNC - Prioritize SDK status over UI stale state
-                // If the SDK says we are NOT connected, but UI thinks we are (Ghost State), 
-                // we MUST clear UI state to 'none' before opening modal. 
-                // This ensures the Modal shows the 'Selection/QR' screen instead of 'Control' screen.
+                // v5.4.6: FIX - Never disconnect immediately on button click.
+                // Always open the Modal to let the user manage the connection or see status.
+                // The 'Disconnect' button inside the Modal is the correct place for manual cancellation.
                 if (!isConnected && isAnyCastOn) {
                     console.log("🔄 [SidebarControls] Re-syncing stale UI: SDK disconnected. Resetting UI state...");
-                    useUIStore.getState().setCastMode('none');
-                }
-                
-                if (isConnected) {
-                    console.log("🔌 [SidebarControls] Explicit manual disconnect triggered.");
-                    cast.disconnect();
-                    // Force UI state to 'none' immediately to allow QR access without delay
                     useUIStore.getState().setCastMode('none');
                 }
                 

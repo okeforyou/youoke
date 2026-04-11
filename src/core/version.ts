@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.4.6 (Correct Cast Flow)",
+        date: "11 เม.ย. 2569",
+        changes: [
+            "FIX: Corrected the Cast button behavior to always open the selection modal instead of triggering an instant disconnect",
+            "UX: Enabled users to manage active connections and see status within the modal before deciding to disconnect",
+            "UI: Synchronized SidebarControls to focus strictly on UI navigation for casting",
+        ],
+        recent_updates: "Correct Cast UX Flow"
+    },
+    {
         version: "v5.4.5 (Reliable Disconnect)",
         date: "11 เม.ย. 2569",
         changes: [
