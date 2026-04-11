@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.5.2 (Sticky Core)",
+        date: "11 เม.ย. 2569",
+        changes: [
+            "FIX: Implemented 'Sticky Initial State' to prevent UI sabotage during cold boots (5+ min sleep)",
+            "LOGIC: Cast status now defaults to TRUE if previously connected, ensuring UI controls remain visible while SDK scans",
+            "STABILITY: Eliminated the race condition where MainLayout would reset castMode before recovery could trigger",
+        ],
+        recent_updates: "Cold Boot Persistence"
+    },
+    {
         version: "v5.5.1 (Syntax Hotfix)",
         date: "11 เม.ย. 2569",
         changes: [

@@ -75,8 +75,14 @@ type CastMessage =
 
 export function CastProvider({ children }: { children: ReactNode }) {
   const [isAvailable, setIsAvailable] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
-  const [castSession, setCastSession] = useState<chrome.cast.Session | null>(null);
+  const [isConnected, setIsConnected] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('youoke_is_casting_google') === 'true' || 
+             localStorage.getItem('youoke_cast_mode') === 'smarttv';
+    }
+    return false;
+  });
+  const [castSession, setCastSession] = useState<any>(null);
   const [receiverName, setReceiverName] = useState('');
   const [receiverStateReceived, setReceiverStateReceived] = useState(false);  // Track if we got state from receiver
   const [connectionQuality, setConnectionQuality] = useState<'good' | 'weak' | 'lost'>('good');
