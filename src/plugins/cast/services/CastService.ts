@@ -182,8 +182,7 @@ export class CastService {
             }
         });
 
-        // Initial Push
-        this.syncMasterState(usePlayerStore.getState());
+        // Initial Push removed to prevent overwriting existing room state on join
     }
 
     private setupMonitorSync() {
@@ -396,6 +395,8 @@ export class CastService {
                     } else if (typeof command.payload?.index === 'number') {
                         store.removeVideoAtIndex(command.payload.index);
                     }
+                    // Force immediate sync to update ALL remote UIs (even if we are a monitor)
+                    this.syncMasterState(usePlayerStore.getState());
                     break;
                 case 'SET_VOLUME':
                     if (command.payload?.volume) store.setVolume(command.payload.volume);
@@ -421,10 +422,12 @@ export class CastService {
                     break;
                 case 'CLEAR_QUEUE':
                     store.clearQueue();
+                    this.syncMasterState(usePlayerStore.getState());
                     break;
                 case 'REORDER_QUEUE':
                     if (Array.isArray(command.payload?.queue)) {
                         store.reorderQueue(command.payload.queue);
+                        this.syncMasterState(usePlayerStore.getState());
                     }
                     break;
                 case 'TOGGLE_FULLSCREEN':

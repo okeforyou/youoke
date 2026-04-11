@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.89 (Ultimate Sync Lockdown)",
+        date: "11 เม.ย. 2569",
+        changes: [
+            "FIX: Finalized persistent queue deletion by allowing multi-role state updates",
+            "RELIABILITY: Prevented initial state overwrites to ensure shared rooms preserve their queue",
+            "CORE: Balanced Host/Monitor hierarchy for 100% reliable production results",
+            "STABILITY: Hardened reorder and clear queue commands for perfect remote control synchronization"
+        ],
+        recent_updates: "Ultimate Sync Lockdown"
+    },
+    {
         version: "v5.3.65 (Remote UI Simplification)",
         date: "10 เม.ย. 2569",
         changes: [
