@@ -68,24 +68,31 @@ export function useCommandExecutor({
           }
 
           case 'ADD_TO_QUEUE': {
-            const { video } = command.payload;
+            const { video, addedBy } = command.payload;
             const queue = currentState.queue || [];
-            const newQueue = [...queue, video];
-
+            
+            // v5.3.92: Ensure addedBy is attached to the video object
+            const videoWithMetadata = { 
+              ...video, 
+              addedBy: addedBy || video.addedBy || null 
+            };
+            
+            const newQueue = [...queue, videoWithMetadata];
+            
             // If queue was empty, auto-play the first song
             if (queue.length === 0) {
               newState = {
                 queue: newQueue,
                 currentIndex: 0,
-                currentVideo: video,
+                currentVideo: videoWithMetadata,
                 controls: { ...currentState.controls, isPlaying: true },
-                notification: { type: 'added', video, timestamp: Date.now() }
+                notification: { type: 'added', video: videoWithMetadata, timestamp: Date.now() }
               };
             } else {
               newState = {
                 queue: newQueue,
                 currentVideo: currentState.currentVideo,
-                notification: { type: 'added', video, timestamp: Date.now() }
+                notification: { type: 'added', video: videoWithMetadata, timestamp: Date.now() }
               };
             }
             break;
@@ -206,14 +213,28 @@ export function useCommandExecutor({
           }
 
           case 'REMOVE_AT': {
-            const { index } = command.payload;
-            const newQueue = currentState.queue.filter((_, i) => i !== index);
+            const { index, uuid } = command.payload;
+            let newQueue = [...currentState.queue];
+            
+            // v5.3.92: Universal Remove Logic (UUID or Index)
+            let actualIndex = index;
+            if (uuid) {
+              const foundIndex = newQueue.findIndex(v => v.uuid === uuid);
+              if (foundIndex !== -1) actualIndex = foundIndex;
+            }
+
+            if (typeof actualIndex !== 'number' || actualIndex < 0 || actualIndex >= newQueue.length) {
+              console.error('❌ REMOVE_AT: Invalid index or uuid not found', { actualIndex, uuid });
+              break;
+            }
+
+            newQueue = newQueue.filter((_, i) => i !== actualIndex);
             let newIndex = currentState.currentIndex;
             let newCurrentVideo = currentState.currentVideo;
 
-            if (index < currentState.currentIndex) {
+            if (actualIndex < currentState.currentIndex) {
               newIndex--;
-            } else if (index === currentState.currentIndex) {
+            } else if (actualIndex === currentState.currentIndex) {
               newCurrentVideo = newQueue[newIndex] || null;
             }
 

@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.92 (Unified Command Engine)",
+        date: "11 เม.ย. 2569",
+        changes: [
+            "FIX: Unified Command Engine between Dashboard and TV receivers",
+            "FIX: Resolved TV deletion issues by enabling UUID-based removal in useCommandExecutor",
+            "RESTORE: Fixed Guest Name visibility on TV and Remote Queue displays",
+            "STABILITY: Improved data mapping for ADD_TO_QUEUE to ensure metadata persistence"
+        ],
+        recent_updates: "Unified Command Engine"
+    },
+    {
         version: "v5.3.91 (Seamless TV Experience)",
         date: "11 เม.ย. 2569",
         changes: [

@@ -244,12 +244,12 @@ export class CastService {
         }));
     }
 
-    private syncMasterState(store: any) {
+    private syncMasterState(store: any, forceSync: boolean = false) {
         if (!this.roomCode || !realtimeDb) return;
         
         // v5.3.91: Allow monitor to sync back state IF it's in the middle of a command execution (like REMOVE_AT)
         // This ensures the remote gets the update even if dashboard is closed.
-        if (this.role !== 'host' && !this.isProcessingSync) return; 
+        if (this.role !== 'host' && !forceSync) return; 
 
         const stateRef = ref(realtimeDb, `rooms/${this.roomCode}/state`);
         const masterState = {
@@ -380,7 +380,7 @@ export class CastService {
                         store.addToQueue(videoToAdd as any);
 
                         // Force immediate sync to update Remote UI
-                        this.syncMasterState(usePlayerStore.getState());
+                        this.syncMasterState(usePlayerStore.getState(), true);
 
                     } else {
                         console.error('❌ ADD_TO_QUEUE missing video payload:', command.payload);
@@ -400,7 +400,7 @@ export class CastService {
                         store.removeVideoAtIndex(command.payload.index);
                     }
                     // Force immediate sync to update ALL remote UIs (even if we are a monitor)
-                    this.syncMasterState(usePlayerStore.getState());
+                    this.syncMasterState(usePlayerStore.getState(), true);
                     break;
                 case 'SET_VOLUME':
                     if (command.payload?.volume) store.setVolume(command.payload.volume);
