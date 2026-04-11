@@ -29,3 +29,26 @@ This workflow ensures all code modifications are safe, targeted, and verified. U
 
 6.  **Final Check**:
     -   Ensure no other parts of the file were accidentally modified (e.g., deleted imports).
+
+## 🛡️ YouOKE Core Safety Rules (Fragile Zones)
+
+**CRITICAL: Do not modify synchronization logic unless you have a 100% verified baseline.**
+
+1.  **Logic Freeze (Sync Core)**:
+    -   Avoid touching `src/hooks/useCommandExecutor.ts`, `src/plugins/cast/services/CastService.ts`, and core state logic in `src/modules/player/stores/usePlayerStore.ts`.
+    -   Small changes here can cause race conditions, double-adding of songs, or infinite loops.
+
+2.  **Command Executor Integrity**:
+    -   **Rule**: Always ensure `snapshot.key` is extracted and used as `id` in `executeCommand`. This is required to mark commands as `completed` and prevent them from re-running on every refresh/reconnect.
+    -   **Rule**: Never blindly append to the queue in `ADD_TO_QUEUE` without checking for existing `uuid` or `videoId` if stability is in question.
+
+3.  **Synchronization Locks**:
+    -   The `isProcessingSync` flag in `CastService.ts` is a lifecycle lock. If you remove or ignore it, the system will enter an "echo loop" where Dashboard and TV fight over the state.
+    -   **Rule**: Always check for this flag before writing to the Firebase `state/` path.
+
+4.  **UI Isolation**:
+    -   Keep CSS and component layout code strictly separated from functional hooks.
+    -   **Rule**: When adding UI elements (like indicators or buttons), do not modify the props or dependency arrays of hooks like `useCmdExec` or `onValue` listeners.
+
+5.  **Reversion Protocol**:
+    -   If a "Polishing" change results in a report of "ระบบรวน" (Glitchy system), immediate **Hard Reset** to the last known stable commit (e.g., v5.3.98 - `9568f005`) is preferred over manual patching.
