@@ -1,5 +1,14 @@
 export const CHANGELOGS = [
     {
+        version: "v5.4.3 (Extra Stability)",
+        date: "11 เม.ย. 2569",
+        changes: [
+            "FIX: Further extended Chromecast recovery window to 15s with 4 re-check points for maximum reliability on mobile wake-up",
+            "LOGIC: Improved silent background re-binding logic to match premium streaming app behavior",
+        ],
+        recent_updates: "Extra Chromecast Stability"
+    },
+    {
         version: "v5.4.2 (Chromecast Stability)",
         date: "11 เม.ย. 2569",
         changes: [
