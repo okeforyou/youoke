@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.4.0 (UI Restoration & Cast UX)",
+        date: "11 เม.ย. 2569",
+        changes: [
+            "UI: Restored per-item Disconnect button inside the active cast mode item (HDMI, Smart TV, Google Cast, YouTube)",
+            "UI: Enhanced active mode indicator with green ring and internal red disconnect button for improved clarity",
+            "CLEANUP: Removed redundant global disconnect button at the bottom of the modal",
+        ],
+        recent_updates: "UI Restoration & Cast UX"
+    },
+    {
         version: "v5.3.99 (Cast Recovery & Queue Guard)",
         date: "11 เม.ย. 2569",
         changes: [
