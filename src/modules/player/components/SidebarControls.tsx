@@ -136,17 +136,14 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             icon: Cast,
             label: isRecovering ? "กำลังเชื่อมต่อ..." : (isAnyCastOn ? "ยกเลิก" : "CAST"),
             onClick: () => {
-                // v5.5.0: UNIVERSAL NAV - Always open modal regardless of mode.
-                // Re-sync logic is only for 'google' mode ghost states.
                 if (castMode === 'google' && !isConnected) {
-                    console.log("🔄 [SidebarControls] Re-syncing stale Google Cast UI...");
                     useUIStore.getState().setCastMode('none');
                 }
-                
                 setCastModalOpen(true);
             },
             active: isAnyCastOn,
-            color: isRecovering ? "text-orange-500" : (isAnyCastOn ? "text-red-500" : "text-black")
+            // v5.5.6: Neutral color for icon, state moved to the dot indicator
+            color: "text-black dark:text-zinc-200"
         }
     ];
 
@@ -167,7 +164,8 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                             "p-1 rounded-lg transition-all duration-300 relative",
                             item.active ? (
                                 item.label === "CAST" || item.label === "ยกเลิก" || item.label === "กำลังเชื่อมต่อ..." ? 
-                                (isRecovering ? "text-white bg-orange-500 animate-pulse shadow-md" : (isAnyCastOn ? "text-white bg-red-500 shadow-sm" : "text-white bg-black")) 
+                                // v5.5.6: Cast icon stays neutral, status is in the dot
+                                "text-black dark:text-zinc-200" 
                                 : "text-primary bg-primary/10"
                             ) : "text-black dark:text-zinc-400 group-hover:text-black dark:group-hover:text-white"
                         )}>
@@ -176,10 +174,17 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                 strokeWidth={item.active ? 2.2 : 1.5}
                                 className={clsx("transition-transform duration-300", item.active && "scale-105")}
                             />
-                            {item.label === "ยกเลิก" && isAnyCastOn && !isRecovering && (
-                                <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full animate-pulse border-2 border-white dark:border-zinc-950 shadow-sm"></span>
+                            {/* v5.5.6: Unified Status Dot for Cast Modes */}
+                            {(item.label === "CAST" || item.label === "ยกเลิก" || item.label === "กำลังเชื่อมต่อ...") && (
+                                <>
+                                    {isRecovering ? (
+                                        <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-orange-500 rounded-full animate-pulse border-2 border-white dark:border-zinc-950 shadow-sm"></span>
+                                    ) : isAnyCastOn ? (
+                                        <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white dark:border-zinc-950 shadow-sm"></span>
+                                    ) : null}
+                                </>
                             )}
-                            {item.active && item.label !== "ยกเลิก" && !isRecovering && (
+                            {item.active && item.label !== "ยกเลิก" && item.label !== "กำลังเชื่อมต่อ..." && item.label !== "CAST" && (
                                 <div className="absolute inset-0 bg-primary/5 blur-md -z-10" />
                             )}
                         </div>
@@ -189,7 +194,10 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                 item.label === "กำลังเชื่อมต่อ..." ? "text-orange-600" : (isAnyCastOn ? "text-red-600" : "text-black dark:text-zinc-200")
                             ) : "text-black/60 dark:text-zinc-500"
                         )}>
-                            {item.label}
+                            {/* v5.5.6: Hide label for Cast items to prevent overflow */}
+                            {item.label !== "CAST" && item.label !== "ยกเลิก" && item.label !== "กำลังเชื่อมต่อ..." && (
+                                item.label
+                            )}
                         </span>
                     </button>
                 ))}

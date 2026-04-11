@@ -1,4 +1,4 @@
-# Workflow: Communication & Context Standard
+# Workflow: Context Windows & Communication Standard
 
 แนวทางปฏิบัติสำหรับการสื่อสารระหว่าง AI และ USER เพื่อประสิทธิภาพสูงสุด
 

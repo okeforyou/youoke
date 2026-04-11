@@ -5,8 +5,9 @@ export const CHANGELOGS = [
         changes: [
             "FIX: Resolved ReferenceError by correctly destructuring setIsRecovering in MainLayout",
             "CI/CD: Ensured production-ready build for Vercel deployments",
+            "UI: Refactored SidebarControls Cast button to use status dots (Green/Orange) and removed overflowing text labels",
         ],
-        recent_updates: "Next.js Build Fix"
+        recent_updates: "Sidebar UI Polish"
     },
     {
         version: "v5.5.5 (Disconnect Hotfix)",
