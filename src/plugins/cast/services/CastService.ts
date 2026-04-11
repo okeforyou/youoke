@@ -42,8 +42,6 @@ export class CastService {
         // ROLE DIFFERENTIATION
         if (this.role === 'host') {
             this.setupHostSync();
-            // v5.3.94: Host only needs to listen to queue updates to handle remote deletions
-            this.setupQueueOnlySync(); 
         } else if (this.role === 'monitor') {
             this.setupMonitorSync();
         }
@@ -149,10 +147,11 @@ export class CastService {
 
         console.log("👑 Master Controller Mode: Pushing local state to Monitor...");
 
-        // 1. Dashboard is the BOSS: Push every change in our local store to Firebase
+        // 1. Dashboard is the BOSS: Push every local change to Firebase
+        //    BUT only if WE are not the ones who triggered the change from a remote command
         let lastSyncKey = '';
         this.unsubscribe = usePlayerStore.subscribe((state, prevState) => {
-            if (this.isProcessingSync) return; // Prevent loop if we're updating from monitor progress
+            if (this.isProcessingSync) return; // 🔒 Skip if we just applied a remote update
 
             // A. Full State Sync for heavy changes (Queue, Play/Pause, Video Change)
             const syncKey = `${state.currentSource}-${state.isPlaying}-${state.queue.length}-${state.layoutMode}-${state.currentIndex}`;
@@ -161,30 +160,45 @@ export class CastService {
                 this.syncMasterState(state);
             }
 
-            // B. Manual Seek Detection (Significant jump not caused by progress reporting)
+            // B. Manual Seek Detection
             if (Math.abs(state.currentTime - prevState.currentTime) > 5) {
                 console.log('👆 User manual seeked to:', state.currentTime);
                 this.sendCommand({ type: 'SEEK', payload: { time: state.currentTime } });
             }
         });
 
-        // 2. Dashboard listens to progress (CurrentTime) reported by the Monitor
-        const controlsRef = ref(realtimeDb, `rooms/${this.roomCode}/state/controls`);
-        this.stateListenerOff = onValue(controlsRef, (snapshot) => {
-            const val = snapshot.val();
-            if (val && !usePlayerStore.getState().isPlaying) {
-                // Only sync time back if we are the host and need to see progress
+        // 2. Host listens to Firebase state changes (deletions from TV/Remote)
+        //    Uses isProcessingSync to prevent writing stale data back up
+        const stateRef = ref(realtimeDb, `rooms/${this.roomCode}/state`);
+        this.stateListenerOff = onValue(stateRef, (snapshot) => {
+            const data = snapshot.val();
+            if (!data) return;
+
+            const store = usePlayerStore.getState();
+            const remoteQueueLen = Array.isArray(data.queue) ? data.queue.length : Object.values(data.queue || {}).length;
+            const localQueueLen = store.queue.length;
+
+            // v5.3.95: If remote queue is SHORTER, someone deleted — apply & lock sync
+            if (remoteQueueLen < localQueueLen) {
+                console.log('📥 Host: Remote queue is shorter — applying deletion from TV/Remote');
                 this.isProcessingSync = true;
-                usePlayerStore.getState().syncRemoteTime(val.currentTime || 0);
-                if (val.duration) usePlayerStore.getState().setDuration(val.duration);
+                const queue = Array.isArray(data.queue) ? data.queue : Object.values(data.queue || []);
+                usePlayerStore.setState({ 
+                    queue,
+                    currentIndex: data.currentIndex ?? store.currentIndex 
+                });
                 this.isProcessingSync = false;
-            } else if (val) {
-                // Just sync the time for the progress bar
-                usePlayerStore.getState().syncRemoteTime(val.currentTime || 0);
+                return;
+            }
+
+            // Progress sync only
+            if (data.controls) {
+                this.isProcessingSync = true;
+                store.syncRemoteTime(data.controls.currentTime || 0);
+                if (data.controls.duration) store.setDuration(data.controls.duration);
+                this.isProcessingSync = false;
             }
         });
-
-        // Initial Push removed to prevent overwriting existing room state on join
     }
 
     private setupMonitorSync() {
@@ -234,19 +248,6 @@ export class CastService {
         this.startCommandListener();
     }
     
-    private setupQueueOnlySync() {
-        if (!this.roomCode || !realtimeDb) return;
-        const stateRef = ref(realtimeDb, `rooms/${this.roomCode}/state/queue`);
-        this.unsubscribe = onValue(stateRef, (snapshot) => {
-            const queue = snapshot.val() || [];
-            const store = usePlayerStore.getState();
-            // Only update if lengths differ to avoid loops
-            if (queue.length !== store.queue.length) {
-                console.log('📥 Host: Syncing Queue only (Remote update detected)');
-                usePlayerStore.setState({ queue });
-            }
-        });
-    }
 
     private applyMonitorState(data: any) {
         usePlayerStore.setState((prev) => ({
@@ -263,14 +264,7 @@ export class CastService {
     private syncMasterState(store: any, forceSync: boolean = false) {
         if (!this.roomCode || !realtimeDb) return;
         
-        // v5.3.93: Guard against overwriting newer remote updates with older local state
-        const now = Date.now();
-        if (store.lastUpdated && store.lastUpdated > now) {
-            console.log('⏳ Skipping sync: Local state is older than last remote update');
-            return;
-        }
-
-        // v5.3.91: Allow monitor to sync back state IF it's in the middle of a command execution (like REMOVE_AT)
+        // v5.3.95: Only host or forceSync can write state
         if (this.role !== 'host' && !forceSync) return; 
 
         const stateRef = ref(realtimeDb, `rooms/${this.roomCode}/state`);
