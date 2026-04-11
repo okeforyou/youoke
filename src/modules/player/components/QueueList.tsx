@@ -115,9 +115,10 @@ export function QueueList() {
     const { queue, removeFromQueue, currentIndex, setCurrentIndex, reorderQueue, clearQueue } = usePlayerStore();
     const { showConfirm } = useUIStore();
 
-    // Derived State
-    const queueItems = queue.slice(currentIndex + 1);
-    const remainingCount = Math.max(0, queue.length - (currentIndex + 1));
+    // v5.3.99: Guard against stale currentIndex during queue transitions (display-only fix)
+    const safeCurrentIndex = Math.min(currentIndex, Math.max(0, queue.length - 1));
+    const queueItems = queue.slice(safeCurrentIndex + 1);
+    const remainingCount = queueItems.length;
 
     const sensors = useSensors(
         useSensor(PointerSensor, {

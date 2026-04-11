@@ -1,5 +1,14 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.99 (Cast Recovery & Queue Guard)",
+        date: "11 เม.ย. 2569",
+        changes: [
+            "FIX: Corrected Chromecast sender-side session recovery — was incorrectly using CastReceiverContext (TV SDK) instead of CastContext (Sender SDK) causing controls to freeze after phone screen wakes up",
+            "FIX: Added safe index guard in QueueList to prevent mismatched queue count display during state transitions",
+        ],
+        recent_updates: "Cast Recovery & Queue Guard"
+    },
+    {
         version: "v5.3.98 (Logic Sync Master)",
         date: "11 เม.ย. 2569",
         changes: [

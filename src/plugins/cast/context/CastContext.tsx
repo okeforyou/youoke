@@ -557,7 +557,8 @@ export function CastProvider({ children }: { children: ReactNode }) {
         const cast = (window as any).cast;
         if (!cast?.framework) return;
 
-        const context = cast.framework.CastReceiverContext?.getInstance() || cast.framework.CastContext.getInstance();
+        // v5.3.99: Fix: CastReceiverContext is for TV receivers, NOT senders. Always use CastContext here.
+        const context = cast.framework.CastContext.getInstance();
         const activeSession = context.getCurrentSession();
         
         // v5.0.4: Enhanced Discovery & Recovery
