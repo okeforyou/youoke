@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.98 (Logic Sync Master)",
+        date: "11 เม.ย. 2569",
+        changes: [
+            "FIX: Resolved song duplication by correctly extracting command ID from snapshot.key",
+            "RESTORE: Re-implemented the initial Audio Unlocker to bypass autoplay blocks",
+            "STABILITY: Finalized v5.3.98 as the stable logic baseline for Host-Monitor sync"
+        ],
+        recent_updates: "Logic Sync Master"
+    },
+    {
         version: "v5.3.94 (Audio Recovery)",
         date: "11 เม.ย. 2569",
         changes: [
