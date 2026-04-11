@@ -572,15 +572,31 @@ export function CastProvider({ children }: { children: ReactNode }) {
           }, 500);
         } else if (isConnected || sleepDuration > 300000) {
           // If we think we're connected but session is gone, or we slept for > 5 mins
-          logger.log('😴 Long sleep or lost session. Attempting recovery...');
-          // We don't force disconnect yet, let the SDK try to resume if possible
-          // But we refresh the UI to show reality if it doesn't resume in 2s
+          logger.log('😴 Long sleep or lost session. Waiting for SDK to recover before giving up...');
+          // v5.4.2: Extended wait window. The Google Cast SDK on Android/iOS often needs
+          // several seconds to re-establish the session after screen wake.
+          // We try to re-check at 3s and 5s before finally giving up at 8s.
+          const tryRecoverAt = (delay: number) => setTimeout(() => {
+            const recoveredSession = context.getCurrentSession();
+            if (recoveredSession) {
+              logger.log(`✅ Session recovered at ${delay}ms! Re-binding...`);
+              handleSessionStarted(recoveredSession);
+              setTimeout(() => {
+                try { recoveredSession.sendMessage(CAST_NAMESPACE, { type: 'GET_STATE' }); } catch(e) {}
+              }, 300);
+            }
+          }, delay);
+
+          tryRecoverAt(3000);
+          tryRecoverAt(5000);
+
           setTimeout(() => {
             if (!context.getCurrentSession()) {
+              logger.log('❌ Session still null after 8s. Accepting disconnection.');
               setIsConnected(false);
               setCastSession(null);
             }
-          }, 2000);
+          }, 8000);
         }
       }
       lastActiveTimeRef.current = now;

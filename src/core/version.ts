@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.4.2 (Chromecast Stability)",
+        date: "11 เม.ย. 2569",
+        changes: [
+            "FIX: Extended Chromecast session recovery window from 2s → 8s with intermediate retries at 3s and 5s to prevent premature disconnection after device screen wake",
+            "FIX: Added bidirectional sync bridge between Google Cast SDK and UI castMode — disconnect button now always appears correctly for Google Cast",
+            "FIX: UI auto-cleans castMode when SDK detects session dropped (e.g. TV powered off)",
+        ],
+        recent_updates: "Chromecast Stability"
+    },
+    {
         version: "v5.4.1 (Queue Sync Fix)",
         date: "11 เม.ย. 2569",
         changes: [

@@ -235,6 +235,22 @@ export default function MainLayout({ children }: MainLayoutProps) {
         }
     }, [layoutMode, mounted]);
 
+    // v5.4.2: Google Cast SDK <-> UI castMode sync bridge
+    // The SDK manages its own session state independently of our UI state.
+    // This bridge ensures the 'Disconnect' button appears correctly when Cast is active,
+    // and cleans up castMode when the SDK loses the session (e.g. TV off, timeout).
+    useEffect(() => {
+        if (isConnected && castMode !== 'google') {
+            // SDK says we ARE connected, but UI doesn't reflect it → force sync
+            console.log('🔄 [CastSync] SDK isConnected=true but castMode is not google. Syncing...');
+            setCastMode('google');
+        } else if (!isConnected && castMode === 'google') {
+            // SDK says we are NOT connected, but UI still shows google → clean up
+            console.log('🔄 [CastSync] SDK isConnected=false but castMode=google. Cleaning up UI...');
+            setCastMode('none');
+        }
+    }, [isConnected, castMode, setCastMode]);
+
 
 
     const handleCastSelectWebMonitor = () => {
