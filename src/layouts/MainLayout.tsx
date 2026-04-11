@@ -161,7 +161,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
     // Cast & UI Store
     const { isCastModalOpen, setCastModalOpen } = useUIStore();
-    const { connect: connectGoogleCast, disconnect: disconnectGoogleCast, isAvailable: isCastAvailable, isConnected } = useCast();
+    const { connect: connectGoogleCast, disconnect: disconnectGoogleCast, isAvailable: isCastAvailable, isConnected, setIsRecovering } = useCast();
     const isMobile = useIsMobile();
 
     // Stable callback to close QR modals on connection

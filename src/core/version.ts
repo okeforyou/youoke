@@ -1,5 +1,14 @@
 export const CHANGELOGS = [
     {
+        version: "v5.5.6 (Build Fix)",
+        date: "11 เม.ย. 2569",
+        changes: [
+            "FIX: Resolved ReferenceError by correctly destructuring setIsRecovering in MainLayout",
+            "CI/CD: Ensured production-ready build for Vercel deployments",
+        ],
+        recent_updates: "Next.js Build Fix"
+    },
+    {
         version: "v5.5.5 (Disconnect Hotfix)",
         date: "11 เม.ย. 2569",
         changes: [
