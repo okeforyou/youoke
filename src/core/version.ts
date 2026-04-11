@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.3.93 (Peace Treaty Sync)",
+        date: "11 เม.ย. 2569",
+        changes: [
+            "FIX: Resolved Host-Monitor race condition by enabling bi-directional sync for the Host role",
+            "RELIABILITY: Host now listens to Firebase updates to ensure total parity with Monitor deletions",
+            "STABILITY: Added Timestamp Guard to prevent stale states from overwriting newer remote updates",
+            "CORE: Zeroed-out queue bouncing issues for 100% reliable deletion persistence"
+        ],
+        recent_updates: "Peace Treaty Sync"
+    },
+    {
         version: "v5.3.92 (Unified Command Engine)",
         date: "11 เม.ย. 2569",
         changes: [

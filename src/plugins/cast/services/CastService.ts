@@ -40,9 +40,11 @@ export class CastService {
         await this.createRoomIfNotExists(this.roomCode);
 
         // ROLE DIFFERENTIATION
-        if (role === 'host') {
+        if (this.role === 'host') {
             this.setupHostSync();
-        } else {
+            // v5.3.93: Host MUST also listen to sync from Firebase in case Monitor/Remote updates state (e.g. deletion)
+            this.setupMonitorSync(); 
+        } else if (this.role === 'monitor') {
             this.setupMonitorSync();
         }
 
@@ -247,8 +249,14 @@ export class CastService {
     private syncMasterState(store: any, forceSync: boolean = false) {
         if (!this.roomCode || !realtimeDb) return;
         
+        // v5.3.93: Guard against overwriting newer remote updates with older local state
+        const now = Date.now();
+        if (store.lastUpdated && store.lastUpdated > now) {
+            console.log('⏳ Skipping sync: Local state is older than last remote update');
+            return;
+        }
+
         // v5.3.91: Allow monitor to sync back state IF it's in the middle of a command execution (like REMOVE_AT)
-        // This ensures the remote gets the update even if dashboard is closed.
         if (this.role !== 'host' && !forceSync) return; 
 
         const stateRef = ref(realtimeDb, `rooms/${this.roomCode}/state`);
