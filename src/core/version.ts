@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.4.5 (Reliable Disconnect)",
+        date: "11 เม.ย. 2569",
+        changes: [
+            "FIX: Implemented 'Force Disconnect' logic to prevent UI freeze during periodic session recovery polling",
+            "LOGIC: Manual disconnection now explicitly kills all background recovery timers and resets UI state immediately",
+            "STABILITY: Ensured the phone returns to local playback mode instantly when 'Cancel' is clicked, even if Chromecast is offline",
+        ],
+        recent_updates: "Force Disconnect Reliability"
+    },
+    {
         version: "v5.4.4 (Remote-Style Recovery)",
         date: "11 เม.ย. 2569",
         changes: [

@@ -105,6 +105,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
   // Track last index received from Chromecast to prevent echo loops
   const lastReceivedIndexRef = useRef<number>(-1);
   const lastActiveTimeRef = useRef<number>(Date.now()); // v5.0.4: Track background time
+  const recoveryIntervalRef = useRef<NodeJS.Timeout | null>(null); // v5.4.5: Track recovery timer for explicit cleanup
 
   // Sync refs with store changes
   useEffect(() => {
@@ -586,6 +587,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
             if (recoveredSession) {
               logger.log(`✅ Session recovered successfully after ${pollCount * 2}s!`);
               clearInterval(recoveryInterval);
+              recoveryIntervalRef.current = null;
               handleSessionStarted(recoveredSession);
               setTimeout(() => {
                 try { recoveredSession.sendMessage(CAST_NAMESPACE, { type: 'GET_STATE' }); } catch(e) {}
@@ -593,6 +595,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
             } else if (pollCount >= maxPolls) {
               logger.log('❌ Failed to recover session after 20 minutes. Disconnecting.');
               clearInterval(recoveryInterval);
+              recoveryIntervalRef.current = null;
               setIsConnected(false);
               setCastSession(null);
             } else if (pollCount % 15 === 0) {
@@ -600,8 +603,15 @@ export function CastProvider({ children }: { children: ReactNode }) {
             }
           }, 2000); // Poll every 2 seconds
 
+          recoveryIntervalRef.current = recoveryInterval;
+
           // Ensure we cleanup if user navigates or visibility changes again
-          const cleanup = () => clearInterval(recoveryInterval);
+          const cleanup = () => {
+            clearInterval(recoveryInterval);
+            if (recoveryIntervalRef.current === recoveryInterval) {
+               recoveryIntervalRef.current = null;
+            }
+          };
           document.addEventListener('visibilitychange', cleanup, { once: true });
         }
       }
@@ -748,20 +758,33 @@ export function CastProvider({ children }: { children: ReactNode }) {
   };
 
   const disconnect = () => {
-    console.log('🔌 Disconnect called');
+    console.log('🔌 [CastContext] Disconnect called (Force Cleanup enabled)');
+
+    // v5.4.5: Immediate cleanup to prevent Ghost States
+    if (recoveryIntervalRef.current) {
+      clearInterval(recoveryIntervalRef.current);
+      recoveryIntervalRef.current = null;
+    }
+
+    // Force local state to disconnected immediately
+    setIsConnected(false);
+    setCastSession(null);
+    setReceiverName('');
+    setReceiverStateReceived(false);
 
     const cast = (window as any).cast;
     if (!cast) {
-      console.error('❌ Cast API not available');
+      console.error('❌ Cast API not available during disconnect');
       return;
     }
 
     try {
       const context = cast.framework.CastContext.getInstance();
-      console.log('📡 Ending current session...');
+      console.log('📡 Ending current SDK session...');
+      // This will trigger SESSION_ENDED but we already cleared local state for responsiveness
       context.endCurrentSession(true);
     } catch (error) {
-      console.error('❌ Error disconnecting:', error);
+      console.error('❌ Error notifying SDK of disconnect:', error);
     }
   };
 
