@@ -71,9 +71,10 @@ export function useCommandExecutor({
             const { video, addedBy } = command.payload;
             const queue = currentState.queue || [];
             
-            // v5.3.92: Ensure addedBy is attached to the video object
+            // v5.3.97: Generate UUID + attach addedBy
             const videoWithMetadata = { 
               ...video, 
+              uuid: video.uuid || crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
               addedBy: addedBy || video.addedBy || null 
             };
             
@@ -216,10 +217,14 @@ export function useCommandExecutor({
             const { index, uuid } = command.payload;
             let newQueue = [...currentState.queue];
             
-            // v5.3.92: Universal Remove Logic (UUID or Index)
+            // v5.3.97: Universal Remove — try uuid, then videoId, then index
             let actualIndex = index;
             if (uuid) {
-              const foundIndex = newQueue.findIndex(v => v.uuid === uuid);
+              let foundIndex = newQueue.findIndex(v => v.uuid === uuid);
+              if (foundIndex === -1) {
+                // Fallback: remote may send videoId as "uuid" when real uuid is missing
+                foundIndex = newQueue.findIndex(v => (v.videoId || v.id) === uuid);
+              }
               if (foundIndex !== -1) actualIndex = foundIndex;
             }
 
