@@ -304,6 +304,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
     const handleDisconnect = useCallback(() => {
         console.log('🔌 [Main] Disconnecting cast mode:', castMode);
+        setIsRecovering(false); // v5.5.3: Ensure we stop pulse on manual disconnect
 
         // 🛑 Send PAUSE to the remote room first so it stops playing
         if ((castMode === 'smarttv' || castMode === 'webmonitor') && roomCode && realtimeDb) {
@@ -354,6 +355,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
         setCastModalOpen(false);
         setCastMode('smarttv'); // AUTO-ACTIVATE Web Caster mode
         useUIStore.getState().setIsCastingLocal(false);
+
+        // v5.5.3: End the visual pulse once joined
+        setIsRecovering(false);
 
         // Show success notification
         addToast(`เชื่อมต่อหน้าจอทีวี (ห้อง ${code}) สำเร็จ!`);

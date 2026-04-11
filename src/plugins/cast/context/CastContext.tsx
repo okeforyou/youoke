@@ -15,6 +15,7 @@ interface CastContextValue {
   receiverName: string;
   connectionQuality: 'good' | 'weak' | 'lost';
   isRecovering: boolean; // v5.5.3: Visual Pulse Track
+  setIsRecovering: (recovering: boolean) => void; 
 
   // Queue State
   playlist: QueueItem[]; // Changed from QueueVideo
@@ -78,8 +79,10 @@ export function CastProvider({ children }: { children: ReactNode }) {
   const [isAvailable, setIsAvailable] = useState(false);
   const [isConnected, setIsConnected] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('youoke_is_casting_google') === 'true' || 
-             localStorage.getItem('youoke_cast_mode') === 'smarttv';
+      const gCast = localStorage.getItem('youoke_is_casting_google') === 'true';
+      const sCast = localStorage.getItem('youoke_cast_mode') === 'smarttv';
+      const dCast = localStorage.getItem('youoke_cast_mode') === 'dual';
+      return gCast || sCast || dCast;
     }
     return false;
   });
@@ -87,7 +90,13 @@ export function CastProvider({ children }: { children: ReactNode }) {
   const [receiverName, setReceiverName] = useState('');
   const [receiverStateReceived, setReceiverStateReceived] = useState(false);  // Track if we got state from receiver
   const [connectionQuality, setConnectionQuality] = useState<'good' | 'weak' | 'lost'>('good');
-  const [isRecovering, setIsRecovering] = useState(false); // v5.5.3: Visual Pulse Track
+  const [isRecovering, setIsRecovering] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('youoke_is_casting_google') === 'true' || 
+             localStorage.getItem('youoke_cast_mode') === 'smarttv';
+    }
+    return false;
+  }); // v5.5.3: Visual Pulse Track
   const lastPongTimeRef = useRef<number>(Date.now());
 
   // Use Global Store as Source of Truth
@@ -1216,6 +1225,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
     updateCurrentIndexSilent,
     connectionQuality,
     isRecovering,
+    setIsRecovering,
   }), [
     isAvailable,
     isConnected,
@@ -1226,9 +1236,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
     currentVideo,
     connectionQuality,
     isRecovering,
-    // Functions (memoized implicitly as they are stable or depend on these deps)
-    // Note: If functions above are not memoized, this useMemo is less effective but still better than nothing.
-    // Ideally, functions like play, pause etc which use refs should be memoized or safe.
+    setIsRecovering,
   ]);
 
   return <CastContext.Provider value={value}>{children}</CastContext.Provider>;

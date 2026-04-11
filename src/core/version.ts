@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.5.4 (Universal Recovery Pulse)",
+        date: "11 เม.ย. 2569",
+        changes: [
+            "UI: Extended the orange 'Recovering' pulse to Smart TV (/monitor) mode for unified visual feedback",
+            "LOGIC: Re-connection status is now global across all cast modes, ensuring a consistent professional experience",
+            "STABILITY: Fixed a race condition where the recovery pulse would continue after manual disconnection",
+        ],
+        recent_updates: "Universal Feedback System"
+    },
+    {
         version: "v5.5.3 (Tactile Feedback)",
         date: "11 เม.ย. 2569",
         changes: [
