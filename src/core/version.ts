@@ -1,5 +1,14 @@
 export const CHANGELOGS = [
     {
+        version: "v5.5.1 (Syntax Hotfix)",
+        date: "11 เม.ย. 2569",
+        changes: [
+            "FIX: Corrected a missing closure brace in CastContext recovery logic preventing production builds",
+            "STABILITY: Verified handleVisibilityChange structure for multi-platform compatibility",
+        ],
+        recent_updates: "Emergency Syntax Fix"
+    },
+    {
         version: "v5.5.0 (Universal Cast Flow)",
         date: "11 เม.ย. 2569",
         changes: [

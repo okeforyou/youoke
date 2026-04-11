@@ -642,6 +642,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
           }, 2000); 
 
           recoveryIntervalRef.current = recoveryInterval;
+        }
       }
       lastActiveTimeRef.current = now;
     };
