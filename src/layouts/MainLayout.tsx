@@ -332,10 +332,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
         setCastModalOpen(false);
         setCastMode('none');
-        // 🛡️ v4.10.118: DO NOT delete partyPIN on disconnect, otherwise Remote QR modal won't render
-        // setPartyPIN(null);
+        // v5.4.8: Clear all persistence flags
+        localStorage.removeItem('youoke_cast_mode');
+        localStorage.removeItem('youoke_party_pin');
         localStorage.removeItem('youoke-dual-active');
-        // localStorage.removeItem('youoke_party_pin');
+        
         useUIStore.getState().setIsCastingLocal(false);
 
         // Cleanup CastService if it exists
@@ -344,11 +345,12 @@ export default function MainLayout({ children }: MainLayoutProps) {
         });
 
         addToast('ตัดการเชื่อมต่อสำเร็จ');
-    }, [castMode, roomCode, realtimeDb, addToast, setCastMode, setCastModalOpen]);
+    }, [castMode, roomCode, realtimeDb, addToast, setCastMode, setCastModalOpen, disconnectGoogleCast]);
 
     const handleJoinRoom = (code: string) => {
         setPartyPIN(code);
         localStorage.setItem('youoke_party_pin', code);
+        localStorage.setItem('youoke_cast_mode', 'smarttv'); // v5.4.8: Remember for auto-recovery
         setCastModalOpen(false);
         setCastMode('smarttv'); // AUTO-ACTIVATE Web Caster mode
         useUIStore.getState().setIsCastingLocal(false);
@@ -356,6 +358,23 @@ export default function MainLayout({ children }: MainLayoutProps) {
         // Show success notification
         addToast(`เชื่อมต่อหน้าจอทีวี (ห้อง ${code}) สำเร็จ!`);
     };
+
+    // 🛡️ v5.4.8: Multi-Mode Recovery Bridge (On Mount)
+    useEffect(() => {
+        if (!mounted) return;
+        
+        // Recover Smart TV / Monitor status
+        const savedMode = localStorage.getItem('youoke_cast_mode');
+        const savedPIN = localStorage.getItem('youoke_party_pin');
+
+        if (savedMode === 'smarttv' && savedPIN && !partyPIN) {
+            console.log('🔄 [Recovery] Restoring Smart TV connection to room:', savedPIN);
+            setPartyPIN(savedPIN);
+            setCastMode('smarttv');
+        } else if (savedMode === 'dual') {
+            setCastMode('dual');
+        }
+    }, [mounted, partyPIN, setCastMode]);
 
     // 📡 Monitor Sync Bridge (Phase 12: Receiver Model Restoration)
     useEffect(() => {

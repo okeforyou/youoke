@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.4.8 (Universal Persistence)",
+        date: "11 เม.ย. 2569",
+        changes: [
+            "FIX: Extended persistent recovery to Smart TV (/monitor) mode using localStorage for castMode and partyPIN",
+            "RECOVERY: Smart TV mode now automatically reconnects after a screen wake or browser reload, matching /remote behavior",
+            "CLEANUP: Ensured handleDisconnect clears all persistent flags across all modes (Google Cast, Smart TV, Dual Screen)",
+        ],
+        recent_updates: "Universal Recovery Support"
+    },
+    {
         version: "v5.4.7 (Persistent Sync)",
         date: "11 เม.ย. 2569",
         changes: [
