@@ -60,17 +60,7 @@ export default function RemoteControlApp() {
         return '';
     }, [queryRoom]);
 
-    // Prevent rendering until router is hydrated to avoid empty queries or hydration mismatches
-    if (!router.isReady && !roomCode) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-stone-950 text-white p-6">
-                <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
-                <p className="text-sm font-bold uppercase tracking-widest opacity-40">Initializing Remote...</p>
-            </div>
-        );
-    }
-
-    // State
+    // v5.5.15: Rules of Hooks Compliance (No early returns before Hooks)
     const [status, setStatus] = useState<RemoteStatus>('connecting');
     const [roomState, setRoomState] = useState<RoomState>({
         queue: [],
@@ -123,6 +113,16 @@ export default function RemoteControlApp() {
     const [isSearching, setIsSearching] = useState(false);
     const [searchType, setSearchType] = useState<'video' | 'karaoke'>('video');
     const debounceRef = React.useRef<NodeJS.Timeout>();
+
+    // Safety Gate: Moved AFTER all hooks to comply with React Rule of Hooks #310
+    if (!router.isReady && !roomCode) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-stone-950 text-white p-6">
+                <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
+                <p className="text-sm font-bold uppercase tracking-widest opacity-40">Initializing Remote...</p>
+            </div>
+        );
+    }
 
     // Load theme preference and set mounted
     useEffect(() => {

@@ -7,6 +7,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.15 (Hook Shield)",
+        date: "12 เม.ย. 2569",
+        changes: [
+            "FIX: Resolved Minified React error #310 by moving early returns after all top-level Hooks in RemoteControlApp",
+            "STABILITY: Ensured strict compliance with React Rules of Hooks during hydration gate check",
+            "CORE: Optimized component initialization order for better mobile device compatibility",
+        ],
+        recent_updates: "Hook Compliance & Stability"
+    },
+    {
         version: "v5.5.14 (Hydration & Scan Shield)",
         date: "12 เม.ย. 2569",
         changes: [
@@ -361,15 +371,15 @@ export const CHANGELOGS = [
 export const getLatestVersion = () => {
     try {
         const latest = CHANGELOGS[0]?.version;
-        if (!latest || typeof latest !== 'string') return "5.5.14";
+        if (!latest || typeof latest !== 'string') return "5.5.15";
         const cleanVersion = safeStartsWith(latest, 'v') ? latest.substring(1) : latest;
-        const parts = safeSplit(cleanVersion, " ", ["5.5.14"]);
-        return parts[0] || "5.5.14";
+        const parts = safeSplit(cleanVersion, " ", ["5.5.15"]);
+        return parts[0] || "5.5.15";
     } catch (e) {
-        return "5.5.14";
+        return "5.5.15";
     }
 };
 
 export const SYSTEM_VERSION = getLatestVersion();
-export const SYSTEM_CODENAME = "Hydration & Scan Shield";
+export const SYSTEM_CODENAME = "Hook Shield";
 export const VERSION_LABEL = `${COMMIT_ID || '#local'} v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
