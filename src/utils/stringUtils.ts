@@ -12,11 +12,12 @@ export const safeSplit = (
     separator: string | RegExp = " ", 
     fallback: string[] = []
 ): string[] => {
-    if (typeof str !== 'string') {
+    const input = str !== null && str !== undefined ? String(str) : null;
+    if (typeof input !== 'string') {
         return fallback;
     }
     try {
-        return str.split(separator);
+        return input.split(separator);
     } catch (e) {
         console.warn("⚠️ safeSplit failed", e);
         return fallback;

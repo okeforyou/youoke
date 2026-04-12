@@ -482,12 +482,12 @@ export const getLatestVersion = () => {
         const latest = CHANGELOGS[0]?.version;
         if (typeof latest !== 'string') return "5.5.25";
         
-        // 🛡️ Explicit inline splitting with type guard
-        const parts = latest.includes(" ") ? latest.split(" ") : [latest];
+        // 🛡️ Final Aggressive Shield: Using safeSplit from stringUtils
+        const parts = safeSplit(latest, " ");
         const vPart = parts[0] || "5.5.25";
         
         // Remove 'v' prefix safely
-        return vPart.startsWith('v') ? vPart.substring(1) : vPart;
+        return safeStartsWith(vPart, 'v') ? safeSlice(vPart, 1) : vPart;
     } catch (e) {
         return "5.5.25";
     }

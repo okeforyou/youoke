@@ -32,7 +32,7 @@ export const DigitalSignage: React.FC<DigitalSignageProps> = ({
     useEffect(() => {
         setMounted(true);
         if (typeof window !== 'undefined') {
-            setQrUrl(`${window.location.origin}/remote?room=${roomCode}`);
+            setQrUrl(`${window.location.origin}/remote?room=${encodeURIComponent(String(roomCode || ''))}`);
         }
     }, [roomCode]);
 
@@ -99,7 +99,7 @@ export const DigitalSignage: React.FC<DigitalSignageProps> = ({
                         <div className="w-full space-y-[1vh] text-center">
                             <p className="text-[1vw] text-white/40 font-bold uppercase tracking-[0.2em]">Enter Room Code</p>
                             <div className="flex items-center justify-center gap-[0.8vw]">
-                                {String(roomCode || '').split('').map((char, i) => (
+                                {(Array.from(String(roomCode || ''))).map((char, i) => (
                                     <div key={i} className="w-[4vw] h-[5.5vw] bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center text-[3vw] font-black">
                                         {char}
                                     </div>
