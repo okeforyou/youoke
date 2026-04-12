@@ -7,6 +7,18 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.22 (Hyper-Performance)",
+        date: "12 เม.ย. 2569",
+        changes: [
+            "PERFORMANCE: Implemented 'Hyper-Performance Mode' for Smart TVs by stripping backdrop-blur filters",
+            "OPTIMIZATION: Added 'isVisible' gating to DigitalSignage to stop background animations during video playback",
+            "RELIABILITY: Set hidden layers to 'display: none' (hidden) to prevent GPU calculation on invisible elements",
+            "SMOOTHNESS: Disabled forced HD ('hd720') to allow YouTube's auto-buffer to optimize for TV hardware",
+            "STABILITY: Replaced glassmorphism with efficient high-opacity solid backgrounds (98% Stone)",
+        ],
+        recent_updates: "TV Playback Smoothness Fix"
+    },
+    {
         version: "v5.5.21 (Clean Leanback)",
         date: "12 เม.ย. 2569",
         changes: [
@@ -437,15 +449,15 @@ export const CHANGELOGS = [
 export const getLatestVersion = () => {
     try {
         const latest = CHANGELOGS[0]?.version;
-        if (!latest || typeof latest !== 'string') return "5.5.21";
+        if (!latest || typeof latest !== 'string') return "5.5.22";
         const cleanVersion = safeStartsWith(latest, 'v') ? latest.substring(1) : latest;
-        const parts = safeSplit(cleanVersion, " ", ["5.5.21"]);
-        return parts[0] || "5.5.21";
+        const parts = safeSplit(cleanVersion, " ", ["5.5.22"]);
+        return parts[0] || "5.5.22";
     } catch (e) {
-        return "5.5.21";
+        return "5.5.22";
     }
 };
 
 export const SYSTEM_VERSION = getLatestVersion();
-export const SYSTEM_CODENAME = "Clean Leanback";
+export const SYSTEM_CODENAME = "Hyper-Performance";
 export const VERSION_LABEL = `${COMMIT_ID || '#local'} v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;

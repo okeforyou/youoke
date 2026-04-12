@@ -222,18 +222,25 @@ const TVPage = () => {
             </Head>
 
             {/* Layer 1: Digital Signage (Idle) */}
-            <div className={`absolute inset-0 transition-opacity duration-1000 ${isIdle ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}>
+            <div className={clsx(
+                "absolute inset-0 transition-opacity duration-1000",
+                isIdle ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none hidden"
+            )}>
                 <DigitalSignage
                     roomCode={roomCode}
                     images={config.tv?.signageImages}
                     messages={config.tv?.signageMessages}
                     template={config.tv?.template}
                     ads={config.tv?.ads}
+                    isVisible={isIdle}
                 />
             </div>
 
             {/* Layer 2: Smart Player (Active) */}
-            <div className={`absolute inset-0 transition-opacity duration-1000 bg-black ${!isIdle ? 'opacity-100 z-20' : 'opacity-0 z-0 pointer-events-none'}`}>
+            <div className={clsx(
+                "absolute inset-0 transition-opacity duration-1000 bg-black",
+                !isIdle ? "opacity-100 z-20" : "opacity-0 z-0 pointer-events-none hidden"
+            )}>
                 <SmartTVPlayer
                     currentVideo={state.currentVideo as any}
                     nextVideo={nextVideo as any}
@@ -245,6 +252,8 @@ const TVPage = () => {
                     currentTime={state.controls.currentTime}
                     syncMode="remote"
                     isPassive={true}
+                    roomCode={roomCode}
+                    isSenderConnected={connectedCount > 1} // Only true if TV (1) + Remote (1+)
                     onStateChange={handlePlayerStateChange}
                     onError={handlePlayerError}
                     onReady={(p: any) => {

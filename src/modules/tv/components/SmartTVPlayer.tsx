@@ -216,16 +216,15 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
                 showInfoToast ? "opacity-100" : "opacity-0"
             )} />
 
-            {/* TV Autoplay Block Prompt (Invisible overlay capturing first click) */}
+            {/* TV Autoplay Block Prompt (Removed backdrop-blur for performance) */}
             {/* v5.3.94: Premium Non-Intrusive Audio Unlocker */}
             {autoplayBlocked && !hasInteracted && (
                 <div 
                   onClick={handleInteraction} 
-                  className="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-black/80 backdrop-blur-md cursor-pointer animate-in fade-in duration-500"
+                  className="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-black/90 cursor-pointer animate-in fade-in duration-500"
                 >
-                    <div className="bg-white/10 border border-white/20 p-10 rounded-[40px] text-center space-y-6 shadow-2xl hover:bg-white/15 transition-all group active:scale-95">
+                    <div className="bg-white/5 border border-white/10 p-10 rounded-[40px] text-center space-y-6 shadow-2xl hover:bg-white/10 transition-all group active:scale-95">
                         <div className="relative">
-                          <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full group-hover:bg-primary/40 transition-all"></div>
                           <PlayCircleIcon className="w-24 h-24 text-primary mx-auto relative z-10 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]" />
                         </div>
                         <div className="space-y-2">
@@ -239,7 +238,7 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
             {/* v5.0.5: Connection Status Indicator (Top Right Dot) */}
             <div className="absolute top-6 right-6 z-[100] flex items-center gap-3">
                 {roomCode && (
-                    <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] bg-black/20 px-3 py-1 rounded-full backdrop-blur-sm">
+                    <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] bg-black/40 px-3 py-1 rounded-full">
                         ROOM: {roomCode}
                     </span>
                 )}

@@ -16,7 +16,7 @@ interface QueueListProps {
 export const QueueList: React.FC<QueueListProps> = ({ queue, isVisible, onPlay, isPassive = false, roomCode = '' }) => {
     return (
         <div className={clsx(
-            "absolute top-0 right-0 bottom-0 w-[450px] bg-black/80 backdrop-blur-[40px] border-l border-white/5 p-10 transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] z-40 flex flex-col shadow-[-40px_0_80px_rgba(0,0,0,0.5)]",
+            "absolute top-0 right-0 bottom-0 w-[450px] bg-stone-950/98 border-l border-white/5 p-10 transition-all duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] z-40 flex flex-col shadow-[-40px_0_80px_rgba(0,0,0,0.5)]",
             isVisible ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
         )}>
             <div className="flex items-center gap-3 mb-8">
