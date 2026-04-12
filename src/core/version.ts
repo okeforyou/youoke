@@ -7,6 +7,18 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.19 (Leanback Edition)",
+        date: "12 เม.ย. 2569",
+        changes: [
+            "DESIGN: Launched new 'Leanback' TV interface inspired by YouTube TV (Leanback UI)",
+            "UX: Implemented glassmorphism connection cards with dynamic split-screen cinematic backgrounds",
+            "FIX: Forced 100% viewport-based scaling to ensure the interface fits perfectly on any Smart TV resolution",
+            "VISUAL: Added soft glow effects and animated status indicators for a premium 'App-like' feel",
+            "RELIABILITY: Hardened room code display with automatic character splitting for maximum readability",
+        ],
+        recent_updates: "YouTube-Style TV Interface"
+    },
+    {
         version: "v5.5.18 (TV Redirect Shield)",
         date: "12 เม.ย. 2569",
         changes: [
@@ -403,15 +415,15 @@ export const CHANGELOGS = [
 export const getLatestVersion = () => {
     try {
         const latest = CHANGELOGS[0]?.version;
-        if (!latest || typeof latest !== 'string') return "5.5.18";
+        if (!latest || typeof latest !== 'string') return "5.5.19";
         const cleanVersion = safeStartsWith(latest, 'v') ? latest.substring(1) : latest;
-        const parts = safeSplit(cleanVersion, " ", ["5.5.18"]);
-        return parts[0] || "5.5.18";
+        const parts = safeSplit(cleanVersion, " ", ["5.5.19"]);
+        return parts[0] || "5.5.19";
     } catch (e) {
-        return "5.5.18";
+        return "5.5.19";
     }
 };
 
 export const SYSTEM_VERSION = getLatestVersion();
-export const SYSTEM_CODENAME = "TV Redirect Shield";
+export const SYSTEM_CODENAME = "Leanback Edition";
 export const VERSION_LABEL = `${COMMIT_ID || '#local'} v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
