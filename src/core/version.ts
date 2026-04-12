@@ -7,6 +7,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.16 (Logic-End Shield)",
+        date: "12 เม.ย. 2569",
+        changes: [
+            "FIX: Relocated hydration gate to the end of the logic block, ensuring 100% compliance with React Rules of Hooks",
+            "RELIABILITY: Guaranteed that all 13+ Hooks are invoked in consistent order regardless of router readiness",
+            "CORE: Finalized roomCode pairing safety by removing all intermediate early returns",
+        ],
+        recent_updates: "Final Hook & Logic Synchronization"
+    },
+    {
         version: "v5.5.15 (Hook Shield)",
         date: "12 เม.ย. 2569",
         changes: [
@@ -371,15 +381,15 @@ export const CHANGELOGS = [
 export const getLatestVersion = () => {
     try {
         const latest = CHANGELOGS[0]?.version;
-        if (!latest || typeof latest !== 'string') return "5.5.15";
+        if (!latest || typeof latest !== 'string') return "5.5.16";
         const cleanVersion = safeStartsWith(latest, 'v') ? latest.substring(1) : latest;
-        const parts = safeSplit(cleanVersion, " ", ["5.5.15"]);
-        return parts[0] || "5.5.15";
+        const parts = safeSplit(cleanVersion, " ", ["5.5.16"]);
+        return parts[0] || "5.5.16";
     } catch (e) {
-        return "5.5.15";
+        return "5.5.16";
     }
 };
 
 export const SYSTEM_VERSION = getLatestVersion();
-export const SYSTEM_CODENAME = "Hook Shield";
+export const SYSTEM_CODENAME = "Logic-End Shield";
 export const VERSION_LABEL = `${COMMIT_ID || '#local'} v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;

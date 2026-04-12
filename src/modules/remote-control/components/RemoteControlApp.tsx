@@ -114,16 +114,6 @@ export default function RemoteControlApp() {
     const [searchType, setSearchType] = useState<'video' | 'karaoke'>('video');
     const debounceRef = React.useRef<NodeJS.Timeout>();
 
-    // Safety Gate: Moved AFTER all hooks to comply with React Rule of Hooks #310
-    if (!router.isReady && !roomCode) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-stone-950 text-white p-6">
-                <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
-                <p className="text-sm font-bold uppercase tracking-widest opacity-40">Initializing Remote...</p>
-            </div>
-        );
-    }
-
     // Load theme preference and set mounted
     useEffect(() => {
         setHasMounted(true);
@@ -609,6 +599,16 @@ export default function RemoteControlApp() {
         return <div className="h-screen bg-stone-950 flex items-center justify-center">
             <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
         </div>;
+    }
+
+    // v5.5.16: Final Hydration Shield (After all hooks are invoked)
+    if (!router.isReady && !roomCode) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-stone-950 text-white p-6">
+                <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
+                <p className="text-sm font-bold uppercase tracking-widest opacity-40">Initializing Remote...</p>
+            </div>
+        );
     }
 
     if (!roomCode) {
