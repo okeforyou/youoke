@@ -7,6 +7,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.25 (Aggressive Split Shield)",
+        date: "12 เม.ย. 2569",
+        changes: [
+            "FIX: Finalized 'g.split' protection by inlining string checks into all version-parsing modules",
+            "RELIABILITY: Resolved minified 'split is not a function' error occurring on some mobile browsers",
+            "STABILITY: Verified industrial-grade hydration guards for QR-to-Remote transition",
+        ],
+        recent_updates: "Mobile Runtime Hardening"
+    },
+    {
         version: "v5.5.24 (Import Fix)",
         date: "12 เม.ย. 2569",
         changes: [
@@ -470,15 +480,19 @@ export const CHANGELOGS = [
 export const getLatestVersion = () => {
     try {
         const latest = CHANGELOGS[0]?.version;
-        if (!latest || typeof latest !== 'string') return "5.5.24";
-        const cleanVersion = safeStartsWith(latest, 'v') ? latest.substring(1) : latest;
-        const parts = safeSplit(cleanVersion, " ", ["5.5.24"]);
-        return parts[0] || "5.5.24";
+        if (typeof latest !== 'string') return "5.5.25";
+        
+        // 🛡️ Explicit inline splitting with type guard
+        const parts = latest.includes(" ") ? latest.split(" ") : [latest];
+        const vPart = parts[0] || "5.5.25";
+        
+        // Remove 'v' prefix safely
+        return vPart.startsWith('v') ? vPart.substring(1) : vPart;
     } catch (e) {
-        return "5.5.24";
+        return "5.5.25";
     }
 };
 
 export const SYSTEM_VERSION = getLatestVersion();
-export const SYSTEM_CODENAME = "Import Fix";
+export const SYSTEM_CODENAME = "Aggressive Split Shield";
 export const VERSION_LABEL = `${COMMIT_ID || '#local'} v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;

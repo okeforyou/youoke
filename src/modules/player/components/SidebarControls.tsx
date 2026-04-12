@@ -29,10 +29,14 @@ export const CHANGELOGS = [
 ];
 
 const getLatestVersion = () => {
-    if (!CHANGELOGS || CHANGELOGS.length === 0) return "5.5.13";
-    const latest = CHANGELOGS[0].version;
-    if (typeof latest !== 'string') return "5.5.13";
-    return latest.split(" ")[0];
+    try {
+        if (!CHANGELOGS || CHANGELOGS.length === 0) return "5.5.25";
+        const latest = CHANGELOGS[0].version;
+        if (typeof latest !== 'string') return "5.5.25";
+        return latest.includes(" ") ? latest.split(" ")[0] : latest;
+    } catch (e) {
+        return "5.5.25";
+    }
 };
 
 export const SYSTEM_VERSION = getLatestVersion();
