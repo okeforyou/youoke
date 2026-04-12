@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.5.10 (UI Unification)",
+        date: "12 เม.ย. 2569",
+        changes: [
+            "UI: Unified and synchronized the styling of all player control buttons",
+            "UI: Applied a consistent red background (bg-primary/10) to the active CAST button to match its neighbors",
+            "UI: Ensured total visual harmony across the SidebarControls component",
+        ],
+        recent_updates: "Visual Consistency Patch"
+    },
+    {
         version: "v5.5.9 (UI Harmonization)",
         date: "12 เม.ย. 2569",
         changes: [

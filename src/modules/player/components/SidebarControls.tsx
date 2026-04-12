@@ -161,13 +161,8 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                         className="flex flex-col items-center justify-center flex-1 h-full active:scale-95 transition-all duration-200 group"
                     >
                         <div className={clsx(
-                            "p-1 rounded-lg transition-all duration-300 relative",
-                            item.active ? (
-                                item.label === "CAST" || item.label === "ยกเลิก" || item.label === "กำลังเชื่อมต่อ..." ? 
-                                // v5.5.6: Cast icon stays neutral, status is in the dot
-                                "text-black dark:text-zinc-200" 
-                                : "text-primary bg-primary/10"
-                            ) : "text-black dark:text-zinc-400 group-hover:text-black dark:group-hover:text-white"
+                            "p-1 rounded-xl transition-all duration-300 relative",
+                            item.active ? "text-primary bg-primary/10" : "text-black dark:text-zinc-400 group-hover:text-black dark:group-hover:text-white"
                         )}>
                             <item.icon
                                 size={20}
