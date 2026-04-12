@@ -7,6 +7,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.26 (Domain Harmony)",
+        date: "12 เม.ย. 2569",
+        changes: [
+            "UI: Migrated hardcoded 'youoke.vercel.app' to dynamic hostname detection for 'play.okeforyou.com' readiness",
+            "CORE: Implemented Smart Versioning by prioritizing NEXT_PUBLIC_APP_VERSION from package.json",
+            "STABILITY: Verified Spotify-first playlist discovery fallback logic for stable production data",
+        ],
+        recent_updates: "Platform Scaling & Domain Harmony"
+    },
+    {
         version: "v5.5.25 (Aggressive Split Shield)",
         date: "12 เม.ย. 2569",
         changes: [
@@ -478,21 +488,26 @@ export const CHANGELOGS = [
 ];
 
 export const getLatestVersion = () => {
+    // 🛡️ Smart Versioning Priority (v4.7.5+)
+    if (process.env.NEXT_PUBLIC_APP_VERSION) {
+        return process.env.NEXT_PUBLIC_APP_VERSION.replace(/^v/, '');
+    }
+
     try {
         const latest = CHANGELOGS[0]?.version;
-        if (typeof latest !== 'string') return "5.5.25";
+        if (typeof latest !== 'string') return "5.5.26";
         
         // 🛡️ Final Aggressive Shield: Using safeSplit from stringUtils
         const parts = safeSplit(latest, " ");
-        const vPart = parts[0] || "5.5.25";
+        const vPart = parts[0] || "5.5.26";
         
         // Remove 'v' prefix safely
         return safeStartsWith(vPart, 'v') ? safeSlice(vPart, 1) : vPart;
     } catch (e) {
-        return "5.5.25";
+        return "5.5.26";
     }
 };
 
 export const SYSTEM_VERSION = getLatestVersion();
-export const SYSTEM_CODENAME = "Aggressive Split Shield";
+export const SYSTEM_CODENAME = "Domain Harmony";
 export const VERSION_LABEL = `${COMMIT_ID || '#local'} v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;

@@ -155,7 +155,7 @@ export const CastModeSelector: React.FC<CastModeSelectorProps> = ({
                 <div className="bg-gray-50 dark:bg-white/5 rounded-2xl p-4 text-xs font-bold text-gray-700 dark:text-zinc-300 leading-relaxed border border-gray-100 dark:border-white/5 shadow-inner">
                   <div className="flex gap-3">
                     <span className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 font-black text-[10px]">1</span>
-                    <p>เปิด <span className="font-black text-primary underline underline-offset-4 decoration-primary/30">{typeof window !== 'undefined' ? (window.location.host.includes('localhost') ? 'youoke.vercel.app' : window.location.host) : 'play.okeforyou.com'}/monitor</span> บนหน้าจออื่น</p>
+                    <p>เปิด <span className="font-black text-primary underline underline-offset-4 decoration-primary/30">{typeof window !== 'undefined' ? window.location.hostname : 'play.okeforyou.com'}/monitor</span> บนหน้าจออื่น</p>
                   </div>
                   <div className="flex gap-3 mt-3">
                     <span className="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center flex-shrink-0 font-black text-[10px]">2</span>

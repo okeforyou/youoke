@@ -105,7 +105,7 @@ export const DigitalSignage: React.FC<DigitalSignageProps> = ({
                                     </div>
                                 ))}
                             </div>
-                            <p className="text-[0.9vw] text-white/30 pt-[0.5vh]">youoke.vercel.app</p>
+                            <p className="text-[0.9vw] text-white/30 pt-[0.5vh]">{typeof window !== 'undefined' ? window.location.hostname : 'play.okeforyou.com'}</p>
                         </div>
                     </div>
                 </div>
