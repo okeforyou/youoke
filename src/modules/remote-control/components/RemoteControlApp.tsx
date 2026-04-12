@@ -270,8 +270,8 @@ export default function RemoteControlApp() {
                     await signInAnonymously(auth);
                 }
 
-                // Initialize CastService (Centralized logic)
-                await castService.initialize(roomCode, 'monitor');
+                // Initialize CastService as 'remote' to prevent local command execution loop v5.5.25
+                await castService.initialize(roomCode, 'remote');
 
                 // Signal to Host that we've joined (Direct Trigger for closing QR)
                 const statusRef = ref(realtimeDb, `rooms/${roomCode}/status`);
@@ -295,8 +295,18 @@ export default function RemoteControlApp() {
                             ts: data.timestamp
                         });
 
+                        // v5.5.25: Strict De-duplication to prevent "Double Song" UI flicker
+                        const seenKeys = new Set();
+                        const uniqueQueue = queue.filter((item: any) => {
+                            if (!item) return false;
+                            const key = item.uuid || item.videoId || item.id;
+                            if (seenKeys.has(key)) return false;
+                            seenKeys.add(key);
+                            return true;
+                        });
+
                         setRoomState({
-                            queue: queue.filter((i: any) => i && (i.videoId || i.id || i.uuid)),
+                            queue: uniqueQueue,
                             currentIndex: data.currentIndex ?? 0,
                             currentVideo: data.currentVideo,
                             controls: data.controls || { isPlaying: false, isMuted: false, volume: 100 },

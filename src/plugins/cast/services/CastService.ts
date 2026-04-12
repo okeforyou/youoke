@@ -10,14 +10,14 @@ export class CastService {
     private unsubscribe: (() => void) | null = null;
     private pollInterval: NodeJS.Timeout | null = null;
     private commandListenerOff: (() => void) | null = null;
-    private role: 'host' | 'monitor' = 'host';
+    private role: 'host' | 'monitor' | 'remote' = 'host';
     private stateListenerOff: (() => void) | null = null;
     private processedCommandIds = new Set<string>();
     private isProcessingSync = false; // 🔒 Sync Lock to prevent loops
 
     constructor() { }
 
-    public async initialize(roomCode: string, role: 'host' | 'monitor' = 'host'): Promise<string> {
+    public async initialize(roomCode: string, role: 'host' | 'monitor' | 'remote' = 'host'): Promise<string> {
         // Cleanup previous session if any
         this.cleanup();
         this.role = role;
@@ -42,12 +42,12 @@ export class CastService {
         // ROLE DIFFERENTIATION
         if (this.role === 'host') {
             this.setupHostSync();
+            this.startCommandListener();
         } else if (this.role === 'monitor') {
             this.setupMonitorSync();
+            this.startCommandListener();
         }
-
-        // BOTH roles listen for commands (Monitor might signal 'NEXT' to Host)
-        this.startCommandListener();
+        // 'remote' role does NOT listen to commands (only sends)
 
         return this.roomCode;
     }
