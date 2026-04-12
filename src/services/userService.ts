@@ -52,7 +52,7 @@ export async function createUserProfile(data: {
     };
 
     // Use email username as displayName if fullName not provided
-    const emailUsername = data.email.split("@")[0];
+    const emailUsername = (typeof data.email === 'string' ? data.email.split("@")[0] : 'User');
     const displayName = data.fullName || emailUsername || "ผู้ใช้";
 
     const dbData: any = {

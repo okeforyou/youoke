@@ -66,7 +66,7 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
             if (db) {
                 const docRef = await addDoc(collection(db, 'payment_proofs'), {
                     userId: user.uid,
-                    userDisplayName: user.displayName || user.email?.split('@')[0],
+                    userDisplayName: user.displayName || (typeof user.email === 'string' ? user.email.split('@')[0] : 'User'),
                     userEmail: user.email,
                     packageId: pkg.id,
                     packageName: pkg.name,

@@ -7,6 +7,7 @@ import { cn } from "@/utils/cn";
 import { db } from "@/firebase";
 import { doc, setDoc, getDoc, deleteDoc, collection, getDocs, onSnapshot } from "firebase/firestore";
 import Image from "next/image";
+import { safeArtistName } from "@/utils/stringUtils";
 
 const ArtistManagementPage = () => {
     const [searchTerm, setSearchTerm] = useState("");
@@ -71,7 +72,7 @@ const ArtistManagementPage = () => {
         setSaving(true);
         setMessage(null);
         try {
-            const cleanName = selectedArtist.name.split(' (')[0].trim();
+            const cleanName = safeArtistName(selectedArtist.name);
             await setDoc(doc(db as any, "artist_images", cleanName), {
                 imageUrl: imageUrl.trim(),
                 updatedAt: new Date().toISOString()
@@ -90,7 +91,7 @@ const ArtistManagementPage = () => {
         if (!selectedArtist) return;
         setSaving(true);
         try {
-            const cleanName = selectedArtist.name.split(' (')[0].trim();
+            const cleanName = safeArtistName(selectedArtist.name);
             await deleteDoc(doc(db as any, "artist_images", cleanName));
             const newOverrides = { ...overrides };
             delete newOverrides[cleanName];
@@ -202,7 +203,7 @@ const ArtistManagementPage = () => {
                                 </div>
                                 <div className="flex-1 overflow-y-auto">
                                     {filteredArtists.map((artist) => {
-                                        const hasOverride = !!overrides[artist.name.split(' (')[0].trim()];
+                                        const hasOverride = !!overrides[safeArtistName(artist.name)];
                                         return (
                                             <div 
                                                 key={artist.name}
@@ -221,7 +222,7 @@ const ArtistManagementPage = () => {
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-sm font-bold text-gray-900 truncate">
-                                                        {artist.name.split(' (')[0]}
+                                                        {safeArtistName(artist.name)}
                                                     </p>
                                                     {artist.name.includes(' (') && (
                                                         <p className="text-[10px] text-gray-400 truncate">
@@ -251,7 +252,7 @@ const ArtistManagementPage = () => {
                                             </div>
                                             <div>
                                                 <h2 className="text-2xl font-bold text-gray-900">
-                                                    {selectedArtist.name.split(' (')[0]}
+                                                    {safeArtistName(selectedArtist.name)}
                                                 </h2>
                                                 {selectedArtist.name.includes(' (') && (
                                                     <p className="text-gray-400 text-sm font-medium">
@@ -261,7 +262,7 @@ const ArtistManagementPage = () => {
                                                 <p className="text-gray-400 text-[11px] mt-1">จัดการรูปภาพหน้าปกเฉพาะของศิลปินคนนี้</p>
                                             </div>
                                         </div>
-                                        {overrides[selectedArtist.name.split(' (')[0].trim()] && (
+                                        {overrides[safeArtistName(selectedArtist.name)] && (
                                             <button 
                                                 onClick={handleDelete}
                                                 disabled={saving}

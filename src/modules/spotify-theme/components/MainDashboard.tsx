@@ -18,6 +18,7 @@ import {
   cleanSearchQuery,
   getJooxCharts,
 } from "../../../utils/api";
+import { safeArtistName } from "../../../utils/stringUtils";
 import JooxError from "../../../components/JooxError";
 import { useSystemConfig } from "../../../hooks/useSystemConfig";
 import { useUIStore } from "../../../stores/useUIStore";
@@ -367,7 +368,7 @@ export default function MainDashboard({ showTab = true, mode = 'default' }: { sh
 
                   <div className="grid grid-cols-2 min-[500px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 py-3">
                     {ARTIST_CATEGORIES.find(c => c.id === 'popular')?.artists.slice(0, 12).map((artist, i) => {
-                      const cleanName = artist.name.split(' (')[0].trim();
+                      const cleanName = safeArtistName(artist.name);
                       const overrideUrl = artistOverrides[cleanName];
                       
                       return (
@@ -454,7 +455,7 @@ export default function MainDashboard({ showTab = true, mode = 'default' }: { sh
                   
                   <div className="grid grid-cols-2 min-[500px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-3 md:gap-4 px-3 md:px-4 pb-20">
                     {selectedCategory.artists.map((artist, i) => {
-                      const cleanName = artist.name.split(' (')[0].trim();
+                      const cleanName = safeArtistName(artist.name);
                       const overrideUrl = artistOverrides[cleanName];
 
                       return (

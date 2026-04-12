@@ -50,7 +50,7 @@ export default async function handler(
     const userProfile = {
       uid: uid,
       email: email,
-      displayName: displayName || email.split('@')[0],
+      displayName: displayName || (typeof email === 'string' ? email.split('@')[0] : 'User'),
       phone: null,
       photoURL: photoURL || null,
       role: 'user',

@@ -55,3 +55,12 @@ export const safeStartsWith = (str: any, search: string): boolean => {
     if (typeof str !== 'string') return false;
     return str.startsWith(search);
 };
+/**
+ * Safely parses artist names by removing parentheses suffix.
+ * e.g., "Bodyslam (บอดี้สแลม)" -> "Bodyslam"
+ */
+export const safeArtistName = (name: any): string => {
+    if (typeof name !== 'string') return "";
+    const clean = name.includes(' (') ? name.split(' (')[0] : name;
+    return clean.trim();
+};
