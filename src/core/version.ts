@@ -7,6 +7,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.21 (Clean Leanback)",
+        date: "12 เม.ย. 2569",
+        changes: [
+            "UI: Hidden the debug connection indicator (red/green dot) for a cleaner, production-ready TV experience",
+            "MAINTENANCE: Preserved the background connection logic and client tracking while removing visual clutter",
+            "OPTIMIZATION: Verified Leanback v2 stability on multiple Smart TV simulations",
+        ],
+        recent_updates: "Clean UI Optimization"
+    },
+    {
         version: "v5.5.20 (Leanback v2)",
         date: "12 เม.ย. 2569",
         changes: [
@@ -427,15 +437,15 @@ export const CHANGELOGS = [
 export const getLatestVersion = () => {
     try {
         const latest = CHANGELOGS[0]?.version;
-        if (!latest || typeof latest !== 'string') return "5.5.20";
+        if (!latest || typeof latest !== 'string') return "5.5.21";
         const cleanVersion = safeStartsWith(latest, 'v') ? latest.substring(1) : latest;
-        const parts = safeSplit(cleanVersion, " ", ["5.5.20"]);
-        return parts[0] || "5.5.20";
+        const parts = safeSplit(cleanVersion, " ", ["5.5.21"]);
+        return parts[0] || "5.5.21";
     } catch (e) {
-        return "5.5.20";
+        return "5.5.21";
     }
 };
 
 export const SYSTEM_VERSION = getLatestVersion();
-export const SYSTEM_CODENAME = "Leanback v2";
+export const SYSTEM_CODENAME = "Clean Leanback";
 export const VERSION_LABEL = `${COMMIT_ID || '#local'} v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
