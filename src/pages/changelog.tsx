@@ -22,7 +22,7 @@ export default function ChangelogPage() {
                         <p className="text-sm font-bold text-slate-400 dark:text-zinc-500">ติดตามสถานะความเคลื่อนไหวล่าสุด (v{SYSTEM_VERSION})</p>
                         {process.env.NEXT_PUBLIC_COMMIT_HASH && (
                             <span className="text-[10px] font-mono opacity-40 bg-slate-100 px-1.5 py-0.5 rounded dark:bg-zinc-900 dark:text-zinc-400">
-                                #{process.env.NEXT_PUBLIC_COMMIT_HASH.slice(0, 7)}
+                                #{String(process.env.NEXT_PUBLIC_COMMIT_HASH).slice(0, 7)}
                             </span>
                         )}
                     </div>

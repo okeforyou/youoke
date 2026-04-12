@@ -6,40 +6,11 @@ import { ListMusic, Trash2 } from "lucide-react";
 import { useUIStore } from "../../../stores/useUIStore";
 import { useCast } from "../../../plugins/cast/context/CastContext";
 import clsx from 'clsx';
-import packageInfo from "../../../../package.json";
+import { SYSTEM_VERSION } from "@/core/version";
 
 interface SidebarControlsProps {
     castMode?: string;
 }
-
-export const CHANGELOGS = [
-    {
-        version: "4.10.117 (Cast & QR UI Stability)",
-        date: "6 เม.ย. 2569",
-        changes: [
-            "Fixed Remote QR accessibility: Force clears stale UI castMode when switching from Cast back to Remote pairing",
-            "Ensured SidebarControls re-syncs with SDK status immediately upon button click",
-            "Stabilized Auto-Version Sync across all Dashboard layout components"
-        ],
-        recent_updates: ""
-    },
-    {
-        version: "4.10.116 (Sequence Fix)",
-    }
-];
-
-const getLatestVersion = () => {
-    try {
-        if (!CHANGELOGS || CHANGELOGS.length === 0) return "5.5.25";
-        const latest = CHANGELOGS[0].version;
-        if (typeof latest !== 'string') return "5.5.25";
-        return latest.includes(" ") ? latest.split(" ")[0] : latest;
-    } catch (e) {
-        return "5.5.25";
-    }
-};
-
-export const SYSTEM_VERSION = getLatestVersion();
 
 export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => {
     const {
