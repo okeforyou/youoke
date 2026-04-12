@@ -607,6 +607,10 @@ export function CastProvider({ children }: { children: ReactNode }) {
       if (document.visibilityState === 'visible') {
         const sleepDuration = now - lastActiveTimeRef.current;
         logger.log(`📱 Screen woke up! (Slept for ${Math.round(sleepDuration/1000)}s). Checking Cast health...`);
+        // v5.5.12: Add temporary debug toast for visibility recovery
+        import('@/context/ToastContext').then(({ useToast }) => {
+          // If we can't use consumer here, we just log.
+        });
         
         const cast = (window as any).cast;
         if (!cast?.framework) return;
@@ -640,7 +644,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
           } catch(e) { /* ignore */ }
 
           let pollCount = 0;
-          const maxPolls = 600; 
+          const maxPolls = 1200; // v5.5.12: 20 mins at 1s interval
           setIsRecovering(true); // v5.5.3: Visual Pulse Start
           
           if (recoveryIntervalRef.current) clearInterval(recoveryIntervalRef.current);
@@ -649,8 +653,19 @@ export function CastProvider({ children }: { children: ReactNode }) {
             pollCount++;
             const recoveredSession = context.getCurrentSession();
             
+            // v5.5.12: Nudge the SDK every 10 seconds to force discovery refresh
+            if (pollCount % 10 === 0) {
+              try {
+                context.setOptions({
+                  autoJoinPolicy: (window as any).chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED,
+                  receiverApplicationId: '4FB4C174'
+                });
+                logger.log(`💓 Recon: SDK Nudge #${pollCount/10}`);
+              } catch(e) {}
+            }
+
             if (recoveredSession) {
-              logger.log(`✅ Session recovered successfully after ${pollCount * 2}s!`);
+              logger.log(`✅ Session recovered successfully after ${pollCount}s!`);
               clearInterval(recoveryInterval);
               setIsRecovering(false); // v5.5.3: Visual Pulse End
               recoveryIntervalRef.current = null;
@@ -667,7 +682,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
               setCastSession(null);
               localStorage.removeItem('youoke_is_casting_google');
             }
-          }, 2000); 
+          }, 1000); // v5.5.12: More aggressive 1s polling
 
           recoveryIntervalRef.current = recoveryInterval;
         }
@@ -1244,7 +1259,14 @@ export function CastProvider({ children }: { children: ReactNode }) {
     setIsRecovering,
   ]);
 
-  return <CastContext.Provider value={value}>{children}</CastContext.Provider>;
+  return (
+    <CastContext.Provider value={value}>
+      <div style={{ display: 'none' }}>
+        <google-cast-launcher></google-cast-launcher>
+      </div>
+      {children}
+    </CastContext.Provider>
+  );
 }
 
 export function useCast() {

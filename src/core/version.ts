@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.5.12 (Aggressive Recon)",
+        date: "12 เม.ย. 2569",
+        changes: [
+            "STABILITY: Implemented 'SDK Nudging' which force-refreshes CastContext options every 10s during recovery",
+            "STABILITY: Added hidden <google-cast-launcher> to maintain active hardware discovery in mobile browsers",
+            "STABILITY: Increased recovery polling frequency to 1s for near-instant reconnection on screen wake",
+            "UX: Added deep visibility listeners (Page Lifecycle API) to ensure logic triggers on mobile resume",
+        ],
+        recent_updates: "Mobile Resiliency Boost"
+    },
+    {
         version: "v5.5.11 (Deep Recon Fix)",
         date: "12 เม.ย. 2569",
         changes: [
