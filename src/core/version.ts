@@ -7,6 +7,17 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.18 (TV Redirect Shield)",
+        date: "12 เม.ย. 2569",
+        changes: [
+            "FIX: Resolved issue where Smart TVs were redirected to /remote due to aggressive mobile detection",
+            "RELIABILITY: Implemented dual-check TV detection (UA Regex + Touch-Capability check)",
+            "STABILITY: Expanded Smart TV UA dictionary to include Bravia, Tizen, Shield, and Nexus Player",
+            "CORE: Added 'isTouchDevice' gate to preserve /tv page on non-touch Smart TV browsers",
+        ],
+        recent_updates: "TV Environment Stability"
+    },
+    {
         version: "v5.5.17 (TV Responsive Patched)",
         date: "12 เม.ย. 2569",
         changes: [
@@ -392,15 +403,15 @@ export const CHANGELOGS = [
 export const getLatestVersion = () => {
     try {
         const latest = CHANGELOGS[0]?.version;
-        if (!latest || typeof latest !== 'string') return "5.5.17";
+        if (!latest || typeof latest !== 'string') return "5.5.18";
         const cleanVersion = safeStartsWith(latest, 'v') ? latest.substring(1) : latest;
-        const parts = safeSplit(cleanVersion, " ", ["5.5.17"]);
-        return parts[0] || "5.5.17";
+        const parts = safeSplit(cleanVersion, " ", ["5.5.18"]);
+        return parts[0] || "5.5.18";
     } catch (e) {
-        return "5.5.17";
+        return "5.5.18";
     }
 };
 
 export const SYSTEM_VERSION = getLatestVersion();
-export const SYSTEM_CODENAME = "TV Responsive Patched";
+export const SYSTEM_CODENAME = "TV Redirect Shield";
 export const VERSION_LABEL = `${COMMIT_ID || '#local'} v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;

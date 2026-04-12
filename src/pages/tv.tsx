@@ -31,26 +31,33 @@ const TVPage = () => {
     const [isPlayerReady, setIsPlayerReady] = useState(false);
     const [connectedCount, setConnectedCount] = useState(0);
 
-    // 0. Smart Entry Redirect Logic
+    // 0. Smart Entry Redirect Logic (V1-v5 Harmony)
     useEffect(() => {
         if (!router.isReady) return;
 
         const ua = window.navigator.userAgent.toLowerCase();
+        
+        // Comprehensive TV Detection
+        const isSmartTV = /smart-tv|smarttv|googletv|appletv|hbbtv|pizazz|tizen|webos|viera|magelink|bravia|netcast|philips|sharp|roku|shield|box|nexus player|tv|dtv|chromecast|crkey/.test(ua);
+        
+        // Mobile Detection
         const isMobileDevice = /iphone|ipod|android|blackberry|mini|windows\sce|palm/i.test(ua);
-        const isSmartTV = /smart-tv|smarttv|googletv|appletv|hbbtv|pizazz|tizen|webos|viera|magelink/.test(ua);
+        
+        // Touch Detection (TVs rarely have touch, phones always do)
+        const isTouchDevice = typeof window !== 'undefined' && (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
+
         const hasRoomParam = !!router.query.room;
 
         // Mobile → redirect to Remote Control app
-        if (isMobileDevice && !isSmartTV) {
-            console.log('📱 Smart Routing: Mobile -> /remote');
+        // Logic: Must look like mobile AND NOT look like a TV AND must have Touch capability
+        if (isMobileDevice && !isSmartTV && isTouchDevice) {
+            console.log('📱 Smart Routing: Redirecting Mobile -> /remote');
             const target = hasRoomParam ? `/remote?room=${router.query.room}` : '/remote';
             router.replace(target);
             return;
         }
 
-        // PC, Tablet, Smart TV → Stay on /tv
-        // No room param → shows Digital Signage + QR Code (for mobile remote flow)
-        // Has room param → connects to room directly (Web Caster from Dashboard)
+        console.log('📺 TV System: Remaining on /tv page. UA:', ua);
     }, [router.isReady, router.query.room]);
 
     // 1. Auth & Room Setup
