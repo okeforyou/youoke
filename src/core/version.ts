@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.5.7 (Stability Boost)",
+        date: "12 เม.ย. 2569",
+        changes: [
+            "STABILITY: Improved Chromecast background persistence by preventing premature session cleanup on screen sleep",
+            "UI: Restored 'CAST' label in SidebarControls for better discovery while keeping status labels hidden to prevent overflow",
+            "UX: Deep Recon recovery logic now triggers reliably when screen wakes up even if SDK session was terminated",
+        ],
+        recent_updates: "Universal Recovery Enhancements"
+    },
+    {
         version: "v5.5.6 (Build Fix)",
         date: "11 เม.ย. 2569",
         changes: [

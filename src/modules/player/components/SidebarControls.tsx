@@ -194,8 +194,8 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                                 item.label === "กำลังเชื่อมต่อ..." ? "text-orange-600" : (isAnyCastOn ? "text-red-600" : "text-black dark:text-zinc-200")
                             ) : "text-black/60 dark:text-zinc-500"
                         )}>
-                            {/* v5.5.6: Hide label for Cast items to prevent overflow */}
-                            {item.label !== "CAST" && item.label !== "ยกเลิก" && item.label !== "กำลังเชื่อมต่อ..." && (
+                            {/* v5.5.7: Show "CAST" but hide longer labels to prevent overflow */}
+                            {(item.label === "CAST" || (item.label !== "ยกเลิก" && item.label !== "กำลังเชื่อมต่อ...")) && (
                                 item.label
                             )}
                         </span>

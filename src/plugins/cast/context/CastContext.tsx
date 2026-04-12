@@ -581,7 +581,9 @@ export function CastProvider({ children }: { children: ReactNode }) {
     setIsConnected(false);
     setReceiverName('');
     setReceiverStateReceived(false);
-    localStorage.removeItem('youoke_is_casting_google'); // v5.4.7: Clear status
+    // v5.5.7: REMOVED localStorage cleanup from here. 
+    // We keep 'youoke_is_casting_google' true to allow the Recovery Pulse (Orange) 
+    // to work when the screen wakes up. Only manual 'disconnect' or long timeout (20m) will clear it.
     
     // v5.0.4: Force reset castMode in global state to fix disconnect button stuck
     import('@/stores/useUIStore').then(({ useUIStore }) => {
