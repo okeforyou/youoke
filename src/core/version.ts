@@ -1,5 +1,15 @@
 export const CHANGELOGS = [
     {
+        version: "v5.5.11 (Deep Recon Fix)",
+        date: "12 เม.ย. 2569",
+        changes: [
+            "STABILITY: Fixed 'Start Over' bug by properly marking receiver state as received during reconnection",
+            "STABILITY: Improved Screen Wake-up recovery by checking localStorage persistence flags",
+            "UX: Ensured casting session resumes exactly where it left off instead of reloading the queue",
+        ],
+        recent_updates: "Persistence Lifecycle Fix"
+    },
+    {
         version: "v5.5.10 (UI Unification)",
         date: "12 เม.ย. 2569",
         changes: [

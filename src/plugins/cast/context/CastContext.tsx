@@ -479,6 +479,9 @@ export function CastProvider({ children }: { children: ReactNode }) {
               storeSetQueue(receiverPlaylist); // Update the store's queue
               setCurrentIndex(data.currentIndex); // Update the store's current index
             }
+            
+            // v5.5.11: CRITICAL FIX - Mark state as received to prevent sync-loop / start-over
+            setReceiverStateReceived(true);
             break;
 
 
@@ -621,7 +624,7 @@ export function CastProvider({ children }: { children: ReactNode }) {
           setTimeout(() => {
             try { activeSession.sendMessage(CAST_NAMESPACE, { type: 'GET_STATE' }); } catch(e) {}
           }, 500);
-        } else if (isConnected || sleepDuration > 1200000) {
+        } else if (isConnected || localStorage.getItem('youoke_is_casting_google') === 'true' || sleepDuration > 1200000) {
           // v5.4.9: Deep Wake-up Pulse (Matching /remote behavior)
           logger.log('💓 Screen Awake: Triggering Deep SDK Recon...');
           
