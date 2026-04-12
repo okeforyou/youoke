@@ -7,6 +7,17 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.17 (TV Responsive Patched)",
+        date: "12 เม.ย. 2569",
+        changes: [
+            "FIX: Overhauled /tv layout to use viewport-based units (vw/vh) for all major components",
+            "RELIABILITY: Resolved QR Code overflow issue on small-resolution/high-zoom Smart TVs",
+            "UX: Optimized room code visibility with flexible scaling font sizes",
+            "STABILITY: Maintained 100% Hook compliance while improving layout robustness",
+        ],
+        recent_updates: "Smart TV Layout Optimization"
+    },
+    {
         version: "v5.5.16 (Logic-End Shield)",
         date: "12 เม.ย. 2569",
         changes: [
@@ -381,15 +392,15 @@ export const CHANGELOGS = [
 export const getLatestVersion = () => {
     try {
         const latest = CHANGELOGS[0]?.version;
-        if (!latest || typeof latest !== 'string') return "5.5.16";
+        if (!latest || typeof latest !== 'string') return "5.5.17";
         const cleanVersion = safeStartsWith(latest, 'v') ? latest.substring(1) : latest;
-        const parts = safeSplit(cleanVersion, " ", ["5.5.16"]);
-        return parts[0] || "5.5.16";
+        const parts = safeSplit(cleanVersion, " ", ["5.5.17"]);
+        return parts[0] || "5.5.17";
     } catch (e) {
-        return "5.5.16";
+        return "5.5.17";
     }
 };
 
 export const SYSTEM_VERSION = getLatestVersion();
-export const SYSTEM_CODENAME = "Logic-End Shield";
+export const SYSTEM_CODENAME = "TV Responsive Patched";
 export const VERSION_LABEL = `${COMMIT_ID || '#local'} v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;

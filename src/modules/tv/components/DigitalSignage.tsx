@@ -97,51 +97,54 @@ export const DigitalSignage: React.FC<DigitalSignageProps> = ({
                 {renderBackground()}
 
                 {/* Header */}
-                <div className="relative z-10 px-12 py-8 flex items-center justify-between">
+                <div className="relative z-10 px-[5vw] py-[3vh] flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary/20 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/10">
-                            <MusicalNoteIcon className="w-6 h-6 text-primary" />
+                        <div className="w-[3vw] h-[3vw] min-w-[40px] min-h-[40px] bg-primary/20 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/10">
+                            <MusicalNoteIcon className="w-[1.8vw] h-[1.8vw] min-w-[20px] min-h-[20px] text-primary" />
                         </div>
-                        <span className="text-2xl font-black tracking-tighter text-white">YouOke <span className="text-primary">TV</span></span>
+                        <span className="text-[2.5vw] min-text-[20px] font-black tracking-tighter text-white">YouOke <span className="text-primary">TV</span></span>
                     </div>
-                    <div className="flex items-center gap-6 text-white/40 text-sm font-medium uppercase tracking-widest">
-                        <span className="flex items-center gap-2"><WifiIcon className="w-4 h-4" /> พร้อมเชื่อมต่อ</span>
+                    <div className="flex items-center gap-6 text-white/40 text-[1.2vw] font-medium uppercase tracking-widest">
+                        <span className="flex items-center gap-2"><WifiIcon className="w-[1.2vw] h-[1.2vw]" /> พร้อมเชื่อมต่อ</span>
                     </div>
                 </div>
 
                 {/* Content */}
-                <div className={`relative z-10 flex-1 flex flex-col justify-center px-24 gap-12 transition-all duration-1000 transform ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-                    <div className="grid grid-cols-12 gap-12 items-center">
-                        <div className={template === 'split' ? "col-span-6 space-y-8" : "col-span-7 space-y-8"}>
-                            <p className="text-primary font-bold uppercase tracking-[0.2em] mb-4 flex items-center gap-3">
-                                <span className="w-8 h-[2px] bg-primary"></span>
+                <div className={`relative z-10 flex-1 flex flex-col justify-center px-[8vw] gap-[5vh] transition-all duration-1000 transform ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+                    <div className="grid grid-cols-12 gap-[4vw] items-center">
+                        <div className={template === 'split' ? "col-span-12 lg:col-span-6 space-y-[2vh]" : "col-span-12 lg:col-span-7 space-y-[2vh]"}>
+                            <p className="text-primary font-bold uppercase tracking-[0.2em] mb-[1vh] flex items-center gap-3 text-[1.2vw]">
+                                <span className="w-[3vw] h-[2px] bg-primary"></span>
                                 ร้องเพลงไปด้วยกัน
                             </p>
-                            <h1 className="text-7xl font-black text-white leading-[1.1] mb-6 drop-shadow-2xl">
+                            <h1 className="text-[6vw] font-black text-white leading-[1.1] mb-[2vh] drop-shadow-2xl">
                                 เข้าร่วมปาร์ตี้<br />
                                 <span className="text-white/30">ผ่านมือถือของคุณ</span>
                             </h1>
-                            <p className="text-xl text-white/60 font-light max-w-xl leading-relaxed">
+                            <p className="text-[1.8vw] text-white/60 font-light max-w-xl leading-relaxed">
                                 สแกน QR Code เพื่อเลือกเพลง คลุมระดับเสียง และแสดงความสามารถของคุณ
                             </p>
 
-                            <div className="inline-flex items-center gap-8 bg-white/5 backdrop-blur-md border border-white/10 pr-12 rounded-3xl overflow-hidden mt-8">
-                                <div className="px-8 py-6 bg-primary text-white font-black text-xl uppercase tracking-widest flex flex-col items-center justify-center leading-tight">
+                            <div className="inline-flex items-center gap-[2vw] bg-white/5 backdrop-blur-md border border-white/10 pr-[3vw] rounded-[2vw] overflow-hidden mt-[2vh]">
+                                <div className="px-[2vw] py-[1.5vh] bg-primary text-white font-black text-[1.5vw] uppercase tracking-widest flex flex-col items-center justify-center leading-tight">
                                     <span>รหัส</span>
                                     <span>ห้อง</span>
                                 </div>
-                                <div className="text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 tracking-tighter">
+                                <div className="text-[10vw] font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 tracking-tighter">
                                     {roomCode}
                                 </div>
                             </div>
                         </div>
 
-                        <div className={template === 'split' ? "col-span-6 flex justify-center" : "col-span-5 flex justify-center"}>
+                        <div className={template === 'split' ? "col-span-12 lg:col-span-6 flex justify-center" : "col-span-12 lg:col-span-5 flex justify-center"}>
                             <div className="relative group">
-                                <div className="absolute -inset-4 bg-primary/30 rounded-[3rem] blur-2xl opacity-50 group-hover:opacity-75 transition-opacity duration-1000 animate-pulse"></div>
-                                <div className="relative bg-white p-6 rounded-[2.5rem] shadow-2xl rotate-2 hover:rotate-0 transition-all duration-700 ease-out transform hover:scale-105">
-                                    <QRCodeSVG value={qrUrl} size={template === 'split' ? 320 : 380} level="H" className="rounded-2xl" />
-                                    <div className="absolute -bottom-6 -right-6 bg-stone-900 text-white px-6 py-3 rounded-2xl font-bold shadow-xl border border-white/10 flex items-center gap-2">
+                                <div className="absolute -inset-4 bg-primary/30 rounded-[3rem] blur-[30px] opacity-50 group-hover:opacity-75 transition-opacity duration-1000 animate-pulse"></div>
+                                <div className="relative bg-white p-[1.5vw] rounded-[2.5rem] shadow-2xl rotate-2 hover:rotate-0 transition-all duration-700 ease-out transform hover:scale-105">
+                                    {/* Scale QR code based on screen height to prevent overflow */}
+                                    <div className="w-[45vh] h-[45vh] max-w-[40vw] max-h-[40vw] min-w-[200px] min-h-[200px]">
+                                        <QRCodeSVG value={qrUrl} size={1024} level="H" className="w-full h-full rounded-2xl" />
+                                    </div>
+                                    <div className="absolute -bottom-6 -right-6 bg-stone-900 text-white px-6 py-3 rounded-2xl font-bold shadow-xl border border-white/10 flex items-center gap-2 text-[1.2vw] whitespace-nowrap">
                                         <SignalIcon className="w-5 h-5 text-green-400 animate-pulse" />
                                         สแกนเลย
                                     </div>
@@ -176,20 +179,20 @@ export const DigitalSignage: React.FC<DigitalSignageProps> = ({
                 {renderBackground(template !== 'video')}
 
                 {/* Visual Overlay for Info */}
-                <div className="absolute bottom-12 left-12 z-20 flex items-center gap-6 bg-black/40 backdrop-blur-xl border border-white/10 p-6 rounded-[2.5rem] shadow-2xl scale-in-center">
-                    <div className="bg-white p-3 rounded-2xl shadow-lg">
-                        <QRCodeSVG value={qrUrl} size={120} level="M" />
+                <div className="absolute bottom-[5vh] left-[5vw] z-20 flex items-center gap-[2vw] bg-black/40 backdrop-blur-xl border border-white/10 p-[2vw] rounded-[2.5rem] shadow-2xl scale-in-center">
+                    <div className="bg-white p-[1vw] rounded-2xl shadow-lg">
+                        <QRCodeSVG value={qrUrl} size={150} level="M" className="w-[8vw] h-[8vw] min-w-[100px] min-h-[100px]" />
                     </div>
                     <div>
-                        <p className="text-white/50 text-xs font-black uppercase tracking-widest mb-1">เข้าร่วมร้องเพลง</p>
-                        <div className="flex items-center gap-4">
-                            <span className="text-5xl font-black text-white tracking-tighter">{roomCode}</span>
-                            <div className="w-px h-10 bg-white/20" />
+                        <p className="text-white/50 text-[1vw] font-black uppercase tracking-widest mb-1">เข้าร่วมร้องเพลง</p>
+                        <div className="flex items-center gap-[1.5vw]">
+                            <span className="text-[4vw] font-black text-white tracking-tighter leading-none">{roomCode}</span>
+                            <div className="w-[1px] h-[4vw] bg-white/20" />
                             <div className="flex flex-col">
-                                <span className="text-primary font-bold text-sm">
+                                <span className="text-primary font-bold text-[1.2vw]">
                                     {typeof window !== 'undefined' ? window.location.host : 'play.okeforyou.com'}
                                 </span>
-                                <span className="text-white/40 text-[10px] uppercase font-bold tracking-widest">Connect Remote</span>
+                                <span className="text-white/40 text-[0.8vw] uppercase font-bold tracking-widest">Connect Remote</span>
                             </div>
                         </div>
                     </div>
