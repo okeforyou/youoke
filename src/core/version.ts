@@ -1,5 +1,16 @@
 export const CHANGELOGS = [
     {
+        version: "v5.5.9 (UI Harmonization)",
+        date: "12 เม.ย. 2569",
+        changes: [
+            "UI: Standardized CAST label font size and weight to match other player controls",
+            "UI: Standardized CAST label font size to 10px and weight to font-medium",
+            "UI: Aligned CAST active color with the primary theme (Red) to ensure visual consistency",
+            "UI: Removed custom green text coloring as per design feedback",
+        ],
+        recent_updates: "Aesthetics Refinement"
+    },
+    {
         version: "v5.5.8 (Mobile UI Fix)",
         date: "12 เม.ย. 2569",
         changes: [

@@ -189,9 +189,9 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                             )}
                         </div>
                         <span className={clsx(
-                            "text-[10px] font-bold uppercase tracking-wide transition-colors duration-200 mt-0.5",
+                            "text-[10px] font-medium uppercase tracking-wide transition-colors duration-200 mt-0.5",
                             (item.label === "CAST" || item.label === "ยกเลิก" || item.label === "กำลังเชื่อมต่อ...") 
-                                ? (isRecovering ? "text-orange-600" : (isAnyCastOn ? "text-green-600" : "text-black dark:text-zinc-200"))
+                                ? (isAnyCastOn ? "text-primary" : "text-black/60 dark:text-zinc-400")
                                 : (item.active ? "text-primary" : "text-black/60 dark:text-zinc-400")
                         )}>
                             {item.label === "ยกเลิก" || item.label === "กำลังเชื่อมต่อ..." ? "CAST" : item.label}
