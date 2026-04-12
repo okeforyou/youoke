@@ -12,16 +12,16 @@ export const ConnectionBadge: React.FC<ConnectionBadgeProps> = ({ mode, classNam
 
     return (
         <div className={clsx(
-            "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest backdrop-blur-md border shadow-xl transition-all duration-500",
+            "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border shadow-xl",
             isLocal
-                ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/30 shadow-yellow-500/10"
-                : "bg-blue-500/20 text-blue-400 border-blue-500/30 shadow-blue-500/10",
+                ? "bg-yellow-950 text-yellow-400 border-yellow-500/30"
+                : "bg-blue-950 text-blue-400 border-blue-500/30",
             className
         )}>
             {isLocal ? (
-                <BoltIcon className="w-3 h-3 animate-pulse" />
+                <BoltIcon className="w-3 h-3" />
             ) : (
-                <GlobeAltIcon className="w-3 h-3 animate-spin-slow" />
+                <GlobeAltIcon className="w-3 h-3" />
             )}
         </div>
     );

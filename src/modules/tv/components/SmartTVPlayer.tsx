@@ -217,15 +217,15 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
             )} />
 
             {/* TV Autoplay Block Prompt (Removed backdrop-blur for performance) */}
-            {/* v5.3.94: Premium Non-Intrusive Audio Unlocker */}
+            {/* TV Autoplay Block Prompt (Zero Effect) */}
             {autoplayBlocked && !hasInteracted && (
                 <div 
                   onClick={handleInteraction} 
-                  className="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-black/90 cursor-pointer animate-in fade-in duration-500"
+                  className="absolute inset-0 z-[100] flex flex-col items-center justify-center bg-black cursor-pointer"
                 >
-                    <div className="bg-white/5 border border-white/10 p-10 rounded-[40px] text-center space-y-6 shadow-2xl hover:bg-white/10 transition-all group active:scale-95">
+                    <div className="bg-stone-900 border border-white/10 p-10 rounded-[40px] text-center space-y-6 shadow-2xl">
                         <div className="relative">
-                          <PlayCircleIcon className="w-24 h-24 text-primary mx-auto relative z-10 drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]" />
+                          <PlayCircleIcon className="w-24 h-24 text-primary mx-auto relative z-10" />
                         </div>
                         <div className="space-y-2">
                           <h2 className="text-4xl font-black text-white tracking-tighter">YOUOKE READY</h2>
@@ -238,15 +238,15 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
             {/* v5.0.5: Connection Status Indicator (Top Right Dot) */}
             <div className="absolute top-6 right-6 z-[100] flex items-center gap-3">
                 {roomCode && (
-                    <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] bg-black/40 px-3 py-1 rounded-full">
+                    <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] bg-stone-900 px-3 py-1 rounded-full">
                         ROOM: {roomCode}
                     </span>
                 )}
                 <div className={clsx(
-                    "w-3 h-3 rounded-full shadow-lg transition-all duration-1000",
+                    "w-3 h-3 rounded-full",
                     isSenderConnected 
-                        ? "bg-green-500 shadow-green-500/50 animate-pulse" 
-                        : "bg-red-500 shadow-red-500/50"
+                        ? "bg-green-500" 
+                        : "bg-red-500"
                 )} />
             </div>
 
@@ -276,7 +276,7 @@ export const SmartTVPlayer: React.FC<SmartTVPlayerProps> = ({
                     </div >
                     <div className="pb-1 min-w-0 flex-1">
                         <div className="flex items-center gap-2.5 mb-2.5">
-                            <span className="bg-primary px-2.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider text-white shadow-lg shadow-primary/40 animate-pulse">กำลังเล่น</span>
+                            <span className="bg-primary px-2.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider text-white">กำลังเล่น</span>
                             {currentVideo.addedBy && (
                                 <span className="flex items-center gap-1.5 text-[11px] font-bold text-white/60 bg-black/40 px-2.5 py-0.5 rounded-full border border-white/5 backdrop-blur-md">
                                     <UserIcon className="w-2.5 h-2.5 text-white/40" />

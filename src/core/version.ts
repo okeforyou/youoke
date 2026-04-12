@@ -7,6 +7,18 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.23 (Zero-Effect Mode)",
+        date: "12 เม.ย. 2569",
+        changes: [
+            "PERFORMANCE: Implemented 'Zero-Effect Mode' by stripping all CSS animations (pulse, bounce, slide-in)",
+            "OPTIMIZATION: Removed all 'backdrop-blur' filters and replaced with high-performance solid backgrounds",
+            "RELIABILITY: Simplified all transitions to basic 'opacity' or 'translate' with zero complex easing",
+            "SMOOTHNESS: Optimized background slideshow to be a static switch rather than animated transition",
+            "VISUAL: Cleaned up shadows and glows that caused GPU overdraw on Smart TV browsers",
+        ],
+        recent_updates: "Absolute Minimum Resource Usage"
+    },
+    {
         version: "v5.5.22 (Hyper-Performance)",
         date: "12 เม.ย. 2569",
         changes: [
@@ -449,15 +461,15 @@ export const CHANGELOGS = [
 export const getLatestVersion = () => {
     try {
         const latest = CHANGELOGS[0]?.version;
-        if (!latest || typeof latest !== 'string') return "5.5.22";
+        if (!latest || typeof latest !== 'string') return "5.5.23";
         const cleanVersion = safeStartsWith(latest, 'v') ? latest.substring(1) : latest;
-        const parts = safeSplit(cleanVersion, " ", ["5.5.22"]);
-        return parts[0] || "5.5.22";
+        const parts = safeSplit(cleanVersion, " ", ["5.5.23"]);
+        return parts[0] || "5.5.23";
     } catch (e) {
-        return "5.5.22";
+        return "5.5.23";
     }
 };
 
 export const SYSTEM_VERSION = getLatestVersion();
-export const SYSTEM_CODENAME = "Hyper-Performance";
+export const SYSTEM_CODENAME = "Zero-Effect Mode";
 export const VERSION_LABEL = `${COMMIT_ID || '#local'} v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
