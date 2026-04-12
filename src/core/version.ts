@@ -7,6 +7,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.24 (Import Fix)",
+        date: "12 เม.ย. 2569",
+        changes: [
+            "FIX: Added missing 'clsx' import in tv.tsx which caused a ReferenceError during runtime",
+            "RELIABILITY: Verified all imports across TV modules for Zero-Effect Mode compatibility",
+        ],
+        recent_updates: "Runtime Stability Patch"
+    },
+    {
         version: "v5.5.23 (Zero-Effect Mode)",
         date: "12 เม.ย. 2569",
         changes: [
@@ -461,15 +470,15 @@ export const CHANGELOGS = [
 export const getLatestVersion = () => {
     try {
         const latest = CHANGELOGS[0]?.version;
-        if (!latest || typeof latest !== 'string') return "5.5.23";
+        if (!latest || typeof latest !== 'string') return "5.5.24";
         const cleanVersion = safeStartsWith(latest, 'v') ? latest.substring(1) : latest;
-        const parts = safeSplit(cleanVersion, " ", ["5.5.23"]);
-        return parts[0] || "5.5.23";
+        const parts = safeSplit(cleanVersion, " ", ["5.5.24"]);
+        return parts[0] || "5.5.24";
     } catch (e) {
-        return "5.5.23";
+        return "5.5.24";
     }
 };
 
 export const SYSTEM_VERSION = getLatestVersion();
-export const SYSTEM_CODENAME = "Zero-Effect Mode";
+export const SYSTEM_CODENAME = "Import Fix";
 export const VERSION_LABEL = `${COMMIT_ID || '#local'} v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
