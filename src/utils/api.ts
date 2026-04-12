@@ -118,10 +118,10 @@ export const searchPlaylists = async (
  * Cleans a search query by removing common YouTube noise and clutter
  * like (Official MV), [Lyric], Unknown Artist, etc.
  */
-export const cleanSearchQuery = (query: any): string => {
-  if (!query || typeof query !== 'string') return "";
+export const cleanSearchQuery = (q: any): string => {
+  if (typeof q !== 'string') return '';
   
-  let cleaned = query;
+  let cleaned = q;
   
   // 1. Aggressive Bracket Removal (Multiple passes for nested ones)
   for (let i = 0; i < 3; i++) {

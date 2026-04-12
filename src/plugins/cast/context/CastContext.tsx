@@ -606,11 +606,9 @@ export function CastProvider({ children }: { children: ReactNode }) {
       const now = Date.now();
       if (document.visibilityState === 'visible') {
         const sleepDuration = now - lastActiveTimeRef.current;
-        logger.log(`📱 Screen woke up! (Slept for ${Math.round(sleepDuration/1000)}s). Checking Cast health...`);
-        // v5.5.12: Add temporary debug toast for visibility recovery
-        import('@/context/ToastContext').then(({ useToast }) => {
-          // If we can't use consumer here, we just log.
-        });
+        // v5.5.13: Explicitly check for Page Lifecycle API Support
+        logger.log(`📱 Screen woke up! Status: [${document.visibilityState}]. Sleep: ${Math.round(sleepDuration/1000)}s.`);
+
         
         const cast = (window as any).cast;
         if (!cast?.framework) return;
@@ -691,15 +689,13 @@ export function CastProvider({ children }: { children: ReactNode }) {
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    // Page Lifecycle API - Reliable for Android/iOS Chrome
     window.addEventListener('resume', handleVisibilityChange);
-    window.addEventListener('pageshow', (event) => {
-      if (event.persisted) handleVisibilityChange();
-    });
+    window.addEventListener('pageshow', handleVisibilityChange);
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('resume', handleVisibilityChange);
+      window.removeEventListener('pageshow', handleVisibilityChange);
     };
   }, [isConnected]); // Keep dependency on isConnected for the fallback reset logic
 

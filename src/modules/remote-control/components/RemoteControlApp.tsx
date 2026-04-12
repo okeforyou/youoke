@@ -51,8 +51,24 @@ interface RoomState {
 export default function RemoteControlApp() {
     const router = useRouter();
     const queryRoom = router.query?.room;
-    // v5.3.62: Hardened roomCode derivation to prevent TypeError: g.split (ReferenceError: VERSION_LABEL)
-    const roomCode = typeof queryRoom === 'string' ? queryRoom : (Array.isArray(queryRoom) && queryRoom[0] ? String(queryRoom[0]) : '');
+    
+    // v5.5.14: Industrial-Grade Hydration & Split Shield
+    const roomCode = React.useMemo(() => {
+        if (!queryRoom) return '';
+        if (typeof queryRoom === 'string') return queryRoom;
+        if (Array.isArray(queryRoom)) return String(queryRoom[0] || '');
+        return '';
+    }, [queryRoom]);
+
+    // Prevent rendering until router is hydrated to avoid empty queries or hydration mismatches
+    if (!router.isReady && !roomCode) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-stone-950 text-white p-6">
+                <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4" />
+                <p className="text-sm font-bold uppercase tracking-widest opacity-40">Initializing Remote...</p>
+            </div>
+        );
+    }
 
     // State
     const [status, setStatus] = useState<RemoteStatus>('connecting');
@@ -140,7 +156,9 @@ export default function RemoteControlApp() {
         setIsSearching(true);
         try {
             const { getSearchResult } = await import('../../../utils/api');
-            const effectiveQuery = type === 'karaoke' ? `${value} karaoke` : value;
+            const { safeTrim } = await import('../../../utils/stringUtils');
+            const cleanValue = safeTrim(value);
+            const effectiveQuery = type === 'karaoke' ? `${cleanValue} karaoke` : cleanValue;
             const data = await getSearchResult({ q: effectiveQuery, type: 'video' });
             setSearchResults(data);
         } catch (e) {

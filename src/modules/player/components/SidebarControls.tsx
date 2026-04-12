@@ -29,8 +29,9 @@ export const CHANGELOGS = [
 ];
 
 const getLatestVersion = () => {
-    if (!CHANGELOGS || CHANGELOGS.length === 0) return "4.10.117";
+    if (!CHANGELOGS || CHANGELOGS.length === 0) return "5.5.13";
     const latest = CHANGELOGS[0].version;
+    if (typeof latest !== 'string') return "5.5.13";
     return latest.split(" ")[0];
 };
 
