@@ -1,5 +1,14 @@
 export const CHANGELOGS = [
     {
+        version: "v5.5.8 (Mobile UI Fix)",
+        date: "12 เม.ย. 2569",
+        changes: [
+            "UI: Fixed missing 'CAST' label on mobile devices by ensuring persistent display regardless of connection state",
+            "UI: Refined button labeling logic to prevent overflows while maintaining discovery",
+        ],
+        recent_updates: "Mobile Navigation Polish"
+    },
+    {
         version: "v5.5.7 (Stability Boost)",
         date: "12 เม.ย. 2569",
         changes: [
