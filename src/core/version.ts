@@ -7,6 +7,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.33 (Monitor Mastery)",
+        date: "13 เม.ย. 2569",
+        changes: [
+            "TV: Completely redesigned Signage to match 'Monitor' industrial aesthetics",
+            "UI: Consolidated QR and Room Code into a single high-contrast central card",
+            "UX: Optimized for maximum visual focus and edge-safety (Safe-Zone)",
+        ],
+        recent_updates: "Monitor-Style Integration & Visual Focus"
+    },
+    {
         version: "v5.5.32 (UI Hotfix)",
         date: "13 เม.ย. 2569",
         changes: [
