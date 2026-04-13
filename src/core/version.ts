@@ -7,6 +7,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.34 (Seamless TV)",
+        date: "13 เม.ย. 2569",
+        changes: [
+            "TV: Migrated to Seamless UI by removing all cards, borders, and visual containers",
+            "UI: Optimized floating typography for high-contrast on dark backgrounds",
+            "UX: Maintained ultra-large Room Code while creating a unified single-surface feel",
+        ],
+        recent_updates: "Seamless Floating UI Transformation"
+    },
+    {
         version: "v5.5.33 (Monitor Mastery)",
         date: "13 เม.ย. 2569",
         changes: [
