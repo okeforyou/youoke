@@ -1,6 +1,6 @@
 
 import { NextApiRequest, NextApiResponse } from 'next';
-import { adminFirestore, adminDatabase } from '../../../firebase-admin';
+import { adminFirestore, adminDb } from '../../../firebase-admin';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     // 🛡️ SECURITY: Only allow from localhost or with a secret (using cron secret as a shortcut)
@@ -39,9 +39,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 await adminFirestore.collection('users').doc(uid).update(lifetimeData);
 
                 // 2. Fix RTDB
-                if (adminDatabase) {
-                    await adminDatabase.ref(`users/${uid}`).update({ role: 'owner' });
-                    await adminDatabase.ref(`users/${uid}/subscription`).update({
+                if (adminDb) {
+                    await adminDb.ref(`users/${uid}`).update({ role: 'owner' });
+                    await adminDb.ref(`users/${uid}/subscription`).update({
                         plan: 'lifetime',
                         status: 'active'
                     });

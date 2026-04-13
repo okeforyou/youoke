@@ -7,6 +7,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.28 (Admin Cleanup)",
+        date: "13 เม.ย. 2569",
+        changes: [
+            "FIX: Corrected adminDatabase import in force-shield.ts (Resolved compile warnings)",
+            "STABILITY: Finalized production build synchronization for play.okeforyou.com",
+        ],
+        recent_updates: "Admin Stability & Clean Build"
+    },
+    {
         version: "v5.5.27 (Build Fix)",
         date: "13 เม.ย. 2569",
         changes: [
