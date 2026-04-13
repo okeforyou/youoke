@@ -7,6 +7,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.32 (UI Hotfix)",
+        date: "13 เม.ย. 2569",
+        changes: [
+            "FIX: Added missing UserIcon import into DigitalSignage.tsx",
+            "STABILITY: Resolved White Screen crash on TV page initialization",
+        ],
+        recent_updates: "Icon Registration & Stability Fix"
+    },
+    {
         version: "v5.5.31 (Safe-Zone TV)",
         date: "13 เม.ย. 2569",
         changes: [

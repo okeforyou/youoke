@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { MusicalNoteIcon, SignalIcon, WifiIcon, PlayCircleIcon, DevicePhoneMobileIcon, KeyIcon } from '@heroicons/react/24/solid';
+import { MusicalNoteIcon, SignalIcon, WifiIcon, PlayCircleIcon, UserIcon } from '@heroicons/react/24/solid';
 
 interface DigitalSignageProps {
     roomCode: string;
