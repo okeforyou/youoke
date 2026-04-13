@@ -7,6 +7,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.35 (UI Revert)",
+        date: "13 เม.ย. 2569",
+        changes: [
+            "UI: Reverted TV Signage to Monitor Mastery (v5.5.33) layout",
+            "UX: Restored central card container and high-contrast borders for better visual depth",
+        ],
+        recent_updates: "Restoration of Preferred Monitor Aesthetics"
+    },
+    {
         version: "v5.5.34 (Seamless TV)",
         date: "13 เม.ย. 2569",
         changes: [
