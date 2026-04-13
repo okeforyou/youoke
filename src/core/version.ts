@@ -7,6 +7,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.27 (Build Fix)",
+        date: "13 เม.ย. 2569",
+        changes: [
+            "FIX: Resolved build failure on Plesk by adding missing 'socket.io' dependencies",
+            "MAINTENANCE: Synchronized package.json for production deployment stability",
+        ],
+        recent_updates: "Emergency Build Hotfix"
+    },
+    {
         version: "v5.5.26 (Domain Harmony)",
         date: "12 เม.ย. 2569",
         changes: [
