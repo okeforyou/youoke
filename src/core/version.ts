@@ -7,6 +7,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.31 (Safe-Zone TV)",
+        date: "13 เม.ย. 2569",
+        changes: [
+            "TV: Implemented 5% Safe-Zone padding to prevent Overscan clipping on Smart TVs",
+            "UI: Restored Split-View layout (Monitor-style) with ultra-large Room Code",
+            "UX: Optimized QR placement and Thai instructions for edge-distance safety",
+        ],
+        recent_updates: "Safe-Zone Padding & Split-View Restoration"
+    },
+    {
         version: "v5.5.30 (Cinematic TV)",
         date: "13 เม.ย. 2569",
         changes: [

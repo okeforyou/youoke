@@ -56,91 +56,93 @@ export const DigitalSignage: React.FC<DigitalSignageProps> = ({
     const bgUrl = typeof item === 'string' ? item : item?.url;
 
     return (
-        <div className="absolute inset-0 bg-stone-950 overflow-hidden flex items-center justify-center font-sans select-none text-white">
-            {/* BACKGROUND LAYER */}
+        <div className="absolute inset-0 bg-[#050505] overflow-hidden flex flex-col font-sans select-none text-white">
+            
+            {/* BACKGROUND: Cinematic Rotation */}
             <div className="absolute inset-0 z-0">
                 <div
                     className="absolute inset-0 bg-cover bg-center transition-opacity duration-[2000ms]"
-                    style={{ backgroundImage: `url(${bgUrl})`, opacity: 0.25 }}
+                    style={{ backgroundImage: `url(${bgUrl})`, opacity: 0.3 }}
                 />
-                <div className="absolute inset-0 bg-radial-gradient from-transparent to-stone-950/80" />
+                <div className="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent" />
             </div>
 
-            {/* CONTENT LAYER: Cinematic Floating Card */}
-            <div className="relative z-10 flex flex-col items-center">
+            {/* MAIN CONTENT AREA: Wrapped in SAFE ZONE (5vw Padding) */}
+            <div className="relative z-10 flex-1 grid grid-cols-12 h-full p-[5vw]">
                 
-                {/* Floating Glass Card */}
-                <div className="bg-stone-900/40 backdrop-blur-xl border border-white/10 rounded-[4rem] p-[4vw] shadow-[0_0_100px_rgba(0,0,0,0.5)] flex flex-col items-center animate-in zoom-in-95 duration-1000">
-                    
-                    {/* Header: Identity */}
-                    <div className="flex items-center gap-[1.2vw] mb-[4vh] opacity-80">
-                        <div className="w-[3.5vw] h-[3.5vw] bg-primary rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(255,50,0,0.3)]">
-                            <MusicalNoteIcon className="w-[2vw] h-[2vw] text-white" />
-                        </div>
-                        <h2 className="text-[2.5vw] font-black tracking-tighter">YouOKE <span className="text-primary font-light">TV</span></h2>
-                    </div>
-
-                    {/* QR Core Container */}
-                    <div className="relative group">
-                        <div className="absolute -inset-[1vw] bg-primary/20 rounded-[3.5rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <div className="relative p-[1.8vw] bg-white rounded-[3rem] shadow-2xl">
-                            <div className="w-[18vw] h-[18vw]">
-                                <QRCodeSVG value={qrUrl} size={1024} level="M" className="w-full h-full rounded-2xl" />
+                {/* LEFT SIDE (40%): QR & Identity */}
+                <div className="col-span-5 flex flex-col justify-center items-start">
+                    <div className="space-y-[4vh]">
+                        {/* App Logo */}
+                        <div className="flex items-center gap-[1vw]">
+                            <div className="w-[3.5vw] h-[3.5vw] bg-primary rounded-2xl flex items-center justify-center shadow-2xl">
+                                <MusicalNoteIcon className="w-[2vw] h-[2vw] text-white" />
                             </div>
-                            
-                            {/* Floating scan tag */}
-                            <div className="absolute -bottom-[2vh] left-1/2 -translate-x-1/2 bg-primary text-white px-[1.8vw] py-[0.8vh] rounded-full text-[1vw] font-black shadow-xl flex items-center gap-[0.5vw] whitespace-nowrap border-2 border-stone-950">
-                                <SignalIcon className="w-[1.2vw] h-[1.2vw]" />
-                                สแกนเพื่อเริ่มร้องเพลง
-                            </div>
+                            <h2 className="text-[2.2vw] font-black tracking-tighter">YouOKE <span className="text-primary">TV</span></h2>
                         </div>
-                    </div>
 
-                    {/* Room Code Section */}
-                    <div className="mt-[7vh] flex flex-col items-center gap-[1.5vh]">
-                        <p className="text-[1.1vw] text-white/40 font-black uppercase tracking-[0.4em]">รหัสเข้าห้อง</p>
-                        <div className="flex gap-[0.8vw]">
-                            {(Array.from(String(roomCode || ''))).map((char, i) => (
-                                <div key={i} className="w-[4.5vw] h-[6vw] bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 flex items-center justify-center text-[3.5vw] font-black shadow-inner">
-                                    {char}
+                        {/* Large QR Card (Glass style) */}
+                        <div className="relative group">
+                            <div className="absolute -inset-[0.5vw] bg-white/5 rounded-[3rem] blur-xl opacity-50" />
+                            <div className="relative p-[1.5vw] bg-white rounded-[2.5rem] shadow-2xl">
+                                <div className="w-[16vw] h-[16vw]">
+                                    <QRCodeSVG value={qrUrl} size={1024} level="M" className="w-full h-full rounded-2xl" />
                                 </div>
-                            ))}
+                                <div className="absolute -bottom-[2vh] left-1/2 -translate-x-1/2 bg-[#0a0a0a] text-white px-[1.5vw] py-[0.8vh] rounded-full text-[0.9vw] font-bold border border-white/10 flex items-center gap-[0.5vw] whitespace-nowrap">
+                                    <SignalIcon className="w-[1.2vw] h-[1.2vw] text-green-500" />
+                                    สแกนเพื่อเริ่มร้องเพลง
+                                </div>
+                            </div>
                         </div>
-                        <p className="text-[1vw] text-white/20 font-medium tracking-widest mt-2">{typeof window !== 'undefined' ? window.location.hostname : 'play.okeforyou.com'}</p>
+
+                        {/* Basic Instructions */}
+                        <div className="space-y-[1.5vh] pt-[2vh]">
+                            <div className="flex items-center gap-[1vw] text-white/50">
+                                <span className="w-8 h-px bg-white/20"></span>
+                                <span className="text-[1vw] font-black uppercase tracking-widest text-primary">วิธีเชื่อมต่อ</span>
+                            </div>
+                            <p className="text-[1.2vw] font-bold text-white/70">1. เปิดกล้องมือถือแล้วสแกน QR Code</p>
+                            <p className="text-[1.2vw] font-bold text-white/70">2. เลือกเพลงและจัดคิวได้ทันที</p>
+                        </div>
                     </div>
                 </div>
 
-                {/* Bottom Instructions (Floating) */}
-                <div className="mt-[5vh] flex flex-col items-center gap-[2.5vh]">
-                    <div className="flex items-center gap-[3vw]">
-                        <div className="flex items-center gap-[1vw] text-white/50">
-                            <div className="w-[2vw] h-[2vw] rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[0.9vw] font-black">1</div>
-                            <span className="text-[1.2vw] font-bold tracking-tight">เปิดกล้องมือถือแล้วสแกน</span>
+                {/* RIGHT SIDE (60%): HUGE Room Code (Monitor Style) */}
+                <div className="col-span-7 flex flex-col justify-center items-end">
+                    <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[4rem] p-[5vw] flex flex-col items-center gap-[4vh] shadow-2xl">
+                        <span className="text-[1vw] font-black uppercase tracking-[0.5em] text-white/20">ยืนยันรหัสเข้าห้อง</span>
+                        
+                        {/* HUGE MONITOR STYLE ROOM CODE */}
+                        <div className="text-[12vw] font-black leading-none tracking-tighter text-white drop-shadow-[0_0_50px_rgba(255,255,255,0.1)]">
+                            {roomCode}
                         </div>
-                        <div className="w-[1px] h-[3vh] bg-white/10" />
-                        <div className="flex items-center gap-[1vw] text-white/50">
-                            <div className="w-[2vw] h-[2vw] rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[0.9vw] font-black">2</div>
-                            <span className="text-[1.2vw] font-bold tracking-tight">พิมพ์รหัส ({roomCode}) บนมือถือ</span>
+
+                        <div className="flex flex-col items-center gap-[1vh]">
+                            <div className="flex items-center gap-[0.5vw] px-[1.5vw] py-[0.8vh] bg-stone-900 border border-white/5 rounded-full text-[1vw] font-bold text-primary">
+                                <WifiIcon className="w-[1.2vw] h-[1.2vw]" />
+                                play.okeforyou.com
+                            </div>
+                            <p className="text-[0.9vw] text-white/30 font-medium tracking-normal">เชื่อมระบบ Cloud Sync อัตโนมัติ</p>
                         </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-[1vw] px-[2vw] py-[1vh] bg-stone-900 border border-white/5 rounded-full">
-                        <PlayCircleIcon className="w-[1.5vw] h-[1.5vw] text-primary" />
-                        <p className="text-[1.2vw] font-bold text-white/60">
-                            พร้อมเริ่มปาร์ตี้ - เชื่อมต่อมือถือเพื่อเริ่มเลือกเพลงได้ทันที
-                        </p>
                     </div>
                 </div>
             </div>
 
-            {/* Status Footer - Extra Minimal */}
-            <div className="absolute bottom-0 inset-x-0 h-[5vh] bg-gradient-to-t from-black/50 to-transparent flex items-center justify-center">
-                <div className="flex items-center gap-[0.5vw] text-white/10 text-[0.8vw] font-black uppercase tracking-[0.5em]">
-                    <WifiIcon className="w-[1vw] h-[1vw]" />
-                    Cloud Sync Active • v{process.env.NEXT_PUBLIC_APP_VERSION || '5.5.30'}
+            {/* BOTTOM TICKER: Info */}
+            <div className="relative z-20 h-[6vh] bg-black/40 backdrop-blur-md border-t border-white/5 flex items-center overflow-hidden">
+                <div className="px-[5vw] w-full flex items-center justify-between text-[0.9vw] font-black uppercase tracking-widest">
+                    <div className="flex items-center gap-[1vw] text-primary">
+                        <PlayCircleIcon className="w-[1.2vw] h-[1.2vw]" />
+                        Ready to Sing
+                    </div>
+                    <div className="text-white/20 flex items-center gap-[0.5vw]">
+                        <UserIcon className="w-[1vw] h-[1vw]" />
+                        v{process.env.NEXT_PUBLIC_APP_VERSION || '5.5.31'}
+                    </div>
                 </div>
             </div>
         </div>
     );
 };
+
 
