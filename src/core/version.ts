@@ -7,6 +7,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.30 (Cinematic TV)",
+        date: "13 เม.ย. 2569",
+        changes: [
+            "TV: Completely redesigned Digital Signage with Cinematic Center-Focus layout",
+            "UI: Implemented Glassmorphism floating cards for improved visual depth on Smart TVs",
+            "UX: Simplified connection instructions and enhanced Room Code visibility",
+        ],
+        recent_updates: "Cinematic UI Overhaul & Depth Evolution"
+    },
+    {
         version: "v5.5.29 (Thai TV UI)",
         date: "13 เม.ย. 2569",
         changes: [
