@@ -1,11 +1,12 @@
 
 import React from 'react';
 import Image from 'next/image';
-import { Plus } from 'lucide-react';
+import { Plus, ListPlus } from 'lucide-react';
 
 interface RemoteSearchResultCardProps {
     video: any;
     onClick: () => void;
+    onSaveClick?: (e: React.MouseEvent) => void;
     theme?: 'light' | 'dark';
 }
 
@@ -17,6 +18,7 @@ interface RemoteSearchResultCardProps {
 export const RemoteSearchResultCard: React.FC<RemoteSearchResultCardProps> = ({
     video,
     onClick,
+    onSaveClick,
     theme = 'dark'
 }) => {
     return (
@@ -56,8 +58,26 @@ export const RemoteSearchResultCard: React.FC<RemoteSearchResultCardProps> = ({
                 </p>
             </div>
 
-            {/* Add Button - Right Side (Rounded Bubble) */}
-            <div className="pr-3">
+            {/* Action Buttons - Right Side */}
+            <div className="flex items-center gap-1 pr-1.5">
+                {/* Save Button (Playlist) */}
+                {onSaveClick && (
+                    <button 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onSaveClick(e);
+                        }}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${theme === 'dark'
+                            ? 'bg-white/5 text-gray-400 hover:bg-zinc-800 hover:text-white'
+                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-black'
+                        }`}
+                        title="บันทึกเพลง"
+                    >
+                        <ListPlus size={20} strokeWidth={3} />
+                    </button>
+                )}
+
+                {/* Add Button (Queue) */}
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${theme === 'dark'
                         ? 'bg-white/5 text-gray-500 group-hover:bg-primary group-hover:text-white group-hover:shadow-[0_4px_12px_rgba(229,9,20,0.4)]'
                         : 'bg-gray-100 text-gray-400 group-hover:bg-primary group-hover:text-white group-hover:shadow-[0_4px_12px_rgba(229,9,20,0.3)]'

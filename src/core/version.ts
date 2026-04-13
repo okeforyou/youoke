@@ -7,6 +7,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.37 (Remote Library)",
+        date: "13 เม.ย. 2569",
+        changes: [
+            "Feature: Added 'Save to Playlist' on Remote Control search results",
+            "UX: Enabled personal song collection management directly from mobile",
+            "Integration: Shared AddToPlaylistModal between Dashboard and Remote",
+        ],
+        recent_updates: "Remote Library & Personal Playlists"
+    },
+    {
         version: "v5.5.36 (Remote Quota Fix)",
         date: "13 เม.ย. 2569",
         changes: [

@@ -35,6 +35,7 @@ import { RemoteMiniPlayer } from './RemoteMiniPlayer';
 import { DraggableQueueItem } from './DraggableQueueItem';
 import { RemoteSearchResultCard } from './RemoteSearchResultCard';
 import { DebounceInput } from 'react-debounce-input';
+import AddToPlaylistModal from '../../../components/AddToPlaylistModal';
 
 // Types
 type RemoteStatus = 'connecting' | 'connected' | 'error';
@@ -90,6 +91,7 @@ export default function RemoteControlApp() {
 
     const [loading, setLoading] = useState(true);
     const [hasMounted, setHasMounted] = useState(false);
+    const [selectedVideoForPlaylist, setSelectedVideoForPlaylist] = useState<any | null>(null);
 
     // Auth & Limit State
     const { user, signInWithGoogle, logIn } = useAuth();
@@ -819,6 +821,7 @@ export default function RemoteControlApp() {
                                             key={`${video.videoId}-${idx}`}
                                             video={video}
                                             onClick={() => handleAddVideo(video)}
+                                            onSaveClick={() => setSelectedVideoForPlaylist(video)}
                                             theme={theme}
                                         />
                                     ))}
@@ -1060,6 +1063,16 @@ export default function RemoteControlApp() {
                                 </button>
                             </div>
                         </div>
+                    </div>
+                )}
+
+                {/* Add To Playlist Modal */}
+                {selectedVideoForPlaylist && (
+                    <div className="z-[300] relative">
+                        <AddToPlaylistModal
+                            video={selectedVideoForPlaylist}
+                            onClose={() => setSelectedVideoForPlaylist(null)}
+                        />
                     </div>
                 )}
             </div>
