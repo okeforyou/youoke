@@ -7,6 +7,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.29 (Thai TV UI)",
+        date: "13 เม.ย. 2569",
+        changes: [
+            "TV: Fully migrated Digital Signage labels to Thai for better local accessibility",
+            "UI: Refined Smart TV Typography and instructions",
+            "STABILITY: Maintained zero-logic performance for legacy Smart TV web browsers",
+        ],
+        recent_updates: "Thai Localization & Smart TV Fluidity"
+    },
+    {
         version: "v5.5.28 (Admin Cleanup)",
         date: "13 เม.ย. 2569",
         changes: [

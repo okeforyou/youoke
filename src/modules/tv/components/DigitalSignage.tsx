@@ -92,12 +92,12 @@ export const DigitalSignage: React.FC<DigitalSignageProps> = ({
                             </div>
                             <div className="absolute -bottom-[1.5vh] left-1/2 -translate-x-1/2 bg-stone-950 text-white px-[1.5vw] py-[0.8vh] rounded-full text-[0.9vw] font-bold border border-white/10 flex items-center gap-[0.5vw]">
                                 <SignalIcon className="w-[1vw] h-[1vw] text-green-500" />
-                                Scan to Connect
+                                สแกนเพื่อเริ่มร้องเพลง
                             </div>
                         </div>
 
                         <div className="w-full space-y-[1vh] text-center">
-                            <p className="text-[1vw] text-white/40 font-bold uppercase tracking-[0.2em]">Enter Room Code</p>
+                            <p className="text-[1vw] text-white/40 font-bold uppercase tracking-[0.2em]">ใส่รหัสเข้าห้อง</p>
                             <div className="flex items-center justify-center gap-[0.8vw]">
                                 {(Array.from(String(roomCode || ''))).map((char, i) => (
                                     <div key={i} className="w-[4vw] h-[5.5vw] bg-white/5 rounded-2xl border border-white/10 flex items-center justify-center text-[3vw] font-black">
@@ -115,11 +115,11 @@ export const DigitalSignage: React.FC<DigitalSignageProps> = ({
                     <div className="space-y-[2.5vh] max-w-[42vw]">
                         <div className="inline-flex items-center gap-[0.5vw] px-[1vw] py-[0.5vh] bg-stone-900 text-primary border border-white/10 rounded-full text-[0.9vw] font-black uppercase tracking-widest">
                             <PlayCircleIcon className="w-[1vw] h-[1vw]" />
-                            Zero-Latency TV System
+                            ระบบร้องเพลงอัจฉริยะ
                         </div>
                         <h1 className="text-[4.5vw] font-black leading-[1.1] tracking-tight">
-                            Smart Karaoke<br />
-                            <span className="text-white/30">Remote Control</span>
+                            คาราโอเกะส่วนตัว<br />
+                            <span className="text-white/30">ควบคุมผ่านมือถือ</span>
                         </h1>
                         <p className="text-[1.4vw] text-white/50 font-medium leading-relaxed">
                             สแกนโค้ดเพื่อเริ่มความสนุก ควบคุมทุกอย่างจากมือถือ
@@ -141,12 +141,12 @@ export const DigitalSignage: React.FC<DigitalSignageProps> = ({
 
             <div className="relative z-20 h-[7vh] bg-stone-950 border-t border-white/5 flex items-center">
                 <div className="px-[2.5vw] h-full flex items-center font-black text-[0.9vw] text-primary uppercase tracking-[0.2em]">
-                    INFO
+                    ข้อมูลระบบ
                 </div>
                 <div className="flex-1 overflow-hidden">
                     <div className="flex px-[4vw] text-[1.1vw] font-bold text-white/40 gap-[1vw]">
                          <MusicalNoteIcon className="w-[1vw] h-[1vw] text-white/20" />
-                         Ready to Sing - Connect your mobile to start queueing songs.
+                         พร้อมเริ่มการปาร์ตี้ - สแกน QR Code หรือพิมพ์ URL เพื่อเริ่มเลือกเพลงเข้าคิวได้ทันที
                     </div>
                 </div>
             </div>
