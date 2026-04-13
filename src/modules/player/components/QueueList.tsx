@@ -4,6 +4,8 @@ import { usePlayerStore } from "../stores/usePlayerStore";
 import { useUIStore } from "../../../stores/useUIStore";
 import Image from 'next/image';
 import clsx from 'clsx';
+import { ListPlus } from "lucide-react";
+import AddToPlaylistModal from "@/components/AddToPlaylistModal";
 import {
     DndContext,
     closestCenter,
@@ -27,9 +29,10 @@ interface SortableItemProps {
     actualIndex: number;
     onRemove: (uuid: string) => void;
     onPlay: (index: number) => void;
+    onSave: (video: any) => void;
 }
 
-function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: SortableItemProps) {
+function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay, onSave }: SortableItemProps) {
     const {
         attributes,
         listeners,
@@ -93,17 +96,29 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
                     </p>
                 </div>
 
-                {/* Remove Button - Inside the card (Gray to Red logic) */}
-                <div className="pr-3">
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
                             onRemove(video.uuid);
                         }}
                         className="w-9 h-9 flex items-center justify-center text-gray-400 dark:text-zinc-500 hover:text-red-500 dark:hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-full transition-all flex-shrink-0"
-                        aria-label="ลบออกจากคิว"
+                        title="ลบออกจากคิว"
                     >
                         <Trash2 className="w-4.5 h-4.5" />
+                    </button>
+                </div>
+
+                {/* Save Button */}
+                <div className="pr-3 -ml-2">
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onSave(video);
+                        }}
+                        className="w-9 h-9 flex items-center justify-center text-gray-400 dark:text-zinc-500 hover:text-primary dark:hover:text-primary hover:bg-primary/10 rounded-full transition-all flex-shrink-0"
+                        title="บันทึกลงเพลย์ลิสต์"
+                    >
+                        <ListPlus className="w-4.5 h-4.5" />
                     </button>
                 </div>
             </div>
@@ -114,6 +129,7 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay }: Sort
 export function QueueList() {
     const { queue, removeFromQueue, currentIndex, setCurrentIndex, reorderQueue, clearQueue } = usePlayerStore();
     const { showConfirm } = useUIStore();
+    const [selectedVideoForPlaylist, setSelectedVideoForPlaylist] = React.useState<any | null>(null);
 
     // v5.3.99: Guard against stale currentIndex during queue transitions (display-only fix)
     const safeCurrentIndex = Math.min(currentIndex, Math.max(0, queue.length - 1));
@@ -228,6 +244,7 @@ export function QueueList() {
                                             actualIndex={actualIndex}
                                             onRemove={removeFromQueue}
                                             onPlay={setCurrentIndex}
+                                            onSave={(v) => setSelectedVideoForPlaylist(v)}
                                         />
                                     </div>
                                 );
@@ -236,6 +253,14 @@ export function QueueList() {
                     </DndContext>
                 )}
             </div>
+
+            {/* Add To Playlist Modal */}
+            {selectedVideoForPlaylist && (
+                <AddToPlaylistModal
+                    video={selectedVideoForPlaylist}
+                    onClose={() => setSelectedVideoForPlaylist(null)}
+                />
+            )}
         </div>
     );
 }

@@ -7,6 +7,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.38 (Host Library)",
+        date: "13 เม.ย. 2569",
+        changes: [
+            "Feature: Added 'Save' button to Dashboard Sidebar for current song",
+            "Feature: Added 'Save to Playlist' button for every item in the Queue",
+            "UX: Unified personal song management across Host and Remote",
+        ],
+        recent_updates: "Host Library & Queue Management"
+    },
+    {
         version: "v5.5.37 (Remote Library)",
         date: "13 เม.ย. 2569",
         changes: [
