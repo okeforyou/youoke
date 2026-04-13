@@ -7,6 +7,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.42 (Playlist Excellence)",
+        date: "13 เม.ย. 2569",
+        changes: [
+            "Feature: Enabled individual song playback and selection from Playlist Detail Modal",
+            "UX: Added tactile feedback (active-scale) to playlist song items",
+            "Reliability: Integrated robust addToQueue mapping for playlist items",
+        ],
+        recent_updates: "Individual Playlist Selection"
+    },
+    {
         version: "v5.5.41 (UI Cleanup & Fix)",
         date: "13 เม.ย. 2569",
         changes: [

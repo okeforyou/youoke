@@ -433,6 +433,25 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
     }
   };
 
+  const handlePlaySong = (video: Video) => {
+    try {
+      // Robust mapping for individual song selection
+      const videoToAdd = {
+        ...video,
+        id: video.videoId || video.id,
+        videoId: video.videoId || (video as any).id,
+        sourceType: 'youtube' as const,
+        thumbnail: video.thumbnail || `https://i.ytimg.com/vi/${video.videoId}/mqdefault.jpg`,
+        uuid: generateUUID()
+      };
+      
+      // Add to Global Queue (v4.9.63 standard)
+      usePlayerStore.getState().addToQueue(videoToAdd as any);
+    } catch (error) {
+      console.error("Failed to play individual song:", error);
+    }
+  };
+
   const handleTogglePrivacy = async (item: PlaylistItem) => {
     const newType = (item.type === "private" || item.type === "ส่วนตัว") ? "public" : "private";
     try {
@@ -703,7 +722,11 @@ export default function ListPlaylistsGrid({ defaultTab = 0 }: ListPlaylistsGridP
             ) : (
               <div className="px-3 sm:px-6 py-2 space-y-1">
                 {selectedItem && selectedItem.playlists?.map((v, i) => (
-                  <div key={i + (v.videoId || v.title)} className="group flex items-center gap-3 p-3 pr-4 rounded-2xl hover:bg-gray-50 dark:hover:bg-zinc-900 cursor-pointer transition-all border border-transparent hover:border-gray-100 dark:hover:border-zinc-800 hover:shadow-sm">
+                  <div 
+                    key={i + (v.videoId || v.title)} 
+                    onClick={() => handlePlaySong(v)}
+                    className="group flex items-center gap-3 p-3 pr-4 rounded-2xl hover:bg-gray-50 dark:hover:bg-zinc-900 cursor-pointer transition-all border border-transparent hover:border-gray-100 dark:hover:border-zinc-800 hover:shadow-sm active:scale-[0.98]"
+                  >
                     <div className="w-6 text-center text-xs font-bold text-gray-300 dark:text-zinc-700 group-hover:text-primary font-mono transition-colors">
                       <span className="group-hover:hidden">{i + 1}</span>
                       <PlayIcon className="w-3 h-3 hidden group-hover:block mx-auto" />
