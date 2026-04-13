@@ -7,6 +7,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.40 (UX Fix)",
+        date: "13 เม.ย. 2569",
+        changes: [
+            "Bugfix: Resolved issue where Playlist Modal couldn't be reopened for the same song",
+            "Logic: Added onClose propagation to sync state when clicking outside the modal",
+        ],
+        recent_updates: "Playlist Modal State Sync"
+    },
+    {
         version: "v5.5.39 (Build Fix)",
         date: "13 เม.ย. 2569",
         changes: [

@@ -101,6 +101,7 @@ export default function AddToPlaylistModal({ video, onClose }: AddToPlaylistModa
         return (
             <Modal
                 ref={modalRef}
+                onClose={onClose}
                 title={<span className="text-lg font-bold flex items-center gap-2"><RectangleStackIcon className="w-5 h-5 text-primary" /> เพิ่มลงเพลย์ลิสต์</span>}
                 body={
                     <div className="p-8 text-center">
@@ -122,6 +123,7 @@ export default function AddToPlaylistModal({ video, onClose }: AddToPlaylistModa
         <>
             <Modal
                 ref={modalRef}
+                onClose={onClose}
                 title={
                     <div className="flex items-center gap-2">
                         <span className="text-lg font-bold text-gray-900 dark:text-white">บันทึกลงใน...</span>
