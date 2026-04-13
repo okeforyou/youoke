@@ -58,16 +58,31 @@ export default function AddToPlaylistModal({ video, onClose }: AddToPlaylistModa
     };
 
     const handleCreatePlaylist = async () => {
-        if (!newPlaylistName.trim()) return;
+        if (!newPlaylistName.trim() || isCreating) return;
+        setIsCreating(true);
         try {
             if (!database || !user?.uid) return;
+
+            // Sanitize video object to prevent Firestore errors (no undefined, no functions)
+            const sanitizedVideo = {
+                id: video.id || video.videoId || '',
+                videoId: video.videoId || video.id || '',
+                title: video.title || 'Unknown Title',
+                author: video.author || video.uploaderName || 'Unknown Author',
+                thumbnail: video.thumbnail || video.videoThumbnails?.[0]?.url || '',
+                duration: video.duration || 0,
+                viewCount: video.viewCount || 0,
+                publishedAt: video.publishedAt || '',
+                sourceType: video.sourceType || 'youtube'
+            };
+
             const newDoc = {
                 name: newPlaylistName,
                 createdBy: user.uid,
                 type: 'private',
                 starCount: 0,
                 createdAt: new Date(),
-                playlists: [video] // Add immediately
+                playlists: [sanitizedVideo] // Add immediately
             };
             await addDoc(collection(database, "playlists"), newDoc);
             alertRef.current?.open();
@@ -84,9 +99,23 @@ export default function AddToPlaylistModal({ video, onClose }: AddToPlaylistModa
     const handleAddToPlaylist = async (playlistId: string) => {
         try {
             if (!database) return;
+
+            // Sanitize video object
+            const sanitizedVideo = {
+                id: video.id || video.videoId || '',
+                videoId: video.videoId || video.id || '',
+                title: video.title || 'Unknown Title',
+                author: video.author || video.uploaderName || 'Unknown Author',
+                thumbnail: video.thumbnail || video.videoThumbnails?.[0]?.url || '',
+                duration: video.duration || 0,
+                viewCount: video.viewCount || 0,
+                publishedAt: video.publishedAt || '',
+                sourceType: video.sourceType || 'youtube'
+            };
+
             const docRef = doc(database, "playlists", playlistId);
             await updateDoc(docRef, {
-                playlists: arrayUnion(video)
+                playlists: arrayUnion(sanitizedVideo)
             });
             alertRef.current?.open();
             setTimeout(() => {

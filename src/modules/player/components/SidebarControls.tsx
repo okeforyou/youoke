@@ -2,7 +2,6 @@ import React from "react";
 import { Play, Pause, SkipForward, RotateCcw, Volume2, VolumeX, Maximize, Cast } from "lucide-react";
 import { usePlayerStore } from "../stores/usePlayerStore";
 import { useShallow } from "zustand/react/shallow";
-import { ListMusic, Trash2 } from "lucide-react";
 import { useUIStore } from "../../../stores/useUIStore";
 import { useCast } from "../../../plugins/cast/context/CastContext";
 import clsx from 'clsx';
@@ -11,9 +10,6 @@ import { SYSTEM_VERSION } from "@/core/version";
 interface SidebarControlsProps {
     castMode?: string;
 }
-
-import AddToPlaylistModal from "@/components/AddToPlaylistModal";
-import { ListPlus } from "lucide-react";
 
 export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => {
     const {
@@ -52,7 +48,6 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
     const { isConnected, isRecovering } = cast;
 
     const isAnyCastOn = (castMode !== 'none' && castMode !== undefined) || isConnected;
-    const [selectedVideoForPlaylist, setSelectedVideoForPlaylist] = React.useState<any | null>(null);
 
     const controlItems = [
         {
@@ -110,16 +105,6 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
             icon: Maximize,
             label: "เต็มจอ",
             onClick: triggerFullscreen,
-            color: "text-primary"
-        },
-        {
-            icon: ListPlus,
-            label: "บันทึก",
-            onClick: () => {
-                if (currentVideo) {
-                    setSelectedVideoForPlaylist(currentVideo);
-                }
-            },
             color: "text-primary"
         },
         {
@@ -192,14 +177,6 @@ export const SidebarControls = ({ castMode = 'none' }: SidebarControlsProps) => 
                     style={{ width: `${progressPercent}%` }}
                 />
             </div>
-
-            {/* Add To Playlist Modal */}
-            {selectedVideoForPlaylist && (
-                <AddToPlaylistModal
-                    video={selectedVideoForPlaylist}
-                    onClose={() => setSelectedVideoForPlaylist(null)}
-                />
-            )}
         </div>
     );
 };

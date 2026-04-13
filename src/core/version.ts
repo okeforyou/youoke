@@ -7,6 +7,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.41 (UI Cleanup & Fix)",
+        date: "13 เม.ย. 2569",
+        changes: [
+            "Revert: Removed 'Save to Playlist' from Sidebar and Queue as requested",
+            "Fix: Improved Playlist Creation logic with data sanitization",
+            "Reliability: Added loading state and duplicate prevention in playlist modal",
+        ],
+        recent_updates: "UI Revert & Playlist Logic Fix"
+    },
+    {
         version: "v5.5.40 (UX Fix)",
         date: "13 เม.ย. 2569",
         changes: [
