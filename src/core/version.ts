@@ -7,6 +7,15 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.39 (Build Fix)",
+        date: "13 เม.ย. 2569",
+        changes: [
+            "Fix: Resolved JSX syntax error in QueueList component",
+            "Stability: Restored host-side search results and library management",
+        ],
+        recent_updates: "Hotfix & Stability"
+    },
+    {
         version: "v5.5.38 (Host Library)",
         date: "13 เม.ย. 2569",
         changes: [

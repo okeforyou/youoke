@@ -96,6 +96,8 @@ function SortableQueueItem({ video, index, actualIndex, onRemove, onPlay, onSave
                     </p>
                 </div>
 
+                {/* Remove Button */}
+                <div className="pr-3">
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
