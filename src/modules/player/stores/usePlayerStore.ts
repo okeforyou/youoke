@@ -296,30 +296,35 @@ export const usePlayerStore = create<PlayerStore>()(
                 broadcast(state);
             },
 
-            addToQueue: (video, autoPlay = true) => set((state) => {
-                // 🛡️ [GATEKEEPER] v4.9.63: Daily Song Count & Membership Enforcement
-                const authUser = useAuthStore.getState().user;
-                const today = new Date().toISOString().split('T')[0];
-                const storageKey = `daily_songs_${today}`;
+            addToQueue: (video, options = { autoPlay: true, skipQuota: false }) => set((state) => {
+                const { autoPlay = true, skipQuota = false } = typeof options === 'boolean' ? { autoPlay: options } : options;
                 
-                let currentUsed = 0;
-                let dailyLimit = 0;
+                // 🛡️ [GATEKEEPER] v4.9.63: Daily Song Count & Membership Enforcement
+                // v5.5.36: Bypass check if skipQuota is requested (Trusted Remote/Internal)
+                if (!skipQuota) {
+                    const authUser = useAuthStore.getState().user;
+                    const today = new Date().toISOString().split('T')[0];
+                    const storageKey = `daily_songs_${today}`;
+                    
+                    let currentUsed = 0;
+                    let dailyLimit = 0;
 
-                if (authUser) {
-                    currentUsed = authUser.quota?.used || 0;
-                    dailyLimit = authUser.quota?.daily_limit || 0;
-                    const isPremium = ['premium', 'monthly', 'yearly', 'lifetime', 'day_pass', 'trial'].includes(authUser.membership?.type || '') || authUser.role === 'admin';
-                    if (isPremium) dailyLimit = -1; // Unlimited
-                } else {
-                    currentUsed = parseInt(localStorage.getItem(storageKey) || '0');
-                    dailyLimit = 5; // Default for guests if config not available
-                }
+                    if (authUser) {
+                        currentUsed = authUser.quota?.used || 0;
+                        dailyLimit = authUser.quota?.daily_limit || 0;
+                        const isPremium = ['premium', 'monthly', 'yearly', 'lifetime', 'day_pass', 'trial'].includes(authUser.membership?.type || '') || authUser.role === 'admin';
+                        if (isPremium) dailyLimit = -1; // Unlimited
+                    } else {
+                        currentUsed = parseInt(localStorage.getItem(storageKey) || '0');
+                        dailyLimit = 5; // Default for guests if config not available
+                    }
 
-                // If limit reached, block adding and show modal (allow adding if already playing)
-                if (dailyLimit !== -1 && currentUsed >= dailyLimit && dailyLimit > 0) {
-                    console.warn("🚫 Global Gatekeeper: Daily limit reached. Blocking addition.");
-                    useUIStore.getState().setLimitModalOpen(true);
-                    return {};
+                    // If limit reached, block adding and show modal
+                    if (dailyLimit !== -1 && currentUsed >= dailyLimit && dailyLimit > 0) {
+                        console.warn("🚫 Global Gatekeeper: Daily limit reached on Host. Blocking addition.");
+                        useUIStore.getState().setLimitModalOpen(true);
+                        return {};
+                    }
                 }
 
                 const videos = Array.isArray(video) ? video : [video];

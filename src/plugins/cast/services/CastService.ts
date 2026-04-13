@@ -392,8 +392,8 @@ export class CastService {
                             return;
                         }
 
-                        console.log('🎵 Adding to Store:', videoToAdd);
-                        store.addToQueue(videoToAdd as any);
+                        console.log('🎵 Adding to Store (Remote Command):', videoToAdd);
+                        store.addToQueue(videoToAdd as any, { skipQuota: true, autoPlay: true });
 
                         // Force immediate sync to update Remote UI
                         this.syncMasterState(usePlayerStore.getState(), true);

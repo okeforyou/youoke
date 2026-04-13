@@ -7,6 +7,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.36 (Remote Quota Fix)",
+        date: "13 เม.ย. 2569",
+        changes: [
+            "Bugfix: Resolved intermittent song adding failures from Remote/Mobile",
+            "Logic: Bypassed Host-side quota enforcement for remote commands (Safe-Skip)",
+            "UX: Ensured shared TV/Monitor screens can process external additions regardless of local guest status",
+        ],
+        recent_updates: "Remote Playlist Reliability & Quota Bypass"
+    },
+    {
         version: "v5.5.35 (UI Revert)",
         date: "13 เม.ย. 2569",
         changes: [
