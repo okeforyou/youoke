@@ -7,6 +7,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.43 (Plesk Stability)",
+        date: "14 เม.ย. 2569",
+        changes: [
+            "Reliability: Added support for file-based Firebase Admin credentials (serviceAccountKey.json)",
+            "Fix: Improved private key parsing for shared hosting environments",
+            "Stability: Resolved Invalid JWT Signature error on Plesk",
+        ],
+        recent_updates: "Firebase Admin Stability"
+    },
+    {
         version: "v5.5.42 (Playlist Excellence)",
         date: "13 เม.ย. 2569",
         changes: [

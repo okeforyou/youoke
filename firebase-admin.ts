@@ -1,54 +1,63 @@
 import * as admin from 'firebase-admin';
+import fs from 'fs';
+import path from 'path';
 
 // Initialize Firebase Admin SDK (singleton pattern)
 if (!admin.apps.length) {
   try {
-    // สำหรับ Vercel: ใช้ environment variables
-    // ⚠️ IMPORTANT: Trim all values to remove trailing newlines from Vercel
-    const privateKey = process.env.FIREBASE_PRIVATE_KEY
-      ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n').trim()
-      : undefined;
+    let serviceAccount: any = null;
 
-    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL?.trim();
-    const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID?.trim();
-    const databaseURL = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL?.trim();
+    // 1. Priority: Look for serviceAccountKey.json in the project root
+    // This is most reliable for Plesk/Shared Hosting where Env Vars might be truncated.
+    const keyPath = path.join(process.cwd(), 'serviceAccountKey.json');
+    
+    if (fs.existsSync(keyPath)) {
+      try {
+        const fileContent = fs.readFileSync(keyPath, 'utf8');
+        serviceAccount = JSON.parse(fileContent);
+        console.log('📦 Firebase Admin: Using credentials from serviceAccountKey.json');
+      } catch (fileErr) {
+        console.error('⚠️ Firebase Admin: Found serviceAccountKey.json but failed to parse it:', fileErr);
+      }
+    }
 
-    if (!privateKey || !clientEmail || !projectId) {
-      console.error('❌ Firebase Admin - Missing environment variables:', {
-        hasPrivateKey: !!privateKey,
-        hasClientEmail: !!clientEmail,
-        hasProjectId: !!projectId,
-        hasDatabaseURL: !!databaseURL,
-        // Debug: show actual values (first 20 chars only for security)
-        clientEmailPreview: clientEmail?.substring(0, 20),
-        projectIdPreview: projectId?.substring(0, 20),
-      });
+    // 2. Fallback: Use environment variables (Standard for Vercel)
+    if (!serviceAccount) {
+      const privateKey = process.env.FIREBASE_PRIVATE_KEY
+        ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n').replace(/^["']|["']$/g, '').trim()
+        : undefined;
+
+      const clientEmail = process.env.FIREBASE_CLIENT_EMAIL?.trim();
+      const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID?.trim();
+
+      if (privateKey && clientEmail && projectId) {
+        serviceAccount = {
+          projectId,
+          clientEmail,
+          privateKey,
+        };
+        console.log('🌐 Firebase Admin: Using credentials from Environment Variables');
+      }
+    }
+
+    if (!serviceAccount) {
+      console.error('❌ Firebase Admin - No credentials found (neither file nor env vars)');
       throw new Error('Firebase Admin credentials not configured');
     }
 
+    const databaseURL = process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL?.trim();
+
     // HYBRID MODE SAFEGUARD:
-    // If we are using PROD credentials (playokeforyou) but pointing to DEV Database (playokeforyou-dev),
-    // the Admin SDK will hang indefinitely trying to connect to the unauthorized DB.
-    // We must force it to use the PROD Database URL (or undefined) to allow Firestore to work.
-    let targetDatabaseURL = databaseURL;
-    if (projectId === 'playokeforyou' && databaseURL?.includes('playokeforyou-dev')) {
-      console.warn('⚠️ Hybrid Mode Detected: Prod Auth + Dev DB. Admin SDK cannot access Dev DB with Prod Creds.');
-      console.warn('⚠️ Switching Admin SDK to use PROD Database URL to prevent hang.');
-      // Fallback to undefined to prevent RTDB connection attempt entirely.
-      // This ensures Firestore works without hanging on unauthorized RTDB access.
-      targetDatabaseURL = undefined;
+    if (serviceAccount.projectId === 'playokeforyou' && databaseURL?.includes('playokeforyou-dev')) {
+      console.warn('⚠️ Hybrid Mode Detected: Prod Auth + Dev DB. Switching Admin SDK to use PROD Database URL to prevent hang.');
     }
 
     admin.initializeApp({
-      credential: admin.credential.cert({
-        projectId: projectId,
-        clientEmail: clientEmail,
-        privateKey: privateKey,
-      }),
-      databaseURL: targetDatabaseURL,
+      credential: admin.credential.cert(serviceAccount),
+      databaseURL: serviceAccount.projectId === 'playokeforyou' && databaseURL?.includes('playokeforyou-dev') ? undefined : databaseURL,
     });
 
-    console.log('✅ Firebase Admin initialized successfully');
+    console.log(`✅ Firebase Admin initialized successfully (Project: ${serviceAccount.projectId})`);
   } catch (error) {
     console.error('❌ Firebase Admin initialization error:', error);
     throw error;
