@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { XMarkIcon, ShieldCheckIcon, StarIcon, ClipboardIcon, UserIcon, BarChart2 } from '@heroicons/react/24/outline';
+import { XMarkIcon, ShieldCheckIcon, StarIcon, ClipboardIcon, UserIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { cn } from "../../../utils/cn";
 import { AdminService } from '../services/adminService';
@@ -407,7 +407,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                                             className="flex items-center gap-1 px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded text-[9px] font-black uppercase tracking-wider transition-all"
                                             title="ดูประวัติการสั่งซื้อ"
                                         >
-                                            <BarChart2 className="w-3 h-3" />
+                                            <ChartBarIcon className="w-3 h-3" />
                                             <span>บิล</span>
                                         </Link>
                                     </div>
