@@ -1,22 +1,23 @@
-import { safeSplit, safeStartsWith, safeSlice } from '@/utils/stringUtils';
+// 🛠️ v5.5.55: Absolute Inline Shield (No imports to prevent g.split is not a function)
+const inlineSlice = (s: any, start: number, end: number) => (typeof s === 'string' ? s.slice(start, end) : "");
+const inlineStartsWith = (s: any, prefix: string) => (typeof s === 'string' ? s.indexOf(prefix) === 0 : false);
 
-// 🛠️ v5.3.42: Industrial-Grade Splitting Shield
 export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA 
-    ? `#${safeSlice(process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA, 0, 7)}` 
+    ? `#${inlineSlice(process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA, 0, 7)}` 
     : "";
 
-export const VERSION_LABEL = 'v5.5.54';
+export const VERSION_LABEL = 'v5.5.55';
 
 export const CHANGELOGS = [
     {
-        version: "v5.5.54 (Production Security & Diagnostics)",
+        version: "v5.5.55 (Absolute Hydration Shield)",
         date: "16 เม.ย. 2569",
         changes: [
-            "Admin: บังคับใช้กุญแจ Production เท่านั้นสำหรับบ้านจริง (Plesk Fix)",
-            "Admin: เพิ่มระบบ Diagnostics สำหรับวินิจฉัยสุขภาพ Server",
-            "Security Note: มีการใช้ไฟล์ serviceAccountKey_PROD.json ชั่วคราว (ต้องย้ายออกในอนาคต)",
+            "FIX: Finalized 'g.split' protection by inlining ALL version-parsing logic within the module",
+            "Stability: Removed external stringUtils dependency for core constants to prevent circular import crashes",
+            "UX: Updated Sidebar and Remote version labels to v5.5.55",
         ],
-        recent_updates: "Production Key Enforcement & Diagnostics"
+        recent_updates: "Self-Contained Version Shield"
     },
     {
         version: "v5.5.49 (Intelligent Admin Filter)",
@@ -713,19 +714,20 @@ export const getLatestVersion = () => {
 
     try {
         const latest = CHANGELOGS[0]?.version;
-        if (typeof latest !== 'string') return "5.5.26";
+        if (typeof latest !== 'string') return "5.5.55";
         
-        // 🛡️ Final Aggressive Shield: Using safeSplit from stringUtils
-        const parts = safeSplit(latest, " ");
-        const vPart = parts[0] || "5.5.26";
+        // 🛡️ Final Aggressive Shield: Using inline string management
+        // latest is e.g. "v5.5.55 (Description)"
+        const spaceIdx = latest.indexOf(" ");
+        const vPart = spaceIdx !== -1 ? latest.substring(0, spaceIdx) : latest;
         
         // Remove 'v' prefix safely
-        return safeStartsWith(vPart, 'v') ? safeSlice(vPart, 1) : vPart;
+        return vPart.startsWith('v') ? vPart.substring(1) : vPart;
     } catch (e) {
-        return "5.5.26";
+        return "5.5.55";
     }
 };
 
 export const SYSTEM_VERSION = getLatestVersion();
-export const SYSTEM_CODENAME = "One-Step Admin";
+export const SYSTEM_CODENAME = "Production-Diagnostics";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;

@@ -16,7 +16,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       HAS_SERVICE_ACCOUNT: serviceAccountRaw.length > 0,
       PRIVATE_KEY_START: privateKeyRaw.substring(0, 20) + '...',
       CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL || 'MISSING',
-      NODE_ENV: process.env.NODE_ENV,
+      appVersionEnv: process.env.NEXT_PUBLIC_APP_VERSION || 'not set',
+      nodeEnv: process.env.NODE_ENV,
     };
 
     let adminTest = "Not Tested";

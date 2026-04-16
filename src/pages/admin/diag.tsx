@@ -120,7 +120,10 @@ export default function AdminDiagPage() {
                                     </div>
                                     <div>
                                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] block mb-1">Server Info</label>
-                                        <div className="text-[10px] text-slate-500 font-medium">Node: {diagData?.env?.NODE_ENV}</div>
+                                        <div className="text-[10px] text-slate-500 font-medium italic">Node: {diagData?.env?.nodeEnv}</div>
+                                        <div className={cn("text-[10px] font-bold mt-1", diagData?.env?.appVersionEnv !== 'not set' ? 'text-amber-500' : 'text-slate-600')}>
+                                            Version Override: {diagData?.env?.appVersionEnv}
+                                        </div>
                                     </div>
                                     <div>
                                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] block mb-1">Private Key Preview (Safety)</label>
