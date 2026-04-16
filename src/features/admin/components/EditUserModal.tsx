@@ -3,6 +3,9 @@ import { XMarkIcon, ShieldCheckIcon, StarIcon, ClipboardIcon, UserIcon } from '@
 import { cn } from "../../../utils/cn";
 import { AdminService } from '../services/adminService';
 import { ConfirmModal } from './ConfirmModal';
+import { db } from '../../../firebase';
+import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
+import { approvePayment } from '../../../modules/billing/services/paymentService';
 
 interface User {
     uid: string;
@@ -60,6 +63,8 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
     const [sendingMessage, setSendingMessage] = useState(false);
     const [localLoading, setLocalLoading] = useState(false);
     const [copied, setCopied] = useState(false);
+    const [pendingOrder, setPendingOrder] = useState<any>(null);
+    const [approvingOrder, setApprovingOrder] = useState(false);
     
     const [confirmModal, setConfirmModal] = useState<{
         isOpen: boolean;
@@ -75,6 +80,29 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
         onConfirm: () => {},
         type: 'warning'
     });
+
+    // ⚡ v5.5.45: Fetch Pending Payment for shortcut approval
+    React.useEffect(() => {
+        const checkPendingOrder = async () => {
+            if (!user.uid || !db) return;
+            try {
+                const q = query(
+                    collection(db, "payment_proofs"),
+                    where("userId", "==", user.uid),
+                    where("status", "==", "pending"),
+                    orderBy("createdAt", "desc"),
+                    limit(1)
+                );
+                const snap = await getDocs(q);
+                if (!snap.empty) {
+                    setPendingOrder({ id: snap.docs[0].id, ...snap.docs[0].data() });
+                }
+            } catch (e) {
+                console.error("Error fetching pending order:", e);
+            }
+        };
+        checkPendingOrder();
+    }, [user.uid]);
 
     const isLineUser = user.uid.startsWith('line:');
 
@@ -228,7 +256,59 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
         setTimeout(() => setCopied(false), 2000);
     };
 
-    const isLoading = parentLoading || localLoading;
+    const isLoading = parentLoading || localLoading || approvingOrder;
+
+    const handleQuickApprove = async () => {
+        if (!pendingOrder) return;
+        
+        setConfirmModal({
+            isOpen: true,
+            title: "ยืนยันการอนุมัติ (ทางลัด)",
+            message: `แอดมินยืนยันที่จะอนุมัติรายการ "${pendingOrder.packageName}" มูลค่า ฿${pendingOrder.amount} หรือไม่? ระบบจะส่ง LINE แจ้งเตือนลูกค้าและเปิดสิทธิ์ให้อัตโนมัติ`,
+            type: 'warning',
+            onConfirm: async () => {
+                setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                setApprovingOrder(true);
+                try {
+                    // Get current admin UID
+                    const { useAuthStore } = await import('../../../modules/auth/useAuthStore');
+                    const adminUid = useAuthStore.getState().user?.uid || 'admin';
+                    
+                    await approvePayment(
+                        pendingOrder.id,
+                        user.uid,
+                        pendingOrder.packageId || 'free',
+                        adminUid
+                    );
+                    
+                    if (onRefresh) onRefresh();
+                    setPendingOrder(null); // Clear once approved
+
+                    setConfirmModal({
+                        isOpen: true,
+                        title: "อนุมัติสำเร็จ!",
+                        message: "แอดมินอนุมัติรายการเรียบร้อยแล้ว และระบบได้ส่งข้อความ LINE แจ้งลูกค้าให้แล้วครับ",
+                        type: 'info',
+                        confirmText: "ตกลง",
+                        onConfirm: () => {
+                            setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                            onClose();
+                        }
+                    });
+                } catch (e: any) {
+                    setConfirmModal({
+                        isOpen: true,
+                        title: "เกิดข้อผิดพลาด",
+                        message: e.message,
+                        type: 'danger',
+                        onConfirm: () => setConfirmModal(prev => ({ ...prev, isOpen: false }))
+                    });
+                } finally {
+                    setApprovingOrder(false);
+                }
+            }
+        });
+    };
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center sm:p-4">
@@ -243,6 +323,32 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
+                    
+                    {/* ⚡ v5.5.45: One-Step Payment Approval Quick Widget */}
+                    {pendingOrder && (
+                        <div className="bg-amber-50 rounded-xl border-2 border-amber-200 p-4 animate-in fade-in slide-in-from-top duration-500">
+                            <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                                    <span className="text-[11px] font-black text-amber-700 uppercase tracking-wider">ตรวจพบการแจ้งโอนค้างอยู่</span>
+                                </div>
+                                <span className="text-[10px] font-bold text-amber-500">฿{pendingOrder.amount}</span>
+                            </div>
+                            <div className="text-xs font-bold text-slate-700 mb-3">
+                                บัญชีนี้มีรายการ <span className="text-indigo-600 underline underline-offset-2">{pendingOrder.packageName}</span> รออนุมัติ
+                            </div>
+                            <button 
+                                onClick={handleQuickApprove}
+                                disabled={approvingOrder}
+                                className="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-black shadow-lg shadow-amber-200 transition-all active:scale-95 disabled:bg-slate-300 disabled:shadow-none"
+                            >
+                                {approvingOrder ? 'กำลังดำเนินการ...' : '✅ อนุมัติทันที & ส่ง LINE แจ้งลูกค้า'}
+                            </button>
+                            <p className="text-[9px] text-amber-600/70 mt-2 text-center font-medium italic">
+                                * กดปุ่มนี้เพื่อจบงานในคลิกเดียว (ระบบจะปิดรายการสั่งซื้อในหน้า Payments ให้ด้วย)
+                            </p>
+                        </div>
+                    )}
                     
                     <div className="bg-white rounded-xl border border-slate-100 p-4 space-y-4">
                         <div className="flex items-center gap-4">

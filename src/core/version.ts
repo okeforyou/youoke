@@ -7,6 +7,17 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.45 (One-Step Admin Approval)",
+        date: "16 เม.ย. 2569",
+        changes: [
+            "Feature: Added Quick Approval widget in Admin User Modal",
+            "UX: Enabled one-click package approval and LINE notification from the User List",
+            "Integration: Automatically cleans up pending orders in Payments page when approved via User Modal",
+            "Reliability: Reused existing paymentService.approvePayment for 100% notification parity",
+        ],
+        recent_updates: "One-Step Payment Approval shortcut"
+    },
+    {
         version: "v5.5.44 (Simplified LINE Strategy)",
         date: "16 เม.ย. 2569",
         changes: [
@@ -684,5 +695,5 @@ export const getLatestVersion = () => {
 };
 
 export const SYSTEM_VERSION = getLatestVersion();
-export const SYSTEM_CODENAME = "Simplified LINE";
-export const VERSION_LABEL = `${COMMIT_ID || '#local'} v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;
+export const SYSTEM_CODENAME = "One-Step Admin";
+export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
