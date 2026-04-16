@@ -6,8 +6,6 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     ? `#${inlineSlice(process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA, 0, 7)}` 
     : "";
 
-export const VERSION_LABEL = 'v5.5.55';
-
 export const CHANGELOGS = [
     {
         version: "v5.5.55 (Absolute Hydration Shield)",
