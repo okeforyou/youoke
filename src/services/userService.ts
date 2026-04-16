@@ -26,6 +26,8 @@ import {
   logServiceOperation,
   SimpleCache,
 } from "../utils/serviceHelper";
+import { safeSplit } from "../utils/stringUtils";
+
 
 const USERS_PATH = "users";
 
@@ -52,7 +54,7 @@ export async function createUserProfile(data: {
     };
 
     // Use email username as displayName if fullName not provided
-    const emailUsername = (typeof data.email === 'string' ? data.email.split("@")[0] : 'User');
+    const emailUsername = safeSplit(typeof data.email === 'string' ? data.email : '', "@")[0] || 'User';
     const displayName = data.fullName || emailUsername || "ผู้ใช้";
 
     const dbData: any = {

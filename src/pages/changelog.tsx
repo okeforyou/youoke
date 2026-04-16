@@ -3,10 +3,11 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { CHANGELOGS, SYSTEM_VERSION } from '@/core/version';
+import { safeSplit } from '@/utils/stringUtils';
 
 export default function ChangelogPage() {
     // ดึงข้อมูลหัวข้อการอัปเดตจากระบบ Build (Git Log)
-    const latestUpdates = process.env.NEXT_PUBLIC_LATEST_UPDATES?.split('\n').filter(line => line.trim() !== '') || [];
+    const latestUpdates = safeSplit(process.env.NEXT_PUBLIC_LATEST_UPDATES || '', '\n').filter(line => line.trim() !== '');
 
     return (
         <div className="min-h-screen bg-white text-gray-800 font-sans p-6 md:p-12 max-w-3xl mx-auto dark:bg-zinc-950 dark:text-zinc-300">

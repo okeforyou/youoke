@@ -1,5 +1,6 @@
 import axios from "axios";
 import { scrapeYouTubeArtistProfile } from "../../../../utils/youtubeScraper";
+import { safeSplit } from "../../../../utils/stringUtils";
 import { adminFirestore } from "../../../../firebase-admin";
 import type { NextApiRequest, NextApiResponse } from "next";
 
@@ -18,7 +19,7 @@ export default async function handler(
   res.setHeader('Cache-Control', 'public, s-maxage=86400, stale-while-revalidate=3600, max-age=3600');
 
   try {
-    const artistName = (name as string).split(' (')[0].trim();
+    const artistName = safeSplit(name as string, ' (')[0].trim();
     const englishNameMatch = (name as string).match(/\((.*?)\)/);
     const englishName = englishNameMatch ? englishNameMatch[1] : artistName;
 

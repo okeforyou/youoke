@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import clsx from 'clsx';
 import { SYSTEM_VERSION, COMMIT_ID } from '@/core/version';
 import { Home, Star, Flame, Library, MessageCircle, Shield, LogOut, Key, Grid, Lock, PlusCircle, ChevronLeft, Headphones, BarChart2 } from 'lucide-react';
+import { safeSplit } from '@/utils/stringUtils';
 import { UserGroupIcon } from '@heroicons/react/24/outline'; // Import Heroicon for Party
 import { useSystem } from '../../core/container/SystemContext'; // DI Container
 import ProfileDrawer from '../profile/ProfileDrawer';
@@ -226,7 +227,7 @@ export const Sidebar = memo(() => {
                                     "flex items-center transition-all duration-300 overflow-hidden flex-1 group cursor-pointer hover:bg-gray-100/50 dark:hover:bg-zinc-800/60 rounded-2xl",
                                     isSidebarCollapsed ? "justify-center p-2" : "gap-3 p-2 bg-gray-50/50 dark:bg-zinc-800/40 border border-transparent dark:border-zinc-800/40"
                                 )}
-                                title={isSidebarCollapsed ? user?.displayName || (typeof user?.email === 'string' ? user.email.split('@')[0] : 'Guest') : ""}
+                                title={isSidebarCollapsed ? user?.displayName || safeSplit(user?.email || '', '@')[0] || 'Guest' : ""}
                             >
                                 {user.photoURL ? 
                                     <div className="relative">
@@ -247,7 +248,7 @@ export const Sidebar = memo(() => {
                                 <div className={clsx("overflow-hidden transition-all duration-300", isSidebarCollapsed ? "w-0 opacity-0" : "w-auto opacity-100")}>
                                     <div className="flex flex-col">
                                         <span className="text-sm font-bold text-black dark:text-white truncate max-w-[140px]">
-                                            {user?.displayName || (typeof user?.email === 'string' ? user.email.split('@')[0] : 'Guest User')}
+                                            {user?.displayName || safeSplit(user?.email || '', '@')[0] || 'Guest User'}
                                         </span>
                                         <span className={clsx(
                                             "text-[10px] font-black uppercase tracking-tight",

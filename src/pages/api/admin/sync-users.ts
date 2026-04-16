@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { adminAuth, adminFirestore, handleFirestoreError } from '@/firebase-admin';
+import { safeSplit } from '@/utils/stringUtils';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -35,7 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           const baseData = {
             uid: user.uid,
             email: user.email || null,
-            displayName: user.displayName || user.email?.split('@')[0] || 'Anonymous',
+            displayName: user.displayName || safeSplit(user.email || '', '@')[0] || 'Anonymous',
             photoURL: user.photoURL || null,
             disabled: user.disabled || false, // Sync the disabled status from Auth
             updatedAt: new Date()

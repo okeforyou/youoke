@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import AdminLayout from '@/features/admin/layouts/AdminLayout';
 import { FileUp, Music, Play, Square, Pause } from 'lucide-react';
+import { safeSplit } from '@/utils/stringUtils';
 
 // Safely import spessasynth only on client side
 const useSpessaSynth = () => {
@@ -105,7 +106,7 @@ export default function MidiLab() {
 
         for (const file of files) {
             const name = file.name;
-            const ext = name.split('.').pop()?.toLowerCase();
+            const ext = safeSplit(name, '.').pop()?.toLowerCase();
             const basename = name.substring(0, name.lastIndexOf('.'));
             const groupId = basename.toLowerCase(); // Case-insensitive grouping
 
@@ -184,7 +185,7 @@ export default function MidiLab() {
     // Smart Search Logic
     const getFilteredSongs = () => {
         if (!searchTerm) return songList;
-        const tokens = searchTerm.toLowerCase().trim().split(/\s+/);
+        const tokens = safeSplit(searchTerm.toLowerCase().trim(), /\s+/);
         return songList.filter(s => {
             const searchStr = `${s.name} ${s.id}`.toLowerCase();
             return tokens.every(token => searchStr.includes(token));

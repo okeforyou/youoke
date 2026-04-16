@@ -27,6 +27,7 @@ import { PaymentSlip } from "@/modules/billing/types";
 import { cn } from "@/lib/utils";
 import { useUIStore } from '@/stores/useUIStore';
 import { useToast } from '@/context/ToastContext';
+import { safeSplit } from "@/utils/stringUtils";
 
 export default function AdminOrdersPage() {
     const [orders, setOrders] = useState<PaymentSlip[]>([]);
@@ -379,8 +380,8 @@ export default function AdminOrdersPage() {
                                             </td>
                                             <td className="px-8 py-6 text-center">
                                                 <div className="flex flex-col items-center">
-                                                    <span className="text-[11px] font-black text-gray-900 tracking-tight">{formatDate(order.createdAt).split(' ')[0]}</span>
-                                                    <span className="text-[10px] text-gray-400 font-bold">{formatDate(order.createdAt).split(' ')[1]}</span>
+                                                    <span className="text-[11px] font-black text-gray-900 tracking-tight">{safeSplit(formatDate(order.createdAt))[0]}</span>
+                                                    <span className="text-[10px] text-gray-400 font-bold">{safeSplit(formatDate(order.createdAt))[1]}</span>
                                                 </div>
                                             </td>
                                             <td className="px-8 py-6 text-right">

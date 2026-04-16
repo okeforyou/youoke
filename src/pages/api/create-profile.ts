@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { adminDb } from '../../firebase-admin';
+import { safeSplit } from '../../utils/stringUtils';
 
 export default async function handler(
   req: NextApiRequest,
@@ -26,7 +27,7 @@ export default async function handler(
       return res.status(401).json({ error: 'Missing Authorization header' });
     }
 
-    const idToken = authHeader.split('Bearer ')[1];
+    const idToken = safeSplit(authHeader, 'Bearer ')[1];
 
     // Import auth from firebase-admin (assuming it's exported or we need to access it)
     // Note: adminDb is the RDB instance. We need the Admin Auth instance.
@@ -50,7 +51,7 @@ export default async function handler(
     const userProfile = {
       uid: uid,
       email: email,
-      displayName: displayName || (typeof email === 'string' ? email.split('@')[0] : 'User'),
+      displayName: displayName || safeSplit(email, '@')[0] || 'User',
       phone: null,
       photoURL: photoURL || null,
       role: 'user',

@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
+import { safeSplit } from '../../../utils/stringUtils';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== 'POST') {
@@ -105,7 +106,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
         };
 
-        const userLineId = userId?.startsWith('line:') ? userId.split(':')[1] : to;
+        const userLineId = userId?.startsWith('line:') ? safeSplit(userId, ':')[1] : to;
 
         // --- Execute Pushes ---
 

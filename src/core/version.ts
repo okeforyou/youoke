@@ -1,7 +1,7 @@
-// 🛡️ v5.5.57: Quota Guardian (Emergency Notifications)
+// 🛡️ v5.5.58: Split Shield (Stability Hardening)
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.57";
+export const SYSTEM_VERSION = "5.5.58";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Production-Diagnostics";
 
@@ -10,6 +10,17 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     : "";
 
 export const CHANGELOGS = [
+    {
+        version: "v5.5.58 (Split Shield)",
+        date: "16 เม.ย. 2569",
+        changes: [
+            "STABILITY: Implemented 'Split Shield' pattern across entire codebase",
+            "FIX: Systematically replaced direct .split() with safeSplit to prevent TypeError Crashes",
+            "RELIABILITY: Hardened Auth Store, Sidebar, User Service, and API Headers",
+            "TV: Improved QR scanning reliability by hardening room parameter parsing",
+        ],
+        recent_updates: "Comprehensive Stability Hardening"
+    },
     {
         version: "v5.5.57 (Quota Guardian)",
         date: "16 เม.ย. 2569",

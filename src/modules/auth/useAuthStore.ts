@@ -19,6 +19,7 @@ import { serverTimestamp, doc, setDoc, getDoc, updateDoc } from 'firebase/firest
 import nookies from 'nookies';
 import { ref, get as rtdbGet, update as rtdbUpdate } from 'firebase/database';
 import { realtimeDb } from '../../firebase';
+import { safeSplit } from '@/utils/stringUtils';
 // Removed unused notification import causing lint errors
 
 interface MembershipState {
@@ -263,7 +264,7 @@ export const useAuthStore = create<UserState & AuthActions>()(
                                 const newProfile = {
                                     uid: firebaseUser.uid,
                                     email: firebaseUser.email,
-                                    displayName: rtdbData?.displayName || firebaseUser.displayName || (typeof firebaseUser.email === 'string' ? firebaseUser.email.split('@')[0] : 'User'),
+                                    displayName: rtdbData?.displayName || firebaseUser.displayName || safeSplit(firebaseUser.email || '', '@')[0] || 'User',
                                     photoURL: rtdbData?.photoURL || firebaseUser.photoURL || null,
                                     role: 'user',
                                     membership: {
@@ -484,7 +485,7 @@ export const useAuthStore = create<UserState & AuthActions>()(
                     if (!auth || !db) throw new Error("Firebase not initialized");
                     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                     const user = userCredential.user;
-                    const displayName = typeof email === 'string' ? email.split('@')[0] : 'User';
+                    const displayName = safeSplit(email || '', '@')[0] || 'User';
 
                     // Update Auth Profile immediately
                     await updateProfile(user, { displayName });

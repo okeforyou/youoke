@@ -2,6 +2,7 @@ import { useState, useEffect, Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { X, CheckCircle, AlertCircle, Copy, MessageCircle, Loader2, Sparkles, Send } from 'lucide-react';
 import { useAuthStore } from '@/modules/auth/useAuthStore';
+import { safeSplit } from '@/utils/stringUtils';
 import { db } from '@/firebase';
 import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 import axios from 'axios';
@@ -66,7 +67,7 @@ export const UploadSlipModal = ({ isOpen, onClose, pkg }: UploadSlipModalProps) 
             if (db) {
                 const docRef = await addDoc(collection(db, 'payment_proofs'), {
                     userId: user.uid,
-                    userDisplayName: user.displayName || (typeof user.email === 'string' ? user.email.split('@')[0] : 'User'),
+                    userDisplayName: user.displayName || safeSplit(user.email || '', '@')[0] || 'User',
                     userEmail: user.email,
                     packageId: pkg.id,
                     packageName: pkg.name,

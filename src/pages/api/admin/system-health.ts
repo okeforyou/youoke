@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { adminAuth, adminFirestore } from '../../../firebase-admin';
+import { safeSplit } from '../../../utils/stringUtils';
 
 export default async function handler(
     req: NextApiRequest,
@@ -11,7 +12,7 @@ export default async function handler(
         return res.status(401).json({ error: 'Unauthorized: Missing token' });
     }
 
-    const token = authHeader.split('Bearer ')[1];
+    const token = safeSplit(authHeader, 'Bearer ')[1];
 
     try {
         if (!adminAuth) {
