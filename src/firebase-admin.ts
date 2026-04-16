@@ -18,6 +18,9 @@ if (!admin.apps.length) {
       }
     }
 
+    // Determine target project ID from env first
+    const envProjectId = cleanEnv(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) || cleanEnv(process.env.NEXT_PUBLIC_PROJECT_ID) || 'playokeforyou';
+
     // 2. Fallback: Try Loading from Local File (Plesk/Local Style)
     if (!serviceAccount) {
         try {
@@ -25,11 +28,19 @@ if (!admin.apps.length) {
             const path = require('path');
             const keyPath = path.join(process.cwd(), 'serviceAccountKey.json');
             if (fs.existsSync(keyPath)) {
-                console.log('📂 Firebase Admin: Loading credentials from serviceAccountKey.json');
-                serviceAccount = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
+                const fileKey = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
+                
+                // 🛡️ Guard: Only use local file if it matches the target project
+                // This prevents accidentally using dev keys for production on Plesk
+                if (!envProjectId || fileKey.project_id === envProjectId) {
+                    console.log('📂 Firebase Admin: Using valid serviceAccountKey.json for project:', fileKey.project_id);
+                    serviceAccount = fileKey;
+                } else {
+                    console.warn(`⚠️ Firebase Admin: Skipping serviceAccountKey.json because it belongs to ${fileKey.project_id} but we need ${envProjectId}`);
+                }
             }
         } catch (e) {
-            console.warn('⚠️ Firebase Admin: serviceAccountKey.json not found or invalid');
+            console.warn('⚠️ Firebase Admin: serviceAccountKey.json loading error');
         }
     }
 
@@ -38,7 +49,7 @@ if (!admin.apps.length) {
       : undefined);
 
     const clientEmail = serviceAccount?.client_email || cleanEnv(process.env.FIREBASE_CLIENT_EMAIL) || cleanEnv(process.env.CLIENT_EMAIL);
-    const projectId = serviceAccount?.project_id || cleanEnv(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) || cleanEnv(process.env.NEXT_PUBLIC_PROJECT_ID);
+    const projectId = serviceAccount?.project_id || envProjectId;
     const databaseURL = serviceAccount?.database_url || cleanEnv(process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL) || cleanEnv(process.env.NEXT_PUBLIC_DATABASE_URL) || `https://${projectId}.firebaseio.com`;
 
     if (!privateKey || !clientEmail || !projectId) {
@@ -51,10 +62,11 @@ if (!admin.apps.length) {
       throw new Error(`Firebase Admin credentials not configured. Missing: ${missing.join(', ')}`);
     }
 
-    // 🛡️ Final Sanitize for Private Key (Remove quotes and fix escapes)
+    // 🛡️ Final Sanitize for Private Key
     const finalPrivateKey = privateKey.replace(/^['"]|['"]$/g, '').replace(/\\n/g, '\n');
 
     try {
+      console.log(`🔥 Firebase Admin: Initializing for Project [${projectId}] with Key [${clientEmail}]`);
       admin.initializeApp({
         credential: admin.credential.cert({
           projectId: projectId,

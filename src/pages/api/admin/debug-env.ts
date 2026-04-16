@@ -33,6 +33,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(200).json({
       success: true,
       adminConfigured: hasAdmin,
+      adminProjectId: (adminFirestore as any)?._databaseId?._projectId || 'Unknown',
+      adminClientEmail: (adminAuth as any)?.app?.options?.credential?.clientEmail || 'Private',
       env: envStatus,
       adminTestResult: adminTest,
       timestamp: new Date().toISOString()

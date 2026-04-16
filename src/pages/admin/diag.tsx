@@ -99,8 +99,12 @@ export default function AdminDiagPage() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                                 <div className="space-y-4">
                                     <div>
-                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] block mb-1">Project ID</label>
-                                        <code className="text-indigo-300 font-mono text-lg">{diagData?.env?.PROJECT_ID}</code>
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] block mb-1">Active Admin Project</label>
+                                        <code className="text-indigo-300 font-mono text-lg">{diagData?.adminProjectId}</code>
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] block mb-1">Auth Credentials Source</label>
+                                        <div className="text-[10px] text-slate-400 font-mono break-all">{diagData?.adminClientEmail}</div>
                                     </div>
                                     <div>
                                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] block mb-1">Has Private Key?</label>
@@ -111,8 +115,12 @@ export default function AdminDiagPage() {
                                 </div>
                                 <div className="space-y-4">
                                     <div>
-                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] block mb-1">Client Email</label>
-                                        <code className="text-slate-400 font-mono text-xs">{diagData?.env?.CLIENT_EMAIL}</code>
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] block mb-1">ENV Project ID</label>
+                                        <code className="text-slate-400 font-mono text-xs">{diagData?.env?.PROJECT_ID}</code>
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] block mb-1">Server Info</label>
+                                        <div className="text-[10px] text-slate-500 font-medium">Node: {diagData?.env?.NODE_ENV}</div>
                                     </div>
                                     <div>
                                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] block mb-1">Private Key Preview (Safety)</label>
