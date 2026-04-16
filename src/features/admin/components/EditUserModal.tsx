@@ -5,6 +5,7 @@ import { AdminService } from '../services/adminService';
 import { ConfirmModal } from './ConfirmModal';
 import { db } from '../../../firebase';
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
+import { VERSION_LABEL } from '@/core/version';
 import { approvePayment } from '../../../modules/billing/services/paymentService';
 
 interface User {
@@ -609,7 +610,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
 
                 <div className="bg-white px-5 py-4 border-t border-slate-100 flex justify-between items-center flex-shrink-0">
                     <span className="text-[8px] font-black text-slate-300 uppercase tracking-widest">
-                        v4.9.98 Admin Intelligence
+                        {VERSION_LABEL} Admin Intelligence
                     </span>
                     <button 
                         className="px-6 py-2 rounded-lg text-sm font-bold text-slate-500 hover:bg-slate-50 transition-colors" 

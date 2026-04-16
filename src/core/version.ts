@@ -7,6 +7,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.46 (Admin Dashboard Polish)",
+        date: "16 เม.ย. 2569",
+        changes: [
+            "Fix: Removed hardcoded v4.9.98 string from Admin User Modal",
+            "Reliability: Unified VERSION_LABEL across the entire administrative interface",
+            "Performance: Optimized pending order detection in user management",
+        ],
+        recent_updates: "Admin Version Sync & Polish"
+    },
+    {
         version: "v5.5.45 (One-Step Admin Approval)",
         date: "16 เม.ย. 2569",
         changes: [
