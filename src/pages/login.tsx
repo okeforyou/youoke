@@ -94,39 +94,45 @@ export default function LoginPage() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ code, redirectUri, state })
                 });
-                if (!res.ok) throw new Error('Failed to verify LINE login');
+                
+                if (!res.ok) {
+                    const errorData = await res.json();
+                    throw new Error(errorData.error || 'Failed to verify LINE');
+                }
+                
                 const data = await res.json();
 
-                if (isLinkingFlow) {
-                    if (data.lineUserId && user?.uid) {
-                        const { realtimeDb, db } = await import('@/firebase');
-                        
-                        // Update RTDB (Backward Compatibility)
-                        if (realtimeDb) {
-                            const { ref, update } = await import('firebase/database');
-                            await update(ref(realtimeDb, `users/${user.uid}`), {
-                                lineUserId: data.lineUserId,
-                                lineDisplayName: data.lineDisplayName || '',
-                            });
-                        }
-                        
-                        // Update Firestore (Crucial for Core System Identity)
-                        if (db) {
-                            const { doc, updateDoc } = await import('firebase/firestore');
-                            await updateDoc(doc(db, 'users', user.uid), {
-                                lineUserId: data.lineUserId,
-                                lineDisplayName: data.lineDisplayName || '',
-                            });
-                        }
+                if (state === 'link_account' && data.lineUserId && user?.uid) {
+                    const { realtimeDb, db } = await import('@/firebase');
+                    
+                    // Update RTDB (Backward Compatibility)
+                    if (realtimeDb) {
+                        const { ref, update } = await import('firebase/database');
+                        await update(ref(realtimeDb, `users/${user.uid}`), {
+                            lineUserId: data.lineUserId,
+                            lineDisplayName: data.lineDisplayName || '',
+                        });
+                    }
+                    
+                    // Update Firestore (Crucial for Core System Identity)
+                    if (db) {
+                        const { doc, updateDoc } = await import('firebase/firestore');
+                        await updateDoc(doc(db, 'users', user.uid), {
+                            lineUserId: data.lineUserId,
+                            lineDisplayName: data.lineDisplayName || '',
+                        });
                     }
                     
                     // Force a hard reload to ensure AuthStore re-fetches the latest Firestore state
                     window.location.href = '/';
                 } else {
-                    await signInWithCustomToken(data.token);
+                    console.warn("⚠️ [LINE] Login with LINE is disabled. Only linking is allowed.");
+                    setLocalError('ระบบปิดการเข้าสู่ระบบด้วย LINE กรุณาใช้ Google หรืออีเมลแทนครับ');
+                    setLineLoading(false);
                 }
             } catch (err: any) {
-                setLocalError('การเชื่อมต่อ LINE ล้มเหลว กรุณาลองใหม่');
+                console.error('❌ LINE Callback Error:', err);
+                setLocalError(err.message || 'การเชื่อมต่อ LINE ล้มเหลว กรุณาลองใหม่');
                 setLineLoading(false);
                 lineProcessedRef.current = false;
             }
@@ -260,10 +266,7 @@ export default function LoginPage() {
                         </div>
 
                         <div className="space-y-3 mb-8">
-                            <button onClick={() => signInWithLine()} disabled={isLoading || lineLoading || !acceptedTerms} className="w-full h-14 flex justify-center items-center gap-3 rounded-2xl bg-[#06C755] text-white font-black transition-all active:scale-95 disabled:opacity-40 border-none shadow-none">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M24 10.304c0-4.66-4.66-8.43-10.404-8.43-5.744 0-10.4 3.77-10.4 8.43 0 4.155 3.655 7.63 8.708 8.284.34.074.801.225 1.026.516.23.289.15.743.074 1.042l-.367 2.215s-.204 1.258.944.685c1.149-.574 6.204-3.655 8.46-6.255C22.618 15.352 24 13.013 24 10.304zm-14.757 2.375a.333.333 0 0 1-.333.333H6.84a.332.332 0 0 1-.334-.333V8.165a.333.333 0 0 1 .334-.334h.61c.184 0 .333.15.333.334v3.837h1.127c.184 0 .333.15.333.333v.644zm3.058 0a.334.334 0 0 1-.334.333h-.615a.333.333 0 0 1-.333-.333V8.165c0-.184.15-.334.333-.334h.615c.184 0 .334.15.334.334v4.514zm3.903 0a.332.332 0 0 1-.333.333h-.515a.34.34 0 0 1-.267-.13l-1.422-1.95v1.747a.333.333 0 0 1-.333.333h-.611a.333.333 0 0 1-.333-.333V8.165a.333.333 0 0 1 .333-.334h.511c.101 0 .196.046.257.126l1.432 1.956V8.165a.333.333 0 0 1 .333-.334h.612c.184 0 .333.15.333.334v4.514zm3.015-2.071c.184 0 .333.15.333.333v.644a.333.333 0 0 1-.333.333h-1.616a.333.333 0 0 1-.333-.333V8.165a.333.333 0 0 1 .333-.334h1.616c.184 0 .333.15.333.334v.644a.333.333 0 0 1-.333.334H17.47v.754h1.127c.184 0 .333.15.333.333v.644a.333.333 0 0 1-.333.334H17.47v.775h1.119z"/></svg>
-                                <span>เข้าสู่ระบบด้วย LINE</span>
-                            </button>
+                            {/* LINE Login button removed based on Simplified LINE Strategy */}
                             <button onClick={handleGoogleLogin} disabled={isLoading || !acceptedTerms} className="w-full h-14 flex justify-center items-center gap-3 rounded-2xl bg-zinc-50 border border-zinc-200 text-zinc-900 font-black transition-all active:scale-95 disabled:opacity-40 shadow-none">
                                 <svg width="20" height="20" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/><path d="M3.964 10.706c-.18-.54-.282-1.117-.282-1.706 0-.589.102-1.166.282-1.706V4.962H.957C.347 6.177 0 7.549 0 9s.347 2.823.957 4.038l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.962L3.964 7.294C4.672 5.167 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
                                 <span>ดำเนินการด้วย Google</span>

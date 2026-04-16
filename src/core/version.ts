@@ -7,6 +7,17 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.44 (Simplified LINE Strategy)",
+        date: "16 เม.ย. 2569",
+        changes: [
+            "Security: Disabled LINE Login to resolve production authentication issues",
+            "Feature: Retained LINE Account Linking for billing and notifications",
+            "Stability: Simplified /api/auth/line-token to focus on verification only",
+            "Fix: Moved LINE identity sync logic to client-side for better reliability",
+        ],
+        recent_updates: "Simplified LINE & Account Linking Focus"
+    },
+    {
         version: "v5.5.43 (Plesk Stability)",
         date: "14 เม.ย. 2569",
         changes: [
@@ -673,5 +684,5 @@ export const getLatestVersion = () => {
 };
 
 export const SYSTEM_VERSION = getLatestVersion();
-export const SYSTEM_CODENAME = "Domain Harmony";
+export const SYSTEM_CODENAME = "Simplified LINE";
 export const VERSION_LABEL = `${COMMIT_ID || '#local'} v${SYSTEM_VERSION} (${SYSTEM_CODENAME})`;

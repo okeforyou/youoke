@@ -1,7 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
-import { adminAuth, adminFirestore, adminDb } from '../../../firebase-admin';
-import { FieldValue } from 'firebase-admin/firestore';
+
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== 'POST') {
@@ -50,130 +49,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const name = lineProfile.name;
         const picture = lineProfile.picture;
 
-        if (state === 'link_account') {
-            // ONLY verify token and return data to frontend for linking.
-            // Do NOT try to fetch or write to Firestore/Firebase Auth since we don't have their true UID here.
-            return res.status(200).json({ 
-                token: null, 
-                lineUserId, 
-                lineDisplayName: name,
-                linked: true
-            });
+        if (state !== 'link_account') {
+            console.warn(`⚠️ [LINE] Unauthorized state: ${state}. Only 'link_account' is supported.`);
+            return res.status(403).json({ error: 'Unauthorized login method' });
         }
 
-        let targetUid = state && state !== 'auth_login' ? state : `line:${lineUserId}`;
-        
-        console.log(`✅ [Identity Bridge] Target UID: ${targetUid} | LINE: ${name}`);
-
-        // 3. Link or Create User
-        if (!adminAuth || !adminFirestore) throw new Error("Firebase Admin not initialized");
-
-        let firebaseUser;
-        try {
-            firebaseUser = await adminAuth.getUser(targetUid);
-        } catch (error: any) {
-            if (error.code === 'auth/user-not-found' && targetUid.startsWith('line:')) {
-                // Create new LINE user if it's a login and user doesn't exist
-                firebaseUser = await adminAuth.createUser({
-                    uid: targetUid,
-                    displayName: name,
-                    photoURL: picture,
-                    emailVerified: true
-                });
-            } else {
-                throw error; // If state UID is invalid/missing, it should error here
-            }
-        }
-
-        // 4. Update Profile with LINE Data (The Bridge - v4.8.5 Dual-DB Fix)
-        const userRef = adminFirestore.collection('users').doc(targetUid);
-        const firestoreBridgeData: any = {
-            lineUserId: lineUserId,
-            lineDisplayName: name,
-            linePhotoURL: picture,
-            updatedAt: FieldValue.serverTimestamp()
-        };
-
-        // If it's a new LINE user, fill in basic info too
-        if (targetUid.startsWith('line:')) {
-            firestoreBridgeData.uid = targetUid;
-            firestoreBridgeData.displayName = name;
-            firestoreBridgeData.photoURL = picture;
-            firestoreBridgeData.provider = 'line';
-        }
-
-        // RTDB uses its own timestamp format
-        const rtdbBridgeData: any = {
-            lineUserId: lineUserId,
-            lineDisplayName: name,
-            linePhotoURL: picture,
-            updatedAt: adminDb ? require('firebase-admin').database.ServerValue.TIMESTAMP : null
-        };
-
-        if (targetUid.startsWith('line:')) {
-            rtdbBridgeData.uid = targetUid;
-            rtdbBridgeData.displayName = name;
-            rtdbBridgeData.photoURL = picture;
-            rtdbBridgeData.provider = 'line';
-        }
-
-        // Parallel Sync to both DBs (v4.8.5)
-        const writePromises: Promise<any>[] = [
-            userRef.set(firestoreBridgeData, { merge: true })
-        ];
-
-        if (adminDb) {
-            writePromises.push(adminDb.ref(`users/${targetUid}`).update(rtdbBridgeData));
-            console.log(`✅ [Bridge] Writing to BOTH Firestore + RTDB for UID: ${targetUid}`);
-        } else {
-            console.warn(`⚠️ [Bridge] adminDb is null — writing to Firestore ONLY for UID: ${targetUid}`);
-        }
-
-        await Promise.all(writePromises);
-
-        // 5. Send Welcome/Link Message via LINE Push API
-        const channelAccessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
-        if (channelAccessToken) {
-            try {
-                const isLinking = state && state !== 'auth_login';
-                const welcomeMsg = isLinking 
-                    ? `ผูกบัญชีสำเร็จ! 🎉\n` +
-                      `บัญชี YouOKE ของคุณเชื่อมต่อกับ LINE แล้ว\n` +
-                      `━━━━━━━━━━━━━━━\n` +
-                      `👤 สมาชิก: ${name}\n` +
-                      `✅ สถานะ: เชื่อมต่อสำเร็จ\n` +
-                      `━━━━━━━━━━━━━━━\n` +
-                      `คุณสามารถรับแจ้งเตือนบิลและข่าวสารผ่าน LINE ได้แล้วครับ ✨`
-                    : `ยินดีต้อนรับเข้าสู่ YouOKE! 🎉\n` +
-                      `คุณเข้าสู่ระบบด้วย LINE เรียบร้อยแล้ว\n` +
-                      `━━━━━━━━━━━━━━━\n` +
-                      `👤 สมาชิก: ${name}\n` +
-                      `📱 บริการ: คาราโอเกะออนไลน์\n` +
-                      `━━━━━━━━━━━━━━━\n` +
-                      `ขอให้สนุกกับการร้องเพลงนะครับ! 🎤✨`;
-
-                await axios.post('https://api.line.me/v2/bot/message/push', {
-                    to: lineUserId,
-                    messages: [{ type: "text", text: welcomeMsg }]
-                }, {
-                    headers: { 'Authorization': `Bearer ${channelAccessToken}` }
-                });
-            } catch (err: any) {
-                console.warn('⚠️ [LINE] Could not send welcome message (User might not have added the bot as friend):', err.message);
-            }
-        }
-
-        // 6. Generate Custom Token for Login
-        const customToken = await adminAuth.createCustomToken(targetUid);
+        // Return profile data for linking on the frontend
         return res.status(200).json({ 
-            token: customToken, 
+            token: null, 
             lineUserId, 
             lineDisplayName: name,
-            linked: !!(state && state !== 'auth_login')
+            linked: true
         });
 
     } catch (error: any) {
-        console.error('❌ LINE Login Error:', error.response?.data || error.message);
-        return res.status(500).json({ error: 'LINE Login Failed', details: error.response?.data || error.message });
+        console.error('❌ LINE Token Error:', error.response?.data || error.message);
+        return res.status(500).json({ error: 'LINE Verification Failed', details: error.response?.data || error.message });
     }
 }

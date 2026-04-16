@@ -26,12 +26,13 @@ if (!admin.apps.length) {
     const databaseURL = serviceAccount?.database_url || cleanEnv(process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL) || cleanEnv(process.env.NEXT_PUBLIC_DATABASE_URL) || `https://${projectId}.firebaseio.com`;
 
     if (!privateKey || !clientEmail || !projectId) {
-      console.error('❌ Firebase Admin - Missing environment variables:', {
-        hasPrivateKey: !!privateKey,
-        hasClientEmail: !!clientEmail,
-        hasProjectId: !!projectId,
-      });
-      throw new Error('Firebase Admin credentials not configured');
+      const missing = [];
+      if (!privateKey) missing.push('FIREBASE_PRIVATE_KEY');
+      if (!clientEmail) missing.push('FIREBASE_CLIENT_EMAIL');
+      if (!projectId) missing.push('NEXT_PUBLIC_FIREBASE_PROJECT_ID');
+      
+      console.error(`❌ Firebase Admin - Missing environment variables: ${missing.join(', ')}`);
+      throw new Error(`Firebase Admin credentials not configured. Missing: ${missing.join(', ')}`);
     }
 
     try {
