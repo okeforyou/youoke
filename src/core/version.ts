@@ -5,7 +5,19 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
     ? `#${safeSlice(process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA, 0, 7)}` 
     : "";
 
+export const VERSION_LABEL = 'v5.5.54';
+
 export const CHANGELOGS = [
+    {
+        version: "v5.5.54 (Production Security & Diagnostics)",
+        date: "16 เม.ย. 2569",
+        changes: [
+            "Admin: บังคับใช้กุญแจ Production เท่านั้นสำหรับบ้านจริง (Plesk Fix)",
+            "Admin: เพิ่มระบบ Diagnostics สำหรับวินิจฉัยสุขภาพ Server",
+            "Security Note: มีการใช้ไฟล์ serviceAccountKey_PROD.json ชั่วคราว (ต้องย้ายออกในอนาคต)",
+        ],
+        recent_updates: "Production Key Enforcement & Diagnostics"
+    },
     {
         version: "v5.5.49 (Intelligent Admin Filter)",
         date: "16 เม.ย. 2569",
