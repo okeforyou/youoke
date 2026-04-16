@@ -53,7 +53,7 @@ const LineIcon = ({ className }: { className?: string }) => (
         <path d="M19.365 9.863c.064.433.1.882.1 1.34 0 3.125-2.562 5.674-5.712 5.674-1.223 0-2.359-.383-3.297-1.036l-2.651.883c-.37.123-.663-.223-.52-.54l.582-1.33c-1.328-1.01-2.181-2.577-2.181-4.347 0-3.125 2.562-5.674 5.712-5.674 3.15 0 5.712 2.549 5.712 5.674h.256zm-10.138 4.53c.06.02.12.03.17.03.16 0 .3-.09.37-.24l.58-1.33.04-.08.08-.03c1.2-.45 2.04-1.58 2.04-2.88 0-1.72-1.41-3.12-3.13-3.12s-3.13 1.4-3.13 3.12c0 1.07.54 2.02 1.36 2.59l.07.05-.02.09-.58 1.33c-.07.16-.03.35.11.45.1.07.21.1.32.1h.11z"/>
     </svg>
 );
-import { collection, query, orderBy, limit, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, addDoc } from "firebase/firestore";
+import { collection, query, orderBy, limit, getDocs, doc, updateDoc, deleteDoc, serverTimestamp, addDoc, where } from "firebase/firestore";
 import { db } from "@/firebase";
 
 interface User {
@@ -238,33 +238,50 @@ export default function AdminUsersPage() {
     };
 
 
-    // Fetch Users (Optimized)
-    const fetchUsers = async () => {
-        if (addToast) addToast("⏳ กำลังรีเฟรชรายชื่อสมาชิก...", "info");
+    // Fetch Users (Optimized v1.1.0: Added 50-limit and search query)
+    const fetchUsers = async (term: string = "") => {
+        if (addToast) addToast(term ? `🔍 กำลังค้นหา: ${term}...` : "⏳ กำลังรีเฟรช 50 สมาชิกใหม่ล่าสุด...", "info");
         setLoading(true);
         try {
             if (!db) return;
-            // Fetch all users for Management (but we should ideally paginate if > 1000)
-            const q = query(collection(db, "users"), orderBy("createdAt", "desc"));
+            
+            let q;
+            if (term) {
+                // 🛡️ Optimized Search: Search by exact UID or Starts-with prefix
+                // Note: Firestore doesn't support full-text search, but "prefix" works well
+                q = query(
+                    collection(db, "users"), 
+                    orderBy("displayName"), 
+                    where("displayName", ">=", term),
+                    where("displayName", "<=", term + '\uf8ff'),
+                    limit(50)
+                );
+            } else {
+                // Default: Latest 50 users (prevents 1000+ read operations per refresh)
+                q = query(collection(db, "users"), orderBy("createdAt", "desc"), limit(50));
+            }
+            
             const snapshot = await getDocs(q);
             const data = snapshot.docs.map((doc) => ({
                 uid: doc.id,
                 ...doc.data(),
             })) as User[];
 
-            // Sort: Admin first, then by date
-            data.sort((a, b) => {
-                if (a.role === 'admin' && b.role !== 'admin') return -1;
-                if (a.role !== 'admin' && b.role === 'admin') return 1;
-                return 0;
-            });
+            // Sort: Admin first (optional for filtered list)
+            if (!term) {
+                data.sort((a, b) => {
+                    if (a.role === 'admin' && b.role !== 'admin') return -1;
+                    if (a.role !== 'admin' && b.role === 'admin') return 1;
+                    return 0;
+                });
+            }
 
             setUsers(data);
-            console.log(`✅ Loaded ${data.length} users successfully.`);
-            if (addToast) addToast("✅ รีเฟรชข้อมูลสมาชิกเรียบร้อยแล้ว", "success");
+            console.log(`✅ Loaded ${data.length} users (Quota Saved).`);
+            if (addToast) addToast(term ? `🔍 ค้นพบ ${data.length} รายการ` : "✅ โหลด 50 รายการล่าสุดเรียบร้อย", "success");
         } catch (error) {
             console.error("Error fetching users:", error);
-            if (addToast) addToast("❌ ไม่สามารถรีเฟรชข้อมูลได้", "error");
+            if (addToast) addToast("❌ ไม่สามารถดึงข้อมูลได้ (เช็คโควตา Firebase)", "error");
         } finally {
             setLoading(false);
         }
@@ -288,7 +305,7 @@ export default function AdminUsersPage() {
 
     useEffect(() => {
         if (!db) return;
-        fetchUsers();
+        fetchUsers(searchTerm); // 🛡️ Initial load with current term
         fetchPackages();
     }, [db]);
 
@@ -738,22 +755,21 @@ export default function AdminUsersPage() {
         expired: users.filter(u => getMembershipType(u) === 'free' && u.email).length
     };
 
-    // Filter Logic
+    // Filter Logic (v1.1.1: Local filtering is now just a backup for Role/Guest filters)
     const filteredUsers = users.filter(u => {
-        const searchLower = searchTerm.toLowerCase();
-        const matchesSearch = 
-            u.displayName?.toLowerCase().includes(searchLower) ||
-            u.email?.toLowerCase().includes(searchLower) ||
-            u.uid?.toLowerCase().includes(searchLower);
-        
         const isGuest = !u.email;
         if (!showGuests && isGuest) return false;
 
         const matchesRole = roleFilter === 'all' || u.role === roleFilter;
         const matchesPackage = packageFilter === 'all' || getMembershipType(u) === packageFilter;
 
-        return matchesSearch && matchesRole && matchesPackage;
+        return matchesRole && matchesPackage;
     });
+
+    // 🛡️ Search Execution Handler
+    const handleSearch = () => {
+        fetchUsers(searchTerm);
+    };
 
 
 
@@ -876,15 +892,24 @@ export default function AdminUsersPage() {
             <div className="bg-white border border-gray-100 rounded-[40px] overflow-hidden">
                 {/* Table Filters Header */}
                 <div className="p-4 flex flex-col lg:flex-row justify-between items-center gap-3 border-b border-gray-50">
-                    <div className="relative w-full lg:w-[320px]">
-                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-                        <input 
-                            type="text" 
-                            placeholder="ค้นหาชื่อ, อีเมล..." 
-                            className="w-full pl-11 pr-6 py-2.5 bg-gray-50/50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-indigo-100 outline-none transition-all font-medium text-xs text-gray-900"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
+                    <div className="relative w-full lg:w-[400px] flex items-center gap-2">
+                        <div className="relative flex-1">
+                            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                            <input 
+                                type="text" 
+                                placeholder="ค้นหาชื่อ (กด Enter เพื่อค้นหา)..." 
+                                className="w-full pl-11 pr-6 py-2.5 bg-gray-50/50 border border-gray-100 rounded-xl focus:ring-4 focus:ring-indigo-100 outline-none transition-all font-medium text-xs text-gray-900"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                            />
+                        </div>
+                        <button 
+                            onClick={handleSearch}
+                            className="px-4 py-2.5 bg-indigo-50 text-indigo-600 rounded-xl font-bold text-xs hover:bg-indigo-100 transition-all border border-indigo-100"
+                        >
+                            ค้นหา
+                        </button>
                     </div>
                     <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
                         <div className="flex items-center gap-3 mr-2">

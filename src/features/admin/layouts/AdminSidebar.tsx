@@ -15,7 +15,7 @@ import {
   Shield,
   Menu
 } from 'lucide-react';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, getCountFromServer } from 'firebase/firestore';
 import { db } from "../../../firebase";
 import { useAuth } from "@/context/AuthContext";
 import { cn } from "../../../utils/cn";
@@ -50,27 +50,27 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onToggle }) 
       return;
     }
 
-    console.log("📊 AdminSidebar: Starting real-time listeners...");
-    const usersRef = collection(db, 'users');
-    const unsubscribeUsers = onSnapshot(usersRef, (snapshot) => {
-      // console.log("📊 AdminSidebar: Users Count Update:", snapshot.size);
-      setStats(prev => ({ ...prev, users: snapshot.size }));
-    }, (error) => {
-      console.error("Error watching users:", error);
-    });
+    // 🛡️ Optimized Count: Use getCountFromServer instead of full-collection snapshot
+    const fetchUserCount = async () => {
+      try {
+        const snapshot = await getCountFromServer(usersRef);
+        setStats(prev => ({ ...prev, users: snapshot.data().count }));
+      } catch (error) {
+        console.error("Error counting users:", error);
+      }
+    };
 
-    // Real-time listener for Pending Orders
+    fetchUserCount();
+
+    // Real-time listener for Pending Orders (Pending orders are few, so this is safe)
     const ordersQuery = query(collection(db, 'payment_proofs'), where('status', '==', 'pending'));
     const unsubscribeOrders = onSnapshot(ordersQuery, (snapshot) => {
-      // console.log("📊 AdminSidebar: Pending Orders Update:", snapshot.size);
       setStats(prev => ({ ...prev, pendingOrders: snapshot.size }));
     }, (error) => {
       console.error("Error watching orders:", error);
     });
 
     return () => {
-      // console.log("📊 AdminSidebar: Cleaning up listeners...");
-      unsubscribeUsers();
       unsubscribeOrders();
     };
   }, [user?.uid]);

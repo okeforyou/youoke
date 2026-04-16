@@ -239,10 +239,10 @@ export class CastService {
             this.applyMonitorState(data);
         });
 
-        // 2. Monitor reports its playback progress back to the Dashboard
+        // v5.5.56: Relaxed sync to 5 seconds to preserve Firestore/Realtime quota
         this.pollInterval = setInterval(() => {
             this.syncProgressToFirebase();
-        }, 1000);
+        }, 5000);
 
         // 3. Monitor listens for direct commands (SEEK, NEXT, etc.)
         this.startCommandListener();

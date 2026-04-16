@@ -95,7 +95,7 @@ export const usePlayerSync = (
                 usePlayerStore.getState().setDuration(currentDuration);
             }
 
-        }, 1000);
+        }, 2000); // 🛡️ v5.5.56: Relaxed sync to 2 seconds
         return () => clearInterval(interval);
     }, [isPlaying, currentSource, isPassive]);
 
