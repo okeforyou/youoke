@@ -1,6 +1,9 @@
-// 🛠️ v5.5.55: Absolute Inline Shield (No imports to prevent g.split is not a function)
+// 🛠️ v5.5.55: Absolute Inline Shield (Fixed: Moved to top to prevent undefined imports)
 const inlineSlice = (s: any, start: number, end: number) => (typeof s === 'string' ? s.slice(start, end) : "");
-const inlineStartsWith = (s: any, prefix: string) => (typeof s === 'string' ? s.indexOf(prefix) === 0 : false);
+
+export const SYSTEM_VERSION = "5.5.55";
+export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
+export const SYSTEM_CODENAME = "Production-Diagnostics";
 
 export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA 
     ? `#${inlineSlice(process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA, 0, 7)}` 
@@ -705,27 +708,6 @@ export const CHANGELOGS = [
 ];
 
 export const getLatestVersion = () => {
-    // 🛡️ Smart Versioning Priority (v4.7.5+)
-    if (process.env.NEXT_PUBLIC_APP_VERSION) {
-        return process.env.NEXT_PUBLIC_APP_VERSION.replace(/^v/, '');
-    }
-
-    try {
-        const latest = CHANGELOGS[0]?.version;
-        if (typeof latest !== 'string') return "5.5.55";
-        
-        // 🛡️ Final Aggressive Shield: Using inline string management
-        // latest is e.g. "v5.5.55 (Description)"
-        const spaceIdx = latest.indexOf(" ");
-        const vPart = spaceIdx !== -1 ? latest.substring(0, spaceIdx) : latest;
-        
-        // Remove 'v' prefix safely
-        return vPart.startsWith('v') ? vPart.substring(1) : vPart;
-    } catch (e) {
-        return "5.5.55";
-    }
+    // 🛡️ v5.5.55 prioritized hardcoded constant
+    return SYSTEM_VERSION;
 };
-
-export const SYSTEM_VERSION = getLatestVersion();
-export const SYSTEM_CODENAME = "Production-Diagnostics";
-export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
