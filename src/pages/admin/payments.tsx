@@ -36,8 +36,9 @@ export default function AdminOrdersPage() {
     const [processing, setProcessing] = useState(false);
     const showConfirm = useUIStore(state => state.showConfirm);
     const { addToast } = useToast()!;
-    const router = useRouter();
     const orderIdToSelect = router.query.id as string;
+    const initialSearch = router.query.u as string;
+    const [searchTerm, setSearchTerm] = useState("");
 
     // Fetch Orders
     const fetchOrders = async () => {
@@ -72,13 +73,29 @@ export default function AdminOrdersPage() {
     useEffect(() => {
         if (router.isReady) {
             fetchOrders();
+            if (initialSearch) {
+                setSearchTerm(initialSearch);
+                addToast("กำลังแสดงรายการของสมาชิกที่คุณเลือก", "info");
+            }
         }
-    }, [router.isReady]);
+    }, [router.isReady, initialSearch]);
 
     // Filter Logic
-    const filteredOrders = statusFilter === 'all'
-        ? orders
-        : orders.filter(o => o.status === statusFilter);
+    const filteredOrders = orders.filter(o => {
+        // Status filter
+        if (statusFilter !== 'all' && o.status !== statusFilter) return false;
+        
+        // Search filter (v5.5.49)
+        if (searchTerm) {
+            const searchLower = searchTerm.toLowerCase();
+            const matchName = o.userDisplayName?.toLowerCase().includes(searchLower);
+            const matchUid = o.userId?.toLowerCase() === searchLower || o.userId?.toLowerCase().includes(searchLower);
+            const matchId = o.id.toLowerCase().includes(searchLower);
+            return matchName || matchUid || matchId;
+        }
+        
+        return true;
+    });
 
     // Stats Logic
     const stats = {
@@ -260,9 +277,19 @@ export default function AdminOrdersPage() {
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-600 transition-colors" size={18} />
                     <input 
                         type="text" 
-                        placeholder="ค้นหาชื่อผู้ซื้อ หรือรหัสสั่งซื้อ..."
+                        placeholder="ค้นหาชื่อผู้ซื้อ หรือ UID..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                         className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-[18px] text-sm focus:outline-none focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold text-gray-900"
                     />
+                    {searchTerm && (
+                        <button 
+                            onClick={() => setSearchTerm("")}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                            <X size={16} />
+                        </button>
+                    )}
                 </div>
                 
                 <div className="flex gap-1 p-1">

@@ -348,7 +348,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                                     {approvingOrder ? 'กำลังดำเนินการ...' : '✅ อนุมัติทันที & ส่ง LINE'}
                                 </button>
                                 <Link 
-                                    href="/admin/payments"
+                                    href={`/admin/payments?u=${user.uid}`}
                                     className="px-3 py-2.5 bg-white border border-amber-200 text-amber-600 rounded-lg text-xs font-bold hover:bg-amber-50 transition-all flex items-center justify-center"
                                     title="ดูรายละเอียดในหน้ารายการสั่งซื้อ"
                                 >
@@ -403,7 +403,7 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                                             <ClipboardIcon className="w-4 h-4" />
                                         </button>
                                         <Link 
-                                            href="/admin/payments"
+                                            href={`/admin/payments?u=${user.uid}`}
                                             className="flex items-center gap-1 px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded text-[9px] font-black uppercase tracking-wider transition-all"
                                             title="ดูประวัติการสั่งซื้อ"
                                         >

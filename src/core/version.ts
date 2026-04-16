@@ -7,6 +7,16 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
+        version: "v5.5.49 (Intelligent Admin Filter)",
+        date: "16 เม.ย. 2569",
+        changes: [
+            "Feature: Implemented automatic userId filtering on the Payments page",
+            "UX: Updated User Modal links to pre-filter order history by specific member",
+            "Reliability: Added search state persistence for Admin orders dashboard",
+        ],
+        recent_updates: "Auto-Filtering Billing Links"
+    },
+    {
         version: "v5.5.46 (Admin Dashboard Polish)",
         date: "16 เม.ย. 2569",
         changes: [
