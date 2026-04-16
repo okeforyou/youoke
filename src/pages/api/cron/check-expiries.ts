@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { adminFirestore } from '../../../firebase-admin';
+import { adminFirestore, handleFirestoreError } from '../../../firebase-admin';
 import axios from 'axios';
 
 const CRON_SECRET = process.env.CRON_SECRET || 'dev_secret_key_for_local_testing';
@@ -112,7 +112,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         });
 
     } catch (error: any) {
-        console.error('❌ [CRON] Expiry Check Failed:', error);
+        await handleFirestoreError(error, 'Cron Expiry Check');
         res.status(500).json({ success: false, error: error.message });
     }
 }

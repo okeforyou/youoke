@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { adminAuth, adminFirestore } from '../../../../firebase-admin';
+import { adminAuth, adminFirestore, handleFirestoreError } from '../../../../firebase-admin';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Security check: Only allow certain methods or a temporary secret key
@@ -72,7 +72,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
   } catch (error: any) {
-    console.error('❌ API Cleanup Error:', error);
+    await handleFirestoreError(error, 'Bulk Cleanup API');
     return res.status(500).json({ error: error.message });
   }
 }

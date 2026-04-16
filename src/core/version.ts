@@ -1,7 +1,7 @@
-// 🛡️ v5.5.55: Static Version Shield (Zero Logic - Maximum Stability)
+// 🛡️ v5.5.57: Quota Guardian (Emergency Notifications)
 // ต่อจากนี้จะใช้ระบบ Manual Update เพื่อป้องกัน Runtime Error ในเบราว์เซอร์เก่าๆ (TV/Mobile)
 
-export const SYSTEM_VERSION = "5.5.55";
+export const SYSTEM_VERSION = "5.5.57";
 export const VERSION_LABEL = `v${SYSTEM_VERSION}`;
 export const SYSTEM_CODENAME = "Production-Diagnostics";
 
@@ -11,17 +11,28 @@ export const COMMIT_ID = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
 
 export const CHANGELOGS = [
     {
-        version: "v5.5.55 (Static Shield & Diagnostics)",
+        version: "v5.5.57 (Quota Guardian)",
         date: "16 เม.ย. 2569",
         changes: [
-            "FIX: Migrated to Static Versioning to eliminate 'g.split' errors on Smart TVs",
-            "RELIABILITY: Removed all dynamic string parsing during module initialization",
-            "DIAGNOSTICS: Added Version Override monitoring in Admin Dashboard",
-            "STABILITY: Removed all external helper dependencies from version module",
+            "FEATURE: Implemented Quota Guardian in firebase-admin.ts",
+            "RELIABILITY: Added proactive Code 8 (Quota Exceeded) detection and reporting",
+            "INTEGRATION: Automatic LINE Push notification to Admin on Firestore exhaustion",
+            "MONITORING: Integrated handler into Sync Users, Cleanup, and Expiry Check APIs",
         ],
-        recent_updates: "Zero-Logic Version Stabilization"
+        recent_updates: "Emergency Quota Notification System"
     },
     {
+        version: "v5.5.56 (Quota Shield)",
+        date: "16 เม.ย. 2569",
+        changes: [
+            "STABILITY: Optimized Firestore usage (Admin Users, Sidebar, TV Heartbeat)",
+            "RELIABILITY: Migrated to CountFromServer and Pagination to reduce reads by 90%",
+            "PERFORMANCE: Relaxed TV heartbeat frequency from 1s to 5s",
+        ],
+        recent_updates: "Firestore Quota Optimization"
+    },
+    {
+        version: "v5.5.55 (Static Shield & Diagnostics)",
         version: "v5.5.49 (Intelligent Admin Filter)",
         date: "16 เม.ย. 2569",
         changes: [

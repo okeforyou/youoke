@@ -105,4 +105,79 @@ export const adminDb = admin.apps.length ? admin.database() : null;
 export const adminFirestore = admin.apps.length ? admin.firestore() : null;
 export const adminMessaging = admin.apps.length ? admin.messaging() : null;
 
+/**
+ * 🛡️ Quota Guardian Utility
+ * Detecting and notifying when Firestore Quota is exceeded (Code 8)
+ */
+export const QuotaGuardian = {
+    /**
+     * Check if the error is a Firestore Quota Exceeded error
+     */
+    isQuotaError: (error: any): boolean => {
+        const code = error?.code;
+        const message = error?.message || "";
+        // Code 8 = RESOURCE_EXHAUSTED
+        return code === 8 || code === 'resource-exhausted' || message.includes('Quota exceeded') || message.includes('RESOURCE_EXHAUSTED');
+    },
+
+    /**
+     * Send emergency notification to Admin via LINE
+     */
+    notifyAdmin: async (error: any, context: string) => {
+        const adminUid = process.env.LINE_ADMIN_USER_ID;
+        const channelToken = process.env.LINE_CHANNEL_ACCESS_TOKEN;
+
+        if (!adminUid || !channelToken) {
+            console.warn('⚠️ QuotaGuardian: Cannot notify admin, LINE credentials missing');
+            return;
+        }
+
+        const errorMessage = error?.message || 'Unknown Error';
+        const timestamp = new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' });
+        
+        const payload = {
+            to: adminUid,
+            messages: [
+                {
+                    type: 'text',
+                    text: `🚨 [YouOKE Quota Alert]\n\nพบปัญหา Quota Firestore เต็ม!\n📍 Context: ${context}\n⏱️ Time: ${timestamp}\n❌ Error: ${errorMessage}\n\nระบบจะทำการลดระดับการทำงาน (Graceful Degradation) อัตโนมัติครับ`
+                }
+            ]
+        };
+
+        try {
+            const response = await fetch('https://api.line.me/v2/bot/message/push', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${channelToken}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                console.log('✅ QuotaGuardian: Admin notified successfully via LINE');
+            } else {
+                const data = await response.json();
+                console.error('❌ QuotaGuardian: LINE API failed', data);
+            }
+        } catch (e) {
+            console.error('❌ QuotaGuardian: Failed to send LINE push', e);
+        }
+    }
+};
+
+/**
+ * Wrapper for Firestore operations that automatically checks for Quota errors
+ */
+export const handleFirestoreError = async (error: any, context: string = 'Firestore Op') => {
+    console.error(`❌ Firestore Error [${context}]:`, error);
+    
+    if (QuotaGuardian.isQuotaError(error)) {
+        await QuotaGuardian.notifyAdmin(error, context);
+    }
+    
+    return error;
+};
+
 export default admin;
