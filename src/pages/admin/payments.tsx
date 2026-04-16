@@ -36,6 +36,7 @@ export default function AdminOrdersPage() {
     const [processing, setProcessing] = useState(false);
     const showConfirm = useUIStore(state => state.showConfirm);
     const { addToast } = useToast()!;
+    const router = useRouter();
     const orderIdToSelect = router.query.id as string;
     const initialSearch = router.query.u as string;
     const [searchTerm, setSearchTerm] = useState("");
