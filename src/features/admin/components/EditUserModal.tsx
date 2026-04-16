@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { XMarkIcon, ShieldCheckIcon, StarIcon, ClipboardIcon, UserIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, ShieldCheckIcon, StarIcon, ClipboardIcon, UserIcon, BarChart2 } from '@heroicons/react/24/outline';
+import Link from 'next/link';
 import { cn } from "../../../utils/cn";
 import { AdminService } from '../services/adminService';
 import { ConfirmModal } from './ConfirmModal';
@@ -333,20 +334,29 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                                     <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
                                     <span className="text-[11px] font-black text-amber-700 uppercase tracking-wider">ตรวจพบการแจ้งโอนค้างอยู่</span>
                                 </div>
-                                <span className="text-[10px] font-bold text-amber-500">฿{pendingOrder.amount}</span>
+                                <div className="text-[10px] font-bold text-amber-500">฿{pendingOrder.amount}</div>
                             </div>
                             <div className="text-xs font-bold text-slate-700 mb-3">
                                 บัญชีนี้มีรายการ <span className="text-indigo-600 underline underline-offset-2">{pendingOrder.packageName}</span> รออนุมัติ
                             </div>
-                            <button 
-                                onClick={handleQuickApprove}
-                                disabled={approvingOrder}
-                                className="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-black shadow-lg shadow-amber-200 transition-all active:scale-95 disabled:bg-slate-300 disabled:shadow-none"
-                            >
-                                {approvingOrder ? 'กำลังดำเนินการ...' : '✅ อนุมัติทันที & ส่ง LINE แจ้งลูกค้า'}
-                            </button>
+                            <div className="flex gap-2">
+                                <button 
+                                    onClick={handleQuickApprove}
+                                    disabled={approvingOrder}
+                                    className="flex-1 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-black shadow-lg shadow-amber-200 transition-all active:scale-95 disabled:bg-slate-300 disabled:shadow-none"
+                                >
+                                    {approvingOrder ? 'กำลังดำเนินการ...' : '✅ อนุมัติทันที & ส่ง LINE'}
+                                </button>
+                                <Link 
+                                    href="/admin/payments"
+                                    className="px-3 py-2.5 bg-white border border-amber-200 text-amber-600 rounded-lg text-xs font-bold hover:bg-amber-50 transition-all flex items-center justify-center"
+                                    title="ดูรายละเอียดในหน้ารายการสั่งซื้อ"
+                                >
+                                    <ClipboardIcon className="w-4 h-4" />
+                                </Link>
+                            </div>
                             <p className="text-[9px] text-amber-600/70 mt-2 text-center font-medium italic">
-                                * กดปุ่มนี้เพื่อจบงานในคลิกเดียว (ระบบจะปิดรายการสั่งซื้อในหน้า Payments ให้ด้วย)
+                                * กดปุ่มทองเพื่อจบงานในคลิกเดียว (ระบบจะแจ้ง LINE และปิดบิลให้ทันที)
                             </p>
                         </div>
                     )}
@@ -383,14 +393,24 @@ export const EditUserModal: React.FC<EditUserModalProps> = ({
                                 <label className="text-[11px] font-bold text-slate-400 uppercase block mb-1">รหัสสมาชิก (UID)</label>
                                 <div className="flex items-center gap-2">
                                     <code className="bg-slate-50 px-2 py-1 rounded text-[10px] text-slate-500 font-mono flex-1 truncate">{user.uid}</code>
-                                    <button onClick={() => copyToClipboard(user.uid)} className="relative text-slate-400 hover:text-indigo-600 transition-colors">
-                                        {copied && (
-                                            <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] px-2 py-1 rounded shadow-xl whitespace-nowrap animate-in fade-in zoom-in-50 duration-200">
-                                                คัดลอกแล้ว!
-                                            </span>
-                                        )}
-                                        <ClipboardIcon className="w-4 h-4" />
-                                    </button>
+                                    <div className="flex items-center gap-1.5 ml-auto">
+                                        <button onClick={() => copyToClipboard(user.uid)} className="relative text-slate-400 hover:text-indigo-600 transition-colors">
+                                            {copied && (
+                                                <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] px-2 py-1 rounded shadow-xl whitespace-nowrap animate-in fade-in zoom-in-50 duration-200">
+                                                    คัดลอกแล้ว!
+                                                </span>
+                                            )}
+                                            <ClipboardIcon className="w-4 h-4" />
+                                        </button>
+                                        <Link 
+                                            href="/admin/payments"
+                                            className="flex items-center gap-1 px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded text-[9px] font-black uppercase tracking-wider transition-all"
+                                            title="ดูประวัติการสั่งซื้อ"
+                                        >
+                                            <BarChart2 className="w-3 h-3" />
+                                            <span>บิล</span>
+                                        </Link>
+                                    </div>
                                 </div>
                             </div>
                         </div>
