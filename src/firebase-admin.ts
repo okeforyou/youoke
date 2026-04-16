@@ -21,26 +21,38 @@ if (!admin.apps.length) {
     // Determine target project ID from env first
     const envProjectId = cleanEnv(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) || cleanEnv(process.env.NEXT_PUBLIC_PROJECT_ID) || 'playokeforyou';
 
-    // 2. Fallback: Try Loading from Local File (Plesk/Local Style)
+    // 2. Fallback: Try Loading from Local Files (Plesk/Local Style)
     if (!serviceAccount) {
         try {
             const fs = require('fs');
             const path = require('path');
-            const keyPath = path.join(process.cwd(), 'serviceAccountKey.json');
-            if (fs.existsSync(keyPath)) {
-                const fileKey = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
-                
-                // 🛡️ Guard: Only use local file if it matches the target project
-                // This prevents accidentally using dev keys for production on Plesk
+            
+            // Prioritize PROD file if it exists
+            const prodKeyPath = path.join(process.cwd(), 'serviceAccountKey_PROD.json');
+            const defaultKeyPath = path.join(process.cwd(), 'serviceAccountKey.json');
+            
+            let loadedPath = "";
+            let fileKey: any = null;
+
+            if (fs.existsSync(prodKeyPath)) {
+                loadedPath = "serviceAccountKey_PROD.json";
+                fileKey = JSON.parse(fs.readFileSync(prodKeyPath, 'utf8'));
+            } else if (fs.existsSync(defaultKeyPath)) {
+                loadedPath = "serviceAccountKey.json";
+                fileKey = JSON.parse(fs.readFileSync(defaultKeyPath, 'utf8'));
+            }
+
+            if (fileKey) {
+                // 🛡️ Guard: Only use local file if it matches the target project (if projectId is constrained)
                 if (!envProjectId || fileKey.project_id === envProjectId) {
-                    console.log('📂 Firebase Admin: Using valid serviceAccountKey.json for project:', fileKey.project_id);
+                    console.log(`📂 Firebase Admin: Using key from ${loadedPath} for project:`, fileKey.project_id);
                     serviceAccount = fileKey;
                 } else {
-                    console.warn(`⚠️ Firebase Admin: Skipping serviceAccountKey.json because it belongs to ${fileKey.project_id} but we need ${envProjectId}`);
+                    console.warn(`⚠️ Firebase Admin: Skipping ${loadedPath} because it belongs to ${fileKey.project_id} but we need ${envProjectId}`);
                 }
             }
         } catch (e) {
-            console.warn('⚠️ Firebase Admin: serviceAccountKey.json loading error');
+            console.warn('⚠️ Firebase Admin: Local JSON loading error');
         }
     }
 
